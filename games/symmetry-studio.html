@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>对称工作室 · 互动实验室</title>
+<meta name="description" content="画一笔，镜子里同时出现好几笔。用镜像轴和旋转对称亲手画出雪花与万花筒，理解对称到底对的是什么。">
+<link rel="stylesheet" href="../assets/css/base.css">
+<style>
+  .lab-head { padding: 28px 0 14px; }
+  .lab-head h1 { margin: 0 0 .3em; font-size: clamp(1.5rem, 3.4vw, 2.1rem); }
+  .lab-head .meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .lab-head p.lead { max-width: 64ch; color: var(--ink-mid); margin: 0; }
+
+  .stage-wrap {
+    display: grid; grid-template-columns: minmax(0,1fr) 290px;
+    gap: 18px; align-items: start; margin: 18px 0 8px;
+  }
+  @media (max-width: 900px) { .stage-wrap { grid-template-columns: 1fr; } }
+
+  .canvas-card {
+    position: relative; padding: 0; overflow: hidden;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r-lg); box-shadow: var(--shadow);
+  }
+  #pad { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+  .canvas-hint {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    text-align: center; pointer-events: none; color: var(--ink-dim);
+    font-size: .95rem; line-height: 1.7; transition: opacity .35s var(--ease);
+  }
+  .canvas-hint.gone { opacity: 0; }
+  .canvas-hint .big { font-size: 2rem; display: block; margin-bottom: 6px; }
+
+  .panel { display: flex; flex-direction: column; gap: 16px; }
+  .ctl { display: flex; flex-direction: column; gap: 7px; }
+  .ctl > .lbl {
+    font-size: .74rem; font-weight: 700; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--ink-dim);
+  }
+  .ctl .val { font-family: var(--mono); color: var(--math); font-weight: 700; }
+
+  .seg { display: flex; gap: 6px; flex-wrap: wrap; }
+  .swatches { display: flex; gap: 7px; flex-wrap: wrap; }
+  .sw {
+    width: 27px; height: 27px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; padding: 0; background-clip: padding-box;
+    transition: transform .15s var(--ease), border-color .15s var(--ease);
+  }
+  .sw:hover { transform: scale(1.14); }
+  .sw[aria-pressed="true"] { border-color: var(--ink); transform: scale(1.14); }
+
+  .readout {
+    background: var(--surface-2); border: 1px solid var(--line-soft);
+    border-radius: var(--r); padding: 12px 14px; font-size: .88rem; color: var(--ink-mid);
+  }
+  .readout b { color: var(--ink); }
+  .readout .n { font-family: var(--mono); color: var(--math); font-weight: 700; }
+
+  .ask {
+    margin: 22px 0 10px; padding: 18px 20px;
+    border-left: 3px solid var(--math); background: var(--bg-soft);
+    border-radius: 0 var(--r) var(--r) 0;
+  }
+  .ask h2 { margin: 0 0 .5em; font-size: 1.02rem; }
+  .ask ol { margin: 0; padding-left: 1.3em; color: var(--ink-mid); }
+  .ask li + li { margin-top: .45em; }
+  .ask .why {
+    margin-top: 14px; padding-top: 13px; border-top: 1px dashed var(--line);
+    font-size: .88rem; color: var(--ink-dim);
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<main class="wrap">
+
+  <header class="lab-head">
+    <div class="meta">
+      <span class="pill pill-math">数学</span>
+      <span class="pill">5–11 岁</span>
+      <span class="pill">对称与变换</span>
+    </div>
+    <h1>对称工作室</h1>
+    <p class="lead">
+      画一笔，镜子里同时出现好几笔。改变镜面的数量，看看什么时候能画出雪花、
+      什么时候能画出万花筒——对称不是「长得好看」，是「转过去 / 翻过来还是原样」。
+    </p>
+  </header>
+
+  <div class="stage-wrap">
+    <div class="canvas-card">
+      <canvas id="pad" width="760" height="760" role="img"
+              aria-label="对称画板：在此拖动可同时绘制多条镜像笔画"></canvas>
+      <div class="canvas-hint" id="hint">
+        <span class="big">✎</span>
+        在这里拖动手指或鼠标
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ctl">
+        <span class="lbl">镜面数量 · <span class="val" id="foldVal">6</span> 折</span>
+        <input id="fold" type="range" min="1" max="16" step="1" value="6"
+               aria-label="镜面数量">
+      </div>
+
+      <div class="ctl">
+        <span class="lbl">镜像翻转</span>
+        <div class="seg">
+          <button class="chip" id="mirrorOn"  aria-pressed="true">开（雪花）</button>
+          <button class="chip" id="mirrorOff" aria-pressed="false">关（万花筒）</button>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <span class="lbl">画笔粗细 · <span class="val" id="sizeVal">4</span> px</span>
+        <input id="size" type="range" min="1" max="18" step="1" value="4"
+               aria-label="画笔粗细">
+      </div>
+
+      <div class="ctl">
+        <span class="lbl">颜色</span>
+        <div class="swatches" id="swatches"></div>
+      </div>
+
+      <div class="ctl">
+        <span class="lbl">辅助线</span>
+        <div class="seg">
+          <button class="chip" id="guideBtn" aria-pressed="true">显示镜面</button>
+        </div>
+      </div>
+
+      <div class="readout" id="readout"></div>
+
+      <div class="seg">
+        <button class="btn btn-primary btn-sm" id="saveBtn">保存图片</button>
+        <button class="btn btn-sm" id="undoBtn">撤销一笔</button>
+        <button class="btn btn-ghost btn-sm" id="clearBtn">全部清空</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="ask">
+    <h2>陪玩时可以这样问</h2>
+    <ol>
+      <li>把镜面调成 <b>1</b>，只剩一面镜子。这时候画出来的东西，像不像照镜子的你？</li>
+      <li>调到 <b>6</b> 折，随手画几笔。为什么看起来像雪花？（真实雪花就是 6 折对称的）</li>
+      <li>把「镜像翻转」<b>关掉</b>，再画一笔。图案变成旋转的了——转一下重合，但翻过来不一样。哪个更像风车？</li>
+      <li>数一数：6 折的时候你画一笔，屏幕上出现几笔？12 折呢？找出这个规律。</li>
+      <li>家里、路上有哪些东西是对称的？蝴蝶是几折？花朵呢？车轮呢？</li>
+    </ol>
+    <div class="why">
+      为什么这个重要：对称是几何变换的第一课，也是后面学旋转、平移、坐标的直觉基础。
+      孩子先用手感受到「转 60 度还是原样」，之后再见到角度和度数就不再抽象。
+      开关镜像翻转，对应的正是数学上<b>反射对称</b>与<b>旋转对称</b>的区别。
+    </div>
+  </section>
+
+  <footer class="foot wrap-narrow" style="text-align:center">
+    做完可以试试：用 6 折画一朵完整的雪花，然后去查真实雪花的照片对比一下。
+  </footer>
+
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var canvas = document.getElementById("pad");
+  var ctx = canvas.getContext("2d");
+  var hint = document.getElementById("hint");
+
+  var COLORS = ["#6ea8fe", "#4ade80", "#a78bfa", "#fb923c", "#f472b6", "#22d3ee", "#fbbf24", "#eef2ff"];
+
+  var state = {
+    fold: 6,
+    mirror: true,
+    size: 4,
+    color: COLORS[0],
+    guide: true,
+    strokes: [],   // committed strokes: {color, size, fold, mirror, pts:[{x,y}]}
+    current: null,
+    drawing: false
+  };
+
+  /* ---------- sizing (crisp on retina, square, responsive) ---------- */
+  var CSS = 760;              // logical drawing space, always square
+  function fit() {
+    var box = canvas.parentNode.getBoundingClientRect();
+    var side = Math.max(240, Math.round(box.width));
+    var dpr = window.devicePixelRatio || 1;
+    canvas.style.height = side + "px";
+    canvas.width  = Math.round(side * dpr);
+    canvas.height = Math.round(side * dpr);
+    // map logical CSS space -> device pixels
+    ctx.setTransform(canvas.width / CSS, 0, 0, canvas.height / CSS, 0, 0);
+    redraw();
+  }
+
+  /* ---------- coordinate conversion ---------- */
+  function toLogical(ev) {
+    var r = canvas.getBoundingClientRect();
+    var cx = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left;
+    var cy = (ev.touches ? ev.touches[0].clientY : ev.clientY) - r.top;
+    return { x: cx / r.width * CSS, y: cy / r.height * CSS };
+  }
+
+  /* ---------- rendering ---------- */
+  function clearSurface() {
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = "#161d33";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  }
+
+  function drawGuides() {
+    if (!state.guide) return;
+    var c = CSS / 2, n = state.fold;
+    ctx.save();
+    ctx.strokeStyle = "rgba(125,136,171,.30)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 7]);
+    for (var i = 0; i < n; i++) {
+      var a = (Math.PI * 2 / n) * i - Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(c, c);
+      ctx.lineTo(c + Math.cos(a) * CSS, c + Math.sin(a) * CSS);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    // centre dot
+    ctx.fillStyle = "rgba(125,136,171,.5)";
+    ctx.beginPath(); ctx.arc(c, c, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // Draw one stroke replicated across all symmetry slots.
+  function paintStroke(s) {
+    if (s.pts.length < 1) return;
+    var c = CSS / 2;
+    ctx.save();
+    ctx.translate(c, c);
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = s.size;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    for (var i = 0; i < s.fold; i++) {
+      var ang = (Math.PI * 2 / s.fold) * i;
+      // pass 1: rotation only
+      ctx.save();
+      ctx.rotate(ang);
+      trace(s.pts, false);
+      ctx.restore();
+      // pass 2: rotation + reflection (only when mirroring)
+      if (s.mirror) {
+        ctx.save();
+        ctx.rotate(ang);
+        ctx.scale(-1, 1);
+        trace(s.pts, false);
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+  }
+
+  function trace(pts) {
+    var c = CSS / 2;
+    ctx.beginPath();
+    if (pts.length === 1) {
+      // a tap -> dot
+      ctx.arc(pts[0].x - c, pts[0].y - c, ctx.lineWidth / 2, 0, Math.PI * 2);
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.fill();
+      return;
+    }
+    ctx.moveTo(pts[0].x - c, pts[0].y - c);
+    for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x - c, pts[i].y - c);
+    ctx.stroke();
+  }
+
+  function redraw() {
+    clearSurface();
+    drawGuides();
+    for (var i = 0; i < state.strokes.length; i++) paintStroke(state.strokes[i]);
+    if (state.current) paintStroke(state.current);
+  }
+
+  /* ---------- input ---------- */
+  function begin(ev) {
+    ev.preventDefault();
+    state.drawing = true;
+    var p = toLogical(ev);
+    state.current = {
+      color: state.color, size: state.size,
+      fold: state.fold, mirror: state.mirror, pts: [p]
+    };
+    hint.classList.add("gone");
+    redraw();
+  }
+  function move(ev) {
+    if (!state.drawing || !state.current) return;
+    ev.preventDefault();
+    var p = toLogical(ev);
+    var pts = state.current.pts;
+    var last = pts[pts.length - 1];
+    // skip micro-moves so stroke arrays stay small
+    if (Math.abs(p.x - last.x) + Math.abs(p.y - last.y) < 1.2) return;
+    pts.push(p);
+    redraw();
+    report();
+  }
+  function end(ev) {
+    if (!state.drawing) return;
+    if (ev) ev.preventDefault();
+    state.drawing = false;
+    if (state.current && state.current.pts.length) state.strokes.push(state.current);
+    state.current = null;
+    redraw();
+    report();
+  }
+
+  canvas.addEventListener("mousedown", begin);
+  canvas.addEventListener("mousemove", move);
+  window.addEventListener("mouseup", end);
+  canvas.addEventListener("mouseleave", end);
+  canvas.addEventListener("touchstart", begin, { passive: false });
+  canvas.addEventListener("touchmove", move, { passive: false });
+  canvas.addEventListener("touchend", end, { passive: false });
+  canvas.addEventListener("touchcancel", end, { passive: false });
+
+  /* ---------- readout ---------- */
+  function report() {
+    var copies = state.fold * (state.mirror ? 2 : 1);
+    var kind = state.mirror
+      ? "反射 + 旋转对称（像雪花）"
+      : "只有旋转对称（像风车）";
+    var strokes = state.strokes.length + (state.current ? 1 : 0);
+    document.getElementById("readout").innerHTML =
+      "你画的每一笔会变成 <span class='n'>" + copies + "</span> 笔。<br>" +
+      "现在是 <b>" + kind + "</b>。<br>" +
+      "已经画了 <span class='n'>" + strokes + "</span> 笔，" +
+      "屏幕上一共 <span class='n'>" + (strokes * copies) + "</span> 条线。";
+  }
+
+  /* ---------- controls ---------- */
+  var foldEl = document.getElementById("fold");
+  foldEl.addEventListener("input", function () {
+    state.fold = +foldEl.value;
+    document.getElementById("foldVal").textContent = state.fold;
+    redraw(); report();
+  });
+
+  var sizeEl = document.getElementById("size");
+  sizeEl.addEventListener("input", function () {
+    state.size = +sizeEl.value;
+    document.getElementById("sizeVal").textContent = state.size;
+  });
+
+  var mOn = document.getElementById("mirrorOn"), mOff = document.getElementById("mirrorOff");
+  function setMirror(on) {
+    state.mirror = on;
+    mOn.setAttribute("aria-pressed", on ? "true" : "false");
+    mOff.setAttribute("aria-pressed", on ? "false" : "true");
+    redraw(); report();
+  }
+  mOn.addEventListener("click", function () { setMirror(true); });
+  mOff.addEventListener("click", function () { setMirror(false); });
+
+  var guideBtn = document.getElementById("guideBtn");
+  guideBtn.addEventListener("click", function () {
+    state.guide = !state.guide;
+    guideBtn.setAttribute("aria-pressed", state.guide ? "true" : "false");
+    guideBtn.textContent = state.guide ? "显示镜面" : "隐藏镜面";
+    redraw();
+  });
+
+  var sw = document.getElementById("swatches");
+  COLORS.forEach(function (col, i) {
+    var b = document.createElement("button");
+    b.className = "sw";
+    b.style.background = col;
+    b.setAttribute("aria-pressed", i === 0 ? "true" : "false");
+    b.setAttribute("aria-label", "颜色 " + (i + 1));
+    b.addEventListener("click", function () {
+      state.color = col;
+      [].forEach.call(sw.children, function (n) { n.setAttribute("aria-pressed", "false"); });
+      b.setAttribute("aria-pressed", "true");
+    });
+    sw.appendChild(b);
+  });
+
+  document.getElementById("undoBtn").addEventListener("click", function () {
+    state.strokes.pop(); redraw(); report();
+  });
+  document.getElementById("clearBtn").addEventListener("click", function () {
+    state.strokes = []; state.current = null;
+    hint.classList.remove("gone");
+    redraw(); report();
+  });
+  document.getElementById("saveBtn").addEventListener("click", function () {
+    try {
+      var a = document.createElement("a");
+      a.download = "对称作品-" + state.fold + "折.png";
+      a.href = canvas.toDataURL("image/png");
+      a.click();
+    } catch (e) {
+      alert("这个浏览器不支持直接下载，可以直接截图保存。");
+    }
+  });
+
+  /* ---------- go ---------- */
+  window.addEventListener("resize", fit);
+  fit();
+  report();
+})();
+</script>
+
+</body>
+</html>

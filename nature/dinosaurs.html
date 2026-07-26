@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>恐龙与化石 · 我们怎么知道它长什么样 | 少儿数理启蒙</title>
+<meta name="description" content="10 种恐龙的真实体型、年代与食性对比。用身高做比例尺，把「一亿年」变成能看懂的长度，并解释化石证据是怎么被推理出来的。">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<style>
+  .hero { padding: 40px 0 18px; }
+  .hero h1 { margin-bottom: .3em; }
+
+  /* ---------- 地质时间轴 ---------- */
+  .tl-wrap { margin: 26px 0 8px; }
+  .tl {
+    position: relative; height: 78px; border-radius: var(--r);
+    border: 1px solid var(--line); overflow: hidden;
+    background: var(--surface);
+  }
+  .tl-era {
+    position: absolute; top: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 700; letter-spacing: .04em;
+    color: #0b1020; text-align: center; line-height: 1.25;
+    border-right: 1px solid rgba(0,0,0,.25);
+  }
+  .tl-era small { display: block; font-weight: 600; opacity: .72; font-size: .68rem; }
+  .tl-mark {
+    position: absolute; top: -4px; bottom: -4px; width: 2px;
+    background: var(--danger); box-shadow: 0 0 0 1px rgba(0,0,0,.4);
+  }
+  .tl-mark::after {
+    content: attr(data-lab);
+    position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: -21px; white-space: nowrap;
+    font-size: .68rem; color: var(--danger); font-weight: 700;
+  }
+  .tl-legend { margin-top: 26px; font-size: .82rem; color: var(--ink-dim); }
+
+  /* ---------- 控件 ---------- */
+  .ctl {
+    position: sticky; top: 51px; z-index: 40;
+    background: rgba(11,15,26,.87);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
+    padding: 11px 0; margin: 22px 0;
+  }
+  .crow { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+  .crow + .crow { margin-top: 8px; }
+  .clab {
+    font-size: .72rem; font-weight: 700; letter-spacing: .08em;
+    color: var(--ink-dim); text-transform: uppercase; min-width: 54px;
+  }
+  .hbox {
+    display: flex; align-items: center; gap: 10px;
+    font-size: .85rem; color: var(--ink-mid);
+  }
+  .hbox input[type=range] { width: 168px; }
+  .hbox b { font-family: var(--mono); color: var(--ink); min-width: 52px; }
+
+  /* ---------- 恐龙卡 ---------- */
+  .dgrid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill,minmax(330px,1fr)); }
+  .dino { display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; }
+  .dino-head { padding: 16px 17px 12px; border-bottom: 1px solid var(--line-soft); }
+  .dino h3 { margin: 0 0 2px; font-size: 1.16rem; }
+  .dino .sci { margin: 0; font-family: var(--mono); font-size: .74rem; color: var(--ink-dim); }
+  .dino .zh { margin: 4px 0 0; font-size: .86rem; color: var(--ink-mid); }
+
+  /* 等比剪影 */
+  .silo {
+    position: relative; height: 132px; padding: 10px 14px 0;
+    display: flex; align-items: flex-end; gap: 12px;
+    background:
+      linear-gradient(180deg, transparent, rgba(0,0,0,.16)),
+      repeating-linear-gradient(90deg, var(--line-soft) 0 1px, transparent 1px 34px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .kid { position: relative; flex: 0 0 auto; }
+  .kid-b { background: var(--ink-dim); border-radius: 3px 3px 0 0; }
+  .kid-h {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    background: var(--ink-dim); border-radius: 50%;
+  }
+  .kid-t {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: -15px; white-space: nowrap;
+    font-size: .62rem; color: var(--ink-dim); font-family: var(--mono);
+  }
+  .beast { position: relative; flex: 1 1 auto; align-self: flex-end; }
+  .beast-body { border-radius: 44% 30% 26% 20% / 62% 58% 42% 38%; }
+  .beast-neck { position: absolute; border-radius: 40%; }
+  .beast-tail { position: absolute; border-radius: 40%; }
+  .beast-t {
+    position: absolute; right: 2px; bottom: -15px; white-space: nowrap;
+    font-size: .62rem; font-family: var(--mono);
+  }
+  .scale-note {
+    padding: 6px 14px 0; font-size: .68rem; color: var(--ink-dim);
+    font-family: var(--mono);
+  }
+
+  .dino-body { padding: 13px 17px 15px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 12px; }
+  .fact { font-size: .8rem; }
+  .fact span { display: block; color: var(--ink-dim); font-size: .68rem; letter-spacing: .04em; }
+  .fact b { color: var(--ink); font-family: var(--mono); font-weight: 700; }
+  .wow { margin: 0; font-size: .87rem; color: var(--ink-mid); flex: 1; }
+  .evid {
+    margin: 0; font-size: .8rem; color: var(--ink-mid);
+    border-left: 2px solid var(--sci); padding-left: 10px;
+  }
+  .evid b { color: var(--sci); }
+  .dphoto { display: block; width: 100%; height: 138px; object-fit: cover; background: var(--surface-2); }
+  .dphoto-cap {
+    padding: 5px 14px 0; font-size: .66rem; color: var(--ink-dim);
+  }
+
+  .diet-c { color: var(--danger); }
+  .diet-h { color: var(--sci); }
+  .diet-o { color: var(--warn); }
+
+  /* ---------- 一亿年有多长 ---------- */
+  .deep { margin: 30px 0; padding: 20px; }
+  .ruler { position: relative; height: 30px; border-radius: 6px; overflow: hidden; background: var(--surface-2); margin: 16px 0 30px; }
+  .ruler-fill { position: absolute; top: 0; bottom: 0; left: 0; }
+  .ruler-tick {
+    position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,.28);
+  }
+  .ruler-tick::after {
+    content: attr(data-l); position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: -20px; font-size: .66rem; color: var(--ink-dim); white-space: nowrap;
+    font-family: var(--mono);
+  }
+  .qa { margin-top: 14px; }
+  .qa summary {
+    cursor: pointer; font-weight: 700; font-size: .93rem; color: var(--ink);
+    padding: 9px 0; list-style: none;
+  }
+  .qa summary::-webkit-details-marker { display: none; }
+  .qa summary::before { content: "▸ "; color: var(--accent); }
+  .qa[open] summary::before { content: "▾ "; }
+  .qa p { margin: 0 0 10px; font-size: .88rem; color: var(--ink-mid); padding-left: 15px; }
+
+  .src {
+    margin-top: 6px; font-size: .74rem; color: var(--ink-dim);
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+  .src .dot2 { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-dim); }
+  .src .on { background: var(--sci); }
+
+  @media (max-width: 560px) {
+    .dgrid { grid-template-columns: 1fr; }
+    .hbox input[type=range] { width: 128px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html">互动实验</a>
+    <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<header class="hero wrap">
+  <h1>恐龙与化石</h1>
+  <p class="lead">
+    恐龙最好的地方不是「大」，而是<b>我们从没见过它们，却能说出它们多高、吃什么、怎么走路</b>。
+    这一页把每种恐龙和你家孩子的身高放在同一把尺子上，再解释每个结论背后的证据是什么。
+  </p>
+</header>
+
+<main class="wrap">
+
+  <!-- 地质时间轴 -->
+  <section class="tl-wrap" aria-label="地质时间轴">
+    <h2>它们活在什么时候</h2>
+    <p style="font-size:.9rem;color:var(--ink-mid);margin:.4em 0 0">
+      整条时间轴代表 2.52 亿年前到今天。注意最右边那条细缝——人类的全部历史。
+    </p>
+    <div class="tl" id="tl"></div>
+    <p class="tl-legend" id="tlLegend"></p>
+  </section>
+
+  <!-- 控件 -->
+  <section class="ctl" aria-label="筛选">
+    <div class="wrap">
+      <div class="crow">
+        <span class="clab">食性</span>
+        <button class="chip" data-d="all" aria-pressed="true">全部</button>
+        <button class="chip" data-d="carn" aria-pressed="false">肉食</button>
+        <button class="chip" data-d="herb" aria-pressed="false">植食</button>
+      </div>
+      <div class="crow">
+        <span class="clab">年代</span>
+        <button class="chip" data-p="all" aria-pressed="true">全部</button>
+        <button class="chip" data-p="jur" aria-pressed="false">侏罗纪</button>
+        <button class="chip" data-p="cre" aria-pressed="false">白垩纪</button>
+        <span style="flex:1"></span>
+        <label class="hbox">
+          孩子身高
+          <input type="range" id="kh" min="90" max="165" step="1" value="120">
+          <b id="khv">120 cm</b>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <div class="dgrid" id="out"></div>
+  <p class="src" id="src"></p>
+
+  <!-- 深时 -->
+  <section class="card deep">
+    <h2 style="margin-top:0">「六千六百万年前」到底有多久</h2>
+    <p style="font-size:.92rem;color:var(--ink-mid)">
+      孩子说得出这个数字，但没有感觉。把恐龙灭绝到今天的时间压缩成下面这一条尺子，
+      看看人类出现在哪里。
+    </p>
+    <div class="ruler" id="ruler"></div>
+    <p style="font-size:.88rem;color:var(--ink-mid);margin-top:22px" id="rulerNote"></p>
+
+    <details class="qa">
+      <summary>为什么恐龙和人类没有见过面？</summary>
+      <p>
+        最后的恐龙死于 6600 万年前，最早的智人出现在约 30 万年前。
+        中间隔了 6570 万年——比恐龙灭绝到人类出现的这段时间，
+        比人类全部历史长两百多倍。任何画着人骑恐龙的图都是幻想。
+      </p>
+    </details>
+    <details class="qa">
+      <summary>恐龙真的全灭绝了吗？</summary>
+      <p>
+        没有。鸟类就是恐龙的直系后代——严格说，你窗外的麻雀是活着的恐龙。
+        灭绝的是所有非鸟恐龙。所以「恐龙灭绝」更准确的说法是：
+        除了鸟这一支，其他都没能活下来。
+      </p>
+    </details>
+    <details class="qa">
+      <summary>科学家怎么知道恐龙是什么颜色的？</summary>
+      <p>
+        大多数时候不知道，所以博物馆的复原图会换颜色。
+        但少数化石里保存了<b>黑色素体</b>（装色素的微小结构），
+        它的形状能对应颜色类型——靠这个已经确定了几种小型恐龙带红棕色和黑色条纹。
+        这是「知道」和「猜测」的分界线，值得让孩子知道。
+      </p>
+    </details>
+    <details class="qa">
+      <summary>为什么恐龙化石那么少见？</summary>
+      <p>
+        因为形成化石需要一连串巧合：死后很快被泥沙埋住、不被吃掉、
+        地下水刚好带着矿物质慢慢替换骨头、之后几千万年里不被地质运动毁掉、
+        最后还得刚好露出地表被人看见。绝大多数恐龙死后什么都没留下。
+        我们看到的每一具骨架，都是极小概率事件的幸存者。
+      </p>
+    </details>
+  </section>
+
+</main>
+
+<footer class="foot wrap-narrow" style="text-align:center">
+  年代与体型数据为人工核定（依据各属公开研究的常用区间），化石点计数来自
+  <a href="https://paleobiodb.org/" target="_blank" rel="noopener">Paleobiology Database</a>，
+  照片来自 <a href="https://www.inaturalist.org/" target="_blank" rel="noopener">iNaturalist</a>。
+  网络不可用时本页显示内置数据，功能不受影响。
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============================================================
+     恐龙数据 —— 年代与体型人工核定
+     说明：PBDB 的 base_name 聚合查询会把子分类与存疑记录一并纳入，
+     导致年代跨度被夸大（例如 Stegosaurus 会出现 93.9 Ma 的异常记录，
+     而该属实际约在 145 Ma 前消失）。因此正文年代不取 API 聚合值，
+     API 只用于补充「已知化石点数量」与照片。
+     ============================================================ */
+  var DINOS = [
+    {
+      n: "霸王龙", sci: "Tyrannosaurus rex", en: "T. rex",
+      len: 12.3, hip: 3.7, kg: 8000,
+      from: 68, to: 66, period: "cre", diet: "carn",
+      where: "北美洲西部",
+      wow: "咬合力约 3.5 万牛顿，是已知陆地动物里最强的，能咬碎骨头。但前肢只有约 1 米长，短得连自己的嘴都碰不到。",
+      evid: "咬合力不是猜的：在三角龙的骨头上找到了带咬痕的化石，齿痕深度和间距能反推出咬下去的力量。",
+      pbdb: "Tyrannosaurus", inat: "Tyrannosaurus rex"
+    },
+    {
+      n: "三角龙", sci: "Triceratops horridus", en: "Triceratops",
+      len: 9, hip: 2.9, kg: 9000,
+      from: 68, to: 66, period: "cre", diet: "herb",
+      where: "北美洲西部",
+      wow: "头骨能长到 2.5 米，是陆地动物里最大的头骨之一。头骨占了身体全长的四分之一还多。",
+      evid: "头盾上常见愈合的伤口和穿孔——说明这些角不只是装饰，是真的用来打斗过，而且伤者活下来了。",
+      pbdb: "Triceratops", inat: "Triceratops"
+    },
+    {
+      n: "剑龙", sci: "Stegosaurus stenops", en: "Stegosaurus",
+      len: 7, hip: 2.7, kg: 3500,
+      from: 155, to: 145, period: "jur", diet: "herb",
+      where: "北美洲、葡萄牙",
+      wow: "背上两排骨板最高的超过 60 厘米，但它们没有连成一体，是各自独立插在皮肉里的。脑子只有一个青柠大小。",
+      evid: "骨板内部有丰富的血管通道，所以主流推测是<b>调节体温</b>或求偶展示，而不是护甲——真正的护甲不会布满血管。",
+      pbdb: "Stegosaurus", inat: "Stegosaurus"
+    },
+    {
+      n: "腕龙", sci: "Brachiosaurus altithorax", en: "Brachiosaurus",
+      len: 21, hip: 4.4, kg: 35000,
+      from: 154, to: 150, period: "jur", diet: "herb",
+      where: "北美洲",
+      wow: "抬起头能到 9 米高，相当于三层楼的窗户。它的前肢比后肢长，所以整个身体是往前上方斜的。",
+      evid: "鼻孔长在头顶曾让人以为它像潜水艇一样泡在水里。后来算出水压会压垮它的肺，这个说法被推翻了——它是陆生的。",
+      pbdb: "Brachiosaurus", inat: "Brachiosaurus"
+    },
+    {
+      n: "梁龙", sci: "Diplodocus carnegii", en: "Diplodocus",
+      len: 26, hip: 4.2, kg: 15000,
+      from: 154, to: 148, period: "jur", diet: "herb",
+      where: "北美洲",
+      wow: "26 米长，但一半以上都是脖子和尾巴。尾巴末端细得像鞭子，有研究认为甩起来能超过音速、发出爆响。",
+      evid: "脖子那么长却不重，因为颈椎里是<b>中空的气腔</b>，像鸟骨一样。化石切开就能看到蜂窝状结构。",
+      pbdb: "Diplodocus", inat: "Diplodocus"
+    },
+    {
+      n: "异特龙", sci: "Allosaurus fragilis", en: "Allosaurus",
+      len: 8.5, hip: 2.7, kg: 2000,
+      from: 155, to: 145, period: "jur", diet: "carn",
+      where: "北美洲、葡萄牙",
+      wow: "侏罗纪最常见的大型猎手。头骨很轻，靠张大嘴猛砍而不是死咬，牙齿边缘像牛排刀一样带锯齿。",
+      evid: "一具著名的异特龙化石身上有 19 处受伤痕迹（断肋骨、感染），却都愈合了——说明它反复打猎受伤又活了很久。",
+      pbdb: "Allosaurus", inat: "Allosaurus"
+    },
+    {
+      n: "棘龙", sci: "Spinosaurus aegyptiacus", en: "Spinosaurus",
+      len: 15, hip: 4.0, kg: 7400,
+      from: 99, to: 94, period: "cre", diet: "carn",
+      where: "北非",
+      wow: "已知最长的肉食恐龙，比霸王龙还长。背上有近 2 米高的帆状структура，而且它很可能大部分时间在水里抓鱼。",
+      evid: "2020 年发现的尾巴化石又高又扁，像鳄鱼的桨——这是它<b>会游泳</b>的直接证据。它的骨头也异常致密，有助于下潜。",
+      pbdb: "Spinosaurus", inat: "Spinosaurus"
+    },
+    {
+      n: "甲龙", sci: "Ankylosaurus magniventris", en: "Ankylosaurus",
+      len: 8, hip: 1.7, kg: 6000,
+      from: 68, to: 66, period: "cre", diet: "herb",
+      where: "北美洲西部",
+      wow: "全身覆盖骨板，连眼皮上都有骨头。尾巴末端是一个几十公斤的骨锤，能一击打断霸王龙的腿骨。",
+      evid: "尾锤能发力，是因为尾巴后半段的脊椎<b>互相锁死成一根硬棒</b>，前半段柔软——这个结构在化石里看得很清楚。",
+      pbdb: "Ankylosaurus", inat: "Ankylosaurus"
+    },
+    {
+      n: "伶盗龙", sci: "Velociraptor mongoliensis", en: "Velociraptor",
+      len: 2, hip: 0.5, kg: 15,
+      from: 75, to: 71, period: "cre", diet: "carn",
+      where: "蒙古",
+      wow: "电影里演成人那么高，真身只有火鸡大小、15 公斤。而且它<b>有羽毛</b>——不是鳞片皮肤。",
+      evid: "近亲化石的前肢骨上有羽毛附着的小突起（羽茎瘤），和现代鸟一模一样。所以羽毛不是推测，是骨头上的痕迹。",
+      pbdb: "Velociraptor", inat: "Velociraptor"
+    },
+    {
+      n: "副栉龙", sci: "Parasaurolophus walkeri", en: "Parasaurolophus",
+      len: 9.5, hip: 2.8, kg: 2500,
+      from: 76, to: 73, period: "cre", diet: "herb",
+      where: "北美洲西部",
+      wow: "头上那根长管子是中空的，连着鼻腔。科学家用 CT 扫描做出模型吹响过它——听起来像低沉的号角。",
+      evid: "管子内部的空腔形状被完整保存，所以能算出共振频率。这是少数我们能<b>听到</b>的恐龙特征。",
+      pbdb: "Parasaurolophus", inat: "Parasaurolophus"
+    }
+  ];
+
+  var PERIODS = [
+    { id: "tri", n: "三叠纪",  from: 252, to: 201, c: "#c084fc" },
+    { id: "jur", n: "侏罗纪",  from: 201, to: 145, c: "#4ade80" },
+    { id: "cre", n: "白垩纪",  from: 145, to: 66,  c: "#fbbf24" },
+    { id: "cen", n: "新生代",  from: 66,  to: 0,   c: "#6ea8fe" }
+  ];
+
+  var TOTAL = 252;
+  var out = document.getElementById("out");
+  var state = { d: "all", p: "all", kh: 120 };
+
+  /* ---------- 时间轴 ---------- */
+  (function timeline() {
+    var tl = document.getElementById("tl");
+    PERIODS.forEach(function (p) {
+      var el = document.createElement("div");
+      el.className = "tl-era";
+      var l = (TOTAL - p.from) / TOTAL * 100;
+      var w = (p.from - p.to) / TOTAL * 100;
+      el.style.left = l + "%";
+      el.style.width = w + "%";
+      el.style.background = p.c;
+      el.innerHTML = p.n + "<small>" + p.from + "–" + p.to + " Ma</small>";
+      tl.appendChild(el);
+    });
+    // 灭绝线
+    var m = document.createElement("div");
+    m.className = "tl-mark";
+    m.style.left = ((TOTAL - 66) / TOTAL * 100) + "%";
+    m.setAttribute("data-lab", "6600万年前 · 大灭绝");
+    tl.appendChild(m);
+
+    // 人类那条缝有多宽
+    var humanMa = 0.3;
+    var pct = humanMa / TOTAL * 100;
+    document.getElementById("tlLegend").innerHTML =
+      "Ma = 百万年前。人类（智人，约 30 万年）在这条轴上只占 <b>" +
+      pct.toFixed(3) + "%</b>——按上面这条 " +
+      "轴的实际像素算，不到半个像素宽，画不出来。";
+  })();
+
+  /* ---------- 深时尺子 ---------- */
+  (function ruler() {
+    var r = document.getElementById("ruler");
+    var f = document.createElement("div");
+    f.className = "ruler-fill";
+    f.style.width = "100%";
+    f.style.background = "linear-gradient(90deg, var(--warn), var(--kit) 62%, var(--math))";
+    r.appendChild(f);
+
+    [[66, "恐龙灭绝"], [50, "5000万年前"], [25, "2500万年前"], [5, "500万年前"], [0, "今天"]]
+      .forEach(function (t) {
+        var d = document.createElement("div");
+        d.className = "ruler-tick";
+        d.style.left = ((66 - t[0]) / 66 * 100) + "%";
+        d.setAttribute("data-l", t[1]);
+        r.appendChild(d);
+      });
+
+    // 人类历史在这把尺子上的宽度
+    var W = 900; // 假定尺子约 900px
+    var humanPx = 0.3 / 66 * W;
+    document.getElementById("rulerNote").innerHTML =
+      "如果这把尺子有 90 厘米长，那么人类的全部历史（30 万年）只占 <b>" +
+      (humanPx / W * 900).toFixed(1) + " 毫米</b>——" +
+      "大约一张指甲盖的厚度。而有文字记载的历史（5000 年），是这个厚度的六十分之一，" +
+      "肉眼根本分不出来。";
+  })();
+
+  /* ---------- 剪影 ---------- */
+  function silhouette(d) {
+    // 以孩子身高为基准，恐龙用臀高（四足）或站立高度做等比
+    var kidCm = state.kh;
+    var beastCm = d.hip * 100;
+    var maxPx = 104;                       // 画布可用高度
+    var tall = Math.max(kidCm, beastCm);
+    var pxPerCm = maxPx / tall;
+
+    var kidPx = kidCm * pxPerCm;
+    var beastPx = beastCm * pxPerCm;
+
+    var wrap = document.createElement("div");
+    wrap.className = "silo";
+
+    // 孩子
+    var kid = document.createElement("div");
+    kid.className = "kid";
+    kid.style.width = Math.max(11, kidPx * 0.19) + "px";
+    kid.style.height = kidPx + "px";
+    var kb = document.createElement("div");
+    kb.className = "kid-b";
+    kb.style.height = (kidPx * 0.82) + "px";
+    kb.style.marginTop = (kidPx * 0.18) + "px";
+    var khd = document.createElement("div");
+    khd.className = "kid-h";
+    var hs = Math.max(7, kidPx * 0.17);
+    khd.style.width = hs + "px";
+    khd.style.height = hs + "px";
+    khd.style.top = "0";
+    kid.appendChild(khd);
+    kid.appendChild(kb);
+    var kt = document.createElement("div");
+    kt.className = "kid-t";
+    kt.textContent = kidCm + "cm";
+    kid.appendChild(kt);
+    wrap.appendChild(kid);
+
+    // 恐龙（抽象剪影，按臀高等比）
+    var col = d.diet === "carn" ? "var(--danger)" : "var(--sci)";
+    var b = document.createElement("div");
+    b.className = "beast";
+    b.style.height = beastPx + "px";
+
+    var body = document.createElement("div");
+    body.className = "beast-body";
+    body.style.height = (beastPx * 0.62) + "px";
+    body.style.marginTop = (beastPx * 0.38) + "px";
+    body.style.background = col;
+    body.style.opacity = ".85";
+    b.appendChild(body);
+
+    // 长颈类：加一段脖子
+    var neckish = d.len > 18 || d.hip > 4;
+    if (neckish) {
+      var nk = document.createElement("div");
+      nk.className = "beast-neck";
+      nk.style.width = Math.max(6, beastPx * 0.1) + "px";
+      nk.style.height = (beastPx * 0.55) + "px";
+      nk.style.left = "4%";
+      nk.style.top = "0";
+      nk.style.background = col;
+      nk.style.opacity = ".85";
+      b.appendChild(nk);
+    }
+
+    var tl2 = document.createElement("div");
+    tl2.className = "beast-tail";
+    tl2.style.width = "34%";
+    tl2.style.height = Math.max(5, beastPx * 0.11) + "px";
+    tl2.style.right = "-2%";
+    tl2.style.bottom = (beastPx * 0.30) + "px";
+    tl2.style.background = col;
+    tl2.style.opacity = ".7";
+    b.appendChild(tl2);
+
+    var bt = document.createElement("div");
+    bt.className = "beast-t";
+    bt.style.color = col;
+    bt.textContent = "臀高 " + d.hip + "m · 全长 " + d.len + "m";
+    b.appendChild(bt);
+
+    wrap.appendChild(b);
+    return wrap;
+  }
+
+  function dietLabel(d) {
+    return d === "carn" ? "肉食" : d === "herb" ? "植食" : "杂食";
+  }
+  function dietClass(d) {
+    return d === "carn" ? "diet-c" : d === "herb" ? "diet-h" : "diet-o";
+  }
+
+  function card(d) {
+    var c = document.createElement("article");
+    c.className = "card dino";
+
+    var head = document.createElement("div");
+    head.className = "dino-head";
+    var h = document.createElement("h3");
+    h.textContent = d.n;
+    var sci = document.createElement("p");
+    sci.className = "sci";
+    sci.textContent = d.sci;
+    head.appendChild(h);
+    head.appendChild(sci);
+    c.appendChild(head);
+
+    c.appendChild(silhouette(d));
+
+    var sn = document.createElement("p");
+    sn.className = "scale-note";
+    var ratio = (d.hip * 100 / state.kh);
+    sn.textContent = "臀部高度是孩子身高的 " + ratio.toFixed(1) + " 倍";
+    c.appendChild(sn);
+
+    var body = document.createElement("div");
+    body.className = "dino-body";
+
+    var facts = document.createElement("div");
+    facts.className = "facts";
+    [
+      ["食性", dietLabel(d.diet), dietClass(d.diet)],
+      ["体重", d.kg >= 1000 ? (d.kg / 1000) + " 吨" : d.kg + " kg", ""],
+      ["生活年代", d.from + "–" + d.to + " Ma", ""],
+      ["化石产地", d.where, ""]
+    ].forEach(function (f) {
+      var el = document.createElement("div");
+      el.className = "fact";
+      var s = document.createElement("span");
+      s.textContent = f[0];
+      var bb = document.createElement("b");
+      bb.textContent = f[1];
+      if (f[2]) bb.className = f[2];
+      el.appendChild(s);
+      el.appendChild(bb);
+      facts.appendChild(el);
+    });
+    body.appendChild(facts);
+
+    var w = document.createElement("p");
+    w.className = "wow";
+    w.innerHTML = d.wow;
+    body.appendChild(w);
+
+    var e = document.createElement("p");
+    e.className = "evid";
+    e.innerHTML = "<b>怎么知道的：</b>" + d.evid;
+    body.appendChild(e);
+
+    var sites = document.createElement("p");
+    sites.className = "scale-note";
+    sites.style.padding = "0";
+    sites.setAttribute("data-sites", d.pbdb);
+    sites.textContent = "已知化石点：查询中…";
+    body.appendChild(sites);
+
+    // 照片位（联网成功才出现，失败则整块不显示，不留空白）
+    var ph = document.createElement("div");
+    ph.className = "photo-slot";
+    ph.setAttribute("data-inat", d.inat);
+    body.appendChild(ph);
+
+    c.appendChild(body);
+    return c;
+  }
+
+  function render() {
+    out.textContent = "";
+    var items = DINOS.filter(function (d) {
+      if (state.d !== "all" && d.diet !== state.d) return false;
+      if (state.p !== "all" && d.period !== state.p) return false;
+      return true;
+    });
+    items.sort(function (a, b) { return b.len - a.len; });
+    items.forEach(function (d) { out.appendChild(card(d)); });
+    if (!items.length) {
+      var p = document.createElement("p");
+      p.style.color = "var(--ink-dim)";
+      p.textContent = "这个组合没有对应的恐龙，换个筛选试试。";
+      out.appendChild(p);
+    }
+    enrich();
+  }
+
+  /* ---------- 控件 ---------- */
+  [].forEach.call(document.querySelectorAll("[data-d]"), function (b) {
+    b.addEventListener("click", function () {
+      state.d = b.dataset.d;
+      [].forEach.call(document.querySelectorAll("[data-d]"), function (o) {
+        o.setAttribute("aria-pressed", o === b ? "true" : "false");
+      });
+      render();
+    });
+  });
+  [].forEach.call(document.querySelectorAll("[data-p]"), function (b) {
+    b.addEventListener("click", function () {
+      state.p = b.dataset.p;
+      [].forEach.call(document.querySelectorAll("[data-p]"), function (o) {
+        o.setAttribute("aria-pressed", o === b ? "true" : "false");
+      });
+      render();
+    });
+  });
+  var kh = document.getElementById("kh");
+  kh.addEventListener("input", function () {
+    state.kh = +kh.value;
+    document.getElementById("khv").textContent = state.kh + " cm";
+    render();
+  });
+
+  /* ---------- 联网增强（失败静默降级） ---------- */
+  var srcEl = document.getElementById("src");
+  var netOk = null;
+
+  function mark(ok) {
+    if (netOk === false) return;
+    netOk = ok;
+    srcEl.textContent = "";
+    var d = document.createElement("span");
+    d.className = "dot2" + (ok ? " on" : "");
+    srcEl.appendChild(d);
+    var t = document.createElement("span");
+    t.textContent = ok
+      ? "化石点计数来自 Paleobiology Database（实时查询）"
+      : "网络不可用 · 显示内置数据，功能不受影响";
+    srcEl.appendChild(t);
+  }
+
+  function jget(url, ms) {
+    var ac = new AbortController();
+    var t = setTimeout(function () { ac.abort(); }, ms || 8000);
+    return fetch(url, { signal: ac.signal })
+      .then(function (r) {
+        clearTimeout(t);
+        if (!r.ok) throw new Error("http " + r.status);
+        return r.json();
+      })
+      .catch(function (e) { clearTimeout(t); throw e; });
+  }
+
+  var siteCache = {};
+  function enrich() {
+    var nodes = [].slice.call(document.querySelectorAll("[data-sites]"));
+    nodes.forEach(function (el) {
+      var g = el.getAttribute("data-sites");
+      if (siteCache[g] != null) {
+        el.textContent = "已知化石点：" + siteCache[g] + " 处（PBDB 记录）";
+        return;
+      }
+      var ck = "pbdb:" + g;
+      try {
+        var c = localStorage.getItem(ck);
+        if (c) {
+          siteCache[g] = JSON.parse(c);
+          el.textContent = "已知化石点：" + siteCache[g] + " 处（PBDB 记录）";
+          mark(true);
+          return;
+        }
+      } catch (e) {}
+
+      jget("https://paleobiodb.org/data1.2/occs/list.json?base_name=" +
+           encodeURIComponent(g) + "&vocab=pbdb&limit=500")
+        .then(function (d) {
+          var recs = (d && d.records) || [];
+          var n = recs.length;
+          siteCache[g] = n;
+          try { localStorage.setItem(ck, JSON.stringify(n)); } catch (e) {}
+          el.textContent = "已知化石点：" + n + " 处（PBDB 记录）";
+          mark(true);
+        })
+        .catch(function () {
+          el.textContent = "已知化石点：需要联网查询";
+          mark(false);
+        });
+    });
+
+    photos();
+  }
+
+  /* 照片：iNaturalist。必须过滤 extinct=true 且名字前缀匹配，
+     否则「Triceratops」会搜到一种叫 Phileurus truncatus 的甲虫。 */
+  function photos() {
+    [].slice.call(document.querySelectorAll("[data-inat]")).forEach(function (slot) {
+      var q = slot.getAttribute("data-inat");
+      if (slot.getAttribute("data-done") === "1") return;
+
+      function paint(rec) {
+        if (!rec || !rec.url) return;
+        slot.setAttribute("data-done", "1");
+        var fig = document.createElement("figure");
+        fig.className = "dphoto-wrap";
+        fig.style.margin = "0";
+        var img = document.createElement("img");
+        img.className = "dphoto";
+        img.loading = "lazy";
+        img.alt = q + " 的化石或复原照片";
+        img.src = rec.url;
+        img.onerror = function () { fig.remove(); };   // 碎图直接移除整块
+        var cap = document.createElement("figcaption");
+        cap.className = "dphoto-cap";
+        cap.textContent = (rec.name || q) + " · iNaturalist";
+        fig.appendChild(img);
+        fig.appendChild(cap);
+        slot.appendChild(fig);
+      }
+
+      var ck = "inat:" + q;
+      try {
+        var c = localStorage.getItem(ck);
+        if (c) { paint(JSON.parse(c)); return; }
+      } catch (e) {}
+
+      jget("https://api.inaturalist.org/v1/taxa?q=" + encodeURIComponent(q) + "&per_page=8")
+        .then(function (d) {
+          var rs = (d && d.results) || [];
+          var want = q.split(" ")[0].toLowerCase();
+          var hit = null;
+          for (var i = 0; i < rs.length; i++) {
+            var r = rs[i];
+            var nm = (r.name || "").toLowerCase();
+            // 只认已灭绝且学名以目标属名开头的条目
+            if (r.extinct === true && nm.indexOf(want) === 0 &&
+                r.default_photo && r.default_photo.medium_url) {
+              hit = { url: r.default_photo.medium_url, name: r.name };
+              break;
+            }
+          }
+          if (hit) {
+            try { localStorage.setItem(ck, JSON.stringify(hit)); } catch (e) {}
+            paint(hit);
+          }
+        })
+        .catch(function () { /* 静默：没照片就是不显示 */ });
+    });
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>海龟几何 · 互动实验室</title>
+<meta name="description" content="写几行中文命令，让海龟在画布上画出正方形、星星、螺旋和花。用重复和转角理解角度、迭代与分解。适合 8-12 岁。">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<style>
+  .head { padding: 30px 0 18px; }
+  .head h1 { margin-bottom: .25em; }
+  .head .one { font-size: 1.05rem; color: var(--ink-mid); max-width: 60ch; margin: 0; }
+
+  .editor {
+    width: 100%; min-height: 190px; resize: vertical;
+    font-family: var(--mono); font-size: .93rem; line-height: 1.75;
+    padding: 12px 14px; border-radius: var(--r);
+    background: #0d1424; color: var(--ink);
+    border: 1px solid var(--line); tab-size: 2;
+  }
+  .editor:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(110,168,254,.16); }
+
+  .msg { font-size: .88rem; margin-top: 10px; display: none; }
+  .msg.on { display: block; }
+
+  .ref { font-family: var(--mono); font-size: .8rem; }
+  .ref div { display: flex; gap: 8px; padding: 5px 0; border-bottom: 1px dashed var(--line-soft); }
+  .ref div:last-child { border-bottom: 0; }
+  .ref code { flex: none; min-width: 96px; background: none; border: 0; padding: 0; color: var(--code); }
+  .ref span { color: var(--ink-dim); font-family: var(--font); font-size: .82rem; }
+
+  .presets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .q { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+  .q li { position: relative; padding-left: 30px; margin-bottom: 12px; color: var(--ink-mid); font-size: .92rem; }
+  .q li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px;
+    width: 21px; height: 21px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: .72rem; font-weight: 700; font-family: var(--mono);
+    background: rgba(251,146,60,.15); color: var(--code);
+    border: 1px solid rgba(251,146,60,.4);
+  }
+  .why { margin-top: 34px; }
+  .why h2 { margin-bottom: .6em; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<header class="head wrap">
+  <p class="row" style="margin:0 0 10px">
+    <span class="pill pill-code">编程</span>
+    <span class="pill">8–12 岁</span>
+    <span class="pill">海龟几何 · Turtle Geometry</span>
+  </p>
+  <h1>海龟几何</h1>
+  <p class="one"><b style="color:var(--ink)">这在教什么：</b>用命令指挥一只海龟走路，它走过的痕迹就是图形。想画出正方形，你得先想清楚「转多少度」——角度、重复、以及把复杂图形拆成小步骤。</p>
+</header>
+
+<main id="main" class="wrap">
+<div class="lab">
+
+  <div>
+    <div class="lab-stage">
+      <canvas id="cv" width="640" height="450" role="img" aria-label="海龟绘图画布"></canvas>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <label for="code" style="display:block;margin-bottom:8px">我的命令（写完按「运行」，或按 Ctrl/⌘ + Enter）</label>
+      <textarea id="code" class="editor" spellcheck="false" aria-describedby="msg"></textarea>
+      <div id="msg" class="msg note note-warn" role="status" aria-live="polite"></div>
+
+      <div class="row" style="margin-top:12px">
+        <button class="btn btn-primary" type="button" id="run">运行</button>
+        <button class="btn" type="button" id="step">单步</button>
+        <button class="btn btn-ghost" type="button" id="reset">重来</button>
+        <button class="btn btn-ghost btn-sm" type="button" id="clear">清空命令</button>
+      </div>
+
+      <div class="ctrl" style="margin-top:16px;margin-bottom:0">
+        <div class="ctrl-head"><label for="speed">画得多快</label><b id="speedOut">中速</b></div>
+        <input type="range" id="speed" min="1" max="5" step="1" value="3" aria-describedby="speedOut">
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <h3>预设例子（点一下就装进编辑器）</h3>
+      <div class="presets">
+        <button class="btn btn-sm" type="button" data-preset="square">正方形</button>
+        <button class="btn btn-sm" type="button" data-preset="star">五角星</button>
+        <button class="btn btn-sm" type="button" data-preset="spiral">螺旋</button>
+        <button class="btn btn-sm" type="button" data-preset="flower">花</button>
+      </div>
+      <p style="font-size:.83rem;color:var(--ink-dim);margin:12px 0 0">先跑一遍，再改一个数字看看会发生什么。改坏了随时点「重来」。</p>
+    </div>
+
+    <div class="panel">
+      <h3>命令参考</h3>
+      <div class="ref">
+        <div><code>前进 100</code><span>向前走 100 步（也可写 fd）</span></div>
+        <div><code>后退 50</code><span>向后退（bk）</span></div>
+        <div><code>右转 90</code><span>原地右转 90 度（rt）</span></div>
+        <div><code>左转 90</code><span>原地左转（lt）</span></div>
+        <div><code>重复 4 [ … ]</code><span>把方括号里的命令做 4 遍，可以套娃</span></div>
+        <div><code>次数</code><span>只在 重复 里能用：现在是第几遍</span></div>
+        <div><code>抬笔 / 落笔</code><span>抬笔后走路不留痕迹</span></div>
+        <div><code>颜色 紫</code><span>蓝 紫 绿 橙 粉 黄 白</span></div>
+        <div><code>粗细 3</code><span>笔画粗细 1–12</span></div>
+        <div><code>回家</code><span>回到中间，重新朝上</span></div>
+        <div><code># 说明</code><span>井号后面是给人看的注释</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>海龟现在的状态</h3>
+      <div class="readout"><span>位置 x, y</span><b id="oPos">0, 0</b></div>
+      <div class="readout"><span>朝向</span><b id="oDir">上 · 0°</b></div>
+      <div class="readout"><span>画笔</span><b id="oPen">落笔</b></div>
+      <div class="readout"><span>已走步骤</span><b id="oStep">0 / 0</b></div>
+      <div class="bar" style="margin-top:10px" role="progressbar" aria-label="执行进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="barWrap"><i id="bar" style="width:0%"></i></div>
+    </div>
+
+    <div class="panel">
+      <h3>给家长的提问脚本</h3>
+      <ol class="q">
+        <li>正方形转了四次 90 度，一共转了多少度？画三角形每次该转多少？（提示：让他先猜 60，试完再想为什么是 120）</li>
+        <li>如果把「重复 5 [ 前进 160 右转 144 ]」的 144 改成 143，你猜图形会怎么变？先说，再试。</li>
+        <li>这朵花其实是同一个正方形转着画了 12 次。你还能用「一个小图形重复很多次」画出什么？</li>
+      </ol>
+    </div>
+  </div>
+
+</div>
+
+<section class="why card wrap-narrow" style="padding:24px;max-width:820px;margin-top:34px">
+  <h2 style="font-size:1.3rem">背后的原理</h2>
+  <p>海龟只懂两件事：<b style="color:var(--ink)">往前走</b>和<b style="color:var(--ink)">转个角度</b>。这种「以自己为中心」的描述方式叫内在几何（intrinsic geometry）——不需要坐标系，孩子可以把身体当成海龟，走一遍就懂。</p>
+  <p>闭合图形有一条漂亮的规律：走一圈回到起点并朝回原方向，转过的角度总和一定是 360 度。所以正三角形每次转 120 度，正方形转 90 度，正 n 边形转 360/n 度。孩子最常见的直觉错误是把「转的角」和「图形内角」搞混，画一次就能自己发现差别。这个转角在数学里叫外角（exterior angle）。</p>
+  <p><code>重复</code> 是迭代（iteration），把「同一件事做很多遍」写成一行；<code>重复</code> 里再套 <code>重复</code> 就是把图形当作零件来搭积木，这是计算思维里的分解（decomposition）与抽象（abstraction）。海龟几何来自 Seymour Papert 的 Logo 语言，他的观点是：孩子学编程的价值不在语法，而在于获得一种可以「调试自己想法」的方式——图形画错了，不是自己笨，是命令需要修改。</p>
+</section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <p style="margin:0">互动实验室 · 纯前端实现。<a href="index.html">回到实验目录</a></p>
+</div></footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ========== 预设 ========== */
+  var PRESETS = {
+    square: "# 正方形：转四次 90 度\n重复 4 [\n  前进 100\n  右转 90\n]",
+    star: "# 五角星：每次转 144 度\n颜色 黄\n重复 5 [\n  前进 130\n  右转 144\n]",
+    spiral: "# 螺旋：每走一遍就走得更长一点\n颜色 紫\n重复 60 [\n  前进 次数 * 1.4\n  右转 89\n]",
+    flower: "# 花：同一个正方形，转着画 12 次\n颜色 粉\n重复 12 [\n  重复 4 [\n    前进 80\n    右转 90\n  ]\n  右转 30\n]"
+  };
+
+  var PALETTE = {
+    "蓝": "#6ea8fe", "紫": "#a78bfa", "绿": "#4ade80", "橙": "#fb923c",
+    "粉": "#f472b6", "黄": "#fbbf24", "白": "#eef2ff",
+    blue: "#6ea8fe", purple: "#a78bfa", green: "#4ade80",
+    orange: "#fb923c", pink: "#f472b6", yellow: "#fbbf24", white: "#eef2ff"
+  };
+  var PALETTE_ORDER = ["蓝", "紫", "绿", "橙", "粉", "黄", "白"];
+
+  var MAX_ACTIONS = 20000;
+
+  /* ========== 词法分析 ========== */
+  var FULL = { "［": "[", "］": "]", "【": "[", "】": "]", "，": " ", "、": " ", "。": " ", "；": " ", "：": " ", "（": "(", "）": ")", "＊": "*", "×": "*", "＋": "+", "－": "-", "／": "/", "÷": "/", "　": " " };
+
+  function normalize(src) {
+    var out = "", i, ch, code;
+    for (i = 0; i < src.length; i++) {
+      ch = src.charAt(i);
+      code = src.charCodeAt(i);
+      if (code >= 0xFF10 && code <= 0xFF19) { out += String.fromCharCode(code - 0xFEE0); continue; }
+      if (code >= 0xFF21 && code <= 0xFF5A) { out += String.fromCharCode(code - 0xFEE0); continue; }
+      out += (FULL[ch] !== undefined ? FULL[ch] : ch);
+    }
+    return out;
+  }
+
+  function isWordChar(ch) {
+    return /[A-Za-z_㐀-䶿一-鿿]/.test(ch);
+  }
+
+  function tokenize(src) {
+    var s = normalize(src), toks = [], i = 0, line = 1, ch, start;
+    while (i < s.length) {
+      ch = s.charAt(i);
+      if (ch === "\n") { line++; i++; continue; }
+      if (ch === " " || ch === "\t" || ch === "\r") { i++; continue; }
+      if (ch === "#" || (ch === "/" && s.charAt(i + 1) === "/")) {
+        while (i < s.length && s.charAt(i) !== "\n") i++;
+        continue;
+      }
+      if (ch === "[" || ch === "]" || ch === "(" || ch === ")") {
+        toks.push({ t: ch, line: line }); i++; continue;
+      }
+      if (ch === "+" || ch === "-" || ch === "*" || ch === "/") {
+        toks.push({ t: "op", v: ch, line: line }); i++; continue;
+      }
+      if (ch >= "0" && ch <= "9" || (ch === "." && /[0-9]/.test(s.charAt(i + 1)))) {
+        start = i;
+        while (i < s.length && /[0-9.]/.test(s.charAt(i))) i++;
+        toks.push({ t: "num", v: parseFloat(s.slice(start, i)), line: line });
+        continue;
+      }
+      if (isWordChar(ch)) {
+        start = i;
+        while (i < s.length && isWordChar(s.charAt(i))) i++;
+        toks.push({ t: "word", v: s.slice(start, i), line: line });
+        continue;
+      }
+      throw { msg: "看不懂这个符号「" + ch + "」", line: line };
+    }
+    return toks;
+  }
+
+  /* ========== 语法分析 ========== */
+  var CMD = {
+    "前进": "fd", "fd": "fd", "forward": "fd", "走": "fd",
+    "后退": "bk", "bk": "bk", "back": "bk", "退": "bk",
+    "右转": "rt", "rt": "rt", "right": "rt",
+    "左转": "lt", "lt": "lt", "left": "lt",
+    "重复": "rep", "repeat": "rep",
+    "抬笔": "pu", "penup": "pu", "pu": "pu",
+    "落笔": "pd", "pendown": "pd", "pd": "pd",
+    "颜色": "color", "color": "color", "换色": "color",
+    "粗细": "width", "width": "width",
+    "回家": "home", "home": "home"
+  };
+  var REPCOUNT = { "次数": 1, "第几遍": 1, "repcount": 1 };
+
+  function parse(toks) {
+    var pos = 0;
+
+    function peek() { return toks[pos]; }
+    function lineOf() { return toks[pos] ? toks[pos].line : (toks.length ? toks[toks.length - 1].line : 1); }
+
+    function expectExpr(cmdName) {
+      var t = peek();
+      if (!t || t.t === "]" || (t.t === "word" && CMD[t.v])) {
+        throw { msg: "「" + cmdName + "」后面还缺一个数字，比如 " + cmdName + " 100", line: lineOf() };
+      }
+      return parseExpr();
+    }
+
+    function parseExpr() {
+      var node = parseTerm(), t;
+      while ((t = peek()) && t.t === "op" && (t.v === "+" || t.v === "-")) {
+        pos++;
+        node = { k: "bin", op: t.v, a: node, b: parseTerm(), line: t.line };
+      }
+      return node;
+    }
+    function parseTerm() {
+      var node = parseFactor(), t;
+      while ((t = peek()) && t.t === "op" && (t.v === "*" || t.v === "/")) {
+        pos++;
+        node = { k: "bin", op: t.v, a: node, b: parseFactor(), line: t.line };
+      }
+      return node;
+    }
+    function parseFactor() {
+      var t = peek();
+      if (!t) throw { msg: "式子写到一半就没了，后面缺个数字", line: lineOf() };
+      if (t.t === "op" && (t.v === "-" || t.v === "+")) {
+        pos++;
+        var inner = parseFactor();
+        return t.v === "-" ? { k: "neg", a: inner, line: t.line } : inner;
+      }
+      if (t.t === "num") { pos++; return { k: "num", v: t.v, line: t.line }; }
+      if (t.t === "(") {
+        pos++;
+        var e = parseExpr();
+        if (!peek() || peek().t !== ")") throw { msg: "括号 ( 没有关上", line: t.line };
+        pos++;
+        return e;
+      }
+      if (t.t === "word" && REPCOUNT[t.v]) { pos++; return { k: "rc", line: t.line }; }
+      if (t.t === "word") throw { msg: "这里应该是个数字，但我看到了「" + t.v + "」", line: t.line };
+      throw { msg: "这里应该是个数字", line: t.line };
+    }
+
+    function parseBlock(inBracket) {
+      var list = [], t, name, kind, line;
+      while (pos < toks.length) {
+        t = peek();
+        if (t.t === "]") {
+          if (!inBracket) throw { msg: "多了一个 ]，前面没有对应的 [", line: t.line };
+          return list;
+        }
+        if (t.t !== "word") {
+          throw { msg: "这里应该是一条命令（比如 前进 / 右转 / 重复）", line: t.line };
+        }
+        name = t.v; line = t.line; kind = CMD[name];
+        if (!kind) {
+          throw { msg: "我不认识命令「" + name + "」。右边「命令参考」里列出了能用的命令", line: line };
+        }
+        pos++;
+
+        if (kind === "fd" || kind === "bk" || kind === "rt" || kind === "lt") {
+          list.push({ k: kind, e: expectExpr(name), line: line });
+        } else if (kind === "width") {
+          list.push({ k: "width", e: expectExpr(name), line: line });
+        } else if (kind === "pu" || kind === "pd" || kind === "home") {
+          list.push({ k: kind, line: line });
+        } else if (kind === "color") {
+          var ct = peek();
+          if (ct && ct.t === "word" && PALETTE[ct.v]) {
+            pos++;
+            list.push({ k: "color", v: PALETTE[ct.v], line: line });
+          } else if (ct && ct.t === "num") {
+            var n = Math.max(1, Math.min(PALETTE_ORDER.length, Math.round(ct.v)));
+            pos++;
+            list.push({ k: "color", v: PALETTE[PALETTE_ORDER[n - 1]], line: line });
+          } else {
+            throw { msg: "「颜色」后面要跟一个颜色名：" + PALETTE_ORDER.join(" "), line: line };
+          }
+        } else if (kind === "rep") {
+          var cnt = expectExpr("重复");
+          if (!peek() || peek().t !== "[") {
+            throw { msg: "「重复」的动作要放在方括号里，像这样：重复 4 [ 前进 100 右转 90 ]", line: line };
+          }
+          pos++;
+          var body = parseBlock(true);
+          if (!peek() || peek().t !== "]") {
+            throw { msg: "方括号 [ 没有关上，末尾少一个 ]", line: line };
+          }
+          pos++;
+          if (!body.length) throw { msg: "「重复」的方括号里是空的，放几条命令进去吧", line: line };
+          list.push({ k: "rep", e: cnt, body: body, line: line });
+        }
+      }
+      if (inBracket) throw { msg: "方括号 [ 没有关上，末尾少一个 ]", line: lineOf() };
+      return list;
+    }
+
+    return parseBlock(false);
+  }
+
+  /* ========== 展开成动作序列 ========== */
+  function evalExpr(node, rc) {
+    switch (node.k) {
+      case "num": return node.v;
+      case "neg": return -evalExpr(node.a, rc);
+      case "rc":
+        if (rc === null) throw { msg: "「次数」只能写在「重复」的方括号里面", line: node.line };
+        return rc;
+      case "bin":
+        var a = evalExpr(node.a, rc), b = evalExpr(node.b, rc);
+        if (node.op === "+") return a + b;
+        if (node.op === "-") return a - b;
+        if (node.op === "*") return a * b;
+        if (b === 0) throw { msg: "不能除以 0 哦", line: node.line };
+        return a / b;
+    }
+    return 0;
+  }
+
+  function flatten(nodes, rc, out, depth) {
+    if (depth > 24) throw { msg: "重复套得太深了（超过 24 层）", line: nodes.length ? nodes[0].line : 1 };
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      if (out.length > MAX_ACTIONS) {
+        throw { msg: "步骤太多了（超过 " + MAX_ACTIONS + " 步），画不完。把「重复」的次数改小一点", line: n.line };
+      }
+      switch (n.k) {
+        case "fd": out.push({ t: "move", v: evalExpr(n.e, rc) }); break;
+        case "bk": out.push({ t: "move", v: -evalExpr(n.e, rc) }); break;
+        case "rt": out.push({ t: "turn", v: evalExpr(n.e, rc) }); break;
+        case "lt": out.push({ t: "turn", v: -evalExpr(n.e, rc) }); break;
+        case "pu": out.push({ t: "pen", v: false }); break;
+        case "pd": out.push({ t: "pen", v: true }); break;
+        case "home": out.push({ t: "home" }); break;
+        case "color": out.push({ t: "color", v: n.v }); break;
+        case "width": out.push({ t: "width", v: Math.max(1, Math.min(12, evalExpr(n.e, rc))) }); break;
+        case "rep":
+          var times = Math.floor(evalExpr(n.e, rc));
+          if (!isFinite(times)) throw { msg: "「重复」的次数算不出来", line: n.line };
+          if (times < 0) throw { msg: "「重复」的次数不能是负数", line: n.line };
+          if (times > MAX_ACTIONS) throw { msg: "「重复 " + times + "」太多了，改小一点吧", line: n.line };
+          for (var r = 1; r <= times; r++) flatten(n.body, r, out, depth + 1);
+          break;
+      }
+    }
+    return out;
+  }
+
+  /* ========== 画布 ========== */
+  var cv = document.getElementById("cv");
+  var ctx = cv.getContext("2d");
+  var buf = document.createElement("canvas");
+  var bctx = buf.getContext("2d");
+  var W = 640, H = 450, dpr = 1;
+
+  function sizeCanvas() {
+    var host = cv.parentNode;
+    W = Math.round(Math.max(260, host.clientWidth - 28));
+    H = Math.round(Math.max(300, Math.min(560, W * 0.7)));
+    dpr = Math.min(3, window.devicePixelRatio || 1);
+    cv.width = Math.round(W * dpr);
+    cv.height = Math.round(H * dpr);
+    cv.style.height = "auto";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    buf.width = cv.width;
+    buf.height = cv.height;
+    bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    bctx.lineCap = "round";
+    bctx.lineJoin = "round";
+  }
+
+  /* ========== 海龟状态 ========== */
+  var turtle, actions = [], done = 0, prog = 0, running = false, finished = true;
+  var outOfBounds = false, dirty = true;
+
+  function homeState() {
+    return { x: W / 2, y: H / 2 + 40, dir: 0, pen: true, color: PALETTE["蓝"], width: 2.4 };
+  }
+
+  function resetAll(keepActions) {
+    turtle = homeState();
+    done = 0; prog = 0; running = false; finished = true;
+    outOfBounds = false;
+    if (!keepActions) actions = [];
+    bctx.setTransform(1, 0, 0, 1, 0, 0);
+    bctx.clearRect(0, 0, buf.width, buf.height);
+    bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    bctx.lineCap = "round"; bctx.lineJoin = "round";
+    dirty = true;
+    updateReadout();
+  }
+
+  function segment(x0, y0, x1, y1) {
+    bctx.strokeStyle = turtle.color;
+    bctx.lineWidth = turtle.width;
+    bctx.beginPath();
+    bctx.moveTo(x0, y0);
+    bctx.lineTo(x1, y1);
+    bctx.stroke();
+    if (x1 < -4 || y1 < -4 || x1 > W + 4 || y1 > H + 4) outOfBounds = true;
+  }
+
+  function moveBy(dist) {
+    var rad = turtle.dir * Math.PI / 180;
+    var nx = turtle.x + Math.sin(rad) * dist;
+    var ny = turtle.y - Math.cos(rad) * dist;
+    if (turtle.pen) segment(turtle.x, turtle.y, nx, ny);
+    turtle.x = nx; turtle.y = ny;
+    dirty = true;
+  }
+
+  function applyInstant(a) {
+    switch (a.t) {
+      case "move": moveBy(a.v); break;
+      case "turn": turtle.dir = turtle.dir + a.v; break;
+      case "pen": turtle.pen = a.v; break;
+      case "color": turtle.color = a.v; break;
+      case "width": turtle.width = a.v; break;
+      case "home":
+        var h = homeState();
+        turtle.x = h.x; turtle.y = h.y; turtle.dir = 0;
+        break;
+    }
+    dirty = true;
+  }
+
+  /* ========== 渲染 ========== */
+  function drawGrid() {
+    ctx.save();
+    ctx.fillStyle = "#0a101d";
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = "rgba(42,51,85,.55)";
+    ctx.lineWidth = 1;
+    var g = 40, i;
+    ctx.beginPath();
+    for (i = g; i < W; i += g) { ctx.moveTo(i + .5, 0); ctx.lineTo(i + .5, H); }
+    for (i = g; i < H; i += g) { ctx.moveTo(0, i + .5); ctx.lineTo(W, i + .5); }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawTurtle() {
+    ctx.save();
+    ctx.translate(turtle.x, turtle.y);
+    ctx.rotate(turtle.dir * Math.PI / 180);
+    ctx.beginPath();
+    ctx.moveTo(0, -13);
+    ctx.lineTo(8.5, 9);
+    ctx.lineTo(0, 4.5);
+    ctx.lineTo(-8.5, 9);
+    ctx.closePath();
+    ctx.fillStyle = turtle.pen ? "rgba(74,222,128,.95)" : "rgba(125,136,171,.85)";
+    ctx.fill();
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = "#0b0f1a";
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function render() {
+    drawGrid();
+    ctx.drawImage(buf, 0, 0, W, H);
+    drawTurtle();
+  }
+
+  /* ========== 动画循环 ========== */
+  var SPEEDS = [70, 180, 420, 900, 3000];
+  var SPEED_NAMES = ["很慢", "慢", "中速", "快", "很快"];
+  var speedIdx = 2;
+  var last = 0;
+
+  /* budget 以「像素」为单位；转 1 度折算成 TURN_COST 像素的代价 */
+  var TURN_COST = 0.62;
+
+  function advance(dt) {
+    var budget = SPEEDS[speedIdx] * dt;
+    var guard = 0;
+    while (budget > 0 && done < actions.length && guard++ < 8000) {
+      var a = actions[done];
+      if (a.t === "move") {
+        var sign = a.v < 0 ? -1 : 1;
+        var left = Math.abs(a.v) - prog;
+        if (left <= budget) {
+          moveBy(sign * left); budget -= left; prog = 0; done++;
+        } else {
+          moveBy(sign * budget); prog += budget; budget = 0;
+        }
+      } else if (a.t === "turn") {
+        var sg = a.v < 0 ? -1 : 1;
+        var remDeg = Math.abs(a.v) - prog;
+        var stepDeg = budget / TURN_COST;
+        if (remDeg <= stepDeg) {
+          turtle.dir += sg * remDeg;
+          budget -= remDeg * TURN_COST;
+          prog = 0; done++;
+        } else {
+          turtle.dir += sg * stepDeg;
+          prog += stepDeg;
+          budget = 0;
+        }
+        dirty = true;
+      } else {
+        applyInstant(a);
+        done++;
+      }
+    }
+    if (done >= actions.length && actions.length) finishRun();
+  }
+
+  function frame(ts) {
+    var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016;
+    last = ts;
+    if (running) { advance(dt); updateReadout(); }
+    if (dirty) { render(); dirty = false; }
+    requestAnimationFrame(frame);
+  }
+
+  /* ========== UI ========== */
+  var codeEl = document.getElementById("code");
+  var msgEl = document.getElementById("msg");
+  var runBtn = document.getElementById("run");
+  var oPos = document.getElementById("oPos"), oDir = document.getElementById("oDir");
+  var oPen = document.getElementById("oPen"), oStep = document.getElementById("oStep");
+  var bar = document.getElementById("bar"), barWrap = document.getElementById("barWrap");
+
+  function say(text, kind) {
+    if (!text) { msgEl.className = "msg"; msgEl.textContent = ""; return; }
+    msgEl.className = "msg on note " + (kind === "ok" ? "note-sci" : "note-warn");
+    msgEl.textContent = text;
+  }
+
+  function dirName(d) {
+    var n = ((d % 360) + 360) % 360;
+    var names = [[0, "上"], [45, "右上"], [90, "右"], [135, "右下"], [180, "下"], [225, "左下"], [270, "左"], [315, "左上"]];
+    var best = "上", bd = 999;
+    for (var i = 0; i < names.length; i++) {
+      var diff = Math.min(Math.abs(n - names[i][0]), 360 - Math.abs(n - names[i][0]));
+      if (diff < bd) { bd = diff; best = names[i][1]; }
+    }
+    return best + " · " + Math.round(n) + "°";
+  }
+
+  function updateReadout() {
+    oPos.textContent = Math.round(turtle.x - W / 2) + ", " + Math.round(H / 2 + 40 - turtle.y);
+    oDir.textContent = dirName(turtle.dir);
+    oPen.textContent = turtle.pen ? "落笔" : "抬笔";
+    oStep.textContent = done + " / " + actions.length;
+    var pct = actions.length ? Math.round(done / actions.length * 100) : 0;
+    bar.style.width = pct + "%";
+    barWrap.setAttribute("aria-valuenow", String(pct));
+  }
+
+  function compile() {
+    try {
+      var nodes = parse(tokenize(codeEl.value));
+      if (!nodes.length) { say("编辑器是空的。点右边一个预设例子试试，或者写「前进 100」。"); return null; }
+      return flatten(nodes, null, [], 0);
+    } catch (err) {
+      if (err && err.msg) say("第 " + err.line + " 行：" + err.msg);
+      else say("命令里有点问题，检查一下拼写和方括号。");
+      return null;
+    }
+  }
+
+  function finishRun() {
+    running = false;
+    finished = true;
+    runBtn.textContent = "运行";
+    if (outOfBounds) say("画完了，不过海龟跑出画布外面了。把步数改小一点，或者先「抬笔」挪回来。", "warn");
+    else say("画完了！试着改一个数字，再跑一遍。", "ok");
+    updateReadout();
+  }
+
+  function startRun() {
+    var acts = compile();
+    if (!acts) return;
+    resetAll(true);
+    actions = acts;
+    finished = false;
+    running = true;
+    last = 0;
+    runBtn.textContent = "暂停";
+    say("");
+    updateReadout();
+  }
+
+  runBtn.addEventListener("click", function () {
+    if (running) {
+      running = false;
+      runBtn.textContent = "继续";
+      return;
+    }
+    if (!finished && done < actions.length) {
+      running = true; last = 0; runBtn.textContent = "暂停"; return;
+    }
+    startRun();
+  });
+
+  document.getElementById("step").addEventListener("click", function () {
+    if (finished || !actions.length || done >= actions.length) {
+      var acts = compile();
+      if (!acts) return;
+      resetAll(true);
+      actions = acts;
+      finished = false;
+    }
+    running = false;
+    runBtn.textContent = actions.length && done > 0 ? "继续" : "运行";
+    if (done < actions.length) {
+      var a = actions[done];
+      if (a.t === "move") moveBy(a.v); else applyInstant(a);
+      prog = 0; done++;
+      var label = a.t === "move" ? (a.v >= 0 ? "前进 " : "后退 ") + Math.abs(Math.round(a.v * 10) / 10)
+        : a.t === "turn" ? (a.v >= 0 ? "右转 " : "左转 ") + Math.abs(Math.round(a.v * 10) / 10) + "°"
+        : a.t === "pen" ? (a.v ? "落笔" : "抬笔")
+        : a.t === "color" ? "换颜色" : a.t === "width" ? "改粗细" : "回家";
+      say("第 " + done + " 步：" + label + "（共 " + actions.length + " 步）", "ok");
+      if (done >= actions.length) { finished = true; runBtn.textContent = "运行"; }
+    }
+    updateReadout();
+  });
+
+  document.getElementById("reset").addEventListener("click", function () {
+    resetAll(false);
+    runBtn.textContent = "运行";
+    say("");
+  });
+
+  document.getElementById("clear").addEventListener("click", function () {
+    codeEl.value = "";
+    resetAll(false);
+    runBtn.textContent = "运行";
+    say("");
+    codeEl.focus();
+  });
+
+  document.querySelectorAll("[data-preset]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      codeEl.value = PRESETS[b.dataset.preset];
+      resetAll(false);
+      runBtn.textContent = "运行";
+      say("例子装好了，点「运行」看它怎么画。", "ok");
+    });
+  });
+
+  var speedEl = document.getElementById("speed"), speedOut = document.getElementById("speedOut");
+  speedEl.addEventListener("input", function () {
+    speedIdx = Math.max(0, Math.min(4, parseInt(speedEl.value, 10) - 1));
+    speedOut.textContent = SPEED_NAMES[speedIdx];
+  });
+
+  codeEl.addEventListener("keydown", function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); startRun(); }
+  });
+
+  /* 重新排版：保持已画内容，按新尺寸重画 */
+  var rt = null;
+  function onResize() {
+    if (rt) clearTimeout(rt);
+    rt = setTimeout(function () {
+      var upto = done, wasRunning = running, acts = actions;
+      var oldW = W;
+      sizeCanvas();
+      if (oldW === W) { dirty = true; return; }
+      resetAll(true);
+      actions = acts;
+      var i;
+      for (i = 0; i < upto && i < actions.length; i++) {
+        var a = actions[i];
+        if (a.t === "move") moveBy(a.v); else applyInstant(a);
+      }
+      done = upto;
+      finished = !actions.length || done >= actions.length;
+      running = wasRunning && !finished;
+      last = 0;
+      updateReadout();
+    }, 140);
+  }
+  window.addEventListener("resize", onResize);
+
+  sizeCanvas();
+  codeEl.value = PRESETS.square;
+  resetAll(false);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

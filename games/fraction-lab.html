@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>分数实验室 · 面积与数轴上的分数 — 少儿数理启蒙</title>
+<meta name="description" content="把分数同时看成「一块面积」和「数轴上的一个点」：自由切分 2–12 份、涂色、比较大小、发现等值分数，并用公分母图形做分数加法。">
+<link rel="stylesheet" href="../assets/css/base.css">
+<style>
+  .head-pills { margin-bottom: 14px; }
+  .teach { font-size: 1.02rem; color: var(--ink-mid); max-width: 62ch; }
+  .teach b { color: var(--ink); }
+
+  .stage-head {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .stage-head h2 { font-size: 1rem; margin: 0; }
+  .stage-hint { font-size: .8rem; color: var(--ink-dim); }
+
+  .tabs { display: flex; gap: 6px; background: var(--surface); padding: 4px; border-radius: 999px; border: 1px solid var(--line-soft); }
+  .tabs button {
+    font-family: inherit; font-size: .84rem; font-weight: 700;
+    padding: 7px 15px; border-radius: 999px; border: 1px solid transparent;
+    background: transparent; color: var(--ink-mid); cursor: pointer;
+    transition: all .16s var(--ease);
+  }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-pressed="true"] { background: var(--accent); color: #08101f; }
+
+  .pair { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 620px) { .pair { grid-template-columns: 1fr; } }
+
+  .frac-cell {
+    background: var(--surface); border: 1px solid var(--line-soft);
+    border-radius: var(--r); padding: 12px;
+  }
+  .frac-cell.a { border-color: rgba(110,168,254,.4); }
+  .frac-cell.b { border-color: rgba(244,114,182,.4); }
+  .frac-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .who {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-weight: 800; font-size: .9rem;
+  }
+  .swatch { width: 13px; height: 13px; border-radius: 4px; flex: none; border: 1px solid rgba(255,255,255,.25); }
+  .swatch.a { background: var(--math); }
+  .swatch.b { background: var(--kit); }
+
+  /* 分数排版 */
+  .frac { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.1; font-family: var(--mono); font-weight: 700; }
+  .frac > i { font-style: normal; }
+  .frac > .rule { display: block; height: 2px; width: 100%; min-width: 1.4em; background: currentColor; margin: 2px 0; border-radius: 2px; }
+  .frac-lg { font-size: 1.5rem; }
+  .frac-md { font-size: 1.05rem; }
+  .frac-a { color: var(--math); }
+  .frac-b { color: var(--kit); }
+
+  .cell-canvas { position: relative; }
+  .cell-canvas canvas { display: block; width: 100%; height: auto; touch-action: none; cursor: pointer; border-radius: var(--r-sm); }
+
+  .mini-row { display: flex; gap: 6px; align-items: center; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+
+  .verdict {
+    margin-top: 14px; padding: 14px 16px;
+    background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: var(--r); min-height: 84px;
+  }
+  .verdict-main {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    font-size: 1.05rem; font-weight: 800; color: var(--ink);
+  }
+  .cmp-sign { font-family: var(--mono); font-size: 1.5rem; color: var(--warn); font-weight: 800; }
+  .verdict-sub { font-size: .87rem; color: var(--ink-mid); margin-top: 8px; }
+  .verdict-sub code { font-size: .85em; }
+  .verdict.eq { border-color: rgba(74,222,128,.45); background: rgba(74,222,128,.08); }
+
+  .badge-eq {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: .78rem; font-weight: 700; color: var(--sci);
+    border: 1px solid rgba(74,222,128,.4); background: rgba(74,222,128,.12);
+    padding: 3px 10px; border-radius: 999px;
+  }
+
+  .sub-label { font-size: .74rem; font-weight: 700; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .block { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--line-soft); }
+
+  .guess-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  .qa { counter-reset: q; }
+  .qa li { margin-bottom: 10px; color: var(--ink-mid); }
+  .qa li b { color: var(--ink); }
+  ul.plain { padding-left: 1.15rem; }
+  ul.plain li { margin-bottom: .5em; color: var(--ink-mid); }
+  .why-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap" style="padding-top:28px;padding-bottom:8px">
+
+  <div class="row head-pills">
+    <span class="pill pill-math">数学 · 分数</span>
+    <span class="pill">适合 7–11 岁</span>
+    <span class="pill">等值分数 equivalent fractions</span>
+    <span class="pill">公分母 common denominator</span>
+  </div>
+
+  <h1>分数实验室</h1>
+  <p class="teach">
+    这在教什么：一个分数有两张面孔 —— 它既是<b>一块面积</b>（圆饼或长条里涂色的部分），
+    也是<b>数轴上的一个点</b>。把同一个分数放在这两个画面里同时看，
+    孩子才会懂为什么 <code>2/4</code> 和 <code>1/2</code> 是同一个数。
+  </p>
+
+  <div class="lab" style="margin-top:22px">
+
+    <!-- ================= 舞台 ================= -->
+    <div class="lab-stage">
+      <div class="stage-head">
+        <div class="tabs" role="group" aria-label="模式切换">
+          <button type="button" id="mCompare" aria-pressed="true">比较大小</button>
+          <button type="button" id="mAdd" aria-pressed="false">分数相加</button>
+        </div>
+        <span class="stage-hint">点击 / 拖动图形涂色 · 拖动滑块改变份数</span>
+      </div>
+
+      <!-- 两个分数 -->
+      <div class="pair">
+        <div class="frac-cell a">
+          <div class="frac-top">
+            <span class="who"><span class="swatch a" aria-hidden="true"></span>分数 A</span>
+            <span class="frac frac-lg frac-a" id="fracA" aria-hidden="true">
+              <i id="fA_n">1</i><span class="rule"></span><i id="fA_d">2</i>
+            </span>
+          </div>
+          <div class="cell-canvas">
+            <canvas id="cvA" role="img" aria-label="分数 A 的面积图"></canvas>
+          </div>
+          <div class="mini-row">
+            <button class="btn btn-sm" type="button" id="aMinus" aria-label="分数 A 减少一份">− 一份</button>
+            <span class="pill" id="aLabel">1/2</span>
+            <button class="btn btn-sm" type="button" id="aPlus" aria-label="分数 A 增加一份">+ 一份</button>
+          </div>
+        </div>
+
+        <div class="frac-cell b">
+          <div class="frac-top">
+            <span class="who"><span class="swatch b" aria-hidden="true"></span>分数 B</span>
+            <span class="frac frac-lg frac-b" id="fracB" aria-hidden="true">
+              <i id="fB_n">2</i><span class="rule"></span><i id="fB_d">4</i>
+            </span>
+          </div>
+          <div class="cell-canvas">
+            <canvas id="cvB" role="img" aria-label="分数 B 的面积图"></canvas>
+          </div>
+          <div class="mini-row">
+            <button class="btn btn-sm" type="button" id="bMinus" aria-label="分数 B 减少一份">− 一份</button>
+            <span class="pill" id="bLabel">2/4</span>
+            <button class="btn btn-sm" type="button" id="bPlus" aria-label="分数 B 增加一份">+ 一份</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 数轴 -->
+      <div class="block">
+        <div class="sub-label">同一个分数在数轴上 number line</div>
+        <canvas id="cvLine" role="img" aria-label="数轴：分数 A 与 分数 B 的位置"></canvas>
+      </div>
+
+      <!-- 公分母 / 加法 -->
+      <div class="block" id="commonBlock">
+        <div class="sub-label" id="commonTitle">切成一样大：公分母 common denominator</div>
+        <canvas id="cvCommon" role="img" aria-label="公分母对照图"></canvas>
+      </div>
+
+      <!-- 结论 -->
+      <div class="verdict" id="verdict" aria-live="polite">
+        <div class="verdict-main" id="vMain">—</div>
+        <div class="verdict-sub" id="vSub"></div>
+      </div>
+    </div>
+
+    <!-- ================= 控制面板 ================= -->
+    <div>
+      <div class="panel">
+        <h3>切分与涂色</h3>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="shapeSel">图形</label></div>
+          <select class="input" id="shapeSel">
+            <option value="circle">圆饼 circle</option>
+            <option value="bar">长条 bar</option>
+          </select>
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head">
+            <label for="denA">A 切成几份</label><b id="denAOut">2</b>
+          </div>
+          <input type="range" id="denA" min="2" max="12" step="1" value="2">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head">
+            <label for="denB">B 切成几份</label><b id="denBOut">4</b>
+          </div>
+          <input type="range" id="denB" min="2" max="12" step="1" value="4">
+        </div>
+
+        <div class="row" style="margin-top:4px">
+          <button class="btn btn-sm" type="button" id="swap">交换 A / B</button>
+          <button class="btn btn-sm" type="button" id="reset">重置</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>猜一猜（先想，再看答案）</h3>
+        <p style="font-size:.86rem;margin-bottom:10px">出一道随机题，让孩子先说出答案，再点「看答案」验证。</p>
+        <div class="guess-row">
+          <button class="btn btn-primary btn-sm" type="button" id="newQ">出一题</button>
+          <button class="btn btn-sm" type="button" id="reveal" disabled>看答案</button>
+        </div>
+        <div class="row" style="margin-top:10px" id="guessBtns" hidden>
+          <button class="btn btn-sm" type="button" data-g="a">A 大</button>
+          <button class="btn btn-sm" type="button" data-g="b">B 大</button>
+          <button class="btn btn-sm" type="button" data-g="eq">一样大</button>
+        </div>
+        <div class="readout" style="margin-top:12px"><span>答对</span><b id="score">0</b></div>
+        <div class="readout"><span>出题</span><b id="asked">0</b></div>
+      </div>
+
+      <div class="panel">
+        <h3>读数</h3>
+        <div class="readout"><span>A</span><b id="roA">1/2 = 0.5</b></div>
+        <div class="readout"><span>B</span><b id="roB">2/4 = 0.5</b></div>
+        <div class="readout"><span>最简形式</span><b id="roSimp">1/2 · 1/2</b></div>
+        <div class="readout"><span>公分母</span><b id="roLcm">4</b></div>
+        <div class="readout" id="roSumRow"><span>A + B</span><b id="roSum">1</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 家长提问脚本 ================= -->
+  <section style="margin-top:34px">
+    <h2>给家长的提问脚本</h2>
+    <p style="font-size:.92rem">不用讲规则。按顺序问这三个问题，让孩子自己把规则说出来。</p>
+    <div class="card">
+      <ol class="qa" style="padding-left:1.2rem;margin:0">
+        <li><b>「分母变大，一份会变大还是变小？」</b><br>
+          把 A 的份数从 2 拖到 12，只涂一份。孩子会看到 <code>1/12</code> 比 <code>1/2</code> 小得多。
+          这是分数最反直觉的一点：<b>下面的数越大，每一份越小</b>。</li>
+        <li><b>「为什么 2/4 和 1/2 站在数轴的同一个点上？」</b><br>
+          把 A 设成 1/2、B 设成 2/4。面积一样多，数轴上的点也重合。
+          让孩子说：<b>切的刀数不同，拿走的量一样</b>。</li>
+        <li><b>「1/2 + 1/3 为什么不是 2/5？」</b><br>
+          切到「分数相加」模式。孩子会看到两块大小不同的砖没法直接数，
+          必须先都切成 6 小份，才数得清是 <code>5/6</code>。</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ================= 背后的原理 ================= -->
+  <section style="margin-top:28px">
+    <h2>背后的原理</h2>
+    <div class="why-grid">
+      <div class="card">
+        <h3>分数是一个数，不是两个数</h3>
+        <p style="font-size:.9rem;margin:0">
+          孩子最常见的误解是把 <code>3/4</code> 读成「3 和 4」。
+          数轴把这个误解直接掐掉：<code>3/4</code> 就是 0 和 1 之间那个确定的点，
+          和 0.75 是同一个位置。研究里称为 <b>measurement interpretation</b>，
+          它比「一块披萨」的说法更能支撑后面的运算。
+        </p>
+      </div>
+      <div class="card">
+        <h3>等值分数 = 同一个点的不同名字</h3>
+        <p style="font-size:.9rem;margin:0">
+          把每一份再切成 k 小份，份数和取走的数量同时乘 k，量没变。
+          所以 <code>1/2 = 2/4 = 6/12</code>。约分就是反过来除掉公因数，
+          得到这个点<b>最短的名字</b>（最简分数）。
+        </p>
+      </div>
+      <div class="card">
+        <h3>加法要求「单位一样」</h3>
+        <p style="font-size:.9rem;margin:0">
+          3 只猫 + 2 只猫能直接加，因为单位相同。
+          <code>1/2</code> 和 <code>1/3</code> 的单位（每份的大小）不同，所以要先换成同一个单位 ——
+          取分母的公倍数（这里用最小公倍数 LCM），把两块砖切成一样厚，再数块数。
+          这正是通分的全部含义。
+        </p>
+      </div>
+      <div class="card">
+        <h3>为什么不直接教口诀</h3>
+        <p style="font-size:.9rem;margin:0">
+          「分母不变，分子相加」记得住却撑不久。
+          先在图形上看见「必须切成一样厚」，口诀就变成对图像的描述，
+          而不是需要背的咒语。面积 + 数轴两种表征并置，是把过程性知识变成概念性理解的关键一步。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="note" style="margin-top:22px">
+    <b>动手延伸：</b>拿一张纸条，对折一次是 <code>1/2</code>，再对折是 <code>1/4</code>，再对折是 <code>1/8</code>。
+    每折一次问孩子：份数怎么变？一份的大小怎么变？折到第几次就折不动了？
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap">
+  分数实验室 · 少儿数理启蒙 — 纯前端单文件实验，可离线使用。
+</div></footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="sr-only" id="live" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- 工具 ----------
+  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = a % b; a = b; b = t; } return a || 1; }
+  function lcm(a, b) { return Math.abs(a * b) / gcd(a, b); }
+  function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+  function randInt(lo, hi) { return lo + Math.floor(Math.random() * (hi - lo + 1)); }
+
+  var CSSV = getComputedStyle(document.documentElement);
+  function cv(name, fallback) {
+    var v = CSSV.getPropertyValue(name);
+    return (v && v.trim()) || fallback;
+  }
+  var C = {
+    a:     cv('--math', '#6ea8fe'),
+    b:     cv('--kit', '#f472b6'),
+    line:  cv('--line', '#2a3355'),
+    soft:  cv('--line-soft', '#202844'),
+    ink:   cv('--ink', '#eef2ff'),
+    mid:   cv('--ink-mid', '#b6c0e0'),
+    dim:   cv('--ink-dim', '#7d88ab'),
+    surf:  cv('--surface', '#161d33'),
+    surf2: cv('--surface-2', '#1d2540'),
+    ok:    cv('--sci', '#4ade80'),
+    warn:  cv('--warn', '#fbbf24')
+  };
+
+  // 斜纹图案：不只靠颜色区分 A / B
+  function hatch(color) {
+    var p = document.createElement('canvas');
+    p.width = p.height = 8;
+    var c = p.getContext('2d');
+    c.strokeStyle = color;
+    c.globalAlpha = 0.55;
+    c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-2, 10); c.lineTo(10, -2); c.stroke();
+    c.beginPath(); c.moveTo(2, 14); c.lineTo(14, 2); c.stroke();
+    return c.canvas;
+  }
+  var hatchB = null;
+
+  // ---------- 状态 ----------
+  var S = {
+    mode: 'compare',
+    shape: 'circle',
+    a: { n: 1, d: 2 },
+    b: { n: 2, d: 4 },
+    revealed: true,
+    guess: null,
+    score: 0,
+    asked: 0
+  };
+
+  var el = {};
+  ['cvA','cvB','cvLine','cvCommon','fA_n','fA_d','fB_n','fB_d','aLabel','bLabel',
+   'denA','denB','denAOut','denBOut','shapeSel','swap','reset','mCompare','mAdd',
+   'vMain','vSub','verdict','commonTitle','commonBlock','roA','roB','roSimp','roLcm',
+   'roSum','roSumRow','newQ','reveal','guessBtns','score','asked','toast','live',
+   'aPlus','aMinus','bPlus','bMinus'].forEach(function (id) {
+    el[id] = document.getElementById(id);
+  });
+
+  // ---------- Canvas 缩放（retina） ----------
+  function fit(canvas, cssH) {
+    var dpr = window.devicePixelRatio || 1;
+    var cssW = canvas.parentNode.clientWidth || canvas.clientWidth || 300;
+    canvas.style.width = '100%';
+    canvas.style.height = cssH + 'px';
+    canvas.width = Math.max(1, Math.round(cssW * dpr));
+    canvas.height = Math.max(1, Math.round(cssH * dpr));
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssW, cssH);
+    return { ctx: ctx, w: cssW, h: cssH };
+  }
+
+  // ---------- 画面积图 ----------
+  function drawShape(canvas, frac, which) {
+    var h = S.shape === 'circle' ? 190 : 130;
+    var f = fit(canvas, h);
+    var ctx = f.ctx, w = f.w;
+    var color = which === 'a' ? C.a : C.b;
+    var den = frac.d, num = frac.n;
+
+    if (S.shape === 'circle') {
+      var cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - 12;
+      var step = Math.PI * 2 / den;
+      for (var i = 0; i < den; i++) {
+        var s = -Math.PI / 2 + i * step, e = s + step;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, s, e);
+        ctx.closePath();
+        if (i < num) {
+          ctx.fillStyle = color; ctx.globalAlpha = .85; ctx.fill(); ctx.globalAlpha = 1;
+          if (which === 'b') { ctx.fillStyle = ctx.createPattern(hatchB, 'repeat'); ctx.fill(); }
+        } else {
+          ctx.fillStyle = C.surf2; ctx.fill();
+        }
+        ctx.strokeStyle = i < num ? 'rgba(255,255,255,.45)' : C.line;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    } else {
+      var pad = 10, bw = w - pad * 2, bh = h - 34, x0 = pad, y0 = 14;
+      var pw = bw / den;
+      for (var j = 0; j < den; j++) {
+        var x = x0 + j * pw;
+        ctx.beginPath();
+        ctx.rect(x, y0, pw, bh);
+        if (j < num) {
+          ctx.fillStyle = color; ctx.globalAlpha = .85; ctx.fill(); ctx.globalAlpha = 1;
+          if (which === 'b') { ctx.fillStyle = ctx.createPattern(hatchB, 'repeat'); ctx.fill(); }
+        } else {
+          ctx.fillStyle = C.surf2; ctx.fill();
+        }
+        ctx.strokeStyle = j < num ? 'rgba(255,255,255,.45)' : C.line;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+      ctx.strokeStyle = color; ctx.lineWidth = 2;
+      ctx.strokeRect(x0, y0, bw, bh);
+      ctx.fillStyle = C.dim;
+      ctx.font = '600 11px ' + cv('--mono', 'monospace');
+      ctx.textAlign = 'left';  ctx.fillText('0', x0, h - 6);
+      ctx.textAlign = 'right'; ctx.fillText('1', x0 + bw, h - 6);
+    }
+
+    canvas.setAttribute('aria-label',
+      (which === 'a' ? '分数 A' : '分数 B') + '：' + den + ' 份里涂了 ' + num + ' 份');
+  }
+
+  // ---------- 命中测试 ----------
+  function pieceAt(canvas, ev, den) {
+    var r = canvas.getBoundingClientRect();
+    var x = ev.clientX - r.left, y = ev.clientY - r.top;
+    if (S.shape === 'circle') {
+      var cx = r.width / 2, cy = r.height / 2;
+      var rad = Math.min(r.width, r.height) / 2 - 12;
+      var dx = x - cx, dy = y - cy;
+      if (Math.sqrt(dx * dx + dy * dy) > rad * 1.15) return -1;
+      var ang = Math.atan2(dy, dx) + Math.PI / 2;
+      while (ang < 0) ang += Math.PI * 2;
+      ang = ang % (Math.PI * 2);
+      return clamp(Math.floor(ang / (Math.PI * 2 / den)), 0, den - 1);
+    }
+    var pad = 10, bw = r.width - pad * 2;
+    if (x < pad - 6 || x > pad + bw + 6) return -1;
+    return clamp(Math.floor((x - pad) / bw * den), 0, den - 1);
+  }
+
+  function bindPaint(canvas, key) {
+    var painting = false;
+    function apply(ev) {
+      var frac = S[key];
+      var idx = pieceAt(canvas, ev, frac.d);
+      if (idx < 0) return;
+      var want = idx + 1;
+      // 再点同一块 → 取消这一块（可以涂到 0）
+      if (!painting && frac.n === want) want = idx;
+      frac.n = clamp(want, 0, frac.d);
+      S.guess = null;
+      render();
+    }
+    canvas.addEventListener('pointerdown', function (ev) {
+      ev.preventDefault();
+      apply(ev);
+      painting = true;
+      if (canvas.setPointerCapture) { try { canvas.setPointerCapture(ev.pointerId); } catch (e) {} }
+    });
+    canvas.addEventListener('pointermove', function (ev) { if (painting) apply(ev); });
+    canvas.addEventListener('pointerup', function () { painting = false; });
+    canvas.addEventListener('pointercancel', function () { painting = false; });
+  }
+
+  // ---------- 数轴 ----------
+  function drawLine() {
+    var maxV = 1;
+    var sum = S.a.n / S.a.d + S.b.n / S.b.d;
+    if (S.mode === 'add') maxV = Math.max(1, Math.ceil(sum - 1e-9)) || 1;
+
+    var f = fit(el.cvLine, 108);
+    var ctx = f.ctx, w = f.w, h = f.h;
+    var padL = 26, padR = 26, y = 60;
+    var lw = w - padL - padR;
+    function X(v) { return padL + (v / maxV) * lw; }
+
+    // 主轴
+    ctx.strokeStyle = C.mid; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + lw, y); ctx.stroke();
+
+    // 整数刻度
+    ctx.font = '700 12px ' + cv('--mono', 'monospace');
+    ctx.textAlign = 'center';
+    for (var k = 0; k <= maxV; k++) {
+      var xk = X(k);
+      ctx.strokeStyle = C.mid; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(xk, y - 9); ctx.lineTo(xk, y + 9); ctx.stroke();
+      ctx.fillStyle = C.mid;
+      ctx.fillText(String(k), xk, y + 26);
+    }
+
+    // A 的等分刻度（轴上方）/ B 的等分刻度（轴下方）
+    function ticks(den, color, up) {
+      ctx.strokeStyle = color; ctx.lineWidth = 1;
+      ctx.globalAlpha = .5;
+      var total = den * maxV;
+      for (var i = 1; i < total; i++) {
+        if (i % den === 0) continue;
+        var xx = X(i / den);
+        ctx.beginPath();
+        ctx.moveTo(xx, y);
+        ctx.lineTo(xx, up ? y - 6 : y + 6);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+    ticks(S.a.d, C.a, true);
+    ticks(S.b.d, C.b, false);
+
+    // 标记点
+    function marker(v, color, label, up, sq) {
+      if (v > maxV + 1e-9) return;
+      var x = X(v);
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.globalAlpha = .55;
+      ctx.beginPath(); ctx.moveTo(padL, up ? y - 3 : y + 3); ctx.lineTo(x, up ? y - 3 : y + 3); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = color;
+      if (sq) {
+        ctx.save();
+        ctx.translate(x, y); ctx.rotate(Math.PI / 4);
+        ctx.fillRect(-5.5, -5.5, 11, 11);
+        ctx.restore();
+      } else {
+        ctx.beginPath(); ctx.arc(x, y, 6.5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.strokeStyle = '#0b0f1a'; ctx.lineWidth = 1.5;
+      if (!sq) { ctx.beginPath(); ctx.arc(x, y, 6.5, 0, Math.PI * 2); ctx.stroke(); }
+      ctx.fillStyle = color;
+      ctx.font = '800 12px ' + cv('--mono', 'monospace');
+      ctx.textAlign = 'center';
+      ctx.fillText(label, clamp(x, 20, w - 20), up ? y - 16 : y + 34);
+    }
+
+    var va = S.a.n / S.a.d, vb = S.b.n / S.b.d;
+    // 两点重合时错开标签，避免互相盖住
+    var same = Math.abs(va - vb) < 1e-9;
+    marker(va, C.a, 'A ' + S.a.n + '/' + S.a.d, true, false);
+    marker(vb, C.b, 'B ' + S.b.n + '/' + S.b.d, !same, true);
+
+    if (S.mode === 'add' && sum <= maxV + 1e-9) {
+      var xs = X(sum);
+      ctx.strokeStyle = C.ok; ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(xs, y - 30); ctx.lineTo(xs, y + 12); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = C.ok;
+      ctx.font = '800 12px ' + cv('--mono', 'monospace');
+      ctx.textAlign = 'center';
+      ctx.fillText('和 ' + fmt(sum), clamp(xs, 26, w - 26), y - 36);
+    }
+
+    el.cvLine.setAttribute('aria-label',
+      '数轴，最大值 ' + maxV + '。A 在 ' + fmt(va) + '，B 在 ' + fmt(vb));
+  }
+
+  function fmt(v) {
+    var r = Math.round(v * 1000) / 1000;
+    return String(r);
+  }
+
+  // ---------- 公分母 / 加法图 ----------
+  function drawCommon() {
+    var L = lcm(S.a.d, S.b.d);
+    var ka = L / S.a.d, kb = L / S.b.d;
+    var ca = S.a.n * ka, cb = S.b.n * kb;
+
+    var isAdd = S.mode === 'add';
+    var rows = isAdd ? Math.max(1, Math.ceil((ca + cb) / L)) : 2;
+    var rowH = 40, gap = 12;
+    var height = rows * rowH + (rows - 1) * gap + 26;
+
+    var f = fit(el.cvCommon, height);
+    var ctx = f.ctx, w = f.w;
+    var pad = 8, bw = w - pad * 2;
+    var pieceW = bw / L;
+
+    ctx.font = '700 11px ' + cv('--mono', 'monospace');
+
+    function cell(x, y, cw, ch, color, which) {
+      ctx.beginPath(); ctx.rect(x, y, cw, ch);
+      if (color) {
+        ctx.fillStyle = color; ctx.globalAlpha = .85; ctx.fill(); ctx.globalAlpha = 1;
+        if (which === 'b') { ctx.fillStyle = ctx.createPattern(hatchB, 'repeat'); ctx.fill(); }
+        ctx.strokeStyle = 'rgba(255,255,255,.45)';
+      } else {
+        ctx.fillStyle = C.surf2; ctx.fill();
+        ctx.strokeStyle = C.line;
+      }
+      ctx.lineWidth = 1; ctx.stroke();
+    }
+
+    if (isAdd) {
+      // 把 A 的块和 B 的块顺序倒进同样厚的格子里
+      var total = ca + cb;
+      for (var r = 0; r < rows; r++) {
+        var y = r * (rowH + gap) + 4;
+        for (var i = 0; i < L; i++) {
+          var idx = r * L + i;
+          var x = pad + i * pieceW;
+          if (idx < ca) cell(x, y, pieceW, rowH, C.a, 'a');
+          else if (idx < total) cell(x, y, pieceW, rowH, C.b, 'b');
+          else cell(x, y, pieceW, rowH, null);
+        }
+        ctx.strokeStyle = C.mid; ctx.lineWidth = 1.5;
+        ctx.strokeRect(pad, y, bw, rowH);
+      }
+      ctx.fillStyle = C.dim;
+      ctx.textAlign = 'left';
+      ctx.fillText('每格 = 1/' + L + ' · 蓝 ' + ca + ' 格 + 粉 ' + cb + ' 格 = ' + total + ' 格', pad, height - 8);
+      el.cvCommon.setAttribute('aria-label',
+        '公分母加法图：每格是 1/' + L + '，A 占 ' + ca + ' 格，B 占 ' + cb + ' 格，一共 ' + total + ' 格');
+    } else {
+      // 上下对照：同样厚度下谁的格子多
+      var pairs = [[ca, C.a, 'a', 'A ' + ca + '/' + L], [cb, C.b, 'b', 'B ' + cb + '/' + L]];
+      for (var p = 0; p < 2; p++) {
+        var yy = p * (rowH + gap) + 4;
+        for (var q = 0; q < L; q++) {
+          var xx = pad + q * pieceW;
+          cell(xx, yy, pieceW, rowH, q < pairs[p][0] ? pairs[p][1] : null, pairs[p][2]);
+        }
+        ctx.strokeStyle = C.mid; ctx.lineWidth = 1.5;
+        ctx.strokeRect(pad, yy, bw, rowH);
+      }
+      ctx.fillStyle = C.dim;
+      ctx.textAlign = 'left';
+      ctx.fillText('两条都切成 ' + L + ' 等份 → ' + ca + '/' + L + '  对比  ' + cb + '/' + L, pad, height - 8);
+      el.cvCommon.setAttribute('aria-label',
+        '公分母对照图：都切成 ' + L + ' 份后，A 是 ' + ca + ' 份，B 是 ' + cb + ' 份');
+    }
+  }
+
+  // ---------- 文字结论 ----------
+  function fracHTML(n, d, cls) {
+    // 分母为 1 时写成整数：2/2 化简后应显示「1」而不是「1/1」
+    if (d === 1) {
+      return '<span class="frac frac-md ' + cls + '" style="display:inline-block;vertical-align:middle">'
+        + '<i style="display:block">' + n + '</i></span>';
+    }
+    return '<span class="frac frac-md ' + cls + '"><i>' + n + '</i><span class="rule"></span><i>' + d + '</i></span>';
+  }
+
+  function simp(n, d) {
+    if (n === 0) return { n: 0, d: 1 };
+    var g = gcd(n, d);
+    return { n: n / g, d: d / g };
+  }
+
+  function mixedText(n, d) {
+    if (n < d) return '';
+    var whole = Math.floor(n / d), rem = n % d;
+    if (rem === 0) return '= ' + whole;
+    var r = simp(rem, d);
+    return '= ' + whole + ' 又 ' + r.n + '/' + r.d;
+  }
+
+  function updateVerdict() {
+    var A = S.a, B = S.b;
+    var va = A.n / A.d, vb = B.n / B.d;
+    var L = lcm(A.d, B.d);
+    var ca = A.n * (L / A.d), cb = B.n * (L / B.d);
+    var sA = simp(A.n, A.d), sB = simp(B.n, B.d);
+
+    el.verdict.classList.remove('eq');
+
+    if (!S.revealed) {
+      el.vMain.textContent = '先猜猜：哪个大？';
+      el.vSub.textContent = '让孩子说出理由，再点「看答案」或下面的按钮。';
+      return;
+    }
+
+    if (S.mode === 'add') {
+      var sum = ca + cb;
+      var red = simp(sum, L);
+      el.vMain.innerHTML =
+        fracHTML(A.n, A.d, 'frac-a') +
+        ' <span class="cmp-sign">+</span> ' + fracHTML(B.n, B.d, 'frac-b') +
+        ' <span class="cmp-sign">=</span> ' + fracHTML(sum, L, '') +
+        (red.d !== L || red.n !== sum ? ' <span class="cmp-sign">=</span> ' + fracHTML(red.n, red.d, '') : '') +
+        (sum > L ? ' <span style="font-size:.9rem;color:var(--ink-mid);font-weight:600">' + mixedText(sum, L) + '</span>' : '');
+      var same = A.d === B.d;
+      el.vSub.innerHTML = same
+        ? '分母已经一样（都是 <code>' + A.d + '</code>），直接把份数相加：<code>' + A.n + ' + ' + B.n + ' = ' + sum + '</code> 份。'
+        : '两块砖厚度不同，先都切成 <code>1/' + L + '</code>：<code>' + A.n + '/' + A.d + ' → ' + ca + '/' + L +
+          '</code>，<code>' + B.n + '/' + B.d + ' → ' + cb + '/' + L + '</code>，再数总格数 <code>' + sum + '</code>。';
+      return;
+    }
+
+    // 比较模式
+    var sign, word;
+    if (Math.abs(va - vb) < 1e-12) { sign = '='; word = '一样大'; }
+    else if (va > vb) { sign = '>'; word = 'A 更大'; }
+    else { sign = '<'; word = 'B 更大'; }
+
+    el.vMain.innerHTML =
+      fracHTML(A.n, A.d, 'frac-a') +
+      ' <span class="cmp-sign">' + sign + '</span> ' +
+      fracHTML(B.n, B.d, 'frac-b') +
+      ' <span style="font-size:.95rem">' + word + '</span>';
+
+    var sub = '都切成 <code>' + L + '</code> 等份后比份数：<code>' + ca + '</code> 对 <code>' + cb + '</code>。';
+    if (sign === '=') {
+      el.verdict.classList.add('eq');
+      if (A.d !== B.d) {
+        sub += ' <span class="badge-eq">✓ 等值分数：' + A.n + '/' + A.d + ' = ' + B.n + '/' + B.d +
+               '，最简形式都是 ' + sA.n + '/' + sA.d + '</span>';
+      } else {
+        sub += ' 完全相同的分数。';
+      }
+    } else {
+      var big = sign === '>' ? A : B;
+      var small = sign === '>' ? B : A;
+      if (A.n === B.n && A.d !== B.d) {
+        sub += ' 份数相同时，<b>分母小的那个更大</b>（每一份更厚）。';
+      } else if (A.d === B.d) {
+        sub += ' 分母相同时，<b>分子大的更大</b>。';
+      } else {
+        sub += ' 也可以看它们离 1 有多远：' + big.n + '/' + big.d + ' 更靠右。';
+      }
+      void small;
+    }
+    el.vSub.innerHTML = sub;
+  }
+
+  function updateReadouts() {
+    var A = S.a, B = S.b;
+    var L = lcm(A.d, B.d);
+    var sA = simp(A.n, A.d), sB = simp(B.n, B.d);
+    var sum = A.n * (L / A.d) + B.n * (L / B.d);
+    var red = simp(sum, L);
+
+    el.roA.textContent = A.n + '/' + A.d + ' = ' + fmt(A.n / A.d);
+    el.roB.textContent = B.n + '/' + B.d + ' = ' + fmt(B.n / B.d);
+    el.roSimp.textContent = sA.n + '/' + sA.d + ' · ' + sB.n + '/' + sB.d;
+    el.roLcm.textContent = String(L);
+    var redTxt = red.d === 1 ? String(red.n) : (red.n + '/' + red.d);
+    el.roSum.textContent = sum + '/' + L + (red.n !== sum ? '  (' + redTxt + ')' : '');
+    el.roSumRow.hidden = S.mode !== 'add';
+  }
+
+  // ---------- 渲染 ----------
+  function render() {
+    S.a.n = clamp(S.a.n, 0, S.a.d);
+    S.b.n = clamp(S.b.n, 0, S.b.d);
+
+    el.fA_n.textContent = S.a.n; el.fA_d.textContent = S.a.d;
+    el.fB_n.textContent = S.b.n; el.fB_d.textContent = S.b.d;
+    el.aLabel.textContent = S.a.n + '/' + S.a.d;
+    el.bLabel.textContent = S.b.n + '/' + S.b.d;
+    el.denAOut.textContent = S.a.d;
+    el.denBOut.textContent = S.b.d;
+    el.denA.value = S.a.d;
+    el.denB.value = S.b.d;
+
+    el.commonTitle.textContent = S.mode === 'add'
+      ? '通分后相加：每格一样厚 common denominator'
+      : '切成一样大：公分母 common denominator';
+
+    drawShape(el.cvA, S.a, 'a');
+    drawShape(el.cvB, S.b, 'b');
+    drawLine();
+    drawCommon();
+    updateVerdict();
+    updateReadouts();
+  }
+
+  var toastTimer = null;
+  function toast(msg) {
+    el.toast.textContent = msg;
+    el.toast.classList.add('on');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.toast.classList.remove('on'); }, 1900);
+  }
+  function say(msg) { el.live.textContent = msg; }
+
+  // ---------- 事件 ----------
+  el.denA.addEventListener('input', function () {
+    var old = S.a.d;
+    S.a.d = parseInt(this.value, 10);
+    // 尽量保持涂色比例，让孩子看见「等值」
+    S.a.n = clamp(Math.round(S.a.n * S.a.d / old), 0, S.a.d);
+    S.guess = null; render();
+  });
+  el.denB.addEventListener('input', function () {
+    var old = S.b.d;
+    S.b.d = parseInt(this.value, 10);
+    S.b.n = clamp(Math.round(S.b.n * S.b.d / old), 0, S.b.d);
+    S.guess = null; render();
+  });
+
+  el.shapeSel.addEventListener('change', function () { S.shape = this.value; render(); });
+
+  el.aPlus.addEventListener('click', function () { S.a.n = clamp(S.a.n + 1, 0, S.a.d); render(); });
+  el.aMinus.addEventListener('click', function () { S.a.n = clamp(S.a.n - 1, 0, S.a.d); render(); });
+  el.bPlus.addEventListener('click', function () { S.b.n = clamp(S.b.n + 1, 0, S.b.d); render(); });
+  el.bMinus.addEventListener('click', function () { S.b.n = clamp(S.b.n - 1, 0, S.b.d); render(); });
+
+  el.swap.addEventListener('click', function () {
+    var t = S.a; S.a = S.b; S.b = t;
+    render(); say('已交换 A 和 B');
+  });
+
+  el.reset.addEventListener('click', function () {
+    S.a = { n: 1, d: 2 }; S.b = { n: 2, d: 4 };
+    S.revealed = true; S.guess = null;
+    el.guessBtns.hidden = true; el.reveal.disabled = true;
+    render(); say('已重置为 1/2 和 2/4');
+  });
+
+  function setMode(m) {
+    S.mode = m;
+    el.mCompare.setAttribute('aria-pressed', String(m === 'compare'));
+    el.mAdd.setAttribute('aria-pressed', String(m === 'add'));
+    render();
+  }
+  el.mCompare.addEventListener('click', function () { setMode('compare'); });
+  el.mAdd.addEventListener('click', function () { setMode('add'); });
+
+  // 猜一猜
+  el.newQ.addEventListener('click', function () {
+    var da, db, na, nb, tries = 0;
+    do {
+      da = randInt(2, 8); db = randInt(2, 8);
+      na = randInt(1, da); nb = randInt(1, db);
+      tries++;
+    } while (tries < 40 && da === db && na === nb);
+    // 三成机会给一道等值题，让「一样大」这个选项真的会出现
+    if (Math.random() < 0.3) {
+      var base = randInt(1, 4), bd = randInt(2, 5);
+      var k = randInt(2, 3);
+      da = bd; na = clamp(base, 1, bd);
+      db = bd * k; nb = na * k;
+      if (db > 12) { db = bd * 2; nb = na * 2; }
+    }
+    S.a = { n: na, d: da };
+    S.b = { n: nb, d: db };
+    S.revealed = false;
+    S.guess = null;
+    S.asked++;
+    el.asked.textContent = S.asked;
+    el.guessBtns.hidden = false;
+    el.reveal.disabled = false;
+    render();
+    say('新题目：A 是 ' + na + '/' + da + '，B 是 ' + nb + '/' + db + '，先猜哪个大');
+  });
+
+  function truth() {
+    var va = S.a.n / S.a.d, vb = S.b.n / S.b.d;
+    if (Math.abs(va - vb) < 1e-12) return 'eq';
+    return va > vb ? 'a' : 'b';
+  }
+
+  el.reveal.addEventListener('click', function () {
+    S.revealed = true;
+    el.reveal.disabled = true;
+    el.guessBtns.hidden = true;
+    render();
+  });
+
+  Array.prototype.forEach.call(el.guessBtns.querySelectorAll('button'), function (btn) {
+    btn.addEventListener('click', function () {
+      if (S.revealed) return;
+      var g = btn.getAttribute('data-g');
+      var t = truth();
+      S.revealed = true;
+      el.reveal.disabled = true;
+      el.guessBtns.hidden = true;
+      if (g === t) {
+        S.score++;
+        el.score.textContent = S.score;
+        toast('答对了！' + (t === 'eq' ? '它们是等值分数 🎉' : '眼力不错 🎉'));
+        say('答对了');
+      } else {
+        toast('再看看图形和数轴');
+        say('不对，看看数轴上谁更靠右');
+      }
+      render();
+    });
+  });
+
+  // 画布点击涂色
+  bindPaint(el.cvA, 'a');
+  bindPaint(el.cvB, 'b');
+
+  // 尺寸自适应
+  var rTimer = null;
+  function onResize() {
+    if (rTimer) clearTimeout(rTimer);
+    rTimer = setTimeout(render, 90);
+  }
+  window.addEventListener('resize', onResize);
+  if (window.ResizeObserver) {
+    try { new ResizeObserver(onResize).observe(document.querySelector('.lab-stage')); } catch (e) {}
+  }
+
+  // 启动
+  hatchB = hatch('#ffffff');
+  render();
+})();
+</script>
+</body>
+</html>

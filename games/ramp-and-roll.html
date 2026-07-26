@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>斜坡滚球 · 能量去哪了 | 少儿数理启蒙</title>
+<meta name="description" content="调节斜坡角度、摩擦和球的质量，用实时能量柱看势能怎么变成动能、又怎么被摩擦变成热。还能先猜球停在哪里。" />
+<link rel="stylesheet" href="../assets/css/base.css">
+<style>
+  .lab-head { margin: 24px 0 18px; }
+  .lab-head p.lead { font-size: 1.02rem; max-width: 62ch; }
+  .seg { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ebar { margin-bottom: 11px; }
+  .ebar-top { display: flex; justify-content: space-between; align-items: baseline; font-size: .78rem; font-weight: 700; color: var(--ink); gap: 8px; }
+  .ebar-top i.sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 5px; vertical-align: -1px; }
+  .ebar-top span.val { font-family: var(--mono); font-size: .76rem; color: var(--ink-mid); font-weight: 700; }
+  .ebar-track { height: 12px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line-soft); overflow: hidden; margin-top: 4px; }
+  .ebar-track > i { display: block; height: 100%; width: 0; }
+  .hint { font-size: .78rem; color: var(--ink-dim); font-family: var(--mono); margin-top: 3px; }
+  .qlist { margin: 0; padding-left: 1.15em; color: var(--ink-mid); font-size: .94rem; }
+  .qlist li { margin-bottom: .5em; }
+  .qlist b { color: var(--ink); }
+  .why h3 { margin-top: 1.1em; }
+  .score { font-family: var(--mono); font-weight: 700; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#stage">跳到实验画面</a>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<main class="wrap" id="main">
+
+  <header class="lab-head stack">
+    <div class="row">
+      <span class="pill pill-phys">物理 · 能量与摩擦</span>
+      <span class="pill">7–12 岁</span>
+      <span class="pill">约 15 分钟</span>
+    </div>
+    <h1>球从斜坡滚下来，能量去哪了？</h1>
+    <p class="lead">这在教什么：<b>能量不会消失，只会换形式</b>。高处的势能变成滚动的动能，摩擦又把动能变成热。三根柱子加起来永远是同一个数。</p>
+  </header>
+
+  <div class="lab">
+    <div class="lab-stage" id="stage">
+      <canvas id="scene"
+        aria-label="斜坡实验画面：小球从斜坡顶端滚下，滑过地面后停下。可以点击地面放置预测旗子。"></canvas>
+      <p id="live" class="sr-only" aria-live="polite"></p>
+      <p class="hint" style="margin:8px 2px 0">在地面上点一下可以放「预测旗」，也可以用下面的滑块。</p>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3>斜坡设置</h3>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="ang">斜坡角度 θ</label><b id="angOut">30°</b></div>
+          <input class="input" type="range" id="ang" min="5" max="45" step="1" value="30">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="hgt">起点高度 h</label><b id="hgtOut">1.20 m</b></div>
+          <input class="input" type="range" id="hgt" min="0.3" max="2.5" step="0.05" value="1.2">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="mu">摩擦系数 μ</label><b id="muOut">0.10</b></div>
+          <input class="input" type="range" id="mu" min="0" max="0.5" step="0.01" value="0.1"
+                 aria-describedby="muHint">
+          <div class="hint" id="muHint">冰 0.02 · 木板 0.15 · 地毯 0.35</div>
+          <div class="seg" style="margin-top:8px" role="group" aria-label="常见表面">
+            <button class="chip btn-sm" type="button" data-mu="0.02" aria-pressed="false">冰面</button>
+            <button class="chip btn-sm" type="button" data-mu="0.15" aria-pressed="false">木板</button>
+            <button class="chip btn-sm" type="button" data-mu="0.35" aria-pressed="false">地毯</button>
+          </div>
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="mass">球的质量 m</label><b id="massOut">0.50 kg</b></div>
+          <input class="input" type="range" id="mass" min="0.1" max="3" step="0.05" value="0.5">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="ts">慢动作</label><b id="tsOut">1.00×</b></div>
+          <input class="input" type="range" id="ts" min="0.15" max="1" step="0.05" value="1">
+        </div>
+
+        <div class="row">
+          <button class="btn btn-primary" id="go" type="button">放手</button>
+          <button class="btn btn-ghost btn-sm" id="reset" type="button">重置</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>能量柱（单位：焦耳 J）</h3>
+
+        <div class="ebar">
+          <div class="ebar-top"><span><i class="sw" style="background:var(--phys)"></i>势能 PE</span><span class="val" id="peV">5.89 J</span></div>
+          <div class="ebar-track"><i id="peB" style="background:var(--phys)"></i></div>
+        </div>
+        <div class="ebar">
+          <div class="ebar-top"><span><i class="sw" style="background:var(--math)"></i>动能 KE</span><span class="val" id="keV">0.00 J</span></div>
+          <div class="ebar-track"><i id="keB" style="background:var(--math)"></i></div>
+        </div>
+        <div class="ebar">
+          <div class="ebar-top"><span><i class="sw" style="background:var(--code)"></i>摩擦生热 Q</span><span class="val" id="qV">0.00 J</span></div>
+          <div class="ebar-track"><i id="qB" style="background:var(--code)"></i></div>
+        </div>
+
+        <div class="readout"><span>三者之和</span><b id="sumV">5.89 J</b></div>
+        <div class="readout"><span>速度 v</span><b id="vV">0.00 m/s</b></div>
+        <div class="readout"><span>已滑行</span><b id="dV">0.00 m</b></div>
+      </div>
+
+      <div class="panel">
+        <h3>挑战：猜它停在哪</h3>
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="pred">预测停止位置（离坡底）</label><b id="predOut">1.50 m</b></div>
+          <input class="input" type="range" id="pred" min="0" max="6" step="0.05" value="1.5">
+        </div>
+        <div class="row">
+          <button class="btn" id="check" type="button">锁定预测并开跑</button>
+        </div>
+        <div class="readout" style="margin-top:8px"><span>实际停止</span><b id="actV">—</b></div>
+        <div class="readout"><span>误差</span><b id="errV" class="score">—</b></div>
+        <div class="readout"><span>连对</span><b id="streakV" class="score">0</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:22px">
+    <section class="card">
+      <h2 style="font-size:1.15rem">给家长的提问脚本</h2>
+      <ol class="qlist">
+        <li><b>预测：</b>「把球换成两倍重，它会滚得更远吗？」（先猜，再把质量滑块拉到 2 倍。答案是滑行距离不变 —— 重的球动能更多，摩擦力也更大，正好抵消）</li>
+        <li><b>观察：</b>「摩擦那根橙色柱子一直在长，紫色和蓝色柱子在缩。它们的总和有变过吗？」（引导孩子发现能量守恒）</li>
+        <li><b>推理：</b>「同样的高度，把坡变陡一点，球到坡底会更快吗？」（会稍快一点，因为陡坡更短、摩擦作用的路程更少；如果完全没有摩擦，就一样快）</li>
+      </ol>
+      <p class="hint" style="margin-top:10px">玩法建议：让孩子先在纸上写下预测的距离，再用滑块锁定，比「随手拖一下」学得多。</p>
+    </section>
+
+    <section class="card">
+      <h2 style="font-size:1.15rem">背后的原理</h2>
+      <p><b>能量守恒。</b>球在高处时拥有重力势能 <code>PE = m·g·h</code>。往下滚时高度减少，势能变成动能 <code>KE = ½·m·v²</code>。同时接触面的摩擦力做负功，把一部分能量变成热 <code>Q = μ·m·g·cosθ·d</code>。任何时刻：<code>PE + KE + Q = m·g·h</code>，也就是一开始的总能量。</p>
+      <h3>为什么质量不影响滑行距离</h3>
+      <p>到坡底时 <code>½mv² = mgh − Q</code>，两边都带 <code>m</code>。在平地上继续滑，停止距离 <code>d = v² / (2·μ·g)</code> —— 式子里根本没有 <code>m</code>。这是个很反直觉但可以亲手验证的结论。</p>
+      <h3>斜坡是「省力」的机器</h3>
+      <p>把重物抬到高 <code>h</code> 需要的能量是固定的，但沿着长长的斜坡推上去，每一步用的<b>力</b>更小（<code>F = m·g·sinθ</code>）。力小、路长，能量不变 —— 这就是杠杆、螺丝、山路盘旋的共同道理。</p>
+      <p class="hint">本模拟说明：为了让能量柱一目了然，把滚动摩擦和滑动摩擦合并成一个系数 μ，并且没有单独区分小球的转动动能（真实的实心球有 2/7 的动能藏在自转里）。角度太小时（<code>tanθ ≤ μ</code>）球会静止不动，这也是真实现象。</p>
+    </section>
+  </div>
+
+  <footer class="foot wrap" style="padding-left:0;padding-right:0">
+    少儿数理启蒙 · 互动实验 — 斜坡与能量。所有计算在你的浏览器里完成，不联网。
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var css = getComputedStyle(document.documentElement);
+  function V(n, fb) { var v = css.getPropertyValue(n); return (v && v.trim()) || fb; }
+  var C = {
+    ink: V('--ink', '#eef2ff'), mid: V('--ink-mid', '#b6c0e0'), dim: V('--ink-dim', '#7d88ab'),
+    line: V('--line', '#2a3355'), soft: V('--line-soft', '#202844'), surf: V('--surface-2', '#1d2540'),
+    math: V('--math', '#6ea8fe'), sci: V('--sci', '#4ade80'), phys: V('--phys', '#a78bfa'),
+    code: V('--code', '#fb923c'), warn: V('--warn', '#fbbf24'), danger: V('--danger', '#f87171'),
+    kit: V('--kit', '#f472b6'), mono: V('--mono', 'monospace'), font: V('--font', 'sans-serif')
+  };
+
+  var G = 9.81;
+  var DT = 1 / 480;
+  var MAX_STEPS = 400;
+  var RUNWAY = 6;          // 平地长度（米）
+  var BALL_R = 0.09;       // 球半径（米，仅用于画图与滚动动画）
+
+  var S = {
+    ang: 30, h: 1.2, mu: 0.1, m: 0.5, timeScale: 1,
+    phase: 'ready',        // ready | ramp | floor | stopped
+    s: 0,                  // 沿斜坡走过的距离
+    d: 0,                  // 平地上走过的距离
+    v: 0, t: 0, heat: 0, spin: 0,
+    stopAt: null,
+    pred: 1.5, predLocked: false, streak: 0
+  };
+
+  function rad(a) { return a * Math.PI / 180; }
+  function rampLen() { return S.h / Math.sin(rad(S.ang)); }
+  function rampBase() { return S.h / Math.tan(rad(S.ang)); }
+  function totalE() { return S.m * G * S.h; }
+
+  function heightNow() {
+    if (S.phase === 'ramp' || S.phase === 'ready') {
+      return Math.max(0, S.h - S.s * Math.sin(rad(S.ang)));
+    }
+    return 0;
+  }
+
+  function reset(keepPred) {
+    S.phase = 'ready'; S.s = 0; S.d = 0; S.v = 0; S.t = 0; S.heat = 0; S.spin = 0;
+    S.stopAt = null;
+    if (!keepPred) S.predLocked = false;
+    btnGo.textContent = '放手';
+    actV.textContent = '—';
+    if (!keepPred) { errV.textContent = '—'; }
+  }
+
+  // ---------- 物理 ----------
+  function step(dt) {
+    var th = rad(S.ang);
+    if (S.phase === 'ramp') {
+      var aDown = G * Math.sin(th);
+      var aFric = S.mu * G * Math.cos(th);
+      var a;
+      if (S.v <= 1e-6 && aDown <= aFric) {          // 静摩擦锁住
+        S.v = 0;
+        S.phase = 'stopped';
+        S.stopAt = -1;                               // 停在坡上
+        finish(true);
+        return;
+      }
+      a = aDown - aFric;
+      var v0 = S.v;
+      S.v = Math.max(0, S.v + a * dt);
+      var ds = 0.5 * (v0 + S.v) * dt;
+      S.s += ds;
+      S.heat += aFric * S.m * ds;
+      S.spin += ds / BALL_R;
+      var L = rampLen();
+      if (S.s >= L) {
+        // 修正到坡底：用能量式重算速度，避免累积误差
+        S.s = L;
+        var e = totalE() - S.heat;
+        S.v = Math.sqrt(Math.max(0, 2 * e / S.m));
+        S.phase = 'floor';
+      }
+    } else if (S.phase === 'floor') {
+      var af = S.mu * G;
+      var vv0 = S.v;
+      S.v = S.v - af * dt;
+      if (S.v <= 0 || af === 0 && S.v <= 0) S.v = Math.max(0, S.v);
+      var dd = 0.5 * (vv0 + Math.max(0, S.v)) * dt;
+      if (dd < 0) dd = 0;
+      S.d += dd;
+      S.heat += af * S.m * dd;
+      S.spin += dd / BALL_R;
+      if (S.d >= RUNWAY) {
+        S.d = RUNWAY; S.v = 0; S.phase = 'stopped'; S.stopAt = RUNWAY; finish(false, true);
+        return;
+      }
+      if (S.v <= 1e-4) {
+        S.v = 0; S.phase = 'stopped'; S.stopAt = S.d;
+        // 数值残差归到热里，保证守恒
+        S.heat = totalE();
+        finish(false);
+        return;
+      }
+    }
+    if (!isFinite(S.v) || !isFinite(S.d) || !isFinite(S.s)) { S.v = 0; S.phase = 'stopped'; S.stopAt = S.d; }
+    S.t += dt;
+  }
+
+  function finish(stuckOnRamp, hitWall) {
+    running = false;
+    btnGo.textContent = '再来一次';
+    if (stuckOnRamp) {
+      actV.textContent = '没动（坡太平）';
+      announce('斜坡太平缓，摩擦力大于下滑力，球没有动。');
+      toast('球不动 —— μ 比 tanθ 还大');
+      return;
+    }
+    actV.textContent = (hitWall ? '≥ ' : '') + S.d.toFixed(2) + ' m';
+    if (S.predLocked) {
+      var err = Math.abs(S.d - S.pred);
+      errV.textContent = err.toFixed(2) + ' m';
+      var good = err <= Math.max(0.15, S.d * 0.12);
+      errV.style.color = good ? C.sci : C.warn;
+      if (good) { S.streak++; toast('猜中了！误差 ' + err.toFixed(2) + ' 米'); }
+      else { S.streak = 0; toast('差了 ' + err.toFixed(2) + ' 米，再试一次'); }
+      streakV.textContent = String(S.streak);
+      announce('球停在离坡底 ' + S.d.toFixed(2) + ' 米，你的预测差 ' + err.toFixed(2) + ' 米。');
+      S.predLocked = false;
+    } else {
+      announce('球停在离坡底 ' + S.d.toFixed(2) + ' 米。');
+    }
+    if (hitWall) toast('冲到跑道尽头了，把摩擦调大一点');
+  }
+
+  // ---------- Canvas ----------
+  var cv = document.getElementById('scene');
+  var ctx = cv.getContext('2d');
+  var stage = document.getElementById('stage');
+  var W = 640, H = 400, dpr = 1;
+  var view = { scale: 60, ox: 34, floorY: 320 };
+
+  function resize() {
+    var cssW = Math.max(260, stage.clientWidth - 28);
+    var cssH = Math.round(Math.min(520, Math.max(300, cssW * 0.60)));
+    dpr = Math.min(3, window.devicePixelRatio || 1);
+    cv.style.height = cssH + 'px';
+    cv.width = Math.round(cssW * dpr);
+    cv.height = Math.round(cssH * dpr);
+    W = cssW; H = cssH;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+
+  function computeView() {
+    var padL = 30, padR = 16, padT = 26, padB = 46;
+    var worldW = rampBase() + RUNWAY;
+    var worldH = S.h + 0.35;
+    var sx = (W - padL - padR) / worldW;
+    var sy = (H - padT - padB) / worldH;
+    view.scale = Math.max(8, Math.min(sx, sy));
+    view.ox = padL;
+    view.floorY = padT + worldH * view.scale;
+    if (view.floorY > H - padB) view.floorY = H - padB;
+  }
+
+  // 世界坐标（米，原点在斜坡顶的正下方地面）→ 屏幕
+  function wx(x) { return view.ox + x * view.scale; }
+  function wy(y) { return view.floorY - y * view.scale; }
+
+  function ballPos() {
+    var th = rad(S.ang);
+    if (S.phase === 'floor' || (S.phase === 'stopped' && S.stopAt !== -1 && S.d > 0)) {
+      return { x: rampBase() + S.d, y: 0, onRamp: false };
+    }
+    if (S.phase === 'ready' || S.phase === 'ramp' || S.stopAt === -1) {
+      var s = Math.min(S.s, rampLen());
+      return { x: s * Math.cos(th), y: S.h - s * Math.sin(th), onRamp: true };
+    }
+    return { x: rampBase() + S.d, y: 0, onRamp: false };
+  }
+
+  function draw() {
+    computeView();
+    ctx.clearRect(0, 0, W, H);
+    var th = rad(S.ang);
+    var base = rampBase();
+
+    // 地面填充
+    ctx.fillStyle = 'rgba(29,37,64,.92)';
+    ctx.fillRect(0, view.floorY, W, H - view.floorY);
+
+    // 斜坡三角形
+    ctx.beginPath();
+    ctx.moveTo(wx(0), wy(S.h));
+    ctx.lineTo(wx(base), wy(0));
+    ctx.lineTo(wx(0), wy(0));
+    ctx.closePath();
+    var grad = ctx.createLinearGradient(wx(0), wy(S.h), wx(base), wy(0));
+    grad.addColorStop(0, 'rgba(167,139,250,.30)');
+    grad.addColorStop(1, 'rgba(167,139,250,.10)');
+    ctx.fillStyle = grad; ctx.fill();
+    ctx.strokeStyle = C.phys; ctx.lineWidth = 2; ctx.stroke();
+
+    // 摩擦纹理（μ 越大越密）
+    var n = Math.round(4 + S.mu * 90);
+    ctx.strokeStyle = 'rgba(251,146,60,' + (0.15 + S.mu * 0.9).toFixed(3) + ')';
+    ctx.lineWidth = 1.5;
+    for (var i = 0; i < n; i++) {
+      var fx = base + (RUNWAY) * (i / n);
+      ctx.beginPath();
+      ctx.moveTo(wx(fx), view.floorY + 3);
+      ctx.lineTo(wx(fx) - 4, view.floorY + 9);
+      ctx.stroke();
+    }
+
+    // 地面线
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, view.floorY + .5); ctx.lineTo(W, view.floorY + .5); ctx.stroke();
+
+    // 高度标注
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(167,139,250,.55)';
+    ctx.beginPath(); ctx.moveTo(wx(0), wy(S.h)); ctx.lineTo(wx(0), wy(0)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.save();
+    ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.phys;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('h=' + S.h.toFixed(2) + 'm', wx(0) + 5, wy(S.h / 2));
+    ctx.restore();
+
+    // 角度弧
+    ctx.strokeStyle = 'rgba(182,192,224,.6)';
+    ctx.beginPath();
+    ctx.arc(wx(base), wy(0), Math.min(40, base * view.scale * 0.5), Math.PI, Math.PI + th);
+    ctx.stroke();
+    ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.mid;
+    ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+    ctx.fillText(S.ang + '°', wx(base) - 8, wy(0) - 4);
+
+    // 跑道刻度
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.font = '600 10px ' + C.mono;
+    for (var mk = 0; mk <= RUNWAY + 0.001; mk += 1) {
+      var mxp = wx(base + mk);
+      ctx.strokeStyle = C.soft;
+      ctx.beginPath(); ctx.moveTo(mxp, view.floorY); ctx.lineTo(mxp, view.floorY + 6); ctx.stroke();
+      ctx.fillStyle = C.dim;
+      ctx.fillText(mk + 'm', mxp, view.floorY + 9);
+    }
+
+    // 预测旗
+    var pfx = wx(base + S.pred);
+    ctx.strokeStyle = S.predLocked ? C.warn : 'rgba(251,191,36,.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(pfx, view.floorY); ctx.lineTo(pfx, view.floorY - 34); ctx.stroke();
+    ctx.fillStyle = S.predLocked ? C.warn : 'rgba(251,191,36,.55)';
+    ctx.beginPath();
+    ctx.moveTo(pfx, view.floorY - 34); ctx.lineTo(pfx + 18, view.floorY - 28); ctx.lineTo(pfx, view.floorY - 22);
+    ctx.closePath(); ctx.fill();
+    ctx.font = '700 10px ' + C.mono; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText('猜 ' + S.pred.toFixed(2) + 'm', pfx + 3, view.floorY - 36);
+
+    // 实际停止标记
+    if (S.phase === 'stopped' && S.stopAt !== null && S.stopAt >= 0) {
+      var sxp = wx(base + S.stopAt);
+      ctx.strokeStyle = C.sci; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(sxp, view.floorY + 2); ctx.lineTo(sxp, view.floorY - 20); ctx.stroke();
+      ctx.fillStyle = C.sci; ctx.font = '700 10px ' + C.mono; ctx.textAlign = 'center';
+      ctx.fillText(S.stopAt.toFixed(2) + 'm', sxp, view.floorY - 22);
+    }
+
+    // 小球
+    var p = ballPos();
+    var bx = wx(p.x), by = wy(p.y);
+    var rpx = Math.max(6, BALL_R * view.scale);
+    // 让球贴在表面上：沿法线抬起 r
+    if (p.onRamp) { bx += Math.sin(th) * rpx; by -= Math.cos(th) * rpx; }
+    else { by -= rpx; }
+
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.rotate(S.spin);
+    var bg = ctx.createRadialGradient(-rpx * 0.3, -rpx * 0.35, rpx * 0.1, 0, 0, rpx);
+    bg.addColorStop(0, '#dbe6ff');
+    bg.addColorStop(1, C.math);
+    ctx.fillStyle = bg;
+    ctx.beginPath(); ctx.arc(0, 0, rpx, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(11,15,26,.55)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, -rpx); ctx.lineTo(0, rpx); ctx.stroke();   // 自转标记
+    ctx.beginPath(); ctx.moveTo(-rpx, 0); ctx.lineTo(rpx, 0); ctx.stroke();
+    ctx.restore();
+
+    // 速度箭头
+    if (S.v > 0.05) {
+      var dirx = p.onRamp ? Math.cos(th) : 1;
+      var diry = p.onRamp ? Math.sin(th) : 0;
+      var len = Math.min(70, 8 + S.v * 9);
+      ctx.strokeStyle = C.sci; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + dirx * len, by + diry * len);
+      ctx.stroke();
+      ctx.fillStyle = C.sci;
+      var ex = bx + dirx * len, ey = by + diry * len;
+      ctx.save(); ctx.translate(ex, ey); ctx.rotate(Math.atan2(diry, dirx));
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-8, -4.5); ctx.lineTo(-8, 4.5); ctx.closePath(); ctx.fill();
+      ctx.restore();
+      ctx.font = '700 10px ' + C.mono; ctx.fillStyle = C.sci;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      ctx.fillText(S.v.toFixed(2) + ' m/s', bx + dirx * len + 6, by + diry * len - 2);
+    }
+
+    // 左上信息
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.font = '700 12px ' + C.font; ctx.fillStyle = C.mid;
+    var label = S.phase === 'ready' ? '待放手' : (S.phase === 'stopped' ? '已停下' : (S.phase === 'ramp' ? '下坡中' : '平地滑行'));
+    ctx.fillText(label, 6, 6);
+    ctx.font = '600 11px ' + C.mono; ctx.fillStyle = C.dim;
+    ctx.fillText('t=' + S.t.toFixed(2) + 's  μ=' + S.mu.toFixed(2) + '  m=' + S.m.toFixed(2) + 'kg', 6, 22);
+  }
+
+  // ---------- 面板 ----------
+  var peV = document.getElementById('peV'), keV = document.getElementById('keV'), qV = document.getElementById('qV');
+  var peB = document.getElementById('peB'), keB = document.getElementById('keB'), qB = document.getElementById('qB');
+  var sumV = document.getElementById('sumV'), vV = document.getElementById('vV'), dV = document.getElementById('dV');
+  var actV = document.getElementById('actV'), errV = document.getElementById('errV'), streakV = document.getElementById('streakV');
+
+  function refresh() {
+    var tot = Math.max(1e-6, totalE());
+    var pe = S.m * G * heightNow();
+    var ke = 0.5 * S.m * S.v * S.v;
+    var q = Math.min(tot, S.heat);
+    // 归一到总能量，避免数值抖动导致柱子超出
+    peV.textContent = pe.toFixed(2) + ' J';
+    keV.textContent = ke.toFixed(2) + ' J';
+    qV.textContent = q.toFixed(2) + ' J';
+    peB.style.width = (pe / tot * 100).toFixed(1) + '%';
+    keB.style.width = (ke / tot * 100).toFixed(1) + '%';
+    qB.style.width = (q / tot * 100).toFixed(1) + '%';
+    sumV.textContent = (pe + ke + q).toFixed(2) + ' J';
+    vV.textContent = S.v.toFixed(2) + ' m/s';
+    dV.textContent = (S.s + S.d).toFixed(2) + ' m';
+  }
+
+  // ---------- 循环 ----------
+  var running = false, last = 0, acc = 0;
+  function loop(now) {
+    if (!last) last = now;
+    var real = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (running) {
+      acc += real * S.timeScale;
+      var k = 0;
+      while (acc >= DT && k < MAX_STEPS && running) { step(DT); acc -= DT; k++; }
+      if (k >= MAX_STEPS) acc = 0;
+    } else { acc = 0; }
+    draw();
+    refresh();
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- UI ----------
+  var toastEl = document.getElementById('toast'), toastTimer = 0;
+  function toast(msg) {
+    toastEl.textContent = msg; toastEl.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('on'); }, 2400);
+  }
+  var liveEl = document.getElementById('live');
+  function announce(m) { liveEl.textContent = m; }
+
+  var btnGo = document.getElementById('go');
+  function start() {
+    if (S.phase === 'stopped') reset(true);
+    if (S.phase === 'ready') { S.phase = 'ramp'; }
+    running = true;
+    btnGo.textContent = '暂停';
+  }
+  btnGo.addEventListener('click', function () {
+    if (running) { running = false; btnGo.textContent = '继续'; return; }
+    start();
+  });
+  document.getElementById('reset').addEventListener('click', function () {
+    running = false; reset(false); S.streak = 0; streakV.textContent = '0';
+  });
+
+  function bindRange(id, outId, fmt, apply) {
+    var el = document.getElementById(id), out = document.getElementById(outId);
+    el.addEventListener('input', function () {
+      var v = parseFloat(el.value);
+      if (!isFinite(v)) return;
+      apply(v);
+      out.textContent = fmt(v);
+    });
+    out.textContent = fmt(parseFloat(el.value));
+    return el;
+  }
+
+  var angEl = bindRange('ang', 'angOut', function (v) { return v.toFixed(0) + '°'; },
+    function (v) { S.ang = Math.min(45, Math.max(5, v)); running = false; reset(true); });
+  var hgtEl = bindRange('hgt', 'hgtOut', function (v) { return v.toFixed(2) + ' m'; },
+    function (v) { S.h = Math.min(2.5, Math.max(0.3, v)); running = false; reset(true); });
+  var muEl = bindRange('mu', 'muOut', function (v) { return v.toFixed(2); },
+    function (v) { S.mu = Math.min(0.5, Math.max(0, v)); syncMuChips(); running = false; reset(true); });
+  bindRange('mass', 'massOut', function (v) { return v.toFixed(2) + ' kg'; },
+    function (v) { S.m = Math.min(3, Math.max(0.1, v)); running = false; reset(true); });
+  bindRange('ts', 'tsOut', function (v) { return v.toFixed(2) + '×'; },
+    function (v) { S.timeScale = Math.min(1, Math.max(0.15, v)); });
+
+  var muChips = Array.prototype.slice.call(document.querySelectorAll('[data-mu]'));
+  function syncMuChips() {
+    muChips.forEach(function (b) {
+      b.setAttribute('aria-pressed', Math.abs(parseFloat(b.dataset.mu) - S.mu) < 0.005 ? 'true' : 'false');
+    });
+  }
+  muChips.forEach(function (b) {
+    b.addEventListener('click', function () {
+      S.mu = parseFloat(b.dataset.mu);
+      muEl.value = String(S.mu);
+      document.getElementById('muOut').textContent = S.mu.toFixed(2);
+      syncMuChips(); running = false; reset(true);
+      announce('表面已切换，摩擦系数 ' + S.mu.toFixed(2));
+    });
+  });
+  syncMuChips();
+
+  var predEl = document.getElementById('pred'), predOut = document.getElementById('predOut');
+  function setPred(v, silent) {
+    S.pred = Math.min(RUNWAY, Math.max(0, v));
+    predEl.value = String(S.pred);
+    predOut.textContent = S.pred.toFixed(2) + ' m';
+    if (!silent) announce('预测位置 ' + S.pred.toFixed(2) + ' 米');
+  }
+  predEl.addEventListener('input', function () { setPred(parseFloat(predEl.value) || 0, true); });
+  document.getElementById('check').addEventListener('click', function () {
+    S.predLocked = true;
+    running = false; reset(true); S.predLocked = true;
+    errV.textContent = '…';
+    errV.style.color = C.mid;
+    start();
+    announce('预测已锁定在 ' + S.pred.toFixed(2) + ' 米，开始运行。');
+  });
+
+  // 点击地面放旗
+  function canvasPred(ev) {
+    var r = cv.getBoundingClientRect();
+    var px = (ev.clientX - r.left) * (W / r.width);
+    var py = (ev.clientY - r.top) * (H / r.height);
+    if (py < view.floorY - 60) return;
+    var meters = (px - view.ox) / view.scale - rampBase();
+    setPred(meters, true);
+  }
+  var dragging = false;
+  cv.addEventListener('pointerdown', function (e) { dragging = true; canvasPred(e); if (cv.setPointerCapture) cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', function (e) { if (dragging) canvasPred(e); });
+  cv.addEventListener('pointerup', function () { dragging = false; });
+  cv.addEventListener('pointercancel', function () { dragging = false; });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.code === 'Space' && !/INPUT|BUTTON|SELECT|TEXTAREA/.test(e.target.tagName)) {
+      e.preventDefault(); btnGo.click();
+    }
+  });
+
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(stage);
+  window.addEventListener('resize', resize);
+
+  reset(false);
+  resize();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

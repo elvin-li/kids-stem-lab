@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>造波机 · 振幅、频率与干涉 | 少儿数理启蒙</title>
+<meta name="description" content="调两列波的振幅、频率、波长，看它们相加的样子；再用双点源水波槽看干涉条纹。给 7–12 岁小朋友的波动启蒙。" />
+<link rel="stylesheet" href="../assets/css/base.css">
+<style>
+  .lab-head { margin: 24px 0 18px; }
+  .lab-head p.lead { font-size: 1.02rem; max-width: 62ch; }
+  .hint { font-size: .78rem; color: var(--ink-dim); margin-top: 4px; }
+  .mono { font-family: var(--mono); }
+  .qlist { margin: 0; padding-left: 1.15em; color: var(--ink-mid); font-size: .94rem; }
+  .qlist li { margin-bottom: .5em; }
+  .qlist b { color: var(--ink); }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: .78rem; color: var(--ink-mid); }
+  .legend i { width: 12px; height: 3px; border-radius: 2px; display: inline-block; margin-right: 5px; vertical-align: 3px; }
+  .legend i.sq { height: 11px; border-radius: 3px; vertical-align: -1px; border: 1px solid rgba(255,255,255,.2); }
+  .modehide { display: none; }
+  .wsrc { border: 1px solid var(--line-soft); border-radius: var(--r-sm); padding: 10px 11px 2px; margin-bottom: 12px; }
+  .wsrc > h4 { margin: 0 0 9px; font-size: .84rem; letter-spacing: .01em; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: 0; }
+  .seg { display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#stage">跳到实验画面</a>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<main class="wrap" id="main">
+
+  <header class="lab-head stack">
+    <div class="row">
+      <span class="pill pill-phys">物理 · 波动</span>
+      <span class="pill">7–12 岁</span>
+      <span class="pill">约 15 分钟</span>
+    </div>
+    <h1>造波机：两列波相遇会发生什么</h1>
+    <p class="lead">这在教什么：<b>振幅、频率、波长</b>三个词分别管波的哪一部分；两列波相遇时会<b>逐点相加</b>，同相加倍（建设性干涉）、反相抵消（破坏性干涉）。全程只用眼睛看，不需要声音。</p>
+  </header>
+
+  <div class="row" style="margin-bottom:14px" role="group" aria-label="选择实验模式">
+    <button class="chip" id="mWave" type="button" aria-pressed="true">① 两列波相加</button>
+    <button class="chip" id="mTank" type="button" aria-pressed="false">② 水波槽干涉</button>
+  </div>
+
+  <div class="lab">
+    <div class="lab-stage" id="stage">
+      <canvas id="scene" aria-label="波动实验画面：显示两列正弦波与它们的叠加结果，或双点源水波槽的干涉图案。" tabindex="0"></canvas>
+      <p id="live" class="sr-only" aria-live="polite"></p>
+      <div class="row" style="margin-top:10px;justify-content:space-between">
+        <div class="legend" id="legend"></div>
+        <span class="hint" id="tip"></span>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3 id="ctrlTitle">波的参数</h3>
+
+        <div class="wsrc">
+          <h4 style="color:var(--math)"><span class="dot" style="background:var(--math)"></span>波 1（蓝）</h4>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="a1">振幅 amplitude</label><b id="a1Out">1.00</b></div>
+            <input class="input" type="range" id="a1" min="0" max="1.5" step="0.05" value="1">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="w1">波长 wavelength</label><b id="w1Out">1.20 m</b></div>
+            <input class="input" type="range" id="w1" min="0.3" max="3" step="0.05" value="1.2">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="f1">频率 frequency</label><b id="f1Out">0.80 Hz</b></div>
+            <input class="input" type="range" id="f1" min="0" max="2.5" step="0.05" value="0.8">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="p1">相位 phase</label><b id="p1Out">0°</b></div>
+            <input class="input" type="range" id="p1" min="0" max="360" step="5" value="0">
+          </div>
+        </div>
+
+        <div class="wsrc">
+          <h4 style="color:var(--kit)"><span class="dot" style="background:var(--kit)"></span>波 2（粉）</h4>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="a2">振幅 amplitude</label><b id="a2Out">1.00</b></div>
+            <input class="input" type="range" id="a2" min="0" max="1.5" step="0.05" value="1">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="w2">波长 wavelength</label><b id="w2Out">1.20 m</b></div>
+            <input class="input" type="range" id="w2" min="0.3" max="3" step="0.05" value="1.2">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="f2">频率 frequency</label><b id="f2Out">0.80 Hz</b></div>
+            <input class="input" type="range" id="f2" min="0" max="2.5" step="0.05" value="0.8">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="p2">相位 phase</label><b id="p2Out">0°</b></div>
+            <input class="input" type="range" id="p2" min="0" max="360" step="5" value="0">
+          </div>
+        </div>
+
+        <div class="ctrl modehide" id="ctrlSep">
+          <div class="ctrl-head"><label for="sep">两个波源的间距</label><b id="sepOut">1.60 m</b></div>
+          <input class="input" type="range" id="sep" min="0.2" max="3.4" step="0.05" value="1.6">
+        </div>
+
+        <div class="seg" style="margin-bottom:12px">
+          <button class="btn btn-sm btn-primary" id="playBtn" type="button" aria-pressed="true">⏸ 暂停</button>
+          <button class="btn btn-sm" id="resetBtn" type="button">重置</button>
+        </div>
+        <div class="seg">
+          <button class="chip btn-sm" type="button" data-preset="same">完全同相</button>
+          <button class="chip btn-sm" type="button" data-preset="anti">完全反相</button>
+          <button class="chip btn-sm" type="button" data-preset="beat">拍频 beats</button>
+          <button class="chip btn-sm" type="button" data-preset="stand">驻波</button>
+        </div>
+        <p class="hint" id="presetHint">选一个预设，看看叠加波（绿色）有什么不同。</p>
+      </div>
+
+      <div class="panel" id="panelRead">
+        <h3>读数</h3>
+        <div class="readout"><span>波 1 速度 v=fλ</span><b id="rV1">0.96 m/s</b></div>
+        <div class="readout"><span>波 2 速度 v=fλ</span><b id="rV2">0.96 m/s</b></div>
+        <div class="readout"><span>相位差</span><b id="rDPhi">0°</b></div>
+        <div class="readout"><span>叠加最大振幅</span><b id="rSum">2.00</b></div>
+        <div class="readout"><span>干涉类型</span><b id="rType">建设性</b></div>
+        <div class="readout modehide" id="rowFringe"><span>亮纹间距（远处）</span><b id="rFringe">—</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:22px">
+    <section class="card">
+      <h2 style="font-size:1.15rem">给家长的提问脚本</h2>
+      <ol class="qlist">
+        <li><b>分辨概念：</b>「振幅变大，波看起来哪里不一样？频率变大呢？」（振幅管高矮、频率管快慢、波长管疏密。让孩子只动一个滑块，说出变化）</li>
+        <li><b>预测：</b>「两列一模一样的波叠在一起，会变成两倍高，还是消失？」（先猜，再点「完全同相」和「完全反相」各试一次。抵消这件事最反直觉）</li>
+        <li><b>迁移：</b>「水波槽里那些黑色的线是什么？为什么水面在那里一直不动？」（那是两个波源永远反相抵消的位置。声学降噪耳机、双缝实验都是同一件事）</li>
+      </ol>
+      <p class="hint" style="margin-top:10px">线下延伸：往洗手池里同时滴两滴水，看两圈水纹相遇处；或者两人同时轻抖一根长绳的两端。</p>
+    </section>
+
+    <section class="card">
+      <h2 style="font-size:1.15rem">背后的原理</h2>
+      <p>一列正弦波可以写成 <code>y(x,t) = A · sin(2π(x/λ − f·t) + φ)</code>。四个字母各管一件事：<b>A 振幅</b>决定波多高（对应声音多响、光多亮）、<b>λ 波长</b>决定波峰之间多远、<b>f 频率</b>决定一秒钟过去几个波峰、<b>φ 相位</b>决定起跑位置。三者关系是 <code>v = f · λ</code> —— 同一种介质里波速固定，所以频率越高，波长必然越短。</p>
+      <h3>叠加原理（superposition）</h3>
+      <p>两列波相遇时不会撞坏对方，只是把位移<b>逐点相加</b>：<code>y = y₁ + y₂</code>。相加后走过彼此，各自波形不变。这是波和小球最大的区别。</p>
+      <ul style="color:var(--ink-mid);font-size:.92rem">
+        <li><b>建设性干涉：</b>相位差 0°（或路程差 = 整数个波长），振幅相加变大。</li>
+        <li><b>破坏性干涉：</b>相位差 180°（路程差 = 半波长的奇数倍），等幅时完全抵消。</li>
+        <li><b>拍频 beats：</b>两个频率只差一点，叠加后忽强忽弱，跳动频率 = <code>|f₁ − f₂|</code>。调吉他就靠听这个。</li>
+        <li><b>驻波：</b>两列反向传播的同频波叠加，出现不动的<b>波节</b>和大幅摆动的<b>波腹</b>。琴弦、笛管发声都靠它。</li>
+      </ul>
+      <h3>水波槽里的条纹</h3>
+      <p>两个点源发出的圆形波，在<b>到两源距离差 = 整数波长</b>的地方永远同相 → 亮纹（波动剧烈）；在<b>距离差 = 半波长的奇数倍</b>处永远反相 → 暗的<b>波节线</b>（水面几乎不动）。把波源拉近，条纹变宽；波长变短，条纹变密。托马斯·杨的双缝实验就是用这个证明了光是波。</p>
+      <p class="hint">本模拟说明：为可视化清晰，波速与色散未按真实水波（有色散）建模，两源振幅按 1/√r 做几何衰减近似；条纹间距读数使用远场小角近似 <code>Δ ≈ λL/d</code>。</p>
+    </section>
+  </div>
+
+  <footer class="foot wrap" style="padding-left:0;padding-right:0">
+    少儿数理启蒙 · 互动实验 — 造波机。纯视觉，无音频，离线可用。
+  </footer>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var css = getComputedStyle(document.documentElement);
+  function V(n, fb) { var v = css.getPropertyValue(n); return (v && v.trim()) || fb; }
+  var C = {
+    ink: V('--ink', '#eef2ff'), mid: V('--ink-mid', '#b6c0e0'), dim: V('--ink-dim', '#7d88ab'),
+    line: V('--line', '#2a3355'), soft: V('--line-soft', '#202844'),
+    math: V('--math', '#6ea8fe'), kit: V('--kit', '#f472b6'), sci: V('--sci', '#4ade80'),
+    warn: V('--warn', '#fbbf24'), phys: V('--phys', '#a78bfa'),
+    mono: V('--mono', 'monospace'), font: V('--font', 'sans-serif')
+  };
+
+  var cv = document.getElementById('scene');
+  var ctx = cv.getContext('2d', { alpha: false });
+  var stage = document.getElementById('stage');
+  var W = 640, H = 420, dpr = 1;
+  var MODE = 'wave';
+
+  var DEF = {
+    a1: 1, w1: 1.2, f1: 0.8, p1: 0,
+    a2: 1, w2: 1.2, f2: 0.8, p2: 0,
+    sep: 1.6
+  };
+  // 波 2 的传播方向：+1 向右，-1 向左（向左 + 同频同波长 = 驻波）
+  var dir2 = 1;
+  var S = {};
+  for (var k in DEF) if (Object.prototype.hasOwnProperty.call(DEF, k)) S[k] = DEF[k];
+  var playing = true;
+  var t = 0;                      // 模拟时间（秒）
+
+  var PPM = 100;                  // 像素 / 米（画面按 devicePixelRatio 之外的逻辑像素）
+
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+  function num(v, fb) { var n = parseFloat(v); return isFinite(n) ? n : fb; }
+
+  function resize() {
+    var cssW = Math.max(260, stage.clientWidth - 28);
+    var ratio = MODE === 'wave' ? 0.66 : 0.72;
+    var cssH = Math.round(clamp(cssW * ratio, 300, 560));
+    dpr = Math.min(3, window.devicePixelRatio || 1);
+    cv.style.height = cssH + 'px';
+    cv.width = Math.round(cssW * dpr);
+    cv.height = Math.round(cssH * dpr);
+    W = cssW; H = cssH;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    PPM = clamp(W / 4.6, 55, 150);   // 画面宽约 4.6 米
+  }
+
+  // ---------- 波形数学 ----------
+  // y = A sin(2π (x/λ - dir·f·t) + φ)   dir=+1 向右传播，dir=-1 向左传播
+  function waveY(A, lam, f, phi, x, tt, dir) {
+    if (lam <= 0.0001) return 0;
+    var v = A * Math.sin(2 * Math.PI * (x / lam - (dir || 1) * f * tt) + phi * Math.PI / 180);
+    return isFinite(v) ? v : 0;
+  }
+
+  // ---------- 模式 1：三条曲线 ----------
+  function drawWaveMode() {
+    ctx.fillStyle = '#0a0e19';
+    ctx.fillRect(0, 0, W, H);
+
+    var padL = 44, padR = 12;
+    var plotW = Math.max(40, W - padL - padR);
+    var rows = 3;
+    var gap = 12;
+    var rowH = (H - 26 - gap * (rows - 1)) / rows;
+    var maxAmp = Math.max(0.5, Math.max(S.a1, S.a2, S.a1 + S.a2) * 1.06);
+
+    var titles = [
+      { label: '波 1', col: C.math, get: function (x, tt) { return waveY(S.a1, S.w1, S.f1, S.p1, x, tt); } },
+      { label: '波 2', col: C.kit, get: function (x, tt) { return waveY(S.a2, S.w2, S.f2, S.p2, x, tt, dir2); } },
+      { label: '叠加 = 波1 + 波2', col: C.sci, get: function (x, tt) {
+          return waveY(S.a1, S.w1, S.f1, S.p1, x, tt) + waveY(S.a2, S.w2, S.f2, S.p2, x, tt, dir2);
+        } }
+    ];
+
+    for (var r = 0; r < rows; r++) {
+      var y0 = 14 + r * (rowH + gap);
+      var mid = y0 + rowH / 2;
+      var scale = (rowH / 2 - 6) / maxAmp;
+
+      // 面板底
+      ctx.fillStyle = '#0d1424';
+      ctx.strokeStyle = C.soft; ctx.lineWidth = 1;
+      rr(padL - 6, y0, plotW + 10, rowH, 8);
+      ctx.fill(); ctx.stroke();
+
+      // 零线
+      ctx.strokeStyle = 'rgba(125,136,171,.35)';
+      ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(padL, mid + .5); ctx.lineTo(padL + plotW, mid + .5); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 纵轴刻度 ±
+      ctx.font = '600 9px ' + C.mono; ctx.fillStyle = C.dim;
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillText('0', padL - 10, mid);
+      ctx.fillText('+', padL - 10, mid - (rowH / 2 - 10));
+      ctx.fillText('−', padL - 10, mid + (rowH / 2 - 10));
+
+      // 曲线
+      var f = titles[r];
+      ctx.strokeStyle = f.col;
+      ctx.lineWidth = r === 2 ? 2.6 : 2;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      var step = 1;
+      for (var px = 0; px <= plotW; px += step) {
+        var xm = px / PPM;
+        var yv = f.get(xm, t);
+        var yy = mid - clamp(yv, -maxAmp * 1.2, maxAmp * 1.2) * scale;
+        if (px === 0) ctx.moveTo(padL + px, yy); else ctx.lineTo(padL + px, yy);
+      }
+      ctx.stroke();
+
+      // 叠加波填充
+      if (r === 2) {
+        ctx.save();
+        ctx.globalAlpha = 0.16;
+        ctx.lineTo(padL + plotW, mid); ctx.lineTo(padL, mid); ctx.closePath();
+        ctx.fillStyle = f.col; ctx.fill();
+        ctx.restore();
+      }
+
+      // 标题
+      ctx.font = '700 11px ' + C.font;
+      ctx.fillStyle = f.col; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+      ctx.fillText(f.label, padL + 4, y0 + 5);
+
+      // 振幅标尺（前两行画波长箭头）
+      if (r < 2) {
+        var lam = r === 0 ? S.w1 : S.w2;
+        var amp = r === 0 ? S.a1 : S.a2;
+        var lamPx = lam * PPM;
+        if (lamPx > 26 && lamPx < plotW - 10 && amp > 0.02) {
+          var ax = padL + 14, ay = mid + rowH / 2 - 14;
+          ctx.strokeStyle = 'rgba(182,192,224,.75)'; ctx.lineWidth = 1.4;
+          ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + lamPx, ay); ctx.stroke();
+          arrow(ax, ay, -1); arrow(ax + lamPx, ay, 1);
+          ctx.font = '600 10px ' + C.mono; ctx.fillStyle = C.mid;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+          ctx.fillText('λ=' + lam.toFixed(2) + 'm', ax + lamPx / 2, ay - 2);
+        }
+      }
+    }
+
+    // x 轴说明
+    ctx.font = '600 10px ' + C.mono; ctx.fillStyle = C.dim;
+    ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+    ctx.fillText('距离 x →  ' + (plotW / PPM).toFixed(1) + ' m', W - padR, H - 2);
+    ctx.textAlign = 'left';
+    ctx.fillText('t = ' + t.toFixed(2) + ' s', padL - 6, H - 2);
+  }
+
+  function arrow(x, y, dir) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + dir * 5, y - 3.5);
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + dir * 5, y + 3.5);
+    ctx.stroke();
+  }
+
+  function rr(x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // ---------- 模式 2：水波槽 ----------
+  // 用离屏 canvas 做低分辨率场计算，再平滑放大铺满舞台
+  var tankImg = null, tankW = 0, tankH = 0;
+  var tankCv = document.createElement('canvas');
+  var tankCtx = tankCv.getContext('2d');
+  var TANK_SCALE = 3;   // 每 3 逻辑像素算一个格子，兼顾清晰与性能
+
+  function ensureTankBuffer() {
+    var bw = Math.max(8, Math.floor(W / TANK_SCALE));
+    var bh = Math.max(8, Math.floor((H - 30) / TANK_SCALE));
+    if (!tankImg || tankW !== bw || tankH !== bh) {
+      tankW = bw; tankH = bh;
+      tankCv.width = bw; tankCv.height = bh;
+      tankImg = tankCtx.createImageData(bw, bh);
+      // 预填不透明
+      var d = tankImg.data;
+      for (var i = 3; i < d.length; i += 4) d[i] = 255;
+    }
+  }
+
+  function tankSources() {
+    var cx = W / 2;
+    var sy = H * 0.5;
+    var d = S.sep * PPM;
+    return [
+      { x: cx - d / 2, y: sy, A: S.a1, lam: S.w1, f: S.f1, p: S.p1 },
+      { x: cx + d / 2, y: sy, A: S.a2, lam: S.w2, f: S.f2, p: S.p2 }
+    ];
+  }
+
+  function drawTankMode() {
+    ctx.fillStyle = '#070b14';
+    ctx.fillRect(0, 0, W, H);
+
+    ensureTankBuffer();
+    var src = tankSources();
+    var data = tankImg.data;
+    var scaleX = W / tankW, scaleY = (H - 30) / tankH;
+    var TWO_PI = Math.PI * 2;
+
+    var s0 = src[0], s1 = src[1];
+    var ph0 = s0.p * Math.PI / 180, ph1 = s1.p * Math.PI / 180;
+    var k0 = s0.lam > 0.0001 ? TWO_PI / (s0.lam * PPM) : 0;
+    var k1 = s1.lam > 0.0001 ? TWO_PI / (s1.lam * PPM) : 0;
+    var om0 = TWO_PI * s0.f * t, om1 = TWO_PI * s1.f * t;
+    var maxA = Math.max(0.001, s0.A + s1.A);
+
+    var idx = 0;
+    for (var gy = 0; gy < tankH; gy++) {
+      var py = (gy + 0.5) * scaleY;
+      for (var gx = 0; gx < tankW; gx++) {
+        var px = (gx + 0.5) * scaleX;
+
+        var dx0 = px - s0.x, dy0 = py - s0.y;
+        var r0 = Math.sqrt(dx0 * dx0 + dy0 * dy0);
+        var dx1 = px - s1.x, dy1 = py - s1.y;
+        var r1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+
+        // 1/sqrt(r) 几何衰减，近源处夹住避免爆炸
+        var g0 = s0.A / Math.sqrt(1 + r0 / 42);
+        var g1 = s1.A / Math.sqrt(1 + r1 / 42);
+
+        var h = g0 * Math.sin(k0 * r0 - om0 + ph0) + g1 * Math.sin(k1 * r1 - om1 + ph1);
+        var n = h / maxA;            // -1..1 附近
+        if (n > 1) n = 1; else if (n < -1) n = -1;
+
+        // 波峰偏青白、波谷偏深蓝
+        var lum = (n + 1) * 0.5;     // 0..1
+        var R = Math.round(14 + 60 * lum * lum);
+        var G = Math.round(24 + 190 * lum);
+        var B = Math.round(52 + 190 * lum);
+
+        data[idx] = R; data[idx + 1] = G; data[idx + 2] = B;
+        idx += 4;
+      }
+    }
+
+    // 放大绘制：低分辨率场 → 离屏 canvas → 平滑放大到舞台
+    tankCtx.putImageData(tankImg, 0, 0);
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(tankCv, 0, 0, tankW, tankH, 0, 0, W, H - 30);
+    ctx.restore();
+
+    // 波节线（破坏性干涉位置）标注：只在同频同波长时才是稳定的
+    var stable = Math.abs(s0.f - s1.f) < 0.001 && Math.abs(s0.lam - s1.lam) < 0.001 && s0.A > 0.02 && s1.A > 0.02;
+    if (stable) {
+      drawNodalLines(s0, s1);
+    }
+
+    // 波源
+    for (var i = 0; i < src.length; i++) {
+      var s = src[i];
+      ctx.strokeStyle = i === 0 ? C.math : C.kit;
+      ctx.lineWidth = 2;
+      ctx.fillStyle = '#0b0f1a';
+      ctx.beginPath(); ctx.arc(s.x, s.y, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.font = '800 10px ' + C.font;
+      ctx.fillStyle = i === 0 ? C.math : C.kit;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(i + 1), s.x, s.y + .5);
+      if (dragSrc === i) {
+        ctx.setLineDash([3, 3]); ctx.strokeStyle = 'rgba(255,255,255,.7)';
+        ctx.beginPath(); ctx.arc(s.x, s.y, 14, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    // 间距标注
+    ctx.strokeStyle = 'rgba(238,242,255,.55)'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(s0.x, s0.y - 22); ctx.lineTo(s1.x, s1.y - 22); ctx.stroke();
+    arrow(s0.x, s0.y - 22, -1); arrow(s1.x, s1.y - 22, 1);
+    ctx.font = '600 10px ' + C.mono; ctx.fillStyle = C.ink;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText('d=' + S.sep.toFixed(2) + 'm', (s0.x + s1.x) / 2, s0.y - 25);
+
+    // 底部图例条
+    ctx.fillStyle = '#0b0f1a';
+    ctx.fillRect(0, H - 30, W, 30);
+    ctx.strokeStyle = C.soft; ctx.beginPath();
+    ctx.moveTo(0, H - 30 + .5); ctx.lineTo(W, H - 30 + .5); ctx.stroke();
+    var gradW = Math.min(160, W * 0.4);
+    var lg = ctx.createLinearGradient(10, 0, 10 + gradW, 0);
+    lg.addColorStop(0, 'rgb(14,24,52)');
+    lg.addColorStop(0.5, 'rgb(29,109,147)');
+    lg.addColorStop(1, 'rgb(74,214,242)');
+    ctx.fillStyle = lg; ctx.fillRect(10, H - 20, gradW, 10);
+    ctx.strokeStyle = C.line; ctx.strokeRect(10, H - 20, gradW, 10);
+    ctx.font = '600 10px ' + C.mono; ctx.fillStyle = C.dim;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('波谷', 10 + gradW + 8, H - 15);
+    ctx.textAlign = 'right';
+    ctx.fillText('t = ' + t.toFixed(2) + ' s', W - 10, H - 15);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = C.mid;
+    ctx.fillText('← 深 = 低    亮 = 高 →', 10, H - 26);
+  }
+
+  // 波节线：|r1 - r0| = (m + 1/2) λ  → 双曲线，逐行求解
+  function drawNodalLines(s0, s1) {
+    var lam = s0.lam * PPM;
+    if (lam < 6) return;
+    var d = Math.abs(s1.x - s0.x);
+    var mMax = Math.floor(d / lam + 0.5);
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,.35)';
+    ctx.setLineDash([5, 5]);
+    ctx.lineWidth = 1.2;
+    var cx = (s0.x + s1.x) / 2, cy = s0.y;
+    var a2 = d / 2;
+    for (var m = -mMax; m <= mMax; m++) {
+      var delta = (m + 0.5) * lam;           // r1 - r0
+      var a = delta / 2;
+      if (Math.abs(a) >= a2 - 0.5) continue;
+      var b2 = a2 * a2 - a * a;
+      if (b2 <= 0) continue;
+      // 双曲线： (X/a)^2 - (Y/b)^2 = 1 ，X 沿两源连线方向（右为正）
+      // delta = r1 - r0 > 0 → 该点离 s0 更近 → X 取负号
+      var sgn = delta >= 0 ? -1 : 1;
+      var aAbs = Math.abs(a);
+      ctx.beginPath();
+      var first = true;
+      for (var Y = -H; Y <= H; Y += 4) {
+        var X = sgn * aAbs * Math.sqrt(1 + (Y * Y) / b2);
+        var sx = cx + X, sy = cy + Y;
+        if (sx < -20 || sx > W + 20) { first = true; continue; }
+        if (first) { ctx.moveTo(sx, sy); first = false; } else ctx.lineTo(sx, sy);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // ---------- 读数 ----------
+  var rV1 = document.getElementById('rV1'), rV2 = document.getElementById('rV2'),
+      rDPhi = document.getElementById('rDPhi'), rSum = document.getElementById('rSum'),
+      rType = document.getElementById('rType'), rFringe = document.getElementById('rFringe');
+
+  function updateReadout() {
+    rV1.textContent = (S.f1 * S.w1).toFixed(2) + ' m/s';
+    rV2.textContent = (S.f2 * S.w2).toFixed(2) + ' m/s';
+    var dphi = ((S.p2 - S.p1) % 360 + 360) % 360;
+    rDPhi.textContent = Math.round(dphi) + '°';
+
+    var sameWave = Math.abs(S.f1 - S.f2) < 0.001 && Math.abs(S.w1 - S.w2) < 0.001;
+    var maxSum;
+    if (sameWave) {
+      var rad = dphi * Math.PI / 180;
+      maxSum = Math.sqrt(S.a1 * S.a1 + S.a2 * S.a2 + 2 * S.a1 * S.a2 * Math.cos(rad));
+    } else {
+      maxSum = S.a1 + S.a2;
+    }
+    rSum.textContent = (isFinite(maxSum) ? maxSum : 0).toFixed(2);
+
+    var type;
+    if (S.a1 < 0.02 || S.a2 < 0.02) type = '只有一列波';
+    else if (MODE === 'wave' && dir2 === -1 && sameWave) type = '驻波（波 2 反向）';
+    else if (!sameWave && Math.abs(S.f1 - S.f2) > 0.001) {
+      type = '拍频 Δf=' + Math.abs(S.f1 - S.f2).toFixed(2) + ' Hz';
+    } else if (dphi < 25 || dphi > 335) type = '建设性（加倍）';
+    else if (dphi > 155 && dphi < 205) type = (Math.abs(S.a1 - S.a2) < 0.03 ? '破坏性（完全抵消）' : '破坏性（部分抵消）');
+    else type = '部分干涉';
+    rType.textContent = type;
+
+    if (MODE === 'tank' && sameWave) {
+      var Lm = (H * 0.45) / PPM;
+      var fr = S.sep > 0.01 ? (S.w1 * Lm / S.sep) : 0;
+      rFringe.textContent = fr > 0 ? fr.toFixed(2) + ' m' : '—';
+    } else {
+      rFringe.textContent = '需两列同频同波长';
+    }
+  }
+
+  // ---------- 主循环（固定步长积分） ----------
+  var FIXED = 1 / 120;
+  var acc = 0, lastT = 0;
+
+  function frame(now) {
+    if (!lastT) lastT = now;
+    var dt = (now - lastT) / 1000;
+    lastT = now;
+    if (!isFinite(dt) || dt < 0) dt = 0;
+    if (dt > 0.25) dt = 0.25;          // 切标签页回来不要跳跃
+
+    if (playing) {
+      acc += dt;
+      var guard = 0;
+      while (acc >= FIXED && guard < 40) { t += FIXED; acc -= FIXED; guard++; }
+      if (acc > FIXED) acc = 0;
+      if (t > 1e6) t = 0;
+    }
+
+    if (MODE === 'wave') drawWaveMode(); else drawTankMode();
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- 控件 ----------
+  var ids = ['a1', 'w1', 'f1', 'p1', 'a2', 'w2', 'f2', 'p2', 'sep'];
+  var els = {};
+  ids.forEach(function (id) { els[id] = document.getElementById(id); });
+
+  var fmt = {
+    a1: function (v) { return v.toFixed(2); }, a2: function (v) { return v.toFixed(2); },
+    w1: function (v) { return v.toFixed(2) + ' m'; }, w2: function (v) { return v.toFixed(2) + ' m'; },
+    f1: function (v) { return v.toFixed(2) + ' Hz'; }, f2: function (v) { return v.toFixed(2) + ' Hz'; },
+    p1: function (v) { return Math.round(v) + '°'; }, p2: function (v) { return Math.round(v) + '°'; },
+    sep: function (v) { return v.toFixed(2) + ' m'; }
+  };
+  var lim = {
+    a1: [0, 1.5], a2: [0, 1.5], w1: [0.3, 3], w2: [0.3, 3],
+    f1: [0, 2.5], f2: [0, 2.5], p1: [0, 360], p2: [0, 360], sep: [0.2, 3.4]
+  };
+
+  function syncUI() {
+    ids.forEach(function (id) {
+      els[id].value = String(S[id]);
+      document.getElementById(id + 'Out').textContent = fmt[id](S[id]);
+    });
+    syncPresets();
+    updateReadout();
+  }
+
+  ids.forEach(function (id) {
+    els[id].addEventListener('input', function () {
+      S[id] = clamp(num(this.value, DEF[id]), lim[id][0], lim[id][1]);
+      document.getElementById(id + 'Out').textContent = fmt[id](S[id]);
+      syncPresets();
+      updateReadout();
+    });
+  });
+
+  var playBtn = document.getElementById('playBtn');
+  function setPlay(p) {
+    playing = p;
+    playBtn.setAttribute('aria-pressed', p ? 'true' : 'false');
+    playBtn.textContent = p ? '⏸ 暂停' : '▶ 播放';
+    announce(p ? '动画播放中' : '动画已暂停，波形静止');
+  }
+  playBtn.addEventListener('click', function () { setPlay(!playing); });
+
+  document.getElementById('resetBtn').addEventListener('click', function () {
+    for (var kk in DEF) if (Object.prototype.hasOwnProperty.call(DEF, kk)) S[kk] = DEF[kk];
+    dir2 = 1;
+    t = 0; acc = 0;
+    syncUI();
+    announce('已重置所有参数');
+  });
+
+  // dir 字段：波 2 的传播方向（+1 向右 / -1 向左）。反向 + 同频同波长 = 驻波
+  var PRESETS = {
+    same:  { a1: 1, w1: 1.2, f1: 0.8, p1: 0, a2: 1, w2: 1.2, f2: 0.8, p2: 0,   dir: 1,
+             hint: '两列波完全一样：叠加后振幅正好变成 2 倍。' },
+    anti:  { a1: 1, w1: 1.2, f1: 0.8, p1: 0, a2: 1, w2: 1.2, f2: 0.8, p2: 180, dir: 1,
+             hint: '相位差 180°：处处大小相等方向相反，叠加后是一条直线 —— 完全抵消。' },
+    beat:  { a1: 1, w1: 1.2, f1: 0.8, p1: 0, a2: 1, w2: 1.2, f2: 0.95, p2: 0,  dir: 1,
+             hint: '两个频率差一点点：叠加波忽大忽小，这就是拍频，跳动频率 = |f₁−f₂| = 0.15 Hz。' },
+    stand: { a1: 1, w1: 1.2, f1: 0.8, p1: 0, a2: 1, w2: 1.2, f2: 0.8, p2: 0,   dir: -1,
+             hint: '波 2 改成向左传播：同频反向叠加成驻波 —— 有些点永远不动（波节），有些点大幅上下（波腹）。' }
+  };
+  var PKEYS = ['a1', 'w1', 'f1', 'p1', 'a2', 'w2', 'f2', 'p2'];
+  var presetBtns = Array.prototype.slice.call(document.querySelectorAll('[data-preset]'));
+  var presetHint = document.getElementById('presetHint');
+
+  function applyPreset(name) {
+    var p = PRESETS[name];
+    if (!p) return;
+    PKEYS.forEach(function (id) { S[id] = clamp(p[id], lim[id][0], lim[id][1]); });
+    dir2 = p.dir;
+    t = 0; acc = 0;
+    syncUI();
+    presetHint.textContent = p.hint;
+    announce('已应用预设：' + (b2label(name) || name));
+  }
+  function b2label(name) {
+    for (var i = 0; i < presetBtns.length; i++) {
+      if (presetBtns[i].dataset.preset === name) return presetBtns[i].textContent;
+    }
+    return '';
+  }
+  function syncPresets() {
+    presetBtns.forEach(function (b) {
+      var p = PRESETS[b.dataset.preset];
+      if (!p) { b.setAttribute('aria-pressed', 'false'); return; }
+      var on = p.dir === dir2 && PKEYS.every(function (id) {
+        var target = clamp(p[id], lim[id][0], lim[id][1]);
+        return Math.abs(S[id] - target) < (id.charAt(0) === 'p' ? 3 : 0.02);
+      });
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  presetBtns.forEach(function (b) {
+    b.addEventListener('click', function () { applyPreset(b.dataset.preset); });
+  });
+
+  // ---------- 水波槽拖动 ----------
+  var dragSrc = null;
+  function local(ev) {
+    var r = cv.getBoundingClientRect();
+    return { x: (ev.clientX - r.left) * (W / r.width), y: (ev.clientY - r.top) * (H / r.height) };
+  }
+  cv.addEventListener('pointerdown', function (e) {
+    if (MODE !== 'tank') return;
+    var p = local(e), src = tankSources();
+    for (var i = 0; i < src.length; i++) {
+      if (Math.hypot(p.x - src[i].x, p.y - src[i].y) < 20) {
+        dragSrc = i;
+        if (cv.setPointerCapture) { try { cv.setPointerCapture(e.pointerId); } catch (err) {} }
+        e.preventDefault();
+        return;
+      }
+    }
+  });
+  cv.addEventListener('pointermove', function (e) {
+    if (MODE !== 'tank') { cv.style.cursor = 'default'; return; }
+    var p = local(e), src = tankSources();
+    if (dragSrc !== null) {
+      var cx = W / 2;
+      var half = Math.abs(p.x - cx);
+      S.sep = clamp((half * 2) / PPM, 0.2, 3.4);
+      els.sep.value = String(S.sep);
+      document.getElementById('sepOut').textContent = fmt.sep(S.sep);
+      updateReadout();
+      return;
+    }
+    var near = src.some(function (s) { return Math.hypot(p.x - s.x, p.y - s.y) < 20; });
+    cv.style.cursor = near ? 'grab' : 'default';
+  });
+  cv.addEventListener('pointerup', function () { dragSrc = null; });
+  cv.addEventListener('pointercancel', function () { dragSrc = null; });
+
+  cv.addEventListener('keydown', function (e) {
+    var handled = true;
+    if (e.key === ' ' || e.key === 'Enter') setPlay(!playing);
+    else if (MODE === 'tank' && e.key === 'ArrowLeft') { S.sep = clamp(S.sep - 0.05, 0.2, 3.4); syncUI(); }
+    else if (MODE === 'tank' && e.key === 'ArrowRight') { S.sep = clamp(S.sep + 0.05, 0.2, 3.4); syncUI(); }
+    else handled = false;
+    if (handled) e.preventDefault();
+  });
+
+  // ---------- 模式切换 ----------
+  var mWave = document.getElementById('mWave'), mTank = document.getElementById('mTank');
+  var legend = document.getElementById('legend'), tip = document.getElementById('tip');
+  var ctrlSep = document.getElementById('ctrlSep'), rowFringe = document.getElementById('rowFringe');
+  var ctrlTitle = document.getElementById('ctrlTitle');
+
+  function setMode(m) {
+    MODE = m;
+    mWave.setAttribute('aria-pressed', m === 'wave' ? 'true' : 'false');
+    mTank.setAttribute('aria-pressed', m === 'tank' ? 'true' : 'false');
+    ctrlSep.classList.toggle('modehide', m !== 'tank');
+    rowFringe.classList.toggle('modehide', m !== 'tank');
+    if (m === 'wave') {
+      ctrlTitle.textContent = '波的参数';
+      legend.innerHTML = '<span><i style="background:' + C.math + '"></i>波 1</span>' +
+        '<span><i style="background:' + C.kit + '"></i>波 2</span>' +
+        '<span><i style="background:' + C.sci + '"></i>叠加波（相加结果）</span>';
+      tip.textContent = '空格键播放/暂停。';
+      cv.setAttribute('aria-label', '两列波相加画面：上面两条是波 1 与波 2，最下面绿色是它们逐点相加的结果。');
+    } else {
+      ctrlTitle.textContent = '波源参数';
+      legend.innerHTML = '<span><i class="sq" style="background:rgb(74,214,242)"></i>波峰</span>' +
+        '<span><i class="sq" style="background:rgb(14,24,52)"></i>波谷</span>' +
+        '<span><i style="background:rgba(255,255,255,.6)"></i>波节线（水面不动）</span>';
+      tip.textContent = '拖动 1 号或 2 号波源改变间距；方向键也可以。';
+      cv.setAttribute('aria-label', '水波槽干涉画面：两个点波源发出圆形波，亮暗相间的条纹就是干涉图案，虚线是水面不动的波节线。');
+    }
+    resize();
+    updateReadout();
+    announce(m === 'wave' ? '已进入两列波相加模式' : '已进入水波槽干涉模式');
+  }
+  mWave.addEventListener('click', function () { setMode('wave'); });
+  mTank.addEventListener('click', function () { setMode('tank'); });
+
+  var liveEl = document.getElementById('live');
+  function announce(msg) { liveEl.textContent = msg; }
+
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(stage);
+  window.addEventListener('resize', resize);
+  document.addEventListener('visibilitychange', function () { lastT = 0; });
+
+  syncUI();
+  setMode('wave');
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>光与影 · 光走直线 | 少儿数理启蒙</title>
+<meta name="description" content="拖动灯和物体，看影子怎么变大变小；再用红绿蓝三盏灯玩加色混合。给 5–10 岁小朋友的光学直觉启蒙。" />
+<link rel="stylesheet" href="../assets/css/base.css">
+<style>
+  .lab-head { margin: 24px 0 18px; }
+  .lab-head p.lead { font-size: 1.02rem; max-width: 62ch; }
+  .seg { display: flex; gap: 8px; flex-wrap: wrap; }
+  .hint { font-size: .78rem; color: var(--ink-dim); margin-top: 4px; }
+  .mono { font-family: var(--mono); }
+  .qlist { margin: 0; padding-left: 1.15em; color: var(--ink-mid); font-size: .94rem; }
+  .qlist li { margin-bottom: .5em; }
+  .qlist b { color: var(--ink); }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: .78rem; color: var(--ink-mid); }
+  .legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; margin-right: 5px; vertical-align: -1px; border: 1px solid rgba(255,255,255,.25); }
+  .swatch { width: 100%; height: 42px; border-radius: var(--r-sm); border: 1px solid var(--line); margin-top: 6px; }
+  .modehide { display: none; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#stage">跳到实验画面</a>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<main class="wrap" id="main">
+
+  <header class="lab-head stack">
+    <div class="row">
+      <span class="pill pill-sci">科学 · 光学</span>
+      <span class="pill">5–10 岁</span>
+      <span class="pill">约 12 分钟</span>
+    </div>
+    <h1>光走直线，影子会说话</h1>
+    <p class="lead">这在教什么：<b>光沿直线传播</b>。物体挡住光就留下影子；灯离得越近，影子越大。换成三盏彩色灯，还能看到红＋绿＝黄这种和调颜料完全相反的规律。</p>
+  </header>
+
+  <div class="row" style="margin-bottom:14px" role="group" aria-label="选择实验模式">
+    <button class="chip" id="mShadow" type="button" aria-pressed="true">① 影子实验</button>
+    <button class="chip" id="mColor" type="button" aria-pressed="false">② 三色光混合</button>
+  </div>
+
+  <div class="lab">
+    <div class="lab-stage" id="stage">
+      <canvas id="scene"
+        aria-label="光学实验画面：可以用鼠标或手指拖动灯泡和挡光物体，也可以用键盘方向键移动被选中的物体。"
+        tabindex="0"></canvas>
+      <p id="live" class="sr-only" aria-live="polite"></p>
+      <div class="row" style="margin-top:10px;justify-content:space-between">
+        <div class="legend" id="legend"></div>
+        <span class="hint" id="tip">拖动灯泡或方块；Tab 选中画面后可用方向键微调。</span>
+      </div>
+    </div>
+
+    <div>
+      <!-- 影子模式 -->
+      <div class="panel" id="panelShadow">
+        <h3>影子设置</h3>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="lampX">灯的左右位置</label><b id="lampXOut">30%</b></div>
+          <input class="input" type="range" id="lampX" min="2" max="60" step="1" value="30">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="lampY">灯的高低位置</label><b id="lampYOut">30%</b></div>
+          <input class="input" type="range" id="lampY" min="8" max="92" step="1" value="30">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="objX">物体离灯的距离</label><b id="objXOut">45%</b></div>
+          <input class="input" type="range" id="objX" min="12" max="82" step="1" value="45">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="objH">物体高度</label><b id="objHOut">0.90 m</b></div>
+          <input class="input" type="range" id="objH" min="0.2" max="2" step="0.05" value="0.9">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="lampR">灯的大小（软硬影）</label><b id="lampROut">0 cm</b></div>
+          <input class="input" type="range" id="lampR" min="0" max="60" step="1" value="0"
+                 aria-describedby="lampRHint">
+          <div class="hint" id="lampRHint">0 = 点光源，只有本影；变大后边缘出现半影。</div>
+        </div>
+
+        <div class="seg" style="margin-top:4px">
+          <button class="chip btn-sm" id="rayToggle" type="button" aria-pressed="true">显示光线</button>
+          <button class="chip btn-sm" id="animToggle" type="button" aria-pressed="true">光线流动</button>
+        </div>
+      </div>
+
+      <div class="panel" id="panelShadowRead">
+        <h3>读数</h3>
+        <div class="readout"><span>物体高</span><b id="rObj">0.90 m</b></div>
+        <div class="readout"><span>影子高</span><b id="rSha">1.80 m</b></div>
+        <div class="readout"><span>放大倍数</span><b id="rMag">2.00×</b></div>
+        <div class="readout"><span>灯→物体</span><b id="rD1">1.50 m</b></div>
+        <div class="readout"><span>灯→墙</span><b id="rD2">3.00 m</b></div>
+        <div class="readout"><span>半影宽度</span><b id="rPen">0 cm</b></div>
+        <p class="hint" style="margin-top:8px">规律：<span class="mono">影高 ÷ 物高 = 灯到墙 ÷ 灯到物</span></p>
+      </div>
+
+      <!-- 混色模式 -->
+      <div class="panel modehide" id="panelColor">
+        <h3>三盏灯的亮度</h3>
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="iR">红灯 R</label><b id="iROut">100%</b></div>
+          <input class="input" type="range" id="iR" min="0" max="100" step="1" value="100">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="iG">绿灯 G</label><b id="iGOut">100%</b></div>
+          <input class="input" type="range" id="iG" min="0" max="100" step="1" value="100">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="iB">蓝灯 B</label><b id="iBOut">100%</b></div>
+          <input class="input" type="range" id="iB" min="0" max="100" step="1" value="100">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="spread">光圈大小</label><b id="spreadOut">34%</b></div>
+          <input class="input" type="range" id="spread" min="16" max="52" step="1" value="34">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="sep">三灯间距</label><b id="sepOut">30%</b></div>
+          <input class="input" type="range" id="sep" min="0" max="60" step="1" value="30">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head" style="margin-bottom:0"><label for="pickX" id="pickLbl">取色点位置（左右）</label><b id="pickOut">50%</b></div>
+          <input class="input" type="range" id="pickX" min="2" max="98" step="1" value="50">
+          <input class="input" type="range" id="pickY" min="2" max="98" step="1" value="50"
+                 aria-label="取色点位置（上下）">
+          <div class="swatch" id="swatch" role="img" aria-label="取色点的颜色预览"></div>
+          <div class="readout" style="margin-top:6px"><span>那一点的颜色</span><b id="pickVal" class="mono">rgb(255,255,255)</b></div>
+          <div class="readout"><span>名字</span><b id="pickName">白色</b></div>
+        </div>
+        <div class="seg">
+          <button class="chip btn-sm" type="button" data-preset="rgb" aria-pressed="true">三灯全开</button>
+          <button class="chip btn-sm" type="button" data-preset="ry" aria-pressed="false">红+绿=黄</button>
+          <button class="chip btn-sm" type="button" data-preset="cy" aria-pressed="false">绿+蓝=青</button>
+          <button class="chip btn-sm" type="button" data-preset="mg" aria-pressed="false">红+蓝=洋红</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:22px">
+    <section class="card">
+      <h2 style="font-size:1.15rem">给家长的提问脚本</h2>
+      <ol class="qlist">
+        <li><b>预测：</b>「把灯往方块那边推近一点，影子会变大还是变小？」（先猜再拖。答案是变大 —— 很多孩子会猜反）</li>
+        <li><b>观察：</b>「影子的边缘是刀切一样整齐的吗？」（把「灯的大小」滑块拉大，边缘出现模糊的半影。太阳、路灯都是有大小的光源，所以现实里的影子边缘都软）</li>
+        <li><b>推理：</b>「红光加绿光会得到什么颜色？用蜡笔混红和绿呢？」（光是加色，得到黄；颜料是减色，得到脏棕色。让孩子拿真蜡笔试一遍对比）</li>
+      </ol>
+      <p class="hint" style="margin-top:10px">线下延伸：关灯，用手机手电筒和一个杯子在墙上做同样的实验，量一量影子的高度。</p>
+    </section>
+
+    <section class="card">
+      <h2 style="font-size:1.15rem">背后的原理</h2>
+      <p><b>光沿直线传播。</b>正因为光不会绕弯，物体背后才会出现一块光到不了的区域，那就是影子。把灯、物体顶点、影子顶点三点连起来，永远是一条直线 —— 这是所有影子几何的唯一秘密。</p>
+      <h3>影子为什么会放大</h3>
+      <p>灯到物体的距离叫 <code>d₁</code>，灯到墙的距离叫 <code>d₂</code>，那么<code>影高 / 物高 = d₂ / d₁</code>。这就是相似三角形。灯越靠近物体，<code>d₁</code> 越小，比值越大，影子越大。太阳离我们极远，<code>d₂/d₁ ≈ 1</code>，所以阳光下的影子和物体差不多大。</p>
+      <h3>本影（umbra）与半影（penumbra）</h3>
+      <p>点光源只产生<b>本影</b>：完全黑。光源有大小时，墙上有些地方只能看到灯的一部分，就形成了亮度渐变的<b>半影</b>。日食里的全食带就是月亮的本影，偏食区就是半影。</p>
+      <h3>加色混合 vs 减色混合</h3>
+      <p>光是<b>加</b>上去的：红+绿=黄，绿+蓝=青，红+蓝=洋红，三色齐全就是白。颜料是<b>减</b>掉光：每一层颜料都吸收一部分光，混得越多越暗。屏幕用 RGB 加色，打印机用 CMY 减色，就是这个区别。</p>
+      <p class="hint">本模拟说明：为了让规律清楚，画面按二维截面处理，忽略光的衍射与墙面反射；亮度直接线性叠加后截断到 255，没有做 gamma 与真实光度学换算。</p>
+    </section>
+  </div>
+
+  <footer class="foot wrap" style="padding-left:0;padding-right:0">
+    少儿数理启蒙 · 互动实验 — 光与影。所有绘制在你的浏览器里完成，不联网。
+  </footer>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var css = getComputedStyle(document.documentElement);
+  function V(n, fb) { var v = css.getPropertyValue(n); return (v && v.trim()) || fb; }
+  var C = {
+    ink: V('--ink', '#eef2ff'), mid: V('--ink-mid', '#b6c0e0'), dim: V('--ink-dim', '#7d88ab'),
+    line: V('--line', '#2a3355'), soft: V('--line-soft', '#202844'),
+    warn: V('--warn', '#fbbf24'), sci: V('--sci', '#4ade80'), math: V('--math', '#6ea8fe'),
+    mono: V('--mono', 'monospace'), font: V('--font', 'sans-serif')
+  };
+
+  var cv = document.getElementById('scene');
+  var ctx = cv.getContext('2d');
+  var stage = document.getElementById('stage');
+  var W = 640, H = 400, dpr = 1;
+
+  var MODE = 'shadow';
+  var PX_PER_M = 100;   // 影子模式：1 米 = 100 逻辑像素时的基准（实际按画面缩放换算）
+
+  var S = {
+    // 影子模式（归一化坐标 0..1，相对画面宽/高）
+    lamp: { x: 0.30, y: 0.30, r: 0 },     // r 单位：厘米
+    objX: 0.45, objH: 0.9,                // objH 单位：米
+    rays: true, anim: true,
+    // 混色模式
+    iR: 1, iG: 1, iB: 1, spread: 0.34, sep: 0.30,
+    pick: { x: 0.5, y: 0.5 }
+  };
+
+  var wallX = 0.90;   // 墙在画面 90% 处
+  var phase = 0;
+
+  function resize() {
+    var cssW = Math.max(260, stage.clientWidth - 28);
+    var cssH = Math.round(Math.min(520, Math.max(300, cssW * 0.62)));
+    dpr = Math.min(3, window.devicePixelRatio || 1);
+    cv.style.height = cssH + 'px';
+    cv.width = Math.round(cssW * dpr);
+    cv.height = Math.round(cssH * dpr);
+    W = cssW; H = cssH;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+
+  // ================= 影子模式 =================
+  // 场景标度：把画面宽度当作 5 米
+  function metersPerPx() { return 5 / Math.max(1, W); }
+
+  function shadowGeom() {
+    var lx = S.lamp.x * W, ly = S.lamp.y * H;
+    var ox = clamp(S.objX, 0.02, wallX - 0.02) * W;
+    var wx = wallX * W;
+    var floorY = H - 26;
+    var objTopY = floorY - (S.objH / metersPerPx()) * 0.001 * 1000; // 见下方修正
+    // 直接换算：objH 米 → 像素
+    objTopY = floorY - S.objH / metersPerPx();
+    var d1 = (ox - lx);
+    var d2 = (wx - lx);
+    var ratio = d1 !== 0 ? d2 / d1 : Infinity;
+    return {
+      lx: lx, ly: ly, ox: ox, wx: wx, floorY: floorY, objTopY: objTopY,
+      d1: d1, d2: d2, ratio: ratio,
+      d1m: d1 * metersPerPx(), d2m: d2 * metersPerPx()
+    };
+  }
+
+  // 从光源点 P 经过遮挡物端点 Q，投到墙上的 y
+  function projectY(px, py, qx, qy, wx) {
+    var dx = qx - px;
+    if (Math.abs(dx) < 1e-6) return null;
+    var t = (wx - px) / dx;
+    if (t < 1) return null;              // 墙在遮挡物前面，投不出去
+    return py + (qy - py) * t;
+  }
+
+  function drawShadow() {
+    var g = shadowGeom();
+    var floorY = g.floorY;
+
+    // 背景
+    ctx.fillStyle = '#0a0e19';
+    ctx.fillRect(0, 0, W, H);
+
+    // 墙
+    var wallGrad = ctx.createLinearGradient(g.wx, 0, W, 0);
+    wallGrad.addColorStop(0, '#20283f');
+    wallGrad.addColorStop(1, '#161d33');
+    ctx.fillStyle = wallGrad;
+    ctx.fillRect(g.wx, 0, W - g.wx, H);
+
+    // 墙上被照亮的区域（灯到墙的距离衰减）
+    var lampSizePx = (S.lamp.r / 100) / metersPerPx();   // 厘米→米→像素
+    var halfR = lampSizePx / 2;
+
+    // 墙上光照：先整体铺一层亮，再挖影
+    var lit = ctx.createRadialGradient(g.lx, g.ly, 10, g.lx, g.ly, Math.max(W, H) * 1.1);
+    lit.addColorStop(0, 'rgba(255,246,214,.95)');
+    lit.addColorStop(0.35, 'rgba(255,244,205,.42)');
+    lit.addColorStop(1, 'rgba(255,240,200,.05)');
+    ctx.save();
+    ctx.beginPath(); ctx.rect(g.wx, 0, W - g.wx, H); ctx.clip();
+    ctx.fillStyle = lit; ctx.fillRect(g.wx, 0, W - g.wx, H);
+    ctx.restore();
+
+    // 地面
+    ctx.fillStyle = '#131a2c';
+    ctx.fillRect(0, floorY, W, H - floorY);
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, floorY + .5); ctx.lineTo(W, floorY + .5); ctx.stroke();
+
+    // ---- 光线 ----
+    if (S.rays) {
+      ctx.save();
+      ctx.lineWidth = 1;
+      var N = 46;
+      for (var i = 0; i < N; i++) {
+        var a = (i / N) * Math.PI * 2;
+        var dx = Math.cos(a), dy = Math.sin(a);
+        // 求与遮挡物 / 墙 / 边界的最近交点
+        var tEnd = Math.max(W, H) * 1.6;
+        // 墙
+        if (dx > 0) { var tw = (g.wx - g.lx) / dx; if (tw > 0) tEnd = Math.min(tEnd, tw); }
+        // 遮挡物（竖直线段 x=ox, y in [objTopY, floorY]）
+        if (dx > 0) {
+          var to = (g.ox - g.lx) / dx;
+          if (to > 0) {
+            var yh = g.ly + dy * to;
+            if (yh >= g.objTopY && yh <= floorY) tEnd = Math.min(tEnd, to);
+          }
+        }
+        // 地面
+        if (dy > 0) { var tf = (floorY - g.ly) / dy; if (tf > 0) tEnd = Math.min(tEnd, tf); }
+        var ex = g.lx + dx * tEnd, ey = g.ly + dy * tEnd;
+        var grd = ctx.createLinearGradient(g.lx, g.ly, ex, ey);
+        grd.addColorStop(0, 'rgba(255,236,170,.55)');
+        grd.addColorStop(1, 'rgba(255,236,170,.05)');
+        ctx.strokeStyle = grd;
+        ctx.beginPath(); ctx.moveTo(g.lx, g.ly); ctx.lineTo(ex, ey); ctx.stroke();
+
+        if (S.anim) {
+          var frac = ((phase * 0.35 + i * 0.11) % 1);
+          var px = g.lx + dx * tEnd * frac, py = g.ly + dy * tEnd * frac;
+          ctx.fillStyle = 'rgba(255,248,214,.85)';
+          ctx.beginPath(); ctx.arc(px, py, 1.8, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
+
+    // ---- 影子（墙上）----
+    var wallShadeTop = null, wallShadeTopSoftA = null, wallShadeTopSoftB = null;
+    if (g.d1 > 1 && g.d2 > g.d1) {
+      // 本影：由光源两端边缘决定的重叠区
+      var lampTopY = g.ly - halfR, lampBotY = g.ly + halfR;
+      var yFromTop = projectY(g.lx, lampTopY, g.ox, g.objTopY, g.wx);      // 灯上沿 → 物顶
+      var yFromBot = projectY(g.lx, lampBotY, g.ox, g.objTopY, g.wx);      // 灯下沿 → 物顶
+      // 影子从墙底往上延伸；umbra 上边界 = max(两条线) ，penumbra 上边界 = min
+      var umbraTop = Math.max(yFromTop === null ? -1e5 : yFromTop, yFromBot === null ? -1e5 : yFromBot);
+      var penTop = Math.min(yFromTop === null ? 1e5 : yFromTop, yFromBot === null ? 1e5 : yFromBot);
+      umbraTop = clamp(umbraTop, -H, floorY);
+      penTop = clamp(penTop, -H, floorY);
+      wallShadeTop = umbraTop; wallShadeTopSoftA = penTop; wallShadeTopSoftB = umbraTop;
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(g.wx, 0, W - g.wx, floorY); ctx.clip();
+
+      // 半影渐变带
+      if (umbraTop - penTop > 0.5) {
+        var pg = ctx.createLinearGradient(0, penTop, 0, umbraTop);
+        pg.addColorStop(0, 'rgba(8,12,22,0)');
+        pg.addColorStop(1, 'rgba(8,12,22,.92)');
+        ctx.fillStyle = pg;
+        ctx.fillRect(g.wx, penTop, W - g.wx, umbraTop - penTop);
+      }
+      // 本影
+      ctx.fillStyle = 'rgba(8,12,22,.92)';
+      ctx.fillRect(g.wx, umbraTop, W - g.wx, floorY - umbraTop);
+      ctx.restore();
+
+      // 影高标注线
+      ctx.save();
+      ctx.strokeStyle = C.warn; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(g.wx + 12, umbraTop); ctx.lineTo(g.wx + 12, floorY);
+      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(g.wx + 6, umbraTop); ctx.lineTo(g.wx + 18, umbraTop); ctx.stroke();
+      ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.warn;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      var shaM = (floorY - umbraTop) * metersPerPx();
+      ctx.fillText(shaM.toFixed(2) + 'm', g.wx + 22, (umbraTop + floorY) / 2);
+      ctx.restore();
+
+      // 关键光线（灯中心 → 物顶 → 墙）
+      ctx.save();
+      ctx.strokeStyle = 'rgba(74,222,128,.9)';
+      ctx.lineWidth = 1.6;
+      ctx.setLineDash([6, 4]);
+      var yc = projectY(g.lx, g.ly, g.ox, g.objTopY, g.wx);
+      if (yc !== null) {
+        ctx.beginPath(); ctx.moveTo(g.lx, g.ly); ctx.lineTo(g.wx, clamp(yc, -H, H * 2)); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // ---- 遮挡物 ----
+    var objW = 14;
+    ctx.fillStyle = '#5b6b95';
+    ctx.strokeStyle = C.math; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(g.ox - objW / 2, g.objTopY, objW, floorY - g.objTopY);
+    ctx.fill(); ctx.stroke();
+    // 物体高度标注
+    ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.math;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText(S.objH.toFixed(2) + 'm', g.ox, g.objTopY - 5);
+
+    // 地面上的投影（物体到墙之间）
+    ctx.save();
+    ctx.fillStyle = 'rgba(8,12,22,.55)';
+    ctx.beginPath();
+    ctx.moveTo(g.ox, floorY);
+    ctx.lineTo(g.wx, floorY);
+    ctx.lineTo(g.wx, floorY + 8);
+    ctx.lineTo(g.ox, floorY + 6);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+
+    // ---- 灯 ----
+    var glow = ctx.createRadialGradient(g.lx, g.ly, 0, g.lx, g.ly, Math.max(26, halfR + 26));
+    glow.addColorStop(0, 'rgba(255,250,220,.95)');
+    glow.addColorStop(1, 'rgba(255,240,180,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(g.lx, g.ly, Math.max(26, halfR + 26), 0, Math.PI * 2); ctx.fill();
+
+    if (halfR > 2) {
+      ctx.strokeStyle = 'rgba(255,240,180,.85)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(g.lx, g.ly - halfR); ctx.lineTo(g.lx, g.ly + halfR); ctx.stroke();
+    }
+    ctx.fillStyle = '#fff8d8';
+    ctx.beginPath(); ctx.arc(g.lx, g.ly, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#0b0f1a'; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // 标签
+    ctx.font = '700 11px ' + C.font;
+    ctx.fillStyle = C.mid; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText('灯', g.lx, g.ly - Math.max(14, halfR + 12));
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillStyle = C.dim; ctx.font = '600 11px ' + C.mono;
+    ctx.fillText('墙', g.wx + 4, 6);
+
+    // 拖动提示热区
+    if (hover === 'lamp' || drag === 'lamp') ring(g.lx, g.ly, 15);
+    if (hover === 'obj' || drag === 'obj') ring(g.ox, (g.objTopY + floorY) / 2, 16);
+
+    updateShadowReadout(g, umbraTopSafe(wallShadeTop), wallShadeTopSoftA, floorY);
+  }
+
+  function umbraTopSafe(v) { return (typeof v === 'number' && isFinite(v)) ? v : null; }
+
+  function ring(x, y, r) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(110,168,254,.8)'; ctx.lineWidth = 2;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+  }
+
+  var rObj = document.getElementById('rObj'), rSha = document.getElementById('rSha'),
+      rMag = document.getElementById('rMag'), rD1 = document.getElementById('rD1'),
+      rD2 = document.getElementById('rD2'), rPen = document.getElementById('rPen');
+
+  function updateShadowReadout(g, umbraTop, penTop, floorY) {
+    rObj.textContent = S.objH.toFixed(2) + ' m';
+    rD1.textContent = (g.d1m > 0 ? g.d1m.toFixed(2) : '—') + (g.d1m > 0 ? ' m' : '');
+    rD2.textContent = g.d2m.toFixed(2) + ' m';
+    if (umbraTop === null || g.d1 <= 1 || g.d2 <= g.d1) {
+      rSha.textContent = '无（灯在物后）';
+      rMag.textContent = '—';
+      rPen.textContent = '—';
+      return;
+    }
+    var shaM = (floorY - umbraTop) * metersPerPx();
+    rSha.textContent = shaM.toFixed(2) + ' m';
+    rMag.textContent = (shaM / Math.max(0.01, S.objH)).toFixed(2) + '×';
+    var penPx = (typeof penTop === 'number' && isFinite(penTop)) ? Math.max(0, umbraTop - penTop) : 0;
+    rPen.textContent = (penPx * metersPerPx() * 100).toFixed(1) + ' cm';
+  }
+
+  // ================= 混色模式 =================
+  var lampsCache = [];
+  function colorLamps() {
+    var cx = W / 2, cy = H * 0.34;
+    var sep = S.sep * Math.min(W, H) * 0.9;
+    return [
+      { x: cx - sep * 0.5, y: cy, col: [255, 40, 40], I: S.iR, name: '红' },
+      { x: cx + sep * 0.5, y: cy, col: [40, 255, 60], I: S.iG, name: '绿' },
+      { x: cx, y: cy + sep * 0.72, col: [50, 90, 255], I: S.iB, name: '蓝' }
+    ];
+  }
+
+  function coneRadius() { return S.spread * Math.min(W, H) * 1.35; }
+
+  // 用叠加混合把三个径向渐变加起来，浏览器帮我们做加色
+  function drawColor() {
+    ctx.fillStyle = '#05070d';
+    ctx.fillRect(0, 0, W, H);
+
+    var lamps = colorLamps();
+    lampsCache = lamps;
+    var R = coneRadius();
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (var i = 0; i < lamps.length; i++) {
+      var L = lamps[i];
+      if (L.I <= 0) continue;
+      var g = ctx.createRadialGradient(L.x, L.y, 0, L.x, L.y, R);
+      var c = L.col;
+      g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (0.95 * L.I).toFixed(3) + ')');
+      g.addColorStop(0.55, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (0.60 * L.I).toFixed(3) + ')');
+      g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(L.x, L.y, R, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+
+    // 灯的标记
+    for (var j = 0; j < lamps.length; j++) {
+      var Lj = lamps[j];
+      ctx.fillStyle = 'rgba(' + Lj.col.join(',') + ',' + (0.35 + 0.65 * Lj.I).toFixed(2) + ')';
+      ctx.beginPath(); ctx.arc(Lj.x, Lj.y, 9, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#0b0f1a'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.font = '800 12px ' + C.font; ctx.fillStyle = '#0b0f1a';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(Lj.name, Lj.x, Lj.y + .5);
+      // 亮度标签
+      ctx.font = '700 10px ' + C.mono; ctx.fillStyle = 'rgba(238,242,255,.9)';
+      ctx.textBaseline = 'top';
+      ctx.fillText(Math.round(Lj.I * 100) + '%', Lj.x, Lj.y + 13);
+    }
+
+    // 取色器
+    var px = S.pick.x * W, py = S.pick.y * H;
+    var col = sampleColor(px, py);
+    ctx.save();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(px, py, 13, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = '#0b0f1a'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(px, py, 15, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px - 20, py); ctx.lineTo(px - 15, py);
+    ctx.moveTo(px + 15, py); ctx.lineTo(px + 20, py);
+    ctx.moveTo(px, py - 20); ctx.lineTo(px, py - 15);
+    ctx.moveTo(px, py + 15); ctx.lineTo(px, py + 20);
+    ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.stroke();
+    ctx.restore();
+
+    // 文本框
+    var name = colorName(col);
+    var label = name + '  rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
+    ctx.font = '700 12px ' + C.mono;
+    var tw = ctx.measureText(label).width + 16;
+    var bx = clamp(px - tw / 2, 4, W - tw - 4), by = clamp(py - 44, 4, H - 30);
+    ctx.fillStyle = 'rgba(11,15,26,.82)';
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1;
+    roundRect(bx, by, tw, 24, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = C.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, bx + 8, by + 12.5);
+
+    updateColorReadout(col, name);
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // 解析式采样（与绘制的渐变公式一致），比 getImageData 更快也更稳
+  function sampleColor(px, py) {
+    var lamps = lampsCache.length ? lampsCache : colorLamps();
+    var R = coneRadius();
+    var out = [0, 0, 0];
+    for (var i = 0; i < lamps.length; i++) {
+      var L = lamps[i];
+      if (L.I <= 0) continue;
+      var d = Math.sqrt((px - L.x) * (px - L.x) + (py - L.y) * (py - L.y));
+      var t = d / R;
+      if (t >= 1) continue;
+      var a;
+      if (t <= 0.55) a = 0.95 + (0.60 - 0.95) * (t / 0.55);
+      else a = 0.60 * (1 - (t - 0.55) / 0.45);
+      a *= L.I;
+      out[0] += L.col[0] * a; out[1] += L.col[1] * a; out[2] += L.col[2] * a;
+    }
+    return [
+      Math.round(clamp(out[0], 0, 255)),
+      Math.round(clamp(out[1], 0, 255)),
+      Math.round(clamp(out[2], 0, 255))
+    ];
+  }
+
+  function colorName(c) {
+    var r = c[0], g = c[1], b = c[2];
+    var mx = Math.max(r, g, b);
+    if (mx < 26) return '黑（没有光）';
+    var hi = 110, lo = 70;
+    var R = r >= hi, G = g >= hi, B = b >= hi;
+    var rl = r < lo, gl = g < lo, bl = b < lo;
+    if (R && G && B) return '白色（三色齐全）';
+    if (R && G && bl) return '黄色（红+绿）';
+    if (G && B && rl) return '青色 cyan（绿+蓝）';
+    if (R && B && gl) return '洋红 magenta（红+蓝）';
+    if (R && gl && bl) return '红色';
+    if (G && rl && bl) return '绿色';
+    if (B && rl && gl) return '蓝色';
+    return '混合色';
+  }
+
+  var swatch = document.getElementById('swatch'), pickVal = document.getElementById('pickVal'),
+      pickName = document.getElementById('pickName');
+  function updateColorReadout(col, name) {
+    var s = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
+    swatch.style.background = s;
+    pickVal.textContent = s;
+    pickName.textContent = name;
+    swatch.setAttribute('aria-label', '取色点颜色：' + name + '，' + s);
+  }
+
+  // ================= 循环 =================
+  var lastT = 0;
+  function loop(now) {
+    if (!lastT) lastT = now;
+    var dt = Math.min(0.05, (now - lastT) / 1000);
+    lastT = now;
+    phase = (phase + dt) % 1000;
+    if (MODE === 'shadow') drawShadow(); else drawColor();
+    requestAnimationFrame(loop);
+  }
+
+  // ================= 交互 =================
+  var drag = null, hover = null;
+  var liveEl = document.getElementById('live');
+  function announce(m) { liveEl.textContent = m; }
+
+  function local(ev) {
+    var r = cv.getBoundingClientRect();
+    return {
+      x: (ev.clientX - r.left) * (W / r.width),
+      y: (ev.clientY - r.top) * (H / r.height)
+    };
+  }
+
+  function hitTest(p) {
+    if (MODE === 'shadow') {
+      var g = shadowGeom();
+      if (Math.hypot(p.x - g.lx, p.y - g.ly) < 22) return 'lamp';
+      if (Math.abs(p.x - g.ox) < 16 && p.y > g.objTopY - 10 && p.y < g.floorY + 6) return 'obj';
+      return null;
+    }
+    return 'pick';
+  }
+
+  function applyDrag(p) {
+    if (MODE === 'shadow') {
+      if (drag === 'lamp') {
+        S.lamp.x = clamp(p.x / W, 0.02, wallX - 0.06);
+        S.lamp.y = clamp(p.y / H, 0.06, 0.92);
+        syncShadowSliders();
+      } else if (drag === 'obj') {
+        S.objX = clamp(p.x / W, 0.06, wallX - 0.03);
+        syncShadowSliders();
+      }
+    } else if (drag === 'pick') {
+      S.pick.x = clamp(p.x / W, 0.01, 0.99);
+      S.pick.y = clamp(p.y / H, 0.01, 0.99);
+      syncPickSliders();
+    }
+  }
+
+  cv.addEventListener('pointerdown', function (e) {
+    var p = local(e);
+    drag = hitTest(p);
+    if (drag) {
+      if (cv.setPointerCapture) { try { cv.setPointerCapture(e.pointerId); } catch (err) {} }
+      applyDrag(p);
+      e.preventDefault();
+    }
+  });
+  cv.addEventListener('pointermove', function (e) {
+    var p = local(e);
+    if (drag) { applyDrag(p); return; }
+    var h = hitTest(p);
+    hover = h;
+    cv.style.cursor = h ? 'grab' : 'default';
+  });
+  cv.addEventListener('pointerup', function () { drag = null; });
+  cv.addEventListener('pointercancel', function () { drag = null; });
+  cv.addEventListener('pointerleave', function () { hover = null; });
+
+  // 键盘操作（画面可聚焦）
+  var kbTarget = 'lamp';
+  cv.addEventListener('keydown', function (e) {
+    var step = e.shiftKey ? 0.05 : 0.015;
+    var handled = true;
+    if (MODE === 'shadow') {
+      if (e.key === 'Tab') return;
+      if (e.key.toLowerCase() === 'o') { kbTarget = kbTarget === 'lamp' ? 'obj' : 'lamp'; announce('键盘现在控制：' + (kbTarget === 'lamp' ? '灯' : '物体')); }
+      else if (e.key === 'ArrowLeft') { if (kbTarget === 'lamp') S.lamp.x = clamp(S.lamp.x - step, 0.02, wallX - 0.06); else S.objX = clamp(S.objX - step, 0.06, wallX - 0.03); }
+      else if (e.key === 'ArrowRight') { if (kbTarget === 'lamp') S.lamp.x = clamp(S.lamp.x + step, 0.02, wallX - 0.06); else S.objX = clamp(S.objX + step, 0.06, wallX - 0.03); }
+      else if (e.key === 'ArrowUp') { if (kbTarget === 'lamp') S.lamp.y = clamp(S.lamp.y - step, 0.06, 0.92); else S.objH = clamp(S.objH + 0.05, 0.2, 2); }
+      else if (e.key === 'ArrowDown') { if (kbTarget === 'lamp') S.lamp.y = clamp(S.lamp.y + step, 0.06, 0.92); else S.objH = clamp(S.objH - 0.05, 0.2, 2); }
+      else handled = false;
+      if (handled) syncShadowSliders();
+    } else {
+      if (e.key === 'ArrowLeft') S.pick.x = clamp(S.pick.x - step, 0.01, 0.99);
+      else if (e.key === 'ArrowRight') S.pick.x = clamp(S.pick.x + step, 0.01, 0.99);
+      else if (e.key === 'ArrowUp') S.pick.y = clamp(S.pick.y - step, 0.01, 0.99);
+      else if (e.key === 'ArrowDown') S.pick.y = clamp(S.pick.y + step, 0.01, 0.99);
+      else handled = false;
+      if (handled) syncPickSliders();
+    }
+    if (handled) e.preventDefault();
+  });
+
+  // 滑块
+  function out(id, txt) { document.getElementById(id).textContent = txt; }
+  var lampXEl = document.getElementById('lampX'), lampYEl = document.getElementById('lampY'),
+      objXEl = document.getElementById('objX'), objHEl = document.getElementById('objH'),
+      lampREl = document.getElementById('lampR');
+
+  function syncShadowSliders() {
+    lampXEl.value = String(Math.round(S.lamp.x * 100));
+    lampYEl.value = String(Math.round(S.lamp.y * 100));
+    objXEl.value = String(Math.round(S.objX * 100));
+    objHEl.value = String(S.objH.toFixed(2));
+    out('lampXOut', Math.round(S.lamp.x * 100) + '%');
+    out('lampYOut', Math.round(S.lamp.y * 100) + '%');
+    out('objXOut', Math.round(S.objX * 100) + '%');
+    out('objHOut', S.objH.toFixed(2) + ' m');
+    out('lampROut', Math.round(S.lamp.r) + ' cm');
+  }
+  lampXEl.addEventListener('input', function () { S.lamp.x = clamp(parseFloat(this.value) / 100, 0.02, wallX - 0.06); syncShadowSliders(); });
+  lampYEl.addEventListener('input', function () { S.lamp.y = clamp(parseFloat(this.value) / 100, 0.06, 0.92); syncShadowSliders(); });
+  objXEl.addEventListener('input', function () { S.objX = clamp(parseFloat(this.value) / 100, 0.06, wallX - 0.03); syncShadowSliders(); });
+  objHEl.addEventListener('input', function () { S.objH = clamp(parseFloat(this.value) || 0.2, 0.2, 2); syncShadowSliders(); });
+  lampREl.addEventListener('input', function () { S.lamp.r = clamp(parseFloat(this.value) || 0, 0, 60); syncShadowSliders(); });
+
+  var rayBtn = document.getElementById('rayToggle'), animBtn = document.getElementById('animToggle');
+  rayBtn.addEventListener('click', function () {
+    S.rays = !S.rays; rayBtn.setAttribute('aria-pressed', S.rays ? 'true' : 'false');
+    announce(S.rays ? '已显示光线' : '已隐藏光线');
+  });
+  animBtn.addEventListener('click', function () {
+    S.anim = !S.anim; animBtn.setAttribute('aria-pressed', S.anim ? 'true' : 'false');
+  });
+
+  var iREl = document.getElementById('iR'), iGEl = document.getElementById('iG'), iBEl = document.getElementById('iB'),
+      spreadEl = document.getElementById('spread'), sepEl = document.getElementById('sep'),
+      pickXEl = document.getElementById('pickX'), pickYEl = document.getElementById('pickY');
+
+  function syncColorSliders() {
+    iREl.value = String(Math.round(S.iR * 100));
+    iGEl.value = String(Math.round(S.iG * 100));
+    iBEl.value = String(Math.round(S.iB * 100));
+    out('iROut', Math.round(S.iR * 100) + '%');
+    out('iGOut', Math.round(S.iG * 100) + '%');
+    out('iBOut', Math.round(S.iB * 100) + '%');
+    out('spreadOut', Math.round(S.spread * 100) + '%');
+    out('sepOut', Math.round(S.sep * 100) + '%');
+  }
+  function syncPickSliders() {
+    pickXEl.value = String(Math.round(S.pick.x * 100));
+    pickYEl.value = String(Math.round(S.pick.y * 100));
+    out('pickOut', Math.round(S.pick.x * 100) + '%');
+  }
+  iREl.addEventListener('input', function () { S.iR = clamp(parseFloat(this.value) / 100, 0, 1); syncColorSliders(); syncPresets(); });
+  iGEl.addEventListener('input', function () { S.iG = clamp(parseFloat(this.value) / 100, 0, 1); syncColorSliders(); syncPresets(); });
+  iBEl.addEventListener('input', function () { S.iB = clamp(parseFloat(this.value) / 100, 0, 1); syncColorSliders(); syncPresets(); });
+  spreadEl.addEventListener('input', function () { S.spread = clamp(parseFloat(this.value) / 100, 0.16, 0.52); syncColorSliders(); });
+  sepEl.addEventListener('input', function () { S.sep = clamp(parseFloat(this.value) / 100, 0, 0.6); syncColorSliders(); });
+  pickXEl.addEventListener('input', function () { S.pick.x = clamp(parseFloat(this.value) / 100, 0.01, 0.99); syncPickSliders(); });
+  pickYEl.addEventListener('input', function () { S.pick.y = clamp(parseFloat(this.value) / 100, 0.01, 0.99); syncPickSliders(); });
+
+  var presets = {
+    rgb: [1, 1, 1], ry: [1, 1, 0], cy: [0, 1, 1], mg: [1, 0, 1]
+  };
+  var presetBtns = Array.prototype.slice.call(document.querySelectorAll('[data-preset]'));
+  function syncPresets() {
+    presetBtns.forEach(function (b) {
+      var p = presets[b.dataset.preset];
+      var on = p && Math.abs(p[0] - S.iR) < 0.02 && Math.abs(p[1] - S.iG) < 0.02 && Math.abs(p[2] - S.iB) < 0.02;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  presetBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var p = presets[b.dataset.preset];
+      if (!p) return;
+      S.iR = p[0]; S.iG = p[1]; S.iB = p[2];
+      syncColorSliders(); syncPresets();
+      announce('已切换灯组：' + b.textContent);
+    });
+  });
+
+  // 模式切换
+  var mShadow = document.getElementById('mShadow'), mColor = document.getElementById('mColor');
+  var panels = {
+    shadow: [document.getElementById('panelShadow'), document.getElementById('panelShadowRead')],
+    color: [document.getElementById('panelColor')]
+  };
+  var legend = document.getElementById('legend'), tip = document.getElementById('tip');
+
+  function setMode(m) {
+    MODE = m;
+    mShadow.setAttribute('aria-pressed', m === 'shadow' ? 'true' : 'false');
+    mColor.setAttribute('aria-pressed', m === 'color' ? 'true' : 'false');
+    panels.shadow.forEach(function (p) { p.classList.toggle('modehide', m !== 'shadow'); });
+    panels.color.forEach(function (p) { p.classList.toggle('modehide', m !== 'color'); });
+    if (m === 'shadow') {
+      legend.innerHTML = '<span><i style="background:#fff8d8"></i>光源</span>' +
+        '<span><i style="background:#5b6b95"></i>挡光物</span>' +
+        '<span><i style="background:#0a0e19"></i>本影 umbra</span>' +
+        '<span><i style="background:#3a3f52"></i>半影 penumbra</span>';
+      tip.textContent = '拖动灯泡或方块；按 O 键切换键盘控制对象，方向键微调。';
+      cv.setAttribute('aria-label', '影子实验画面：拖动灯泡和挡光物体，墙上的影子随几何关系变化。');
+      announce('已进入影子实验模式');
+    } else {
+      legend.innerHTML = '<span><i style="background:#ff2828"></i>红 R</span>' +
+        '<span><i style="background:#28ff3c"></i>绿 G</span>' +
+        '<span><i style="background:#325aff"></i>蓝 B</span>' +
+        '<span><i style="background:#ffffff"></i>三色重叠 = 白</span>';
+      tip.textContent = '点画面任意处取色；方向键可微调取色点。';
+      cv.setAttribute('aria-label', '三色光混合画面：红绿蓝三个光圈叠加，点击任意位置查看该点颜色。');
+      announce('已进入三色光混合模式');
+    }
+  }
+  mShadow.addEventListener('click', function () { setMode('shadow'); });
+  mColor.addEventListener('click', function () { setMode('color'); });
+
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(stage);
+  window.addEventListener('resize', resize);
+
+  syncShadowSliders(); syncColorSliders(); syncPickSliders(); syncPresets();
+  setMode('shadow');
+  resize();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

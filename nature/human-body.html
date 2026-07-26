@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>人体探索 · 用自己的身体做实验 | 少儿数理启蒙</title>
+<meta name="description" content="心跳、呼吸、骨头、反应速度、味觉、视觉盲点：14 个用自己身体就能做的测量实验，输入身高体重看个性化数据。">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<style>
+  .hero { padding: 40px 0 20px; }
+  .hero h1 { margin-bottom: .3em; }
+
+  /* ---------- 我的身体数据 ---------- */
+  .mebox {
+    background:
+      radial-gradient(120% 100% at 100% 0%, rgba(244,114,182,.14), transparent 60%),
+      var(--surface);
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+    padding: 20px 22px;
+  }
+  .me-in { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; }
+  .me-f { display: flex; flex-direction: column; gap: 6px; }
+  .me-f label { font-size: .74rem; font-weight: 700; color: var(--ink-dim); letter-spacing: .06em; }
+  .me-f input {
+    width: 110px; font-family: var(--mono); font-size: 1.05rem;
+    background: var(--bg-soft); color: var(--ink);
+    border: 1px solid var(--line); border-radius: var(--r-sm);
+    padding: 8px 10px;
+  }
+  .me-f input:focus { outline: none; border-color: var(--kit); }
+
+  .me-out {
+    display: grid; gap: 12px; margin-top: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  }
+  .me-cell {
+    background: var(--bg-soft); border: 1px solid var(--line-soft);
+    border-radius: var(--r); padding: 12px 13px;
+  }
+  .me-cell .k { font-size: .72rem; color: var(--ink-dim); display: block; margin-bottom: 4px; }
+  .me-cell .v { font-family: var(--mono); font-size: 1.16rem; font-weight: 700; color: var(--kit); }
+  .me-cell .u { font-size: .74rem; color: var(--ink-mid); margin-left: 3px; }
+  .me-cell .n { display: block; font-size: .72rem; color: var(--ink-dim); margin-top: 5px; line-height: 1.4; }
+
+  /* ---------- 心跳测量器 ---------- */
+  .pulse {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r-lg); padding: 22px;
+  }
+  .pulse-main { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+  .heart {
+    width: 108px; height: 108px; flex: none;
+    display: grid; place-items: center; position: relative;
+  }
+  .heart svg { width: 100%; height: 100%; }
+  .heart path { fill: var(--kit); }
+  .heart.beating path { animation: hb var(--bd, .7s) var(--ease) infinite; transform-origin: 50% 55%; }
+  @keyframes hb {
+    0%, 100% { transform: scale(1); }
+    14%      { transform: scale(1.16); }
+    28%      { transform: scale(1.02); }
+    42%      { transform: scale(1.09); }
+  }
+  .bpm-read { font-family: var(--mono); font-size: 2.6rem; font-weight: 700; color: var(--ink); line-height: 1; }
+  .bpm-read small { font-size: .9rem; color: var(--ink-dim); font-weight: 400; margin-left: 6px; }
+  .tapzone {
+    flex: 1; min-width: 220px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .tapbtn {
+    width: 100%; padding: 22px; font-size: 1.05rem; font-weight: 700;
+    background: linear-gradient(180deg, var(--surface-2), var(--bg-soft));
+    color: var(--ink); border: 2px dashed var(--line);
+    border-radius: var(--r); cursor: pointer;
+    transition: transform .06s var(--ease), border-color .2s var(--ease);
+  }
+  .tapbtn:hover { border-color: var(--kit); }
+  .tapbtn:active { transform: scale(.98); }
+  .tapbtn.armed { border-style: solid; border-color: var(--kit); }
+  .taps { font-family: var(--mono); font-size: .8rem; color: var(--ink-dim); }
+  .zone-scale { display: flex; gap: 3px; margin-top: 4px; }
+  .zone-scale i {
+    flex: 1; height: 7px; border-radius: 3px; background: var(--line);
+    transition: background .25s var(--ease);
+  }
+  .zone-scale i.on { background: var(--kit); }
+
+  /* ---------- 反应速度 ---------- */
+  .react {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r-lg); padding: 22px;
+  }
+  .rtarget {
+    width: 100%; height: 172px; border-radius: var(--r);
+    display: grid; place-items: center; cursor: pointer; user-select: none;
+    font-size: 1.16rem; font-weight: 700; text-align: center; padding: 16px;
+    background: var(--bg-soft); color: var(--ink-mid);
+    border: 2px solid var(--line);
+    transition: background .12s var(--ease), color .12s var(--ease);
+  }
+  .rtarget.wait { background: #3b1d1d; border-color: #7f1d1d; color: #fca5a5; }
+  .rtarget.go   { background: #123524; border-color: var(--sci); color: #86efac; font-size: 1.7rem; }
+  .rtarget.done { background: var(--surface-2); border-color: var(--kit); color: var(--ink); }
+  .rt-list { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+  .rt-list span {
+    font-family: var(--mono); font-size: .78rem;
+    background: var(--bg-soft); border: 1px solid var(--line-soft);
+    border-radius: 999px; padding: 3px 10px; color: var(--ink-mid);
+  }
+  .rt-list span.best { border-color: var(--sci); color: #86efac; }
+
+  /* ---------- 实验卡片 ---------- */
+  .bgrid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); }
+  .bcard { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+  .bcard-h { padding: 15px 17px 12px; border-bottom: 1px solid var(--line-soft); }
+  .bcard-h .sys {
+    display: inline-block; font-size: .66rem; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; padding: 2px 8px; border-radius: 999px; margin-bottom: 8px;
+  }
+  .s-heart { background: rgba(244,114,182,.16); color: #f9a8d4; }
+  .s-lung  { background: rgba(34,211,238,.16); color: #67e8f9; }
+  .s-brain { background: rgba(167,139,250,.16); color: #c4b5fd; }
+  .s-bone  { background: rgba(251,191,36,.16); color: #fcd34d; }
+  .s-sense { background: rgba(74,222,128,.16); color: #86efac; }
+  .bcard-h h3 { margin: 0; font-size: 1.06rem; }
+  .bcard-b { padding: 13px 17px 16px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .bcard-b .how { margin: 0; font-size: .88rem; color: var(--ink-mid); flex: 1; }
+  .bcard-b .why {
+    margin: 0; font-size: .8rem; color: var(--ink-mid);
+    border-left: 2px solid var(--kit); padding-left: 10px;
+  }
+  .bcard-b .why b { color: var(--kit); }
+  .need {
+    font-family: var(--mono); font-size: .72rem; color: var(--ink-dim);
+  }
+
+  .fact-strip {
+    display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+  .fstat {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r); padding: 15px 16px;
+  }
+  .fstat b {
+    display: block; font-family: var(--mono); font-size: 1.5rem;
+    color: var(--kit); line-height: 1.1;
+  }
+  .fstat span { font-size: .8rem; color: var(--ink-mid); display: block; margin-top: 5px; }
+
+  @media (max-width: 640px) {
+    .me-f input { width: 100%; }
+    .me-f { flex: 1; min-width: 130px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html">互动实验</a>
+    <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<header class="hero wrap">
+  <h1>人体探索</h1>
+  <p class="lead" style="color:var(--ink-mid);max-width:64ch">
+    这是唯一一个不需要任何器材的科学课题——实验对象就是孩子自己。
+    先填身高体重看看属于自己的数字，然后动手测心跳、量反应速度、找眼睛里的盲点。
+  </p>
+</header>
+
+<main class="wrap stack" style="padding-bottom:56px">
+
+  <!-- 我的身体数据 -->
+  <section class="mebox">
+    <h2 style="margin-top:0;font-size:1.16rem">① 属于我的数字</h2>
+    <p style="color:var(--ink-mid);font-size:.9rem;margin-top:0">
+      填进去，下面所有数字都会跟着变。这比背「成人有 206 块骨头」有用得多。
+    </p>
+    <div class="me-in">
+      <div class="me-f">
+        <label for="ht">身高（厘米）</label>
+        <input id="ht" type="number" min="60" max="200" step="1" value="130">
+      </div>
+      <div class="me-f">
+        <label for="wt">体重（公斤）</label>
+        <input id="wt" type="number" min="10" max="120" step="0.5" value="26">
+      </div>
+      <div class="me-f">
+        <label for="ag">年龄（岁）</label>
+        <input id="ag" type="number" min="3" max="18" step="1" value="8">
+      </div>
+    </div>
+    <div class="me-out" id="meOut"></div>
+    <p style="font-size:.74rem;color:var(--ink-dim);margin-bottom:0;margin-top:14px">
+      这些是按人群平均比例估算的参考值，个体差异很大，不是体检结论。
+    </p>
+  </section>
+
+  <!-- 心跳 -->
+  <section class="pulse">
+    <h2 style="margin-top:0;font-size:1.16rem">② 测出自己的心跳</h2>
+    <p style="color:var(--ink-mid);font-size:.9rem;margin-top:0">
+      两根手指按住手腕靠拇指那一侧，找到跳动。然后<b>跟着自己的心跳点下面的按钮</b>，
+      点 10 次就能算出每分钟多少下。
+    </p>
+    <div class="pulse-main">
+      <div class="heart" id="heart" aria-hidden="true">
+        <svg viewBox="0 0 32 30"><path d="M16 28C16 28 2 19.5 2 10.5 2 5.8 5.8 2 10.5 2 13.2 2 15.3 3.4 16 5.3 16.7 3.4 18.8 2 21.5 2 26.2 2 30 5.8 30 10.5 30 19.5 16 28 16 28Z"/></svg>
+      </div>
+      <div class="tapzone">
+        <div>
+          <span class="bpm-read"><span id="bpm">—</span><small>次 / 分钟</small></span>
+        </div>
+        <button class="tapbtn" id="tap">跟着心跳点我</button>
+        <div class="taps" id="taps">还没开始</div>
+        <div class="zone-scale" id="zone" aria-hidden="true"></div>
+        <div style="font-size:.78rem;color:var(--ink-mid)" id="verdict"></div>
+        <div class="row" style="gap:8px">
+          <button class="btn btn-sm" id="tapReset">重新测</button>
+          <button class="btn btn-ghost btn-sm" id="tapCompare">记下这次</button>
+        </div>
+        <div class="taps" id="log"></div>
+      </div>
+    </div>
+    <p style="font-size:.82rem;color:var(--ink-mid);margin-bottom:0">
+      测完静息心率，去原地跳 30 下再测一次，记下来对比。心跳变快是因为肌肉需要更多氧气，
+      心脏必须加快泵血——<b>恢复得越快，心肺越有力</b>。
+    </p>
+  </section>
+
+  <!-- 反应速度 -->
+  <section class="react">
+    <h2 style="margin-top:0;font-size:1.16rem">③ 你的神经有多快</h2>
+    <p style="color:var(--ink-mid);font-size:.9rem;margin-top:0">
+      点开始，屏幕变红时<b>等着</b>，一变绿就马上点。测 5 次取最快的那次。
+    </p>
+    <div class="rtarget" id="rt" role="button" tabindex="0">点这里开始</div>
+    <div class="rt-list" id="rtList"></div>
+    <p style="font-size:.82rem;color:var(--ink-mid);margin-bottom:0" id="rtNote">
+      信号要从眼睛到大脑、再到手指，这一路要过好多个神经接头，每个接头都要花时间。
+    </p>
+  </section>
+
+  <!-- 身体里的大数字 -->
+  <section>
+    <h2 style="font-size:1.16rem">④ 身体里的大数字</h2>
+    <div class="fact-strip">
+      <div class="fstat"><b>206</b><span>成人骨头数。<b>新生儿约 270 块</b>，长大过程中一部分融合在了一起。</span></div>
+      <div class="fstat"><b>600+</b><span>骨骼肌数量。光是说一句话，就要用上上百块肌肉配合。</span></div>
+      <div class="fstat"><b>10 万公里</b><span>全身血管接起来的长度，能绕地球赤道<b>两圈半</b>。</span></div>
+      <div class="fstat"><b>2 万次</b><span>一天呼吸的次数，平均每分钟约 14 次，你几乎从不需要去想它。</span></div>
+      <div class="fstat"><b>2% / 20%</b><span>大脑只占体重 2%，却要消耗全身约 20% 的氧气。</span></div>
+      <div class="fstat"><b>120 天</b><span>一颗红细胞的寿命，之后就会被替换掉。你身体一直在重建自己。</span></div>
+    </div>
+  </section>
+
+  <!-- 实验 -->
+  <section>
+    <div class="spread" style="align-items:flex-end;margin-bottom:14px">
+      <h2 style="margin:0;font-size:1.16rem">⑤ 用身体做的实验</h2>
+      <div class="row" style="gap:6px">
+        <button class="chip" data-s="all" aria-pressed="true">全部</button>
+        <button class="chip" data-s="sense" aria-pressed="false">感官</button>
+        <button class="chip" data-s="brain" aria-pressed="false">大脑</button>
+        <button class="chip" data-s="heart" aria-pressed="false">心脏血液</button>
+        <button class="chip" data-s="lung" aria-pressed="false">呼吸</button>
+        <button class="chip" data-s="bone" aria-pressed="false">骨骼肌肉</button>
+      </div>
+    </div>
+    <div class="bgrid" id="exp"></div>
+  </section>
+
+</main>
+
+<footer class="foot wrap-narrow" style="text-align:center;padding-bottom:40px">
+  <p style="font-size:.78rem;color:var(--ink-dim)">
+    所有数字为人群平均参考值，用于科普演示，不构成任何健康或医疗建议。
+    孩子若有身体不适，请咨询医生。
+  </p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ================= 我的身体数据 ================= */
+  var ht = document.getElementById("ht"),
+      wt = document.getElementById("wt"),
+      ag = document.getElementById("ag"),
+      meOut = document.getElementById("meOut");
+
+  function cell(k, v, u, n) {
+    var d = document.createElement("div");
+    d.className = "me-cell";
+    var ke = document.createElement("span");
+    ke.className = "k"; ke.textContent = k;
+    var ve = document.createElement("span");
+    ve.className = "v"; ve.textContent = v;
+    if (u) {
+      var ue = document.createElement("span");
+      ue.className = "u"; ue.textContent = u;
+      ve.appendChild(ue);
+    }
+    var ne = document.createElement("span");
+    ne.className = "n"; ne.textContent = n;
+    d.appendChild(ke); d.appendChild(ve); d.appendChild(ne);
+    return d;
+  }
+
+  function fmt(n) {
+    return n.toLocaleString("zh-CN");
+  }
+
+  function renderMe() {
+    var H = +ht.value || 130, W = +wt.value || 26, A = +ag.value || 8;
+    meOut.textContent = "";
+
+    // 血量约占体重 7%（约 70 mL/kg）
+    var blood = Math.round(W * 70);
+    // 静息心率按年龄粗略估：儿童偏快
+    var hr = A <= 5 ? 100 : A <= 8 ? 92 : A <= 12 ? 84 : 74;
+    var perDay = hr * 60 * 24;
+    // 皮肤面积 Mosteller 公式: sqrt(H*W/3600) m²
+    var bsa = Math.sqrt(H * W / 3600);
+    // 每次呼吸约 7 mL/kg，静息 16 次/分
+    var tidal = Math.round(W * 7);
+    var airDay = Math.round(tidal * 16 * 60 * 24 / 1000); // 升
+    // 一步长约身高 0.41，走 1 公里步数
+    var step = H * 0.41;
+    var steps1km = Math.round(100000 / step);
+    // 身高里有几个头（儿童头身比随年龄变）
+    var headRatio = A <= 4 ? 5 : A <= 8 ? 6 : A <= 12 ? 6.5 : 7.2;
+
+    meOut.appendChild(cell("我的血液大约", fmt(blood), " mL",
+      "约占体重的 7%。差不多是 " + (blood / 250).toFixed(1) + " 个大纸杯。"));
+    meOut.appendChild(cell("静息心跳（估）", hr, " 次/分",
+      "一天约跳 " + fmt(perDay) + " 次，一年 " + (perDay * 365 / 1e8).toFixed(1) + " 亿次。"));
+    meOut.appendChild(cell("皮肤面积", bsa.toFixed(2), " m²",
+      "皮肤是人体最大的器官，比你想的大。"));
+    meOut.appendChild(cell("每天呼吸空气", fmt(airDay), " 升",
+      "每次约 " + tidal + " mL，一天两万多次。"));
+    meOut.appendChild(cell("走 1 公里要", fmt(steps1km), " 步",
+      "按你的身高，一步约 " + Math.round(step) + " 厘米。"));
+    meOut.appendChild(cell("身高 ≈ 几个头", headRatio, " 个头",
+      "小时候头占比大，长大慢慢变成约 7.5 个头——画画时很有用。"));
+  }
+
+  [ht, wt, ag].forEach(function (el) {
+    el.addEventListener("input", renderMe);
+  });
+
+  /* ================= 心跳测量 ================= */
+  var tapBtn = document.getElementById("tap"),
+      bpmEl = document.getElementById("bpm"),
+      tapsEl = document.getElementById("taps"),
+      heart = document.getElementById("heart"),
+      zone = document.getElementById("zone"),
+      verdict = document.getElementById("verdict"),
+      logEl = document.getElementById("log");
+
+  for (var z = 0; z < 10; z++) zone.appendChild(document.createElement("i"));
+  var zi = [].slice.call(zone.children);
+
+  var times = [], records = [];
+  var NEED = 10;
+
+  function bpmOf(ts) {
+    if (ts.length < 2) return null;
+    var span = ts[ts.length - 1] - ts[0];
+    if (span <= 0) return null;
+    var intervals = ts.length - 1;
+    return Math.round(60000 / (span / intervals));
+  }
+
+  function paintZone(n) {
+    zi.forEach(function (b, i) {
+      if (i < n) b.classList.add("on"); else b.classList.remove("on");
+    });
+  }
+
+  function judge(b) {
+    if (b == null) return "";
+    if (b < 55)  return "偏低——可能是点得太慢了，再测一次看看。";
+    if (b <= 100) return "在成人常见范围内（60–100）。";
+    if (b <= 130) return "儿童安静时常见就是这个区间（80–120），完全正常。";
+    return "偏快——刚才是不是刚跑动过？歇一会儿再测。";
+  }
+
+  tapBtn.addEventListener("click", function () {
+    var now = performance.now();
+    if (times.length && now - times[times.length - 1] > 4000) times = []; // 隔太久重新开始
+    times.push(now);
+    tapBtn.classList.add("armed");
+    paintZone(Math.min(times.length, NEED));
+
+    var b = bpmOf(times);
+    if (b) {
+      bpmEl.textContent = b;
+      heart.classList.add("beating");
+      heart.style.setProperty("--bd", (60 / b).toFixed(2) + "s");
+      verdict.textContent = judge(b);
+    }
+    tapsEl.textContent = times.length < NEED
+      ? "已点 " + times.length + " 次，还要 " + (NEED - times.length) + " 次"
+      : "测量完成（" + times.length + " 次）。可以点「记下这次」保存。";
+  });
+
+  document.getElementById("tapReset").addEventListener("click", function () {
+    times = []; paintZone(0);
+    bpmEl.textContent = "—";
+    tapsEl.textContent = "还没开始";
+    verdict.textContent = "";
+    heart.classList.remove("beating");
+    tapBtn.classList.remove("armed");
+  });
+
+  document.getElementById("tapCompare").addEventListener("click", function () {
+    var b = bpmOf(times);
+    if (!b) { tapsEl.textContent = "先点几次才有数据可记。"; return; }
+    records.push(b);
+    logEl.textContent = "记录：" + records.join(" → ") + " 次/分" +
+      (records.length > 1
+        ? "（变化 " + (records[records.length - 1] - records[0] > 0 ? "+" : "") +
+          (records[records.length - 1] - records[0]) + "）"
+        : "");
+  });
+
+  /* ================= 反应速度 ================= */
+  var rt = document.getElementById("rt"),
+      rtList = document.getElementById("rtList"),
+      rtNote = document.getElementById("rtNote");
+  var rState = "idle", goAt = 0, timer = null, results = [];
+
+  function setIdle(msg) {
+    rState = "idle"; rt.className = "rtarget"; rt.textContent = msg;
+  }
+
+  function arm() {
+    rState = "wait";
+    rt.className = "rtarget wait";
+    rt.textContent = "等着…别急";
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      rState = "go";
+      rt.className = "rtarget go";
+      rt.textContent = "点！";
+      goAt = performance.now();
+    }, 1200 + Math.random() * 2600);
+  }
+
+  function hit() {
+    if (rState === "idle") { arm(); return; }
+    if (rState === "wait") {
+      clearTimeout(timer);
+      rt.className = "rtarget done";
+      rt.textContent = "太早了！还没变绿呢。点一下再来";
+      rState = "idle";
+      return;
+    }
+    if (rState === "go") {
+      var ms = Math.round(performance.now() - goAt);
+      results.push(ms);
+      rt.className = "rtarget done";
+      rt.textContent = ms + " 毫秒！点一下再测";
+      rState = "idle";
+      paintRT();
+    }
+  }
+
+  function paintRT() {
+    rtList.textContent = "";
+    var best = Math.min.apply(null, results);
+    results.forEach(function (m) {
+      var s = document.createElement("span");
+      s.textContent = m + " ms";
+      if (m === best) s.className = "best";
+      rtList.appendChild(s);
+    });
+    if (results.length >= 3) {
+      var avg = Math.round(results.reduce(function (a, b) { return a + b; }, 0) / results.length);
+      rtNote.innerHTML = "你的平均 <b>" + avg + " 毫秒</b>，最快 <b>" + best +
+        " 毫秒</b>。成年人一般在 200–300 毫秒，孩子通常稍慢一点，练几次会变快——" +
+        "但快不过大约 100 毫秒，因为神经传导本身就需要时间。";
+    }
+  }
+
+  rt.addEventListener("click", hit);
+  rt.addEventListener("keydown", function (e) {
+    if (e.key === " " || e.key === "Enter") { e.preventDefault(); hit(); }
+  });
+
+  /* ================= 实验卡片 ================= */
+  var EXPS = [
+    {
+      sys: "sense", t: "找出眼睛里的盲点",
+      need: "一张纸、一支笔",
+      how: "纸上画两个相距约 8 厘米的小黑点。闭上左眼，右眼盯住<b>左边</b>那个点，把纸慢慢靠近再拉远。到某个距离时，右边的点会突然<b>整个消失</b>。",
+      why: "视网膜上有一块地方没有感光细胞——视神经从那里穿出去，这就是<b>盲点</b>。平时你察觉不到，因为大脑会自动用周围的图案把这个洞「补」上。你刚刚亲眼验证了：大脑一直在替你编造一部分画面。"
+    },
+    {
+      sys: "sense", t: "舌头真的分区吗",
+      need: "盐水、糖水、棉签",
+      how: "用棉签分别蘸盐水和糖水，点在舌尖、舌侧、舌根不同位置，每次之间漱口。让孩子说哪里能尝出味道。",
+      why: "课本上那张「舌头味觉分区图」其实是<b>流传了一百年的错误</b>。真实情况是：整个舌面都能尝出五种基本味道，只是灵敏度略有差别。这个实验的价值在于——孩子亲手推翻了一张印在书上的图。"
+    },
+    {
+      sys: "sense", t: "捏住鼻子吃东西",
+      need: "苹果、梨（或不同口味软糖）",
+      how: "把苹果和梨切成一样大小的小块。让孩子闭眼、<b>捏紧鼻子</b>，随机吃一块，猜是什么。然后松开鼻子再试。",
+      why: "捏住鼻子后几乎分不出苹果和梨——因为我们以为的「味道」，大部分其实来自<b>嗅觉</b>。舌头只能分辨甜、咸、酸、苦、鲜五种，剩下的细腻风味全靠鼻子。这也解释了感冒时为什么吃什么都没味。"
+    },
+    {
+      sys: "sense", t: "两点辨别测试",
+      need: "两支笔、蒙眼布",
+      how: "让孩子闭眼，用两支笔尖同时轻触他的<b>指尖</b>，问「你感觉到几个点」。慢慢把两支笔靠近，直到他觉得只有一个点，量下这时的距离。再换<b>后背</b>和<b>手臂</b>各测一次。",
+      why: "指尖能分辨约 2–3 毫米的两个点，后背要差到 4 厘米以上才分得开。因为<b>触觉感受器的密度</b>差别巨大——手和嘴唇最密，背部最稀。身体把「分辨率」优先分配给了最需要精细操作的部位。"
+    },
+    {
+      sys: "brain", t: "斯特鲁普效应",
+      need: "彩笔、纸",
+      how: "用红笔写「蓝」，用蓝笔写「绿」，写满一页，颜色和字义故意都不一致。然后让孩子<b>只说墨水颜色，不许读字</b>，计时读完一页。再写一页颜色字义一致的对比。",
+      why: "第二页会明显快很多。因为读字对识字的人来说是<b>自动化</b>的，快到你来不及阻止，于是大脑必须花额外的力气去压制它。这是心理学最著名的实验之一，能让孩子直接感觉到「大脑里两个程序在抢方向盘」。"
+    },
+    {
+      sys: "brain", t: "橡皮筋一样的时间感",
+      need: "秒表",
+      how: "让孩子闭眼，感觉「过了 30 秒」就举手，你记下真实时间。做三次。然后让他做点有趣的事（比如搭积木）时再估一次，再让他干等着估一次。",
+      why: "无聊时会高估时间流逝（觉得过了很久其实才 20 秒），专注时会低估。大脑没有精确的<b>内部时钟</b>，它是靠注意力和记忆的变化量来推断时间的——所以「快乐的时光总是过得快」有实实在在的神经学原因。"
+    },
+    {
+      sys: "brain", t: "记忆的容量上限",
+      need: "纸笔",
+      how: "念一串随机数字让孩子复述：先 3 位，对了就加到 4 位、5 位……记下他最多能复述几位。然后把长数字<b>分组</b>念（比如 1 3 8 5 2 9 念成 138-529）再试。",
+      why: "多数人的<b>短期记忆</b>上限是 5 到 9 个单元。但把数字分组以后，每组算作一个单元，能记住的位数就明显变多了——这叫<b>组块</b>。这就是为什么电话号码要分段写。"
+    },
+    {
+      sys: "heart", t: "找出自己的恢复曲线",
+      need: "秒表、记录纸",
+      how: "先测静息心率。原地跳 30 下后立刻测，然后<b>每隔一分钟测一次</b>，直到回到静息值。把数据画成折线图。全家一起做，比一比谁的曲线降得快。",
+      why: "恢复速度反映<b>心肺能力</b>，比最高心率更有意义。经常运动的人心脏每次泵血更多，所以不需要跳那么快，恢复也更快。这是一条能画出来、能长期追踪的真实数据。"
+    },
+    {
+      sys: "heart", t: "肺容量有多大",
+      need: "气球、卷尺",
+      how: "深吸一口气，一次性全部吹进气球，捏住口不让漏。量气球的<b>周长</b>，用 V = (周长/π)³ × π/6 估算体积。全家各吹一个，比大小。",
+      why: "成人肺活量约 3–5 升，孩子按体型小一些。这个实验把「看不见的呼吸」变成了可以<b>测量和比较</b>的东西。顺便还用上了球体体积公式——数学在这里是真的有用，不是练习题。"
+    },
+    {
+      sys: "bone", t: "手上的肌腱在动",
+      need: "什么都不用",
+      how: "把手掌朝上放平，另一只手的手指轻按<b>手腕内侧</b>。然后依次弯曲每根手指。感觉手腕里那些细绳一样的东西在滑动。",
+      why: "手指里<b>几乎没有肌肉</b>——动手指的肌肉长在前臂，靠肌腱像提线木偶一样远程拉动。这就是为什么手指那么细却很有力，也是为什么手能做出那么精细的动作。攥紧拳头时看看前臂鼓起来的地方。"
+    },
+    {
+      sys: "bone", t: "身高一天在变",
+      need: "卷尺、门框、铅笔",
+      how: "早上刚起床立刻量身高，做个标记。晚上睡前再量一次，同样的姿势。连续记三天。",
+      why: "晚上通常比早上矮 1–2 厘米。因为脊椎骨之间的<b>椎间盘</b>是含水的软垫，站着走了一天被压缩失水，躺一晚又吸水恢复。宇航员在太空失重环境里能「长高」好几厘米，就是同一个原因。"
+    },
+    {
+      sys: "bone", t: "反应还是速度",
+      need: "一把直尺",
+      how: "你竖着捏住尺子顶端，让孩子把手指张开在尺子 0 刻度两侧但不碰到。你随时松手，他尽快夹住。<b>看夹住的刻度</b>，数字越小反应越快。测 5 次取最好成绩。",
+      why: "尺子下落距离 d 和时间的关系是 d = ½gt²，所以刻度可以换算成反应时间：落 20 厘米约 200 毫秒。这是个用<b>重力当秒表</b>的巧妙设计——物理公式在这里成了测量工具。"
+    },
+    {
+      sys: "bone", t: "闭眼站一只脚",
+      need: "秒表",
+      how: "单脚站立，睁眼计时能站多久（到 60 秒就够了）。然后<b>闭上眼</b>再试，记时间。多数人会从轻松变成几秒就晃。全家对比。",
+      why: "平衡靠三套系统合作：内耳的<b>前庭</b>、脚底的<b>触觉压力</b>、还有<b>视觉</b>。闭眼一下砍掉三分之一的信息，身体就得靠剩下两套拼命修正。老年人容易摔倒，很大一部分原因就是这三套系统都在退化。"
+    },
+    {
+      sys: "lung", t: "一口气有多大",
+      need: "气球、软尺",
+      how: "深吸一口气，<b>一次性</b>全部吹进气球，然后捏住口不让漏气。用软尺量气球最粗处的<b>周长</b>，记下来。全家每人吹一个，比大小。想更准就吹三次取最大值。",
+      why: "气球周长能换算出体积：周长除以 3.14 得直径，再算球体积。周长 60 厘米的气球约装 3.6 升气，这就是你的<b>肺活量</b>。孩子通常 1.5–2.5 升，成人 3–5 升，游泳和管乐演奏者往往更大。肺活量随身高增长，是发育的直接指标。"
+    },
+    {
+      sys: "lung", t: "憋气与二氧化碳",
+      need: "秒表",
+      how: "正常呼吸下憋气，记住能憋多久（<b>难受就立刻呼吸，不要硬撑</b>）。休息两分钟，然后先做 15 次深呼吸再憋一次，比较两次时长。<b>只在陆地上做，绝不可以在水里做。</b>",
+      why: "让你忍不住要呼吸的信号，不是「缺氧」而是<b>二氧化碳积累</b>——大脑监测的是二氧化碳浓度。提前深呼吸排掉一部分二氧化碳，所以第二次能憋更久。这也是为什么在水里做这件事很危险：氧气其实已经耗尽了，但报警信号被推迟了。"
+    }
+  ];
+
+  var expBox = document.getElementById("exp");
+  var SYS = { heart: ["心肺", "s-heart"], lung: ["呼吸", "s-lung"],
+              brain: ["大脑", "s-brain"], bone: ["骨骼肌肉", "s-bone"],
+              sense: ["感官", "s-sense"] };
+  var sState = "all";
+
+  function expCard(e) {
+    var c = document.createElement("article");
+    c.className = "card bcard";
+
+    var h = document.createElement("div");
+    h.className = "bcard-h";
+    var meta = SYS[e.sys] || ["其他", ""];
+    var s = document.createElement("span");
+    s.className = "sys " + meta[1];
+    s.textContent = meta[0];
+    var t = document.createElement("h3");
+    t.textContent = e.t;
+    h.appendChild(s); h.appendChild(t);
+
+    var b = document.createElement("div");
+    b.className = "bcard-b";
+    var need = document.createElement("div");
+    need.className = "need";
+    need.textContent = "需要：" + e.need;
+    var how = document.createElement("p");
+    how.className = "how";
+    how.innerHTML = e.how;
+    var why = document.createElement("p");
+    why.className = "why";
+    why.innerHTML = "<b>为什么会这样：</b>" + e.why;
+    b.appendChild(need); b.appendChild(how); b.appendChild(why);
+
+    c.appendChild(h); c.appendChild(b);
+    return c;
+  }
+
+  function renderExp() {
+    expBox.textContent = "";
+    var items = EXPS.filter(function (e) {
+      return sState === "all" || e.sys === sState;
+    });
+    items.forEach(function (e) { expBox.appendChild(expCard(e)); });
+    if (!items.length) {
+      var p = document.createElement("p");
+      p.style.color = "var(--ink-dim)";
+      p.textContent = "这一类还没有实验。";
+      expBox.appendChild(p);
+    }
+  }
+
+  [].forEach.call(document.querySelectorAll("[data-s]"), function (btn) {
+    btn.addEventListener("click", function () {
+      sState = btn.dataset.s;
+      [].forEach.call(document.querySelectorAll("[data-s]"), function (o) {
+        o.setAttribute("aria-pressed", o === btn ? "true" : "false");
+      });
+      renderExp();
+    });
+  });
+
+  renderMe();
+  renderExp();
+  setIdle("点这里开始");
+})();
+</script>
+</body>
+</html>

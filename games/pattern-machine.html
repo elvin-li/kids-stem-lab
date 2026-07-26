@@ -1,0 +1,1252 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>规律机器 · 互动实验室</title>
+<meta name="description" content="给机器喂一个数，它吐出另一个数。孩子通过输入输出猜出隐藏规则，从算术走向代数思维。">
+<link rel="stylesheet" href="../assets/css/base.css">
+<style>
+  .hd { padding: 28px 0 18px; }
+  .hd .row { margin-bottom: 14px; }
+  .lede { font-size: 1.03rem; color: var(--ink-mid); max-width: 62ch; }
+  .lede b { color: var(--ink); }
+
+  .modebar { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px;
+             background: var(--surface); border: 1px solid var(--line); }
+  .modebar button { font-family: inherit; font-size: .86rem; font-weight: 700;
+                    padding: 8px 16px; border-radius: 999px; border: 0;
+                    background: transparent; color: var(--ink-mid); cursor: pointer;
+                    transition: all .16s var(--ease); }
+  .modebar button:hover { color: var(--ink); }
+  .modebar button[aria-selected="true"] { background: var(--accent); color: #08101f; }
+
+  .stage-head { display: flex; justify-content: space-between; align-items: center;
+                gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .stage-head h2 { font-size: 1rem; margin: 0; }
+  .hint { font-size: .8rem; color: var(--ink-dim); }
+
+  /* ---------- 机器 ---------- */
+  .machine-wrap { display: grid; gap: 14px; }
+  .machine { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px;
+             align-items: center; }
+  @media (max-width: 640px) { .machine { grid-template-columns: 1fr; } }
+
+  .port { background: var(--surface); border: 1px solid var(--line);
+          border-radius: var(--r); padding: 14px; text-align: center; }
+  .port-label { font-size: .74rem; font-weight: 700; letter-spacing: .06em;
+                text-transform: uppercase; color: var(--ink-dim); margin-bottom: 8px; }
+  .port-val { font-family: var(--mono); font-size: 2rem; font-weight: 700;
+              line-height: 1.1; min-height: 1.1em; }
+  .port-in .port-val { color: var(--math); }
+  .port-out .port-val { color: var(--sci); }
+  .port-out.thinking .port-val { color: var(--ink-dim); }
+
+  .box { position: relative; width: 132px; height: 118px; margin: 0 auto;
+         border-radius: var(--r-lg);
+         background: linear-gradient(160deg, #263venue, var(--surface-2));
+         background: linear-gradient(160deg, #2b3559, var(--surface-2));
+         border: 1px solid var(--line);
+         display: grid; place-items: center; box-shadow: var(--shadow); }
+  .box.run { border-color: rgba(110,168,254,.75); box-shadow: var(--glow); }
+  .box-face { font-size: 2.1rem; line-height: 1; }
+  .box-tag { position: absolute; bottom: 9px; left: 0; right: 0; text-align: center;
+             font-size: .68rem; font-weight: 700; color: var(--ink-dim);
+             letter-spacing: .05em; }
+  .gear { position: absolute; top: 9px; right: 11px; width: 16px; height: 16px;
+          border-radius: 50%; border: 2px dashed var(--ink-dim); }
+  .box.run .gear { animation: spin 1s linear infinite; border-color: var(--math); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .arrow { font-size: 1.3rem; color: var(--ink-dim); text-align: center; }
+
+  .feed { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .feed .input { width: 96px; flex: none; text-align: center; font-family: var(--mono); }
+  .feed-hint {
+    font-size: .82rem; font-weight: 600; color: var(--warn);
+    border: 1px solid rgba(251,191,36,.4); background: rgba(251,191,36,.1);
+    padding: 4px 10px; border-radius: 999px;
+  }
+
+  .quick { display: flex; gap: 6px; flex-wrap: wrap; }
+  .quick button { font-family: var(--mono); font-size: .84rem; font-weight: 700;
+                  padding: 6px 11px; border-radius: 9px; cursor: pointer;
+                  background: var(--surface-2); color: var(--ink);
+                  border: 1px solid var(--line); transition: all .16s var(--ease); }
+  .quick button:hover { border-color: rgba(110,168,254,.6); }
+
+  /* ---------- 记录表 ---------- */
+  .tbl { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: .88rem; }
+  .tbl caption { text-align: left; font-family: var(--font); font-size: .78rem;
+                 font-weight: 700; color: var(--ink-dim); padding-bottom: 7px;
+                 letter-spacing: .04em; }
+  .tbl th, .tbl td { padding: 7px 10px; text-align: center;
+                     border-bottom: 1px dashed var(--line-soft); }
+  .tbl th { font-family: var(--font); font-size: .76rem; color: var(--ink-dim);
+            font-weight: 700; letter-spacing: .04em; }
+  .tbl td.in  { color: var(--math); font-weight: 700; }
+  .tbl td.out { color: var(--sci);  font-weight: 700; }
+  .tbl td.dif { color: var(--ink-dim); }
+  .tbl tr:last-child td { border-bottom: 0; }
+  .tbl tbody tr.fresh td { background: rgba(110,168,254,.09); }
+  .tbl-empty { font-size: .85rem; color: var(--ink-dim); padding: 10px 0; }
+  .tbl-scroll { max-height: 232px; overflow: auto; }
+
+  /* ---------- 猜规则 ---------- */
+  .guess { display: grid; gap: 10px; }
+  .guess-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .guess-row .input { width: 74px; flex: none; text-align: center; font-family: var(--mono); }
+  .rule-pre { font-family: var(--mono); font-size: .95rem; color: var(--ink-mid); }
+  .rule-pre b { color: var(--accent); }
+
+  .opts { display: grid; gap: 7px; }
+  .opt { display: flex; align-items: center; gap: 10px; width: 100%;
+         font-family: var(--mono); font-size: .92rem; font-weight: 700;
+         padding: 11px 14px; border-radius: var(--r-sm); cursor: pointer;
+         background: var(--surface); color: var(--ink);
+         border: 1px solid var(--line); text-align: left;
+         transition: all .16s var(--ease); }
+  .opt:hover:not(:disabled) { border-color: rgba(110,168,254,.6); background: var(--surface-2); }
+  .opt:disabled { cursor: default; }
+  .opt .mk { width: 20px; flex: none; text-align: center; font-size: .95rem; }
+  .opt.right { border-color: rgba(74,222,128,.7); background: rgba(74,222,128,.12); }
+  .opt.right .mk { color: var(--sci); }
+  .opt.wrong { border-color: rgba(248,113,113,.6); background: rgba(248,113,113,.1); }
+  .opt.wrong .mk { color: var(--danger); }
+  .opt.dim { opacity: .5; }
+
+  /* ---------- 图像 ---------- */
+  .plot-wrap { background: var(--surface); border: 1px solid var(--line);
+               border-radius: var(--r); padding: 12px; }
+
+  /* ---------- 生长模式 ---------- */
+  .figs { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+  .fig { background: var(--surface); border: 1px solid var(--line);
+         border-radius: var(--r); padding: 10px; text-align: center; }
+  .fig.target { border-color: rgba(251,191,36,.6); background: rgba(251,191,36,.07); }
+  .fig.solved { border-color: rgba(74,222,128,.55); }
+  .fig-cap { font-family: var(--mono); font-size: .76rem; color: var(--ink-dim);
+             margin-top: 7px; font-weight: 700; }
+  .fig.target .fig-cap { color: var(--warn); }
+  .fig canvas { display: block; border-radius: 8px; }
+
+  .grow-q { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+            font-size: .92rem; color: var(--ink-mid); font-weight: 600; }
+  .grow-q .input { width: 88px; flex: none; text-align: center; font-family: var(--mono); }
+
+  .verdict { border-radius: var(--r); padding: 13px 16px; border: 1px solid var(--line);
+             background: var(--surface); }
+  .verdict-main { font-size: 1rem; font-weight: 700; margin-bottom: 3px; }
+  .verdict-sub { font-size: .85rem; color: var(--ink-mid); }
+  .verdict.good { border-color: rgba(74,222,128,.55); background: rgba(74,222,128,.1); }
+  .verdict.good .verdict-main { color: var(--sci); }
+  .verdict.bad  { border-color: rgba(251,191,36,.5); background: rgba(251,191,36,.08); }
+  .verdict.bad .verdict-main { color: var(--warn); }
+
+  .lvlbar { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .qs { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+  .qs li { counter-increment: q; position: relative; padding-left: 34px;
+           margin-bottom: 11px; color: var(--ink-mid); font-size: .94rem; }
+  .qs li::before {
+    content: counter(q); position: absolute; left: 0; top: 1px;
+    width: 23px; height: 23px; border-radius: 7px; display: grid; place-items: center;
+    background: var(--surface-2); border: 1px solid var(--line);
+    font-size: .76rem; font-weight: 700; color: var(--accent); font-family: var(--mono);
+  }
+  .why h3 { margin-top: 0; }
+  .why p:last-child { margin-bottom: 0; }
+  .kv { font-family: var(--mono); font-size: .84rem; color: var(--ink-mid); }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+
+  <header class="hd">
+    <div class="row">
+      <span class="pill pill-math">数学 · 代数思维</span>
+      <span class="pill">适合 6–12 岁</span>
+      <span class="pill">函数 function</span>
+      <span class="pill">数列 sequence</span>
+    </div>
+    <h1>规律机器</h1>
+    <p class="lede">
+      这在教什么：机器里藏着一条<b>规则</b>。孩子喂进一个数，看它吐出什么，
+      再从一堆「进 → 出」里反推出规则。这就是函数最原始的样子，
+      也是从<b>算术</b>走向<b>代数</b>的那一步。
+    </p>
+  </header>
+
+  <div class="row" style="margin-bottom:16px">
+    <div class="modebar" role="tablist" aria-label="选择玩法">
+      <button role="tab" id="mGuess" aria-selected="true"  aria-controls="panelGuess">猜规则</button>
+      <button role="tab" id="mGrow"  aria-selected="false" aria-controls="panelGrow">生长图形</button>
+    </div>
+  </div>
+
+  <div class="lab">
+
+    <!-- ================= 舞台 ================= -->
+    <div class="lab-stage">
+
+      <!-- ---------- 猜规则 ---------- -->
+      <section id="panelGuess" role="tabpanel" aria-labelledby="mGuess">
+        <div class="stage-head">
+          <h2>喂一个数进去，看它变成什么</h2>
+          <span class="hint">试 0、1、2 这些小数字最容易看出规律</span>
+        </div>
+
+        <div class="machine-wrap">
+          <div class="machine">
+            <div class="port port-in">
+              <div class="port-label">输入 IN</div>
+              <div class="port-val" id="inVal" aria-live="off">—</div>
+            </div>
+            <div>
+              <div class="box" id="box">
+                <span class="gear" aria-hidden="true"></span>
+                <span class="box-face" aria-hidden="true">⚙︎</span>
+                <span class="box-tag">神秘规则</span>
+              </div>
+              <div class="arrow" aria-hidden="true">▼</div>
+            </div>
+            <div class="port port-out" id="portOut">
+              <div class="port-label">输出 OUT</div>
+              <div class="port-val" id="outVal" aria-live="polite">—</div>
+            </div>
+          </div>
+
+          <div class="feed">
+            <label for="feedIn" class="sr-only">要喂给机器的数字</label>
+            <input class="input" id="feedIn" type="number" value="1" step="1" min="-20" max="99"
+                   inputmode="numeric" aria-describedby="feedHelp">
+            <button class="btn btn-primary" id="feedBtn">喂进去 →</button>
+            <span id="feedHelp" class="sr-only">输入一个整数，然后按喂进去，机器会算出结果</span>
+          </div>
+
+          <div class="quick" role="group" aria-label="快捷输入">
+            <button type="button" data-q="0">0</button>
+            <button type="button" data-q="1">1</button>
+            <button type="button" data-q="2">2</button>
+            <button type="button" data-q="3">3</button>
+            <button type="button" data-q="5">5</button>
+            <button type="button" data-q="10">10</button>
+            <button type="button" id="feedAll">一次喂 0–5</button>
+          </div>
+
+          <div class="tbl-scroll">
+            <table class="tbl">
+              <caption>机器日记 · 进 → 出（差 = 这一行比上一行多多少）</caption>
+              <thead>
+                <tr><th scope="col">输入</th><th scope="col">输出</th><th scope="col">差</th></tr>
+              </thead>
+              <tbody id="logBody"></tbody>
+            </table>
+            <div class="tbl-empty" id="logEmpty">还没有记录。喂一个数进去试试。</div>
+          </div>
+
+          <div class="plot-wrap">
+            <canvas id="cvPlot" aria-label="输入与输出的点图，横轴是输入，纵轴是输出"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 生长图形 ---------- -->
+      <section id="panelGrow" role="tabpanel" aria-labelledby="mGrow" hidden>
+        <div class="stage-head">
+          <h2>看前几个图形，猜第 N 个有几块</h2>
+          <span class="hint">先数出每一步多了几块</span>
+        </div>
+
+        <div class="stack">
+          <div class="figs" id="figs"></div>
+
+          <div class="grow-q">
+            <span>第 <b id="askN" class="kv">5</b> 个图形有几块方块？</span>
+            <label for="growIn" class="sr-only">第 N 个图形的方块数</label>
+            <input class="input" id="growIn" type="number" step="1" min="0" max="9999"
+                   inputmode="numeric" placeholder="?">
+            <button class="btn btn-primary" id="growCheck">看对不对</button>
+            <button class="btn btn-ghost" id="growShow">显示第 <span id="showN">5</span> 个</button>
+          </div>
+
+          <div class="verdict" id="growVerdict">
+            <div class="verdict-main" id="gvMain">先数一数前几个图形</div>
+            <div class="verdict-sub" id="gvSub">第 1 个几块？第 2 个几块？每次多了几块？</div>
+          </div>
+
+          <div class="tbl-scroll">
+            <table class="tbl">
+              <caption>方块数记录</caption>
+              <thead>
+                <tr><th scope="col">第几个</th><th scope="col">方块数</th><th scope="col">差</th></tr>
+              </thead>
+              <tbody id="growBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================= 侧栏 ================= -->
+    <aside>
+      <!-- 猜规则侧栏 -->
+      <div id="sideGuess">
+        <div class="panel">
+          <h3>难度</h3>
+          <div class="lvlbar" role="group" aria-label="选择难度">
+            <button class="chip" id="lv1" aria-pressed="true">加减法</button>
+            <button class="chip" id="lv2" aria-pressed="false">乘法</button>
+            <button class="chip" id="lv3" aria-pressed="false">两步</button>
+            <button class="chip" id="lv4" aria-pressed="false">挑战</button>
+          </div>
+          <p class="hint" id="lvDesc" style="margin:10px 0 0">规则形如 x + 3 或 x − 2。</p>
+        </div>
+
+        <div class="panel">
+          <h3>猜规则</h3>
+          <div class="guess">
+            <div class="rule-pre">输出 = <b id="rulePre">?</b></div>
+            <div class="opts" id="opts"></div>
+            <p class="hint" id="guessHint" style="margin:0">至少喂 2 个数再猜，才不是瞎猜。</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>操作</h3>
+          <div class="stack">
+            <button class="btn btn-primary" id="newRule" style="width:100%">换一台新机器</button>
+            <button class="btn btn-ghost" id="clearLog" style="width:100%">清空日记</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>读数</h3>
+          <div class="readout"><span>喂过几个数</span><b id="roFed">0</b></div>
+          <div class="readout"><span>猜对次数</span><b id="roWins">0</b></div>
+          <div class="readout"><span>当前连对</span><b id="roStreak">0</b></div>
+          <div class="readout"><span>规则</span><b id="roRule">保密</b></div>
+        </div>
+      </div>
+
+      <!-- 生长模式侧栏 -->
+      <div id="sideGrow" hidden>
+        <div class="panel">
+          <h3>选一种图形</h3>
+          <div class="stack">
+            <label for="patSel">生长方式</label>
+            <select class="input" id="patSel">
+              <option value="stair">楼梯（每次多一层）</option>
+              <option value="lshape">L 形（两条腿一起长）</option>
+              <option value="square">正方形（边长 = N）</option>
+              <option value="cross">十字（四个方向各长一格）</option>
+              <option value="frame">方框（只要外圈）</option>
+            </select>
+          </div>
+          <div class="ctrl" style="margin-top:14px">
+            <div class="ctrl-head"><label for="askSel">要预测第几个</label><b id="askOut">5</b></div>
+            <input type="range" id="askSel" min="4" max="12" step="1" value="5">
+          </div>
+          <button class="btn btn-ghost" id="growReset" style="width:100%">重新出题</button>
+        </div>
+
+        <div class="panel">
+          <h3>规律</h3>
+          <div class="readout"><span>前四个</span><b id="roSeq">—</b></div>
+          <div class="readout"><span>每次多</span><b id="roDiff">—</b></div>
+          <div class="readout"><span>公式</span><b id="roFormula">先自己猜</b></div>
+          <div class="readout"><span>答对</span><b id="roGrowWins">0</b></div>
+          <button class="btn btn-sm btn-ghost" id="revealF" style="width:100%;margin-top:12px">
+            公开公式
+          </button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>给家长的提问脚本</h3>
+        <ol class="qs" id="parentQs">
+          <li>「你怎么知道规则是这个？换一个数字试试，还成立吗？」</li>
+          <li>「如果我喂 0 进去会出来什么？先猜，再试。」</li>
+          <li>「能不能用一句话说清这台机器在干什么？」</li>
+        </ol>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ================= 原理 ================= -->
+  <section class="panel why" style="margin-top:22px">
+    <h3>背后的原理</h3>
+    <div class="grid-2">
+      <div>
+        <p>
+          一台机器就是一个 <b>function</b>：每喂一个数，它只会吐出一个确定的结果。
+          孩子在这里做的事，数学上叫「根据有限的样本推断规则」——
+          先观察、再猜想、然后用新数据验证。这跟科学家的工作方式是同一套。
+        </p>
+        <p>
+          日记里的<b>「差」</b>那一列是关键。如果每行的差都一样（比如都是 3），
+          规则里的乘数就是 3，这叫<b>一次关系 linear</b>；
+          差本身也在变（1、3、5、7…），就说明藏着平方，是<b>二次 quadratic</b>。
+          先看差，再猜规则，比乱试快得多。
+        </p>
+      </div>
+      <div>
+        <p>
+          「喂 0 进去」是最有用的一招。因为 <span class="kv">a×0 + b = b</span>，
+          输出会直接把加数 <span class="kv">b</span> 暴露出来。剩下的只要再喂 1，
+          就能算出乘数。这种「挑一个能让干扰项消失的输入」，是解方程的核心直觉。
+        </p>
+        <p>
+          生长图形模式把同一件事换成了看得见的版本。数第 N 个图形有几块，
+          孩子可以一块块数（算术），也可以发现「每次多 4 块，所以是 4N 加上开头那几块」
+          （代数）。同一个答案，两条路——后一条路才是能走远的那条。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot wrap-narrow" style="text-align:center">
+    做完可以聊聊：还有哪些「机器」藏在生活里？（比如价格表、身高年龄表）
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<p class="sr-only" id="live" aria-live="polite"></p>
+
+<script>
+(function () {
+  'use strict';
+
+  // ============================================================
+  //  工具
+  // ============================================================
+  var el = {};
+  ['inVal','outVal','portOut','box','feedIn','feedBtn','feedAll','logBody','logEmpty',
+   'cvPlot','rulePre','opts','guessHint','newRule','clearLog','roFed','roWins','roStreak',
+   'roRule','lvDesc','mGuess','mGrow','panelGuess','panelGrow','sideGuess','sideGrow',
+   'figs','askN','growIn','growCheck','growShow','showN','growVerdict','gvMain','gvSub',
+   'growBody','patSel','askSel','askOut','growReset','roSeq','roDiff','roFormula',
+   'roGrowWins','revealF','toast','live','lv1','lv2','lv3','lv4'
+  ].forEach(function (id) { el[id] = document.getElementById(id); });
+
+  function ce(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt !== undefined && txt !== null) n.textContent = txt;
+    return n;
+  }
+  function randInt(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+  function pick(arr) { return arr[randInt(0, arr.length - 1)]; }
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+
+  var toastTimer = null;
+  function toast(msg) {
+    el.toast.textContent = msg;
+    el.toast.classList.add('on');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.toast.classList.remove('on'); }, 1900);
+  }
+  function say(msg) { el.live.textContent = msg; }
+
+  // 尊重「减少动态效果」
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) { reduceMotion = false; }
+
+  // ============================================================
+  //  规则：内部统一表示 y = a*x + b，或 a*x*x + b
+  // ============================================================
+  // kind: 'lin'  -> a*x + b
+  //       'quad' -> a*x*x + b
+  function makeRule(level) {
+    var a, b, kind = 'lin';
+    if (level === 1) {                       // x + b（最小年龄段只做加法，避免负数结果）
+      a = 1; b = pick([1,2,3,4,5,6,7,8,9,10]);
+    } else if (level === 2) {                // a*x
+      a = pick([2,3,4,5,10]); b = 0;
+    } else if (level === 3) {                // a*x + b
+      a = pick([2,3,4,5]); b = pick([1,2,3,4,5,-1,-2,-3]);
+    } else {                                 // 挑战：含平方或较大系数
+      if (Math.random() < 0.45) {
+        kind = 'quad'; a = pick([1,2]); b = pick([0,1,-1,2]);
+      } else {
+        a = pick([6,7,8,-2,-3]); b = pick([1,2,3,-4,5,10]);
+      }
+    }
+    return { kind: kind, a: a, b: b, level: level };
+  }
+
+  function apply(rule, x) {
+    return rule.kind === 'quad' ? rule.a * x * x + rule.b : rule.a * x + rule.b;
+  }
+
+  // 规则的可读文本
+  function ruleText(rule) {
+    var a = rule.a, b = rule.b;
+    var core;
+    if (rule.kind === 'quad') {
+      core = (a === 1 ? 'x × x' : a + ' × x × x');
+    } else {
+      if (a === 1) core = 'x';
+      else if (a === -1) core = '−x';
+      else core = a + ' × x';
+    }
+    if (b === 0) return core;
+    return core + (b > 0 ? ' + ' + b : ' − ' + Math.abs(b));
+  }
+
+  function sameRule(r1, r2) {
+    return r1.kind === r2.kind && r1.a === r2.a && r1.b === r2.b;
+  }
+
+  // ---------- 生成选项（1 个正确 + 3 个干扰） ----------
+  function makeOptions(rule) {
+    var out = [rule];
+    var tries = 0;
+    function has(c) {
+      for (var i = 0; i < out.length; i++) if (sameRule(out[i], c)) return true;
+      return false;
+    }
+    while (out.length < 4 && tries < 400) {
+      tries++;
+      var c = null, r = Math.random();
+      if (rule.kind === 'quad') {
+        // 干扰：换系数、换常数、或退化成一次
+        if (r < 0.4) c = { kind: 'quad', a: rule.a, b: rule.b + pick([1,-1,2,-2]) };
+        else if (r < 0.7) c = { kind: 'quad', a: rule.a === 1 ? 2 : 1, b: rule.b };
+        else c = { kind: 'lin', a: pick([2,3,4]), b: rule.b };
+      } else {
+        if (r < 0.34) c = { kind: 'lin', a: rule.a, b: rule.b + pick([1,-1,2,-2,3]) };
+        else if (r < 0.68) c = { kind: 'lin', a: rule.a + pick([1,-1,2,-2]), b: rule.b };
+        else c = { kind: 'lin', a: rule.a + pick([1,-1]), b: rule.b + pick([1,-1]) };
+      }
+      if (!c) continue;
+      if (c.kind === 'lin' && c.a === 0) continue;      // 常函数太怪
+      if (c.b > 14 || c.b < -14) continue;
+      if (c.a > 12 || c.a < -6) continue;
+      if (has(c)) continue;
+      out.push(c);
+    }
+    // 兜底：万一没凑够，用简单变体补齐
+    var extra = 1;
+    while (out.length < 4) {
+      var f = { kind: 'lin', a: 1, b: extra++ };
+      if (!has(f)) out.push(f);
+      if (extra > 20) break;
+    }
+    // 洗牌
+    for (var i = out.length - 1; i > 0; i--) {
+      var j = randInt(0, i), t = out[i]; out[i] = out[j]; out[j] = t;
+    }
+    return out;
+  }
+
+  // ============================================================
+  //  状态
+  // ============================================================
+  var G = {                 // 猜规则模式
+    level: 1,
+    rule: null,
+    log: [],              // {x, y}
+    options: [],
+    answered: false,
+    wins: 0,
+    streak: 0,
+    revealed: false
+  };
+
+  var W = {                 // 生长模式
+    pat: 'stair',
+    askN: 5,
+    shown: 4,             // 已展示到第几个
+    solved: false,
+    wins: 0,
+    revealed: false
+  };
+
+  var MODE = 'guess';
+
+  // ============================================================
+  //  猜规则：渲染
+  // ============================================================
+  function renderLog() {
+    el.logBody.textContent = '';
+    el.logEmpty.hidden = G.log.length > 0;
+
+    // 按输入排序显示（更容易看出规律），但标记最新一条
+    var rows = G.log.slice().sort(function (p, q) { return p.x - q.x; });
+    rows.forEach(function (row, i) {
+      var tr = ce('tr');
+      if (G.log.length && row === G.log[G.log.length - 1]) tr.className = 'fresh';
+      tr.appendChild(ce('td', 'in', row.x));
+      tr.appendChild(ce('td', 'out', row.y));
+      var d = '—';
+      if (i > 0) {
+        var prev = rows[i - 1];
+        // 只有输入相差 1 时，"差" 才有直接意义；否则标注跨度
+        var dy = row.y - prev.y, dx = row.x - prev.x;
+        d = (dy >= 0 ? '+' + dy : String(dy)) + (dx === 1 ? '' : ' /' + dx);
+      }
+      tr.appendChild(ce('td', 'dif', d));
+      el.logBody.appendChild(tr);
+    });
+
+    el.roFed.textContent = G.log.length;
+    drawPlot();
+    updateGuessAvailability();
+  }
+
+  function updateGuessAvailability() {
+    var enough = G.log.length >= 2;
+    var btns = el.opts.querySelectorAll('.opt');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].disabled = G.answered || !enough;
+    }
+    if (G.answered) {
+      el.guessHint.textContent = G.revealed
+        ? '规则是 ' + ruleText(G.rule) + '。换一台新机器再玩。'
+        : '答对了！换一台新机器再玩。';
+    } else {
+      el.guessHint.textContent = enough
+        ? '选一个你认为对的规则。'
+        : '至少喂 2 个数再猜，才不是瞎猜。（还差 ' + (2 - G.log.length) + ' 个）';
+    }
+  }
+
+  function renderOptions() {
+    el.opts.textContent = '';
+    G.options.forEach(function (opt) {
+      var b = ce('button', 'opt');
+      b.type = 'button';
+      var mk = ce('span', 'mk', '○');
+      mk.setAttribute('aria-hidden', 'true');
+      b.appendChild(mk);
+      b.appendChild(ce('span', null, ruleText(opt)));
+      b.setAttribute('aria-label', '猜规则是 输出等于 ' + ruleText(opt));
+      b.addEventListener('click', function () { chooseOption(opt, b, mk); });
+      el.opts.appendChild(b);
+    });
+    updateGuessAvailability();
+  }
+
+  function chooseOption(opt, btn, mk) {
+    if (G.answered) return;
+    var ok = sameRule(opt, G.rule);
+    if (ok) {
+      G.answered = true;
+      G.wins++; G.streak++;
+      btn.classList.add('right'); mk.textContent = '✓';
+      // 其余选项变暗
+      var all = el.opts.querySelectorAll('.opt');
+      for (var i = 0; i < all.length; i++) if (all[i] !== btn) all[i].classList.add('dim');
+      el.roRule.textContent = ruleText(G.rule);
+      el.rulePre.textContent = ruleText(G.rule);
+      boxCelebrate();
+      toast('猜对了！规则是 ' + ruleText(G.rule));
+      say('猜对了，规则是 输出等于 ' + ruleText(G.rule));
+    } else {
+      G.streak = 0;
+      btn.classList.add('wrong'); mk.textContent = '✕';
+      btn.disabled = true;
+      // 找一个反例，帮孩子看到"为什么不对"
+      var cx = counterExample(opt, G.rule);
+      if (cx !== null) {
+        var mine = apply(opt, cx), real = apply(G.rule, cx);
+        toast('再想想：喂 ' + cx + ' 时这条规则给 ' + mine + '，机器给 ' + real);
+        say('不对。喂 ' + cx + ' 的时候，这条规则算出 ' + mine + '，但机器给的是 ' + real);
+      } else {
+        toast('再想想');
+      }
+    }
+    el.roWins.textContent = G.wins;
+    el.roStreak.textContent = G.streak;
+    updateGuessAvailability();
+  }
+
+  // 在已喂过的数里找反例，找不到就在小范围里找
+  function counterExample(guess, real) {
+    var i, x;
+    for (i = 0; i < G.log.length; i++) {
+      x = G.log[i].x;
+      if (apply(guess, x) !== apply(real, x)) return x;
+    }
+    for (x = 0; x <= 10; x++) {
+      if (apply(guess, x) !== apply(real, x)) return x;
+    }
+    return null;
+  }
+
+  function boxCelebrate() {
+    if (reduceMotion) return;
+    el.box.classList.add('run');
+    setTimeout(function () { el.box.classList.remove('run'); }, 700);
+  }
+
+  // ---------- 喂数 ----------
+  var FEED_HELP_SR = '输入一个整数，然后按喂进去，机器会算出结果';
+  var feeding = false;
+  function feed(x) {
+    if (feeding) return;
+    x = Math.round(x);
+    if (!isFinite(x)) {
+      el.feedHelp.className = 'feed-hint';
+      el.feedHelp.textContent = '先在框里填一个整数，再点「喂进去」。';
+      el.feedIn.focus();
+      return;
+    }
+    el.feedHelp.className = 'sr-only';
+    el.feedHelp.textContent = FEED_HELP_SR;
+    x = clamp(x, -20, 99);
+
+    var y = apply(G.rule, x);
+    el.inVal.textContent = x;
+    el.feedIn.value = x;
+
+    if (reduceMotion) {
+      el.outVal.textContent = y;
+      pushLog(x, y);
+      return;
+    }
+
+    feeding = true;
+    el.portOut.classList.add('thinking');
+    el.outVal.textContent = '···';
+    el.box.classList.add('run');
+    setTimeout(function () {
+      el.box.classList.remove('run');
+      el.portOut.classList.remove('thinking');
+      el.outVal.textContent = y;
+      feeding = false;
+      pushLog(x, y);
+    }, 420);
+  }
+
+  function pushLog(x, y) {
+    // 同一个输入不重复记录，但移到最新
+    for (var i = 0; i < G.log.length; i++) {
+      if (G.log[i].x === x) { G.log.splice(i, 1); break; }
+    }
+    G.log.push({ x: x, y: y });
+    if (G.log.length > 12) G.log.shift();
+    say('喂 ' + x + '，机器输出 ' + y);
+    renderLog();
+  }
+
+  function feedSeries() {
+    if (feeding) return;
+    var xs = [0, 1, 2, 3, 4, 5], k = 0;
+    (function next() {
+      if (k >= xs.length) return;
+      var x = xs[k++];
+      var y = apply(G.rule, x);
+      el.inVal.textContent = x;
+      el.outVal.textContent = y;
+      el.feedIn.value = x;
+      pushLog(x, y);
+      if (reduceMotion) { next(); }
+      else setTimeout(next, 190);
+    })();
+  }
+
+  // ---------- 点图 ----------
+  var plotCtx = el.cvPlot.getContext('2d');
+  function sizeCanvas(cv, ctx, cssW, cssH) {
+    var dpr = window.devicePixelRatio || 1;
+    cv.width  = Math.round(cssW * dpr);
+    cv.height = Math.round(cssH * dpr);
+    cv.style.width = cssW + 'px';
+    cv.style.height = cssH + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { w: cssW, h: cssH };
+  }
+
+  function drawPlot() {
+    var host = el.cvPlot.parentNode;
+    var cssW = Math.max(240, host.clientWidth - 24);
+    var cssH = clamp(Math.round(cssW * 0.44), 130, 220);
+    var box = sizeCanvas(el.cvPlot, plotCtx, cssW, cssH);
+    var c = plotCtx, W2 = box.w, H2 = box.h;
+
+    c.clearRect(0, 0, W2, H2);
+
+    var pad = { l: 34, r: 12, t: 12, b: 24 };
+    var iw = W2 - pad.l - pad.r, ih = H2 - pad.t - pad.b;
+
+    // 数据范围
+    var xs = G.log.map(function (p) { return p.x; });
+    var ys = G.log.map(function (p) { return p.y; });
+    var xmin = 0, xmax = 6, ymin = 0, ymax = 10;
+    if (xs.length) {
+      xmin = Math.min.apply(null, xs.concat([0]));
+      xmax = Math.max.apply(null, xs.concat([xmin + 3]));
+      ymin = Math.min.apply(null, ys.concat([0]));
+      ymax = Math.max.apply(null, ys.concat([ymin + 4]));
+    }
+    if (xmax - xmin < 3) xmax = xmin + 3;
+    if (ymax - ymin < 4) ymax = ymin + 4;
+    var padY = (ymax - ymin) * 0.12;
+    ymin -= padY; ymax += padY;
+
+    function X(v) { return pad.l + (v - xmin) / (xmax - xmin) * iw; }
+    function Y(v) { return pad.t + ih - (v - ymin) / (ymax - ymin) * ih; }
+
+    // 网格
+    c.strokeStyle = 'rgba(42,51,85,.75)';
+    c.lineWidth = 1;
+    c.beginPath();
+    var stepX = Math.max(1, Math.ceil((xmax - xmin) / 6));
+    for (var gx = Math.ceil(xmin); gx <= xmax; gx += stepX) {
+      c.moveTo(Math.round(X(gx)) + .5, pad.t);
+      c.lineTo(Math.round(X(gx)) + .5, pad.t + ih);
+    }
+    for (var k = 0; k <= 4; k++) {
+      var gy = ymin + (ymax - ymin) * k / 4;
+      c.moveTo(pad.l, Math.round(Y(gy)) + .5);
+      c.lineTo(pad.l + iw, Math.round(Y(gy)) + .5);
+    }
+    c.stroke();
+
+    // 轴（y=0 / x=0 更亮）
+    c.strokeStyle = 'rgba(125,136,171,.9)';
+    c.beginPath();
+    if (ymin <= 0 && ymax >= 0) { c.moveTo(pad.l, Math.round(Y(0)) + .5); c.lineTo(pad.l + iw, Math.round(Y(0)) + .5); }
+    if (xmin <= 0 && xmax >= 0) { c.moveTo(Math.round(X(0)) + .5, pad.t); c.lineTo(Math.round(X(0)) + .5, pad.t + ih); }
+    c.stroke();
+
+    // 轴标签
+    c.fillStyle = '#7d88ab';
+    c.font = '600 10px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif');
+    c.textAlign = 'center'; c.textBaseline = 'top';
+    for (var lx = Math.ceil(xmin); lx <= xmax; lx += stepX) {
+      c.fillText(String(lx), X(lx), pad.t + ih + 6);
+    }
+    c.textAlign = 'right'; c.textBaseline = 'middle';
+    for (var m = 0; m <= 4; m++) {
+      var vy = ymin + (ymax - ymin) * m / 4;
+      c.fillText(String(Math.round(vy)), pad.l - 6, Y(vy));
+    }
+    c.textAlign = 'left'; c.textBaseline = 'top';
+    c.fillText('输入 →', pad.l + 2, pad.t + 1);
+    c.save();
+    c.translate(11, pad.t + ih / 2); c.rotate(-Math.PI / 2);
+    c.textAlign = 'center'; c.fillText('输出', 0, 0);
+    c.restore();
+
+    if (!G.log.length) {
+      c.fillStyle = '#7d88ab';
+      c.font = '600 12px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif');
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText('喂几个数，点就会出现在这里', pad.l + iw / 2, pad.t + ih / 2);
+      return;
+    }
+
+    // 答对后画出规则曲线
+    if (G.answered) {
+      c.strokeStyle = 'rgba(74,222,128,.55)';
+      c.lineWidth = 2;
+      c.beginPath();
+      var first = true;
+      for (var t = 0; t <= 60; t++) {
+        var vx = xmin + (xmax - xmin) * t / 60;
+        var vv = apply(G.rule, vx);
+        if (vv < ymin - 1e6 || vv > ymax + 1e6) continue;
+        if (first) { c.moveTo(X(vx), Y(vv)); first = false; }
+        else c.lineTo(X(vx), Y(vv));
+      }
+      c.stroke();
+    }
+
+    // 点
+    var sorted = G.log.slice().sort(function (p, q) { return p.x - q.x; });
+    sorted.forEach(function (p) {
+      var px = X(p.x), py = Y(p.y);
+      if (py < pad.t - 2 || py > pad.t + ih + 2) return;
+      c.fillStyle = '#6ea8fe';
+      c.beginPath(); c.arc(px, py, 4.5, 0, Math.PI * 2); c.fill();
+      c.strokeStyle = '#0b0f1a'; c.lineWidth = 1.5; c.stroke();
+    });
+  }
+
+  // ---------- 新机器 ----------
+  function newMachine(keepLevel) {
+    G.rule = makeRule(keepLevel ? G.level : G.level);
+    G.log = [];
+    G.answered = false;
+    G.revealed = false;
+    G.options = makeOptions(G.rule);
+    el.inVal.textContent = '—';
+    el.outVal.textContent = '—';
+    el.rulePre.textContent = '?';
+    el.roRule.textContent = '保密';
+    renderOptions();
+    renderLog();
+    say('新机器准备好了，喂一个数试试');
+  }
+
+  var LV_DESC = {
+    1: '规则形如 x + 3 或 x − 2。',
+    2: '规则形如 3 × x，先乘再看。',
+    3: '两步：先乘再加，比如 2 × x + 1。',
+    4: '挑战：可能出现 x × x，也可能是大系数。'
+  };
+
+  function setLevel(n) {
+    G.level = n;
+    [1,2,3,4].forEach(function (i) {
+      el['lv' + i].setAttribute('aria-pressed', i === n ? 'true' : 'false');
+    });
+    el.lvDesc.textContent = LV_DESC[n];
+    G.wins = G.wins; // 保留累计
+    newMachine(true);
+    toast('难度：' + el['lv' + n].textContent);
+  }
+
+  // ============================================================
+  //  生长图形
+  // ============================================================
+  // 每种 pattern 返回第 n 个图形的方块坐标（单位格）
+  var PATTERNS = {
+    stair: {
+      name: '楼梯',
+      cells: function (n) {
+        var out = [];
+        for (var col = 0; col < n; col++) {
+          for (var row = 0; row <= col; row++) out.push([col, row]);
+        }
+        return out;
+      },
+      count: function (n) { return n * (n + 1) / 2; },
+      formula: 'N × (N + 1) ÷ 2',
+      why: '第 N 个比第 N−1 个多 N 块，所以是 1+2+…+N。'
+    },
+    lshape: {
+      name: 'L 形',
+      cells: function (n) {
+        var out = [], i;
+        for (i = 0; i < n; i++) out.push([0, i]);        // 竖
+        for (i = 1; i < n; i++) out.push([i, 0]);        // 横
+        return out;
+      },
+      count: function (n) { return 2 * n - 1; },
+      formula: '2 × N − 1',
+      why: '两条腿各 N 块，拐角那块被数了两次，要减 1。'
+    },
+    square: {
+      name: '正方形',
+      cells: function (n) {
+        var out = [];
+        for (var x = 0; x < n; x++) for (var y = 0; y < n; y++) out.push([x, y]);
+        return out;
+      },
+      count: function (n) { return n * n; },
+      formula: 'N × N',
+      why: '边长是 N，所以是 N 的平方。每次多的量自己也在变大。'
+    },
+    cross: {
+      name: '十字',
+      cells: function (n) {
+        var out = [[0, 0]], i;
+        for (i = 1; i <= n - 1; i++) {
+          out.push([i, 0]); out.push([-i, 0]); out.push([0, i]); out.push([0, -i]);
+        }
+        return out;
+      },
+      count: function (n) { return 4 * (n - 1) + 1; },
+      formula: '4 × (N − 1) + 1',
+      why: '中心 1 块，四个方向每次各长 1 块，所以每次多 4 块。'
+    },
+    frame: {
+      name: '方框',
+      cells: function (n) {
+        if (n === 1) return [[0, 0]];
+        var out = [], i;
+        for (i = 0; i < n; i++) {
+          out.push([i, 0]); out.push([i, n - 1]);
+        }
+        for (i = 1; i < n - 1; i++) {
+          out.push([0, i]); out.push([n - 1, i]);
+        }
+        return out;
+      },
+      count: function (n) { return n === 1 ? 1 : 4 * n - 4; },
+      formula: '4 × N − 4（N ≥ 2）',
+      why: '四条边各 N 块，四个角各被数了两次，要减 4。'
+    }
+  };
+
+  function drawFigure(cv, n, patKey, isTarget) {
+    var P = PATTERNS[patKey];
+    var cells = P.cells(n);
+    var xs = cells.map(function (p) { return p[0]; });
+    var ys = cells.map(function (p) { return p[1]; });
+    var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+    var minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+    var cols = maxX - minX + 1, rows = maxY - minY + 1;
+
+    var maxPx = 108;
+    var cell = clamp(Math.floor(maxPx / Math.max(cols, rows)), 4, 20);
+    var gap = cell > 8 ? 1 : 0;
+    var cssW = cols * cell, cssH = rows * cell;
+
+    var ctx = cv.getContext('2d');
+    var dpr = window.devicePixelRatio || 1;
+    cv.width = Math.round(cssW * dpr);
+    cv.height = Math.round(cssH * dpr);
+    cv.style.width = cssW + 'px';
+    cv.style.height = cssH + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssW, cssH);
+
+    var fill = isTarget ? '#fbbf24' : '#6ea8fe';
+    cells.forEach(function (p) {
+      var gx = (p[0] - minX) * cell;
+      var gy = (maxY - p[1]) * cell;     // y 轴翻转，让楼梯往上长
+      ctx.fillStyle = fill;
+      ctx.globalAlpha = .92;
+      ctx.fillRect(gx + gap, gy + gap, cell - gap * 2, cell - gap * 2);
+      ctx.globalAlpha = 1;
+      if (cell >= 8) {
+        ctx.strokeStyle = 'rgba(11,15,26,.55)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(gx + gap + .5, gy + gap + .5, cell - gap * 2 - 1, cell - gap * 2 - 1);
+      }
+    });
+  }
+
+  function renderGrow() {
+    var P = PATTERNS[W.pat];
+    el.figs.textContent = '';
+
+    for (var n = 1; n <= W.shown; n++) {
+      var box = ce('div', 'fig');
+      var cv = document.createElement('canvas');
+      var cnt = P.count(n);
+      cv.setAttribute('role', 'img');
+      cv.setAttribute('aria-label', '第 ' + n + ' 个图形，' + cnt + ' 块方块');
+      box.appendChild(cv);
+      box.appendChild(ce('div', 'fig-cap', '第 ' + n + ' 个 · ' + cnt + ' 块'));
+      el.figs.appendChild(box);
+      drawFigure(cv, n, W.pat, false);
+    }
+
+    // 目标图形（未解答时只给问号占位）
+    var t = ce('div', 'fig target' + (W.solved ? ' solved' : ''));
+    if (W.solved) {
+      var cvT = document.createElement('canvas');
+      cvT.setAttribute('role', 'img');
+      cvT.setAttribute('aria-label', '第 ' + W.askN + ' 个图形，' + P.count(W.askN) + ' 块方块');
+      t.appendChild(cvT);
+      t.appendChild(ce('div', 'fig-cap', '第 ' + W.askN + ' 个 · ' + P.count(W.askN) + ' 块'));
+      el.figs.appendChild(t);
+      drawFigure(cvT, W.askN, W.pat, true);
+    } else {
+      var q = ce('div');
+      q.style.cssText = 'width:104px;height:104px;display:grid;place-items:center;' +
+                        'font-size:2rem;font-weight:700;color:var(--warn);' +
+                        'border:2px dashed rgba(251,191,36,.5);border-radius:10px';
+      q.textContent = '?';
+      q.setAttribute('aria-hidden', 'true');
+      t.appendChild(q);
+      t.appendChild(ce('div', 'fig-cap', '第 ' + W.askN + ' 个 · ? 块'));
+      el.figs.appendChild(t);
+    }
+
+    // 表格
+    el.growBody.textContent = '';
+    var upto = W.solved ? W.askN : W.shown;
+    for (var i = 1; i <= upto; i++) {
+      var tr = ce('tr');
+      if (i === W.askN) tr.className = 'fresh';
+      tr.appendChild(ce('td', 'in', '第 ' + i));
+      tr.appendChild(ce('td', 'out', P.count(i)));
+      tr.appendChild(ce('td', 'dif', i === 1 ? '—' : '+' + (P.count(i) - P.count(i - 1))));
+      el.growBody.appendChild(tr);
+    }
+
+    // 侧栏读数
+    var seq = [];
+    for (var s = 1; s <= 4; s++) seq.push(P.count(s));
+    el.roSeq.textContent = seq.join(', ');
+    var d1 = P.count(2) - P.count(1), d2 = P.count(3) - P.count(2);
+    el.roDiff.textContent = (d1 === d2) ? ('+' + d1 + '（固定）') : ('+' + d1 + ', +' + d2 + '（在变）');
+    el.roFormula.textContent = (W.revealed || W.solved) ? P.formula : '先自己猜';
+    el.roGrowWins.textContent = W.wins;
+
+    el.askN.textContent = W.askN;
+    el.showN.textContent = W.askN;
+    el.askOut.textContent = W.askN;
+  }
+
+  function checkGrow() {
+    var P = PATTERNS[W.pat];
+    var raw = el.growIn.value.trim();
+    if (raw === '') {
+      el.growVerdict.className = 'verdict bad';
+      el.gvMain.textContent = '先写一个数';
+      el.gvSub.textContent = '猜猜第 ' + W.askN + ' 个图形有几块，写在框里。';
+      say('请先填一个数字');
+      return;
+    }
+    var v = Math.round(Number(raw));
+    if (!isFinite(v)) {
+      el.growVerdict.className = 'verdict bad';
+      el.gvMain.textContent = '请填一个整数';
+      el.gvSub.textContent = '方块数只能是整数。';
+      return;
+    }
+    var right = P.count(W.askN);
+    if (v === right) {
+      W.solved = true; W.wins++;
+      el.growVerdict.className = 'verdict good';
+      el.gvMain.textContent = '对了！第 ' + W.askN + ' 个是 ' + right + ' 块';
+      el.gvSub.textContent = '公式：' + P.formula + '。' + P.why;
+      toast('答对了！' + right + ' 块');
+      say('答对了，第 ' + W.askN + ' 个图形有 ' + right + ' 块。公式是 ' + P.formula);
+      renderGrow();
+    } else {
+      el.growVerdict.className = 'verdict bad';
+      el.gvMain.textContent = v + ' 还不对，再数一次';
+      var d = P.count(W.shown) - P.count(W.shown - 1);
+      el.gvSub.textContent = '提示：第 ' + (W.shown - 1) + ' 个到第 ' + W.shown +
+        ' 个多了 ' + d + ' 块。往后每一步多多少？把它们加起来。';
+      say('还不对，再试试');
+    }
+  }
+
+  function resetGrow(newPat) {
+    W.solved = false;
+    W.revealed = false;
+    el.growIn.value = '';
+    el.growVerdict.className = 'verdict';
+    el.gvMain.textContent = '先数一数前几个图形';
+    el.gvSub.textContent = '第 1 个几块？第 2 个几块？每次多了几块？';
+    if (newPat) W.pat = newPat;
+    renderGrow();
+  }
+
+  // ============================================================
+  //  模式切换
+  // ============================================================
+  function setMode(m) {
+    MODE = m;
+    var guess = (m === 'guess');
+    el.mGuess.setAttribute('aria-selected', guess ? 'true' : 'false');
+    el.mGrow.setAttribute('aria-selected', guess ? 'false' : 'true');
+    el.panelGuess.hidden = !guess;
+    el.panelGrow.hidden = guess;
+    el.sideGuess.hidden = !guess;
+    el.sideGrow.hidden = guess;
+    if (guess) drawPlot(); else renderGrow();
+  }
+
+  // ============================================================
+  //  事件
+  // ============================================================
+  el.feedBtn.addEventListener('click', function () {
+    feed(Number(el.feedIn.value));
+  });
+  el.feedIn.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); feed(Number(el.feedIn.value)); }
+  });
+  el.feedAll.addEventListener('click', feedSeries);
+
+  var quickBtns = document.querySelectorAll('.quick button[data-q]');
+  for (var qi = 0; qi < quickBtns.length; qi++) {
+    (function (b) {
+      b.addEventListener('click', function () { feed(Number(b.getAttribute('data-q'))); });
+    })(quickBtns[qi]);
+  }
+
+  el.newRule.addEventListener('click', function () { newMachine(true); toast('换了一台新机器'); });
+  el.clearLog.addEventListener('click', function () {
+    G.log = [];
+    el.inVal.textContent = '—';
+    el.outVal.textContent = '—';
+    renderLog();
+    say('日记已清空');
+  });
+
+  [1,2,3,4].forEach(function (i) {
+    el['lv' + i].addEventListener('click', function () { setLevel(i); });
+  });
+
+  el.mGuess.addEventListener('click', function () { setMode('guess'); });
+  el.mGrow.addEventListener('click', function () { setMode('grow'); });
+  // 键盘左右切 tab
+  [el.mGuess, el.mGrow].forEach(function (tab) {
+    tab.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        var next = (tab === el.mGuess) ? el.mGrow : el.mGuess;
+        next.focus();
+        setMode(next === el.mGuess ? 'guess' : 'grow');
+      }
+    });
+  });
+
+  el.patSel.addEventListener('change', function () { resetGrow(el.patSel.value); });
+  el.askSel.addEventListener('input', function () {
+    W.askN = Number(el.askSel.value);
+    el.askOut.textContent = W.askN;
+    W.solved = false;
+    el.growIn.value = '';
+    el.growVerdict.className = 'verdict';
+    el.gvMain.textContent = '第 ' + W.askN + ' 个有几块？';
+    el.gvSub.textContent = '先找出每次多几块的规律。';
+    renderGrow();
+  });
+  el.growCheck.addEventListener('click', checkGrow);
+  el.growIn.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); checkGrow(); }
+  });
+  el.growShow.addEventListener('click', function () {
+    var P = PATTERNS[W.pat];
+    W.solved = true;
+    el.growVerdict.className = 'verdict';
+    el.gvMain.textContent = '第 ' + W.askN + ' 个是 ' + P.count(W.askN) + ' 块';
+    el.gvSub.textContent = '公式：' + P.formula + '。' + P.why;
+    renderGrow();
+    say('第 ' + W.askN + ' 个图形有 ' + P.count(W.askN) + ' 块');
+  });
+  el.growReset.addEventListener('click', function () { resetGrow(null); toast('重新出题'); });
+  el.revealF.addEventListener('click', function () {
+    W.revealed = true;
+    var P = PATTERNS[W.pat];
+    el.roFormula.textContent = P.formula;
+    toast('公式：' + P.formula);
+    say('公式是 ' + P.formula + '。' + P.why);
+  });
+
+  var rsTimer = null;
+  window.addEventListener('resize', function () {
+    if (rsTimer) clearTimeout(rsTimer);
+    rsTimer = setTimeout(function () {
+      if (MODE === 'guess') drawPlot(); else renderGrow();
+    }, 130);
+  });
+
+  // ============================================================
+  //  启动
+  // ============================================================
+  setLevel(1);
+  el.toast.classList.remove('on');   // setLevel 会 toast，首屏不需要
+  resetGrow('stair');
+  setMode('guess');
+})();
+</script>
+</body>
+</html>

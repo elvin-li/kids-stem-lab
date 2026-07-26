@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>海底世界 · 一万米下潜 | 少儿数理启蒙</title>
+<meta name="description" content="从海面一直沉到马里亚纳海沟：光在哪一层消失、压力有多大、谁住在那里。含压强计算器与真实海洋生物照片。">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<style>
+  .hero { padding: 40px 0 20px; }
+  .hero h1 { margin-bottom: .3em; }
+  .hero p.lead { font-size: 1.06rem; max-width: 62ch; }
+
+  /* ---------- 下潜舱 ---------- */
+  .dive {
+    display: grid; gap: 0; grid-template-columns: 1fr;
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+    overflow: hidden; margin: 22px 0;
+  }
+  .zone {
+    position: relative; padding: 18px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .zone:last-child { border-bottom: 0; }
+  .zone-hd { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .zone-hd h3 { margin: 0; font-size: 1.08rem; }
+  .zone-hd .en {
+    font-family: var(--mono); font-size: .7rem; letter-spacing: .06em;
+    color: rgba(255,255,255,.5); text-transform: uppercase;
+  }
+  .zone-depth {
+    margin-left: auto; font-family: var(--mono); font-size: .78rem;
+    font-weight: 700; color: rgba(255,255,255,.82);
+  }
+  .zone p { margin: 8px 0 0; font-size: .89rem; color: rgba(255,255,255,.76); max-width: 68ch; }
+  .zone .lightbar {
+    height: 5px; border-radius: 3px; margin-top: 12px;
+    border: 1px solid rgba(255,255,255,.14);
+  }
+  .zone .lightnote {
+    font-size: .74rem; color: rgba(255,255,255,.6); margin-top: 5px;
+    font-family: var(--mono);
+  }
+  .zone .who {
+    margin-top: 11px; display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .zone .who span {
+    font-size: .74rem; padding: 3px 9px; border-radius: 999px;
+    background: rgba(255,255,255,.1); color: rgba(255,255,255,.85);
+    border: 1px solid rgba(255,255,255,.14);
+  }
+
+  /* ---------- 深度标尺 ---------- */
+  .ruler {
+    position: relative; height: 460px; margin: 26px 0 8px;
+    border-left: 2px solid var(--line);
+    padding-left: 0;
+  }
+  .rmark {
+    position: absolute; left: 0; display: flex; align-items: center; gap: 9px;
+    transform: translateY(-50%); width: 100%;
+  }
+  .rmark i {
+    display: block; height: 1px; background: var(--line); flex: 0 0 26px;
+  }
+  .rmark b {
+    font-family: var(--mono); font-size: .72rem; color: var(--ink-mid);
+    flex: 0 0 74px;
+  }
+  .rmark span { font-size: .83rem; color: var(--ink-mid); }
+  .rmark.hi b { color: var(--video); }
+  .rmark.hi span { color: var(--ink); font-weight: 600; }
+
+  /* ---------- 压强计算器 ---------- */
+  .press { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; align-items: start; }
+  .press-vis {
+    background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: var(--r); padding: 18px; text-align: center;
+  }
+  .can {
+    width: 76px; height: 108px; margin: 6px auto 12px; position: relative;
+    border-radius: 9px; border: 2px solid var(--ink-mid);
+    background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.02));
+    transition: transform .25s var(--ease);
+  }
+  .can::before {
+    content: ""; position: absolute; left: 8px; right: 8px; top: 10px; bottom: 10px;
+    border-radius: 4px; border: 1px dashed rgba(255,255,255,.2);
+  }
+  .press-num { font-family: var(--mono); font-size: 1.9rem; font-weight: 700; color: var(--video); }
+  .press-lab { font-size: .78rem; color: var(--ink-dim); }
+  .press-rows { display: flex; flex-direction: column; gap: 9px; }
+  .prow {
+    display: flex; justify-content: space-between; gap: 10px;
+    padding: 9px 12px; background: var(--surface); border: 1px solid var(--line-soft);
+    border-radius: var(--r-sm); font-size: .86rem;
+  }
+  .prow span { color: var(--ink-dim); }
+  .prow b { font-family: var(--mono); color: var(--ink); }
+
+  /* ---------- 生物卡 ---------- */
+  .cgrid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .crit { display: flex; flex-direction: column; overflow: hidden; padding: 0; }
+  .crit .ph { width: 100%; height: 132px; background: var(--surface-2); display: block; object-fit: cover; }
+  .crit .ph-ph {
+    width: 100%; height: 132px; background:
+      linear-gradient(135deg, var(--surface-2), var(--surface));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem; color: var(--ink-dim);
+  }
+  .crit-b { padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .crit-b h3 { margin: 0; font-size: 1.02rem; }
+  .crit-b .sci { margin: 0; font-family: var(--mono); font-size: .71rem; color: var(--ink-dim); font-style: italic; }
+  .crit-b .fact { margin: 0; font-size: .85rem; color: var(--ink-mid); flex: 1; }
+  .crit-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+  .crit-meta .pill { font-size: .71rem; }
+  .cap { font-size: .68rem; color: var(--ink-dim); font-family: var(--mono); padding: 0 15px 10px; }
+
+  @media (max-width: 720px) {
+    .press { grid-template-columns: 1fr; }
+    .ruler { height: 380px; }
+    .rmark b { flex: 0 0 62px; font-size: .68rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html">互动实验</a>
+    <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<header class="hero wrap">
+  <h1>海底世界 · 往下一万米</h1>
+  <p class="lead">
+    海最深的地方有 10,935 米——把珠穆朗玛峰整个扔进去，峰顶还差 2 公里才够到海面。
+    这一页带孩子一层层往下沉：光在哪里消失，压力变成多少，谁能住在那里。
+  </p>
+  <p style="font-size:.8rem;color:var(--ink-dim)" id="src"></p>
+</header>
+
+<main class="wrap stack">
+
+  <!-- 下潜舱 -->
+  <section>
+    <h2>五层海，越往下越黑</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      海洋学家按<b>光照</b>把海分成五层。分界线不是随便画的：200 米是光合作用的极限，
+      1000 米以下连仪器都测不到阳光。
+    </p>
+    <div class="dive" id="dive"></div>
+  </section>
+
+  <!-- 深度标尺 -->
+  <section>
+    <h2>这些东西各在多深</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      同一根标尺上比一比。人能自由下潜的深度，和海最深处比起来几乎看不见。
+    </p>
+    <div class="ruler" id="ruler"></div>
+  </section>
+
+  <!-- 压强 -->
+  <section>
+    <h2>下潜时身上压着多少水</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      每往下 10 米，压力就<b>增加一个大气压</b>。拖动滑块看看在不同深度，
+      指甲盖那么大的面积（1 平方厘米）上压着多重的东西。
+    </p>
+    <div class="card" style="padding:18px">
+      <label for="dep" style="display:block;margin-bottom:6px">
+        下潜深度：<b id="depv" style="font-family:var(--mono);color:var(--video)">40 米</b>
+      </label>
+      <input id="dep" type="range" min="0" max="10935" step="5" value="40" style="width:100%">
+      <div class="press" style="margin-top:16px">
+        <div class="press-vis">
+          <div class="can" id="can"></div>
+          <div class="press-num" id="pnum">5.0</div>
+          <div class="press-lab">个大气压</div>
+        </div>
+        <div class="press-rows" id="prows"></div>
+      </div>
+      <p style="font-size:.82rem;color:var(--ink-dim);margin:14px 0 0">
+        计算方式：压强 = 1 + 深度÷10（大气压）。这是海水的近似值，够孩子建立直觉。
+        真实计算还要考虑海水密度随深度和盐度的细微变化。
+      </p>
+    </div>
+  </section>
+
+  <!-- 生物 -->
+  <section>
+    <h2>住在海里的邻居</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      按住的深度排开。照片来自 iNaturalist 的公开观察记录，联网时自动加载。
+    </p>
+    <div class="cgrid" id="crits" style="margin-top:14px"></div>
+  </section>
+
+  <!-- 动手 -->
+  <section>
+    <h2>在家做：三个和海有关的实验</h2>
+    <div class="grid grid-2" id="acts"></div>
+  </section>
+
+</main>
+
+<footer class="foot wrap-narrow" style="text-align:center;padding:30px 0 46px">
+  深度与压强数据为公开海洋学常用值；生物照片与学名来自
+  <a href="https://www.inaturalist.org/" target="_blank" rel="noopener">iNaturalist</a>，
+  分布数据可参考 <a href="https://obis.org/" target="_blank" rel="noopener">OBIS</a>。
+  离线时页面显示内置数据，功能不受影响。
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 五层海 ---------- */
+  var ZONES = [
+    {
+      n: "阳光层", en: "Sunlight / Epipelagic", from: 0, to: 200,
+      bg: "linear-gradient(180deg,#38bdf8,#0ea5e9)",
+      light: "linear-gradient(90deg,#fde68a,#fbbf24)", lightPct: "100%",
+      lightNote: "阳光充足 · 能进行光合作用",
+      say: "海里几乎所有植物都住这一层，因为只有这里的光够强，海藻才能进行光合作用。海洋里 90% 的生物也住在这层——有饭吃的地方才热闹。",
+      who: ["海豚", "小丑鱼", "海龟", "鲸鲨", "海藻"]
+    },
+    {
+      n: "微光层", en: "Twilight / Mesopelagic", from: 200, to: 1000,
+      bg: "linear-gradient(180deg,#0ea5e9,#1e40af)",
+      light: "linear-gradient(90deg,#93c5fd,transparent)", lightPct: "30%",
+      lightNote: "只剩微弱蓝光 · 无法光合作用",
+      say: "光弱到植物活不下去。很多鱼白天躲在这层，晚上才游到上面吃东西——这是地球上规模最大的每日迁徙。这里的鱼眼睛特别大，为了收集那一点点光。",
+      who: ["抹香鲸（下潜）", "灯笼鱼", "巨型乌贼"]
+    },
+    {
+      n: "无光层", en: "Midnight / Bathypelagic", from: 1000, to: 4000,
+      bg: "linear-gradient(180deg,#1e3a8a,#111a3d)",
+      light: "linear-gradient(90deg,#1e3a8a,transparent)", lightPct: "4%",
+      lightNote: "完全黑暗 · 唯一的光来自生物自己",
+      say: "一丝阳光都没有。这里能看到的光全是动物自己发的——<b>生物发光</b>。有的用来找同伴，有的挂在头前当钓饵。泰坦尼克号就沉在这一层（3,800 米）。",
+      who: ["鮟鱇鱼", "吸血乌贼", "深海水母"]
+    },
+    {
+      n: "深渊层", en: "Abyss / Abyssopelagic", from: 4000, to: 6000,
+      bg: "linear-gradient(180deg,#111a3d,#0b1020)",
+      light: "linear-gradient(90deg,#0f172f,transparent)", lightPct: "1%",
+      lightNote: "永久黑暗 · 水温接近 2°C",
+      say: "水温常年只有 2 度左右，压力是海面的四百多倍。食物极少，大部分靠上层沉下来的碎屑——科学家叫它「海洋雪」。这里的动物普遍动作极慢，为了省能量。",
+      who: ["深海海参", "盲虾", "三脚架鱼"]
+    },
+    {
+      n: "超深渊层", en: "Hadal / Hadopelagic", from: 6000, to: 11034,
+      bg: "linear-gradient(180deg,#0b1020,#05070f)",
+      light: "linear-gradient(90deg,#080d1c,transparent)", lightPct: "0%",
+      lightNote: "绝对黑暗 · 压力超过 600 个大气压",
+      say: "只存在于海沟里，占海洋面积不到 0.25%。人类到这里的次数比登月的人还少。但即使在最深的马里亚纳海沟底部，依然发现了活着的虾状动物和微生物。",
+      who: ["狮子鱼", "深渊钩虾", "海沟微生物"]
+    }
+  ];
+
+  var dive = document.getElementById("dive");
+  ZONES.forEach(function (z) {
+    var d = document.createElement("div");
+    d.className = "zone";
+    d.style.background = z.bg;
+
+    var hd = document.createElement("div");
+    hd.className = "zone-hd";
+    var h = document.createElement("h3");
+    h.textContent = z.n;
+    var en = document.createElement("span");
+    en.className = "en";
+    en.textContent = z.en;
+    var dp = document.createElement("span");
+    dp.className = "zone-depth";
+    dp.textContent = z.from.toLocaleString() + "–" + z.to.toLocaleString() + " m";
+    hd.appendChild(h); hd.appendChild(en); hd.appendChild(dp);
+    d.appendChild(hd);
+
+    var p = document.createElement("p");
+    p.innerHTML = z.say;
+    d.appendChild(p);
+
+    var lb = document.createElement("div");
+    lb.className = "lightbar";
+    lb.style.background = z.light;
+    lb.style.width = z.lightPct;
+    d.appendChild(lb);
+
+    var ln = document.createElement("div");
+    ln.className = "lightnote";
+    ln.textContent = z.lightNote;
+    d.appendChild(ln);
+
+    var w = document.createElement("div");
+    w.className = "who";
+    z.who.forEach(function (x) {
+      var s = document.createElement("span");
+      s.textContent = x;
+      w.appendChild(s);
+    });
+    d.appendChild(w);
+
+    dive.appendChild(d);
+  });
+
+  /* ---------- 深度标尺 ---------- */
+  var MARKS = [
+    { d: 40,    t: "休闲潜水的安全上限", hi: false },
+    { d: 214,   t: "人类自由潜纪录（无装备）", hi: true },
+    { d: 332,   t: "水肺潜水世界纪录", hi: false },
+    { d: 2250,  t: "抹香鲸最深下潜", hi: true },
+    { d: 3800,  t: "泰坦尼克号残骸", hi: true },
+    { d: 8849,  t: "珠穆朗玛峰的高度（对比）", hi: true },
+    { d: 10935, t: "马里亚纳海沟最深处", hi: true }
+  ];
+  var ruler = document.getElementById("ruler");
+  var MAXD = 11034;
+  MARKS.forEach(function (m) {
+    var el = document.createElement("div");
+    el.className = "rmark" + (m.hi ? " hi" : "");
+    // 用平方根压缩，否则浅处全挤在顶端
+    el.style.top = (Math.sqrt(m.d / MAXD) * 96 + 2) + "%";
+    var i = document.createElement("i");
+    var b = document.createElement("b");
+    b.textContent = m.d.toLocaleString() + " m";
+    var s = document.createElement("span");
+    s.textContent = m.t;
+    el.appendChild(i); el.appendChild(b); el.appendChild(s);
+    ruler.appendChild(el);
+  });
+
+  /* ---------- 压强计算器 ---------- */
+  var dep = document.getElementById("dep");
+  var depv = document.getElementById("depv");
+  var pnum = document.getElementById("pnum");
+  var prows = document.getElementById("prows");
+  var can = document.getElementById("can");
+
+  function press() {
+    var d = +dep.value;
+    var atm = 1 + d / 10;
+    depv.textContent = d.toLocaleString() + " 米";
+    pnum.textContent = atm < 10 ? atm.toFixed(1) : Math.round(atm).toLocaleString();
+
+    // 罐子按压力可视化压缩（仅示意，不代表真实压缩率）
+    var sq = Math.max(0.22, 1 - Math.log10(atm + 1) / 3.6);
+    can.style.transform = "scaleX(" + sq.toFixed(3) + ") scaleY(" + (0.55 + sq * 0.45).toFixed(3) + ")";
+
+    var kgcm2 = atm * 1.033;                 // 1 atm ≈ 1.033 kgf/cm²
+    var perPalm = kgcm2 * 100;               // 手掌约 100 cm²
+    var rows = [
+      ["每 1 cm²（指甲盖）压着", kgcm2.toFixed(1) + " kg"],
+      ["整个手掌（约 100 cm²）", Math.round(perPalm).toLocaleString() + " kg"],
+      ["相当于几头大象压手掌", (perPalm / 4000).toFixed(2) + " 头"],
+      ["这里还有阳光吗", d <= 200 ? "有，能光合作用" : d <= 1000 ? "只剩微弱蓝光" : "完全黑暗"],
+      ["水温大约", d <= 200 ? "随季节 15–25°C" : d <= 1000 ? "约 5–10°C" : "约 2–4°C"],
+      ["谁能到这里", who(d)]
+    ];
+    prows.textContent = "";
+    rows.forEach(function (r) {
+      var el = document.createElement("div");
+      el.className = "prow";
+      var s = document.createElement("span");
+      s.textContent = r[0];
+      var b = document.createElement("b");
+      b.textContent = r[1];
+      el.appendChild(s); el.appendChild(b);
+      prows.appendChild(el);
+    });
+  }
+  function who(d) {
+    if (d <= 40) return "普通潜水员";
+    if (d <= 214) return "自由潜运动员";
+    if (d <= 332) return "水肺潜水纪录";
+    if (d <= 2250) return "抹香鲸";
+    if (d <= 3800) return "载人深潜器";
+    if (d <= 8000) return "少数深潜器";
+    return "极少数深潜器";
+  }
+  dep.addEventListener("input", press);
+  press();
+
+  /* ---------- 生物 ---------- */
+  var CRITS = [
+    { n: "蓝鲸", sci: "Balaenoptera musculus", inat: "Balaenoptera musculus",
+      depth: "0–150 m", zone: "阳光层", emo: "🐋",
+      fact: "地球上最大的动物，比已知任何恐龙都重。心脏和小汽车差不多大，叫声能传几百公里。" },
+    { n: "小丑鱼", sci: "Amphiprion", inat: "Amphiprion",
+      depth: "1–15 m", zone: "阳光层", emo: "🐠",
+      fact: "住在海葵的毒触手里却不被蛰——它身上有层特殊黏液。海葵保护它，它帮海葵赶走天敌。" },
+    { n: "绿海龟", sci: "Chelonia mydas", inat: "Chelonia mydas",
+      depth: "0–40 m", zone: "阳光层", emo: "🐢",
+      fact: "能活到 70 岁以上。小海龟孵化后游进大海，几十年后竟能回到自己出生的那片沙滩产卵。" },
+    { n: "鲸鲨", sci: "Rhincodon typus", inat: "Rhincodon typus",
+      depth: "0–1000 m", zone: "阳光层→微光层", emo: "🦈",
+      fact: "世界上最大的鱼，能长到 12 米。但它只吃浮游生物和小鱼，对人完全无害，嘴张开像个大吸尘器。" },
+    { n: "月亮水母", sci: "Aurelia aurita", inat: "Aurelia aurita",
+      depth: "0–1000 m", zone: "阳光层→微光层", emo: "🪼",
+      fact: "身体 95% 是水，没有大脑、没有心脏、没有血液。已经在地球上存在超过五亿年，比恐龙还早得多。" },
+    { n: "抹香鲸", sci: "Physeter macrocephalus", inat: "Physeter macrocephalus",
+      depth: "可潜至 2250 m", zone: "微光层→无光层", emo: "🐳",
+      fact: "哺乳动物里的下潜冠军，一口气能在水下待九十分钟。靠回声定位在漆黑深海找巨型乌贼。" },
+    { n: "大王乌贼", sci: "Architeuthis dux", inat: "Architeuthis dux",
+      depth: "300–1000 m", zone: "微光层", emo: "🦑",
+      fact: "眼睛直径可达 27 厘米，是动物界最大的眼睛——在几乎无光的深海，越大的眼睛才能看见越多。" },
+    { n: "鮟鱇鱼", sci: "Melanocetus johnsonii", inat: "Melanocetus johnsonii",
+      depth: "1000–4000 m", zone: "无光层", emo: "🎣",
+      fact: "头顶挂着一盏会发光的「钓竿」，光是靠身上的细菌发出来的。小鱼被光吸引过来，就被一口吞掉。" },
+    { n: "大王酸浆鱿", sci: "Mesonychoteuthis hamiltoni", inat: "Mesonychoteuthis hamiltoni",
+      depth: "1000–2200 m", zone: "无光层", emo: "🦑",
+      fact: "比大王乌贼更重，触手上长着能转动的钩子。抹香鲸胃里常发现它的喙，是两者搏斗的证据。" },
+    { n: "深海狮子鱼", sci: "Pseudoliparis", inat: "Pseudoliparis",
+      depth: "6000–8300 m", zone: "超深渊层", emo: "🐟",
+      fact: "目前记录到的最深的鱼。身体像果冻一样软，没有鱼鳞也没有气囊——硬结构在这种压力下反而是负担。" }
+  ];
+
+  var crits = document.getElementById("crits");
+  CRITS.forEach(function (c) {
+    var el = document.createElement("article");
+    el.className = "card crit";
+
+    var slot = document.createElement("div");
+    slot.className = "ph-ph";
+    slot.textContent = c.emo;
+    slot.setAttribute("data-inat", c.inat);
+    el.appendChild(slot);
+
+    var b = document.createElement("div");
+    b.className = "crit-b";
+    var h = document.createElement("h3");
+    h.textContent = c.n;
+    var sci = document.createElement("p");
+    sci.className = "sci";
+    sci.textContent = c.sci;
+    var f = document.createElement("p");
+    f.className = "fact";
+    f.textContent = c.fact;
+    var m = document.createElement("div");
+    m.className = "crit-meta";
+    [c.depth, c.zone].forEach(function (x) {
+      var p = document.createElement("span");
+      p.className = "pill";
+      p.textContent = x;
+      m.appendChild(p);
+    });
+    b.appendChild(h); b.appendChild(sci); b.appendChild(f); b.appendChild(m);
+    el.appendChild(b);
+    crits.appendChild(el);
+  });
+
+  /* ---------- 动手实验 ---------- */
+  var ACTS = [
+    { t: "自制潜水艇（浮沉子）",
+      need: "塑料瓶、酱油包或笔帽、橡皮泥",
+      how: "笔帽上粘一小块橡皮泥，让它在水里刚好悬浮。放进装满水的塑料瓶，盖紧。用力挤瓶子——它就往下沉；松手——它又浮起来。",
+      why: "挤压让瓶内压力变大，把水压进笔帽、挤走里面的空气，浮力变小就下沉。真潜艇也是同一原理：往压载舱注水就下潜，排水就上浮。" },
+    { t: "为什么深海鱼不会被压扁",
+      need: "两个密封袋、水",
+      how: "一个袋子装满水密封，另一个装满空气密封。都按进水盆里，用力挤。装水的几乎挤不动，装空气的很容易变形。",
+      why: "水几乎<b>不可压缩</b>。深海鱼体内基本都是水，所以外面压力再大也压不瘪。真正怕压的是含气体的结构——这就是深海鱼大多没有鱼鳔的原因。" },
+    { t: "光在水里走多远",
+      need: "手电筒、深一点的容器、牛奶几滴",
+      how: "在清水里照手电，光能穿到底。滴几滴牛奶搅匀再照，光就只能透进一小段。逐渐加牛奶，记录光每次能走多深。",
+      why: "海水里的浮游生物和悬浮颗粒会散射、吸收光线，所以光越往下越少。红光最先消失（几米内），蓝光能走最远——这就是深海照片总是蓝色的原因。" },
+    { t: "海水为什么比淡水浮",
+      need: "两个杯子、盐、鸡蛋或葡萄",
+      how: "一杯清水，一杯加三大勺盐搅到化开。同一个鸡蛋分别放进去：清水里沉底，盐水里浮起来。试试能不能配出让它悬在中间的浓度。",
+      why: "盐溶解后水的<b>密度</b>变大，浮力也变大。死海盐度极高，人躺上去就能漂着。海洋里不同盐度和温度的水层不会轻易混合，会形成分层。" }
+  ];
+  var acts = document.getElementById("acts");
+  ACTS.forEach(function (a) {
+    var c = document.createElement("div");
+    c.className = "card";
+    c.style.padding = "17px 19px";
+    var h = document.createElement("h3");
+    h.style.margin = "0 0 4px";
+    h.style.fontSize = "1.04rem";
+    h.textContent = a.t;
+    var n = document.createElement("p");
+    n.style.cssText = "margin:0 0 9px;font-size:.76rem;color:var(--ink-dim);font-family:var(--mono)";
+    n.textContent = "需要：" + a.need;
+    var hw = document.createElement("p");
+    hw.style.cssText = "margin:0 0 9px;font-size:.88rem;color:var(--ink-mid)";
+    hw.innerHTML = a.how;
+    var wy = document.createElement("p");
+    wy.style.cssText = "margin:0;font-size:.83rem;color:var(--ink-mid);border-left:2px solid var(--video);padding-left:10px";
+    wy.innerHTML = "<b style='color:var(--video)'>原理：</b>" + a.why;
+    c.appendChild(h); c.appendChild(n); c.appendChild(hw); c.appendChild(wy);
+    acts.appendChild(c);
+  });
+
+  /* ---------- 联网增强：iNaturalist 照片 ---------- */
+  var srcEl = document.getElementById("src");
+  var netOk = null;
+  function mark(ok) {
+    if (netOk === false) return;
+    netOk = ok;
+    srcEl.textContent = ok
+      ? "照片来自 iNaturalist（加载中或已完成）。"
+      : "离线模式 · 显示内置数据（照片需要联网）";
+  }
+
+  function jget(url, ms) {
+    var ac = new AbortController();
+    var t = setTimeout(function () { ac.abort(); }, ms || 8000);
+    return fetch(url, { signal: ac.signal })
+      .then(function (r) {
+        clearTimeout(t);
+        if (!r.ok) throw new Error("http " + r.status);
+        return r.json();
+      })
+      .catch(function (e) { clearTimeout(t); throw e; });
+  }
+
+  [].slice.call(document.querySelectorAll("[data-inat]")).forEach(function (slot) {
+    var q = slot.getAttribute("data-inat");
+    var ck = "inat-ocean:" + q;
+
+    function paint(rec) {
+      if (!rec || !rec.url) return;
+      var img = document.createElement("img");
+      img.className = "ph";
+      img.alt = q;
+      // 先插进文档再设 src：游离节点不会触发加载，onload 永远不来。
+      // 也不能用 loading="lazy"——同样的原因。
+      img.style.display = "none";
+      slot.appendChild(img);
+      img.onload = function () {
+        // 加载成功才清掉 emoji 占位，避免闪成空白
+        [].slice.call(slot.childNodes).forEach(function (n) {
+          if (n !== img) slot.removeChild(n);
+        });
+        slot.className = "";
+        img.style.display = "";
+      };
+      img.onerror = function () { img.remove(); };  // 失败保留 emoji 占位
+      img.src = rec.url;
+    }
+
+    try {
+      var c = localStorage.getItem(ck);
+      if (c) { paint(JSON.parse(c)); mark(true); return; }
+    } catch (e) {}
+
+    jget("https://api.inaturalist.org/v1/taxa?q=" + encodeURIComponent(q) + "&per_page=6")
+      .then(function (d) {
+        var rs = (d && d.results) || [];
+        var want = q.split(" ")[0].toLowerCase();
+        var hit = null;
+        for (var i = 0; i < rs.length; i++) {
+          var r = rs[i];
+          var nm = (r.name || "").toLowerCase();
+          if (nm.indexOf(want) === 0 && r.default_photo && r.default_photo.medium_url) {
+            hit = { url: r.default_photo.medium_url, name: r.name };
+            break;
+          }
+        }
+        if (hit) {
+          try { localStorage.setItem(ck, JSON.stringify(hit)); } catch (e) {}
+          paint(hit);
+          mark(true);
+        }
+      })
+      .catch(function () { mark(false); });
+  });
+})();
+</script>
+</body>
+</html>

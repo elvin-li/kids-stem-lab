@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>重力落体实验 · 羽毛与锤子 | 少儿数理启蒙</title>
+<meta name="description" content="切换有空气与真空，改变重力大小，看羽毛、皮球和锤子谁先落地。重现 Apollo 15 号在月球上的经典实验。" />
+<link rel="stylesheet" href="../assets/css/base.css">
+<style>
+  .lab-head { margin: 24px 0 18px; }
+  .lab-head p.lead { font-size: 1.02rem; max-width: 62ch; }
+  .seg { display: flex; gap: 8px; flex-wrap: wrap; }
+  .obj-row { padding: 8px 0; border-bottom: 1px dashed var(--line-soft); }
+  .obj-row:last-child { border-bottom: 0; }
+  .obj-top { display: flex; align-items: center; gap: 7px; font-size: .82rem; font-weight: 700; color: var(--ink); }
+  .obj-top .sw { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+  .obj-top .num { margin-left: auto; font-family: var(--mono); font-weight: 700; font-size: .8rem; }
+  .obj-sub { font-family: var(--mono); font-size: .72rem; color: var(--ink-dim); margin-top: 2px; }
+  .vbar { height: 6px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line-soft); overflow: hidden; margin-top: 5px; }
+  .vbar > i { display: block; height: 100%; width: 0; }
+  .qlist { margin: 0; padding-left: 1.15em; color: var(--ink-mid); font-size: .94rem; }
+  .qlist li { margin-bottom: .5em; }
+  .qlist b { color: var(--ink); }
+  .why { font-size: .95rem; }
+  .why h3 { margin-top: 1.1em; }
+  .tag-row { gap: 8px; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#stage">跳到实验画面</a>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<main class="wrap" id="main">
+
+  <header class="lab-head stack">
+    <div class="row tag-row">
+      <span class="pill pill-phys">物理 · 力与运动</span>
+      <span class="pill">6–12 岁</span>
+      <span class="pill">约 10 分钟</span>
+    </div>
+    <h1>羽毛、皮球和锤子，谁先落地？</h1>
+    <p class="lead">这在教什么：<b>重力让所有东西以同样的加速度下落</b>。看起来羽毛慢，是空气阻力在拖它 —— 抽掉空气，三个东西会一起落地。</p>
+  </header>
+
+  <div class="lab">
+    <!-- ================= 舞台 ================= -->
+    <div class="lab-stage" id="stage">
+      <canvas id="scene" role="img"
+        aria-label="下落实验画面：羽毛、皮球、锤子从同一高度落下，画面显示运动轨迹与落地时间"></canvas>
+      <p id="live" class="sr-only" aria-live="polite"></p>
+    </div>
+
+    <!-- ================= 控制面板 ================= -->
+    <div>
+      <div class="panel">
+        <h3>实验条件</h3>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label id="airLbl">空气</label><b id="airVal">有空气</b></div>
+          <div class="seg" role="group" aria-labelledby="airLbl">
+            <button class="chip" id="airOn"  type="button" aria-pressed="true">有空气</button>
+            <button class="chip" id="airOff" type="button" aria-pressed="false">真空</button>
+          </div>
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label id="planetLbl">星球</label><b id="planetVal">地球</b></div>
+          <div class="seg" role="group" aria-labelledby="planetLbl">
+            <button class="chip" type="button" data-g="9.81"  aria-pressed="true">地球</button>
+            <button class="chip" type="button" data-g="1.62"  aria-pressed="false">月球</button>
+            <button class="chip" type="button" data-g="3.71"  aria-pressed="false">火星</button>
+            <button class="chip" type="button" data-g="24.79" aria-pressed="false">木星</button>
+          </div>
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="gRange">重力加速度 g</label><b id="gOut">9.81 m/s²</b></div>
+          <input class="input" type="range" id="gRange" min="0.5" max="25" step="0.01" value="9.81"
+                 aria-describedby="gHint">
+          <div class="obj-sub" id="gHint">地球 9.81 · 月球 1.62 · 火星 3.71 · 木星 24.79</div>
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="hRange">下落高度</label><b id="hOut">8.0 m</b></div>
+          <input class="input" type="range" id="hRange" min="2" max="20" step="0.5" value="8">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="tsRange">慢动作</label><b id="tsOut">1.00×</b></div>
+          <input class="input" type="range" id="tsRange" min="0.1" max="1" step="0.05" value="1">
+        </div>
+
+        <div class="row">
+          <button class="btn btn-primary" id="go" type="button">松手，开始下落</button>
+          <button class="btn btn-ghost btn-sm" id="reset" type="button">重置</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>实时数据</h3>
+        <div class="obj-row" data-row="0">
+          <div class="obj-top"><i class="sw" style="background:var(--sci)"></i><span>羽毛</span><span class="num" data-v>0.00 m/s</span></div>
+          <div class="vbar"><i data-bar style="background:var(--sci)"></i></div>
+          <div class="obj-sub">质量 5 g · <span data-t>未落地</span></div>
+        </div>
+        <div class="obj-row" data-row="1">
+          <div class="obj-top"><i class="sw" style="background:var(--math)"></i><span>皮球</span><span class="num" data-v>0.00 m/s</span></div>
+          <div class="vbar"><i data-bar style="background:var(--math)"></i></div>
+          <div class="obj-sub">质量 150 g · <span data-t>未落地</span></div>
+        </div>
+        <div class="obj-row" data-row="2">
+          <div class="obj-top"><i class="sw" style="background:var(--code)"></i><span>锤子</span><span class="num" data-v>0.00 m/s</span></div>
+          <div class="vbar"><i data-bar style="background:var(--code)"></i></div>
+          <div class="obj-sub">质量 1300 g · <span data-t>未落地</span></div>
+        </div>
+        <div class="readout" style="margin-top:10px"><span>计时</span><b id="clock">0.00 s</b></div>
+        <div class="readout"><span>最先与最后相差</span><b id="gap">—</b></div>
+      </div>
+
+      <div class="panel">
+        <h3>试试这个</h3>
+        <p class="obj-sub" style="font-size:.85rem;line-height:1.6;color:var(--ink-mid)">
+          先在「有空气」里落一次，记住谁最后到；再切到「真空」落一次。<br>
+          然后把重力换成月球，看下落变得多慢。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 家长 & 原理 ================= -->
+  <div class="grid-2" style="margin-top:22px">
+    <section class="card">
+      <h2 style="font-size:1.15rem">给家长的提问脚本</h2>
+      <ol class="qlist">
+        <li><b>预测：</b>「如果我同时松手，羽毛和锤子谁先掉到地上？为什么？」（先让孩子说完整理由，再一起看真空模式）</li>
+        <li><b>解释：</b>「真空里羽毛掉得和锤子一样快，那平时是什么在拖住羽毛？」（引导到「空气」这个看不见但真实存在的东西）</li>
+        <li><b>迁移：</b>「月球上的重力只有地球的六分之一，所以东西掉得更慢。那你在月球上能跳多高？」（可以让孩子把 g 拉到 1.62 数一数落地时间）</li>
+      </ol>
+      <p class="obj-sub" style="margin-top:10px;color:var(--ink-dim)">小提示：孩子说「重的东西掉得快」是非常正常的直觉，亚里士多德也这么想了两千年。不要直接纠正，用真空模式让他自己看见。</p>
+    </section>
+
+    <section class="card why">
+      <h2 style="font-size:1.15rem">背后的原理</h2>
+      <p><b>重力加速度与质量无关。</b>物体受到的重力是 <code>F = m·g</code>，而牛顿第二定律说加速度是 <code>a = F / m</code>。两个 <code>m</code> 正好抵消，剩下 <code>a = g</code>。所以只要没有别的力，所有物体的下落加速度都一样。</p>
+      <h3>那空气做了什么？</h3>
+      <p>空气阻力大致是 <code>F_d = ½ · ρ · C_d · A · v²</code>：跟迎风面积 <code>A</code> 和速度平方成正比。羽毛面积大、质量小，阻力很快就追上重力，于是它进入<b>终端速度</b>（匀速下落）；锤子又重又小，阻力相对它的重量微不足道，几乎是自由落体。</p>
+      <h3>Apollo 15</h3>
+      <p>1971 年，航天员 David Scott 在月球表面同时松开一把地质锤和一根猎鹰羽毛。月球没有空气，两样东西并排落地。这是伽利略的猜想第一次在真空中被现场验证。</p>
+      <p class="obj-sub" style="color:var(--ink-dim)">本模拟说明：三个物体的画面大小做了夸张处理，方便观察；物理量（质量、面积、阻力系数）取的是接近真实的估值，积分用固定步长 1/480 秒，所以慢动作下数值依然稳定。</p>
+    </section>
+  </div>
+
+  <footer class="foot wrap" style="padding-left:0;padding-right:0">
+    少儿数理启蒙 · 互动实验 — 重力落体。所有计算在你的浏览器里完成，不联网。
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- 调色板（只取 base.css 里的变量） ----------
+  var css = getComputedStyle(document.documentElement);
+  function V(n, fb) { var v = css.getPropertyValue(n); return (v && v.trim()) || fb; }
+  var C = {
+    ink:   V('--ink', '#eef2ff'),
+    mid:   V('--ink-mid', '#b6c0e0'),
+    dim:   V('--ink-dim', '#7d88ab'),
+    line:  V('--line', '#2a3355'),
+    soft:  V('--line-soft', '#202844'),
+    surf:  V('--surface-2', '#1d2540'),
+    sci:   V('--sci', '#4ade80'),
+    math:  V('--math', '#6ea8fe'),
+    code:  V('--code', '#fb923c'),
+    phys:  V('--phys', '#a78bfa'),
+    warn:  V('--warn', '#fbbf24')
+  };
+
+  // ---------- 物体定义 ----------
+  // m: kg, area: m^2 迎风面积, cd: 阻力系数, draw: 画法
+  var BODIES = [
+    { name: '羽毛', m: 0.005, area: 0.020, cd: 1.10, color: C.sci,  kind: 'feather', r: 15 },
+    { name: '皮球', m: 0.150, area: 0.0079, cd: 0.47, color: C.math, kind: 'ball',    r: 14 },
+    { name: '锤子', m: 1.300, area: 0.0060, cd: 1.00, color: C.code, kind: 'hammer',  r: 15 }
+  ];
+
+  var RHO_AIR = 1.225;          // kg/m^3
+  var DT = 1 / 480;             // 固定积分步长
+  var MAX_STEPS = 400;          // 单帧最多步数，防止卡顿后爆炸
+
+  var S = {
+    g: 9.81,
+    height: 8,
+    air: true,
+    timeScale: 1,
+    running: false,
+    t: 0,
+    bodies: []
+  };
+
+  function resetBodies() {
+    S.bodies = BODIES.map(function (b) {
+      return { def: b, s: 0, v: 0, landed: false, tLand: null, trail: [], tTrail: 0, puff: 0 };
+    });
+    S.t = 0;
+    S.running = false;
+    announce('已重置。高度 ' + S.height.toFixed(1) + ' 米，重力 ' + S.g.toFixed(2) + '。');
+  }
+
+  // ---------- 物理 ----------
+  function step(dt) {
+    var rho = S.air ? RHO_AIR : 0;
+    var allDown = true;
+    for (var i = 0; i < S.bodies.length; i++) {
+      var o = S.bodies[i], d = o.def;
+      if (o.landed) { if (o.puff > 0) o.puff = Math.max(0, o.puff - dt * 1.6); continue; }
+      allDown = false;
+      // 半隐式欧拉：a = g - drag/m
+      var drag = 0.5 * rho * d.cd * d.area * o.v * o.v;   // v >= 0 向下
+      var a = S.g - drag / d.m;
+      o.v += a * dt;
+      if (o.v < 0) o.v = 0;                               // 阻力不会把东西推回去
+      o.s += o.v * dt;
+      if (!isFinite(o.s) || !isFinite(o.v)) { o.s = S.height; o.v = 0; }  // 保险
+      if (o.s >= S.height) {
+        o.s = S.height;
+        o.landed = true;
+        o.tLand = S.t;
+        o.puff = 1;
+      }
+      o.tTrail += dt;
+      if (o.tTrail >= 0.04) {
+        o.tTrail = 0;
+        o.trail.push(o.s);
+        if (o.trail.length > 260) o.trail.shift();
+      }
+    }
+    S.t += dt;
+    if (allDown) finish();
+  }
+
+  var finished = false;
+  function finish() {
+    if (!S.running) return;
+    S.running = false;
+    finished = true;
+    btnGo.textContent = '再落一次';
+    var ts = S.bodies.map(function (o) { return o.tLand || 0; });
+    var gap = Math.max.apply(null, ts) - Math.min.apply(null, ts);
+    if (gap < 0.02) {
+      toast('三个一起落地！');
+      announce('三个物体同时落地，时间差小于 0.02 秒。');
+    } else {
+      var last = S.bodies[ts.indexOf(Math.max.apply(null, ts))].def.name;
+      announce(last + '最后落地，比第一个慢 ' + gap.toFixed(2) + ' 秒。');
+    }
+  }
+
+  // ---------- Canvas ----------
+  var cv = document.getElementById('scene');
+  var ctx = cv.getContext('2d');
+  var stage = document.getElementById('stage');
+  var W = 640, H = 420, dpr = 1;
+
+  function resize() {
+    var cssW = Math.max(260, stage.clientWidth - 28);
+    var cssH = Math.round(Math.min(560, Math.max(330, cssW * 0.66)));
+    dpr = Math.min(3, window.devicePixelRatio || 1);
+    cv.style.height = cssH + 'px';
+    cv.width = Math.round(cssW * dpr);
+    cv.height = Math.round(cssH * dpr);
+    W = cssW; H = cssH;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function drawShape(kind, x, y, r, color, alpha) {
+    // y = 物体底部
+    ctx.save();
+    ctx.globalAlpha = alpha === undefined ? 1 : alpha;
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    if (kind === 'ball') {
+      ctx.beginPath();
+      ctx.arc(x, y - r, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = (alpha === undefined ? 1 : alpha) * 0.5;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(x - r * 0.32, y - r * 1.35, r * 0.28, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (kind === 'hammer') {
+      // 手柄
+      ctx.fillStyle = color;
+      roundRect(x - 2.5, y - r * 2.2, 5, r * 2.2, 2); ctx.fill();
+      // 锤头
+      roundRect(x - r, y - r * 2.9, r * 2, r * 0.85, 3); ctx.fill();
+    } else {
+      // 羽毛：一片斜的椭圆 + 羽轴
+      ctx.save();
+      ctx.translate(x, y - r);
+      ctx.rotate(-0.5);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, r * 0.42, r * 1.05, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(0, -r * 1.05); ctx.lineTo(0, r * 1.25);
+      ctx.lineWidth = 1.6;
+      ctx.strokeStyle = C.ink;
+      ctx.globalAlpha = (alpha === undefined ? 1 : alpha) * 0.55;
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    var padT = 30, padB = 44, rulerX = 46;
+    var y0 = padT, y1 = H - padB;
+    var scale = (y1 - y0) / S.height;      // px per meter
+    var lanes = [0.38, 0.60, 0.82].map(function (f) { return rulerX + (W - rulerX) * (f - 0.2) / 0.8; });
+    // 简化：均匀分布在标尺右侧
+    var usable = W - rulerX - 16;
+    lanes = [0, 1, 2].map(function (i) { return rulerX + usable * (0.22 + 0.29 * i); });
+
+    // 天空渐变（真空更暗）
+    var sky = ctx.createLinearGradient(0, y0 - 18, 0, y1);
+    if (S.air) {
+      sky.addColorStop(0, 'rgba(110,168,254,.13)');
+      sky.addColorStop(1, 'rgba(110,168,254,.02)');
+    } else {
+      sky.addColorStop(0, 'rgba(167,139,250,.10)');
+      sky.addColorStop(1, 'rgba(11,15,26,.02)');
+    }
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, y1);
+
+    // 空气「颗粒」提示（只在有空气时）
+    if (S.air) {
+      ctx.fillStyle = 'rgba(182,192,224,.20)';
+      for (var i = 0; i < 46; i++) {
+        var px = ((i * 97) % 100) / 100 * (W - rulerX - 10) + rulerX + 5;
+        var py = ((i * 53) % 100) / 100 * (y1 - y0 - 6) + y0 + 3;
+        ctx.beginPath(); ctx.arc(px, py, 1.2, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    // 标尺
+    ctx.strokeStyle = C.line;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(rulerX, y0); ctx.lineTo(rulerX, y1); ctx.stroke();
+    var stepM = S.height <= 6 ? 1 : (S.height <= 12 ? 2 : 4);
+    ctx.font = '600 10px ' + (css.getPropertyValue('--mono') || 'monospace');
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    for (var m = 0; m <= S.height + 0.001; m += stepM) {
+      var yy = y1 - m * scale;
+      ctx.strokeStyle = C.soft;
+      ctx.beginPath(); ctx.moveTo(rulerX - 5, yy); ctx.lineTo(W - 8, yy); ctx.stroke();
+      ctx.fillStyle = C.dim;
+      ctx.fillText(m.toFixed(0) + 'm', rulerX - 8, yy);
+    }
+
+    // 地面
+    ctx.fillStyle = 'rgba(29,37,64,.9)';
+    ctx.fillRect(0, y1, W, H - y1);
+    ctx.strokeStyle = C.line;
+    ctx.beginPath(); ctx.moveTo(0, y1 + .5); ctx.lineTo(W, y1 + .5); ctx.stroke();
+
+    // 物体 + 轨迹
+    ctx.textAlign = 'center';
+    for (var k = 0; k < S.bodies.length; k++) {
+      var o = S.bodies[k], d = o.def, x = lanes[k];
+
+      // 起点虚线
+      ctx.setLineDash([3, 5]);
+      ctx.strokeStyle = 'rgba(125,136,171,.45)';
+      ctx.beginPath(); ctx.moveTo(x - 22, y0); ctx.lineTo(x + 22, y0); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 轨迹
+      for (var j = 0; j < o.trail.length; j++) {
+        var age = (o.trail.length - j) / o.trail.length;
+        ctx.globalAlpha = 0.06 + 0.34 * (1 - age);
+        ctx.fillStyle = d.color;
+        ctx.beginPath();
+        ctx.arc(x, y1 - (S.height - o.trail[j]) * scale - d.r * 0.6, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      var yb = y0 + o.s * scale;   // 物体底部
+
+      // 落地小烟尘
+      if (o.puff > 0) {
+        ctx.globalAlpha = o.puff * 0.5;
+        ctx.strokeStyle = d.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, y1, 10 + (1 - o.puff) * 22, Math.PI, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      drawShape(d.kind, x, yb, d.r, d.color, 1);
+
+      // 名字 + 落地时间
+      ctx.font = '700 11px ' + V('--font', 'sans-serif');
+      ctx.fillStyle = o.landed ? d.color : C.mid;
+      ctx.fillText(d.name, x, H - 26);
+      ctx.font = '600 10px ' + (css.getPropertyValue('--mono') || 'monospace');
+      ctx.fillStyle = C.dim;
+      ctx.fillText(o.landed ? o.tLand.toFixed(2) + 's' : '—', x, H - 12);
+    }
+
+    // 左上状态
+    ctx.textAlign = 'left';
+    ctx.font = '700 12px ' + V('--font', 'sans-serif');
+    ctx.fillStyle = S.air ? C.math : C.phys;
+    ctx.fillText(S.air ? '有空气' : '真空', 8, 14);
+    ctx.fillStyle = C.dim;
+    ctx.font = '600 11px ' + (css.getPropertyValue('--mono') || 'monospace');
+    ctx.fillText('g = ' + S.g.toFixed(2) + ' m/s²   t = ' + S.t.toFixed(2) + ' s', 8, 28);
+  }
+
+  // ---------- 面板刷新 ----------
+  var rows = [0, 1, 2].map(function (i) {
+    var el = document.querySelector('[data-row="' + i + '"]');
+    return { v: el.querySelector('[data-v]'), bar: el.querySelector('[data-bar]'), t: el.querySelector('[data-t]') };
+  });
+  var clockEl = document.getElementById('clock');
+  var gapEl = document.getElementById('gap');
+
+  function refreshPanel() {
+    var vmax = 1;
+    S.bodies.forEach(function (o) { if (o.v > vmax) vmax = o.v; });
+    var ref = Math.max(10, Math.sqrt(2 * S.g * S.height));
+    S.bodies.forEach(function (o, i) {
+      rows[i].v.textContent = o.v.toFixed(2) + ' m/s';
+      rows[i].bar.style.width = Math.min(100, o.v / ref * 100).toFixed(1) + '%';
+      rows[i].t.textContent = o.landed ? ('落地 ' + o.tLand.toFixed(2) + ' s') : (S.running ? '正在下落' : '未落地');
+    });
+    clockEl.textContent = S.t.toFixed(2) + ' s';
+    var done = S.bodies.filter(function (o) { return o.landed; });
+    if (done.length === S.bodies.length) {
+      var ts = S.bodies.map(function (o) { return o.tLand; });
+      gapEl.textContent = (Math.max.apply(null, ts) - Math.min.apply(null, ts)).toFixed(2) + ' s';
+    } else {
+      gapEl.textContent = '—';
+    }
+  }
+
+  // ---------- 主循环 ----------
+  var last = 0, acc = 0;
+  function loop(now) {
+    if (!last) last = now;
+    var real = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (S.running) {
+      acc += real * S.timeScale;
+      var n = 0;
+      while (acc >= DT && n < MAX_STEPS) { step(DT); acc -= DT; n++; }
+      if (n >= MAX_STEPS) acc = 0;
+    } else {
+      acc = 0;
+    }
+    draw();
+    refreshPanel();
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- 交互 ----------
+  var btnGo = document.getElementById('go');
+  var toastEl = document.getElementById('toast');
+  var toastTimer = 0;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('on'); }, 2200);
+  }
+  var liveEl = document.getElementById('live');
+  function announce(msg) { liveEl.textContent = msg; }
+
+  btnGo.addEventListener('click', function () {
+    if (S.running) { S.running = false; btnGo.textContent = '继续'; return; }
+    var allLanded = S.bodies.every(function (o) { return o.landed; });
+    if (allLanded || finished) { resetBodies(); finished = false; }
+    S.running = true;
+    btnGo.textContent = '暂停';
+    announce('开始下落。');
+  });
+
+  document.getElementById('reset').addEventListener('click', function () {
+    resetBodies(); finished = false; btnGo.textContent = '松手，开始下落';
+  });
+
+  var airOn = document.getElementById('airOn'), airOff = document.getElementById('airOff');
+  var airVal = document.getElementById('airVal');
+  function setAir(on) {
+    S.air = on;
+    airOn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    airOff.setAttribute('aria-pressed', on ? 'false' : 'true');
+    airVal.textContent = on ? '有空气' : '真空';
+    resetBodies(); finished = false; btnGo.textContent = '松手，开始下落';
+    announce(on ? '已切换到有空气。' : '已切换到真空，没有空气阻力。');
+  }
+  airOn.addEventListener('click', function () { setAir(true); });
+  airOff.addEventListener('click', function () { setAir(false); });
+
+  var gRange = document.getElementById('gRange'), gOut = document.getElementById('gOut');
+  var planetVal = document.getElementById('planetVal');
+  var planetBtns = Array.prototype.slice.call(document.querySelectorAll('[data-g]'));
+  var PLANETS = { '9.81': '地球', '1.62': '月球', '3.71': '火星', '24.79': '木星' };
+
+  function setG(g, fromChip) {
+    g = Math.min(25, Math.max(0.5, g));
+    S.g = g;
+    gRange.value = String(g);
+    gOut.textContent = g.toFixed(2) + ' m/s²';
+    var name = '自定义';
+    planetBtns.forEach(function (b) {
+      var on = Math.abs(parseFloat(b.dataset.g) - g) < 0.005;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (on) name = PLANETS[b.dataset.g];
+    });
+    planetVal.textContent = name;
+    resetBodies(); finished = false; btnGo.textContent = '松手，开始下落';
+    if (fromChip) announce('重力已设为' + name + '，g = ' + g.toFixed(2) + '。');
+  }
+  gRange.addEventListener('input', function () { setG(parseFloat(gRange.value), false); });
+  planetBtns.forEach(function (b) {
+    b.addEventListener('click', function () { setG(parseFloat(b.dataset.g), true); });
+  });
+
+  var hRange = document.getElementById('hRange'), hOut = document.getElementById('hOut');
+  hRange.addEventListener('input', function () {
+    S.height = Math.min(20, Math.max(2, parseFloat(hRange.value) || 8));
+    hOut.textContent = S.height.toFixed(1) + ' m';
+    resetBodies(); finished = false; btnGo.textContent = '松手，开始下落';
+  });
+
+  var tsRange = document.getElementById('tsRange'), tsOut = document.getElementById('tsOut');
+  tsRange.addEventListener('input', function () {
+    S.timeScale = Math.min(1, Math.max(0.1, parseFloat(tsRange.value) || 1));
+    tsOut.textContent = S.timeScale.toFixed(2) + '×';
+  });
+
+  // 空格键 = 开始/暂停
+  document.addEventListener('keydown', function (e) {
+    if (e.code === 'Space' && !/INPUT|BUTTON|SELECT|TEXTAREA/.test(e.target.tagName)) {
+      e.preventDefault();
+      btnGo.click();
+    }
+  });
+
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(stage);
+  window.addEventListener('resize', resize);
+
+  resetBodies();
+  resize();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

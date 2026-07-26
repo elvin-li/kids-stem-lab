@@ -1,0 +1,916 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>数感积木 · 十格阵与凑十 — 少儿数理启蒙</title>
+<meta name="description" content="拖动单位积木，满十成行。同一个数量同时用积木、数字、数轴三种方式呈现，帮 4–8 岁孩子建立位值与瞬识（subitizing）直觉。" />
+<link rel="stylesheet" href="../assets/css/base.css" />
+<style>
+  .lab-head { padding: 26px 0 18px; }
+  .lab-head .row { margin-bottom: 10px; }
+  .lead { font-size: 1.02rem; color: var(--ink-mid); max-width: 62ch; margin: 0; }
+
+  .stage-caption {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 10px; margin: 2px 2px 10px; font-size: .8rem; color: var(--ink-dim);
+  }
+  .stage-caption b { color: var(--ink-mid); font-weight: 700; }
+
+  /* 三种表征：数字卡 */
+  .three-ways { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin-top: 12px; }
+  .way {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r); padding: 12px 14px;
+  }
+  .way-tag { font-size: .7rem; font-weight: 700; letter-spacing: .04em; color: var(--ink-dim); text-transform: uppercase; }
+  .numeral {
+    font-family: var(--mono); font-weight: 700; line-height: 1;
+    font-size: clamp(2.6rem, 9vw, 3.4rem); color: var(--math);
+    letter-spacing: -.02em; margin-top: 4px;
+  }
+  .place-row { display: flex; gap: 8px; margin-top: 8px; }
+  .place {
+    flex: 1; text-align: center; border-radius: var(--r-sm);
+    border: 1px solid var(--line-soft); background: var(--surface-2); padding: 6px 4px;
+  }
+  .place i { display: block; font-family: var(--mono); font-style: normal; font-size: 1.4rem; font-weight: 700; }
+  .place.tens i { color: var(--warn); }
+  .place.ones i { color: var(--math); }
+  .place span { font-size: .72rem; color: var(--ink-dim); }
+  .word { font-size: 1.05rem; font-weight: 700; color: var(--ink); margin-top: 6px; }
+
+  /* 凑十等式 */
+  .eq {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: var(--mono); font-size: 1.5rem; font-weight: 700; color: var(--ink);
+    padding: 10px 0;
+  }
+  .eq .slot {
+    min-width: 46px; text-align: center; border-radius: var(--r-sm);
+    border: 1px dashed var(--math); color: var(--math); background: rgba(110,168,254,.1);
+  }
+  .eq.ok .slot { border-style: solid; border-color: var(--sci); color: var(--sci); background: rgba(74,222,128,.14); }
+
+  .mode-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .btn-grid .btn { width: 100%; }
+
+  .qa { counter-reset: q; list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .qa li {
+    counter-increment: q; position: relative;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r); padding: 14px 16px 14px 52px;
+  }
+  .qa li::before {
+    content: "Q" counter(q); position: absolute; left: 14px; top: 13px;
+    font-family: var(--mono); font-size: .8rem; font-weight: 700; color: var(--math);
+  }
+  .qa b { display: block; color: var(--ink); margin-bottom: 2px; }
+  .qa small { color: var(--ink-dim); font-size: .82rem; }
+
+  .why { margin-top: 34px; }
+  .why h2 { margin-bottom: 14px; }
+  section.block { margin-top: 40px; }
+  .streak { display: flex; gap: 5px; flex-wrap: wrap; min-height: 22px; }
+  .star-dot { color: var(--warn); font-size: 1.05rem; line-height: 1; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#stage-area">跳到互动区</a>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<main class="wrap" id="main">
+
+  <header class="lab-head">
+    <div class="row">
+      <span class="pill pill-math">数学 · 数感</span>
+      <span class="pill">适合 4–8 岁</span>
+      <span class="pill">位值 place value</span>
+      <span class="pill">瞬识 subitizing</span>
+    </div>
+    <h1>数感积木</h1>
+    <p class="lead">
+      这在教什么：把「多少」变成看得见的东西。孩子拖动一颗一颗的单位积木，满十自动成行；
+      同一个数量会同时以<b>积木</b>、<b>数字</b>、<b>数轴</b>三种方式出现，让「12」不再只是两个符号。
+    </p>
+  </header>
+
+  <div class="lab">
+    <!-- ================= 舞台 ================= -->
+    <section class="lab-stage" id="stage-area" aria-label="积木互动区">
+      <div class="stage-caption">
+        <b id="taskText">自由搭：想放多少就放多少</b>
+        <span>拖动 / 点击散块 → 放进十格阵；点已放的积木可拿走</span>
+      </div>
+
+      <div id="blocksWrap">
+        <canvas id="blocks" tabindex="0" role="application"
+          aria-label="十格阵积木区。用方向键上或右增加一颗积木，下或左减少一颗，回车补满当前一行。"></canvas>
+      </div>
+
+      <div class="stage-caption" style="margin-top:12px">
+        <b>数轴 number line</b><span id="lineHint">同一个数量在数轴上的位置</span>
+      </div>
+      <canvas id="numline" aria-hidden="true"></canvas>
+
+      <div class="three-ways">
+        <div class="way">
+          <span class="way-tag">数字 numeral</span>
+          <div class="numeral" id="numeral">0</div>
+          <div class="word" id="cnWord">零</div>
+        </div>
+        <div class="way">
+          <span class="way-tag">位值 place value</span>
+          <div class="place-row">
+            <div class="place tens"><i id="tensVal">0</i><span>个十</span></div>
+            <div class="place ones"><i id="onesVal">0</i><span>个一</span></div>
+          </div>
+          <div class="word" id="expand" style="font-size:.9rem;color:var(--ink-mid);font-weight:600">0 = 0 + 0</div>
+        </div>
+        <div class="way" id="eqCard">
+          <span class="way-tag">凑十 make ten</span>
+          <div class="eq" id="eq" aria-live="polite">
+            <span id="eqA">0</span><span>+</span><span class="slot" id="eqB">?</span><span>=</span><span>10</span>
+          </div>
+          <div class="word" id="eqNote" style="font-size:.85rem;color:var(--ink-dim);font-weight:600">当前这一行还差几颗就满十</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 控制面板 ================= -->
+    <aside>
+      <div class="panel">
+        <h3>玩法</h3>
+        <div class="ctrl">
+          <div class="mode-group" role="group" aria-label="选择玩法">
+            <button class="chip" id="mFree" aria-pressed="true">自由搭</button>
+            <button class="chip" id="mTarget" aria-pressed="false">搭目标数</button>
+            <button class="chip" id="mTen" aria-pressed="false">凑十挑战</button>
+          </div>
+        </div>
+
+        <div class="ctrl">
+          <label for="rangeSel">数字范围</label>
+          <select class="input" id="rangeSel">
+            <option value="20">0 – 20（幼儿）</option>
+            <option value="50">0 – 50</option>
+            <option value="100" selected>0 – 100</option>
+          </select>
+        </div>
+
+        <div class="btn-grid">
+          <button class="btn btn-sm" id="minus" aria-label="减少一颗积木">− 1 颗</button>
+          <button class="btn btn-sm" id="plus" aria-label="增加一颗积木">+ 1 颗</button>
+          <button class="btn btn-sm" id="fillTen">补满这行</button>
+          <button class="btn btn-sm" id="clear">清空</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn btn-primary btn-sm" id="newTask" style="width:100%">换一题</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>读数</h3>
+        <div class="readout"><span>积木总数</span><b id="roCount">0</b></div>
+        <div class="readout"><span>满十的行</span><b id="roTens">0</b></div>
+        <div class="readout"><span>本行还差</span><b id="roNeed">10</b></div>
+        <div class="readout"><span>目标</span><b id="roTarget">—</b></div>
+        <div class="readout"><span>完成次数</span><b id="roWins">0</b></div>
+        <div class="streak" id="streak" aria-label="已完成的挑战"></div>
+      </div>
+
+      <div class="panel">
+        <h3>给家长的小提示</h3>
+        <p style="font-size:.86rem;margin:0">
+          先让孩子<b>不数就猜</b>：一眼看到 7 颗时问「多还是少于 10？」。
+          十格阵的空位是关键教具——空位数就是「还差几」，这正是心算凑十的起点。
+        </p>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ================= 家长提问脚本 ================= -->
+  <section class="block">
+    <h2>给家长的提问脚本</h2>
+    <p style="max-width:62ch">孩子操作时，别急着报答案。这三个问题按顺序问，一次只问一个，等 5 秒。</p>
+    <ol class="qa">
+      <li>
+        <b>「不数出声，你猜这里大概有几颗？」</b>
+        <small>练的是 subitizing（瞬识）。十格阵让 6 = 一行 5 + 1，孩子会慢慢不再逐个点数。</small>
+      </li>
+      <li>
+        <b>「这一行还有几个空位？那我们再放几颗就满十？」</b>
+        <small>空位 = 补数。孩子答对后，请他念出等式：7 + 3 = 10。这是 20 以内加减的核心策略。</small>
+      </li>
+      <li>
+        <b>「34 里的 3 是 3 颗，还是 3 行？在数轴上它靠 0 近还是靠 100 近？」</b>
+        <small>把位值和数量级连起来。数字里的每一位代表「几个十、几个一」，不是三个孤立符号。</small>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ================= 背后的原理 ================= -->
+  <section class="block why">
+    <h2>背后的原理</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>十格阵与瞬识（ten-frame &amp; subitizing）</h3>
+        <p style="margin:0">
+          人一眼能准确判断的数量上限约为 4。超过 4 就要靠<b>结构</b>：十格阵把 10 拆成 5 + 5，
+          于是 8 被看成「5 满 + 3」而不是 8 个独立小方块。这种「看见结构」的能力，
+          比背诵加法表更能预测后续算术表现。
+        </p>
+      </div>
+      <div class="card">
+        <h3>为什么满十要成行（位值 place value）</h3>
+        <p style="margin:0">
+          十进制的秘密是<b>捆绑</b>：10 个「一」捆成 1 个「十」，符号位置从此代表不同单位。
+          这里每满十就把一行合成一根「十条」，孩子亲手完成的这个动作，
+          正是 34 中「3」表示 3 个十的物理来源。
+        </p>
+      </div>
+      <div class="card">
+        <h3>三重表征（multiple representations）</h3>
+        <p style="margin:0">
+          数量（积木）、符号（数字）、位置（数轴）同时更新，孩子才能建立三者之间的映射。
+          研究一致显示：数轴估计能力与整体数学成绩高度相关，因为它要求把离散计数迁移到连续量。
+        </p>
+      </div>
+      <div class="card">
+        <h3>凑十策略（make ten）</h3>
+        <p style="margin:0">
+          8 + 6 的高效算法不是数 14 下，而是 8 + 2 + 4 = 10 + 4。
+          先在<b>看得见</b>的十格阵里反复经历「补满」，再抽象成心算，
+          这是从数数（counting）走向运算（operating）的分水岭。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="row spread">
+      <span>少儿数理启蒙 · 互动实验</span>
+      <span><a href="../games/index.html">← 返回全部实验</a></span>
+    </div>
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<p class="sr-only" id="live" aria-live="polite"></p>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- 工具 ---------- */
+  var root = getComputedStyle(document.documentElement);
+  function cv(name, fb) { var v = root.getPropertyValue(name).trim(); return v || fb; }
+  var C = {
+    math: cv('--math', '#6ea8fe'), sci: cv('--sci', '#4ade80'),
+    warn: cv('--warn', '#fbbf24'), phys: cv('--phys', '#a78bfa'),
+    kit: cv('--kit', '#f472b6'),
+    ink: cv('--ink', '#eef2ff'), inkMid: cv('--ink-mid', '#b6c0e0'),
+    inkDim: cv('--ink-dim', '#7d88ab'),
+    line: cv('--line', '#2a3355'), soft: cv('--line-soft', '#202844'),
+    surf: cv('--surface', '#161d33'), surf2: cv('--surface-2', '#1d2540')
+  };
+  var FONT = '-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif';
+  var MONO = 'ui-monospace, Menlo, monospace';
+
+  function rr(ctx, x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  function ri(a, b) { return Math.floor(rnd(a, b + 1)); }
+
+  var toastEl = document.getElementById('toast'), toastT = 0;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('on');
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { toastEl.classList.remove('on'); }, 1900);
+  }
+  var liveEl = document.getElementById('live');
+  function say(msg) { liveEl.textContent = msg; }
+
+  /* ---------- Canvas 设置 ---------- */
+  var blocks = document.getElementById('blocks'), bctx = blocks.getContext('2d');
+  var lineC = document.getElementById('numline'), lctx = lineC.getContext('2d');
+  var wrap = document.getElementById('blocksWrap');
+
+  function fit(cnv, ctx, w, h) {
+    var dpr = Math.min(window.devicePixelRatio || 1, 3);
+    cnv.width = Math.max(1, Math.round(w * dpr));
+    cnv.height = Math.max(1, Math.round(h * dpr));
+    cnv.style.width = w + 'px';
+    cnv.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  /* ---------- 状态 ---------- */
+  var S = {
+    max: 100,
+    mode: 'free',          // free | target | ten
+    target: null,
+    tenBase: 0,            // 凑十模式：预置数量
+    placed: [],            // 已入格
+    loose: [],             // 散块
+    wins: 0,
+    rowFlash: [],          // {row, t}
+    parts: []              // 彩屑
+  };
+  var G = { W: 320, H: 400, cell: 30, gap: 5, gGap: 12, pad: 14, frameTop: 34, rowGap: 6, rows: 10, trayTop: 300, trayH: 92, labelW: 30 };
+  var uid = 0;
+
+  function layout() {
+    var w = Math.max(260, wrap.clientWidth || 320);
+    G.W = w;
+    G.rows = Math.ceil(S.max / 10);
+    G.labelW = w < 360 ? 24 : 34;
+    var avail = w - G.pad * 2 - G.labelW - 9 * G.gap - G.gGap;
+    G.cell = clamp(Math.floor(avail / 10), 14, 46);
+    G.rowGap = G.cell > 34 ? 8 : 5;
+    G.frameW = G.cell * 10 + 9 * G.gap + G.gGap;
+    G.frameH = G.rows * G.cell + (G.rows - 1) * G.rowGap;
+    G.trayTop = G.frameTop + G.frameH + 20;
+    G.trayH = Math.max(74, G.cell * 2 + 34);
+    G.H = G.trayTop + G.trayH + 6;
+    fit(blocks, bctx, w, G.H);
+    fit(lineC, lctx, w, w < 420 ? 92 : 104);
+    reposition(true);
+  }
+
+  function slotPos(i) {
+    var row = Math.floor(i / 10), col = i % 10;
+    return {
+      x: G.pad + col * (G.cell + G.gap) + (col >= 5 ? G.gGap : 0),
+      y: G.frameTop + row * (G.cell + G.rowGap)
+    };
+  }
+  function looseHome(i, n) {
+    var size = Math.max(14, G.cell * 0.86);
+    var per = Math.min(n, Math.max(4, Math.floor((G.W - G.pad * 2) / (size + 8))));
+    var col = i % per, row = Math.floor(i / per);
+    var step = (G.W - G.pad * 2 - size) / Math.max(1, per - 1);
+    return {
+      x: G.pad + col * step,
+      y: G.trayTop + 26 + row * (size * 0.55),
+      s: size
+    };
+  }
+
+  function mkBlock(x, y) { return { id: ++uid, x: x, y: y, tx: x, ty: y, s: G.cell, ts: G.cell, born: performance.now(), drag: false }; }
+
+  function refillLoose() {
+    var room = S.max - S.placed.length;
+    var want = clamp(room, 0, 10);
+    while (S.loose.length > want) S.loose.pop();
+    while (S.loose.length < want) {
+      var h = looseHome(S.loose.length, want);
+      S.loose.push(mkBlock(h.x, h.y));
+    }
+    reposition(false);
+  }
+
+  function reposition(snap) {
+    var n = S.loose.length;
+    for (var i = 0; i < S.placed.length; i++) {
+      var p = slotPos(i), b = S.placed[i];
+      b.tx = p.x; b.ty = p.y; b.ts = G.cell;
+      if (snap) { b.x = p.x; b.y = p.y; b.s = G.cell; }
+    }
+    for (var j = 0; j < n; j++) {
+      var h = looseHome(j, n), l = S.loose[j];
+      if (l.drag) continue;
+      l.tx = h.x; l.ty = h.y; l.ts = h.s;
+      if (snap) { l.x = h.x; l.y = h.y; l.s = h.s; }
+    }
+  }
+
+  /* ---------- 数量变更 ---------- */
+  function count() { return S.placed.length; }
+
+  function addOne(from) {
+    if (count() >= S.max) { toast('已经到' + S.max + '啦，这是本关的上限'); return; }
+    var b;
+    if (from) { b = from; }
+    else {
+      var l = S.loose.length ? S.loose[S.loose.length - 1] : mkBlock(G.pad, G.trayTop + 26);
+      b = l;
+    }
+    var li = S.loose.indexOf(b);
+    if (li >= 0) S.loose.splice(li, 1);
+    b.drag = false;
+    S.placed.push(b);
+    var before = Math.floor((count() - 1) / 10), after = Math.floor(count() / 10);
+    if (count() % 10 === 0 && after > before) celebrateRow(after - 1);
+    refillLoose();
+    check();
+    update();
+  }
+
+  function removeOne(b) {
+    if (!count()) return;
+    var i = b ? S.placed.indexOf(b) : count() - 1;
+    if (i < 0) i = count() - 1;
+    S.placed.splice(i, 1);
+    refillLoose();
+    check();
+    update();
+  }
+
+  function celebrateRow(row) {
+    S.rowFlash.push({ row: row, t: performance.now() });
+    var p = slotPos(row * 10);
+    burst(p.x + G.frameW / 2, p.y + G.cell / 2, 26);
+    toast('满十啦！10 个「一」= 1 个「十」');
+  }
+
+  function burst(x, y, n) {
+    var cols = [C.warn, C.sci, C.math, C.kit, C.phys];
+    for (var i = 0; i < n; i++) {
+      S.parts.push({
+        x: x, y: y,
+        vx: rnd(-2.6, 2.6), vy: rnd(-4.4, -1),
+        g: rnd(.08, .16), life: 1,
+        r: rnd(2.5, 5.5), rot: rnd(0, 6.28), vr: rnd(-.2, .2),
+        c: cols[ri(0, cols.length - 1)]
+      });
+    }
+  }
+
+  /* ---------- 任务 / 判定 ---------- */
+  function newTask() {
+    S.rowFlash.length = 0;
+    if (S.mode === 'target') {
+      var lo = Math.min(11, S.max), hi = S.max;
+      var t = ri(lo, hi);
+      while (t === S.target) t = ri(lo, hi);
+      S.target = t; S.tenBase = 0;
+      S.placed.length = 0;
+    } else if (S.mode === 'ten') {
+      var base = ri(1, 9);
+      while (base === S.tenBase) base = ri(1, 9);
+      S.tenBase = base; S.target = 10;
+      S.placed.length = 0;
+      for (var i = 0; i < base; i++) S.placed.push(mkBlock(G.pad, G.trayTop));
+      reposition(false);
+    } else {
+      S.target = null; S.tenBase = 0;
+    }
+    S.solved = false;
+    refillLoose();
+    update();
+  }
+
+  function check() {
+    if (S.solved) {
+      // 解出后又改动了数量，允许重新判定
+      if (S.mode === 'target' && count() !== S.target) S.solved = false;
+      if (S.mode === 'ten' && count() !== 10) S.solved = false;
+      return;
+    }
+    if (S.mode === 'target' && S.target && count() === S.target) win('搭对了！' + S.target + ' = ' + Math.floor(S.target / 10) + ' 个十 + ' + (S.target % 10) + ' 个一');
+    if (S.mode === 'ten' && count() === 10) win(S.tenBase + ' + ' + (10 - S.tenBase) + ' = 10 ，凑十成功！');
+  }
+
+  function win(msg) {
+    S.solved = true;
+    S.wins++;
+    toast(msg);
+    say(msg);
+    burst(G.W / 2, G.frameTop + Math.min(G.frameH, 120), 46);
+    renderStreak();
+  }
+
+  function renderStreak() {
+    var el = document.getElementById('streak');
+    el.textContent = '';
+    var n = Math.min(S.wins, 12);
+    for (var i = 0; i < n; i++) {
+      var s = document.createElement('span');
+      s.className = 'star-dot'; s.textContent = '★';
+      el.appendChild(s);
+    }
+    if (S.wins > 12) {
+      var more = document.createElement('span');
+      more.style.color = C.inkDim; more.style.fontSize = '.8rem';
+      more.textContent = '+' + (S.wins - 12);
+      el.appendChild(more);
+    }
+  }
+
+  /* ---------- 中文数字 ---------- */
+  var CN = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  function cnNum(n) {
+    if (n < 10) return CN[n];
+    if (n === 10) return '十';
+    if (n < 20) return '十' + CN[n % 10];
+    var t = Math.floor(n / 10), o = n % 10;
+    if (n === 100) return '一百';
+    return CN[t] + '十' + (o ? CN[o] : '');
+  }
+
+  /* ---------- DOM 更新 ---------- */
+  var el = {
+    numeral: document.getElementById('numeral'), word: document.getElementById('cnWord'),
+    tens: document.getElementById('tensVal'), ones: document.getElementById('onesVal'),
+    expand: document.getElementById('expand'),
+    eq: document.getElementById('eq'), eqA: document.getElementById('eqA'), eqB: document.getElementById('eqB'),
+    eqNote: document.getElementById('eqNote'),
+    roCount: document.getElementById('roCount'), roTens: document.getElementById('roTens'),
+    roNeed: document.getElementById('roNeed'), roTarget: document.getElementById('roTarget'),
+    roWins: document.getElementById('roWins'), task: document.getElementById('taskText')
+  };
+
+  function update() {
+    var n = count(), t = Math.floor(n / 10), o = n % 10;
+    el.numeral.textContent = n;
+    el.word.textContent = cnNum(n);
+    el.tens.textContent = t; el.ones.textContent = o;
+    el.expand.textContent = n + ' = ' + (t * 10) + ' + ' + o;
+    el.roCount.textContent = n;
+    el.roTens.textContent = t;
+    var need = n === 0 ? 10 : (10 - o) % 10;
+    el.roNeed.textContent = n === 0 ? 10 : (need === 0 ? '0（刚好满十）' : need);
+    el.roWins.textContent = S.wins;
+
+    if (S.mode === 'ten') {
+      var added = n - S.tenBase;
+      el.eqA.textContent = S.tenBase;
+      el.eqB.textContent = n === 10 ? added : '?';
+      el.eq.classList.toggle('ok', n === 10);
+      el.eqNote.textContent = n === 10
+        ? '答对了：' + S.tenBase + ' + ' + (10 - S.tenBase) + ' = 10'
+        : (added > 0 ? '再放 ' + (10 - n) + ' 颗就到 10' : '再放几颗就到 10？');
+    } else {
+      var rowFull = need === 0 && n > 0;
+      el.eqA.textContent = rowFull ? 10 : o;
+      el.eqB.textContent = rowFull ? 0 : need;
+      el.eq.classList.toggle('ok', need === 0 && n > 0);
+      el.eqNote.textContent = need === 0 && n > 0 ? '这一行刚好满十' : '当前这一行还差几颗就满十';
+    }
+
+    if (S.mode === 'target') {
+      el.roTarget.textContent = S.target;
+      el.task.textContent = '搭出 ' + S.target + '（' + cnNum(S.target) + '）' + (n === S.target ? ' ✓ 完成' : '，现在是 ' + n);
+    } else if (S.mode === 'ten') {
+      el.roTarget.textContent = '10';
+      el.task.textContent = '凑十挑战：已有 ' + S.tenBase + ' 颗，补到 10';
+    } else {
+      el.roTarget.textContent = '—';
+      el.task.textContent = '自由搭：想放多少就放多少';
+    }
+    drawLine();
+  }
+
+  /* ---------- 绘制：积木区 ---------- */
+  function drawBlock(ctx, b, kind, idx, now) {
+    var s = b.s, x = b.x, y = b.y;
+    var main = kind === 'placed' ? C.math : C.inkMid;
+    var full = kind === 'placed' && Math.floor(idx / 10) < Math.floor(count() / 10);
+    if (full) main = C.warn;
+
+    var pop = clamp((now - b.born) / 240, 0, 1);
+    var sc = kind === 'placed' ? 1 : 1;
+    if (pop < 1) sc = 0.7 + 0.3 * (1 - Math.pow(1 - pop, 3)) + Math.sin(pop * Math.PI) * .06;
+    var w = s * sc, off = (s - w) / 2;
+
+    ctx.save();
+    if (b.drag) { ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 5; }
+    var g = ctx.createLinearGradient(x, y, x, y + s);
+    g.addColorStop(0, main);
+    g.addColorStop(1, shade(main, -.32));
+    rr(ctx, x + off, y + off, w, w, Math.max(3, s * .22));
+    ctx.fillStyle = g; ctx.fill();
+    ctx.restore();
+
+    rr(ctx, x + off + 1.5, y + off + 1.5, w - 3, w * .34, Math.max(2, s * .16));
+    ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.fill();
+
+    rr(ctx, x + off + .5, y + off + .5, w - 1, w - 1, Math.max(3, s * .22));
+    ctx.strokeStyle = 'rgba(8,16,31,.55)'; ctx.lineWidth = 1; ctx.stroke();
+  }
+
+  function shade(hex, amt) {
+    var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim());
+    if (!m) return hex;
+    var r = parseInt(m[1], 16), g = parseInt(m[2], 16), b = parseInt(m[3], 16);
+    function f(v) { return clamp(Math.round(amt < 0 ? v * (1 + amt) : v + (255 - v) * amt), 0, 255); }
+    return 'rgb(' + f(r) + ',' + f(g) + ',' + f(b) + ')';
+  }
+  function alpha(hex, a) {
+    var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim());
+    if (!m) return hex;
+    return 'rgba(' + parseInt(m[1], 16) + ',' + parseInt(m[2], 16) + ',' + parseInt(m[3], 16) + ',' + a + ')';
+  }
+
+  function drawStage(now) {
+    var ctx = bctx;
+    ctx.clearRect(0, 0, G.W, G.H);
+
+    // 标题
+    ctx.font = '700 12px ' + FONT;
+    ctx.fillStyle = C.inkDim;
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('十格阵 ten-frame（每行 10 格，5 + 5）', G.pad, 20);
+
+    var n = count(), fullRows = Math.floor(n / 10);
+
+    // 空格子
+    for (var i = 0; i < S.max; i++) {
+      var row = Math.floor(i / 10);
+      if (i >= n) {
+        var p = slotPos(i);
+        var inCurrent = row === fullRows;
+        ctx.save();
+        ctx.setLineDash([3, 3]);
+        rr(ctx, p.x + .5, p.y + .5, G.cell - 1, G.cell - 1, Math.max(3, G.cell * .22));
+        ctx.strokeStyle = inCurrent ? alpha(C.math, .55) : C.soft;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        if (inCurrent) { ctx.fillStyle = alpha(C.math, .06); ctx.fill(); }
+        ctx.restore();
+      }
+    }
+
+    // 行标签 + 满十高亮
+    for (var r = 0; r < G.rows; r++) {
+      var q = slotPos(r * 10);
+      var done = r < fullRows;
+      var flash = 0;
+      for (var k = 0; k < S.rowFlash.length; k++) {
+        if (S.rowFlash[k].row === r) flash = Math.max(flash, 1 - clamp((now - S.rowFlash[k].t) / 900, 0, 1));
+      }
+      if (done) {
+        rr(ctx, q.x - 4, q.y - 4, G.frameW + 8, G.cell + 8, Math.max(5, G.cell * .3));
+        ctx.strokeStyle = alpha(C.warn, .45 + flash * .55);
+        ctx.lineWidth = 1 + flash * 2;
+        ctx.stroke();
+      }
+      ctx.font = '700 ' + Math.max(9, Math.min(12, G.cell * .38)) + 'px ' + MONO;
+      ctx.fillStyle = done ? C.warn : C.soft;
+      ctx.textAlign = 'left';
+      ctx.fillText(done ? '=10' : '·', q.x + G.frameW + 7, q.y + G.cell * .68);
+      ctx.textAlign = 'left';
+    }
+
+    // 已放积木
+    for (var b = 0; b < S.placed.length; b++) if (!S.placed[b].drag) drawBlock(ctx, S.placed[b], 'placed', b, now);
+
+    // 散块区
+    var ty = G.trayTop;
+    ctx.save();
+    ctx.setLineDash([4, 4]);
+    rr(ctx, G.pad - 6, ty - 6, G.W - (G.pad - 6) * 2, G.trayH, 12);
+    ctx.strokeStyle = C.soft; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+    ctx.font = '600 11px ' + FONT;
+    ctx.fillStyle = C.inkDim;
+    ctx.fillText('散块区 · 拖到上面的格子里（点一下也会飞进去）', G.pad, ty + 12);
+
+    for (var l = 0; l < S.loose.length; l++) if (!S.loose[l].drag) drawBlock(ctx, S.loose[l], 'loose', -1, now);
+
+    // 正在拖的放最上层
+    var all = S.placed.concat(S.loose);
+    for (var d = 0; d < all.length; d++) if (all[d].drag) drawBlock(ctx, all[d], S.placed.indexOf(all[d]) >= 0 ? 'placed' : 'loose', S.placed.indexOf(all[d]), now);
+
+    // 彩屑
+    for (var pi = 0; pi < S.parts.length; pi++) {
+      var pt = S.parts[pi];
+      ctx.save();
+      ctx.globalAlpha = clamp(pt.life, 0, 1);
+      ctx.translate(pt.x, pt.y);
+      ctx.rotate(pt.rot);
+      ctx.fillStyle = pt.c;
+      ctx.fillRect(-pt.r, -pt.r * .6, pt.r * 2, pt.r * 1.2);
+      ctx.restore();
+    }
+  }
+
+  /* ---------- 绘制：数轴 ---------- */
+  function drawLine() {
+    var w = G.W, h = lineC.height / (Math.min(window.devicePixelRatio || 1, 3));
+    var ctx = lctx;
+    ctx.clearRect(0, 0, w, h);
+    var padL = 18, padR = 18;
+    var x0 = padL, x1 = w - padR, y = h - 34;
+    var n = count(), max = S.max;
+    function px(v) { return x0 + (x1 - x0) * (v / max); }
+
+    // 轴
+    ctx.strokeStyle = C.line; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
+
+    // 已走过的部分
+    var grad = ctx.createLinearGradient(x0, 0, x1, 0);
+    grad.addColorStop(0, C.math); grad.addColorStop(1, C.sci);
+    ctx.strokeStyle = grad; ctx.lineWidth = 5; ctx.lineCap = 'round';
+    if (n > 0) { ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(px(n), y); ctx.stroke(); }
+    ctx.lineWidth = 1; ctx.lineCap = 'butt';
+
+    // 刻度
+    var minorStep = max <= 20 ? 1 : (max <= 50 ? 1 : 2);
+    var majorStep = max <= 20 ? 5 : 10;
+    for (var v = 0; v <= max; v += minorStep) {
+      var major = v % majorStep === 0;
+      ctx.strokeStyle = major ? C.inkDim : C.soft;
+      ctx.beginPath();
+      ctx.moveTo(px(v), y);
+      ctx.lineTo(px(v), y + (major ? 9 : 4));
+      ctx.stroke();
+      if (major && (max <= 50 || v % 20 === 0 || v === max)) {
+        ctx.font = '600 10px ' + MONO;
+        ctx.fillStyle = C.inkDim;
+        ctx.textAlign = 'center';
+        ctx.fillText(String(v), px(v), y + 22);
+      }
+    }
+
+    // 目标标记
+    if (S.target && S.mode !== 'free') {
+      var tx = px(S.target);
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = alpha(C.warn, .8);
+      ctx.beginPath(); ctx.moveTo(tx, y - 26); ctx.lineTo(tx, y + 6); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font = '700 10px ' + MONO; ctx.fillStyle = C.warn; ctx.textAlign = 'center';
+      ctx.fillText('目标 ' + S.target, tx, y - 30);
+    }
+
+    // 当前位置
+    var cx = px(n);
+    ctx.beginPath(); ctx.arc(cx, y, 7, 0, 6.2832);
+    ctx.fillStyle = C.math; ctx.fill();
+    ctx.strokeStyle = '#08101f'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.font = '700 13px ' + MONO;
+    ctx.fillStyle = C.ink; ctx.textAlign = 'center';
+    ctx.fillText(String(n), cx, y - 13);
+    ctx.textAlign = 'left';
+  }
+
+  /* ---------- 动画 ---------- */
+  function tick(now) {
+    var moving = false;
+    var all = S.placed.concat(S.loose);
+    for (var i = 0; i < all.length; i++) {
+      var b = all[i];
+      if (b.drag) continue;
+      b.x = lerp(b.x, b.tx, .22); b.y = lerp(b.y, b.ty, .22); b.s = lerp(b.s, b.ts, .22);
+      if (Math.abs(b.x - b.tx) > .3 || Math.abs(b.y - b.ty) > .3 || Math.abs(b.s - b.ts) > .3) moving = true;
+      else { b.x = b.tx; b.y = b.ty; b.s = b.ts; }
+    }
+    for (var p = S.parts.length - 1; p >= 0; p--) {
+      var pt = S.parts[p];
+      pt.x += pt.vx; pt.y += pt.vy; pt.vy += pt.g; pt.rot += pt.vr; pt.life -= .014;
+      if (pt.life <= 0 || pt.y > G.H + 20) S.parts.splice(p, 1);
+    }
+    S.rowFlash = S.rowFlash.filter(function (f) { return now - f.t < 900; });
+    drawStage(now);
+    requestAnimationFrame(tick);
+    return moving;
+  }
+
+  /* ---------- 指针交互 ---------- */
+  var drag = null;
+  function pos(e) {
+    var r = blocks.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * (G.W / r.width), y: (e.clientY - r.top) * (G.H / r.height) };
+  }
+  function hit(p) {
+    for (var i = S.loose.length - 1; i >= 0; i--) {
+      var l = S.loose[i];
+      if (p.x >= l.x && p.x <= l.x + l.s && p.y >= l.y && p.y <= l.y + l.s) return { b: l, kind: 'loose' };
+    }
+    for (var j = S.placed.length - 1; j >= 0; j--) {
+      var b = S.placed[j];
+      if (p.x >= b.x && p.x <= b.x + b.s && p.y >= b.y && p.y <= b.y + b.s) return { b: b, kind: 'placed' };
+    }
+    return null;
+  }
+
+  blocks.addEventListener('pointerdown', function (e) {
+    blocks.focus({ preventScroll: true });
+    var p = pos(e), h = hit(p);
+    if (!h) {
+      // 点空白的格子区 = 加一颗
+      if (p.y < G.trayTop - 10 && count() < S.max) addOne();
+      return;
+    }
+    drag = { b: h.b, kind: h.kind, dx: p.x - h.b.x, dy: p.y - h.b.y, moved: 0, sx: p.x, sy: p.y };
+    h.b.drag = true;
+    try { blocks.setPointerCapture(e.pointerId); } catch (err) {}
+    e.preventDefault();
+  });
+
+  blocks.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    var p = pos(e);
+    drag.b.x = p.x - drag.dx; drag.b.y = p.y - drag.dy;
+    drag.moved = Math.max(drag.moved, Math.abs(p.x - drag.sx) + Math.abs(p.y - drag.sy));
+    e.preventDefault();
+  });
+
+  function endDrag(e) {
+    if (!drag) return;
+    var b = drag.b, kind = drag.kind, tap = drag.moved < 8;
+    b.drag = false;
+    var inFrame = b.y + b.s / 2 < G.trayTop - 8;
+    if (kind === 'loose') {
+      if (tap || inFrame) addOne(b);
+      else reposition(false);
+    } else {
+      if (tap || !inFrame) removeOne(b);
+      else reposition(false);
+    }
+    drag = null;
+    update();
+  }
+  blocks.addEventListener('pointerup', endDrag);
+  blocks.addEventListener('pointercancel', endDrag);
+
+  blocks.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (k === 'ArrowUp' || k === 'ArrowRight' || k === '+' || k === '=') { addOne(); e.preventDefault(); }
+    else if (k === 'ArrowDown' || k === 'ArrowLeft' || k === '-' || k === 'Backspace') { removeOne(); e.preventDefault(); }
+    else if (k === 'Enter') { fillTen(); e.preventDefault(); }
+    else return;
+    say(count() + '，' + Math.floor(count() / 10) + ' 个十 ' + (count() % 10) + ' 个一');
+  });
+
+  /* ---------- 控件 ---------- */
+  function fillTen() {
+    var need = (10 - count() % 10) % 10;
+    if (!need) need = Math.min(10, S.max - count());
+    for (var i = 0; i < need; i++) addOne();
+  }
+
+  document.getElementById('plus').addEventListener('click', function () { addOne(); });
+  document.getElementById('minus').addEventListener('click', function () { removeOne(); });
+  document.getElementById('fillTen').addEventListener('click', fillTen);
+  document.getElementById('clear').addEventListener('click', function () {
+    S.placed.length = 0; S.rowFlash.length = 0;
+    if (S.mode === 'ten') { for (var i = 0; i < S.tenBase; i++) S.placed.push(mkBlock(G.pad, G.trayTop)); }
+    S.solved = false;
+    refillLoose(); update();
+  });
+  document.getElementById('newTask').addEventListener('click', function () { newTask(); });
+
+  document.getElementById('rangeSel').addEventListener('change', function (e) {
+    S.max = parseInt(e.target.value, 10);
+    if (S.placed.length > S.max) S.placed.length = S.max;
+    if (S.mode === 'target' && S.target > S.max) S.target = null;
+    layout(); refillLoose();
+    if (S.mode === 'target' && !S.target) newTask(); else update();
+  });
+
+  var modeBtns = { free: document.getElementById('mFree'), target: document.getElementById('mTarget'), ten: document.getElementById('mTen') };
+  Object.keys(modeBtns).forEach(function (m) {
+    modeBtns[m].addEventListener('click', function () {
+      S.mode = m;
+      Object.keys(modeBtns).forEach(function (k) { modeBtns[k].setAttribute('aria-pressed', k === m ? 'true' : 'false'); });
+      if (m === 'ten' && S.max !== 20) { /* 凑十只用一行，范围不变也可 */ }
+      newTask();
+      say(m === 'free' ? '自由搭模式' : m === 'target' ? '目标数模式，目标 ' + S.target : '凑十模式，已有 ' + S.tenBase + ' 颗');
+    });
+  });
+
+  /* ---------- 启动 ---------- */
+  var lastW = 0;
+  function onResize() {
+    var w = wrap.clientWidth;
+    if (Math.abs(w - lastW) < 1) return;
+    lastW = w; layout(); update();
+  }
+  if (window.ResizeObserver) new ResizeObserver(onResize).observe(wrap);
+  window.addEventListener('resize', onResize);
+
+  layout();
+  refillLoose();
+  update();
+  renderStreak();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

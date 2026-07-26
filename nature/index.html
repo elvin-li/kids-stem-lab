@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>探索 · 自然与科学专题 | 少儿数理启蒙</title>
+<meta name="description" content="恐龙、太空、海洋、昆虫、地球、天气、人体——每个专题都用真实科学数据讲一件事，配可动手的观察任务。">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<style>
+  .hero { padding: 40px 0 8px; }
+  .hero h1 { margin-bottom: .3em; }
+  .hero p.lead { font-size: 1.06rem; max-width: 64ch; }
+
+  .tgrid {
+    display: grid; gap: 16px; margin: 24px 0 8px;
+    grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  }
+  a.topic {
+    position: relative; display: flex; flex-direction: column;
+    text-decoration: none; overflow: hidden;
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+    background: var(--surface); transition: .18s var(--ease);
+  }
+  a.topic:hover {
+    transform: translateY(-3px);
+    border-color: var(--line);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+  }
+  a.topic.soon { opacity: .5; pointer-events: none; }
+
+  /* 每个专题的插画区：纯 CSS，无外部图片 */
+  .art {
+    position: relative; height: 116px; overflow: hidden;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .art > * { position: absolute; }
+
+  .a-dino { background: linear-gradient(180deg, #2b2140, #1a2033); }
+  .a-space { background: linear-gradient(180deg, #0d1430, #131b3a); }
+  .a-ocean { background: linear-gradient(180deg, #0e2740, #0a1c30); }
+  .a-bug   { background: linear-gradient(180deg, #1d2f1c, #16241a); }
+  .a-earth { background: linear-gradient(180deg, #3a2418, #241a14); }
+  .a-weather { background: linear-gradient(180deg, #17324a, #101f30); }
+  .a-body  { background: linear-gradient(180deg, #3a1c28, #24141c); }
+
+  /* 星空 */
+  .star-d { width: 2px; height: 2px; border-radius: 50%; background: #fff; opacity: .8; }
+  .ring {
+    border-radius: 50%; border: 1px solid rgba(255,255,255,.16);
+  }
+  .orb { border-radius: 50%; }
+
+  /* 恐龙剪影 */
+  .dino-sil {
+    left: 50%; bottom: 10px; transform: translateX(-50%);
+    width: 132px; height: 74px;
+    background: #7dd3a0;
+    clip-path: polygon(2% 96%, 14% 62%, 8% 44%, 20% 30%, 38% 24%, 52% 12%, 62% 3%, 70% 12%, 66% 24%, 78% 30%, 92% 44%, 98% 62%, 88% 96%, 74% 96%, 68% 66%, 40% 66%, 32% 96%);
+    opacity: .9;
+  }
+
+  /* 海浪 */
+  .wave1, .wave2 {
+    left: -10%; width: 120%; height: 40px; border-radius: 45%;
+  }
+  .wave1 { bottom: -14px; background: rgba(56,189,248,.28); }
+  .wave2 { bottom: -22px; background: rgba(56,189,248,.20); }
+  .fish {
+    width: 22px; height: 11px; background: #67e8f9; border-radius: 50% 12% 50% 12%;
+    opacity: .85;
+  }
+
+  /* 昆虫 */
+  .leaf {
+    width: 90px; height: 56px; background: rgba(74,222,128,.22);
+    border-radius: 0 100% 0 100%; transform: rotate(-18deg);
+  }
+  .bug {
+    width: 20px; height: 26px; border-radius: 50% 50% 45% 45%;
+    background: #f87171; box-shadow: inset 0 -6px 0 rgba(0,0,0,.25);
+  }
+  .bug::after {
+    content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 1.5px;
+    background: rgba(0,0,0,.45); transform: translateX(-50%);
+  }
+
+  /* 地层 */
+  .strata { left: 0; right: 0; height: 22px; }
+
+  /* 云与雨 */
+  .cloud {
+    width: 74px; height: 26px; background: rgba(226,232,240,.85); border-radius: 999px;
+  }
+  .cloud::before, .cloud::after {
+    content: ""; position: absolute; background: inherit; border-radius: 50%;
+  }
+  .cloud::before { width: 34px; height: 34px; left: 12px; top: -14px; }
+  .cloud::after  { width: 26px; height: 26px; right: 12px; top: -10px; }
+  .drop { width: 3px; height: 10px; border-radius: 999px; background: #7dd3fc; opacity: .8; }
+
+  /* 心跳线 */
+  .ecg {
+    left: 0; right: 0; top: 50%; height: 40px; transform: translateY(-50%);
+  }
+
+  .tbody { padding: 15px 17px 16px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+  .tbody h3 { margin: 0; font-size: 1.12rem; color: var(--ink); }
+  .tbody .zh { margin: 0; font-size: .82rem; color: var(--ink-dim); }
+  .tbody .say { margin: 0; font-size: .89rem; color: var(--ink-mid); flex: 1; }
+  .tmeta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .badge {
+    font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--ink-dim);
+  }
+  .badge.live { color: var(--sci); border-color: color-mix(in oklab, var(--sci) 40%, var(--line)); }
+  .badge.age  { font-family: var(--mono); }
+  .soon-tag {
+    position: absolute; right: 10px; top: 10px; z-index: 3;
+    font-size: .68rem; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+    background: rgba(0,0,0,.55); color: #fff; border: 1px solid rgba(255,255,255,.2);
+  }
+
+  .qbox {
+    margin: 30px 0 10px; padding: 20px 22px;
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+    background: var(--bg-soft);
+  }
+  .qbox h2 { margin: 0 0 4px; font-size: 1.1rem; }
+  .qbox p { margin: 0 0 14px; font-size: .9rem; color: var(--ink-mid); }
+  .qlist { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .q {
+    padding: 12px 14px; border-radius: var(--r);
+    background: var(--surface); border: 1px solid var(--line-soft);
+    font-size: .88rem; color: var(--ink-mid);
+  }
+  .q b { color: var(--ink); display: block; margin-bottom: 3px; font-size: .92rem; }
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html">互动实验</a>
+    <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<header class="hero wrap">
+  <h1>探索</h1>
+  <p class="lead">
+    每个专题只讲一件事，但讲到底：不是罗列知识点，而是先给一个让人想问「为什么」的现象，
+    再告诉孩子科学家是<b>怎么知道</b>的。多数专题会去公开科学数据库取真实数据，
+    断网时用内置数据，内容依然完整。
+  </p>
+</header>
+
+<main class="wrap">
+
+  <div class="tgrid" id="tg"></div>
+
+  <section class="qbox">
+    <h2>怎么陪着看</h2>
+    <p>这些页面不是读完就算了。每个专题都留了可以动手的部分，下面是通用的四个提问角度。</p>
+    <div class="qlist">
+      <div class="q">
+        <b>先猜再看</b>
+        打开数据之前先让孩子猜一个数：恐龙多重？木星多大？猜错了才有惊讶，惊讶才记得住。
+      </div>
+      <div class="q">
+        <b>问「怎么知道的」</b>
+        没人见过活恐龙，那体重是怎么算出来的？这个问题比答案本身更有价值。
+      </div>
+      <div class="q">
+        <b>找身边的对照</b>
+        把数字换成孩子熟悉的东西：几个书包重、几层楼高、走多少步。抽象数字才有意义。
+      </div>
+      <div class="q">
+        <b>允许「不知道」</b>
+        科学里有大量还没有定论的问题。告诉孩子哪些是确定的、哪些还在争论，比假装全懂更诚实。
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot wrap-narrow" style="text-align:center">
+  数据来源：PaleobioDB、iNaturalist、GBIF、OBIS、USGS、NASA。
+  各专题页脚注明具体接口与授权。网络不可用时自动使用内置数据。
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var TOPICS = [
+    {
+      f: "dinosaurs.html", n: "恐龙与化石", zh: "Dinosaurs & Fossils",
+      say: "霸王龙有多重？没人见过活恐龙，科学家却能算出它的体重和咬合力——这一页讲的是他们怎么算的。",
+      age: "5–12", live: "PaleobioDB · iNaturalist", art: "dino", ready: true
+    },
+    {
+      f: "space.html", n: "太空站", zh: "Solar System",
+      say: "在木星上你会重成三倍，在金星上一天比一年还长。按真实比例排开八颗行星，再看今天的天文图。",
+      age: "5–12", live: "NASA", art: "space", ready: true
+    },
+    {
+      f: "ocean.html", n: "海底世界", zh: "Ocean Deep",
+      say: "从海面一直沉到一万米：光在哪一层消失、压力有多大、谁住在那里。",
+      age: "5–12", live: "OBIS · iNaturalist", art: "ocean", ready: false
+    },
+    {
+      f: "insects.html", n: "虫子放大镜", zh: "Bugs Up Close",
+      say: "蚂蚁能扛起自己体重的多少倍？为什么虫子长不到猫那么大？",
+      age: "4–11", live: "iNaturalist", art: "bug", ready: false
+    },
+    {
+      f: "earth.html", n: "地球与地震", zh: "Earth & Quakes",
+      say: "脚下的地面每天都在动。看最近真实发生的地震，理解地层是怎么一层层叠起来的。",
+      age: "6–12", live: "USGS", art: "earth", ready: false
+    },
+    {
+      f: "weather.html", n: "天气工坊", zh: "Weather Lab",
+      say: "云为什么会飘在天上？雨滴掉下来有多快？闪电和雷声之间那几秒能算出距离。",
+      age: "5–11", live: null, art: "weather", ready: false
+    },
+    {
+      f: "body.html", n: "人体机器", zh: "Human Body",
+      say: "心脏一天泵多少血？你身上的骨头比刚出生时少了——去哪了？",
+      age: "5–12", live: null, art: "body", ready: false
+    }
+  ];
+
+  var tg = document.getElementById("tg");
+
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+
+  /* 每个专题的 CSS 插画 */
+  function art(kind) {
+    var d = document.createElement("div");
+    d.className = "art a-" + kind;
+
+    if (kind === "space") {
+      for (var i = 0; i < 26; i++) {
+        var s = document.createElement("div");
+        s.className = "star-d";
+        s.style.left = rnd(2, 98) + "%";
+        s.style.top = rnd(4, 92) + "%";
+        s.style.opacity = rnd(.35, .95);
+        d.appendChild(s);
+      }
+      // 一个带环的行星
+      var p = document.createElement("div");
+      p.className = "orb";
+      p.style.cssText = "right:22px;top:30px;width:46px;height:46px;" +
+        "background:radial-gradient(circle at 32% 30%,#fcd34d,#d97706);";
+      d.appendChild(p);
+      var r = document.createElement("div");
+      r.className = "ring";
+      r.style.cssText = "right:2px;top:44px;width:86px;height:22px;transform:rotate(-14deg);" +
+        "border-color:rgba(252,211,77,.55);";
+      d.appendChild(r);
+      var m = document.createElement("div");
+      m.className = "orb";
+      m.style.cssText = "left:24px;bottom:16px;width:16px;height:16px;background:#93c5fd;";
+      d.appendChild(m);
+    }
+
+    if (kind === "dino") {
+      for (var j = 0; j < 3; j++) {
+        var h = document.createElement("div");
+        h.style.cssText = "left:" + (8 + j * 34) + "%;bottom:0;width:" + rnd(40, 70) +
+          "px;height:" + rnd(16, 30) + "px;border-radius:50% 50% 0 0;" +
+          "background:rgba(148,163,184,.18);";
+        d.appendChild(h);
+      }
+      var ds = document.createElement("div");
+      ds.className = "dino-sil";
+      d.appendChild(ds);
+    }
+
+    if (kind === "ocean") {
+      for (var k = 0; k < 5; k++) {
+        var f = document.createElement("div");
+        f.className = "fish";
+        f.style.left = rnd(8, 80) + "%";
+        f.style.top = rnd(14, 62) + "%";
+        f.style.transform = "scaleX(" + (Math.random() > .5 ? 1 : -1) + ")";
+        f.style.opacity = rnd(.45, .9);
+        d.appendChild(f);
+      }
+      var w2 = document.createElement("div"); w2.className = "wave2"; d.appendChild(w2);
+      var w1 = document.createElement("div"); w1.className = "wave1"; d.appendChild(w1);
+    }
+
+    if (kind === "bug") {
+      var lf = document.createElement("div");
+      lf.className = "leaf";
+      lf.style.cssText += "left:8px;bottom:8px;";
+      d.appendChild(lf);
+      var bg = document.createElement("div");
+      bg.className = "bug";
+      bg.style.cssText += "left:52%;top:34px;";
+      d.appendChild(bg);
+      for (var a = 0; a < 4; a++) {
+        var an = document.createElement("div");
+        an.style.cssText = "left:" + (20 + a * 18) + "%;bottom:" + rnd(10, 40) + "px;" +
+          "width:9px;height:5px;border-radius:50%;background:rgba(0,0,0,.4);";
+        d.appendChild(an);
+      }
+    }
+
+    if (kind === "earth") {
+      var cols = ["rgba(120,113,108,.55)", "rgba(168,131,90,.5)",
+                  "rgba(214,178,120,.45)", "rgba(120,90,60,.5)"];
+      cols.forEach(function (c, idx) {
+        var st = document.createElement("div");
+        st.className = "strata";
+        st.style.bottom = (idx * 22) + "px";
+        st.style.background = c;
+        d.appendChild(st);
+      });
+      var crack = document.createElement("div");
+      crack.style.cssText = "left:56%;bottom:0;width:3px;height:88px;" +
+        "background:rgba(248,113,113,.75);transform:rotate(9deg);";
+      d.appendChild(crack);
+    }
+
+    if (kind === "weather") {
+      var c1 = document.createElement("div");
+      c1.className = "cloud";
+      c1.style.cssText += "left:22px;top:26px;";
+      d.appendChild(c1);
+      for (var q = 0; q < 9; q++) {
+        var dr = document.createElement("div");
+        dr.className = "drop";
+        dr.style.left = (18 + q * 7) + "%";
+        dr.style.top = rnd(62, 88) + "%";
+        d.appendChild(dr);
+      }
+      var sun = document.createElement("div");
+      sun.className = "orb";
+      sun.style.cssText = "right:18px;top:18px;width:30px;height:30px;" +
+        "background:radial-gradient(circle,#fde68a,#f59e0b);";
+      d.appendChild(sun);
+    }
+
+    if (kind === "body") {
+      var svgns = "http://www.w3.org/2000/svg";
+      var svg = document.createElementNS(svgns, "svg");
+      svg.setAttribute("viewBox", "0 0 240 40");
+      svg.setAttribute("preserveAspectRatio", "none");
+      svg.setAttribute("class", "ecg");
+      var path = document.createElementNS(svgns, "path");
+      path.setAttribute("d",
+        "M0 20 H40 l6 -14 l7 28 l6 -14 H120 l6 -14 l7 28 l6 -14 H240");
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke", "#fb7185");
+      path.setAttribute("stroke-width", "2.5");
+      svg.appendChild(path);
+      d.appendChild(svg);
+    }
+
+    return d;
+  }
+
+  TOPICS.forEach(function (t) {
+    var a = document.createElement("a");
+    a.className = "topic" + (t.ready ? "" : " soon");
+    a.href = t.ready ? t.f : "#";
+    if (!t.ready) a.setAttribute("aria-disabled", "true");
+
+    a.appendChild(art(t.art));
+
+    if (!t.ready) {
+      var st = document.createElement("span");
+      st.className = "soon-tag";
+      st.textContent = "建设中";
+      a.appendChild(st);
+    }
+
+    var b = document.createElement("div");
+    b.className = "tbody";
+
+    var h = document.createElement("h3");
+    h.textContent = t.n;
+    var zh = document.createElement("p");
+    zh.className = "zh";
+    zh.textContent = t.zh;
+    var say = document.createElement("p");
+    say.className = "say";
+    say.textContent = t.say;
+
+    var meta = document.createElement("div");
+    meta.className = "tmeta";
+    var ag = document.createElement("span");
+    ag.className = "badge age";
+    ag.textContent = t.age + " 岁";
+    meta.appendChild(ag);
+    if (t.live) {
+      var lv = document.createElement("span");
+      lv.className = "badge live";
+      lv.textContent = "真实数据 · " + t.live;
+      meta.appendChild(lv);
+    }
+
+    b.appendChild(h);
+    b.appendChild(zh);
+    b.appendChild(say);
+    b.appendChild(meta);
+    a.appendChild(b);
+    tg.appendChild(a);
+  });
+})();
+</script>
+</body>
+</html>

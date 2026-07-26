@@ -1,0 +1,650 @@
+/* 少儿数理启蒙 · 资源数据
+   同源于 data/resources.json，以 JS 形式提供，便于 file:// 直接打开时读取。
+   共 46 条，链接均于 2026-07 校验。 */
+window.RESOURCES = [
+  {
+    "name": "Beast Academy",
+    "zh": "野兽学院｜漫画风数学，AoPS 出品",
+    "url": "https://beastacademy.com/",
+    "desc": "美国口碑最好的小学数学项目之一，用漫画讲抽象概念，题目层层递进。Level 1–5 覆盖 6–13 岁，纸质书 + 在线练习 + 直播小班。",
+    "age": "6–13",
+    "subject": "math",
+    "cost": "paid",
+    "origin": "US · AoPS",
+    "tags": [
+      "curriculum",
+      "problem-solving"
+    ],
+    "star": true
+  },
+  {
+    "name": "Art of Problem Solving",
+    "zh": "美国竞赛数学的黄金起点",
+    "url": "https://artofproblemsolving.com/",
+    "desc": "AMC / MATHCOUNTS 培训体系事实标准。教材、Alcumus 免费练习平台、以及 Beast Academy 的进阶接力。",
+    "age": "10+",
+    "subject": "math",
+    "cost": "mixed",
+    "origin": "US",
+    "tags": [
+      "olympiad",
+      "advanced"
+    ],
+    "star": true
+  },
+  {
+    "name": "Singapore Math",
+    "zh": "新加坡数学｜可视化建模",
+    "url": "https://www.singaporemath.com/",
+    "desc": "以 bar model（图示建模）著称，从具象到抽象逐层过渡。美国许多私校和 homeschool 家庭首选。",
+    "age": "5–12",
+    "subject": "math",
+    "cost": "paid",
+    "origin": "SG / US",
+    "tags": [
+      "curriculum",
+      "visual"
+    ]
+  },
+  {
+    "name": "Khan Academy Kids",
+    "zh": "可汗学院 Kids｜2–8 岁全学科",
+    "url": "https://www.khanacademy.org/kids",
+    "desc": "完全免费。数学、阅读、社交情感课程一站式，用可爱角色带练习，家长后台清晰。",
+    "age": "2–8",
+    "subject": "math",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "app",
+      "all-subject"
+    ],
+    "star": true
+  },
+  {
+    "name": "ST Math (MIND Education)",
+    "zh": "ST Math｜先图形后语言的可视化数学",
+    "url": "https://www.mindeducation.org/programs/st-math/",
+    "desc": "让企鹅 JiJi 演示题意，学生先“看懂”再讲清。研究支撑充分，K–8 学校采购最多的补充课程之一。",
+    "age": "5–13",
+    "subject": "math",
+    "cost": "paid",
+    "origin": "US",
+    "tags": [
+      "visual",
+      "school"
+    ]
+  },
+  {
+    "name": "Zearn",
+    "zh": "Zearn｜K–8 免费在线数学",
+    "url": "https://www.zearn.org/",
+    "desc": "非营利，Eureka Math 课程的数字化版。分步引导 + 反馈式练习，家庭版免费。",
+    "age": "5–13",
+    "subject": "math",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "curriculum",
+      "non-profit"
+    ]
+  },
+  {
+    "name": "Illustrative Mathematics",
+    "zh": "Illustrative Mathematics｜以问题为中心的 K–12 数学",
+    "url": "https://illustrativemathematics.org/",
+    "desc": "被 EdReports 评为最高等级的免费开源课程，强调数学讨论与概念理解。",
+    "age": "6–18",
+    "subject": "math",
+    "cost": "mixed",
+    "origin": "US",
+    "tags": [
+      "curriculum",
+      "open"
+    ]
+  },
+  {
+    "name": "Mathigon",
+    "zh": "Mathigon｜交互式数学教科书 + Polypad 教具",
+    "url": "https://mathigon.org/",
+    "desc": "由 Amplify 支持。故事化数学课 + 数字积木/几何板 Polypad，是最有想象力的数学网页之一。",
+    "age": "7+",
+    "subject": "math",
+    "cost": "free",
+    "origin": "UK / US",
+    "tags": [
+      "interactive",
+      "tool"
+    ],
+    "star": true
+  },
+  {
+    "name": "Desmos",
+    "zh": "Desmos｜函数图像与几何工具",
+    "url": "https://www.desmos.com/",
+    "desc": "美国中学最常用的图形计算器。Classroom 活动库对启蒙也非常友好。",
+    "age": "8+",
+    "subject": "math",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "tool"
+    ]
+  },
+  {
+    "name": "NRICH (Cambridge)",
+    "zh": "剑桥 NRICH｜数学谜题与探究",
+    "url": "https://nrich.maths.org/",
+    "desc": "剑桥大学出品，3–18 岁数学任务和 low-floor-high-ceiling 谜题库。研究导向，任务质量极高。",
+    "age": "3–18",
+    "subject": "math",
+    "cost": "free",
+    "origin": "UK",
+    "tags": [
+      "puzzles",
+      "open-ended"
+    ],
+    "star": true
+  },
+  {
+    "name": "Math for Love",
+    "zh": "Math for Love｜Dan Finkel 的数学游戏",
+    "url": "https://mathforlove.com/",
+    "desc": "TED 讲者 Dan Finkel 团队。Prime Climb、Tiny Polka Dot 等桌游 + 免费教案，家庭最易上手。",
+    "age": "4–12",
+    "subject": "math",
+    "cost": "mixed",
+    "origin": "US",
+    "tags": [
+      "games",
+      "lessons"
+    ]
+  },
+  {
+    "name": "SolveMe Puzzles (EDC)",
+    "zh": "SolveMe｜平衡秤直觉学代数",
+    "url": "https://solveme.edc.org/",
+    "desc": "EDC 教育发展中心出品。Mobiles / Who Am I? / MysteryGrid 三款交互谜题，把代数思想变成拖拽。",
+    "age": "7+",
+    "subject": "math",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "puzzles"
+    ]
+  },
+  {
+    "name": "Julia Robinson Math Festival",
+    "zh": "JRMF｜合作型数学节",
+    "url": "https://jrmf.org/",
+    "desc": "非竞赛式的数学庆典。桌面活动 + 视频教程都免费，几乎每一个都能让孩子聊上一小时。",
+    "age": "7+",
+    "subject": "math",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "puzzles",
+      "non-competitive"
+    ]
+  },
+  {
+    "name": "YouCubed (Stanford)",
+    "zh": "斯坦福 YouCubed｜数学思维方式",
+    "url": "https://www.youcubed.org/",
+    "desc": "Jo Boaler 教授团队。免费任务、周主题活动，强调“每个孩子都能学好数学”的成长型思维。",
+    "age": "5–18",
+    "subject": "math",
+    "cost": "free",
+    "origin": "US · Stanford",
+    "tags": [
+      "mindset",
+      "tasks"
+    ]
+  },
+  {
+    "name": "Bedtime Math",
+    "zh": "Bedtime Math｜睡前数学故事",
+    "url": "https://bedtimemath.org/",
+    "desc": "每晚一段小故事，附三档难度问题。研究证明能显著改善家庭数学氛围。",
+    "age": "3–9",
+    "subject": "math",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "family",
+      "daily"
+    ]
+  },
+  {
+    "name": "Talking Math with Kids",
+    "zh": "Talking Math with Kids｜和孩子聊数学",
+    "url": "https://talkingmathwithkids.com/",
+    "desc": "Christopher Danielson 的博客与书。教家长如何在日常里发现和延伸孩子的数学时刻。",
+    "age": "3–10",
+    "subject": "math",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "family",
+      "parenting"
+    ]
+  },
+  {
+    "name": "Math Kangaroo",
+    "zh": "Math Kangaroo｜国际趣味数学竞赛",
+    "url": "https://www.mathkangaroo.org/",
+    "desc": "从 1 年级开始的国际比赛，题目有趣、面向全体，是低压力接触竞赛数学的最好入口。",
+    "age": "6–18",
+    "subject": "math",
+    "cost": "paid",
+    "origin": "国际",
+    "tags": [
+      "competition"
+    ]
+  },
+  {
+    "name": "MATHCOUNTS",
+    "zh": "MATHCOUNTS｜美国初中数学竞赛",
+    "url": "https://www.mathcounts.org/",
+    "desc": "6–8 年级的美国官方竞赛体系。免费的 Math Video Challenge 和每周挑战适合启蒙。",
+    "age": "10–14",
+    "subject": "math",
+    "cost": "mixed",
+    "origin": "US",
+    "tags": [
+      "competition"
+    ]
+  },
+  {
+    "name": "Math Circles",
+    "zh": "Math Circles｜数学圈子",
+    "url": "https://mathcircles.org/",
+    "desc": "起源于东欧、由伯克利与哈佛推广。美国各地小型俱乐部，用有趣的数学问题连接学生和数学家。",
+    "age": "6–18",
+    "subject": "math",
+    "cost": "mixed",
+    "origin": "US",
+    "tags": [
+      "community"
+    ]
+  },
+  {
+    "name": "National Museum of Mathematics (MoMath)",
+    "zh": "MoMath｜纽约国家数学博物馆",
+    "url": "https://momath.org/",
+    "desc": "全球唯一的国家级数学博物馆。展品、线上活动、家庭日；到纽约必去。",
+    "age": "5+",
+    "subject": "math",
+    "cost": "mixed",
+    "origin": "US",
+    "tags": [
+      "museum"
+    ]
+  },
+  {
+    "name": "IMAGINARY",
+    "zh": "IMAGINARY｜开源数学艺术展",
+    "url": "https://www.imaginary.org/",
+    "desc": "德国 Mathematisches Forschungsinstitut Oberwolfach 发起。免费下载可交互的数学艺术软件。",
+    "age": "8+",
+    "subject": "math",
+    "cost": "free",
+    "origin": "EU",
+    "tags": [
+      "art",
+      "exhibits"
+    ]
+  },
+  {
+    "name": "Numberphile (YouTube)",
+    "zh": "Numberphile｜数学奇观频道",
+    "url": "https://www.youtube.com/@numberphile",
+    "desc": "Brady Haran 主持，采访数学家讲有趣的数字与证明。适合 10 岁以上入门。",
+    "age": "10+",
+    "subject": "math",
+    "cost": "free",
+    "origin": "UK",
+    "tags": [
+      "video"
+    ]
+  },
+  {
+    "name": "PhET Interactive Simulations",
+    "zh": "PhET｜科罗拉多大学的免费交互仿真",
+    "url": "https://phet.colorado.edu/",
+    "desc": "物理化学生物数学全覆盖，全球下载超十亿次。所有仿真免费、离线可用、多语言。",
+    "age": "6+",
+    "subject": "science",
+    "cost": "free",
+    "origin": "US · CU",
+    "tags": [
+      "simulation",
+      "physics"
+    ],
+    "star": true
+  },
+  {
+    "name": "Mystery Science",
+    "zh": "Mystery Science｜K–5 每节课都从一个“为什么”开始",
+    "url": "https://mysteryscience.com/",
+    "desc": "Doug Peltz 创立。视频引子 + 简单材料的动手实验，被美国上千个学区采用。",
+    "age": "5–11",
+    "subject": "science",
+    "cost": "paid",
+    "origin": "US",
+    "tags": [
+      "curriculum",
+      "hands-on"
+    ],
+    "star": true
+  },
+  {
+    "name": "Exploratorium Science Snacks",
+    "zh": "旧金山探索博物馆｜Science Snacks 实验合集",
+    "url": "https://www.exploratorium.edu/snacks",
+    "desc": "把博物馆展品变成家里 30 分钟能做的小实验。数百个，全部免费、教师验证过。",
+    "age": "6+",
+    "subject": "science",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "hands-on"
+    ],
+    "star": true
+  },
+  {
+    "name": "Exploratorium Tinkering Studio",
+    "zh": "Tinkering Studio｜「边玩边发明」的教学法",
+    "url": "https://www.exploratorium.edu/tinkering",
+    "desc": "关于 STEAM maker 教育的世界级研究与项目库：scribbling machines、marble runs、light play。",
+    "age": "5+",
+    "subject": "science",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "maker",
+      "pedagogy"
+    ]
+  },
+  {
+    "name": "Concord Consortium",
+    "zh": "Concord Consortium｜研究级 STEM 交互模型",
+    "url": "https://learn.concord.org/",
+    "desc": "非营利实验室，做出建模型的下一代交互课程，从分子到气候都可以「动手」。",
+    "age": "8+",
+    "subject": "science",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "simulation",
+      "research"
+    ]
+  },
+  {
+    "name": "OpenSciEd",
+    "zh": "OpenSciEd｜NGSS 全面对齐的开源课程",
+    "url": "https://openscied.org/",
+    "desc": "由多家基金会资助的免费中学科学课程，2026 版已扩展到高中。是美国目前最先进的科学课样板。",
+    "age": "10–18",
+    "subject": "science",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "curriculum",
+      "open"
+    ]
+  },
+  {
+    "name": "Next Generation Science Standards",
+    "zh": "NGSS｜下一代科学教育标准",
+    "url": "https://www.nextgenscience.org/",
+    "desc": "美国当前的科学课国家标准。理解它对挑选任何科学资源都有帮助。",
+    "age": "5–18",
+    "subject": "science",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "standards"
+    ]
+  },
+  {
+    "name": "Generation Genius",
+    "zh": "Generation Genius｜K–8 科学与数学视频",
+    "url": "https://www.generationgenius.com/",
+    "desc": "NGSS 对齐视频课程，制作精良，配有教师指南和小实验，家庭订阅友好。",
+    "age": "5–13",
+    "subject": "science",
+    "cost": "paid",
+    "origin": "US",
+    "tags": [
+      "video",
+      "curriculum"
+    ]
+  },
+  {
+    "name": "Physics Classroom",
+    "zh": "The Physics Classroom｜物理概念全书",
+    "url": "https://www.physicsclassroom.com/",
+    "desc": "免费物理概念教程、Concept Builders、动画。是无数美国物理老师的备课起点。",
+    "age": "12+",
+    "subject": "science",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "physics",
+      "reference"
+    ]
+  },
+  {
+    "name": "NASA Space Place",
+    "zh": "NASA Space Place｜孩子专属的太空网站",
+    "url": "https://spaceplace.nasa.gov/",
+    "desc": "NASA 官方少儿门户，游戏、动画、科学解释，太空迷不能错过。",
+    "age": "6–12",
+    "subject": "science",
+    "cost": "free",
+    "origin": "US · NASA",
+    "tags": [
+      "space",
+      "free"
+    ],
+    "star": true
+  },
+  {
+    "name": "Smithsonian Science Education Center",
+    "zh": "史密森尼科学教育中心",
+    "url": "https://ssec.si.edu/",
+    "desc": "史密森尼出品的 K–12 课程与免费家庭活动，权威且现代。",
+    "age": "5–18",
+    "subject": "science",
+    "cost": "mixed",
+    "origin": "US",
+    "tags": [
+      "curriculum",
+      "museum"
+    ]
+  },
+  {
+    "name": "Science Friday · Educate",
+    "zh": "Science Friday｜广播里的现代科学",
+    "url": "https://www.sciencefriday.com/educate/",
+    "desc": "NPR 长寿科学节目的教育资源，从主持人 Ira Flatow 的访谈生成教案与音频活动。",
+    "age": "8+",
+    "subject": "science",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "audio",
+      "stem"
+    ]
+  },
+  {
+    "name": "Stellarium Web",
+    "zh": "Stellarium Web｜浏览器里的天文馆",
+    "url": "https://stellarium-web.org/",
+    "desc": "打开就是当下的星空，可以任意加速时间。免费开源，配合观星最佳。",
+    "age": "6+",
+    "subject": "science",
+    "cost": "free",
+    "origin": "开源",
+    "tags": [
+      "astronomy",
+      "tool"
+    ]
+  },
+  {
+    "name": "Perimeter Institute",
+    "zh": "Perimeter Institute｜理论物理研究所的教育资源",
+    "url": "https://perimeterinstitute.ca/",
+    "desc": "加拿大 Perimeter 免费提供高质量物理讲义、动画、视频，从量子到宇宙学。",
+    "age": "12+",
+    "subject": "science",
+    "cost": "free",
+    "origin": "CA",
+    "tags": [
+      "physics",
+      "research"
+    ]
+  },
+  {
+    "name": "SciShow Kids (YouTube)",
+    "zh": "SciShow Kids｜给小朋友的科学频道",
+    "url": "https://www.youtube.com/@SciShowKids",
+    "desc": "Hank Green 团队。每期回答一个「为什么」，视觉友好，是最佳的通勤或吃饭时间视频。",
+    "age": "4–9",
+    "subject": "science",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "video"
+    ]
+  },
+  {
+    "name": "KiwiCo",
+    "zh": "KiwiCo｜按月订阅的动手实验盒",
+    "url": "https://www.kiwico.co/",
+    "desc": "从 Panda Crate（0–3）到 Eureka Crate（14+）的分龄套装，STEAM + 艺术，家长最少心力。",
+    "age": "0–14+",
+    "subject": "kits",
+    "cost": "paid",
+    "origin": "US",
+    "tags": [
+      "subscription",
+      "hands-on"
+    ]
+  },
+  {
+    "name": "MEL Science",
+    "zh": "MEL Science｜化学与物理实验盒",
+    "url": "https://melscience.com/US-en/",
+    "desc": "俄裔团队做的高品质化学实验盒，配 AR 应用讲原理。7 岁起，10+ 起是化学实验的正餐。",
+    "age": "5–16",
+    "subject": "kits",
+    "cost": "paid",
+    "origin": "US / EU",
+    "tags": [
+      "chemistry",
+      "physics"
+    ]
+  },
+  {
+    "name": "LEGO Education",
+    "zh": "LEGO Education｜从 SPIKE 到 WeDo",
+    "url": "https://education.lego.com/en-us/",
+    "desc": "LEGO 教育版：SPIKE Essential、WeDo 2.0、BricQ。学校版偏贵，但课程和教案质量极高。",
+    "age": "5–14",
+    "subject": "kits",
+    "cost": "paid",
+    "origin": "DK / US",
+    "tags": [
+      "robotics",
+      "stem"
+    ]
+  },
+  {
+    "name": "micro:bit",
+    "zh": "BBC micro:bit｜英国国家级教育微控制器",
+    "url": "https://microbit.org/",
+    "desc": "BBC 主导。一块能编程的小板，图形化编程直接接传感器，最便宜的编程 + 硬件入口。",
+    "age": "8+",
+    "subject": "coding",
+    "cost": "paid",
+    "origin": "UK",
+    "tags": [
+      "hardware",
+      "coding"
+    ]
+  },
+  {
+    "name": "Tinkercad",
+    "zh": "Tinkercad｜浏览器 3D 设计",
+    "url": "https://www.tinkercad.com/",
+    "desc": "Autodesk 免费。三块拼图能做 3D 建模、电路、代码块。适合从「看视频」过渡到「做作品」。",
+    "age": "8+",
+    "subject": "coding",
+    "cost": "free",
+    "origin": "US · Autodesk",
+    "tags": [
+      "3d",
+      "free"
+    ]
+  },
+  {
+    "name": "Scratch",
+    "zh": "Scratch｜MIT 的儿童创意编程",
+    "url": "https://scratch.mit.edu/",
+    "desc": "MIT Media Lab。全球最大的儿童创作社区，8+ 起学编程的默认起点。",
+    "age": "8+",
+    "subject": "coding",
+    "cost": "free",
+    "origin": "US · MIT",
+    "tags": [
+      "coding",
+      "community"
+    ],
+    "star": true
+  },
+  {
+    "name": "ScratchJr",
+    "zh": "ScratchJr｜给学龄前的图形化编程",
+    "url": "https://scratchjr.org/",
+    "desc": "iPad / Android。5–7 岁孩子拖拽积木做故事和小游戏。Scratch 的低幼版。",
+    "age": "5–7",
+    "subject": "coding",
+    "cost": "free",
+    "origin": "US · MIT/Tufts",
+    "tags": [
+      "coding",
+      "app"
+    ]
+  },
+  {
+    "name": "Code.org",
+    "zh": "Code.org｜从 Hour of Code 到 CS 全课程",
+    "url": "https://code.org/",
+    "desc": "非营利。K–12 完整计算机科学课程，学生和教师都免费。",
+    "age": "5–18",
+    "subject": "coding",
+    "cost": "free",
+    "origin": "US",
+    "tags": [
+      "coding",
+      "curriculum"
+    ]
+  },
+  {
+    "name": "Numberblocks · Alphablocks",
+    "zh": "Numberblocks｜英国国民级数学动画",
+    "url": "https://www.blocksuniverse.tv/",
+    "desc": "BBC 出品。每一个方块就是一个数字，把 1–100 的关系演得清清楚楚。低龄数学神器。",
+    "age": "3–7",
+    "subject": "video",
+    "cost": "free",
+    "origin": "UK · BBC",
+    "tags": [
+      "video",
+      "math"
+    ],
+    "star": true
+  }
+];

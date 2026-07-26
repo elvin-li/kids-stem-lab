@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>虫子放大镜 · 小身体里的大物理 | 少儿数理启蒙</title>
+<meta name="description" content="蚂蚁为什么能扛起 50 倍体重？虫子为什么长不到猫那么大？用蟋蟀叫声算气温。真实照片来自 iNaturalist，附户外观察任务。">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<style>
+  .hero { padding: 40px 0 16px; }
+  .hero h1 { margin-bottom: .3em; }
+  .hero p.lead { font-size: 1.06rem; max-width: 63ch; }
+
+  /* ---------- 力量对比器 ---------- */
+  .strong {
+    background:
+      radial-gradient(110% 100% at 100% 0%, rgba(244,114,182,.13), transparent 58%),
+      var(--surface);
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+    padding: 20px 20px 18px;
+  }
+  .st-ctl { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 16px; }
+  .st-f { display: flex; flex-direction: column; gap: 5px; }
+  .st-f span { font-size: .74rem; color: var(--ink-dim); font-weight: 600; }
+  .st-f input[type="number"] {
+    width: 92px; padding: 7px 9px; font-family: var(--mono); font-size: .94rem;
+    background: var(--bg-soft); color: var(--ink);
+    border: 1px solid var(--line); border-radius: var(--r-sm);
+  }
+  .bars { display: flex; flex-direction: column; gap: 11px; }
+  .bar-row { display: grid; grid-template-columns: 88px 1fr; gap: 11px; align-items: center; }
+  .bar-row > .bl { font-size: .84rem; color: var(--ink-mid); text-align: right; }
+  .bar-track { position: relative; height: 30px; background: var(--bg-soft); border-radius: 6px; overflow: hidden; }
+  .bar-fill {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    border-radius: 6px; transition: width .5s var(--ease);
+    display: flex; align-items: center; padding-left: 9px;
+  }
+  .bar-fill b { font-family: var(--mono); font-size: .8rem; color: #0b0f1a; white-space: nowrap; }
+  .bar-fill.out b { color: var(--ink); padding-left: 0; }
+  .f-bug   { background: linear-gradient(90deg, #f472b6, #fb7185); }
+  .f-human { background: linear-gradient(90deg, #6ea8fe, #818cf8); }
+  .st-note {
+    margin: 14px 0 0; font-size: .84rem; color: var(--ink-mid);
+    border-left: 2px solid var(--kit); padding-left: 11px;
+  }
+
+  /* ---------- 为什么长不大 ---------- */
+  .scale-demo { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .cube-card {
+    background: var(--bg-soft); border: 1px solid var(--line-soft);
+    border-radius: var(--r); padding: 15px; text-align: center;
+  }
+  .cube {
+    margin: 0 auto 11px; background: linear-gradient(135deg, #4ade80, #22d3ee);
+    border-radius: 5px;
+  }
+  .cube-card h4 { margin: 0 0 7px; font-size: .95rem; }
+  .cube-card p { margin: 0; font-size: .78rem; color: var(--ink-dim); line-height: 1.5; }
+  .cube-card .rat {
+    display: block; margin-top: 8px; font-family: var(--mono);
+    font-size: 1.05rem; color: var(--sci); font-weight: 700;
+  }
+
+  /* ---------- 蟋蟀温度计 ---------- */
+  .cricket {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r-lg); padding: 20px;
+  }
+  .cr-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .cr-big {
+    font-family: var(--mono); font-size: 2.5rem; font-weight: 700;
+    color: var(--warn); line-height: 1;
+  }
+  .cr-big small { font-size: .95rem; color: var(--ink-dim); font-weight: 400; }
+
+  /* ---------- 虫卡 ---------- */
+  .bgrid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .bug {
+    display: flex; flex-direction: column; overflow: hidden; padding: 0;
+  }
+  .bug .ph-slot {
+    height: 134px; display: flex; align-items: center; justify-content: center;
+    background: var(--surface-2); font-size: 2.6rem;
+  }
+  .bug .ph-slot img { width: 100%; height: 134px; object-fit: cover; display: block; }
+  .bug-in { padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .bug-in h3 { margin: 0; font-size: 1.04rem; }
+  .bug-in .sci { margin: 0; font-family: var(--mono); font-size: .72rem; color: var(--ink-dim); }
+  .bug-in .fact { margin: 0; font-size: .85rem; color: var(--ink-mid); flex: 1; }
+  .bug-in .sz {
+    font-family: var(--mono); font-size: .74rem; color: var(--kit);
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 2px 9px; align-self: flex-start;
+  }
+  .cap-src { font-size: .68rem; color: var(--ink-dim); }
+
+  /* ---------- 观察任务 ---------- */
+  .hunt { display: grid; gap: 13px; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); }
+  .hunt-c { background: var(--bg-soft); border: 1px solid var(--line-soft); border-radius: var(--r); padding: 15px 16px; }
+  .hunt-c h4 { margin: 0 0 7px; font-size: .96rem; color: var(--kit); }
+  .hunt-c p { margin: 0 0 8px; font-size: .85rem; color: var(--ink-mid); }
+  .hunt-c .ask { margin: 0; font-size: .82rem; color: var(--ink); font-style: italic; }
+  .safe {
+    margin-top: 18px; background: rgba(251,191,36,.09);
+    border: 1px solid rgba(251,191,36,.3); border-radius: var(--r);
+    padding: 13px 16px; font-size: .86rem; color: var(--ink-mid);
+  }
+  .safe b { color: var(--warn); }
+  #src { font-size: .78rem; color: var(--ink-dim); }
+  @media (max-width: 600px) {
+    .bar-row { grid-template-columns: 66px 1fr; }
+    .cr-big { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html">互动实验</a>
+    <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<header class="hero wrap">
+  <p class="pill pill-kit" style="margin-bottom:12px">4–11 岁 · 户外可做</p>
+  <h1>虫子放大镜</h1>
+  <p class="lead">
+    蚂蚁能扛起自己体重的 50 倍，可它要是长到猫那么大，反而会立刻窒息而死。
+    虫子的世界被两条物理规律统治着——这一页把它们讲清楚，然后让孩子去院子里亲自验证。
+  </p>
+</header>
+
+<main class="wrap stack">
+
+  <!-- 力量对比 -->
+  <section>
+    <h2>如果你有蚂蚁的力量</h2>
+    <div class="strong">
+      <div class="st-ctl">
+        <label class="st-f">
+          <span>你的体重（公斤）</span>
+          <input id="kg" type="number" min="10" max="120" step="0.5" value="26">
+        </label>
+        <label class="st-f">
+          <span>比谁</span>
+          <select class="input" id="who" style="width:auto">
+            <option value="50">蚂蚁（约 50 倍）</option>
+            <option value="850">角蜣螂（约 850 倍）</option>
+            <option value="20">蜜蜂（约 20 倍）</option>
+            <option value="1">你自己（1 倍）</option>
+          </select>
+        </label>
+      </div>
+      <div class="bars" id="bars"></div>
+      <p class="st-note" id="stNote"></p>
+    </div>
+  </section>
+
+  <!-- 为什么长不大 -->
+  <section>
+    <h2>为什么虫子长不到猫那么大</h2>
+    <p style="color:var(--ink-mid);max-width:64ch">
+      这是整页最重要的一个道理，而且它不只管虫子——它管所有活物的大小上限。
+      把虫子想成一个方块，每条边放大一点，看体积和表面积各自变成多少倍。
+    </p>
+    <div class="scale-demo" id="cubes"></div>
+    <p class="st-note" style="border-color:var(--sci)">
+      虫子没有肺，靠身体侧面的小孔（<b>气孔</b>）让空气自己扩散进去，供氧能力大致跟<b>表面积</b>成正比。
+      但需要氧气的肉，是跟<b>体积</b>成正比的。放大 10 倍，肉多了 1000 倍，进气口只多了 100 倍——
+      差了整整 10 倍，所以大虫子会缺氧。三亿年前空气含氧量高得多，那时候真的有翅膀 70 厘米宽的巨脉蜻蜓。
+    </p>
+  </section>
+
+  <!-- 蟋蟀温度计 -->
+  <section>
+    <h2>用蟋蟀叫声当温度计</h2>
+    <div class="cricket">
+      <div class="cr-row">
+        <label class="st-f">
+          <span>14 秒内数到几声</span>
+          <input id="chirp" type="number" min="5" max="60" step="1" value="35">
+        </label>
+        <div>
+          <div class="cr-big" id="ctemp">—</div>
+          <span style="font-size:.8rem;color:var(--ink-dim)">估算气温</span>
+        </div>
+      </div>
+      <p class="st-note" style="border-color:var(--warn)">
+        方法叫<b>多尔贝定律</b>：数 14 秒的叫声次数，加上 40，就约等于华氏温度。
+        蟋蟀是冷血动物，肌肉收缩快慢直接受气温支配——天越暖，叫得越急。
+        这不是巧合或迷信，是一条能用温度计当场验证的经验公式。带孩子夏夜试一次，误差通常在两三度内。
+      </p>
+    </div>
+  </section>
+
+  <!-- 虫卡 -->
+  <section>
+    <h2>十种常见的虫（和它们的绝技）</h2>
+    <p id="src">照片加载中…</p>
+    <div class="bgrid" id="bugs"></div>
+  </section>
+
+  <!-- 观察任务 -->
+  <section>
+    <h2>拿着放大镜出门做的四件事</h2>
+    <div class="hunt" id="hunt"></div>
+    <div class="safe">
+      <b>安全与善待：</b>看完就放回原地，别带回家养。不认识的虫不要用手直接抓，
+      蜜蜂胡蜂周围不要挥手驱赶（挥动反而触发攻击，静静走开就行）。
+      翻开石头或木头看完，请把它<b>照原样盖回去</b>——那是别人的房子。
+    </div>
+  </section>
+
+  <footer class="foot" style="margin-top:34px">
+    <p>
+      照片与物种资料来自 <a href="https://www.inaturalist.org/" target="_blank" rel="noopener">iNaturalist</a>（社区科学平台，照片版权归各拍摄者）。
+      体重倍数、体长为常见文献范围的近似值，个体差异较大。蟋蟀公式适用于北美树蟋等常见种，其他种类系数略有不同。
+      离线时页面显示内置数据，功能不受影响。
+    </p>
+  </footer>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 力量对比 ---------- */
+  var kgEl = document.getElementById("kg");
+  var whoEl = document.getElementById("who");
+  var barsEl = document.getElementById("bars");
+  var stNote = document.getElementById("stNote");
+
+  function bar(label, kg, cls, maxKg) {
+    var row = document.createElement("div");
+    row.className = "bar-row";
+    var bl = document.createElement("div");
+    bl.className = "bl";
+    bl.textContent = label;
+    var tr = document.createElement("div");
+    tr.className = "bar-track";
+    var fl = document.createElement("div");
+    fl.className = "bar-fill " + cls;
+    var pct = Math.max(4, Math.min(100, kg / maxKg * 100));
+    fl.style.width = pct + "%";
+    var b = document.createElement("b");
+    b.textContent = kg >= 1000
+      ? (kg / 1000).toFixed(1) + " 吨"
+      : Math.round(kg).toLocaleString() + " kg";
+    if (pct < 26) fl.classList.add("out");
+    fl.appendChild(b);
+    tr.appendChild(fl);
+    row.appendChild(bl);
+    row.appendChild(tr);
+    return row;
+  }
+
+  function strength() {
+    var kg = +kgEl.value || 26;
+    var mult = +whoEl.value || 50;
+    var lifted = kg * mult;
+    var normal = kg * 0.5;              // 普通孩子大致能提起自身一半体重
+    var max = Math.max(lifted, normal);
+
+    barsEl.textContent = "";
+    barsEl.appendChild(bar("你现在", normal, "f-human", max));
+    barsEl.appendChild(bar("有了虫的力量", lifted, "f-bug", max));
+
+    var cars = lifted / 1500;
+    var kids = lifted / kg;
+    var txt = "按这个比例，你能举起 " +
+      (lifted >= 1000 ? (lifted / 1000).toFixed(1) + " 吨" : Math.round(lifted) + " 公斤") +
+      "，差不多是 " + (cars >= 1 ? cars.toFixed(1) + " 辆小汽车" : (cars * 100).toFixed(0) + "% 辆小汽车") +
+      "，或者 " + Math.round(kids) + " 个你自己叠起来。";
+    if (mult > 1) {
+      txt += " 但要注意：虫子并不是肌肉更强，而是<b>身体小</b>——" +
+        "肌肉力量随截面积（长度的平方）增长，体重随体积（长度的立方）增长。" +
+        "个子越小，力量相对体重就越占优势。这跟蚂蚁「天生大力士」没关系，纯粹是几何。";
+    } else {
+      txt += " 这就是你真实的大概水平。";
+    }
+    stNote.innerHTML = txt;
+  }
+  kgEl.addEventListener("input", strength);
+  whoEl.addEventListener("change", strength);
+
+  /* ---------- 立方体缩放 ---------- */
+  var cubes = document.getElementById("cubes");
+  [1, 2, 5, 10].forEach(function (L) {
+    var c = document.createElement("div");
+    c.className = "cube-card";
+    var box = document.createElement("div");
+    box.className = "cube";
+    var px = 16 + L * 5;
+    box.style.width = px + "px";
+    box.style.height = px + "px";
+    var h = document.createElement("h4");
+    h.textContent = "边长 × " + L;
+    var p = document.createElement("p");
+    p.innerHTML = "体积 × <b>" + (L * L * L) + "</b>（要吃要呼吸的肉）<br>" +
+                  "表面 × <b>" + (L * L) + "</b>（能进气的皮）";
+    var r = document.createElement("span");
+    r.className = "rat";
+    r.textContent = "缺口 " + L + " 倍";
+    c.appendChild(box); c.appendChild(h); c.appendChild(p); c.appendChild(r);
+    cubes.appendChild(c);
+  });
+
+  /* ---------- 蟋蟀温度计 ---------- */
+  var chirp = document.getElementById("chirp");
+  var ctemp = document.getElementById("ctemp");
+  function cricket() {
+    var n = +chirp.value;
+    if (isNaN(n) || n < 0) { ctemp.textContent = "—"; return; }
+    var f = n + 40;                       // 多尔贝定律
+    var c = (f - 32) * 5 / 9;
+    ctemp.innerHTML = c.toFixed(1) + " °C <small>（" + f + " °F）</small>";
+  }
+  chirp.addEventListener("input", cricket);
+
+  /* ---------- 虫子数据（内置，联网后补照片）---------- */
+  var BUGS = [
+    { n: "西方蜜蜂", sci: "Apis mellifera", mm: 13, em: "🐝",
+      f: "找到花蜜后回巢跳「8 字摆尾舞」：摆尾持续 1 秒约代表 1 公里，舞蹈方向相对重力的角度就是相对太阳的角度。一只虫子在用<b>角度和时间编码地图</b>。" },
+    { n: "帝王蝶", sci: "Danaus plexippus", mm: 100, em: "🦋",
+      f: "每年从加拿大飞到墨西哥同一片树林，全程约 4000 公里。没有一只蝴蝶活着走完往返——认路的本事完全靠<b>遗传</b>，不是学来的。" },
+    { n: "蚂蚁", sci: "Formica", mm: 5, em: "🐜",
+      f: "能扛起约 50 倍体重。回家不靠记路，靠沿途留下的<b>信息素</b>浓度——最短的路来回快，气味最浓，于是整个蚁群自动收敛到最短路径。" },
+    { n: "瓢虫", sci: "Coccinellidae", mm: 6, em: "🐞",
+      f: "一生能吃掉五千只蚜虫，是农业上重要的天敌昆虫。鲜红带黑点不是为了好看，是<b>警戒色</b>：告诉鸟「我很难吃」。" },
+    { n: "蟋蟀", sci: "Gryllus", mm: 25, em: "🦗",
+      f: "叫声不是嘴发出的，是<b>两片翅膀互相摩擦</b>——一边像锉刀，一边像刮片。气温越高叫得越快，所以能当温度计。" },
+    { n: "萤火虫", sci: "Lampyridae", mm: 12, em: "✨",
+      f: "发的是<b>冷光</b>，几乎 100% 的能量变成光，一点不发热。家里的灯泡远远做不到。每种萤火虫的闪光节奏都不一样，那是它们的求偶密码。" },
+    { n: "螳螂", sci: "Mantodea", mm: 60, em: "🦟",
+      f: "唯一能<b>转头 180 度</b>的昆虫。前腿弹出抓捕只用 50–70 毫秒，比人眨眼快五倍以上。眼睛上那个跟着你转的小黑点其实是伪瞳孔。" },
+    { n: "蜘蛛", sci: "Araneae", mm: 10, em: "🕷",
+      f: "严格说不是昆虫（八条腿、两段身体）。蛛丝按同等重量比<b>钢还结实</b>，能拉伸到原长四成不断。织一张网通常不到一小时。" },
+    { n: "欧洲深山锹甲", sci: "Lucanus cervus", mm: 75, em: "🪲",
+      f: "那对「大角」其实是放大的<b>上颚</b>，雄虫用它互相摔跤争地盘。幼虫要在腐木里啃三到五年才变成虫，成虫却只活几周。" },
+    { n: "熊蜂", sci: "Bombus", mm: 20, em: "🐝",
+      f: "会<b>抱住花朵高频振动</b>把花粉抖出来（声振传粉），番茄和蓝莓特别依赖这招，蜜蜂反而不会。它比蜜蜂耐冷，早春就出来干活。" }
+  ];
+
+  var bugsEl = document.getElementById("bugs");
+  BUGS.forEach(function (b) {
+    var c = document.createElement("article");
+    c.className = "card bug";
+
+    var ph = document.createElement("div");
+    ph.className = "ph-slot";
+    ph.textContent = b.em;
+    ph.setAttribute("data-inat", b.sci);
+
+    var inr = document.createElement("div");
+    inr.className = "bug-in";
+    var h = document.createElement("h3");
+    h.textContent = b.n;
+    var sci = document.createElement("p");
+    sci.className = "sci";
+    sci.textContent = b.sci;
+    var sz = document.createElement("span");
+    sz.className = "sz";
+    sz.textContent = b.mm >= 10 ? "约 " + (b.mm / 10) + " 厘米" : "约 " + b.mm + " 毫米";
+    var f = document.createElement("p");
+    f.className = "fact";
+    f.innerHTML = b.f;
+
+    inr.appendChild(h); inr.appendChild(sci);
+    inr.appendChild(sz); inr.appendChild(f);
+    c.appendChild(ph); c.appendChild(inr);
+    bugsEl.appendChild(c);
+  });
+
+  /* ---------- 观察任务 ---------- */
+  var HUNT = [
+    { t: "跟一只蚂蚁走完全程", p: "选一只蚂蚁，一路跟着它，看它去哪、碰到同伴做什么。计时看它多久回巢。再用手指在它的路线上横着抹一道（擦掉信息素），看它慌不慌。",
+      a: "它是怎么知道回家方向的？路被擦掉以后它怎么重新找到？" },
+    { t: "数一朵花上的访客", p: "找一朵开得正好的花，坐着看五分钟，数有几种不同的虫来过。记下每种停留多久。换一朵不同颜色的花再数一次。",
+      a: "哪种花来的虫最多？虫子更喜欢什么颜色？为什么花要费劲长得好看？" },
+    { t: "翻开一块石头", p: "找院子里或树下一块半埋的石头，轻轻翻开，快速看看下面住着谁，数一数种类，然后照原样盖回去。",
+      a: "为什么这些虫都躲在石头下面？那里和外面有什么不一样（湿度、温度、光）？" },
+    { t: "夏夜数蟋蟀", p: "天黑后到院子或公园，安静听，用手机计时数 14 秒内的叫声次数。用上面的计算器算气温，再拿真温度计对一下。",
+      a: "算出来和真实温度差多少？换个更暖或更凉的夜晚再测，规律还成立吗？" }
+  ];
+  var huntEl = document.getElementById("hunt");
+  HUNT.forEach(function (h) {
+    var c = document.createElement("div");
+    c.className = "hunt-c";
+    var t = document.createElement("h4");
+    t.textContent = h.t;
+    var p = document.createElement("p");
+    p.textContent = h.p;
+    var a = document.createElement("p");
+    a.className = "ask";
+    a.textContent = "问他：" + h.a;
+    c.appendChild(t); c.appendChild(p); c.appendChild(a);
+    huntEl.appendChild(c);
+  });
+
+  /* ---------- 联网增强：iNaturalist 照片 ---------- */
+  var srcEl = document.getElementById("src");
+  var got = 0, tried = 0;
+  function report() {
+    srcEl.textContent = got > 0
+      ? "已加载 " + got + " 张照片（iNaturalist，版权归拍摄者）。"
+      : "离线模式 · 显示内置图标与文字（照片需要联网）。";
+  }
+
+  function jget(url, ms) {
+    var ac = new AbortController();
+    var t = setTimeout(function () { ac.abort(); }, ms || 8000);
+    return fetch(url, { signal: ac.signal })
+      .then(function (r) {
+        clearTimeout(t);
+        if (!r.ok) throw new Error("http " + r.status);
+        return r.json();
+      })
+      .catch(function (e) { clearTimeout(t); throw e; });
+  }
+
+  var slots = [].slice.call(document.querySelectorAll("[data-inat]"));
+  var total = slots.length;
+
+  slots.forEach(function (slot) {
+    var q = slot.getAttribute("data-inat");
+    var ck = "inat-bug:" + q;
+
+    // 先插入文档再设 src；游离节点不会加载，也不能用 lazy。
+    function paint(rec) {
+      if (!rec || !rec.url) { tried++; if (tried === total) report(); return; }
+      var img = document.createElement("img");
+      img.alt = rec.name || q;
+      img.style.display = "none";
+      slot.appendChild(img);
+      img.onload = function () {
+        [].slice.call(slot.childNodes).forEach(function (n) {
+          if (n !== img) slot.removeChild(n);
+        });
+        img.style.display = "";
+        got++; tried++;
+        if (tried === total) report();
+      };
+      img.onerror = function () {
+        img.remove();               // 失败保留 emoji
+        tried++; if (tried === total) report();
+      };
+      img.src = rec.url;
+    }
+
+    try {
+      var c = localStorage.getItem(ck);
+      if (c) { paint(JSON.parse(c)); return; }
+    } catch (e) {}
+
+    jget("https://api.inaturalist.org/v1/taxa?q=" + encodeURIComponent(q) + "&per_page=6")
+      .then(function (d) {
+        var rs = (d && d.results) || [];
+        var want = q.split(" ")[0].toLowerCase();
+        var hit = null;
+        for (var i = 0; i < rs.length; i++) {
+          var r = rs[i];
+          if ((r.name || "").toLowerCase().indexOf(want) === 0 &&
+              r.default_photo && r.default_photo.medium_url) {
+            hit = { url: r.default_photo.medium_url, name: r.name };
+            break;
+          }
+        }
+        if (hit) {
+          try { localStorage.setItem(ck, JSON.stringify(hit)); } catch (e) {}
+          paint(hit);
+        } else { tried++; if (tried === total) report(); }
+      })
+      .catch(function () { tried++; if (tried === total) report(); });
+  });
+
+  strength();
+  cricket();
+})();
+</script>
+</body>
+</html>

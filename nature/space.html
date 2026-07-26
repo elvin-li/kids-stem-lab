@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>太空站 · 太阳系与每日天文图 | 少儿数理启蒙</title>
+<meta name="description" content="按真实比例看太阳系八大行星，比较重力、一天有多长、跑到太阳要多久。数据来自 NASA，含每日天文图。">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<style>
+  .hero { padding: 40px 0 20px; }
+  .hero h1 { margin-bottom: .3em; }
+
+  /* ---------- 太阳系轨道图 ---------- */
+  .solar {
+    position: relative; overflow-x: auto; overflow-y: hidden;
+    background:
+      radial-gradient(90% 120% at 0% 50%, rgba(251,191,36,.16), transparent 55%),
+      var(--surface);
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+    padding: 26px 20px 20px;
+  }
+  .solar-track { position: relative; height: 190px; min-width: 880px; }
+  .sun-edge {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 46px;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b 40%, transparent);
+    border-radius: 50% / 50%;
+    filter: blur(1px);
+  }
+  .sun-label {
+    position: absolute; left: 4px; bottom: -2px;
+    font-size: .68rem; font-weight: 700; color: var(--warn);
+    font-family: var(--mono);
+  }
+  .planet {
+    position: absolute; transform: translate(-50%, -50%);
+    background: none; border: 0; padding: 0; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .planet .body {
+    border-radius: 50%;
+    box-shadow: inset -3px -3px 8px rgba(0,0,0,.45), 0 0 0 0 rgba(255,255,255,0);
+    transition: box-shadow .18s var(--ease), transform .18s var(--ease);
+  }
+  .planet:hover .body, .planet[aria-pressed="true"] .body {
+    transform: scale(1.16);
+    box-shadow: inset -3px -3px 8px rgba(0,0,0,.45), 0 0 0 3px rgba(110,168,254,.5);
+  }
+  .planet .nm {
+    font-size: .72rem; color: var(--ink-mid); white-space: nowrap;
+    font-weight: 600;
+  }
+  .planet[aria-pressed="true"] .nm { color: var(--ink); }
+  .ring {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    border: 1px solid rgba(251,191,36,.55); border-radius: 50%;
+    pointer-events: none;
+  }
+  .scale-note {
+    font-size: .76rem; color: var(--ink-dim); margin-top: 10px;
+    font-family: var(--mono);
+  }
+
+  /* ---------- 行星详情 ---------- */
+  .detail { display: grid; grid-template-columns: 1.1fr .9fr; gap: 18px; margin-top: 18px; }
+  @media (max-width: 780px) { .detail { grid-template-columns: 1fr; } }
+  .facts { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 14px; }
+  .fact {
+    background: var(--surface-2); border: 1px solid var(--line-soft);
+    border-radius: var(--r-sm); padding: 10px 12px;
+  }
+  .fact .k { font-size: .68rem; color: var(--ink-dim); letter-spacing: .05em; text-transform: uppercase; }
+  .fact .v { font-size: 1.02rem; font-weight: 700; color: var(--ink); font-family: var(--mono); margin-top: 2px; }
+  .fact .sub { font-size: .72rem; color: var(--ink-mid); margin-top: 2px; }
+
+  /* ---------- 体重计 ---------- */
+  .weigh { margin-top: 16px; }
+  .weigh-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .weigh input[type=number] {
+    width: 90px; font-family: var(--mono);
+  }
+  .wbars { margin-top: 14px; display: grid; gap: 7px; }
+  .wbar { display: grid; grid-template-columns: 62px 1fr 78px; gap: 10px; align-items: center; }
+  .wbar .pl { font-size: .8rem; color: var(--ink-mid); }
+  .wbar .track { height: 20px; background: var(--surface-2); border-radius: 999px; overflow: hidden; border: 1px solid var(--line-soft); }
+  .wbar .fill { height: 100%; border-radius: 999px; transition: width .45s var(--ease); }
+  .wbar .val { font-family: var(--mono); font-size: .82rem; text-align: right; color: var(--ink); }
+  .wbar.me .pl { color: var(--sci); font-weight: 700; }
+
+  /* ---------- APOD ---------- */
+  .apod-media {
+    width: 100%; border-radius: var(--r); border: 1px solid var(--line);
+    background: var(--surface-2); display: block; aspect-ratio: 16/10; object-fit: cover;
+  }
+  .apod-media[data-ph="1"] {
+    display: grid; place-items: center; color: var(--ink-dim); font-size: .84rem;
+  }
+  iframe.apod-media { aspect-ratio: 16/9; }
+  .badge-live {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: .7rem; font-family: var(--mono); color: var(--ink-dim);
+    border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px;
+  }
+  .badge-live .d { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-dim); }
+  .badge-live.on .d { background: var(--sci); }
+  .badge-live.off .d { background: var(--warn); }
+
+  /* ---------- 图片墙 ---------- */
+  .shots { display: grid; grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); gap: 10px; margin-top: 12px; }
+  .shot { position: relative; border-radius: var(--r-sm); overflow: hidden; border: 1px solid var(--line); background: var(--surface-2); aspect-ratio: 1; }
+  .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .shot .cap {
+    position: absolute; inset: auto 0 0 0; padding: 5px 7px;
+    background: linear-gradient(transparent, rgba(0,0,0,.82));
+    font-size: .68rem; color: #fff; line-height: 1.3;
+  }
+
+  /* ---------- 距离尺 ---------- */
+  .ruler { margin-top: 12px; }
+  .rrow { display: grid; grid-template-columns: 66px 1fr; gap: 10px; align-items: center; padding: 5px 0; }
+  .rrow .lb { font-size: .78rem; color: var(--ink-mid); }
+  .rrow .bar { height: 8px; border-radius: 999px; background: var(--surface-2); position: relative; border: 1px solid var(--line-soft); }
+  .rrow .dot2 { position: absolute; top: 50%; width: 11px; height: 11px; border-radius: 50%; transform: translate(-50%,-50%); }
+  .rrow .tx { font-size: .72rem; color: var(--ink-dim); font-family: var(--mono); }
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html">互动实验</a>
+    <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<header class="hero wrap">
+  <h1>太空站</h1>
+  <p class="lead">
+    八大行星按真实数据排开。点一颗行星，看它有多大、多远、一天多长、你在上面有多重。
+    每日天文图来自 NASA，网络不通时页面仍然完整可用。
+  </p>
+  <span id="netBadge" class="badge-live"><span class="d"></span><span id="netTxt">正在连接 NASA…</span></span>
+</header>
+
+<main class="wrap stack">
+
+  <!-- ============ 太阳系 ============ -->
+  <section>
+    <h2>太阳系全景</h2>
+    <p class="muted" style="color:var(--ink-mid);font-size:.9rem">
+      距离用了压缩尺度（否则海王星要画到 30 米开外）；行星大小之间是<b>真实比例</b>。
+    </p>
+    <div class="solar">
+      <div class="solar-track" id="track">
+        <div class="sun-edge"></div>
+        <span class="sun-label">太阳</span>
+      </div>
+    </div>
+    <p class="scale-note" id="scaleNote"></p>
+  </section>
+
+  <!-- ============ 行星详情 ============ -->
+  <section class="detail">
+    <div class="card" style="padding:20px">
+      <div class="row spread" style="align-items:flex-start">
+        <div>
+          <h2 id="pName" style="margin:0">地球</h2>
+          <p id="pTag" style="margin:.2em 0 0;color:var(--ink-mid);font-size:.9rem">我们的家</p>
+        </div>
+        <span id="pEmoji" style="font-size:2rem" aria-hidden="true">🌍</span>
+      </div>
+      <p id="pDesc" style="margin:.9em 0 0;color:var(--ink-mid);font-size:.92rem;line-height:1.6"></p>
+      <div class="facts" id="pFacts"></div>
+      <p id="pWow" style="margin:.9em 0 0;font-size:.88rem;color:var(--ink);background:var(--surface-2);border-left:3px solid var(--sci);padding:9px 12px;border-radius:0 var(--r-sm) var(--r-sm) 0"></p>
+    </div>
+
+    <div class="card" style="padding:20px">
+      <h3 style="margin:0 0 .2em">你在别的星球上有多重？</h3>
+      <p style="margin:0 0 12px;color:var(--ink-mid);font-size:.85rem">
+        输入你的体重，看重力怎么改变它。质量没变，是<b>重力</b>变了。
+      </p>
+      <div class="weigh-row">
+        <label for="kg" style="font-size:.85rem">我的体重</label>
+        <input class="input" type="number" id="kg" value="25" min="1" max="200" step="0.5">
+        <span style="color:var(--ink-mid);font-size:.85rem">公斤</span>
+      </div>
+      <div class="wbars" id="wbars"></div>
+    </div>
+  </section>
+
+  <!-- ============ 距离 ============ -->
+  <section>
+    <h2>坐飞机去要多久？</h2>
+    <p style="color:var(--ink-mid);font-size:.9rem;margin-top:-.3em">
+      假设一直以民航客机的速度（900 公里/小时）飞，永不停歇。
+    </p>
+    <div class="card" style="padding:18px">
+      <div class="ruler" id="ruler"></div>
+    </div>
+  </section>
+
+  <!-- ============ APOD ============ -->
+  <section>
+    <h2>今天的天文图</h2>
+    <div class="card" style="padding:18px">
+      <div id="apodBox">
+        <div class="apod-media" data-ph="1">正在取图…</div>
+      </div>
+      <h3 id="apodTitle" style="margin:.8em 0 .2em;font-size:1.06rem"></h3>
+      <p id="apodDate" style="margin:0;font-family:var(--mono);font-size:.74rem;color:var(--ink-dim)"></p>
+      <p id="apodText" style="margin:.7em 0 0;color:var(--ink-mid);font-size:.88rem;line-height:1.65"></p>
+    </div>
+  </section>
+
+  <!-- ============ NASA 图片墙 ============ -->
+  <section>
+    <h2>NASA 拍到的这颗星</h2>
+    <p style="color:var(--ink-mid);font-size:.9rem;margin-top:-.3em">
+      点上面的行星会换一组照片。图片来自 NASA 公共图像库。
+    </p>
+    <div class="shots" id="shots"></div>
+  </section>
+
+  <!-- ============ 亲子问题 ============ -->
+  <section>
+    <h2>可以一起聊的问题</h2>
+    <div class="grid grid-2">
+      <div class="card" style="padding:16px">
+        <h3 style="margin:0 0 .3em;font-size:1rem">木星那么大，为什么不是恒星？</h3>
+        <p style="margin:0;color:var(--ink-mid);font-size:.88rem">
+          恒星要靠自身重力把氢压到能聚变。木星虽是行星里最大的，质量还差得远——大约要再重 80 倍才能点着。
+        </p>
+      </div>
+      <div class="card" style="padding:16px">
+        <h3 style="margin:0 0 .3em;font-size:1rem">金星离太阳远，为什么比水星热？</h3>
+        <p style="margin:0;color:var(--ink-mid);font-size:.88rem">
+          金星有极厚的二氧化碳大气，热量进得来出不去——温室效应。水星几乎没有大气，白天极热、夜里极冷。
+        </p>
+      </div>
+      <div class="card" style="padding:16px">
+        <h3 style="margin:0 0 .3em;font-size:1rem">为什么金星上一天比一年长？</h3>
+        <p style="margin:0;color:var(--ink-mid);font-size:.88rem">
+          金星自转极慢（243 地球日转一圈），公转只要 225 天。自转比公转还慢，所以「一天」真的比「一年」长。
+        </p>
+      </div>
+      <div class="card" style="padding:16px">
+        <h3 style="margin:0 0 .3em;font-size:1rem">冥王星为什么被除名了？</h3>
+        <p style="margin:0;color:var(--ink-mid);font-size:.88rem">
+          2006 年国际天文联合会重新定义行星，要求能「清空自己轨道附近」。冥王星所在的柯伊伯带还有很多同类天体，于是归为矮行星。
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot wrap-narrow" style="text-align:center;padding:28px 0">
+  <p style="color:var(--ink-dim);font-size:.8rem;line-height:1.7">
+    行星物理数据来自 NASA Planetary Fact Sheet（内置，不依赖网络）。<br>
+    每日天文图与照片来自 NASA APOD 与 NASA Image Library，可能因网络不可用而显示内置内容。<br>
+    NASA 图像为公有领域素材。
+  </p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------------------------------------------------------------
+  // 行星数据：全部来自 NASA Planetary Fact Sheet，内置以保证离线可用
+  //   au    : 距太阳（天文单位）
+  //   dkm   : 直径 km
+  //   g     : 表面重力相对地球
+  //   day   : 自转周期（地球日，绝对值）
+  //   year  : 公转周期（地球年）
+  //   tempC : 平均表面温度 ℃
+  //   moons : 已确认卫星数
+  // ---------------------------------------------------------------
+  var PLANETS = [
+    { id:"mercury", zh:"水星", en:"Mercury", emoji:"☿", col:"#b8b0a4",
+      au:0.39, dkm:4879, g:0.38, day:58.6, year:0.24, tempC:167, moons:0,
+      tag:"最小、最快、最极端",
+      desc:"离太阳最近的行星，几乎没有大气。白天能到 430℃，夜里降到 -180℃——同一天里温差 600 度以上。它绕太阳一圈只要 88 天，是跑得最快的行星。",
+      wow:"水星上看日出，太阳会先升起、停住、往回落一点，再重新升起。因为它自转和公转的速度太接近了。",
+      q:"mercury planet" },
+    { id:"venus", zh:"金星", en:"Venus", emoji:"♀", col:"#e8c07a",
+      au:0.72, dkm:12104, g:0.91, day:243, year:0.62, tempC:464, moons:0,
+      tag:"最热的行星",
+      desc:"大小几乎和地球一样，却是太阳系最热的地方。厚厚的二氧化碳大气把热量牢牢锁住，地表气压是地球的 90 倍——相当于在海里下潜 900 米。",
+      wow:"金星自转的方向和其他行星相反。在金星上，太阳从西边升起。",
+      q:"venus planet" },
+    { id:"earth", zh:"地球", en:"Earth", emoji:"🌍", col:"#5b9bd5",
+      au:1.00, dkm:12756, g:1.00, day:1, year:1.00, tempC:15, moons:1,
+      tag:"我们的家",
+      desc:"目前已知唯一有液态水海洋和生命的星球。大气层里 21% 是氧气，还有一层臭氧挡住紫外线。地球有一个相对巨大的卫星——月球。",
+      wow:"地球表面 71% 是水，但其中 97% 是咸水。所有淡水加起来只占 3%，而大部分还冻在冰川里。",
+      q:"earth from space" },
+    { id:"mars", zh:"火星", en:"Mars", emoji:"♂", col:"#c1613c",
+      au:1.52, dkm:6792, g:0.38, day:1.03, year:1.88, tempC:-65, moons:2,
+      tag:"红色的邻居",
+      desc:"表面的铁锈让它看起来是红色的。有太阳系最高的火山（奥林帕斯山，约 22 公里高）和最长的峡谷。两极有冰盖，地下可能还有水冰。",
+      wow:"火星上的一天只比地球长 37 分钟，所以火星车团队会按「火星时间」上班，每天晚 37 分钟。",
+      q:"mars surface" },
+    { id:"jupiter", zh:"木星", en:"Jupiter", emoji:"♃", col:"#d8a373",
+      au:5.20, dkm:142984, g:2.36, day:0.41, year:11.86, tempC:-110, moons:95,
+      tag:"最大的行星",
+      desc:"气体巨行星，能装下 1300 个地球。表面那些条纹是高速气流，大红斑是一场刮了至少几百年的风暴，比地球还大。它有 95 颗已确认卫星。",
+      wow:"木星自转极快，一天不到 10 小时。转得太快，把自己甩成了一个扁球——赤道明显鼓出来。",
+      q:"jupiter" },
+    { id:"saturn", zh:"土星", en:"Saturn", emoji:"♄", col:"#e0cd9a",
+      au:9.54, dkm:120536, g:0.92, day:0.44, year:29.4, tempC:-140, moons:146,
+      tag:"戴环的星",
+      desc:"最漂亮的行星，环由无数冰块和石块组成，从几厘米到几米大。环很宽（几十万公里）却极薄，平均只有几十米厚。",
+      wow:"土星的平均密度比水还小。如果有一个足够大的浴缸，土星能浮起来。",
+      q:"saturn rings" },
+    { id:"uranus", zh:"天王星", en:"Uranus", emoji:"♅", col:"#93d3dd",
+      au:19.2, dkm:51118, g:0.89, day:0.72, year:84, tempC:-195, moons:28,
+      tag:"躺着转的星",
+      desc:"冰巨行星，甲烷让它呈青蓝色。自转轴几乎躺平（倾斜 98 度），所以它是「滚着」绕太阳走的，两极各有 21 年的极昼和极夜。",
+      wow:"天王星绕太阳一圈要 84 年。1781 年被发现至今，它才走完不到三圈。",
+      q:"uranus planet" },
+    { id:"neptune", zh:"海王星", en:"Neptune", emoji:"♆", col:"#4b6ed8",
+      au:30.1, dkm:49528, g:1.11, day:0.67, year:164.8, tempC:-200, moons:16,
+      tag:"风最猛的星",
+      desc:"最远的行星，深蓝色。风速可达每小时 2000 公里，是太阳系最猛的风。它不是靠望远镜偶然看到的，而是先用数学算出位置再找到的。",
+      wow:"海王星是唯一「算」出来的行星。天文学家发现天王星轨道有偏差，推算出还有一颗星在拉它，照着算出的位置一找就找到了。",
+      q:"neptune planet" }
+  ];
+
+  var AU_KM = 149597870;
+  var PLANE_KMH = 900;
+
+  // ---------- 轨道图 ----------
+  var track = document.getElementById("track");
+  var maxD = Math.max.apply(null, PLANETS.map(function (p) { return p.dkm; }));
+  var minD = Math.min.apply(null, PLANETS.map(function (p) { return p.dkm; }));
+
+  function bodyPx(dkm) {
+    // 真实比例但整体缩放：木星 46px，水星约 1.6px 太小，故设下限 9px 并做 sqrt 压缩
+    var t = Math.sqrt((dkm - minD) / (maxD - minD));   // 0..1
+    return 9 + t * 37;
+  }
+  // 距离用 ^0.42 压缩，否则内行星全挤在一起
+  function xPct(au) {
+    var t = Math.pow(au / 30.1, 0.42);
+    return 7 + t * 88;
+  }
+
+  PLANETS.forEach(function (p, i) {
+    var b = document.createElement("button");
+    b.className = "planet";
+    b.type = "button";
+    b.setAttribute("aria-pressed", p.id === "earth" ? "true" : "false");
+    b.dataset.id = p.id;
+    b.style.left = xPct(p.au) + "%";
+    b.style.top = (i % 2 === 0 ? 38 : 62) + "%";
+
+    var px = bodyPx(p.dkm);
+    var d = document.createElement("span");
+    d.className = "body";
+    d.style.width = px + "px";
+    d.style.height = px + "px";
+    d.style.background = "radial-gradient(circle at 32% 30%, " +
+      p.col + ", color-mix(in oklab, " + p.col + " 55%, #000))";
+
+    // 土星环
+    if (p.id === "saturn") {
+      var wrap = document.createElement("span");
+      wrap.style.cssText = "position:relative;display:grid;place-items:center;width:" +
+        (px + 20) + "px;height:" + px + "px";
+      var r = document.createElement("span");
+      r.className = "ring";
+      r.style.width = (px + 18) + "px";
+      r.style.height = Math.max(4, px * 0.30) + "px";
+      wrap.appendChild(r);
+      wrap.appendChild(d);
+      b.appendChild(wrap);
+    } else {
+      b.appendChild(d);
+    }
+
+    var nm = document.createElement("span");
+    nm.className = "nm";
+    nm.textContent = p.zh;
+    b.appendChild(nm);
+
+    b.addEventListener("click", function () { select(p.id); });
+    track.appendChild(b);
+  });
+
+  document.getElementById("scaleNote").textContent =
+    "行星直径为真实比例（木星 = " + Math.round(bodyPx(142984)) +
+    "px，水星 = " + Math.round(bodyPx(4879)) + "px）；横向距离经过压缩以便同屏显示。";
+
+  // ---------- 详情 ----------
+  var pName = document.getElementById("pName");
+  var pTag = document.getElementById("pTag");
+  var pDesc = document.getElementById("pDesc");
+  var pEmoji = document.getElementById("pEmoji");
+  var pFacts = document.getElementById("pFacts");
+  var pWow = document.getElementById("pWow");
+
+  function fmtDay(d) {
+    if (d < 1) return (d * 24).toFixed(1) + " 小时";
+    if (d < 2) return d.toFixed(2) + " 地球日";
+    return Math.round(d) + " 地球日";
+  }
+  function fmtYear(y) {
+    if (y < 1) return Math.round(y * 365) + " 地球天";
+    return (y < 20 ? y.toFixed(2) : Math.round(y)) + " 地球年";
+  }
+  function fact(k, v, sub) {
+    var d = document.createElement("div");
+    d.className = "fact";
+    var a = document.createElement("div"); a.className = "k"; a.textContent = k;
+    var b = document.createElement("div"); b.className = "v"; b.textContent = v;
+    d.appendChild(a); d.appendChild(b);
+    if (sub) { var c = document.createElement("div"); c.className = "sub"; c.textContent = sub; d.appendChild(c); }
+    return d;
+  }
+
+  var current = PLANETS[2];
+
+  function renderDetail(p) {
+    pName.textContent = p.zh + " " + p.en;
+    pTag.textContent = p.tag;
+    pEmoji.textContent = p.emoji;
+    pDesc.textContent = p.desc;
+    pWow.textContent = "💡 " + p.wow;
+
+    pFacts.textContent = "";
+    pFacts.appendChild(fact("直径", p.dkm.toLocaleString() + " km",
+      (p.dkm / 12756).toFixed(2) + " × 地球"));
+    pFacts.appendChild(fact("离太阳", p.au.toFixed(2) + " AU",
+      Math.round(p.au * AU_KM / 1e6) + " 百万 km"));
+    pFacts.appendChild(fact("一天有多长", fmtDay(p.day), "自转一圈"));
+    pFacts.appendChild(fact("一年有多长", fmtYear(p.year), "绕太阳一圈"));
+    pFacts.appendChild(fact("表面重力", p.g.toFixed(2) + " g",
+      p.g > 1 ? "比地球大" : p.g === 1 ? "基准" : "比地球小"));
+    pFacts.appendChild(fact("平均温度", p.tempC + " ℃",
+      p.tempC > 100 ? "能烤熟一切" : p.tempC < -100 ? "极冷" : "还算温和"));
+    pFacts.appendChild(fact("卫星", p.moons + " 颗", p.moons === 0 ? "一颗也没有" : ""));
+    pFacts.appendChild(fact("坐飞机要飞", flightTime(p.au), "900 km/h 不停飞"));
+  }
+
+  function flightTime(au) {
+    var km = Math.abs(au - 1) * AU_KM;
+    if (km === 0) return "已经到了";
+    var yrs = km / PLANE_KMH / 24 / 365;
+    if (yrs < 1) return Math.round(yrs * 12) + " 个月";
+    return yrs < 100 ? yrs.toFixed(1) + " 年" : Math.round(yrs) + " 年";
+  }
+
+  // ---------- 体重计 ----------
+  var kgEl = document.getElementById("kg");
+  var wbars = document.getElementById("wbars");
+
+  function renderWeigh() {
+    var kg = parseFloat(kgEl.value);
+    if (!isFinite(kg) || kg <= 0) kg = 25;
+    var maxG = Math.max.apply(null, PLANETS.map(function (p) { return p.g; }));
+    wbars.textContent = "";
+    PLANETS.forEach(function (p) {
+      var row = document.createElement("div");
+      row.className = "wbar" + (p.id === current.id ? " me" : "");
+      var nm = document.createElement("span"); nm.className = "pl"; nm.textContent = p.zh;
+      var tk = document.createElement("div"); tk.className = "track";
+      var fl = document.createElement("div"); fl.className = "fill";
+      fl.style.width = (p.g / maxG * 100) + "%";
+      fl.style.background = "linear-gradient(90deg, " + p.col + ", color-mix(in oklab," + p.col + " 60%, #000))";
+      tk.appendChild(fl);
+      var v = document.createElement("span"); v.className = "val";
+      v.textContent = (kg * p.g).toFixed(1) + " kg";
+      row.appendChild(nm); row.appendChild(tk); row.appendChild(v);
+      wbars.appendChild(row);
+    });
+  }
+  kgEl.addEventListener("input", renderWeigh);
+
+  // ---------- 距离尺 ----------
+  var ruler = document.getElementById("ruler");
+  (function renderRuler() {
+    PLANETS.forEach(function (p) {
+      var row = document.createElement("div");
+      row.className = "rrow";
+      var lb = document.createElement("span"); lb.className = "lb"; lb.textContent = p.zh;
+      var bar = document.createElement("div"); bar.className = "bar";
+      var dot = document.createElement("span"); dot.className = "dot2";
+      dot.style.left = Math.pow(p.au / 30.1, 0.5) * 100 + "%";
+      dot.style.background = p.col;
+      bar.appendChild(dot);
+      var tx = document.createElement("span"); tx.className = "tx";
+      tx.textContent = flightTime(p.au);
+      var wrapc = document.createElement("div");
+      wrapc.style.cssText = "display:grid;gap:3px";
+      wrapc.appendChild(bar);
+      wrapc.appendChild(tx);
+      row.appendChild(lb); row.appendChild(wrapc);
+      ruler.appendChild(row);
+    });
+  })();
+
+  // ---------- 选择 ----------
+  function select(id) {
+    var p = PLANETS.filter(function (x) { return x.id === id; })[0];
+    if (!p) return;
+    current = p;
+    [].forEach.call(document.querySelectorAll(".planet"), function (b) {
+      b.setAttribute("aria-pressed", b.dataset.id === id ? "true" : "false");
+    });
+    renderDetail(p);
+    renderWeigh();
+    loadShots(p);
+  }
+
+  // ---------------------------------------------------------------
+  // 网络部分：全部可失败，失败即降级
+  // ---------------------------------------------------------------
+  var badge = document.getElementById("netBadge");
+  var netTxt = document.getElementById("netTxt");
+  var netState = { ok: 0, fail: 0 };
+
+  function mark(ok) {
+    if (ok) netState.ok++; else netState.fail++;
+    if (netState.ok > 0) {
+      badge.className = "badge-live on";
+      netTxt.textContent = "已连接 NASA · 数据为最新";
+    } else if (netState.fail >= 2) {
+      badge.className = "badge-live off";
+      netTxt.textContent = "离线模式 · 显示内置数据";
+    }
+  }
+
+  function getJSON(url, ms) {
+    var ac = new AbortController();
+    var t = setTimeout(function () { ac.abort(); }, ms || 8000);
+    return fetch(url, { signal: ac.signal })
+      .then(function (r) {
+        clearTimeout(t);
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .catch(function (e) { clearTimeout(t); throw e; });
+  }
+
+  // ---------- APOD ----------
+  var APOD_FALLBACK = {
+    title: "猎户座大星云",
+    date: "内置示例",
+    explanation: "猎户座大星云（M42）距离我们约 1350 光年，是夜空中最亮的星云之一，肉眼在猎户座腰带下方就能看到一小团模糊的光。它是一座正在运转的「恒星工厂」——气体和尘埃在重力作用下聚成团，中心温度足够高时就点燃成新的恒星。目前显示的是内置示例，联网后会自动换成 NASA 今天发布的图。",
+    media_type: "none"
+  };
+
+  function renderApod(d) {
+    var box = document.getElementById("apodBox");
+    box.textContent = "";
+    if (d.media_type === "image" && d.url) {
+      var img = document.createElement("img");
+      img.className = "apod-media";
+      img.loading = "lazy";
+      img.alt = d.title || "NASA 每日天文图";
+      img.src = d.hdurl || d.url;
+      img.onerror = function () {
+        var ph = document.createElement("div");
+        ph.className = "apod-media"; ph.dataset.ph = "1";
+        ph.textContent = "图片加载失败";
+        box.replaceChild(ph, img);
+      };
+      box.appendChild(img);
+    } else if (d.media_type === "video" && d.url) {
+      var fr = document.createElement("iframe");
+      fr.className = "apod-media";
+      fr.src = d.url;
+      fr.title = d.title || "NASA 每日天文视频";
+      fr.setAttribute("allow", "encrypted-media; picture-in-picture");
+      fr.setAttribute("allowfullscreen", "");
+      fr.style.border = "0";
+      box.appendChild(fr);
+    } else {
+      var p = document.createElement("div");
+      p.className = "apod-media"; p.dataset.ph = "1";
+      p.textContent = "🌌 内置示例（未联网）";
+      box.appendChild(p);
+    }
+    document.getElementById("apodTitle").textContent = d.title || "";
+    document.getElementById("apodDate").textContent = d.date || "";
+    document.getElementById("apodText").textContent = d.explanation || "";
+  }
+
+  renderApod(APOD_FALLBACK);           // 先渲染内置
+
+  (function loadApod() {
+    var today = new Date().toISOString().slice(0, 10);
+    var ck = "apod:" + today;
+    try {
+      var c = localStorage.getItem(ck);
+      if (c) { renderApod(JSON.parse(c)); mark(true); return; }
+    } catch (e) {}
+
+    getJSON("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY")
+      .then(function (d) {
+        if (!d || !d.title) throw new Error("bad payload");
+        renderApod(d);
+        mark(true);
+        try { localStorage.setItem(ck, JSON.stringify(d)); } catch (e) {}
+      })
+      .catch(function () { mark(false); });
+  })();
+
+  // ---------- 图片墙 ----------
+  var shots = document.getElementById("shots");
+
+  function loadShots(p) {
+    shots.textContent = "";
+    for (var i = 0; i < 4; i++) {
+      var sk = document.createElement("div");
+      sk.className = "shot";
+      sk.style.opacity = ".4";
+      shots.appendChild(sk);
+    }
+    var ck = "shots:" + p.id;
+    try {
+      var c = localStorage.getItem(ck);
+      if (c) { paintShots(JSON.parse(c)); mark(true); return; }
+    } catch (e) {}
+
+    getJSON("https://images-api.nasa.gov/search?q=" +
+            encodeURIComponent(p.q) + "&media_type=image&page_size=8")
+      .then(function (d) {
+        var items = (d && d.collection && d.collection.items) || [];
+        var out = items.map(function (it) {
+          var ln = (it.links || [])[0] || {};
+          var dt = (it.data || [])[0] || {};
+          return { src: ln.href, cap: dt.title || "" };
+        }).filter(function (x) { return x.src; }).slice(0, 8);
+        if (!out.length) throw new Error("empty");
+        paintShots(out);
+        mark(true);
+        try { localStorage.setItem(ck, JSON.stringify(out)); } catch (e) {}
+      })
+      .catch(function () {
+        mark(false);
+        shots.textContent = "";
+        var d = document.createElement("p");
+        d.style.cssText = "color:var(--ink-dim);font-size:.84rem;grid-column:1/-1";
+        d.textContent = "照片需要联网才能显示。上面的行星数据是内置的，不受影响。";
+        shots.appendChild(d);
+      });
+  }
+
+  function paintShots(list) {
+    shots.textContent = "";
+    list.forEach(function (o) {
+      var d = document.createElement("div");
+      d.className = "shot";
+      var img = document.createElement("img");
+      img.loading = "lazy";
+      img.alt = o.cap || "NASA 照片";
+      img.src = o.src;
+      img.onerror = function () { d.remove(); };
+      var cap = document.createElement("span");
+      cap.className = "cap";
+      cap.textContent = o.cap.length > 46 ? o.cap.slice(0, 46) + "…" : o.cap;
+      d.appendChild(img);
+      if (o.cap) d.appendChild(cap);
+      shots.appendChild(d);
+    });
+  }
+
+  // 启动
+  select("earth");
+})();
+</script>
+</body>
+</html>
