@@ -320,7 +320,11 @@
     if (isNaN(n) || n < 0) { ctemp.textContent = "—"; return; }
     var f = n + 40;                       // 多尔贝定律
     var c = (f - 32) * 5 / 9;
-    ctemp.innerHTML = c.toFixed(1) + " °C <small>（" + f + " °F）</small>";
+    var html = c.toFixed(1) + " °C <small>（" + f + " °F）</small>";
+    // 蟋蟀在约 13–35 °C 之间才正常鸣叫，超出范围要说明，不能假装算得准
+    if (c < 13) html += '<br><small style="color:var(--warn)">这么凉，蟋蟀基本不叫了——公式在低温下会失准。</small>';
+    else if (c > 35) html += '<br><small style="color:var(--warn)">这个温度已超出蟋蟀正常鸣叫范围，公式不再适用。</small>';
+    ctemp.innerHTML = html;
   }
   chirp.addEventListener("input", cricket);
 
@@ -437,14 +441,15 @@
       if (!rec || !rec.url) { tried++; if (tried === total) report(); return; }
       var img = document.createElement("img");
       img.alt = rec.name || q;
-      img.loading = "lazy";
-      img.style.display = "none";
+      // 不能用 loading="lazy" + display:none：浏览器判定图片不可见会无限推迟加载，
+      // onload 永不触发，图片就永远停在 emoji 占位上。用 visibility 保留布局占位。
+      img.style.visibility = "hidden";
       slot.appendChild(img);
       img.onload = function () {
         [].slice.call(slot.childNodes).forEach(function (n) {
           if (n !== img) slot.removeChild(n);
         });
-        img.style.display = "";
+        img.style.visibility = "";
         got++; tried++;
         if (tried === total) report();
       };

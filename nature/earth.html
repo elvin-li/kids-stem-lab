@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>地球与地震 · 脚下的地面在动 | 少儿数理启蒙</title>
+<meta name="description" content="钻到地心要穿过几层？震级差一级到底差多少？看最近真实发生的地震，学会用 P 波和 S 波的时间差算出震中有多远。数据来自 USGS。">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<style>
+  .hero { padding: 40px 0 18px; }
+  .hero h1 { margin-bottom: .3em; }
+  .hero p.lead { font-size: 1.06rem; max-width: 64ch; }
+
+  /* ---------- 地球剖面 ---------- */
+  .earth-wrap {
+    display: grid; gap: 20px; align-items: start;
+    grid-template-columns: minmax(240px, 320px) 1fr;
+  }
+  .core-svg { width: 100%; height: auto; display: block; }
+  .core-svg .seg { cursor: pointer; transition: opacity .18s var(--ease); }
+  .core-svg .seg:hover { opacity: .82; }
+  .core-svg .seg.on { stroke: #fff; stroke-width: 2.5; }
+
+  .layer-list { display: flex; flex-direction: column; gap: 8px; }
+  .layer-btn {
+    display: flex; align-items: center; gap: 11px; text-align: left;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r); padding: 11px 13px; cursor: pointer;
+    color: var(--ink); font: inherit; transition: all .16s var(--ease);
+  }
+  .layer-btn:hover { border-color: var(--line); background: var(--surface-2); }
+  .layer-btn[aria-pressed="true"] { border-color: currentColor; background: var(--surface-2); }
+  .layer-swatch { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+  .layer-btn b { font-size: .94rem; }
+  .layer-btn small { display: block; color: var(--ink-dim); font-size: .78rem; font-family: var(--mono); }
+
+  .layer-detail {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r); padding: 15px 17px; margin-top: 4px;
+  }
+  .layer-detail h3 { margin: 0 0 4px; font-size: 1.1rem; }
+  .layer-detail .lmeta {
+    display: flex; gap: 14px; flex-wrap: wrap; margin: 8px 0 10px;
+    font-family: var(--mono); font-size: .8rem; color: var(--ink-mid);
+  }
+  .layer-detail .lmeta b { color: var(--ink); }
+  .layer-detail p { margin: 0; font-size: .89rem; color: var(--ink-mid); }
+
+  /* ---------- 震级 ---------- */
+  .mag-grid { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+  .mag-big {
+    font-family: var(--mono); font-size: 2.6rem; font-weight: 700;
+    line-height: 1; color: var(--warn);
+  }
+  .mag-rows { display: flex; flex-direction: column; gap: 7px; margin-top: 12px; }
+  .mag-row {
+    display: flex; justify-content: space-between; gap: 10px;
+    font-size: .87rem; padding-bottom: 6px;
+    border-bottom: 1px dashed var(--line-soft);
+  }
+  .mag-row span { color: var(--ink-dim); }
+  .mag-row b { font-family: var(--mono); color: var(--ink); text-align: right; }
+  .quake-bar {
+    height: 10px; border-radius: 999px; background: var(--surface-2);
+    overflow: hidden; margin-top: 14px; border: 1px solid var(--line-soft);
+  }
+  .quake-bar i {
+    display: block; height: 100%; width: 0;
+    background: linear-gradient(90deg, var(--sci), var(--warn), var(--danger));
+    transition: width .3s var(--ease);
+  }
+
+  /* ---------- 真实地震列表 ---------- */
+  .qlist { display: flex; flex-direction: column; gap: 8px; }
+  .qrow {
+    display: grid; gap: 12px; align-items: center;
+    grid-template-columns: 58px 1fr auto;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r); padding: 10px 13px;
+  }
+  .qmag {
+    font-family: var(--mono); font-weight: 700; font-size: 1.05rem;
+    text-align: center; padding: 4px 0; border-radius: var(--r-sm);
+  }
+  .qm-s { background: rgba(74,222,128,.16); color: #86efac; }
+  .qm-m { background: rgba(251,191,36,.18); color: #fcd34d; }
+  .qm-l { background: rgba(248,113,113,.18); color: #fca5a5; }
+  .qplace { font-size: .88rem; color: var(--ink); }
+  .qmeta { font-size: .74rem; color: var(--ink-dim); font-family: var(--mono); }
+  .qdepth { font-size: .76rem; color: var(--ink-mid); font-family: var(--mono); text-align: right; }
+
+  /* ---------- 地层 ---------- */
+  .strata { border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); }
+  .stratum {
+    display: grid; gap: 12px; align-items: center;
+    grid-template-columns: 100px 1fr;
+    padding: 12px 15px; border-bottom: 1px solid rgba(0,0,0,.25);
+  }
+  .stratum:last-child { border-bottom: 0; }
+  .stratum b { font-size: .9rem; }
+  .stratum small { display: block; font-size: .76rem; opacity: .82; font-family: var(--mono); }
+  .stratum p { margin: 0; font-size: .84rem; }
+
+  .acts { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+  .act { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 15px 16px; }
+  .act h4 { margin: 0 0 6px; font-size: .97rem; color: var(--sci); }
+  .act p { margin: 0 0 7px; font-size: .85rem; color: var(--ink-mid); }
+  .act .need { font-size: .76rem; color: var(--ink-dim); font-family: var(--mono); }
+
+  .st-note {
+    border-left: 3px solid var(--phys); padding: 10px 13px; margin: 14px 0 0;
+    background: var(--surface); border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    font-size: .86rem; color: var(--ink-mid);
+  }
+  .srcline { font-size: .8rem; color: var(--ink-dim); margin-top: 10px; }
+
+  @media (max-width: 780px) {
+    .earth-wrap, .mag-grid { grid-template-columns: 1fr; }
+    .qrow { grid-template-columns: 52px 1fr; }
+    .qdepth { grid-column: 2; text-align: left; }
+    .stratum { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html">互动实验</a>
+    <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<header class="hero wrap">
+  <h1>地球与地震</h1>
+  <p class="lead">
+    你正站在一层薄薄的壳上。它下面是 6000 多公里深的岩石和金属，
+    最里面那颗铁球比太阳表面还热。这一页讲三件事：地球里面长什么样、
+    震级差一级到底差多少、还有科学家怎么只用两种波的时间差就算出震中有多远。
+  </p>
+</header>
+
+<main class="wrap stack">
+
+  <!-- ============ 地球内部 ============ -->
+  <section class="card" style="padding:20px">
+    <h2 style="margin-top:0">切开地球看看</h2>
+    <p style="color:var(--ink-mid);font-size:.9rem;margin-top:0">
+      点圆环的任意一层，或者点右边的名字。数字是真实的深度和温度。
+    </p>
+
+    <div class="earth-wrap">
+      <div>
+        <svg class="core-svg" id="coreSvg" viewBox="0 0 260 260" role="img"
+             aria-label="地球内部分层剖面图">
+          <!-- 从外到内画同心圆 -->
+          <circle class="seg" data-l="crust"  cx="130" cy="130" r="126" fill="#8b6f47"></circle>
+          <circle class="seg" data-l="upper"  cx="130" cy="130" r="122" fill="#c2703d"></circle>
+          <circle class="seg" data-l="lower"  cx="130" cy="130" r="100" fill="#e0762f"></circle>
+          <circle class="seg" data-l="outer"  cx="130" cy="130" r="58"  fill="#f2a33c"></circle>
+          <circle class="seg" data-l="inner"  cx="130" cy="130" r="26"  fill="#fde68a"></circle>
+          <text x="130" y="252" text-anchor="middle" font-size="9"
+                fill="#7d88ab" font-family="monospace">半径 6,371 km（按比例）</text>
+        </svg>
+      </div>
+
+      <div>
+        <div class="layer-list" id="layerList"></div>
+        <div class="layer-detail" id="layerDetail"></div>
+      </div>
+    </div>
+
+    <p class="st-note">
+      有意思的是：<b>人类从没钻穿过地壳</b>。最深的科拉超深钻井打了 12.3 公里，
+      连地壳都没穿透（地壳平均 35 公里厚）。我们对地心的了解，
+      全靠地震波穿过地球时的「回声」推算出来——就像用敲击声判断墙里有没有空洞。
+    </p>
+  </section>
+
+  <!-- ============ 震级 ============ -->
+  <section class="card" style="padding:20px">
+    <h2 style="margin-top:0">震级差一级，差多少？</h2>
+    <p style="color:var(--ink-mid);font-size:.9rem;margin-top:0">
+      新闻里说「7 级地震」和「8 级地震」，听起来只差一点。其实差 32 倍能量。拖动看看。
+    </p>
+
+    <div class="mag-grid">
+      <div>
+        <label for="mag">震级（矩震级 M）
+          <input id="mag" type="range" min="3" max="9.5" step="0.1" value="6.0">
+        </label>
+        <div class="mag-big" id="magBig">M 6.0</div>
+        <div class="quake-bar"><i id="magBar"></i></div>
+        <p style="font-size:.83rem;color:var(--ink-dim);margin:10px 0 0" id="magFeel"></p>
+      </div>
+
+      <div>
+        <div class="mag-rows" id="magRows"></div>
+      </div>
+    </div>
+
+    <p class="st-note">
+      为什么是 32 倍？震级每加 1，地震仪上记录的<b>振幅是 10 倍</b>，
+      但释放的<b>能量是约 32 倍</b>（准确说是 10 的 1.5 次方）。
+      所以 M9 不是 M6 的 1.5 倍，而是三万倍能量——这就是对数刻度的威力，
+      也是数学能救命的地方：分不清 32 倍和 1.5 倍，就没法正确设计抗震建筑。
+    </p>
+  </section>
+
+  <!-- ============ 真实地震 ============ -->
+  <section class="card" style="padding:20px">
+    <h2 style="margin-top:0">最近真的发生了哪些地震</h2>
+    <p style="color:var(--ink-mid);font-size:.9rem;margin-top:0">
+      地球上每天都有几十次能被记录到的地震，大部分你完全感觉不到。
+      下面这些来自美国地质调查局（USGS）的公开记录。
+    </p>
+    <div class="qlist" id="qlist"></div>
+    <p class="srcline" id="qsrc">加载中…</p>
+  </section>
+
+  <!-- ============ S-P 测距 ============ -->
+  <section class="card" style="padding:20px">
+    <h2 style="margin-top:0">怎么知道震中在哪</h2>
+    <p style="color:var(--ink-mid);font-size:.9rem;margin-top:0">
+      地震同时放出两种波。<b>P 波</b>跑得快（约 6 km/s），<b>S 波</b>慢一些（约 3.5 km/s）。
+      距离越远，两者到达的时间差越大——所以时间差可以反推距离。
+    </p>
+
+    <div class="mag-grid">
+      <div>
+        <label for="spgap">S 波比 P 波晚到（秒）
+          <input id="spgap" type="range" min="1" max="60" step="0.5" value="12">
+        </label>
+        <div class="mag-big" id="spBig" style="color:var(--phys)">—</div>
+        <p style="font-size:.83rem;color:var(--ink-dim);margin:10px 0 0">
+          经验公式：时间差 × 8 ≈ 震中距离（公里）
+        </p>
+      </div>
+      <div>
+        <div class="mag-rows" id="spRows"></div>
+      </div>
+    </div>
+
+    <p class="st-note">
+      一台地震仪只能算出「离这里多远」，画出来是一个圆。
+      要确定震中的准确位置，至少需要<b>三个不同地方</b>的地震台，
+      三个圆的交点就是震中——这个方法叫三角定位，GPS 定位你的手机用的是同一个思路。
+    </p>
+  </section>
+
+  <!-- ============ 地层 ============ -->
+  <section class="card" style="padding:20px">
+    <h2 style="margin-top:0">往下挖，一层一层是时间</h2>
+    <p style="color:var(--ink-mid);font-size:.9rem;margin-top:0">
+      地层像一本从下往上写的书：<b>越深的越老</b>。这条规律叫地层叠覆律，
+      是整个地质学和古生物学的基础——恐龙化石的年代就是这么定出来的。
+    </p>
+    <div class="strata" id="strata"></div>
+  </section>
+
+  <!-- ============ 动手 ============ -->
+  <section class="card" style="padding:20px">
+    <h2 style="margin-top:0">在家能做的四件事</h2>
+    <div class="acts" id="acts"></div>
+  </section>
+
+  <section class="card" style="padding:18px 20px">
+    <h2 style="margin-top:0;font-size:1.05rem">数据与来源</h2>
+    <p style="font-size:.84rem;color:var(--ink-mid);margin:0">
+      地震记录来自 <a href="https://earthquake.usgs.gov/" target="_blank" rel="noopener">USGS 地震灾害计划</a>
+      的公开接口（公有领域数据）。地球内部分层深度采用 PREM 参考地球模型的常用取值，
+      地核温度为估算范围。震级与能量的换算基于矩震级定义。
+      网络不可用时页面显示内置的历史著名地震数据，其余内容不受影响。
+    </p>
+  </section>
+
+</main>
+
+<footer class="wrap" style="padding:26px 0 40px;color:var(--ink-dim);font-size:.82rem">
+  <hr>
+  <p>
+    这一页想说明的不是「地震很可怕」，而是<b>人类怎么用数学看见看不见的东西</b>：
+    没人下去过地心，但我们知道那里有一颗铁球；震中在几百公里外，
+    但三台仪器就能定出位置。
+  </p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 地球分层（深度 km，PREM 常用取值）---------- */
+  var LAYERS = [
+    { id: "crust", n: "地壳", en: "Crust", from: 0, to: 35, c: "#8b6f47",
+      temp: "0–600 °C", state: "固体岩石",
+      d: "我们生活的这层，薄得不成比例——如果地球是个鸡蛋，地壳比蛋壳还薄。海洋下面只有 5–10 公里厚，大陆下面 30–50 公里。所有的山、海沟、火山、地震都发生在这层和它下面一点。" },
+    { id: "upper", n: "上地幔", en: "Upper mantle", from: 35, to: 660, c: "#c2703d",
+      temp: "600–1900 °C", state: "固体，但会极慢地流动",
+      d: "这里的岩石是固体，却能像沥青一样以每年几厘米的速度缓慢流动。正是这种流动推着上面的板块移动——大陆漂移、喜马拉雅山的抬升、地震，动力都在这一层。" },
+    { id: "lower", n: "下地幔", en: "Lower mantle", from: 660, to: 2890, c: "#e0762f",
+      temp: "1900–3700 °C", state: "固体，高压致密",
+      d: "地球体积最大的一层，占了一半以上。压力大到让矿物结构被压成完全不同的形态。热量从这里往上传，像一锅极慢的浓汤在对流。" },
+    { id: "outer", n: "外核", en: "Outer core", from: 2890, to: 5150, c: "#f2a33c",
+      temp: "3700–4500 °C", state: "液态铁和镍",
+      d: "液态的铁在这里流动，产生电流，电流产生磁场——这就是<b>地球磁场的来源</b>，指南针指北、极光出现、候鸟辨向，全靠这层液态铁在转。没有它，太阳风会把大气吹跑。" },
+    { id: "inner", n: "内核", en: "Inner core", from: 5150, to: 6371, c: "#fde68a",
+      temp: "约 5200 °C", state: "固态铁球",
+      d: "温度和太阳表面差不多（约 5500 °C），却是固体——因为压力实在太大，铁原子挤得动不了。它还在慢慢变大：外核的铁不断在它表面凝固，每年长约 1 毫米。" }
+  ];
+
+  var svg = document.getElementById("coreSvg");
+  var listEl = document.getElementById("layerList");
+  var detEl = document.getElementById("layerDetail");
+  var cur = "crust";
+
+  function paintDetail() {
+    var L = null;
+    for (var i = 0; i < LAYERS.length; i++) if (LAYERS[i].id === cur) L = LAYERS[i];
+    if (!L) return;
+    detEl.innerHTML = "";
+    var h = document.createElement("h3");
+    h.textContent = L.n + " · " + L.en;
+    h.style.color = L.c;
+    var meta = document.createElement("div");
+    meta.className = "lmeta";
+    [["深度", L.from.toLocaleString() + "–" + L.to.toLocaleString() + " km"],
+     ["厚度", (L.to - L.from).toLocaleString() + " km"],
+     ["温度", L.temp],
+     ["状态", L.state]].forEach(function (p) {
+      var s = document.createElement("span");
+      s.innerHTML = p[0] + " <b>" + p[1] + "</b>";
+      meta.appendChild(s);
+    });
+    var pd = document.createElement("p");
+    pd.innerHTML = L.d;
+    detEl.appendChild(h); detEl.appendChild(meta); detEl.appendChild(pd);
+
+    [].slice.call(listEl.children).forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset.l === cur ? "true" : "false");
+      b.style.color = b.dataset.l === cur ? L.c : "";
+    });
+    [].slice.call(svg.querySelectorAll(".seg")).forEach(function (s) {
+      s.classList.toggle("on", s.dataset.l === cur);
+    });
+  }
+
+  LAYERS.forEach(function (L) {
+    var b = document.createElement("button");
+    b.className = "layer-btn";
+    b.dataset.l = L.id;
+    b.setAttribute("aria-pressed", "false");
+    var sw = document.createElement("span");
+    sw.className = "layer-swatch";
+    sw.style.background = L.c;
+    var t = document.createElement("span");
+    t.innerHTML = "<b>" + L.n + "</b><small>" + L.from.toLocaleString() +
+                  "–" + L.to.toLocaleString() + " km</small>";
+    b.appendChild(sw); b.appendChild(t);
+    b.addEventListener("click", function () { cur = L.id; paintDetail(); });
+    listEl.appendChild(b);
+  });
+  [].slice.call(svg.querySelectorAll(".seg")).forEach(function (s) {
+    s.addEventListener("click", function () { cur = s.dataset.l; paintDetail(); });
+  });
+  paintDetail();
+
+  /* ---------- 震级 ---------- */
+  var mag = document.getElementById("mag");
+  var magBig = document.getElementById("magBig");
+  var magRows = document.getElementById("magRows");
+  var magBar = document.getElementById("magBar");
+  var magFeel = document.getElementById("magFeel");
+
+  // 感受描述按震级区间（改良麦加利烈度的通俗说法）
+  function feel(m) {
+    if (m < 3.5) return "一般感觉不到，只有仪器能记录。";
+    if (m < 4.5) return "室内能感觉到，吊灯轻微摇晃，很少造成损坏。";
+    if (m < 5.5) return "明显摇晃，摆件可能倒下，老旧房屋可能出现裂缝。";
+    if (m < 6.5) return "站立困难，抗震差的建筑会受损。";
+    if (m < 7.5) return "破坏性地震，可能造成建筑倒塌。";
+    if (m < 8.5) return "大地震，大范围严重破坏，海底发生可能引发海啸。";
+    return "特大地震，全球地震仪都能记录，一百年只有几次。";
+  }
+
+  function magCalc() {
+    var m = +mag.value;
+    magBig.textContent = "M " + m.toFixed(1);
+    magFeel.textContent = feel(m);
+    magBar.style.width = ((m - 3) / (9.5 - 3) * 100).toFixed(1) + "%";
+
+    var vsM4energy = Math.pow(31.62, m - 4);      // 相对 M4 的能量倍数
+    var amp = Math.pow(10, m - 4);                 // 相对 M4 的振幅倍数
+    // TNT 当量：M4 约相当于 1000 吨 TNT（数量级近似）
+    var tnt = 1000 * vsM4energy;
+
+    function fmt(x) {
+      if (x >= 1e8) return (x / 1e8).toFixed(1) + " 亿";
+      if (x >= 1e4) return (x / 1e4).toFixed(1) + " 万";
+      if (x >= 100) return Math.round(x).toLocaleString();
+      return x.toFixed(1);
+    }
+
+    magRows.innerHTML = "";
+    [
+      ["比 M4.0 地震振幅大", fmt(amp) + " 倍"],
+      ["比 M4.0 地震能量大", fmt(vsM4energy) + " 倍"],
+      ["大致相当于 TNT", tnt >= 1e6 ? fmt(tnt / 1e6) + " 百万吨" : fmt(tnt) + " 吨"],
+      ["每年全球大约发生", quakesPerYear(m)],
+      ["再大一级的话，能量要", "× 32"]
+    ].forEach(function (r) {
+      var d = document.createElement("div");
+      d.className = "mag-row";
+      var s = document.createElement("span"); s.textContent = r[0];
+      var b = document.createElement("b"); b.textContent = r[1];
+      d.appendChild(s); d.appendChild(b);
+      magRows.appendChild(d);
+    });
+  }
+
+  // 古登堡-里希特关系：震级每加1，次数约降到1/10
+  function quakesPerYear(m) {
+    if (m >= 9.0) return "不到 1 次";
+    if (m >= 8.0) return "约 1 次";
+    if (m >= 7.0) return "约 15 次";
+    if (m >= 6.0) return "约 130 次";
+    if (m >= 5.0) return "约 1,300 次";
+    if (m >= 4.0) return "约 13,000 次";
+    return "十万次以上";
+  }
+  mag.addEventListener("input", magCalc);
+  magCalc();
+
+  /* ---------- S-P 测距 ---------- */
+  var spgap = document.getElementById("spgap");
+  var spBig = document.getElementById("spBig");
+  var spRows = document.getElementById("spRows");
+  var VP = 6.0, VS = 3.5;   // km/s
+
+  function spCalc() {
+    var dt = +spgap.value;
+    // dt = d/VS - d/VP  =>  d = dt / (1/VS - 1/VP)
+    var d = dt / (1 / VS - 1 / VP);
+    spBig.textContent = Math.round(d).toLocaleString() + " km";
+    spRows.innerHTML = "";
+    [
+      ["S 波比 P 波晚", dt.toFixed(1) + " 秒"],
+      ["算出的震中距离", Math.round(d).toLocaleString() + " km"],
+      ["经验公式（差 × 8）", Math.round(dt * 8).toLocaleString() + " km"],
+      ["P 波到达用了", (d / VP).toFixed(1) + " 秒"],
+      ["S 波到达用了", (d / VS).toFixed(1) + " 秒"]
+    ].forEach(function (r) {
+      var e = document.createElement("div");
+      e.className = "mag-row";
+      var s = document.createElement("span"); s.textContent = r[0];
+      var b = document.createElement("b"); b.textContent = r[1];
+      e.appendChild(s); e.appendChild(b);
+      spRows.appendChild(e);
+    });
+  }
+  spgap.addEventListener("input", spCalc);
+  spCalc();
+
+  /* ---------- 地层 ---------- */
+  var STRATA = [
+    { n: "表土", en: "Topsoil", age: "几百到几千年", c: "#4b3621", t: "#e8dcc8",
+      d: "有机质、树根、虫子。一厘米表土要几百年才能形成。" },
+    { n: "砂", en: "Sand", age: "数千年", c: "#b08d57", t: "#2a1d0d",
+      d: "颗粒粗，水能直接渗过去。海滩和河床下面常见。" },
+    { n: "黏土", en: "Clay", age: "上万年", c: "#7d6b52", t: "#f0e8da",
+      d: "颗粒极细，几乎不透水——所以地下水会停在黏土层上面。" },
+    { n: "砾石", en: "Gravel", age: "上万年", c: "#8f8f8f", t: "#1a1a1a",
+      d: "被河流冲刷磨圆的石头。找到砾石层，说明这里以前有河。" },
+    { n: "砂岩", en: "Sandstone", age: "百万到上亿年", c: "#c97b4a", t: "#20120a",
+      d: "砂被上面的重量压实、胶结成岩。恐龙化石常出现在这类岩层里。" },
+    { n: "石灰岩", en: "Limestone", age: "上亿年", c: "#d9d2c0", t: "#26221a",
+      d: "由海洋生物的壳堆积而成。在山顶找到石灰岩，说明那里曾经是海底。" },
+    { n: "花岗岩", en: "Granite", age: "数亿到数十亿年", c: "#9c8fa5", t: "#1a1620",
+      d: "岩浆在地下深处慢慢冷却结晶。冷得越慢，晶体越大——所以花岗岩上能看见闪亮的颗粒。" }
+  ];
+  var strataEl = document.getElementById("strata");
+  STRATA.forEach(function (s) {
+    var d = document.createElement("div");
+    d.className = "stratum";
+    d.style.background = s.c;
+    d.style.color = s.t;
+    var l = document.createElement("div");
+    l.innerHTML = "<b>" + s.n + "</b><small>" + s.age + "</small>";
+    var p = document.createElement("p");
+    p.textContent = s.d;
+    d.appendChild(l); d.appendChild(p);
+    strataEl.appendChild(d);
+  });
+
+  /* ---------- 动手活动 ---------- */
+  var ACTS = [
+    { t: "摇一摇的地层瓶", need: "透明瓶、砂、小石子、土、水",
+      d: "把砂、石子、土一起倒进瓶子，加水盖紧，用力摇匀，然后静置。半小时后看：重的沉底，轻的在上，自动分成了层。这就是水下沉积岩形成的过程，只是真实版本要几百万年。" },
+    { t: "果冻里的地震波", need: "一盘果冻、小积木房子",
+      d: "在果冻上盖几栋小积木房子，然后轻敲盘子边缘。看波怎么传过去、哪种房子先倒。矮而宽的比高而窄的稳——这正是抗震设计要解决的问题。" },
+    { t: "自制震级尺", need: "纸、笔、桌子",
+      d: "一支笔垂直立在纸上，另一人轻敲桌子，笔尖会画出抖动的痕迹。轻敲、重敲各画一次，比较线的高度。这就是地震仪的原理：把地面运动放大成可以量的痕迹。" },
+    { t: "找一块石头讲故事", need: "路边任何一块石头",
+      d: "捡一块石头，看它是圆的还是有棱角。圆的说明被水冲刷搬运过很远，有棱角说明刚从大石头上掉下来不久。一块石头能告诉你它走过多远的路。" }
+  ];
+  var actsEl = document.getElementById("acts");
+  ACTS.forEach(function (a) {
+    var d = document.createElement("div");
+    d.className = "act";
+    var h = document.createElement("h4"); h.textContent = a.t;
+    var p = document.createElement("p"); p.textContent = a.d;
+    var n = document.createElement("div"); n.className = "need"; n.textContent = "要用：" + a.need;
+    d.appendChild(h); d.appendChild(p); d.appendChild(n);
+    actsEl.appendChild(d);
+  });
+
+  /* ---------- 真实地震：USGS（失败降级到历史著名地震）---------- */
+  var qlist = document.getElementById("qlist");
+  var qsrc = document.getElementById("qsrc");
+
+  var FALLBACK = [
+    { m: 9.5, place: "智利 瓦尔迪维亚", when: "1960-05-22", depth: 33, note: "有记录以来最强" },
+    { m: 9.1, place: "日本 东北地方", when: "2011-03-11", depth: 29, note: "引发大海啸" },
+    { m: 9.1, place: "印尼 苏门答腊", when: "2004-12-26", depth: 30, note: "引发印度洋海啸" },
+    { m: 8.0, place: "中国 汶川", when: "2008-05-12", depth: 19, note: "龙门山断裂带" },
+    { m: 7.9, place: "美国 旧金山", when: "1906-04-18", depth: 12, note: "圣安地列斯断层" },
+    { m: 7.0, place: "海地", when: "2010-01-12", depth: 13, note: "建筑抗震不足" }
+  ];
+
+  function magClass(m) { return m >= 6 ? "qm-l" : m >= 5 ? "qm-m" : "qm-s"; }
+
+  function paintQuakes(list, live) {
+    qlist.innerHTML = "";
+    list.forEach(function (q) {
+      var row = document.createElement("div");
+      row.className = "qrow";
+      var mm = document.createElement("div");
+      mm.className = "qmag " + magClass(q.m);
+      mm.textContent = q.m.toFixed(1);
+      var mid = document.createElement("div");
+      var pl = document.createElement("div");
+      pl.className = "qplace";
+      pl.textContent = q.place;
+      var me = document.createElement("div");
+      me.className = "qmeta";
+      me.textContent = q.when + (q.note ? " · " + q.note : "");
+      mid.appendChild(pl); mid.appendChild(me);
+      var dp = document.createElement("div");
+      dp.className = "qdepth";
+      dp.textContent = "深 " + Math.round(q.depth) + " km";
+      row.appendChild(mm); row.appendChild(mid); row.appendChild(dp);
+      qlist.appendChild(row);
+    });
+    qsrc.textContent = live
+      ? "以上为 USGS 记录的近 30 天 M4.5 以上地震。"
+      : "离线模式 · 显示内置的历史著名地震（联网后会换成最近 30 天的真实记录）。";
+  }
+
+  paintQuakes(FALLBACK, false);   // 先渲染，保证断网也完整
+
+  (function fetchQuakes() {
+    var ac = new AbortController();
+    var t = setTimeout(function () { ac.abort(); }, 8000);
+    var end = new Date();
+    var start = new Date(end.getTime() - 30 * 864e5);
+    function ymd(d) { return d.toISOString().slice(0, 10); }
+    var url = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson" +
+              "&starttime=" + ymd(start) + "&minmagnitude=4.5&orderby=magnitude&limit=12";
+
+    fetch(url, { signal: ac.signal })
+      .then(function (r) { clearTimeout(t); if (!r.ok) throw new Error("http"); return r.json(); })
+      .then(function (d) {
+        var fs = (d && d.features) || [];
+        if (!fs.length) return;
+        var out = fs.map(function (f) {
+          var p = f.properties || {}, g = (f.geometry && f.geometry.coordinates) || [];
+          return {
+            m: +p.mag,
+            place: p.place || "未知位置",
+            when: new Date(p.time).toISOString().slice(0, 10),
+            depth: g[2] != null ? g[2] : 0,
+            note: ""
+          };
+        }).filter(function (q) { return !isNaN(q.m); });
+        if (out.length) paintQuakes(out, true);
+      })
+      .catch(function () { clearTimeout(t); /* 保留内置数据 */ });
+  })();
+})();
+</script>
+</body>
+</html>
