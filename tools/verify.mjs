@@ -1,177 +1,348 @@
-/* 全站验证器 —— 无依赖，只用 Node 内置 WebSocket + 本机 Chrome
+/* 全站真浏览器验证器：无依赖，只用 Node 内置 WebSocket + 本机 Chrome。
  *
  * 用法：
  *   node tools/verify.mjs              # 验证全部页面
  *   node tools/verify.mjs games/x.html # 只验证指定页面
  *
- * 做三件事：
- *  1. 用 file:// 打开每一页（和孩子双击打开的方式一致）
- *  2. 抓 console 报错 + 未捕获异常
- *  3. 点一遍页面上所有 button / 拖一遍 range 滑块，再抓一次报错
- *     —— 静态读代码抓不到「点了才崩」的 bug，必须真点。
- *
- * 退出码非 0 表示有页面有问题，可直接用在 pre-commit 里。
+ * 每页检查 file:// 加载、站内资源、运行时异常、控件交互、基础键盘可达性，
+ * 并在 375 / 768 / 1280 三档视口检查横向溢出。
  */
 import { spawn } from 'node:child_process';
-import { readdir, mkdtemp, rm } from 'node:fs/promises';
+import { access, mkdtemp, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 
-/* 用 fileURLToPath 而不是 .pathname：目录名含中文时 pathname 是 percent-encoded 的，
-   直接拿去 readdir 会 ENOENT。 */
 const ROOT = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
-const PORT = 9400 + (process.pid % 300);          // 避开可能已占用的固定端口
-const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-
-/* file:// 下 NASA / iNaturalist 等跨域接口必然被拦，这是设计好的降级路径，不算 bug */
-const IGNORE = [
-  /blocked by CORS policy/i,
-  /Failed to load resource/i,
-  /net::ERR_(FAILED|BLOCKED|NAME_NOT_RESOLVED|INTERNET_DISCONNECTED|CONNECTION)/i,
-  /ERR_BLOCKED_BY_CLIENT/i,
+const PORT = 9400 + (process.pid % 300);
+const VIEWPORTS = [
+  { width: 375, height: 750, mobile: true },
+  { width: 768, height: 900, mobile: true },
+  { width: 1280, height: 900, mobile: false }
 ];
-const ignorable = (t) => IGNORE.some((re) => re.test(t));
+const ROOT_URL = pathToFileURL(ROOT + sep).href;
+const wait = (ms) => new Promise((done) => setTimeout(done, ms));
 
-/* ---------- 收集页面 ---------- */
-async function pages(dir = ROOT, acc = []) {
-  for (const e of await readdir(dir, { withFileTypes: true })) {
-    if (e.name.startsWith('.') || e.name === 'tools' || e.name === 'node_modules') continue;
-    const p = join(dir, e.name);
-    if (e.isDirectory()) await pages(p, acc);
-    else if (e.name.endsWith('.html')) acc.push(relative(ROOT, p));
+function chromeCandidates() {
+  return [
+    process.env.CHROME_PATH,
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/Applications/Chromium.app/Contents/MacOS/Chromium',
+    '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser'
+  ].filter(Boolean);
+}
+async function findChrome() {
+  for (const candidate of chromeCandidates()) {
+    try { await access(candidate); return candidate; } catch { /* 继续找 */ }
   }
-  return acc.sort();
+  throw new Error('找不到 Chrome；可通过 CHROME_PATH 指定可执行文件');
 }
 
-/* ---------- 极简 CDP 客户端 ---------- */
+async function pages(dir = ROOT, out = []) {
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith('.') || entry.name === 'tools' || entry.name === 'node_modules') continue;
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) await pages(path, out);
+    else if (entry.name.endsWith('.html')) out.push(relative(ROOT, path).split(sep).join('/'));
+  }
+  return out.sort();
+}
+
 class CDP {
-  constructor(ws) { this.ws = ws; this.id = 0; this.waiting = new Map(); this.onEvent = null; }
+  constructor(ws) {
+    this.ws = ws;
+    this.id = 0;
+    this.waiting = new Map();
+    this.onEvent = null;
+  }
   static async attach(wsUrl) {
     const ws = new WebSocket(wsUrl);
-    await new Promise((ok, no) => { ws.onopen = ok; ws.onerror = () => no(new Error('ws 连接失败')); });
-    const c = new CDP(ws);
-    ws.onmessage = (m) => {
-      const msg = JSON.parse(m.data);
-      if (msg.id && c.waiting.has(msg.id)) {
-        const { ok, no } = c.waiting.get(msg.id); c.waiting.delete(msg.id);
-        msg.error ? no(new Error(msg.error.message)) : ok(msg.result);
-      } else if (msg.method && c.onEvent) c.onEvent(msg);
+    await new Promise((ok, fail) => {
+      ws.onopen = ok;
+      ws.onerror = () => fail(new Error('Chrome WebSocket 连接失败'));
+    });
+    const client = new CDP(ws);
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.id && client.waiting.has(message.id)) {
+        const pending = client.waiting.get(message.id);
+        client.waiting.delete(message.id);
+        message.error ? pending.fail(new Error(message.error.message)) : pending.ok(message.result);
+      } else if (message.method && client.onEvent) client.onEvent(message);
     };
-    return c;
+    ws.onclose = () => {
+      for (const pending of client.waiting.values()) pending.fail(new Error('Chrome WebSocket 已关闭'));
+      client.waiting.clear();
+    };
+    return client;
   }
   send(method, params = {}, sessionId) {
     const id = ++this.id;
-    return new Promise((ok, no) => {
-      this.waiting.set(id, { ok, no });
+    return new Promise((ok, fail) => {
+      const timer = setTimeout(() => {
+        if (this.waiting.delete(id)) fail(new Error(`${method} 超时`));
+      }, 30000);
+      this.waiting.set(id, {
+        ok(value) { clearTimeout(timer); ok(value); },
+        fail(error) { clearTimeout(timer); fail(error); }
+      });
       this.ws.send(JSON.stringify({ id, method, params, sessionId }));
-      setTimeout(() => { if (this.waiting.delete(id)) no(new Error(method + ' 超时')); }, 30000);
     });
   }
   close() { this.ws.close(); }
 }
 
-/* ---------- 主流程 ---------- */
-const only = process.argv.slice(2);
-const list = only.length ? only : await pages();
+function isLocal(url) { return url.startsWith(ROOT_URL); }
+function shortUrl(url) {
+  if (!isLocal(url)) return url;
+  try { return decodeURIComponent(url.slice(ROOT_URL.length)); } catch { return url.slice(ROOT_URL.length); }
+}
+function runtimeIgnorable(text) {
+  /* 可选远程增强在 file:// 下可因 CORS/断网失败；Network 域会单独、严格地抓本站资源。 */
+  return /blocked by CORS|ERR_BLOCKED_BY_CLIENT|net::ERR_(?:FAILED|NAME_NOT_RESOLVED|INTERNET_DISCONNECTED|CONNECTION)/i.test(text)
+    || /^Failed to load resource(?::|$)/i.test(text.trim());
+}
+function unique(items) { return [...new Set(items)]; }
 
+const only = process.argv.slice(2);
+const list = only.length ? only.map((arg) => {
+  const absolute = resolve(ROOT, arg);
+  const rel = relative(ROOT, absolute);
+  if (isAbsolute(arg) || rel === '..' || rel.startsWith(`..${sep}`) || !arg.endsWith('.html')) {
+    throw new Error(`页面参数必须是站内相对 HTML 路径: ${arg}`);
+  }
+  return rel.split(sep).join('/');
+}) : await pages();
+
+const chromePath = await findChrome();
 const profile = await mkdtemp(join(tmpdir(), 'verify-chrome-'));
-const chrome = spawn(CHROME, [
+const chrome = spawn(chromePath, [
   `--remote-debugging-port=${PORT}`,
   `--user-data-dir=${profile}`,
   '--headless=new', '--no-first-run', '--no-default-browser-check',
-  '--disable-gpu', '--hide-scrollbars', '--mute-audio',
+  '--disable-gpu', '--hide-scrollbars', '--mute-audio', '--disable-extensions',
   '--allow-file-access-from-files', '--window-size=1280,900',
-  'about:blank',
+  'about:blank'
 ], { stdio: 'ignore' });
 
-/* 等调试端口就绪（上次失败就是没等） */
-let wsUrl = null;
-for (let i = 0; i < 60 && !wsUrl; i++) {
-  await new Promise((r) => setTimeout(r, 250));
-  try {
-    const r = await fetch(`http://127.0.0.1:${PORT}/json/version`);
-    wsUrl = (await r.json()).webSocketDebuggerUrl;
-  } catch { /* 还没起来，继续等 */ }
+async function cleanup() {
+  if (!chrome.killed) chrome.kill();
+  await new Promise((done) => {
+    if (chrome.exitCode !== null || chrome.signalCode !== null) return done();
+    const timer = setTimeout(done, 3000);
+    chrome.once('exit', () => { clearTimeout(timer); done(); });
+  });
+  try { await rm(profile, { recursive: true, force: true }); } catch { /* 不遮盖测试结果 */ }
 }
-if (!wsUrl) { chrome.kill(); await rm(profile, { recursive: true, force: true }); console.error('Chrome 调试端口未就绪'); process.exit(1); }
 
-const browser = await CDP.attach(wsUrl);
+let browser;
 let bad = 0;
-
-for (const page of list) {
-  const { targetId } = await browser.send('Target.createTarget', { url: 'about:blank' });
-  const { sessionId } = await browser.send('Target.attachToTarget', { targetId, flatten: true });
-
-  const problems = [];
-  browser.onEvent = (m) => {
-    if (m.sessionId !== sessionId) return;
-    if (m.method === 'Runtime.exceptionThrown') {
-      const d = m.params.exceptionDetails;
-      const t = d.exception?.description || d.text || '未知异常';
-      if (!ignorable(t)) problems.push('未捕获异常: ' + t.split('\n').slice(0, 3).join('\n    '));
-    }
-    if (m.method === 'Runtime.consoleAPICalled' && m.params.type === 'error') {
-      const t = m.params.args.map((a) => a.value ?? a.description ?? '').join(' ');
-      if (!ignorable(t)) problems.push('console.error: ' + t.slice(0, 200));
-    }
-  };
-
-  await browser.send('Runtime.enable', {}, sessionId);
-  await browser.send('Page.enable', {}, sessionId);
-  await browser.send('Page.navigate', { url: 'file://' + join(ROOT, page) }, sessionId);
-  await new Promise((r) => setTimeout(r, 1400));           // 等首屏渲染 + 降级数据画完
-
-  /* 点一遍所有控件：这是抓「点了才崩」的关键 */
-  const poke = `(() => {
-    const out = { clicked: 0, ranges: 0 };
-    for (const b of document.querySelectorAll('button:not([disabled])')) {
-      try { b.click(); out.clicked++; } catch (e) {}
-    }
-    for (const r of document.querySelectorAll('input[type=range]')) {
-      try {
-        const lo = +r.min || 0, hi = +r.max || 100;
-        for (const v of [lo, (lo + hi) / 2, hi]) {
-          r.value = v;
-          r.dispatchEvent(new Event('input',  { bubbles: true }));
-          r.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-        out.ranges++;
-      } catch (e) {}
-    }
-    return JSON.stringify(out);
-  })()`;
-  let stat = { clicked: 0, ranges: 0 };
-  try {
-    const r = await browser.send('Runtime.evaluate', { expression: poke, returnByValue: true }, sessionId);
-    if (r.result?.value) stat = JSON.parse(r.result.value);
-  } catch (e) { problems.push('控件遍历失败: ' + e.message); }
-
-  await new Promise((r) => setTimeout(r, 900));             // 等点击引发的动画/定时器把异常抛出来
-  await browser.send('Target.closeTarget', { targetId });
-
-  const n = stat.clicked + stat.ranges;
-  if (problems.length) {
-    bad++;
-    console.log(`\n✗ ${page}  (点了 ${stat.clicked} 个按钮，拖了 ${stat.ranges} 个滑块)`);
-    for (const p of [...new Set(problems)].slice(0, 6)) console.log('   ' + p);
-  } else {
-    console.log(`✓ ${page}  (${n} 个控件，无报错)`);
-  }
-}
-
-browser.close();
-
-// Chrome 退出时还在写 profile，必须等它真的退出再删，否则 rmdir 撞上
-// ENOTEMPTY。清理失败不应该盖掉真实的测试结果，所以整段吞掉异常。
-chrome.kill();
-await new Promise((res) => {
-  const t = setTimeout(res, 3000);
-  chrome.once('exit', () => { clearTimeout(t); res(); });
-});
 try {
-  await rm(profile, { recursive: true, force: true });
-} catch { /* 临时目录留给系统清理，不影响结论 */ }
+  let wsUrl = null;
+  for (let attempt = 0; attempt < 60 && !wsUrl; attempt++) {
+    await wait(250);
+    try {
+      const response = await fetch(`http://127.0.0.1:${PORT}/json/version`);
+      if (response.ok) wsUrl = (await response.json()).webSocketDebuggerUrl;
+    } catch { /* Chrome 尚未就绪 */ }
+  }
+  if (!wsUrl) throw new Error('Chrome 调试端口未就绪');
+  browser = await CDP.attach(wsUrl);
+
+  for (const page of list) {
+    const { targetId } = await browser.send('Target.createTarget', { url: 'about:blank' });
+    const { sessionId } = await browser.send('Target.attachToTarget', { targetId, flatten: true });
+    const problems = [];
+    const requests = new Map();
+    let stat = { clicked: 0, ranges: 0, tabbable: 0 };
+
+    browser.onEvent = (message) => {
+      if (message.sessionId !== sessionId) return;
+      const params = message.params || {};
+      if (message.method === 'Network.requestWillBeSent') requests.set(params.requestId, params.request?.url || '');
+      if (message.method === 'Network.responseReceived') {
+        const response = params.response || {};
+        if (isLocal(response.url || '') && response.status >= 400) {
+          problems.push(`站内资源 HTTP ${response.status}: ${shortUrl(response.url)}`);
+        }
+      }
+      if (message.method === 'Network.loadingFailed') {
+        const url = requests.get(params.requestId) || '';
+        if (isLocal(url)) problems.push(`站内资源加载失败: ${shortUrl(url)} (${params.errorText || '未知错误'})`);
+      }
+      if (message.method === 'Runtime.exceptionThrown') {
+        const detail = params.exceptionDetails || {};
+        const text = detail.exception?.description || detail.text || '未知异常';
+        if (!runtimeIgnorable(text)) problems.push(`未捕获异常: ${text.split('\n').slice(0, 3).join('\n    ')}`);
+      }
+      if (message.method === 'Runtime.consoleAPICalled' && params.type === 'error') {
+        const text = (params.args || []).map((arg) => arg.value ?? arg.description ?? '').join(' ');
+        if (!runtimeIgnorable(text)) problems.push(`console.error: ${text.slice(0, 240)}`);
+      }
+    };
+
+    try {
+      await Promise.all([
+        browser.send('Runtime.enable', {}, sessionId),
+        browser.send('Page.enable', {}, sessionId),
+        browser.send('Network.enable', {}, sessionId)
+      ]);
+
+      for (const viewport of VIEWPORTS) {
+        await browser.send('Emulation.setDeviceMetricsOverride', {
+          width: viewport.width,
+          height: viewport.height,
+          deviceScaleFactor: viewport.mobile ? 2 : 1,
+          mobile: viewport.mobile
+        }, sessionId);
+        await browser.send('Page.navigate', { url: pathToFileURL(join(ROOT, page)).href }, sessionId);
+        await wait(700);
+
+        const audit = await browser.send('Runtime.evaluate', {
+          expression: `(() => {
+            const root = document.documentElement;
+            const width = root.clientWidth;
+            const overflow = Math.max(0, root.scrollWidth - width);
+            const visible = (el) => {
+              const cs = getComputedStyle(el), r = el.getBoundingClientRect();
+              return cs.display !== 'none' && cs.visibility !== 'hidden' && r.width > 0 && r.height > 0;
+            };
+            const ownsScroller = (el) => {
+              for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+                const cs = getComputedStyle(p);
+                if (/(auto|scroll)/.test(cs.overflowX) && p.scrollWidth > p.clientWidth + 1) return true;
+              }
+              return false;
+            };
+            const offenders = [];
+            if (overflow > 1) {
+              for (const el of document.body.querySelectorAll('*')) {
+                if (!visible(el) || ownsScroller(el)) continue;
+                const r = el.getBoundingClientRect();
+                if (r.right > width + 1 || r.left < -1) {
+                  offenders.push(el.tagName.toLowerCase() + (el.id ? '#' + el.id : el.classList.length ? '.' + [...el.classList].slice(0, 2).join('.') : ''));
+                  if (offenders.length === 4) break;
+                }
+              }
+            }
+            return { overflow, offenders };
+          })()`,
+          returnByValue: true
+        }, sessionId);
+        const layout = audit.result?.value || { overflow: 0, offenders: [] };
+        if (layout.overflow > 1) {
+          problems.push(`${viewport.width}px 横向溢出 ${layout.overflow}px${layout.offenders.length ? `（${layout.offenders.join(', ')}）` : ''}`);
+        }
+
+        /* 只需一档做键盘/交互；每档导航仍会捕获该尺寸下的初始化异常和资源失败。 */
+        if (viewport.width !== 1280) continue;
+
+        const keyboard = await browser.send('Runtime.evaluate', {
+          expression: `(() => {
+            const visible = (el) => {
+              const cs = getComputedStyle(el), r = el.getBoundingClientRect();
+              return cs.display !== 'none' && cs.visibility !== 'hidden' && !el.hidden && r.width > 0 && r.height > 0;
+            };
+            const selector = 'a[href],button,input:not([type=hidden]),select,textarea,[tabindex],[role=button],[role=link],[role=tab],[role=checkbox],[role=radio],[role=switch],[role=slider]';
+            const controls = [...document.querySelectorAll(selector)].filter((el) => visible(el) && !el.disabled && el.getAttribute('aria-disabled') !== 'true');
+            const issues = [];
+
+            /* roving tabindex：tablist / radiogroup / listbox 里只有当选项可 Tab 进入，
+               其余为 -1，靠方向键切换。这是 ARIA 标准做法，不是「不可聚焦」。
+               但要求整组恰好有一个可聚焦成员，否则整组真的进不去，仍然报错。 */
+            const ROVING = { tab: 'tablist', radio: 'radiogroup', option: 'listbox' };
+            const rovingOk = (el) => {
+              const role = el.getAttribute('role');
+              const owner = ROVING[role];
+              if (!owner) return false;
+              const group = el.closest('[role=' + owner + ']');
+              if (!group) return false;
+              const peers = [...group.querySelectorAll('[role=' + role + ']')].filter(visible);
+              return peers.filter((p) => p.tabIndex >= 0).length === 1;
+            };
+
+            for (const el of controls) {
+              const role = el.getAttribute('role');
+              const native = /^(A|BUTTON|INPUT|SELECT|TEXTAREA)$/.test(el.tagName);
+              if (el.tabIndex < 0 && !(native && el.tagName === 'A' && !el.hasAttribute('href')) && !rovingOk(el)) issues.push('不可聚焦 ' + el.tagName.toLowerCase() + (el.id ? '#' + el.id : ''));
+              if (!native && role && !el.hasAttribute('tabindex')) issues.push('自制 ' + role + ' 缺少 tabindex' + (el.id ? ' #' + el.id : ''));
+              if (el.tabIndex > 0) issues.push('使用正数 tabindex' + (el.id ? ' #' + el.id : ''));
+            }
+            const sample = controls.filter((el) => el.tabIndex >= 0).slice(0, 5);
+            for (const el of sample) {
+              try { el.focus({ preventScroll: true }); } catch { el.focus(); }
+              if (document.activeElement !== el) issues.push('focus() 失败 ' + el.tagName.toLowerCase() + (el.id ? '#' + el.id : ''));
+            }
+            if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+            return { tabbable: controls.filter((el) => el.tabIndex >= 0).length, issues: [...new Set(issues)].slice(0, 6) };
+          })()`,
+          returnByValue: true
+        }, sessionId);
+        const keyAudit = keyboard.result?.value || { tabbable: 0, issues: ['键盘审计无结果'] };
+        stat.tabbable = keyAudit.tabbable;
+        for (const issue of keyAudit.issues) problems.push(`键盘: ${issue}`);
+
+        await browser.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9 }, sessionId);
+        await browser.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9 }, sessionId);
+        const tabResult = await browser.send('Runtime.evaluate', {
+          expression: `(() => {
+            const el = document.activeElement;
+            return { ok: !!el && el !== document.body && el !== document.documentElement,
+              target: el ? el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') : 'none' };
+          })()`, returnByValue: true
+        }, sessionId);
+        if (!tabResult.result?.value?.ok && keyAudit.tabbable > 0) problems.push(`键盘: Tab 未进入页面控件（${tabResult.result?.value?.target || 'none'}）`);
+
+        const poke = await browser.send('Runtime.evaluate', {
+          expression: `(() => {
+            const out = { clicked: 0, ranges: 0 };
+            for (const button of document.querySelectorAll('button:not([disabled]):not([data-verify-skip])')) {
+              if (button.hidden || getComputedStyle(button).display === 'none') continue;
+              try { button.click(); out.clicked++; } catch (error) { /* 运行时异常会由 CDP 捕获 */ }
+            }
+            for (const range of document.querySelectorAll('input[type=range]:not([disabled])')) {
+              try {
+                const low = Number.isFinite(+range.min) ? +range.min : 0;
+                const high = Number.isFinite(+range.max) ? +range.max : 100;
+                for (const value of [low, (low + high) / 2, high]) {
+                  range.value = String(value);
+                  range.dispatchEvent(new Event('input', { bubbles: true }));
+                  range.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                out.ranges++;
+              } catch (error) { /* 运行时异常会由 CDP 捕获 */ }
+            }
+            return out;
+          })()`,
+          returnByValue: true
+        }, sessionId);
+        stat = { ...stat, ...(poke.result?.value || {}) };
+        await wait(800);
+      }
+    } catch (error) {
+      problems.push(`验证流程失败: ${error.message}`);
+    } finally {
+      browser.onEvent = null;
+      try { await browser.send('Target.closeTarget', { targetId }); } catch { /* 继续报告 */ }
+    }
+
+    const found = unique(problems);
+    if (found.length) {
+      bad++;
+      console.log(`\n✗ ${page}（${stat.tabbable} 个键盘控件，点 ${stat.clicked}，拖 ${stat.ranges}）`);
+      for (const problem of found.slice(0, 12)) console.log(`   ${problem}`);
+      if (found.length > 12) console.log(`   …另有 ${found.length - 12} 项`);
+    } else {
+      console.log(`✓ ${page}（375/768/1280，无溢出；${stat.tabbable} 个键盘控件；点 ${stat.clicked}，拖 ${stat.ranges}）`);
+    }
+  }
+} catch (error) {
+  bad++;
+  console.error(`验证器失败: ${error.message}`);
+} finally {
+  if (browser) browser.close();
+  await cleanup();
+}
 
 console.log(`\n=== ${list.length} 页，${bad} 页有问题 ===`);
 process.exit(bad ? 1 : 0);

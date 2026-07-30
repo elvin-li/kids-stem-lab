@@ -6,6 +6,11 @@
 <title>重力落体实验 · 羽毛与锤子 | 少儿数理启蒙</title>
 <meta name="description" content="切换有空气与真空，改变重力大小，看羽毛、皮球和锤子谁先落地。重现 Apollo 15 号在月球上的经典实验。" />
 <link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .lab-head { margin: 24px 0 18px; }
   .lab-head p.lead { font-size: 1.02rem; max-width: 62ch; }
@@ -24,18 +29,28 @@
   .why { font-size: .95rem; }
   .why h3 { margin-top: 1.1em; }
   .tag-row { gap: 8px; }
+  .task-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto; gap:10px; align-items:end; }
+  .compare-list { display:grid; gap:7px; margin-top:8px; }
+  .playful-story { display:grid; gap:12px; margin-bottom:18px; }
+  .playful-story-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .playful-story h2 { font-size:1.12rem; margin:0 0 4px; }
+  .playful-story p { margin:0; }
+  .playful-story-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .playful-story [data-playful-task-output] { color:var(--ink-mid); min-height:1.5em; }
+  @media (max-width:760px) { .task-fields { grid-template-columns:1fr; } }
 </style>
 </head>
-<body>
+<body data-playful-page="games/gravity-drop.html">
 <a class="skip-link" href="#stage">跳到实验画面</a>
 
 <nav class="nav"><div class="nav-in wrap">
   <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
-  <div class="row">
+  <div class="row" aria-label="主导航">
     <a class="nav-link" href="../index.html">资源库</a>
     <a class="nav-link" href="../pages/paths.html">学习路径</a>
     <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
     <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
   </div>
 </div></nav>
@@ -52,11 +67,52 @@
     <p class="lead">这在教什么：<b>重力让所有东西以同样的加速度下落</b>。看起来羽毛慢，是空气阻力在拖它 —— 抽掉空气，三个东西会一起落地。</p>
   </header>
 
+  <section class="card playful-story" aria-labelledby="gravityStoryTitle">
+    <div data-playful-companion></div>
+    <div class="playful-story-head">
+      <div><h2 id="gravityStoryTitle">月球实验舱：准备开启真空舱门</h2><p>你是今天的落体观察员。先在有空气的舱室试一次，再抽成真空，把两份数据送回地面研究站。</p></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="playful-story-actions">
+      <button class="btn btn-sm" id="gravitySurpriseBtn" type="button" data-playful-random-task="#gravitySurprise">抽取月球惊喜任务</button>
+      <p id="gravitySurprise" data-playful-task-output>实验舱已就绪，想加一项小挑战吗？</p>
+    </div>
+    <p id="gravityPlayfulFeedback" data-playful-feedback></p>
+  </section>
+
+  <section class="task" aria-labelledby="gravityTaskTitle">
+    <h2 class="task-title" id="gravityTaskTitle">任务：比较有空气与真空中的落体</h2>
+    <ol>
+      <li><b>预测：</b>先选出你认为在有空气时最后落地的物体。</li>
+      <li><b>操作：</b>保持高度和重力不变，分别在“有空气”和“真空”各落一次。</li>
+      <li><b>结果：</b>比较两次的落地顺序、三件物体的时间和最大时间差。</li>
+      <li><b>反思：</b>说明为什么真空和有空气的结果不同，再记录完成证据。</li>
+    </ol>
+    <div class="task-fields">
+      <div><label for="gravityPrediction">我的预测</label><select class="input" id="gravityPrediction"><option>羽毛最后</option><option>皮球最后</option><option>锤子最后</option><option>三个同时</option></select></div>
+      <div><label for="gravityReflection">我的解释</label><textarea class="input" id="gravityReflection" rows="2" placeholder="例如：空气阻力对轻而宽的羽毛影响更明显。"></textarea></div>
+      <button class="btn btn-primary" id="gravityComplete" type="button" disabled>记录任务完成</button>
+    </div>
+    <p class="task-status status" id="gravityTaskStatus" role="status" aria-live="polite">尚未完成：请保持条件不变，先后完成有空气和真空两次实验。</p>
+
+    <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="gravityWorkTitle">
+      <h3 class="work-card-title" id="gravityWorkTitle">把这次落体数据存成研究站报告</h3>
+      <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+      <div class="work-card-fields">
+        <div><label for="gravityWorkType">作品类型</label><select class="input" id="gravityWorkType" name="type"><option value="observation">观察记录</option><option value="prediction">预测卡</option><option value="explanation">我的解释</option></select></div>
+        <div><label for="gravityWorkName">报告名称</label><input class="input" id="gravityWorkName" name="title" required maxlength="80" placeholder="例如：真空舱三件一起落"></div>
+        <div><label for="gravityWorkContent">两次舱内的落地顺序</label><textarea class="input" id="gravityWorkContent" name="content" required maxlength="4000" placeholder="写下有空气时谁最后落地、真空时又怎样，以及你认为差别来自什么。"></textarea></div>
+        <button class="btn btn-primary btn-sm" type="submit">保存研究站报告</button>
+      </div>
+      <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+    </form>
+  </section>
+
   <div class="lab">
     <!-- ================= 舞台 ================= -->
     <div class="lab-stage" id="stage">
-      <canvas id="scene" role="img"
-        aria-label="下落实验画面：羽毛、皮球、锤子从同一高度落下，画面显示运动轨迹与落地时间"></canvas>
+      <canvas id="scene" role="img" tabindex="0"
+        aria-label="下落实验画面：羽毛、皮球、锤子从同一高度落下，画面显示运动轨迹与落地时间。聚焦画面后按空格键可开始或暂停。"></canvas>
       <p id="live" class="sr-only" aria-live="polite"></p>
     </div>
 
@@ -125,6 +181,15 @@
         </div>
         <div class="readout" style="margin-top:10px"><span>计时</span><b id="clock">0.00 s</b></div>
         <div class="readout"><span>最先与最后相差</span><b id="gap">—</b></div>
+      </div>
+
+      <div class="panel" aria-labelledby="gravityCompareTitle">
+        <h3 id="gravityCompareTitle">空气 / 真空比较数据</h3>
+        <div class="compare-list">
+          <div class="readout"><span>有空气</span><b id="airResult">尚未实验</b></div>
+          <div class="readout"><span>真空</span><b id="vacuumResult">尚未实验</b></div>
+        </div>
+        <p class="obj-sub" id="compareResult" role="status" aria-live="polite">完成两种条件后，这里会用文字比较结果。</p>
       </div>
 
       <div class="panel">
@@ -209,6 +274,7 @@
     t: 0,
     bodies: []
   };
+  var comparison = { air: null, vacuum: null };
 
   function resetBodies() {
     S.bodies = BODIES.map(function (b) {
@@ -266,6 +332,7 @@
       var last = S.bodies[ts.indexOf(Math.max.apply(null, ts))].def.name;
       announce(last + '最后落地，比第一个慢 ' + gap.toFixed(2) + ' 秒。');
     }
+    recordComparison(ts, gap);
   }
 
   // ---------- Canvas ----------
@@ -455,6 +522,35 @@
   });
   var clockEl = document.getElementById('clock');
   var gapEl = document.getElementById('gap');
+  var airResultEl = document.getElementById('airResult');
+  var vacuumResultEl = document.getElementById('vacuumResult');
+  var compareResultEl = document.getElementById('compareResult');
+  var gravityReflection = document.getElementById('gravityReflection');
+  var gravityComplete = document.getElementById('gravityComplete');
+  var gravityTaskStatus = document.getElementById('gravityTaskStatus');
+
+  function resultText(result) {
+    if (!result) return '尚未实验';
+    return '羽 ' + result.times[0].toFixed(2) + 's · 球 ' + result.times[1].toFixed(2) + 's · 锤 ' + result.times[2].toFixed(2) + 's；差 ' + result.gap.toFixed(2) + 's';
+  }
+  function updateGravityTask() {
+    airResultEl.textContent = resultText(comparison.air);
+    vacuumResultEl.textContent = resultText(comparison.vacuum);
+    var both = comparison.air && comparison.vacuum;
+    var explained = gravityReflection.value.trim().length >= 8;
+    gravityComplete.disabled = !(both && explained);
+    if (!both) {
+      compareResultEl.textContent = '还缺少' + (!comparison.air && !comparison.vacuum ? '两种条件' : (!comparison.air ? '有空气' : '真空')) + '的数据。';
+      gravityTaskStatus.textContent = '尚未完成：请保持高度和重力不变，完成有空气和真空两次实验。';
+    } else {
+      compareResultEl.textContent = '有空气时最大落地时间差 ' + comparison.air.gap.toFixed(2) + ' 秒；真空时 ' + comparison.vacuum.gap.toFixed(2) + ' 秒。真空中三者' + (comparison.vacuum.gap < 0.02 ? '几乎同时落地。' : '仍有可测时间差。');
+      gravityTaskStatus.textContent = explained ? '证据已齐：可以记录任务完成。' : '两组结果已得到；请写至少 8 个字解释差异。';
+    }
+  }
+  function recordComparison(times, gap) {
+    comparison[S.air ? 'air' : 'vacuum'] = { times: times.slice(), gap: gap, g: S.g, height: S.height };
+    updateGravityTask();
+  }
 
   function refreshPanel() {
     var vmax = 1;
@@ -506,6 +602,16 @@
   }
   var liveEl = document.getElementById('live');
   function announce(msg) { liveEl.textContent = msg; }
+
+  gravityReflection.addEventListener('input', updateGravityTask);
+  gravityComplete.addEventListener('click', function () {
+    if (gravityComplete.disabled || !window.Progress) return;
+    var evidence = '预测：' + document.getElementById('gravityPrediction').value + '；有空气差 ' + comparison.air.gap.toFixed(2) + 's，真空差 ' + comparison.vacuum.gap.toFixed(2) + 's；解释：' + gravityReflection.value.trim();
+    if (Progress.complete("games/gravity-drop.html", evidence)) {
+      gravityTaskStatus.textContent = '已完成并保存证据：' + evidence;
+      announce('重力比较任务已完成并保存在本机。');
+    }
+  });
 
   btnGo.addEventListener('click', function () {
     if (S.running) { S.running = false; btnGo.textContent = '继续'; return; }
@@ -583,9 +689,16 @@
   window.addEventListener('resize', resize);
 
   resetBodies();
+  updateGravityTask();
   resize();
   requestAnimationFrame(loop);
 })();
 </script>
+<script src="../data/explorations.js"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../data/playful.js"></script>
+<script src="../assets/js/playful.js"></script>
+<script>if (window.Progress) Progress.visit("games/gravity-drop.html", "自由落体");</script>
+<script src="../assets/js/pwa.js"></script>
 </body>
 </html>

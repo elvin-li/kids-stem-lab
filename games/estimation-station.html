@@ -6,7 +6,11 @@
 <title>估算站 · 互动实验室</title>
 <meta name="description" content="扫一眼估个数，答「差不多」就算赢。练量级感、抽样估计和费米估算（Fermi estimation），适合 6–12 岁。">
 <link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/kid.css">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .head { padding: 30px 0 18px; }
   .head h1 { margin-bottom: .25em; }
@@ -77,18 +81,41 @@
     color: var(--math); font-size: .76rem; font-weight: 800; font-family: var(--mono);
   }
   .ask li b { color: var(--ink); }
+  .mission { margin: 0 0 20px; }
+  .mission ol { margin:8px 0 12px; padding-left:1.3rem; color:var(--ink-mid); }
+  .mission-grid { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); align-items:end; }
+  .mission textarea { min-height:70px; resize:vertical; }
+
+  .playful-quest {
+    margin-top: 16px; padding: 16px; overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--quest-accent, var(--math)) 45%, var(--line));
+    border-radius: var(--r-lg); background:
+      radial-gradient(circle at 100% 0, color-mix(in srgb, var(--quest-accent, var(--math)) 18%, transparent) 0 22%, transparent 23%),
+      linear-gradient(135deg, var(--surface-2), var(--surface));
+  }
+  .playful-quest h3, .playful-quest h4 { margin: 0; }
+  .playful-quest-head { display:grid; gap:12px; grid-template-columns:minmax(0,1fr) auto; align-items:start; }
+  .playful-story { margin:7px 0 0; max-width:62ch; color:var(--ink-mid); }
+  .playful-tools { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  .playful-task-output { min-height:1.6em; margin:0; color:var(--ink); font-weight:700; }
+  .playful-evidence { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  @media (max-width:620px) { .playful-quest-head { grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+  }
 </style>
 </head>
-<body>
+<body data-playful-page="games/estimation-station.html">
 <a class="skip-link" href="#main">跳到主要内容</a>
 
 <nav class="nav"><div class="nav-in wrap">
   <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
-  <div class="row">
+  <div class="row" aria-label="主导航">
     <a class="nav-link" href="../index.html">资源库</a>
     <a class="nav-link" href="../pages/paths.html">学习路径</a>
     <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
     <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
   </div>
 </div></nav>
@@ -102,6 +129,42 @@
 </header>
 
 <main id="main" class="wrap">
+  <section class="task mission" aria-labelledby="estimateMissionTitle">
+    <h2 class="task-title" id="estimateMissionTitle">任务：用策略完成三轮估算并校准</h2>
+    <ol>
+      <li><b>预测：</b>扫一眼散点、聚类或网格分布，写下估计值。</li>
+      <li><b>操作：</b>至少使用两种策略（整体感觉、四分区或样方抽样）完成三轮。</li>
+      <li><b>结果：</b>比较每轮百分比误差，阅读偏大 / 偏小校准提示。</li>
+      <li><b>反思：</b>写下哪种分组方法让估计更接近。</li>
+    </ol>
+    <div class="mission-grid">
+      <div><label for="estimateReflect">我的反思</label><textarea class="input" id="estimateReflect" placeholder="例如：聚类时先估每团，再把几团相加。"></textarea></div>
+      <button class="btn btn-primary" id="estimateComplete" type="button" disabled>记录任务完成</button>
+    </div>
+    <p class="task-status status" id="estimateStatus" role="status" aria-live="polite">尚未完成：需要三轮估算，并至少使用两种策略。</p>
+      <div class="playful-quest" style="--quest-accent:var(--warn)" aria-labelledby="estimateStoryTitle">
+      <div class="playful-quest-head">
+        <div><h3 id="estimateStoryTitle">云端补给站的装箱单</h3><p class="playful-story">妙妙不需要精确点完每一颗糖豆。先分组、再估算，把校准方法写进观察记录。</p></div>
+        <div data-playful-companion role="note" aria-label="妙妙伙伴提示"></div>
+      </div>
+      <div class="playful-tools">
+        <button class="btn btn-sm" type="button" data-playful-random-task="#estimateSurprise">抽取随机补给任务</button>
+        <p class="playful-task-output" id="estimateSurprise" data-playful-task-output role="status" aria-live="polite">补给箱里会出现一种新的估算方法。</p>
+      </div>
+      <div class="playful-evidence"><span data-playful-sticker aria-label="估算站贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
+      <form class="work-card work-card-form" data-playful-work-form aria-labelledby="estimateWorkTitle">
+        <h4 id="estimateWorkTitle">保存我的估算观察</h4>
+        <div class="work-card-fields">
+          <div><label for="estimateWorkType">作品类型</label><select class="input" id="estimateWorkType" name="type"><option value="observation">观察记录</option><option value="prediction">预测卡</option><option value="explanation">我的解释</option></select></div>
+          <div><label for="estimateWorkName">记录名称</label><input class="input" id="estimateWorkName" name="title" required maxlength="80" placeholder="例如：四分区估算"></div>
+          <div><label for="estimateWorkContent">估算与校准</label><textarea class="input" id="estimateWorkContent" name="content" required maxlength="4000" placeholder="记录估计值、真实值、误差和下一次怎样调整。"></textarea></div>
+          <button class="btn btn-primary btn-sm" type="submit">保存观察卡</button>
+        </div>
+        <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">观察卡只保存在这台设备上。</p>
+      </form>
+    </div>
+  </section>
+
   <div class="tabs" role="tablist" aria-label="选择模式">
     <button class="chip" type="button" role="tab" id="tab-count" aria-selected="true"  aria-pressed="true"  aria-controls="mode-count" data-mode="count">模式一 · 数糖豆</button>
     <button class="chip" type="button" role="tab" id="tab-fermi" aria-selected="false" aria-pressed="false" aria-controls="mode-fermi" data-mode="fermi">模式二 · 费米问题</button>
@@ -110,7 +173,7 @@
   <!-- ================= 模式一 ================= -->
   <section id="mode-count" role="tabpanel" aria-labelledby="tab-count" class="lab">
     <div class="lab-stage stage-wrap">
-      <canvas id="cv" width="800" height="520" role="img" aria-label="散落着许多糖豆的画面，用于估算数量"></canvas>
+      <canvas id="cv" width="800" height="520" aria-label="散落着许多糖豆的画面，用于估算数量">糖豆数量估算图。糖豆短暂显示后会隐藏，请在表单中填写估计值。</canvas>
       <div class="veil" id="veil">
         <div>
           <h2 id="veil-title">准备好了吗？</h2>
@@ -136,6 +199,24 @@
             <option value="easy">简单（10–40 个）</option>
             <option value="mid" selected>中（40–150 个）</option>
             <option value="hard">难（150–600 个）</option>
+          </select>
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="layout-mode">点的分布</label></div>
+          <select class="input" id="layout-mode">
+            <option value="scatter">散点 · 随机铺开</option>
+            <option value="cluster">聚类 · 分成几团</option>
+            <option value="grid">网格 · 接近行列排列</option>
+          </select>
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="estimate-strategy">本轮使用的策略</label></div>
+          <select class="input" id="estimate-strategy">
+            <option value="whole">整体感觉</option>
+            <option value="quarter">四分区：估一块再乘 4</option>
+            <option value="sample">样方抽样：估小框再放大</option>
           </select>
         </div>
 
@@ -166,11 +247,12 @@
         <div class="readout"><span>已完成</span><b id="r-rounds">0 轮</b></div>
         <div class="readout"><span>平均误差</span><b id="r-avg">—</b></div>
         <div class="readout"><span>最好的一次</span><b id="r-best">—</b></div>
+        <div class="readout"><span>校准反馈</span><b id="r-calibration">完成一轮后显示</b></div>
         <div class="bar" style="margin:10px 0 12px" role="img" aria-labelledby="r-avg"><i id="r-bar" style="width:0"></i></div>
         <p class="hist-empty" id="hist-empty">玩几轮，这里会出现你的记录。</p>
         <table class="hist" id="hist" hidden>
           <caption class="sr-only">每一轮的猜测与真实数量对照</caption>
-          <thead><tr><th scope="col">轮</th><th scope="col">你猜</th><th scope="col">真实</th><th scope="col">误差</th></tr></thead>
+          <thead><tr><th scope="col">轮 / 策略</th><th scope="col">你猜</th><th scope="col">真实</th><th scope="col">误差</th></tr></thead>
           <tbody id="hist-body"></tbody>
         </table>
         <button class="btn btn-ghost btn-sm" type="button" id="clear" style="margin-top:12px">清空记录</button>
@@ -328,6 +410,8 @@
 
   var items = [], truth = 0, round = 0, phase = "idle"; /* idle | flash | guess | done */
   var history = [];
+  var STRATEGY_NAMES = { whole: "整体", quarter: "四分区", sample: "样方抽样" };
+  var LAYOUT_NAMES = { scatter: "散点", cluster: "聚类", grid: "网格" };
   var flashEndsAt = 0, rafId = 0;
 
   function fit() {
@@ -345,18 +429,31 @@
 
   function makeItems() {
     var range = LEVELS[document.getElementById("level").value];
+    var mode = document.getElementById("layout-mode").value;
     truth = Math.round(rnd(range[0], range[1]));
     items = [];
     var pad = 26, r = truth > 260 ? 5.5 : truth > 120 ? 7.5 : 11;
+    var centers = [[.24,.28],[.70,.27],[.35,.72],[.76,.70]];
+    var cols = Math.ceil(Math.sqrt(truth * CSS_W / CSS_H));
+    var rows = Math.ceil(truth / cols);
     for (var i = 0; i < truth; i++) {
-      items.push({
-        x: rnd(pad, CSS_W - pad) / CSS_W,     /* 存归一化坐标，resize 后仍然对 */
-        y: rnd(pad, CSS_H - pad) / CSS_H,
-        r: r * rnd(0.86, 1.16),
-        c: PALETTE[(Math.random() * PALETTE.length) | 0],
-        a: rnd(0, Math.PI)
-      });
+      var nx, ny;
+      if (mode === "cluster") {
+        var center = centers[i % centers.length];
+        nx = Math.max(.04, Math.min(.96, center[0] + rnd(-.12,.12)));
+        ny = Math.max(.06, Math.min(.94, center[1] + rnd(-.14,.14)));
+      } else if (mode === "grid") {
+        var col = i % cols, row = Math.floor(i / cols);
+        nx = .05 + (col + .5) / cols * .90 + rnd(-.006,.006);
+        ny = .06 + (row + .5) / rows * .88 + rnd(-.008,.008);
+      } else {
+        nx = rnd(pad, CSS_W - pad) / CSS_W;
+        ny = rnd(pad, CSS_H - pad) / CSS_H;
+      }
+      items.push({ x:nx, y:ny, r:r * rnd(0.86,1.16),
+        c:PALETTE[(Math.random() * PALETTE.length) | 0], a:rnd(0,Math.PI) });
     }
+    cv.setAttribute("aria-label", LAYOUT_NAMES[mode] + "分布，共有若干糖豆，用于估算数量");
   }
 
   function draw(showItems) {
@@ -366,13 +463,23 @@
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, CSS_W, CSS_H);
 
-    /* 淡格子：给孩子一个「框一块数」的抓手 */
-    ctx.strokeStyle = "rgba(42,51,85,.55)";
+    /* 当前策略的视觉抓手 */
+    var strategy = document.getElementById("estimate-strategy").value;
+    ctx.strokeStyle = "rgba(125,136,171,.65)";
     ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(CSS_W / 2, 0); ctx.lineTo(CSS_W / 2, CSS_H);
-    ctx.moveTo(0, CSS_H / 2); ctx.lineTo(CSS_W, CSS_H / 2);
-    ctx.stroke();
+    if (strategy === "quarter") {
+      ctx.beginPath();
+      ctx.moveTo(CSS_W / 2, 0); ctx.lineTo(CSS_W / 2, CSS_H);
+      ctx.moveTo(0, CSS_H / 2); ctx.lineTo(CSS_W, CSS_H / 2);
+      ctx.stroke();
+    } else if (strategy === "sample") {
+      ctx.save(); ctx.setLineDash([6,5]); ctx.lineWidth = 2;
+      ctx.strokeStyle = "rgba(251,191,36,.9)";
+      ctx.strokeRect(CSS_W * .08, CSS_H * .10, CSS_W * .28, CSS_H * .32);
+      ctx.fillStyle = "rgba(251,191,36,.9)"; ctx.font = "700 12px sans-serif";
+      ctx.fillText("样方：估这里，再按面积放大", CSS_W * .08 + 5, CSS_H * .10 + 18);
+      ctx.restore();
+    }
 
     if (!showItems) return;
     for (var i = 0; i < items.length; i++) {
@@ -405,6 +512,10 @@
   var levelOut = document.getElementById("level-out");
   levelSel.addEventListener("change", function () {
     levelOut.textContent = { easy: "简单", mid: "中", hard: "难" }[levelSel.value];
+  });
+  document.getElementById("estimate-strategy").addEventListener("change", function () {
+    draw(phase === "done" || phase === "flash");
+    liveCount.textContent = "本轮策略切换为" + STRATEGY_NAMES[this.value];
   });
 
   var veil = document.getElementById("veil");
@@ -490,7 +601,10 @@
     phase = "done";
     round++;
     var s = score(g, truth);
-    history.push({ n: round, guess: g, truth: truth, err: s.err });
+    var strategy = document.getElementById("estimate-strategy").value;
+    var layoutMode = document.getElementById("layout-mode").value;
+    history.push({ n: round, guess: g, truth: truth, err: s.err, strategy: strategy, layout: layoutMode,
+      signed: (g - truth) / truth });
 
     draw(true);
     veil.hidden = true;
@@ -511,7 +625,30 @@
     else if (s.err <= 0.15) toast("很接近了！");
 
     renderHistory();
+    updateEstimateMission();
   }
+
+  function updateEstimateMission() {
+    var strategies = {};
+    history.forEach(function (h) { strategies[h.strategy] = true; });
+    var names = Object.keys(strategies).map(function (key) { return STRATEGY_NAMES[key]; });
+    var ready = history.length >= 3 && names.length >= 2;
+    document.getElementById("estimateComplete").disabled = !ready;
+    document.getElementById("estimateStatus").textContent = ready
+      ? "✓ 已完成 " + history.length + " 轮，使用了 " + names.join("、") + "。请写反思并记录。"
+      : "进度：" + history.length + "/3 轮；已用策略：" + (names.join("、") || "尚无") + "。至少需要两种策略。";
+  }
+
+  document.getElementById("estimateComplete").addEventListener("click", function () {
+    var reflection = document.getElementById("estimateReflect").value.trim();
+    if (!reflection) { document.getElementById("estimateStatus").textContent = "请先写下哪种方法更接近。"; document.getElementById("estimateReflect").focus(); return; }
+    var sum = 0, best = Infinity, strategies = {};
+    history.forEach(function (h) { sum += h.err; best = Math.min(best, h.err); strategies[h.strategy] = true; });
+    var evidence = "完成 " + history.length + " 轮；策略：" + Object.keys(strategies).map(function(k){return STRATEGY_NAMES[k];}).join("、") +
+      "；平均误差 " + (sum / history.length * 100).toFixed(1) + "%；最好 " + (best * 100).toFixed(1) + "%；反思：" + reflection;
+    var saved = window.Progress && Progress.complete("games/estimation-station.html", evidence);
+    document.getElementById("estimateStatus").textContent = saved ? "✓ 任务已完成并记录：" + evidence : "✓ 任务已完成；本机存储不可用，未能保存足迹。";
+  });
 
   function renderHistory() {
     var rounds = history.length;
@@ -524,7 +661,9 @@
       tbl.hidden = true; emptyP.hidden = false;
       document.getElementById("r-avg").textContent = "—";
       document.getElementById("r-best").textContent = "—";
+      document.getElementById("r-calibration").textContent = "完成一轮后显示";
       document.getElementById("r-bar").style.width = "0";
+      updateEstimateMission();
       return;
     }
     var sum = 0, best = Infinity;
@@ -533,12 +672,17 @@
     document.getElementById("r-avg").textContent = (avg * 100).toFixed(1) + "%";
     document.getElementById("r-best").textContent = (best * 100).toFixed(1) + "%";
     document.getElementById("r-bar").style.width = Math.max(2, Math.min(100, (1 - avg) * 100)) + "%";
+    var signedAvg = history.reduce(function (total, h) { return total + h.signed; }, 0) / rounds;
+    document.getElementById("r-calibration").textContent = Math.abs(signedAvg) < .08
+      ? "整体已较平衡"
+      : signedAvg > 0 ? "常偏大：下一轮先减约 " + Math.round(Math.abs(signedAvg) * 100) + "%"
+      : "常偏小：下一轮先加约 " + Math.round(Math.abs(signedAvg) * 100) + "%";
 
     emptyP.hidden = true; tbl.hidden = false;
     body.textContent = "";
     history.slice(-8).reverse().forEach(function (h) {
       var tr = document.createElement("tr");
-      [String(h.n), String(h.guess), String(h.truth), (h.err * 100).toFixed(0) + "%"].forEach(function (t) {
+      [String(h.n) + " · " + STRATEGY_NAMES[h.strategy], String(h.guess), String(h.truth), (h.err * 100).toFixed(0) + "%"].forEach(function (t) {
         var td = document.createElement("td");
         td.textContent = t;
         tr.appendChild(td);
@@ -569,7 +713,7 @@
   });
   document.getElementById("clear").addEventListener("click", function () {
     history = []; round = 0;
-    renderHistory();
+    renderHistory(); updateEstimateMission();
     flashBtn.textContent = "开始第 1 轮";
     toast("记录已清空");
   });
@@ -587,6 +731,7 @@
   fit();
   draw(false);
   renderHistory();
+  updateEstimateMission();
 
   /* ================= 模式二：费米问题 ================= */
   var FERMI = [
@@ -727,5 +872,11 @@
   renderFermiStats();
 })();
 </script>
+<script src="../data/explorations.js"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../data/playful.js"></script>
+<script src="../assets/js/playful.js"></script>
+<script>if (window.Progress) Progress.visit("games/estimation-station.html", "估算站");</script>
+<script src="../assets/js/pwa.js"></script>
 </body>
 </html>

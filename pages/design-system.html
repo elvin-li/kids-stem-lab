@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>设计系统 | 少儿数理启蒙</title>
+<meta name="description" content="全站设计系统的唯一参考页：色彩 token 与实测对比度、真实字号、圆角尺度、全部共享组件与键盘焦点状态。所有数值由页面实时从 base.css 读取计算，不手写。" />
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
+<style>
+  .ds-head { padding: 44px 0 4px; }
+  .lede { font-size: 1.05rem; max-width: 70ch; }
+
+  section.sec { margin-top: 46px; scroll-margin-top: 76px; }
+  section.sec > h2 { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  section.sec > h2 .num {
+    font-family: var(--mono); font-size: .8rem; color: var(--accent); flex: none;
+    border: 1px solid rgba(110,168,254,.35); background: rgba(110,168,254,.1);
+    border-radius: 999px; padding: 2px 9px; font-weight: 700;
+  }
+  .sec-lede { max-width: 72ch; }
+
+  .toc { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 20px 0 0; }
+  .toc a {
+    padding: 10px 13px; border-radius: var(--r-sm); font-size: .88rem; font-weight: 600;
+    background: var(--surface); border: 1px solid var(--line); color: var(--ink-mid);
+    min-height: 44px; display: flex; align-items: center;
+  }
+  .toc a:hover { color: var(--ink); border-color: rgba(110,168,254,.5); text-decoration: none; }
+
+  /* ---- 色彩 ---- */
+  .swatches { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); margin-top: 18px; }
+  .sw { border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--surface); }
+  .sw-chip { height: 62px; display: grid; place-items: center; font: 700 .78rem/1 var(--mono); }
+  .sw-body { padding: 10px 12px; display: grid; gap: 3px; }
+  .sw-name { font: 700 .8rem/1.3 var(--mono); color: var(--ink); }
+  .sw-hex  { font: 600 .74rem/1.3 var(--mono); color: var(--ink-dim); text-transform: uppercase; }
+  .sw-use  { font-size: .78rem; color: var(--ink-mid); }
+
+  .tablewrap { margin-top: 16px; border: 1px solid var(--line); border-radius: var(--r); overflow-x: auto; }
+  table.ds { border-collapse: collapse; width: 100%; min-width: 560px; font-size: .85rem; }
+  table.ds caption { text-align: left; padding: 12px 14px 0; color: var(--ink-mid); font-size: .84rem; }
+  table.ds th, table.ds td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line-soft); }
+  table.ds thead th {
+    font-size: .74rem; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--ink-dim); background: var(--surface-2); font-weight: 800; white-space: nowrap;
+  }
+  table.ds tbody th { font: 700 .8rem/1.4 var(--mono); color: var(--ink); white-space: nowrap; }
+  table.ds tr:last-child td, table.ds tr:last-child th { border-bottom: 0; }
+  .ratio { font: 700 .84rem/1 var(--mono); color: var(--ink); }
+  .verdict {
+    display: inline-block; margin-left: 7px; padding: 1px 7px; border-radius: 999px;
+    font: 800 .68rem/1.6 var(--font); border: 1px solid;
+  }
+  .verdict[data-level="AAA"] { color: var(--sci);    border-color: rgba(74,222,128,.45);  background: rgba(74,222,128,.1); }
+  .verdict[data-level="AA"]  { color: var(--video);  border-color: rgba(34,211,238,.45);  background: rgba(34,211,238,.1); }
+  .verdict[data-level="大字"] { color: var(--warn);   border-color: rgba(251,191,36,.45); background: rgba(251,191,36,.1); }
+  .verdict[data-level="不足"] { color: var(--danger); border-color: rgba(248,113,113,.5);  background: rgba(248,113,113,.1); }
+
+  /* ---- 字号 / 间距 ---- */
+  .typerow {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+    padding: 12px 0; border-bottom: 1px dashed var(--line-soft);
+  }
+  .typerow:last-child { border-bottom: 0; }
+  .typerow .sample { min-width: 0; overflow-wrap: anywhere; }
+  .typerow .meta { flex: none; font: 600 .76rem/1.4 var(--mono); color: var(--ink-dim); text-align: right; }
+
+  .radii { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 18px; }
+  .radius-demo {
+    width: 96px; height: 76px; display: grid; place-items: center; gap: 2px;
+    border: 1px solid var(--line); background: var(--surface-2);
+    font: 700 .72rem/1.3 var(--mono); color: var(--ink-mid); text-align: center;
+  }
+
+  /* ---- 组件展示 ---- */
+  .specimen {
+    margin-top: 16px; border: 1px solid var(--line); border-radius: var(--r);
+    background: rgba(255,255,255,.014); overflow: hidden;
+  }
+  .specimen > figcaption {
+    padding: 9px 14px; border-bottom: 1px solid var(--line-soft); background: var(--surface-2);
+    font: 700 .78rem/1.5 var(--font); color: var(--ink-mid);
+  }
+  .specimen > figcaption code { font-size: .84em; }
+  .specimen-body { padding: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .specimen-body.block { display: grid; gap: 12px; align-items: stretch; }
+
+  .focus-hint {
+    margin-top: 18px; font-size: .86rem; color: var(--ink-mid);
+    border-left: 3px solid var(--phys); background: rgba(167,139,250,.07);
+    padding: 12px 15px; border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  }
+  .focus-hint kbd { font-size: .8em; }
+
+  .rules { display: grid; gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
+  .rules li {
+    padding: 12px 15px 12px 40px; position: relative;
+    border: 1px solid var(--line); border-radius: var(--r);
+    background: var(--surface); color: var(--ink-mid); font-size: .89rem;
+  }
+  .rules li::before {
+    content: "✓"; position: absolute; left: 14px; top: 12px;
+    color: var(--sci); font-weight: 800;
+  }
+  .rules li.no::before { content: "✕"; color: var(--danger); }
+  .rules li b { color: var(--ink); }
+
+  .finding {
+    margin-top: 16px; padding: 14px 16px; border-radius: var(--r);
+    border: 1px solid rgba(251,191,36,.4); background: rgba(251,191,36,.07);
+    font-size: .88rem; color: var(--ink-mid);
+  }
+  .finding b { color: var(--warn); }
+
+  @media (max-width: 640px) {
+    .typerow { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .typerow .meta { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html" aria-current="page">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+
+  <header class="ds-head">
+    <h1>设计系统</h1>
+    <p class="lede">
+      全站唯一的视觉参考页。色彩值、对比度、字号都由本页在浏览器里从
+      <code>assets/css/base.css</code> 实时读取并计算，不是手写进来的数字——改了 base.css，这页跟着变。
+      下面所有组件都是真实 class，不是截图。
+    </p>
+    <nav class="toc" aria-label="本页目录">
+      <a href="#colors">色彩与对比度</a>
+      <a href="#type">字号</a>
+      <a href="#space">圆角与尺度</a>
+      <a href="#components">组件</a>
+      <a href="#playful">童趣层</a>
+      <a href="#a11y">无障碍约定</a>
+    </nav>
+  </header>
+
+  <section class="sec" id="colors">
+    <h2><span class="num">01</span> 色彩与对比度</h2>
+    <p class="sec-lede">
+      学科色在全站是语义化的：同一个颜色永远代表同一个学科，不能拿来做装饰。
+      深色底站点最容易踩的坑是浅灰字对比度不够，所以每个组合都实测。
+    </p>
+
+    <div class="swatches" id="swatches"></div>
+
+    <div class="tablewrap">
+      <table class="ds">
+        <caption>前景色 × 四层背景的实测对比度（WCAG 2.1 相对亮度公式）。正文阈值 AA 4.5、AAA 7.0；大字（≥18.66px 粗体或 ≥24px）阈值 3.0。</caption>
+        <thead>
+          <tr><th scope="col">前景</th><th scope="col">--bg</th><th scope="col">--bg-soft</th><th scope="col">--surface</th><th scope="col">--surface-2</th></tr>
+        </thead>
+        <tbody id="contrastBody">
+          <tr><td colspan="5">对比度需要浏览器计算样式，本表由脚本生成。</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tablewrap">
+      <table class="ds">
+        <caption>实色按钮/药丸上的深色文字（<code>#08101f</code>）。<code>.btn-primary</code> 与 <code>.chip[aria-pressed="true"]</code> 用的就是这一组。</caption>
+        <thead>
+          <tr><th scope="col">底色</th><th scope="col">深色文字对比度</th><th scope="col">示例</th></tr>
+        </thead>
+        <tbody id="solidBody">
+          <tr><td colspan="3">对比度需要浏览器计算样式，本表由脚本生成。</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="finding" id="dimFinding" hidden></div>
+  </section>
+
+  <section class="sec" id="type">
+    <h2><span class="num">02</span> 字号</h2>
+    <p class="sec-lede">
+      标题用 <code>clamp()</code> 随视口缩放，所以右侧的 px 是<b>当前窗口宽度下</b>的实测值，改变窗口大小数字会变。
+      正文行高统一 1.65，中文小字在深色底上不再往下压。
+    </p>
+    <div id="typeScale" class="stack"></div>
+    <div class="finding">
+      <b>已知取舍：</b>站点的字号是按内容需要逐个定的，不是严格的模块化比例（1.125 或 1.25 的等比数列）。
+      好处是每处都合适，代价是新增页面时没有唯一正确答案——照抄这页上最接近的用途即可。
+    </div>
+  </section>
+
+  <section class="sec" id="space">
+    <h2><span class="num">03</span> 圆角与尺度</h2>
+    <p class="sec-lede">圆角是唯一被 token 化的尺度。触控目标统一 44px 最小高度，已经写进 <code>base.css</code> 的 <code>.btn / .chip / .input / input[type=range]</code>。</p>
+    <div class="radii" id="radii"></div>
+    <div class="finding">
+      <b>已知缺口：</b>间距（padding / gap）没有 token，全站是 4 / 8 / 10 / 12 / 14 / 16 / 18 / 24 / 32 / 44 / 64 这些字面值混用。
+      短期不改是为了避免一次性重排全站；新增样式请从这串数里挑，不要引入 13px、21px 这类孤立值。
+    </div>
+  </section>
+
+  <section class="sec" id="components">
+    <h2><span class="num">04</span> 组件</h2>
+    <p class="sec-lede">下面每一个都是活的真实组件。用 <kbd>Tab</kbd> 走一遍就能看到全站统一的焦点环。</p>
+
+    <figure class="specimen">
+      <figcaption>按钮 <code>.btn</code> / <code>.btn-primary</code> / <code>.btn-ghost</code> / <code>.btn-sm</code> / <code>:disabled</code></figcaption>
+      <div class="specimen-body">
+        <button type="button" class="btn">默认按钮</button>
+        <button type="button" class="btn btn-primary">主按钮</button>
+        <button type="button" class="btn btn-ghost">幽灵按钮</button>
+        <button type="button" class="btn btn-sm">小尺寸</button>
+        <button type="button" class="btn" disabled>禁用状态</button>
+      </div>
+    </figure>
+
+    <figure class="specimen">
+      <figcaption>筛选芯片 <code>.chip[aria-pressed]</code>——按下态用背景填充 + <code>aria-pressed</code>，不只靠颜色</figcaption>
+      <div class="specimen-body">
+        <button type="button" class="chip" aria-pressed="true"  data-demo-chip>数学</button>
+        <button type="button" class="chip" aria-pressed="false" data-demo-chip>科学</button>
+        <button type="button" class="chip" aria-pressed="false" data-demo-chip>物理</button>
+        <p class="live-text" id="chipStatus" role="status" style="flex:1 1 100%;margin:0"></p>
+      </div>
+    </figure>
+
+    <figure class="specimen">
+      <figcaption>学科药丸 <code>.pill-*</code>——颜色是语义，文字必须自带含义</figcaption>
+      <div class="specimen-body">
+        <span class="pill pill-math">数学</span>
+        <span class="pill pill-sci">科学</span>
+        <span class="pill pill-phys">物理</span>
+        <span class="pill pill-code">编程</span>
+        <span class="pill pill-kit">动手</span>
+        <span class="pill pill-video">视频</span>
+        <span class="pill pill-free">免费</span>
+        <span class="pill pill-paid">付费</span>
+        <span class="pill pill-mixed">部分免费</span>
+      </div>
+    </figure>
+
+    <figure class="specimen">
+      <figcaption>卡片 <code>.card</code> 与精选态 <code>.card.star</code>（<code>::after</code> 自带「★ 精选」文字）</figcaption>
+      <div class="specimen-body block" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+        <div class="card">
+          <h3 style="margin-bottom:6px">普通卡片</h3>
+          <p style="margin:0;font-size:.88rem">链接型卡片 <code>a.card</code> 悬停会上浮 3px 并高亮描边。</p>
+        </div>
+        <div class="card star">
+          <h3 style="margin-bottom:6px">精选卡片</h3>
+          <p style="margin:0;font-size:.88rem">角标是 CSS 生成的文字，屏幕阅读器读得到。</p>
+        </div>
+      </div>
+    </figure>
+
+    <figure class="specimen">
+      <figcaption>提示条 <code>.note</code> / <code>.note-sci</code> / <code>.note-warn</code></figcaption>
+      <div class="specimen-body block">
+        <p class="note" style="margin:0"><b>默认提示：</b>用来解释「这在教什么」。</p>
+        <p class="note note-sci" style="margin:0"><b>科学提示：</b>用来补充背后的原理。</p>
+        <p class="note note-warn" style="margin:0"><b>注意：</b>用来标注需要家长在场的步骤。</p>
+      </div>
+    </figure>
+
+    <figure class="specimen">
+      <figcaption>表单 <code>.input</code> / <code>select.input</code> / <code>input[type=range]</code>——都有可见 <code>label</code></figcaption>
+      <div class="specimen-body block" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+        <div>
+          <label for="dsText">文本输入</label>
+          <input class="input" id="dsText" type="text" placeholder="搜索资源…" style="margin-top:6px">
+        </div>
+        <div>
+          <label for="dsSelect">下拉选择</label>
+          <select class="input" id="dsSelect" style="margin-top:6px">
+            <option>全部年龄</option><option>4–6 岁</option><option>7–9 岁</option><option>10–12 岁</option>
+          </select>
+        </div>
+        <div>
+          <div class="ctrl-head"><label for="dsRange">滑杆</label><b id="dsRangeOut">50</b></div>
+          <input id="dsRange" type="range" min="0" max="100" value="50">
+        </div>
+      </div>
+    </figure>
+
+    <figure class="specimen">
+      <figcaption>数据展示 <code>.panel</code> + <code>.readout</code> + <code>.bar</code>（实验页右栏用的就是这套）</figcaption>
+      <div class="specimen-body block" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+        <div class="panel">
+          <h3>实时读数</h3>
+          <div class="readout"><span>下落时间</span><b>1.24 s</b></div>
+          <div class="readout"><span>末速度</span><b>12.2 m/s</b></div>
+          <div class="readout"><span>下落高度</span><b>7.5 m</b></div>
+        </div>
+        <div class="panel">
+          <h3>进度条</h3>
+          <p style="font-size:.85rem;margin:0 0 8px">进度必须同时给出文字，不能只有一条彩色的条。</p>
+          <div class="bar"><i style="width:62%"></i></div>
+          <p style="font-size:.82rem;margin:8px 0 0;color:var(--ink-mid)">已探索 <b style="color:var(--ink)">11 / 17</b></p>
+        </div>
+      </div>
+    </figure>
+
+    <figure class="specimen">
+      <figcaption>任务与状态 <code>.task</code> / <code>.task-status[data-complete]</code> / <code>.live-text</code></figcaption>
+      <div class="specimen-body block">
+        <div class="task">
+          <p class="task-title">把三块积木拼成 10</p>
+          <span class="task-status" data-complete="false">◦ 还没完成</span>
+        </div>
+        <div class="task is-complete">
+          <p class="task-title">找出这张图的对称轴</p>
+          <span class="task-status" data-complete="true">✓ 已完成</span>
+        </div>
+      </div>
+    </figure>
+
+    <figure class="specimen">
+      <figcaption>任务地图 <code>.task-map</code> / <code>.task-map-step</code>（未完成 / 当前 / 已完成）</figcaption>
+      <div class="specimen-body block">
+        <div class="task-map">
+          <div class="task-map-step is-complete" data-step="1">先猜一猜哪个先落地</div>
+          <div class="task-map-step is-current" aria-current="step" data-step="2">真的放手试一次</div>
+          <div class="task-map-step" data-step="3">说说为什么和猜的不一样</div>
+        </div>
+      </div>
+    </figure>
+
+    <figure class="specimen">
+      <figcaption>浮层提示 <code>.toast</code>——非阻塞，替代 <code>alert()</code></figcaption>
+      <div class="specimen-body">
+        <button type="button" class="btn" id="toastBtn">演示 toast</button>
+        <span style="font-size:.84rem;color:var(--ink-mid)">全站禁用 <code>alert()</code> 与 <code>confirm()</code>，确认走页内两步操作。</span>
+      </div>
+    </figure>
+
+    <p class="focus-hint">
+      <b>焦点环：</b>由 <code>base.css</code> 的 <code>:focus-visible</code> 统一提供，2px 实线 + 3px 外偏移，
+      用的是当前 <code>--accent</code>。任何组件都不许写 <code>outline: none</code> 而不给替代焦点样式。
+      按 <kbd>Tab</kbd> 从本页顶部走一遍即可核对。
+    </p>
+  </section>
+
+  <section class="sec" id="playful">
+    <h2><span class="num">05</span> 童趣层</h2>
+    <p class="sec-lede">
+      给孩子的那一层。故意<b>不</b>做连胜、排行榜、金币和倒计时——这些会把注意力从「想明白」拉到「别断」。
+      贴纸只标记「你去过、你做完了」，是收藏册而不是计分板。
+    </p>
+
+    <figure class="specimen">
+      <figcaption>探索伙伴 <code>.playful-companion</code>（4 个角色之一，按页面固定分配）</figcaption>
+      <div class="specimen-body block">
+        <div class="playful-companion">
+          <span class="playful-character" aria-hidden="true">🦖</span>
+          <span class="playful-companion-bubble">
+            <strong>阿雷</strong>
+            <span>化石猎人。「先别急着看答案，你猜它有多重？」</span>
+          </span>
+        </div>
+      </div>
+    </figure>
+
+    <figure class="specimen">
+      <figcaption>贴纸 <code>.playful-sticker</code>——未获得是虚线描边，获得后实线加色，两者文字也不同</figcaption>
+      <div class="specimen-body">
+        <span class="playful-sticker">🔍 待解锁：放大镜徽章</span>
+        <span class="playful-sticker" data-earned="true">🏅 已获得：造波达人</span>
+      </div>
+    </figure>
+
+    <figure class="specimen">
+      <figcaption>作品卡 <code>.work-card</code>——孩子的观察、预测、画和解释存在本地</figcaption>
+      <div class="specimen-body block" style="grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">
+        <div class="work-card">
+          <p class="work-card-title">我的预测</p>
+          <p class="work-card-meta">斜坡滚球 · 预测</p>
+          <p class="work-card-content">我觉得重的球会先到底，因为它力气大。</p>
+        </div>
+        <div class="work-card">
+          <p class="work-card-title">试完之后</p>
+          <p class="work-card-meta">斜坡滚球 · 解释</p>
+          <p class="work-card-content">两个几乎一起到！所以重不重不影响，是坡的斜度在管速度。</p>
+        </div>
+      </div>
+    </figure>
+
+    <figure class="specimen">
+      <figcaption>
+        作品表单 <code>.work-card.work-card-form</code>——外壳复用作品卡，内部用
+        <code>.work-card-fields</code> 自动换行、<code>.work-card-status</code> 播报结果。
+        真实页面还会加 <code>data-playful-work-form</code>，由 <code>playful.js</code> 统一接管校验与保存；
+        这里是静态样例，所以按钮是 <code>type="button"</code>。
+      </figcaption>
+      <div class="specimen-body block">
+        <form class="work-card work-card-form">
+          <h4 class="work-card-title">保存我的斜坡发现</h4>
+          <div class="work-card-fields">
+            <div>
+              <label for="dsWorkType">作品类型</label>
+              <select class="input" id="dsWorkType" name="type">
+                <option value="prediction">预测卡</option>
+                <option value="observation">观察记录</option>
+                <option value="explanation">我的解释</option>
+              </select>
+            </div>
+            <div>
+              <label for="dsWorkTitle">作品名称</label>
+              <input class="input" id="dsWorkTitle" name="title" maxlength="80" placeholder="例如：两个球一起到">
+            </div>
+            <div>
+              <label for="dsWorkContent">我的记录</label>
+              <textarea class="input" id="dsWorkContent" name="content" maxlength="4000" placeholder="写下预测、看到的结果，以及和预测不一样的地方。"></textarea>
+            </div>
+            <button class="btn btn-primary btn-sm" type="button">保存作品卡</button>
+          </div>
+          <p class="work-card-status" role="status" aria-live="polite">状态行始终留出一行高度，成功和失败都用文字说明，不只靠颜色。</p>
+        </form>
+      </div>
+    </figure>
+
+    <div class="finding">
+      <b>分龄与动效：</b><code>html[data-playful-age]</code> 只调整提示密度和字号，从不隐藏核心任务——
+      小孩子看到的是同一个实验，不是删减版。用户在足迹页选「减少动效」会写
+      <code>html[data-playful-motion="reduced"]</code>，与系统 <code>prefers-reduced-motion</code> 走同一套降级。
+    </div>
+  </section>
+
+  <section class="sec" id="a11y">
+    <h2><span class="num">06</span> 无障碍约定</h2>
+    <p class="sec-lede">这些不是建议，是 <code>tools/check-contract.mjs</code> 和 <code>tools/verify.mjs</code> 会在真实 Chrome 里逐页检查的硬条件。</p>
+    <ul class="rules">
+      <li>每页恰好一个 <b>h1</b>，一个 <b>main</b> landmark，一条指向本页真实 id 的<b>跳到主要内容</b>链接。</li>
+      <li>固定六项主导航，链接目标固定，<b>aria-current="page"</b> 恰好一个。</li>
+      <li>所有可交互控件必须有<b>可访问名称</b>：文字内容、<code>aria-label</code>、或关联的 <code>label</code>。</li>
+      <li>状态<b>永不只靠颜色</b>：完成态同时给 ✓ 和文字，按下态同时给 <code>aria-pressed</code>。</li>
+      <li>动态变化用 <b>aria-live / role="status"</b> 播报，不静默改 DOM。</li>
+      <li>触控目标最小 <b>44px</b>；键盘可达顺序与视觉顺序一致。</li>
+      <li>尊重 <b>prefers-reduced-motion</b>，并额外提供页内开关。</li>
+      <li class="no">不用 <b>alert() / confirm()</b>——破坏性操作走页内两步确认。</li>
+      <li class="no">不引外部 CDN、字体或 JS 库；全站在 <b>file://</b> 双击即开。</li>
+      <li class="no">不做<b>连胜、排行榜、完成百分比</b>；不要登录，不上传任何数据。</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    本页的色值、对比度与字号均由浏览器实时从 <code>assets/css/base.css</code> 计算得出，因此与线上样式不可能不一致。
+    对比度按 WCAG 2.1 相对亮度公式计算；数值达标不等于整体无障碍达标，键盘与读屏仍需人工走查。
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var root = document.documentElement;
+  var computed = getComputedStyle(root);
+
+  /* --- token 解析：跟随一层层 var() 引用，直到拿到字面色值 --- */
+  function raw(name) { return String(computed.getPropertyValue(name) || "").trim(); }
+  function resolve(name) {
+    var value = raw(name), guard = 0;
+    while (/^var\(/.test(value) && guard++ < 6) {
+      var inner = value.match(/^var\(\s*(--[\w-]+)/);
+      if (!inner) break;
+      value = raw(inner[1]);
+    }
+    return value;
+  }
+
+  function toRgb(value) {
+    var hex = value.replace(/^#/, "");
+    if (/^[0-9a-f]{3}$/i.test(hex)) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    if (/^[0-9a-f]{6}$/i.test(hex)) {
+      return [parseInt(hex.slice(0, 2), 16), parseInt(hex.slice(2, 4), 16), parseInt(hex.slice(4, 6), 16)];
+    }
+    var nums = value.match(/-?[\d.]+/g);
+    return nums && nums.length >= 3 ? [+nums[0], +nums[1], +nums[2]] : null;
+  }
+
+  function luminance(rgb) {
+    var channels = rgb.map(function (c) {
+      c = c / 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+  }
+
+  function contrast(a, b) {
+    var x = toRgb(a), y = toRgb(b);
+    if (!x || !y) return null;
+    var la = luminance(x), lb = luminance(y);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  }
+
+  function verdict(ratio) {
+    if (ratio >= 7) return "AAA";
+    if (ratio >= 4.5) return "AA";
+    if (ratio >= 3) return "大字";
+    return "不足";
+  }
+
+  function cell(ratio) {
+    var td = document.createElement("td");
+    if (ratio === null) { td.textContent = "—"; return td; }
+    var number = document.createElement("span");
+    number.className = "ratio";
+    number.textContent = ratio.toFixed(2);
+    var tag = document.createElement("span");
+    tag.className = "verdict";
+    var level = verdict(ratio);
+    tag.setAttribute("data-level", level);
+    tag.textContent = level;
+    td.appendChild(number);
+    td.appendChild(tag);
+    return td;
+  }
+
+  var BACKGROUNDS = [
+    { token: "--bg", label: "--bg" },
+    { token: "--bg-soft", label: "--bg-soft" },
+    { token: "--surface", label: "--surface" },
+    { token: "--surface-2", label: "--surface-2" }
+  ];
+
+  var FOREGROUNDS = [
+    { token: "--ink",     use: "正文与标题" },
+    { token: "--ink-mid", use: "次级正文、说明文字" },
+    { token: "--ink-dim", use: "元信息、占位符、页脚" },
+    { token: "--math",    use: "数学 · 也是默认 accent" },
+    { token: "--sci",     use: "科学 · 完成态" },
+    { token: "--phys",    use: "物理" },
+    { token: "--code",    use: "编程" },
+    { token: "--kit",     use: "动手" },
+    { token: "--video",   use: "视频" },
+    { token: "--warn",    use: "注意、精选角标" },
+    { token: "--danger",  use: "危险操作、错误" }
+  ];
+
+  /* --- 色卡 --- */
+  var swatches = document.getElementById("swatches");
+  var surfaceTokens = BACKGROUNDS.concat([{ token: "--line", label: "--line" }]);
+  surfaceTokens.concat(FOREGROUNDS).forEach(function (item) {
+    var value = resolve(item.token);
+    if (!value) return;
+    var box = document.createElement("div");
+    box.className = "sw";
+
+    var chip = document.createElement("div");
+    chip.className = "sw-chip";
+    chip.style.background = value;
+    var onDark = contrast(value, "#0b0f1a");
+    chip.style.color = onDark !== null && onDark > 4 ? "#08101f" : "#eef2ff";
+    chip.textContent = "Aa 示例";
+
+    var body = document.createElement("div");
+    body.className = "sw-body";
+    var name = document.createElement("div");
+    name.className = "sw-name";
+    name.textContent = item.token;
+    var hex = document.createElement("div");
+    hex.className = "sw-hex";
+    hex.textContent = value;
+    body.appendChild(name);
+    body.appendChild(hex);
+    if (item.use) {
+      var use = document.createElement("div");
+      use.className = "sw-use";
+      use.textContent = item.use;
+      body.appendChild(use);
+    }
+
+    box.appendChild(chip);
+    box.appendChild(body);
+    swatches.appendChild(box);
+  });
+
+  /* --- 对比度矩阵 --- */
+  var body = document.getElementById("contrastBody");
+  body.textContent = "";
+  var weakest = null;
+  FOREGROUNDS.forEach(function (fg) {
+    var value = resolve(fg.token);
+    var tr = document.createElement("tr");
+    var th = document.createElement("th");
+    th.scope = "row";
+    th.textContent = fg.token;
+    tr.appendChild(th);
+    BACKGROUNDS.forEach(function (bg) {
+      var ratio = contrast(value, resolve(bg.token));
+      tr.appendChild(cell(ratio));
+      if (ratio !== null && ratio < 4.5 && (!weakest || ratio < weakest.ratio)) {
+        weakest = { ratio: ratio, fg: fg.token, bg: bg.token };
+      }
+    });
+    body.appendChild(tr);
+  });
+
+  /* --- 实色底 + 深色字 --- */
+  var solid = document.getElementById("solidBody");
+  solid.textContent = "";
+  ["--math", "--sci", "--phys", "--code", "--kit", "--video", "--warn"].forEach(function (token) {
+    var value = resolve(token);
+    var tr = document.createElement("tr");
+    var th = document.createElement("th");
+    th.scope = "row";
+    th.textContent = token;
+    tr.appendChild(th);
+    tr.appendChild(cell(contrast(value, "#08101f")));
+    var demo = document.createElement("td");
+    var pill = document.createElement("span");
+    pill.className = "pill";
+    pill.style.background = value;
+    pill.style.color = "#08101f";
+    pill.style.borderColor = "transparent";
+    pill.textContent = "按下态";
+    demo.appendChild(pill);
+    tr.appendChild(demo);
+    solid.appendChild(tr);
+  });
+
+  /* --- 把实测出的最弱组合如实写出来，而不是假装全部达标 --- */
+  var finding = document.getElementById("dimFinding");
+  if (weakest) {
+    finding.hidden = false;
+    finding.innerHTML = "<b>矩阵中最弱的组合：</b><code>" + weakest.fg + "</code> 压在 <code>" +
+      weakest.bg + "</code> 上只有 " + weakest.ratio.toFixed(2) +
+      "，低于正文 AA 的 4.5。这是<b>理论组合，本站目前没有任何元素这样搭配</b>——" +
+      "<code>--surface-2</code> 上的文字一律是 <code>--ink</code> 或 <code>--ink-mid</code>。" +
+      "列在这里是为了防止将来误用：真要用，只能用于大字（≥18.66px 粗体或 ≥24px，阈值 3.0），" +
+      "正文与小字改用 <code>--ink-mid</code>。";
+  }
+
+  /* --- 真正贴线的地方：实际在用、余量却很小的组合 --- */
+  var tight = document.getElementById("tightFinding");
+  if (tight) {
+    var dimOnSurface = contrast(resolve("--ink-dim"), resolve("--surface"));
+    if (dimOnSurface !== null) {
+      tight.hidden = false;
+      tight.innerHTML = "<b>余量提示：</b><code>--ink-dim</code> 压在 <code>--surface</code> 上实测 " +
+        dimOnSurface.toFixed(2) + "，达标但只比 AA 的 4.5 高出 " + (dimOnSurface - 4.5).toFixed(2) +
+        "。<code>.readout span</code>、<code>.task-status</code>、<code>.playful-sticker</code>、" +
+        "<code>.work-card-meta</code> 都落在这个组合上，其中 <code>.work-card-meta</code> 只有 0.76rem。" +
+        "调亮 <code>--surface</code> 或给这些元素换更亮的底色，都会让它跌破 4.5。";
+    }
+  }
+
+  /* --- 字号：读真实元素的计算值 --- */
+  var TYPE = [
+    { tag: "h1",   text: "一级标题 · 页面只有一个",       style: "" },
+    { tag: "h2",   text: "二级标题 · 章节",               style: "" },
+    { tag: "h3",   text: "三级标题 · 卡片与面板",         style: "" },
+    { tag: "p",    text: "正文 1rem · 行高 1.65，中文长句在深色底上也不挤。", style: "" },
+    { tag: "p",    text: "说明文字 0.89rem · 提示条与卡片描述",  style: "font-size:.89rem" },
+    { tag: "p",    text: "次级说明 0.85rem · 页脚与表格",        style: "font-size:.85rem" },
+    { tag: "p",    text: "元信息 0.76rem · 作品卡时间戳",        style: "font-size:.76rem;color:var(--ink-dim)" },
+    { tag: "p",    text: "药丸 0.7rem · 标签，不参与正文阈值",   style: "font-size:.7rem;font-weight:700" }
+  ];
+  var scale = document.getElementById("typeScale");
+  TYPE.forEach(function (item) {
+    var row = document.createElement("div");
+    row.className = "typerow";
+    var sample = document.createElement("div");
+    sample.className = "sample";
+    var el = document.createElement(item.tag);
+    el.style.cssText = "margin:0;" + item.style;
+    el.textContent = item.text;
+    sample.appendChild(el);
+    var meta = document.createElement("div");
+    meta.className = "meta";
+    row.appendChild(sample);
+    row.appendChild(meta);
+    scale.appendChild(row);
+    var size = getComputedStyle(el);
+    meta.textContent = item.tag + " · " + Math.round(parseFloat(size.fontSize) * 10) / 10 + "px · 行高 " +
+      (Math.round(parseFloat(size.lineHeight) * 10) / 10 || "—") + "px";
+  });
+
+  /* --- 圆角 --- */
+  var radii = document.getElementById("radii");
+  [["--r-sm", "小：提示条、目录项"], ["--r", "标准：卡片、按钮组"], ["--r-lg", "大：面板、舞台"], ["--r-xl", "特大：整块容器"]].forEach(function (pair) {
+    var value = resolve(pair[0]);
+    var box = document.createElement("div");
+    box.className = "radius-demo";
+    box.style.borderRadius = value;
+    var name = document.createElement("b");
+    name.textContent = pair[0];
+    var size = document.createElement("span");
+    size.textContent = value;
+    box.appendChild(name);
+    box.appendChild(size);
+    box.title = pair[1];
+    radii.appendChild(box);
+  });
+
+  /* --- 芯片按下态演示 --- */
+  var status = document.getElementById("chipStatus");
+  var chips = [].slice.call(document.querySelectorAll("[data-demo-chip]"));
+  chips.forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      var next = chip.getAttribute("aria-pressed") !== "true";
+      chip.setAttribute("aria-pressed", String(next));
+      var on = chips.filter(function (c) { return c.getAttribute("aria-pressed") === "true"; })
+        .map(function (c) { return c.textContent; });
+      status.textContent = on.length ? "已选：" + on.join("、") : "未选择任何筛选条件";
+    });
+  });
+
+  /* --- 滑杆读数 --- */
+  var range = document.getElementById("dsRange");
+  var out = document.getElementById("dsRangeOut");
+  range.addEventListener("input", function () { out.textContent = range.value; });
+
+  /* --- toast 演示 --- */
+  var toast = document.createElement("div");
+  toast.className = "toast";
+  toast.setAttribute("role", "status");
+  document.body.appendChild(toast);
+  var timer = null;
+  document.getElementById("toastBtn").addEventListener("click", function () {
+    toast.textContent = "✓ 这就是全站的成功提示";
+    toast.classList.add("on");
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(function () { toast.classList.remove("on"); }, 2200);
+  });
+})();
+</script>
+<script src="../assets/js/pwa.js"></script>
+</body>
+</html>

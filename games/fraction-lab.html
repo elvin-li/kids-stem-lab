@@ -6,6 +6,11 @@
 <title>分数实验室 · 面积与数轴上的分数 — 少儿数理启蒙</title>
 <meta name="description" content="把分数同时看成「一块面积」和「数轴上的一个点」：自由切分 2–12 份、涂色、比较大小、发现等值分数，并用公分母图形做分数加法。">
 <link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .head-pills { margin-bottom: 14px; }
   .teach { font-size: 1.02rem; color: var(--ink-mid); max-width: 62ch; }
@@ -92,18 +97,41 @@
   ul.plain { padding-left: 1.15rem; }
   ul.plain li { margin-bottom: .5em; color: var(--ink-mid); }
   .why-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+  .mission { margin: 20px 0 22px; }
+  .mission ol { margin: 8px 0 14px; padding-left: 1.3rem; color: var(--ink-mid); }
+  .mission-grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); align-items:end; }
+  .mission textarea { min-height:72px; resize:vertical; }
+
+  .playful-quest {
+    margin-top: 16px; padding: 16px; overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--quest-accent, var(--math)) 45%, var(--line));
+    border-radius: var(--r-lg); background:
+      radial-gradient(circle at 100% 0, color-mix(in srgb, var(--quest-accent, var(--math)) 18%, transparent) 0 22%, transparent 23%),
+      linear-gradient(135deg, var(--surface-2), var(--surface));
+  }
+  .playful-quest h3, .playful-quest h4 { margin: 0; }
+  .playful-quest-head { display:grid; gap:12px; grid-template-columns:minmax(0,1fr) auto; align-items:start; }
+  .playful-story { margin:7px 0 0; max-width:62ch; color:var(--ink-mid); }
+  .playful-tools { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  .playful-task-output { min-height:1.6em; margin:0; color:var(--ink); font-weight:700; }
+  .playful-evidence { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  @media (max-width:620px) { .playful-quest-head { grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+  }
 </style>
 </head>
-<body>
+<body data-playful-page="games/fraction-lab.html">
 <a class="skip-link" href="#main">跳到主要内容</a>
 
 <nav class="nav"><div class="nav-in wrap">
   <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
-  <div class="row">
+  <div class="row" aria-label="主导航">
     <a class="nav-link" href="../index.html">资源库</a>
     <a class="nav-link" href="../pages/paths.html">学习路径</a>
     <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
     <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
   </div>
 </div></nav>
@@ -123,6 +151,48 @@
     也是<b>数轴上的一个点</b>。把同一个分数放在这两个画面里同时看，
     孩子才会懂为什么 <code>2/4</code> 和 <code>1/2</code> 是同一个数。
   </p>
+
+  <section class="task mission" aria-labelledby="fractionMissionTitle">
+    <h2 class="task-title" id="fractionMissionTitle">任务：先预测，再用面积图和数轴检验</h2>
+    <ol>
+      <li><b>预测：</b>判断 1/2 与 2/4 是否等值，并判断 7/4 在数轴哪一段。</li>
+      <li><b>操作：</b>加载两项挑战，观察涂色、公分母和数轴位置。</li>
+      <li><b>结果：</b>页面会说明预测是否与图形证据一致。</li>
+      <li><b>反思：</b>写下“同一个点为什么能有不同分数名字”。</li>
+    </ol>
+    <div class="mission-grid">
+      <div><label for="eqPredict">我预测 1/2 与 2/4</label><select class="input" id="eqPredict"><option value="">请选择</option><option value="eq">一样大</option><option value="neq">不一样大</option></select><button class="btn btn-sm" id="eqChallenge" type="button" style="margin-top:6px">操作并检验等值</button></div>
+      <div><label for="improperPredict">我预测 7/4 在数轴上</label><select class="input" id="improperPredict"><option value="">请选择</option><option value="under">0 到 1 之间</option><option value="between">1 到 2 之间</option><option value="over">2 的右边</option></select><button class="btn btn-sm" id="improperChallenge" type="button" style="margin-top:6px">操作并检验假分数</button></div>
+      <div><label for="fractionReflect">我的反思</label><textarea class="input" id="fractionReflect" placeholder="例如：切法不同，但涂色量和数轴位置相同。"></textarea></div>
+      <button class="btn btn-primary" id="fractionComplete" type="button" disabled>记录任务完成</button>
+    </div>
+    <p class="task-status status" id="fractionMissionStatus" role="status" aria-live="polite">尚未完成：请先做等值预测。</p>
+      <div class="playful-quest" style="--quest-accent:var(--kit)" aria-labelledby="fractionStoryTitle">
+      <div class="playful-quest-head">
+        <div><h3 id="fractionStoryTitle">公平点心铺的证据盘</h3><p class="playful-story">果果只相信看得见的证据：面积一样多、数轴站在同一点，才算找到等值分数。</p></div>
+        <div data-playful-companion role="note" aria-label="果果伙伴提示"></div>
+      </div>
+      <div class="playful-tools">
+        <button class="btn btn-sm" type="button" data-playful-random-task="#fractionSurprise">再抽一张重复挑战</button>
+        <p class="playful-task-output" id="fractionSurprise" data-playful-task-output role="status" aria-live="polite">完成后再抽一题，用新的图形重复验证。</p>
+      </div>
+      <div class="playful-evidence" aria-label="分数挑战证据">
+        <span data-playful-sticker aria-label="分数实验证据贴纸位"></span>
+        <span data-playful-feedback aria-live="polite"></span>
+      </div>
+      <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="fractionWorkTitle">
+        <h4 class="work-card-title" id="fractionWorkTitle">把这盘证据存进点心铺</h4>
+        <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+        <div class="work-card-fields">
+          <div><label for="fractionWorkType">作品类型</label><select class="input" id="fractionWorkType" name="type"><option value="explanation">我的解释</option><option value="observation">观察记录</option><option value="drawing">发现画</option></select></div>
+          <div><label for="fractionWorkName">证据名称</label><input class="input" id="fractionWorkName" name="title" required maxlength="80" placeholder="例如：2/4 和 1/2 站同一点"></div>
+          <div><label for="fractionWorkContent">面积与数轴两种证据</label><textarea class="input" id="fractionWorkContent" name="content" required maxlength="4000" placeholder="写下涂色部分一样多吗、两个分数落在数轴哪个位置，以及切法不同为什么还相等。"></textarea></div>
+          <button class="btn btn-primary btn-sm" type="submit">保存证据盘</button>
+        </div>
+        <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和证据后即可保存。</p>
+      </form>
+    </div>
+  </section>
 
   <div class="lab" style="margin-top:22px">
 
@@ -146,7 +216,7 @@
             </span>
           </div>
           <div class="cell-canvas">
-            <canvas id="cvA" role="img" aria-label="分数 A 的面积图"></canvas>
+            <canvas id="cvA" role="slider" tabindex="0" aria-label="分数 A 涂色份数" aria-valuemin="0" aria-valuemax="2" aria-valuenow="1" aria-valuetext="2 份里涂了 1 份">分数 A：2 份里涂了 1 份。使用方向键调整涂色份数。</canvas>
           </div>
           <div class="mini-row">
             <button class="btn btn-sm" type="button" id="aMinus" aria-label="分数 A 减少一份">− 一份</button>
@@ -163,7 +233,7 @@
             </span>
           </div>
           <div class="cell-canvas">
-            <canvas id="cvB" role="img" aria-label="分数 B 的面积图"></canvas>
+            <canvas id="cvB" role="slider" tabindex="0" aria-label="分数 B 涂色份数" aria-valuemin="0" aria-valuemax="4" aria-valuenow="2" aria-valuetext="4 份里涂了 2 份">分数 B：4 份里涂了 2 份。使用方向键调整涂色份数。</canvas>
           </div>
           <div class="mini-row">
             <button class="btn btn-sm" type="button" id="bMinus" aria-label="分数 B 减少一份">− 一份</button>
@@ -176,13 +246,13 @@
       <!-- 数轴 -->
       <div class="block">
         <div class="sub-label">同一个分数在数轴上 number line</div>
-        <canvas id="cvLine" role="img" aria-label="数轴：分数 A 与 分数 B 的位置"></canvas>
+        <canvas id="cvLine" aria-label="数轴：分数 A 与分数 B 的位置">数轴文字说明：分数 A 与分数 B 的位置会随操作更新。</canvas>
       </div>
 
       <!-- 公分母 / 加法 -->
       <div class="block" id="commonBlock">
         <div class="sub-label" id="commonTitle">切成一样大：公分母 common denominator</div>
-        <canvas id="cvCommon" role="img" aria-label="公分母对照图"></canvas>
+        <canvas id="cvCommon" aria-label="公分母对照图">公分母文字说明：A、B 换成同样大小的份后进行比较或相加。</canvas>
       </div>
 
       <!-- 结论 -->
@@ -377,7 +447,8 @@
     revealed: true,
     guess: null,
     score: 0,
-    asked: 0
+    asked: 0,
+    mission: { eq: false, improper: false, results: [] }
   };
 
   var el = {};
@@ -385,7 +456,8 @@
    'denA','denB','denAOut','denBOut','shapeSel','swap','reset','mCompare','mAdd',
    'vMain','vSub','verdict','commonTitle','commonBlock','roA','roB','roSimp','roLcm',
    'roSum','roSumRow','newQ','reveal','guessBtns','score','asked','toast','live',
-   'aPlus','aMinus','bPlus','bMinus'].forEach(function (id) {
+   'aPlus','aMinus','bPlus','bMinus','eqPredict','eqChallenge','improperPredict',
+   'improperChallenge','fractionReflect','fractionComplete','fractionMissionStatus'].forEach(function (id) {
     el[id] = document.getElementById(id);
   });
 
@@ -919,6 +991,47 @@
     });
   });
 
+  function updateFractionMission(message) {
+    if (message) S.mission.results.push(message);
+    var done = [];
+    if (S.mission.eq) done.push('等值分数');
+    if (S.mission.improper) done.push('假分数数轴');
+    el.fractionMissionStatus.textContent = (done.length ? '已验证：' + done.join('、') + '。' : '尚未验证挑战。') +
+      (message ? ' 最近结果：' + message : '');
+    el.fractionComplete.disabled = !(S.mission.eq && S.mission.improper);
+  }
+
+  el.eqChallenge.addEventListener('click', function () {
+    var prediction = el.eqPredict.value;
+    if (!prediction) { say('请先预测两个分数是否一样大'); el.eqPredict.focus(); return; }
+    setMode('compare');
+    S.a = { n: 1, d: 2 }; S.b = { n: 2, d: 4 }; S.revealed = true; render();
+    var ok = prediction === 'eq';
+    if (ok) S.mission.eq = true;
+    var msg = '1/2 与 2/4 在数轴同一点，最简形式都是 1/2；预测' + (ok ? '正确。' : '需要修正。');
+    updateFractionMission(msg); say(msg);
+  });
+
+  el.improperChallenge.addEventListener('click', function () {
+    var prediction = el.improperPredict.value;
+    if (!prediction) { say('请先预测七分之四的位置'); el.improperPredict.focus(); return; }
+    setMode('add');
+    S.a = { n: 3, d: 4 }; S.b = { n: 4, d: 4 }; S.revealed = true; render();
+    var ok = prediction === 'between';
+    if (ok) S.mission.improper = true;
+    var msg = '3/4 + 4/4 = 7/4 = 1 又 3/4，所以在 1 与 2 之间；预测' + (ok ? '正确。' : '需要修正。');
+    updateFractionMission(msg); say(msg);
+  });
+
+  el.fractionComplete.addEventListener('click', function () {
+    var reflection = el.fractionReflect.value.trim();
+    if (!reflection) { say('请先写一句反思'); el.fractionReflect.focus(); return; }
+    var evidence = '验证 1/2=2/4，并在数轴定位 7/4=1又3/4。反思：' + reflection;
+    var saved = window.Progress && Progress.complete('games/fraction-lab.html', evidence);
+    el.fractionMissionStatus.textContent = saved ? '✓ 任务已完成并记录：' + evidence : '✓ 任务已完成；本机存储不可用，未能保存足迹。';
+    say(el.fractionMissionStatus.textContent);
+  });
+
   // 画布点击涂色
   bindPaint(el.cvA, 'a');
   bindPaint(el.cvB, 'b');
@@ -939,5 +1052,11 @@
   render();
 })();
 </script>
+<script src="../data/explorations.js"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../data/playful.js"></script>
+<script src="../assets/js/playful.js"></script>
+<script>if (window.Progress) Progress.visit("games/fraction-lab.html", "分数实验台");</script>
+<script src="../assets/js/pwa.js"></script>
 </body>
 </html>

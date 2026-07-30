@@ -6,7 +6,11 @@
 <title>如何评估一个 STEM 项目 | 少儿数理启蒙</title>
 <meta name="description" content="诚实地讲：好的少儿数理项目和平庸的差在哪里——深度而非速度、推理而非记忆、真动手；以及常见营销话术、免费与付费的真实差距、「超前」到底该指什么。" />
 <link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/kid.css">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .hero-head { padding: 44px 0 4px; }
   .lede { font-size: 1.05rem; max-width: 68ch; }
@@ -113,6 +117,14 @@
   .honest h3 { font-size: 1rem; color: var(--ink); }
   .honest p { font-size: .92rem; margin-bottom: .7em; }
   .honest p:last-child { margin-bottom: 0; }
+  .evaluator { margin:26px 0 8px; padding:20px; }
+  .score-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:12px; }
+  .score-item { padding:12px; border:1px solid var(--line-soft); border-radius:var(--r-sm); background:var(--surface-2); }
+  .score-item label { display:flex; justify-content:space-between; gap:10px; color:var(--ink); font-weight:700; }
+  .score-item input { width:100%; margin-top:10px; }
+  .risk-box { margin-top:14px; padding:14px; border-left:3px solid var(--warn); background:color-mix(in oklab,var(--warn) 7%,var(--surface)); }
+  .risk-box strong { display:block; font-size:1.05rem; }
+  @media print { body.print-eval .nav, body.print-eval .foot, body.print-eval main > :not(.evaluator), body.print-eval .hero-head { display:none!important; } body.print-eval .evaluator { margin:0; border:0; box-shadow:none; } }
 </style>
 </head>
 <body>
@@ -121,11 +133,12 @@
 
 <nav class="nav"><div class="nav-in wrap">
   <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
-  <div class="row">
-    <a class="nav-link" href="../index.html">资源库</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html" aria-current="page">资源库</a>
     <a class="nav-link" href="../pages/paths.html">学习路径</a>
     <a class="nav-link" href="../games/index.html">互动实验</a>
     <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
   </div>
 </div></nav>
@@ -152,6 +165,22 @@
       <a href="#honest">⑥ 我们不确定的部分</a>
     </nav>
   </header>
+
+  <section class="card evaluator" aria-labelledby="evalTitle">
+    <h2 id="evalTitle">交互项目评估量表</h2>
+    <p>根据实际试用打 0–3 分：0 表示完全没有，3 表示表现稳定。总分只是筛查信号，下面会解释具体风险，不代替孩子的真实体验。</p>
+    <div class="score-grid" id="scoreGrid">
+      <div class="score-item"><label for="depthScore">概念深度 <output id="depthValue">1</output></label><input id="depthScore" name="depth" type="range" min="0" max="3" value="1"></div>
+      <div class="score-item"><label for="reasonScore">解释与推理 <output id="reasonValue">1</output></label><input id="reasonScore" name="reasoning" type="range" min="0" max="3" value="1"></div>
+      <div class="score-item"><label for="errorScore">如何处理错误 <output id="errorValue">1</output></label><input id="errorScore" name="errorHandling" type="range" min="0" max="3" value="1"></div>
+      <div class="score-item"><label for="choiceScore">孩子有选择权 <output id="choiceValue">1</output></label><input id="choiceScore" name="choice" type="range" min="0" max="3" value="1"></div>
+      <div class="score-item"><label for="evidenceScore">学习证据可见 <output id="evidenceValue">1</output></label><input id="evidenceScore" name="evidence" type="range" min="0" max="3" value="1"></div>
+      <div class="score-item"><label for="rewardScore">不依赖奖励循环 <output id="rewardValue">1</output></label><input id="rewardScore" name="rewardIndependence" type="range" min="0" max="3" value="1"></div>
+      <div class="score-item"><label for="playScore">童趣是否服务理解 <output id="playValue">1</output></label><input id="playScore" name="playForUnderstanding" type="range" min="0" max="3" value="1"></div>
+    </div>
+    <div class="risk-box" id="riskBox" role="status" aria-live="polite"></div>
+    <div class="row no-print" style="margin-top:12px"><button class="btn" type="button" id="exportEval">导出文本</button><button class="btn btn-ghost" type="button" id="printEval">打印评估</button><span id="exportMsg" role="status" aria-live="polite"></span></div>
+  </section>
 
   <!-- ============ 1 ============ -->
   <section class="sec" id="what">
@@ -202,6 +231,11 @@
         <div class="clabel">激励设计</div>
         <div class="cgood">成就感来自「想通了」；进度和内容一致</div>
         <div class="cbad">连胜、金币、动画奖励；孩子记得徽章不记得内容</div>
+      </div>
+      <div class="crow">
+        <div class="clabel">童趣的作用</div>
+        <div class="cgood">伙伴提示孩子先猜、观察、记录和解释；装饰退场后，任务仍然成立</div>
+        <div class="cbad">角色只负责催促点击，反馈与孩子是否理解、是否留下证据无关</div>
       </div>
       <div class="crow">
         <div class="clabel">对家长的态度</div>
@@ -445,5 +479,12 @@
   </div>
 </footer>
 
+<script>
+(function(){"use strict";var fields=["depth","reason","error","choice","evidence","reward","play"],names={depth:"概念深度",reason:"解释与推理",error:"错误处理",choice:"选择权",evidence:"学习证据",reward:"奖励独立性",play:"童趣服务理解"},box=document.getElementById("riskBox");
+function values(){var o={};fields.forEach(function(k){o[k]=Number(document.getElementById(k+"Score").value);document.getElementById(k+"Value").textContent=o[k];});return o;}
+function assess(){var v=values(),sum=fields.reduce(function(n,k){return n+v[k];},0),weak=fields.filter(function(k){return v[k]<=1;}).map(function(k){return names[k];}),level=sum>=18?"低风险：值得继续试用":sum>=12?"中等风险：带着问题继续观察":"高风险：先暂停购买或续费";box.textContent="总分 "+sum+" / 21 · "+level+"。各项："+fields.map(function(k){return names[k]+" "+v[k]+"/3";}).join("，")+"。"+(weak.length?"需重点核查："+weak.join("、")+"。":"六项都没有明显短板。")+(v.reward<=1?" 奖励独立性低，孩子可能在追逐连胜而不是理解。":"")+(v.error<=1?" 错误处理弱，反复重做同类题可能掩盖误解。":"")+(v.play<=1?" 童趣与理解脱节，建议检查角色、贴纸或动画是否真的推动了预测、观察、记录和解释。":"");return{values:v,total:sum,text:box.textContent};}
+document.querySelectorAll("#scoreGrid input").forEach(function(x){x.addEventListener("input",assess);});document.getElementById("exportEval").addEventListener("click",function(){var a=assess(),lines=["STEM 项目评估","日期："+new Date().toLocaleString(),""];fields.forEach(function(k){lines.push(names[k]+"："+a.values[k]+" / 3");});lines.push("",a.text);var b=new Blob([lines.join("\n")],{type:"text/plain;charset=utf-8"}),u=URL.createObjectURL(b),link=document.createElement("a");link.href=u;link.download="STEM项目评估.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(function(){URL.revokeObjectURL(u);},0);document.getElementById("exportMsg").textContent="评估已导出";});document.getElementById("printEval").addEventListener("click",function(){document.body.classList.add("print-eval");window.print();});window.addEventListener("afterprint",function(){document.body.classList.remove("print-eval");});assess();})();
+</script>
+<script src="../assets/js/pwa.js"></script>
 </body>
 </html>

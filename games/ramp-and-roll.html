@@ -6,6 +6,11 @@
 <title>斜坡滚球 · 能量去哪了 | 少儿数理启蒙</title>
 <meta name="description" content="调节斜坡角度、摩擦和球的质量，用实时能量柱看势能怎么变成动能、又怎么被摩擦变成热。还能先猜球停在哪里。" />
 <link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .lab-head { margin: 24px 0 18px; }
   .lab-head p.lead { font-size: 1.02rem; max-width: 62ch; }
@@ -21,19 +26,29 @@
   .qlist li { margin-bottom: .5em; }
   .qlist b { color: var(--ink); }
   .why h3 { margin-top: 1.1em; }
-  .score { font-family: var(--mono); font-weight: 700; }
+  .task-fields { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:end; }
+  .playful-story { display:grid; gap:12px; margin-bottom:18px; }
+  .playful-story-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .playful-story h2 { font-size:1.12rem; margin:0 0 4px; }
+  .playful-story p { margin:0; }
+  .playful-story-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .playful-story [data-playful-task-output] { color:var(--ink-mid); min-height:1.5em; }
+  .fair-card { margin-top:14px; }
+  .fair-card textarea { min-height:120px; resize:vertical; }
+  @media (max-width:680px) { .task-fields { grid-template-columns:1fr; } }
 </style>
 </head>
-<body>
+<body data-playful-page="games/ramp-and-roll.html">
 <a class="skip-link" href="#stage">跳到实验画面</a>
 
 <nav class="nav"><div class="nav-in wrap">
   <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
-  <div class="row">
+  <div class="row" aria-label="主导航">
     <a class="nav-link" href="../index.html">资源库</a>
     <a class="nav-link" href="../pages/paths.html">学习路径</a>
     <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
     <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
   </div>
 </div></nav>
@@ -49,6 +64,34 @@
     <h1>球从斜坡滚下来，能量去哪了？</h1>
     <p class="lead">这在教什么：<b>能量不会消失，只会换形式</b>。高处的势能变成滚动的动能，摩擦又把动能变成热。三根柱子加起来永远是同一个数。</p>
   </header>
+
+  <section class="card playful-story" aria-labelledby="rampStoryTitle">
+    <div data-playful-companion></div>
+    <div class="playful-story-head">
+      <div><h2 id="rampStoryTitle">山坡试车场：测试新轮胎</h2><p>你是试车工程师。每次只换一项条件，让两轮测试公平可比，再把结果保存成实验卡交给设计组。</p></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="playful-story-actions">
+      <button class="btn btn-sm" id="rampSurpriseBtn" type="button" data-playful-random-task="#rampSurprise">抽取试车惊喜任务</button>
+      <p id="rampSurprise" data-playful-task-output>测试跑道已清空，抽一项额外试车要求吧。</p>
+    </div>
+    <p id="rampPlayfulFeedback" data-playful-feedback></p>
+  </section>
+
+  <section class="task" aria-labelledby="rampTaskTitle">
+    <h2 class="task-title" id="rampTaskTitle">任务：做一次公平的斜坡实验</h2>
+    <ol>
+      <li><b>预测：</b>用“预测停止位置”放好旗子，说出球会停在哪里。</li>
+      <li><b>操作：</b>完成第一轮后，只改变角度、高度、摩擦或质量中的一项，再预测并运行第二轮。</li>
+      <li><b>结果：</b>比较两轮实际停止位置和预测误差，确认其余条件相同。</li>
+      <li><b>反思：</b>写下改变的变量怎样影响结果，再保存完成证据。</li>
+    </ol>
+    <div class="task-fields">
+      <div><label for="rampReflection">我的反思</label><textarea class="input" id="rampReflection" rows="2" placeholder="例如：只把质量加倍，停止距离几乎没变，因为质量在等式两边抵消。"></textarea></div>
+      <button class="btn btn-primary" id="rampComplete" type="button" disabled>记录任务完成</button>
+    </div>
+    <p class="task-status status" id="rampTaskStatus" role="status" aria-live="polite">尚未完成：需要两轮锁定预测的实验，且两轮只能改变一个变量。</p>
+  </section>
 
   <div class="lab">
     <div class="lab-stage" id="stage">
@@ -131,8 +174,18 @@
           <button class="btn" id="check" type="button">锁定预测并开跑</button>
         </div>
         <div class="readout" style="margin-top:8px"><span>实际停止</span><b id="actV">—</b></div>
-        <div class="readout"><span>误差</span><b id="errV" class="score">—</b></div>
-        <div class="readout"><span>连对</span><b id="streakV" class="score">0</b></div>
+        <div class="readout"><span>预测误差</span><b id="errV" class="mono">—</b></div>
+        <h4 style="margin:14px 0 6px">公平实验比较</h4>
+        <p class="hint" id="fairResult" role="status" aria-live="polite">完成两轮“锁定预测并开跑”，这里会检查是否只改变一个变量。</p>
+        <form class="work-card fair-card" id="rampFairCardForm" data-playful-work-form>
+          <input type="hidden" name="type" value="observation">
+          <label for="rampFairCardTitle">公平实验卡名称</label>
+          <input class="input" id="rampFairCardTitle" name="title" value="斜坡试车场公平实验卡" maxlength="80" required>
+          <label for="rampFairCardContent">两轮条件与结果快照</label>
+          <textarea class="input" id="rampFairCardContent" name="content" rows="6" readonly>完成一组公平比较后，这里会生成实验快照。</textarea>
+          <button class="btn btn-primary btn-sm" id="rampFairCardSave" type="submit" disabled>保存公平实验卡</button>
+          <p class="hint" data-playful-work-status role="status" aria-live="polite"></p>
+        </form>
       </div>
     </div>
   </div>
@@ -193,7 +246,8 @@
     d: 0,                  // 平地上走过的距离
     v: 0, t: 0, heat: 0, spin: 0,
     stopAt: null,
-    pred: 1.5, predLocked: false, streak: 0
+    pred: 1.5, predLocked: false,
+    trials: []
   };
 
   function rad(a) { return a * Math.PI / 180; }
@@ -287,10 +341,10 @@
       errV.textContent = err.toFixed(2) + ' m';
       var good = err <= Math.max(0.15, S.d * 0.12);
       errV.style.color = good ? C.sci : C.warn;
-      if (good) { S.streak++; toast('猜中了！误差 ' + err.toFixed(2) + ' 米'); }
-      else { S.streak = 0; toast('差了 ' + err.toFixed(2) + ' 米，再试一次'); }
-      streakV.textContent = String(S.streak);
+      if (good) toast('预测很接近，误差 ' + err.toFixed(2) + ' 米');
+      else toast('相差 ' + err.toFixed(2) + ' 米，比较条件再试一次');
       announce('球停在离坡底 ' + S.d.toFixed(2) + ' 米，你的预测差 ' + err.toFixed(2) + ' 米。');
+      recordFairTrial(err, hitWall);
       S.predLocked = false;
     } else {
       announce('球停在离坡底 ' + S.d.toFixed(2) + ' 米。');
@@ -489,7 +543,51 @@
   var peV = document.getElementById('peV'), keV = document.getElementById('keV'), qV = document.getElementById('qV');
   var peB = document.getElementById('peB'), keB = document.getElementById('keB'), qB = document.getElementById('qB');
   var sumV = document.getElementById('sumV'), vV = document.getElementById('vV'), dV = document.getElementById('dV');
-  var actV = document.getElementById('actV'), errV = document.getElementById('errV'), streakV = document.getElementById('streakV');
+  var actV = document.getElementById('actV'), errV = document.getElementById('errV');
+  var fairResult = document.getElementById('fairResult');
+  var rampFairCardContent = document.getElementById('rampFairCardContent');
+  var rampFairCardSave = document.getElementById('rampFairCardSave');
+  var rampReflection = document.getElementById('rampReflection');
+  var rampComplete = document.getElementById('rampComplete');
+  var rampTaskStatus = document.getElementById('rampTaskStatus');
+  var fairPassed = false, fairChanged = '';
+  var VAR_LABELS = { ang: '斜坡角度', h: '起点高度', mu: '摩擦系数', m: '球的质量' };
+
+  function recordFairTrial(err, hitWall) {
+    S.trials.push({ ang: S.ang, h: S.h, mu: S.mu, m: S.m, pred: S.pred, actual: S.d, err: err, hitWall: !!hitWall });
+    if (S.trials.length > 2) S.trials.shift();
+    checkFairPair();
+  }
+  function checkFairPair() {
+    fairPassed = false; fairChanged = '';
+    if (S.trials.length < 2) {
+      fairResult.textContent = '已记录第 1 轮；现在只改变一个变量，再做第 2 轮。';
+    } else {
+      var a = S.trials[0], b = S.trials[1];
+      var changed = ['ang', 'h', 'mu', 'm'].filter(function (key) { return Math.abs(a[key] - b[key]) > 0.0001; });
+      if (changed.length === 1) {
+        fairPassed = true; fairChanged = VAR_LABELS[changed[0]];
+        fairResult.textContent = '公平比较通过：只改变了' + fairChanged + '；实际停止从 ' + a.actual.toFixed(2) + ' m 变为 ' + b.actual.toFixed(2) + ' m，预测误差分别为 ' + a.err.toFixed(2) + ' m 和 ' + b.err.toFixed(2) + ' m。';
+      } else {
+        fairResult.textContent = changed.length ? '还不是公平实验：两轮改变了 ' + changed.map(function (key) { return VAR_LABELS[key]; }).join('、') + '。请保留第二轮作为新基准，再只改一项。' : '两轮条件完全相同。请只改变一个变量后再做一轮。';
+      }
+    }
+    updateRampTask();
+  }
+  function trialSnapshot(trial, number) {
+    return '第' + number + '轮：角度 ' + trial.ang.toFixed(0) + '°，高度 ' + trial.h.toFixed(2) + 'm，摩擦 ' + trial.mu.toFixed(2) + '，质量 ' + trial.m.toFixed(2) + 'kg；预测 ' + trial.pred.toFixed(2) + 'm，实际 ' + trial.actual.toFixed(2) + 'm，误差 ' + trial.err.toFixed(2) + 'm。';
+  }
+  function updateRampTask() {
+    var reflected = rampReflection.value.trim().length >= 8;
+    rampComplete.disabled = !(fairPassed && reflected);
+    rampFairCardSave.disabled = !fairPassed;
+    if (fairPassed) {
+      rampFairCardContent.value = '公平变量：只改变' + fairChanged + '。\n' + trialSnapshot(S.trials[0], 1) + '\n' + trialSnapshot(S.trials[1], 2);
+    } else {
+      rampFairCardContent.value = '完成一组公平比较后，这里会生成实验快照。';
+    }
+    rampTaskStatus.textContent = !fairPassed ? '尚未完成：需要两轮锁定预测，且两轮只能改变一个变量。' : (reflected ? '公平比较与反思证据已齐，可以记录完成。' : '公平比较已通过；请写至少 8 个字反思结果。');
+  }
 
   function refresh() {
     var tot = Math.max(1e-6, totalE());
@@ -535,6 +633,17 @@
   var liveEl = document.getElementById('live');
   function announce(m) { liveEl.textContent = m; }
 
+  rampReflection.addEventListener('input', updateRampTask);
+  rampComplete.addEventListener('click', function () {
+    if (rampComplete.disabled || !window.Progress) return;
+    var a = S.trials[0], b = S.trials[1];
+    var evidence = '公平变量：' + fairChanged + '；实际停止 ' + a.actual.toFixed(2) + 'm → ' + b.actual.toFixed(2) + 'm；反思：' + rampReflection.value.trim();
+    if (Progress.complete("games/ramp-and-roll.html", evidence)) {
+      rampTaskStatus.textContent = '已完成并保存证据：' + evidence;
+      announce('公平斜坡实验已完成并保存在本机。');
+    }
+  });
+
   var btnGo = document.getElementById('go');
   function start() {
     if (S.phase === 'stopped') reset(true);
@@ -547,7 +656,7 @@
     start();
   });
   document.getElementById('reset').addEventListener('click', function () {
-    running = false; reset(false); S.streak = 0; streakV.textContent = '0';
+    running = false; reset(false);
   });
 
   function bindRange(id, outId, fmt, apply) {
@@ -632,9 +741,16 @@
   window.addEventListener('resize', resize);
 
   reset(false);
+  updateRampTask();
   resize();
   requestAnimationFrame(loop);
 })();
 </script>
+<script src="../data/explorations.js"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../data/playful.js"></script>
+<script src="../assets/js/playful.js"></script>
+<script>if (window.Progress) Progress.visit("games/ramp-and-roll.html", "斜坡滚球");</script>
+<script src="../assets/js/pwa.js"></script>
 </body>
 </html>

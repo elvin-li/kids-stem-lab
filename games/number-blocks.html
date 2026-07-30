@@ -6,6 +6,11 @@
 <title>数感积木 · 十格阵与凑十 — 少儿数理启蒙</title>
 <meta name="description" content="拖动单位积木，满十成行。同一个数量同时用积木、数字、数轴三种方式呈现，帮 4–8 岁孩子建立位值与瞬识（subitizing）直觉。" />
 <link rel="stylesheet" href="../assets/css/base.css" />
+<link rel="stylesheet" href="../assets/css/kid.css" />
+<link rel="stylesheet" href="../assets/css/print.css" media="print" />
+<link rel="manifest" href="../manifest.webmanifest" />
+<meta name="theme-color" content="#0b0f1a" />
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml" />
 <style>
   .lab-head { padding: 26px 0 18px; }
   .lab-head .row { margin-bottom: 10px; }
@@ -72,20 +77,44 @@
   .why { margin-top: 34px; }
   .why h2 { margin-bottom: 14px; }
   section.block { margin-top: 40px; }
-  .streak { display: flex; gap: 5px; flex-wrap: wrap; min-height: 22px; }
+  .challenge-log { display: flex; gap: 5px; flex-wrap: wrap; min-height: 22px; }
   .star-dot { color: var(--warn); font-size: 1.05rem; line-height: 1; }
+  .mission { margin: 0 0 22px; }
+  .mission ol { margin: 8px 0 12px; padding-left: 1.3rem; color: var(--ink-mid); }
+  .mission li + li { margin-top: 6px; }
+  .mission-actions { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); align-items:end; }
+  .mission textarea { min-height:72px; resize:vertical; }
+
+  .playful-quest {
+    margin-top: 16px; padding: 16px; overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--quest-accent, var(--math)) 45%, var(--line));
+    border-radius: var(--r-lg); background:
+      radial-gradient(circle at 100% 0, color-mix(in srgb, var(--quest-accent, var(--math)) 18%, transparent) 0 22%, transparent 23%),
+      linear-gradient(135deg, var(--surface-2), var(--surface));
+  }
+  .playful-quest h3, .playful-quest h4 { margin: 0; }
+  .playful-quest-head { display:grid; gap:12px; grid-template-columns:minmax(0,1fr) auto; align-items:start; }
+  .playful-story { margin:7px 0 0; max-width:62ch; color:var(--ink-mid); }
+  .playful-tools { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  .playful-task-output { min-height:1.6em; margin:0; color:var(--ink); font-weight:700; }
+  .playful-evidence { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  @media (max-width:620px) { .playful-quest-head { grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+  }
 </style>
 </head>
-<body>
+<body data-playful-page="games/number-blocks.html">
 <a class="skip-link" href="#stage-area">跳到互动区</a>
 
 <nav class="nav"><div class="nav-in wrap">
   <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
-  <div class="row">
+  <div class="row" aria-label="主导航">
     <a class="nav-link" href="../index.html">资源库</a>
     <a class="nav-link" href="../pages/paths.html">学习路径</a>
     <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
     <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
   </div>
 </div></nav>
@@ -106,6 +135,43 @@
     </p>
   </header>
 
+  <section class="task mission" aria-labelledby="numberMissionTitle">
+    <h2 class="task-title" id="numberMissionTitle">任务：预测并完成三种十进制挑战</h2>
+    <ol>
+      <li><b>预测：</b>每题先写“还要放几颗”，再锁定预测。</li>
+      <li><b>操作：</b>依次完成凑十、拆分和跨十进位；用积木或键盘方向键操作。</li>
+      <li><b>结果：</b>对照文字状态，说明几个一怎样组成一个十。</li>
+      <li><b>反思：</b>写下哪一种结构让你不用逐个数。</li>
+    </ol>
+    <div class="mission-actions">
+      <div><label for="numPredict">我预测还要放（颗）</label><input class="input" id="numPredict" type="number" min="0" max="100" step="1" inputmode="numeric"><button class="btn btn-sm" id="lockPredict" type="button" style="margin-top:6px">锁定预测</button></div>
+      <div><label for="numReflect">我的反思</label><textarea class="input" id="numReflect" placeholder="例如：先看满的一行，再看散块。"></textarea></div>
+      <button class="btn btn-primary" id="numComplete" type="button" disabled>记录任务完成</button>
+    </div>
+    <p class="task-status status" id="numMissionStatus" role="status" aria-live="polite">尚未完成：先选择“凑十”任务。</p>
+      <div class="playful-quest" style="--quest-accent:var(--warn)" aria-labelledby="numberStoryTitle">
+      <div class="playful-quest-head">
+        <div><h3 id="numberStoryTitle">积木城的十号桥</h3><p class="playful-story">桥只能用“十”作支架。完成三关后，把你看见的凑十结构存成一张作品卡。</p></div>
+        <div data-playful-companion role="note" aria-label="妙妙伙伴提示"></div>
+      </div>
+      <div class="playful-tools">
+        <button class="btn btn-sm" type="button" data-playful-random-task="#numberSurprise">抽一块神秘任务砖</button>
+        <p class="playful-task-output" id="numberSurprise" data-playful-task-output role="status" aria-live="polite">神秘任务砖正等你来翻。</p>
+      </div>
+      <div class="playful-evidence"><span data-playful-sticker aria-label="数感积木贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
+      <form class="work-card work-card-form" data-playful-work-form aria-labelledby="numberWorkTitle">
+        <h4 id="numberWorkTitle">保存我的十格阵作品</h4>
+        <div class="work-card-fields">
+          <div><label for="numberWorkType">作品类型</label><select class="input" id="numberWorkType" name="type"><option value="model">模型说明</option><option value="drawing">发现画</option><option value="explanation">我的解释</option></select></div>
+          <div><label for="numberWorkName">作品名称</label><input class="input" id="numberWorkName" name="title" required maxlength="80" placeholder="例如：两种颜色凑十"></div>
+          <div><label for="numberWorkContent">结构说明</label><textarea class="input" id="numberWorkContent" name="content" required maxlength="4000" placeholder="写下几和几组成十，以及你怎样一眼看出来。"></textarea></div>
+          <button class="btn btn-primary btn-sm" type="submit">保存作品卡</button>
+        </div>
+        <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">作品只保存在这台设备上。</p>
+      </form>
+    </div>
+  </section>
+
   <div class="lab">
     <!-- ================= 舞台 ================= -->
     <section class="lab-stage" id="stage-area" aria-label="积木互动区">
@@ -122,7 +188,7 @@
       <div class="stage-caption" style="margin-top:12px">
         <b>数轴 number line</b><span id="lineHint">同一个数量在数轴上的位置</span>
       </div>
-      <canvas id="numline" aria-hidden="true"></canvas>
+      <canvas id="numline" aria-label="数轴：当前数量 0，范围 0 到 100">数轴文字说明：当前数量 0，范围 0 到 100。</canvas>
 
       <div class="three-ways">
         <div class="way">
@@ -156,8 +222,16 @@
           <div class="mode-group" role="group" aria-label="选择玩法">
             <button class="chip" id="mFree" aria-pressed="true">自由搭</button>
             <button class="chip" id="mTarget" aria-pressed="false">搭目标数</button>
-            <button class="chip" id="mTen" aria-pressed="false">凑十挑战</button>
+            <button class="chip" id="mTen" aria-pressed="false">凑十</button>
+            <button class="chip" id="mSplit" aria-pressed="false">拆分</button>
+            <button class="chip" id="mCarry" aria-pressed="false">进位</button>
           </div>
+          <label for="taskLevel" style="margin-top:10px">分级任务</label>
+          <select class="input" id="taskLevel">
+            <option value="ten">第 1 级 · 凑十</option>
+            <option value="split">第 2 级 · 拆分一个数</option>
+            <option value="carry">第 3 级 · 跨十进位</option>
+          </select>
         </div>
 
         <div class="ctrl">
@@ -187,7 +261,7 @@
         <div class="readout"><span>本行还差</span><b id="roNeed">10</b></div>
         <div class="readout"><span>目标</span><b id="roTarget">—</b></div>
         <div class="readout"><span>完成次数</span><b id="roWins">0</b></div>
-        <div class="streak" id="streak" aria-label="已完成的挑战"></div>
+        <div class="challenge-log" id="challengeLog" aria-label="已完成的挑战"></div>
       </div>
 
       <div class="panel">
@@ -337,7 +411,9 @@
     loose: [],             // 散块
     wins: 0,
     rowFlash: [],          // {row, t}
-    parts: []              // 彩屑
+    parts: [],             // 彩屑
+    splitBase: 0, carryAdd: 0, prediction: null,
+    levelSolved: { ten: false, split: false, carry: false }, lastResult: ''
   };
   var G = { W: 320, H: 400, cell: 30, gap: 5, gGap: 12, pad: 14, frameTop: 34, rowGap: 6, rows: 10, trayTop: 300, trayH: 92, labelW: 30 };
   var uid = 0;
@@ -475,10 +551,25 @@
       S.placed.length = 0;
       for (var i = 0; i < base; i++) S.placed.push(mkBlock(G.pad, G.trayTop));
       reposition(false);
+    } else if (S.mode === 'split') {
+      S.target = ri(8, Math.min(20, S.max));
+      S.splitBase = ri(2, S.target - 2);
+      S.tenBase = S.splitBase; S.placed.length = 0;
+      for (var j = 0; j < S.splitBase; j++) S.placed.push(mkBlock(G.pad, G.trayTop));
+      reposition(false);
+    } else if (S.mode === 'carry') {
+      S.tenBase = ri(6, 9);
+      S.carryAdd = ri(11 - S.tenBase, 9);
+      S.target = S.tenBase + S.carryAdd; S.placed.length = 0;
+      for (var k = 0; k < S.tenBase; k++) S.placed.push(mkBlock(G.pad, G.trayTop));
+      reposition(false);
     } else {
       S.target = null; S.tenBase = 0;
     }
-    S.solved = false;
+    S.solved = false; S.prediction = null;
+    document.getElementById('numPredict').value = '';
+    document.getElementById('numPredict').disabled = false;
+    document.getElementById('lockPredict').disabled = false;
     refillLoose();
     update();
   }
@@ -488,10 +579,13 @@
       // 解出后又改动了数量，允许重新判定
       if (S.mode === 'target' && count() !== S.target) S.solved = false;
       if (S.mode === 'ten' && count() !== 10) S.solved = false;
+      if ((S.mode === 'split' || S.mode === 'carry') && count() !== S.target) S.solved = false;
       return;
     }
     if (S.mode === 'target' && S.target && count() === S.target) win('搭对了！' + S.target + ' = ' + Math.floor(S.target / 10) + ' 个十 + ' + (S.target % 10) + ' 个一');
-    if (S.mode === 'ten' && count() === 10) win(S.tenBase + ' + ' + (10 - S.tenBase) + ' = 10 ，凑十成功！');
+    if (S.mode === 'ten' && count() === 10) win(S.tenBase + ' + ' + (10 - S.tenBase) + ' = 10，凑十成功！');
+    if (S.mode === 'split' && count() === S.target) win(S.splitBase + ' + ' + (S.target - S.splitBase) + ' = ' + S.target + '，拆分成功！');
+    if (S.mode === 'carry' && count() === S.target) win(S.tenBase + ' + ' + S.carryAdd + ' = 10 + ' + (S.target - 10) + ' = ' + S.target + '，完成进位！');
   }
 
   function win(msg) {
@@ -500,11 +594,18 @@
     toast(msg);
     say(msg);
     burst(G.W / 2, G.frameTop + Math.min(G.frameH, 120), 46);
-    renderStreak();
+    var expected = S.target - (S.mode === 'split' ? S.splitBase : S.tenBase);
+    if ((S.mode === 'ten' || S.mode === 'split' || S.mode === 'carry') && S.prediction === expected) {
+      S.levelSolved[S.mode] = true; S.lastResult = msg + ' 预测正确：还要 ' + expected + ' 颗。';
+    } else if (S.mode === 'ten' || S.mode === 'split' || S.mode === 'carry') {
+      S.lastResult = msg + ' 但这题没有先锁定正确预测，不计入分级任务。';
+    }
+    updateMission();
+    renderChallengeLog();
   }
 
-  function renderStreak() {
-    var el = document.getElementById('streak');
+  function renderChallengeLog() {
+    var el = document.getElementById('challengeLog');
     el.textContent = '';
     var n = Math.min(S.wins, 12);
     for (var i = 0; i < n; i++) {
@@ -576,7 +677,13 @@
       el.task.textContent = '搭出 ' + S.target + '（' + cnNum(S.target) + '）' + (n === S.target ? ' ✓ 完成' : '，现在是 ' + n);
     } else if (S.mode === 'ten') {
       el.roTarget.textContent = '10';
-      el.task.textContent = '凑十挑战：已有 ' + S.tenBase + ' 颗，补到 10';
+      el.task.textContent = '第 1 级凑十：已有 ' + S.tenBase + ' 颗，预测还要几颗，再补到 10';
+    } else if (S.mode === 'split') {
+      el.roTarget.textContent = S.target;
+      el.task.textContent = '第 2 级拆分：' + S.target + ' 可以拆成 ' + S.splitBase + ' 和多少？';
+    } else if (S.mode === 'carry') {
+      el.roTarget.textContent = S.target;
+      el.task.textContent = '第 3 级进位：从 ' + S.tenBase + ' 开始再加 ' + S.carryAdd + '，先凑十再继续';
     } else {
       el.roTarget.textContent = '—';
       el.task.textContent = '自由搭：想放多少就放多少';
@@ -767,6 +874,11 @@
     ctx.fillStyle = C.ink; ctx.textAlign = 'center';
     ctx.fillText(String(n), cx, y - 13);
     ctx.textAlign = 'left';
+
+    var description = '数轴：当前数量 ' + n + '，范围 0 到 ' + max +
+      (S.target && S.mode !== 'free' ? '，目标 ' + S.target : '');
+    lineC.setAttribute('aria-label', description);
+    lineC.textContent = description + '。';
   }
 
   /* ---------- 动画 ---------- */
@@ -884,15 +996,44 @@
     if (S.mode === 'target' && !S.target) newTask(); else update();
   });
 
-  var modeBtns = { free: document.getElementById('mFree'), target: document.getElementById('mTarget'), ten: document.getElementById('mTen') };
+  var modeBtns = { free: document.getElementById('mFree'), target: document.getElementById('mTarget'), ten: document.getElementById('mTen'), split: document.getElementById('mSplit'), carry: document.getElementById('mCarry') };
   Object.keys(modeBtns).forEach(function (m) {
     modeBtns[m].addEventListener('click', function () {
       S.mode = m;
       Object.keys(modeBtns).forEach(function (k) { modeBtns[k].setAttribute('aria-pressed', k === m ? 'true' : 'false'); });
-      if (m === 'ten' && S.max !== 20) { /* 凑十只用一行，范围不变也可 */ }
+      if (m === 'ten' || m === 'split' || m === 'carry') document.getElementById('taskLevel').value = m;
       newTask();
       say(m === 'free' ? '自由搭模式' : m === 'target' ? '目标数模式，目标 ' + S.target : '凑十模式，已有 ' + S.tenBase + ' 颗');
     });
+  });
+
+  document.getElementById('taskLevel').addEventListener('change', function () {
+    S.mode = this.value;
+    Object.keys(modeBtns).forEach(function (k) { modeBtns[k].setAttribute('aria-pressed', k === S.mode ? 'true' : 'false'); });
+    newTask(); say('开始' + document.getElementById('taskLevel').selectedOptions[0].textContent);
+  });
+  document.getElementById('lockPredict').addEventListener('click', function () {
+    var input = document.getElementById('numPredict'), v = Number(input.value);
+    if (input.value.trim() === '' || !isFinite(v) || Math.floor(v) !== v || v < 0) { say('请先填写非负整数预测'); input.focus(); return; }
+    S.prediction = v; input.disabled = true; this.disabled = true;
+    updateMission(); say('已锁定预测，还要放 ' + v + ' 颗');
+  });
+  function updateMission() {
+    var done = ['ten','split','carry'].filter(function (k) { return S.levelSolved[k]; });
+    var names = {ten:'凑十',split:'拆分',carry:'进位'};
+    var status = done.length ? '已计入：' + done.map(function(k){return names[k];}).join('、') + '。' : '尚无计入结果。';
+    if (S.prediction !== null && !S.solved) status += ' 已锁定预测 ' + S.prediction + '，现在请操作积木。';
+    if (S.lastResult) status += ' 最近结果：' + S.lastResult;
+    document.getElementById('numMissionStatus').textContent = status;
+    document.getElementById('numComplete').disabled = done.length < 3;
+  }
+  document.getElementById('numComplete').addEventListener('click', function () {
+    var reflection = document.getElementById('numReflect').value.trim();
+    if (!reflection) { say('请先写一句反思'); document.getElementById('numReflect').focus(); return; }
+    var evidence = '完成凑十、拆分、跨十进位三关。最近结果：' + S.lastResult + ' 反思：' + reflection;
+    var saved = window.Progress && Progress.complete('games/number-blocks.html', evidence);
+    document.getElementById('numMissionStatus').textContent = saved ? '✓ 任务已完成并记录：' + evidence : '✓ 任务已完成；本机存储不可用，未能保存足迹。';
+    say(document.getElementById('numMissionStatus').textContent);
   });
 
   /* ---------- 启动 ---------- */
@@ -908,9 +1049,15 @@
   layout();
   refillLoose();
   update();
-  renderStreak();
+  renderChallengeLog();
   requestAnimationFrame(tick);
 })();
 </script>
+<script src="../data/explorations.js"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../data/playful.js"></script>
+<script src="../assets/js/playful.js"></script>
+<script>if (window.Progress) Progress.visit("games/number-blocks.html", "数感积木");</script>
+<script src="../assets/js/pwa.js"></script>
 </body>
 </html>

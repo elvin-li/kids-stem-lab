@@ -6,6 +6,11 @@
 <title>规律机器 · 互动实验室</title>
 <meta name="description" content="给机器喂一个数，它吐出另一个数。孩子通过输入输出猜出隐藏规则，从算术走向代数思维。">
 <link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .hd { padding: 28px 0 18px; }
   .hd .row { margin-bottom: 14px; }
@@ -157,18 +162,41 @@
   .why h3 { margin-top: 0; }
   .why p:last-child { margin-bottom: 0; }
   .kv { font-family: var(--mono); font-size: .84rem; color: var(--ink-mid); }
+  .mission { margin: 0 0 22px; }
+  .mission ol { margin: 8px 0 14px; padding-left: 1.3rem; color: var(--ink-mid); }
+  .mission-grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); align-items:end; }
+  .mission textarea { min-height:72px; resize:vertical; }
+
+  .playful-quest {
+    margin-top: 16px; padding: 16px; overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--quest-accent, var(--math)) 45%, var(--line));
+    border-radius: var(--r-lg); background:
+      radial-gradient(circle at 100% 0, color-mix(in srgb, var(--quest-accent, var(--math)) 18%, transparent) 0 22%, transparent 23%),
+      linear-gradient(135deg, var(--surface-2), var(--surface));
+  }
+  .playful-quest h3, .playful-quest h4 { margin: 0; }
+  .playful-quest-head { display:grid; gap:12px; grid-template-columns:minmax(0,1fr) auto; align-items:start; }
+  .playful-story { margin:7px 0 0; max-width:62ch; color:var(--ink-mid); }
+  .playful-tools { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  .playful-task-output { min-height:1.6em; margin:0; color:var(--ink); font-weight:700; }
+  .playful-evidence { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  @media (max-width:620px) { .playful-quest-head { grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+  }
 </style>
 </head>
-<body>
+<body data-playful-page="games/pattern-machine.html">
 <a class="skip-link" href="#main">跳到主要内容</a>
 
 <nav class="nav"><div class="nav-in wrap">
   <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
-  <div class="row">
+  <div class="row" aria-label="主导航">
     <a class="nav-link" href="../index.html">资源库</a>
     <a class="nav-link" href="../pages/paths.html">学习路径</a>
     <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
     <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
   </div>
 </div></nav>
@@ -189,6 +217,46 @@
       也是从<b>算术</b>走向<b>代数</b>的那一步。
     </p>
   </header>
+
+  <section class="task mission" aria-labelledby="patternMissionTitle">
+    <h2 class="task-title" id="patternMissionTitle">任务：提出数列假设，再主动找反例</h2>
+    <ol>
+      <li><b>预测：</b>判断两个数列是固定差的线性规律，还是差在变化的非线性规律，并预测下一项。</li>
+      <li><b>操作：</b>提交分类；再检验“只看两组数据得到的规则”。</li>
+      <li><b>结果：</b>比较一阶差，并用新输入构造反例。</li>
+      <li><b>反思：</b>说明为什么三组数据也不一定能唯一确定规则。</li>
+    </ol>
+    <div class="mission-grid">
+      <div><label for="linearGuess">数列 2，5，8，11 是</label><select class="input" id="linearGuess"><option value="">请选择</option><option value="linear">线性（固定差）</option><option value="nonlinear">非线性（差在变）</option></select><label for="linearNext" style="margin-top:6px">下一项</label><input class="input" id="linearNext" type="number" inputmode="numeric"></div>
+      <div><label for="nonlinearGuess">数列 1，4，9，16 是</label><select class="input" id="nonlinearGuess"><option value="">请选择</option><option value="linear">线性（固定差）</option><option value="nonlinear">非线性（差在变）</option></select><label for="nonlinearNext" style="margin-top:6px">下一项</label><input class="input" id="nonlinearNext" type="number" inputmode="numeric"></div>
+      <button class="btn btn-sm" id="checkSequences" type="button">检验数列假设</button>
+      <button class="btn btn-sm" id="testCounterexample" type="button" disabled>用新输入寻找反例</button>
+      <div><label for="patternReflect">我的反思</label><textarea class="input" id="patternReflect" placeholder="例如：前两点都符合，不代表后面的点也符合。"></textarea></div>
+      <button class="btn btn-primary" id="patternComplete" type="button" disabled>记录任务完成</button>
+    </div>
+    <p class="task-status status" id="patternMissionStatus" role="status" aria-live="polite">尚未完成：先提交两个数列假设。</p>
+      <div class="playful-quest" style="--quest-accent:var(--phys)" aria-labelledby="patternStoryTitle">
+      <div class="playful-quest-head">
+        <div><h3 id="patternStoryTitle">规律侦探社的密件</h3><p class="playful-story">每个输入都是线索，但线索也会骗人。带上反例，再把规则写成别人能检验的作品卡。</p></div>
+        <div data-playful-companion role="note" aria-label="星星伙伴提示"></div>
+      </div>
+      <div class="playful-tools">
+        <button class="btn btn-sm" type="button" data-playful-random-task="#patternSurprise">打开随机密件</button>
+        <p class="playful-task-output" id="patternSurprise" data-playful-task-output role="status" aria-live="polite">密件里藏着一条额外规律任务。</p>
+      </div>
+      <div class="playful-evidence"><span data-playful-sticker aria-label="规律机器贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
+      <form class="work-card work-card-form" data-playful-work-form aria-labelledby="patternWorkTitle">
+        <h4 id="patternWorkTitle">保存我的规律说明</h4>
+        <div class="work-card-fields">
+          <div><label for="patternWorkType">作品类型</label><select class="input" id="patternWorkType" name="type"><option value="explanation">我的解释</option><option value="prediction">预测卡</option><option value="model">模型说明</option></select></div>
+          <div><label for="patternWorkName">规律名称</label><input class="input" id="patternWorkName" name="title" required maxlength="80" placeholder="例如：每次多 3"></div>
+          <div><label for="patternWorkContent">规则与反例</label><textarea class="input" id="patternWorkContent" name="content" required maxlength="4000" placeholder="写一句规则，再写一个能检验它的新输入或反例。"></textarea></div>
+          <button class="btn btn-primary btn-sm" type="submit">保存侦探密件</button>
+        </div>
+        <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">密件只保存在这台设备上。</p>
+      </form>
+    </div>
+  </section>
 
   <div class="row" style="margin-bottom:16px">
     <div class="modebar" role="tablist" aria-label="选择玩法">
@@ -336,8 +404,7 @@
         <div class="panel">
           <h3>读数</h3>
           <div class="readout"><span>喂过几个数</span><b id="roFed">0</b></div>
-          <div class="readout"><span>猜对次数</span><b id="roWins">0</b></div>
-          <div class="readout"><span>当前连对</span><b id="roStreak">0</b></div>
+          <div class="readout"><span>验证过的规则</span><b id="roWins">0</b></div>
           <div class="readout"><span>规则</span><b id="roRule">保密</b></div>
         </div>
       </div>
@@ -435,11 +502,13 @@
   // ============================================================
   var el = {};
   ['inVal','outVal','portOut','box','feedIn','feedHelp','feedBtn','feedAll','logBody','logEmpty',
-   'cvPlot','rulePre','opts','guessHint','newRule','clearLog','roFed','roWins','roStreak',
+   'cvPlot','rulePre','opts','guessHint','newRule','clearLog','roFed','roWins',
    'roRule','lvDesc','mGuess','mGrow','panelGuess','panelGrow','sideGuess','sideGrow',
    'figs','askN','growIn','growCheck','growShow','showN','growVerdict','gvMain','gvSub',
    'growBody','patSel','askSel','askOut','growReset','roSeq','roDiff','roFormula',
-   'roGrowWins','revealF','toast','live','lv1','lv2','lv3','lv4'
+   'roGrowWins','revealF','toast','live','lv1','lv2','lv3','lv4','linearGuess',
+   'linearNext','nonlinearGuess','nonlinearNext','checkSequences','testCounterexample',
+   'patternReflect','patternComplete','patternMissionStatus'
   ].forEach(function (id) { el[id] = document.getElementById(id); });
 
   function ce(tag, cls, txt) {
@@ -565,7 +634,6 @@
     options: [],
     answered: false,
     wins: 0,
-    streak: 0,
     revealed: false
   };
 
@@ -579,6 +647,16 @@
   };
 
   var MODE = 'guess';
+  var MISSION = { sequences: false, counterexample: false };
+
+  function updatePatternMission(message) {
+    var done = [];
+    if (MISSION.sequences) done.push('线性/非线性数列');
+    if (MISSION.counterexample) done.push('反例');
+    el.patternMissionStatus.textContent = (done.length ? '已验证：' + done.join('、') + '。' : '尚未验证挑战。') +
+      (message ? ' 最近结果：' + message : '');
+    el.patternComplete.disabled = !(MISSION.sequences && MISSION.counterexample);
+  }
 
   // ============================================================
   //  猜规则：渲染
@@ -648,7 +726,7 @@
     var ok = sameRule(opt, G.rule);
     if (ok) {
       G.answered = true;
-      G.wins++; G.streak++;
+      G.wins++;
       btn.classList.add('right'); mk.textContent = '✓';
       // 其余选项变暗
       var all = el.opts.querySelectorAll('.opt');
@@ -659,7 +737,6 @@
       toast('猜对了！规则是 ' + ruleText(G.rule));
       say('猜对了，规则是 输出等于 ' + ruleText(G.rule));
     } else {
-      G.streak = 0;
       btn.classList.add('wrong'); mk.textContent = '✕';
       btn.disabled = true;
       // 找一个反例，帮孩子看到"为什么不对"
@@ -673,7 +750,6 @@
       }
     }
     el.roWins.textContent = G.wins;
-    el.roStreak.textContent = G.streak;
     updateGuessAvailability();
   }
 
@@ -1231,6 +1307,38 @@
     say('公式是 ' + P.formula + '。' + P.why);
   });
 
+  el.checkSequences.addEventListener('click', function () {
+    var aKind = el.linearGuess.value, bKind = el.nonlinearGuess.value;
+    var aNext = Number(el.linearNext.value), bNext = Number(el.nonlinearNext.value);
+    if (!aKind || !bKind || el.linearNext.value.trim() === '' || el.nonlinearNext.value.trim() === '') {
+      say('请完成两个分类和下一项预测'); return;
+    }
+    var ok = aKind === 'linear' && aNext === 14 && bKind === 'nonlinear' && bNext === 25;
+    if (ok) {
+      MISSION.sequences = true; el.testCounterexample.disabled = false;
+      updatePatternMission('第一列差都是 3；平方数列的差是 3、5、7、9，下一项 25。');
+    } else {
+      updatePatternMission('请再看差：2→5→8→11 每次加 3；1→4→9→16 的差是 3、5、7。');
+    }
+    say(el.patternMissionStatus.textContent);
+  });
+
+  el.testCounterexample.addEventListener('click', function () {
+    if (!MISSION.sequences) return;
+    MISSION.counterexample = true;
+    updatePatternMission('假设 y=2x 符合 1→2、2→4；但真实规则 y=x² 在 x=3 时给 9，而假设给 6，3→9 就是反例。');
+    say(el.patternMissionStatus.textContent);
+  });
+
+  el.patternComplete.addEventListener('click', function () {
+    var reflection = el.patternReflect.value.trim();
+    if (!reflection) { say('请先写一句反思'); el.patternReflect.focus(); return; }
+    var evidence = '正确区分固定差数列与平方数列，并用 x=3 找到 y=2x 对 y=x² 的反例。反思：' + reflection;
+    var saved = window.Progress && Progress.complete('games/pattern-machine.html', evidence);
+    el.patternMissionStatus.textContent = saved ? '✓ 任务已完成并记录：' + evidence : '✓ 任务已完成；本机存储不可用，未能保存足迹。';
+    say(el.patternMissionStatus.textContent);
+  });
+
   var rsTimer = null;
   window.addEventListener('resize', function () {
     if (rsTimer) clearTimeout(rsTimer);
@@ -1248,5 +1356,11 @@
   setMode('guess');
 })();
 </script>
+<script src="../data/explorations.js"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../data/playful.js"></script>
+<script src="../assets/js/playful.js"></script>
+<script>if (window.Progress) Progress.visit("games/pattern-machine.html", "规律机器");</script>
+<script src="../assets/js/pwa.js"></script>
 </body>
 </html>

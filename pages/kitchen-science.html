@@ -6,7 +6,11 @@
 <title>厨房科学 · 30 个零成本家庭实验 | 少儿数理启蒙</title>
 <meta name="description" content="30 个用家里现成材料就能做的数学与物理实验：材料、步骤、背后的原理，以及最关键的——该问孩子什么问题。按年龄、学科、脏乱程度筛选。">
 <link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/kid.css">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .hero { padding: 40px 0 20px; }
   .hero h1 { margin-bottom: .35em; }
@@ -87,27 +91,45 @@
   .safety h3 { margin: 0 0 8px; font-size: 1rem; color: var(--danger); }
   .safety ul { margin: 0; padding-left: 1.2em; font-size: .9rem; color: var(--ink-mid); }
   .safety li + li { margin-top: 4px; }
+  .material-search { flex:1; min-width:220px; }
+  .xp-tools { display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding-top:10px; border-top:1px solid var(--line-soft); }
+  .favorite[aria-pressed="true"] { color:var(--warn); border-color:color-mix(in oklab,var(--warn) 45%,var(--line)); }
+  .observation label { display:block; font-size:.72rem; font-weight:700; color:var(--ink-dim); margin-bottom:5px; }
+  .observation textarea { width:100%; min-height:64px; resize:vertical; }
+  .card-safety { padding:10px 12px; border-radius:var(--r-sm); border:1px solid color-mix(in oklab,var(--danger) 28%,var(--line)); color:var(--ink-mid); font-size:.82rem; }
+  .save-msg { font-size:.72rem; color:var(--sci); }
+  .passport { margin:18px 0; padding:20px; }
+  .passport h2 { margin-top:0; }
+  .passport-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .passport-box { padding:14px; border:1px solid var(--line-soft); border-radius:var(--r); background:var(--surface-2); }
+  .passport-box h3 { margin:0 0 7px; font-size:1rem; }
+  .passport-box p { margin:0; color:var(--ink-mid); font-size:.88rem; }
+  .passport-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .hunt-list { margin:10px 0 0; padding-left:1.2em; color:var(--ink-mid); font-size:.84rem; }
 
   @media (max-width: 640px) {
+    .passport-grid { grid-template-columns:1fr; }
     .xgrid { grid-template-columns: 1fr; }
     .filters { top: 0; }
   }
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">跳到主要内容</a>
 
 <nav class="nav"><div class="nav-in wrap">
   <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
-  <div class="row">
+  <div class="row" aria-label="主导航">
     <a class="nav-link" href="../index.html">资源库</a>
     <a class="nav-link" href="../pages/paths.html">学习路径</a>
     <a class="nav-link" href="../games/index.html">互动实验</a>
-    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
   </div>
 </div></nav>
 
-<main class="wrap">
+<main id="main" class="wrap">
 
   <header class="hero">
     <h1>厨房科学</h1>
@@ -123,9 +145,18 @@
       同一个实验，说「看，醋和小苏打会冒泡」孩子记住一个现象；
       问「你猜泡泡是从哪里来的，是醋里本来就有的吗」孩子开始建立因果推理。
       每张卡片里的黄色一栏是先问、后做——让孩子先押一个答案，再动手验证。
-      押错了比押对了学得更多。
+      押错了比押对了学得更多。收藏只表示“稍后想做”，<b>不等于完成</b>；观察记录也单独保存在本机。
     </p>
   </div>
+
+  <section class="card passport no-print" aria-labelledby="passportTitle">
+    <h2 id="passportTitle">实验护照</h2>
+    <p>护照帮你挑一项实验、找齐材料、带走一张观察卡。它只记录准备与观察，收藏和抽卡都不算完成。</p>
+    <div class="passport-grid" style="margin-top:14px">
+      <div class="passport-box"><h3>随机护照任务</h3><p id="passportOutput" role="status" aria-live="polite">抽取后会显示实验、安全提醒和先问的问题。</p><div class="passport-actions"><button class="btn btn-primary" id="randomPassport" type="button">抽一个实验</button><a class="btn btn-ghost" id="passportGo" href="#out" hidden>查看观察卡 →</a></div></div>
+      <div class="passport-box"><h3>材料寻宝</h3><p>输入手边的一种材料，找出能做的实验。</p><label for="huntMaterial">手边材料</label><input class="input" id="huntMaterial" name="huntMaterial" type="search" placeholder="例如：水、纸、硬币"><button class="btn btn-ghost" id="huntButton" type="button" style="margin-top:8px">寻找实验</button><div id="huntOutput" role="status" aria-live="polite"></div></div>
+    </div>
+  </section>
 
   <div class="filters">
     <div class="wrap">
@@ -149,7 +180,14 @@
         <span class="flabel">条件</span>
         <button class="chip" data-k="mess" data-v="all" aria-pressed="true">不限</button>
         <button class="chip" data-k="mess" data-v="clean" aria-pressed="false">不脏手</button>
-        <button class="chip" data-k="mess" data-v="quick" aria-pressed="false">5 分钟内</button>
+        <button class="chip" data-k="mess" data-v="quick" aria-pressed="false">8 分钟内</button>
+        <button class="chip" data-k="favorite" data-v="yes" aria-pressed="false">仅收藏</button>
+        <button class="chip" data-k="safety" data-v="basic" aria-pressed="false">孩子可主做</button>
+        <button class="chip" data-k="safety" data-v="adult" aria-pressed="false">需成人协助</button>
+      </div>
+      <div class="frow">
+        <label class="flabel" for="materialFilter">材料</label>
+        <input class="input material-search" id="materialFilter" name="material" type="search" placeholder="输入硬币、水、纸、鸡蛋……" autocomplete="off">
       </div>
     </div>
   </div>
@@ -610,11 +648,17 @@
   var cnt = document.getElementById("cnt");
   var chips = [].slice.call(document.querySelectorAll(".chip"));
 
-  var state = { subject: "all", age: "all", mess: "all" };
+  var state = { subject: "all", age: "all", mess: "all", favorite: "all", safety: "all", material: "" };
+  var STORE_KEY = "kids-stem:kitchen:v1";
+  function loadStore() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || "{}") || {}; } catch (e) { return {}; } }
+  function saveStore(data) { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); return true; } catch (e) { return false; } }
+  function itemKey(i) { return "experiment-" + String(i + 1).padStart(2, "0"); }
 
   var SUBJ = { phys: "物理", math: "数学", chem: "化学", bio: "生物" };
   var SUBJ_PILL = { phys: "pill-phys", math: "pill-math", chem: "pill-sci", bio: "pill-sci" };
   var MESS = ["不脏手", "有点乱", "水槽边做"];
+
+  function needsAdult(x) { return /打火机|明火|热水|刀|剪刀|图钉|玻璃|生鸡蛋|缝衣针/.test(x.mats.join(" ") + x.steps.join(" ")); }
 
   function passes(x) {
     if (state.subject !== "all" && x.subject !== state.subject) return false;
@@ -626,6 +670,12 @@
     }
     if (state.mess === "clean" && x.mess !== 0) return false;
     if (state.mess === "quick" && x.mins > 8) return false;
+    var store = loadStore(), key = itemKey(XP.indexOf(x));
+    if (state.favorite === "yes" && !(store[key] && store[key].favorite)) return false;
+    if (state.safety === "adult" && !needsAdult(x)) return false;
+    if (state.safety === "basic" && needsAdult(x)) return false;
+    var materialTerms = state.material.split(/[，,、\s]+/).filter(Boolean);
+    if (materialTerms.some(function(term){ return x.mats.join(" ").toLowerCase().indexOf(term) === -1; })) return false;
     return true;
   }
 
@@ -638,6 +688,7 @@
 
   function card(x, i) {
     var c = el("article", "card xp");
+    c.id = "kitchen-" + itemKey(i);
 
     var head = el("div", "xp-head");
     head.appendChild(el("div", "xp-no", "实验 " + String(i + 1).padStart(2, "0")));
@@ -665,6 +716,11 @@
     bs.appendChild(ol);
     body.appendChild(bs);
 
+    var safetyText = needsAdult(x)
+      ? "需要成人协助：涉及热源、尖锐物、玻璃或生食材；孩子只做安全步骤。"
+      : "基础安全：实验材料不入口，避开眼睛，结束后洗手并清理台面。";
+    body.appendChild(el("div", "card-safety", "安全：" + safetyText));
+
     var ba = el("div", "blk ask");
     ba.appendChild(el("h4", null, "先问孩子"));
     ba.appendChild(el("p", null, x.ask));
@@ -681,6 +737,18 @@
     foot.appendChild(el("span", "mess", MESS[x.mess]));
     body.appendChild(foot);
 
+    var store = loadStore(), key = itemKey(i), saved = store[key] || {};
+    var tools = el("div", "xp-tools no-print");
+    var fav = el("button", "btn btn-ghost btn-sm favorite", saved.favorite ? "★ 已收藏" : "☆ 收藏稍后做");
+    fav.type = "button"; fav.setAttribute("aria-pressed", String(!!saved.favorite));
+    fav.addEventListener("click", function () { var data=loadStore(), rec=data[key]||{}; rec.favorite=!rec.favorite; data[key]=rec; if(saveStore(data)){ fav.setAttribute("aria-pressed",String(rec.favorite)); fav.textContent=rec.favorite?"★ 已收藏":"☆ 收藏稍后做"; } });
+    tools.appendChild(fav); tools.appendChild(el("span", "save-msg", "收藏不等于完成")); body.appendChild(tools);
+    var obs = el("div", "observation work-card"); var label=el("label", null, "观察卡（保存在本机）"); label.setAttribute("for", "observation-"+(i+1));
+    var area=el("textarea", "input"); area.id="observation-"+(i+1); area.name="observation-"+(i+1); area.maxLength=500; area.placeholder="我先预测……\n我观察到……\n证据或测量……\n下一次想改……"; area.value=saved.observation||"";
+    var save=el("button", "btn btn-sm no-print", "保存观察记录"); save.type="button"; var noteMsg=el("span", "save-msg");
+    save.addEventListener("click", function(){var data=loadStore(),rec=data[key]||{};rec.observation=area.value.trim().slice(0,500);data[key]=rec;noteMsg.textContent=saveStore(data)?"已保存":"保存失败";});
+    label.appendChild(area); obs.appendChild(label); obs.appendChild(save); obs.appendChild(noteMsg); body.appendChild(obs);
+
     c.appendChild(body);
     return c;
   }
@@ -694,6 +762,11 @@
       ? XP.length + " 个实验"
       : "显示 " + list.length + " / " + XP.length;
   }
+
+  document.getElementById("randomPassport").addEventListener("click", function () { var i=Math.floor(Math.random()*XP.length),x=XP[i],go=document.getElementById("passportGo");document.getElementById("passportOutput").textContent="实验 "+String(i+1).padStart(2,"0")+" · "+x.t+"。安全："+(needsAdult(x)?"需要成人协助。":"孩子可在成人看护下主做。")+" 先问："+x.ask;go.href="#kitchen-"+itemKey(i);go.hidden=false; });
+  document.getElementById("huntButton").addEventListener("click", function () { var term=document.getElementById("huntMaterial").value.trim().toLowerCase(),box=document.getElementById("huntOutput");box.textContent="";if(!term){box.textContent="先输入一种手边材料。";return;}var found=XP.map(function(x,i){return{x:x,i:i};}).filter(function(v){return v.x.mats.join(" ").toLowerCase().indexOf(term)>=0;}).slice(0,6);if(!found.length){box.textContent="暂时没找到含“"+term+"”的实验，试试更短的材料名。";return;}var ul=el("ul","hunt-list");found.forEach(function(v){var li=el("li"),a=el("a",null,v.x.t);a.href="#kitchen-"+itemKey(v.i);li.appendChild(a);li.appendChild(document.createTextNode(" · "+v.x.mats.join("、")));ul.appendChild(li);});box.appendChild(ul);});
+  document.getElementById("huntMaterial").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();document.getElementById("huntButton").click();}});
+  document.getElementById("materialFilter").addEventListener("input", function (e) { state.material=e.target.value.trim().toLowerCase(); render(); });
 
   chips.forEach(function (c) {
     c.addEventListener("click", function () {
@@ -712,5 +785,6 @@
 })();
 </script>
 
+<script src="../assets/js/pwa.js"></script>
 </body>
 </html>

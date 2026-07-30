@@ -6,6 +6,11 @@
 <title>对称工作室 · 互动实验室</title>
 <meta name="description" content="画一笔，镜子里同时出现好几笔。用镜像轴和旋转对称亲手画出雪花与万花筒，理解对称到底对的是什么。">
 <link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .lab-head { padding: 28px 0 14px; }
   .lab-head h1 { margin: 0 0 .3em; font-size: clamp(1.5rem, 3.4vw, 2.1rem); }
@@ -69,22 +74,47 @@
     margin-top: 14px; padding-top: 13px; border-top: 1px dashed var(--line);
     font-size: .88rem; color: var(--ink-dim);
   }
+  .mission { margin: 0 0 20px; }
+  .mission ol { margin: 8px 0 12px; padding-left: 1.3rem; color: var(--ink-mid); }
+  .mission-grid { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); align-items:end; }
+  .mission textarea { min-height:70px; resize:vertical; }
+  .kbd-help { font-size:.8rem; color:var(--ink-dim); margin:6px 0 0; }
+
+  .playful-quest {
+    margin-top: 16px; padding: 16px; overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--quest-accent, var(--math)) 45%, var(--line));
+    border-radius: var(--r-lg); background:
+      radial-gradient(circle at 100% 0, color-mix(in srgb, var(--quest-accent, var(--math)) 18%, transparent) 0 22%, transparent 23%),
+      linear-gradient(135deg, var(--surface-2), var(--surface));
+  }
+  .playful-quest h3, .playful-quest h4 { margin: 0; }
+  .playful-quest-head { display:grid; gap:12px; grid-template-columns:minmax(0,1fr) auto; align-items:start; }
+  .playful-story { margin:7px 0 0; max-width:62ch; color:var(--ink-mid); }
+  .playful-tools { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  .playful-task-output { min-height:1.6em; margin:0; color:var(--ink); font-weight:700; }
+  .playful-evidence { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  @media (max-width:620px) { .playful-quest-head { grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+  }
 </style>
 </head>
-<body>
+<body data-playful-page="games/symmetry-studio.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
 
 <nav class="nav"><div class="nav-in wrap">
   <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
-  <div class="row">
+  <div class="row" aria-label="主导航">
     <a class="nav-link" href="../index.html">资源库</a>
     <a class="nav-link" href="../pages/paths.html">学习路径</a>
     <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
     <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
   </div>
 </div></nav>
 
-<main class="wrap">
+<main class="wrap" id="main">
 
   <header class="lab-head">
     <div class="meta">
@@ -94,19 +124,61 @@
     </div>
     <h1>对称工作室</h1>
     <p class="lead">
-      画一笔，镜子里同时出现好几笔。改变镜面的数量，看看什么时候能画出雪花、
+      <b>这在教什么：</b>画一笔，镜子里同时出现好几笔。改变镜面的数量，看看什么时候能画出雪花、
       什么时候能画出万花筒——对称不是「长得好看」，是「转过去 / 翻过来还是原样」。
     </p>
   </header>
 
+  <section class="task mission" aria-labelledby="symMissionTitle">
+    <h2 class="task-title" id="symMissionTitle">任务：预测镜像与旋转会复制几笔</h2>
+    <ol>
+      <li><b>预测：</b>选择挑战，先预测一笔会变成几笔并锁定。</li>
+      <li><b>操作：</b>镜像挑战画一条直线，旋转挑战画一条曲线（鼠标、触摸或键盘均可）。</li>
+      <li><b>结果：</b>读出实际复制数，找出镜像轴或旋转中心。</li>
+      <li><b>反思：</b>写下反射对称与旋转对称哪里不同。</li>
+    </ol>
+    <div class="mission-grid">
+      <div role="group" aria-label="选择对称挑战">
+        <button class="chip" id="mirrorChallenge" type="button">镜像挑战 · 1 折</button>
+        <button class="chip" id="rotateChallenge" type="button">旋转挑战 · 4 折</button>
+      </div>
+      <div><label for="symPredict">我预测一笔会变成（笔）</label><input class="input" id="symPredict" type="number" min="1" max="32" step="1" inputmode="numeric"><button class="btn btn-sm" id="symLock" type="button" style="margin-top:6px">锁定预测</button></div>
+      <div><label for="symReflect">我的反思</label><textarea class="input" id="symReflect" placeholder="例如：镜像会翻面，旋转只绕中心转。"></textarea></div>
+      <button class="btn btn-primary" id="symComplete" type="button" disabled>记录任务完成</button>
+    </div>
+    <p class="task-status status" id="symStatus" role="status" aria-live="polite">尚未完成：先选择镜像挑战或旋转挑战。</p>
+      <div class="playful-quest" style="--quest-accent:var(--sci)" aria-labelledby="symmetryStoryTitle">
+      <div class="playful-quest-head">
+        <div><h3 id="symmetryStoryTitle">雪花邮局的半张图</h3><p class="playful-story">果果收到半张图案。请用镜像和旋转补全它，再保存一张“变换说明”作品卡。</p></div>
+        <div data-playful-companion role="note" aria-label="果果伙伴提示"></div>
+      </div>
+      <div class="playful-tools">
+        <button class="btn btn-sm" type="button" data-playful-random-task="#symmetrySurprise">拆开随机图案信</button>
+        <p class="playful-task-output" id="symmetrySurprise" data-playful-task-output role="status" aria-live="polite">信封里会出现一个新的对称任务。</p>
+      </div>
+      <div class="playful-evidence"><span data-playful-sticker aria-label="对称工作室贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
+      <form class="work-card work-card-form" data-playful-work-form aria-labelledby="symmetryWorkTitle">
+        <h4 id="symmetryWorkTitle">保存我的对称作品说明</h4>
+        <div class="work-card-fields">
+          <div><label for="symmetryWorkType">作品类型</label><select class="input" id="symmetryWorkType" name="type"><option value="drawing">发现画</option><option value="explanation">我的解释</option><option value="model">模型说明</option></select></div>
+          <div><label for="symmetryWorkName">作品名称</label><input class="input" id="symmetryWorkName" name="title" required maxlength="80" placeholder="例如：六折雪花"></div>
+          <div><label for="symmetryWorkContent">变换说明</label><textarea class="input" id="symmetryWorkContent" name="content" required maxlength="4000" placeholder="记录折数、是否镜像，以及图案怎样重合。"></textarea></div>
+          <button class="btn btn-primary btn-sm" type="submit">保存图案卡</button>
+        </div>
+        <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">PNG 可另存；这里保存的是作品文字说明。</p>
+      </form>
+    </div>
+  </section>
+
   <div class="stage-wrap">
     <div class="canvas-card">
-      <canvas id="pad" width="760" height="760" role="img"
-              aria-label="对称画板：在此拖动可同时绘制多条镜像笔画"></canvas>
+      <canvas id="pad" width="760" height="760" role="application" tabindex="0"
+              aria-label="对称画板：拖动绘画；键盘方向键移动画笔，空格或回车画一小笔"></canvas>
       <div class="canvas-hint" id="hint">
         <span class="big">✎</span>
         在这里拖动手指或鼠标
       </div>
+      <p class="sr-only" id="canvasLive" aria-live="polite"></p>
     </div>
 
     <div class="panel">
@@ -145,15 +217,18 @@
       <div class="readout" id="readout"></div>
 
       <div class="seg">
-        <button class="btn btn-primary btn-sm" id="saveBtn">保存图片</button>
-        <button class="btn btn-sm" id="undoBtn">撤销一笔</button>
-        <button class="btn btn-ghost btn-sm" id="clearBtn">全部清空</button>
+        <button class="btn btn-primary btn-sm" id="saveBtn" type="button">保存 PNG</button>
+        <button class="btn btn-sm" id="undoBtn" type="button">撤销一笔</button>
+        <button class="btn btn-sm" id="redoBtn" type="button">重做一笔</button>
+        <button class="btn btn-ghost btn-sm" id="clearBtn" type="button">全部清空</button>
       </div>
+      <p class="kbd-help">键盘：聚焦画板后用方向键移动，空格 / 回车画一小笔。</p>
+      <p class="status" id="saveStatus" role="status" aria-live="polite">图片尚未保存。</p>
     </div>
   </div>
 
   <section class="ask">
-    <h2>陪玩时可以这样问</h2>
+    <h2>给家长：陪玩时可以这样问</h2>
     <ol>
       <li>把镜面调成 <b>1</b>，只剩一面镜子。这时候画出来的东西，像不像照镜子的你？</li>
       <li>调到 <b>6</b> 折，随手画几笔。为什么看起来像雪花？（真实雪花就是 6 折对称的）</li>
@@ -162,7 +237,7 @@
       <li>家里、路上有哪些东西是对称的？蝴蝶是几折？花朵呢？车轮呢？</li>
     </ol>
     <div class="why">
-      为什么这个重要：对称是几何变换的第一课，也是后面学旋转、平移、坐标的直觉基础。
+      <b>背后的原理：</b>对称是几何变换的第一课，也是后面学旋转、平移、坐标的直觉基础。
       孩子先用手感受到「转 60 度还是原样」，之后再见到角度和度数就不再抽象。
       开关镜像翻转，对应的正是数学上<b>反射对称</b>与<b>旋转对称</b>的区别。
     </div>
@@ -191,8 +266,14 @@
     color: COLORS[0],
     guide: true,
     strokes: [],   // committed strokes: {color, size, fold, mirror, pts:[{x,y}]}
+    redo: [],
     current: null,
-    drawing: false
+    drawing: false,
+    keyboardPoint: { x: 470, y: 380 },
+    challenge: null,
+    prediction: null,
+    challengeDone: { mirror: false, rotate: false },
+    lastEvidence: ""
   };
 
   /* ---------- sizing (crisp on retina, square, responsive) ---------- */
@@ -327,7 +408,11 @@
     if (!state.drawing) return;
     if (ev) ev.preventDefault();
     state.drawing = false;
-    if (state.current && state.current.pts.length) state.strokes.push(state.current);
+    if (state.current && state.current.pts.length) {
+      state.strokes.push(state.current);
+      state.redo.length = 0;
+      evaluateChallenge(state.current);
+    }
     state.current = null;
     redraw();
     report();
@@ -341,6 +426,23 @@
   canvas.addEventListener("touchmove", move, { passive: false });
   canvas.addEventListener("touchend", end, { passive: false });
   canvas.addEventListener("touchcancel", end, { passive: false });
+  canvas.addEventListener("focus", function () { document.getElementById("canvasLive").textContent = "画板已聚焦，方向键移动，空格或回车绘制"; });
+  canvas.addEventListener("keydown", function (ev) {
+    var step = ev.shiftKey ? 24 : 12;
+    if (ev.key === "ArrowLeft") state.keyboardPoint.x = Math.max(20, state.keyboardPoint.x - step);
+    else if (ev.key === "ArrowRight") state.keyboardPoint.x = Math.min(CSS - 20, state.keyboardPoint.x + step);
+    else if (ev.key === "ArrowUp") state.keyboardPoint.y = Math.max(20, state.keyboardPoint.y - step);
+    else if (ev.key === "ArrowDown") state.keyboardPoint.y = Math.min(CSS - 20, state.keyboardPoint.y + step);
+    else if (ev.key === " " || ev.key === "Enter") {
+      var p = state.keyboardPoint;
+      var stroke = { color:state.color, size:state.size, fold:state.fold, mirror:state.mirror,
+        pts:[{x:p.x - 10,y:p.y},{x:p.x,y:p.y - (state.challenge === "rotate" ? 8 : 0)},{x:p.x + 10,y:p.y}] };
+      state.strokes.push(stroke); state.redo.length = 0; hint.classList.add("gone");
+      evaluateChallenge(stroke); redraw(); report();
+    } else return;
+    ev.preventDefault();
+    document.getElementById("canvasLive").textContent = "画笔位置横坐标 " + Math.round(state.keyboardPoint.x) + "，纵坐标 " + Math.round(state.keyboardPoint.y);
+  });
 
   /* ---------- readout ---------- */
   function report() {
@@ -404,22 +506,79 @@
   });
 
   document.getElementById("undoBtn").addEventListener("click", function () {
-    state.strokes.pop(); redraw(); report();
+    var stroke = state.strokes.pop();
+    if (stroke) state.redo.push(stroke);
+    redraw(); report();
+    document.getElementById("canvasLive").textContent = stroke ? "已撤销一笔" : "没有可撤销的笔画";
+  });
+  document.getElementById("redoBtn").addEventListener("click", function () {
+    var stroke = state.redo.pop();
+    if (stroke) state.strokes.push(stroke);
+    redraw(); report();
+    document.getElementById("canvasLive").textContent = stroke ? "已重做一笔" : "没有可重做的笔画";
   });
   document.getElementById("clearBtn").addEventListener("click", function () {
-    state.strokes = []; state.current = null;
+    state.strokes = []; state.redo = []; state.current = null;
     hint.classList.remove("gone");
     redraw(); report();
+    document.getElementById("canvasLive").textContent = "画板已清空";
   });
   document.getElementById("saveBtn").addEventListener("click", function () {
+    var status = document.getElementById("saveStatus");
     try {
       var a = document.createElement("a");
       a.download = "对称作品-" + state.fold + "折.png";
       a.href = canvas.toDataURL("image/png");
       a.click();
+      status.textContent = "✓ PNG 已生成；如果浏览器没有自动下载，请长按或截图保存。";
     } catch (e) {
-      alert("这个浏览器不支持直接下载，可以直接截图保存。");
+      status.textContent = "无法自动生成 PNG，请使用系统截图保存；你的画仍保留在画板上。";
     }
+  });
+
+  function beginChallenge(kind) {
+    state.challenge = kind; state.prediction = null;
+    state.fold = kind === "mirror" ? 1 : 4; state.mirror = kind === "mirror";
+    foldEl.value = state.fold; document.getElementById("foldVal").textContent = state.fold;
+    setMirror(state.mirror);
+    document.getElementById("symPredict").value = "";
+    document.getElementById("symPredict").disabled = false;
+    document.getElementById("symLock").disabled = false;
+    document.getElementById("symStatus").textContent = kind === "mirror"
+      ? "镜像挑战：先预测 1 折镜像中一笔会复制几笔，再画一条直线。"
+      : "旋转挑战：先预测 4 折旋转中一笔会复制几笔，再画一条曲线。";
+    redraw(); report();
+  }
+  document.getElementById("mirrorChallenge").addEventListener("click", function () { beginChallenge("mirror"); });
+  document.getElementById("rotateChallenge").addEventListener("click", function () { beginChallenge("rotate"); });
+  document.getElementById("symLock").addEventListener("click", function () {
+    var input = document.getElementById("symPredict"), value = Number(input.value);
+    if (!state.challenge) { document.getElementById("symStatus").textContent = "请先选择一个挑战。"; return; }
+    if (input.value.trim() === "" || !isFinite(value) || Math.floor(value) !== value || value < 1) {
+      document.getElementById("symStatus").textContent = "请填写大于 0 的整数预测。"; input.focus(); return;
+    }
+    state.prediction = value; input.disabled = true; this.disabled = true;
+    document.getElementById("symStatus").textContent = "预测已锁定为 " + value + " 笔，现在请在画板画一笔。";
+  });
+  function evaluateChallenge(stroke) {
+    if (!state.challenge || state.prediction === null) return;
+    var actual = stroke.fold * (stroke.mirror ? 2 : 1);
+    var label = state.challenge === "mirror" ? "镜像" : "旋转";
+    if (state.prediction === actual) {
+      state.challengeDone[state.challenge] = true;
+      state.lastEvidence = label + "挑战预测 " + state.prediction + "，实际 " + actual + " 笔";
+    } else state.lastEvidence = label + "挑战预测 " + state.prediction + "，实际 " + actual + " 笔，需要再试";
+    var complete = state.challengeDone.mirror && state.challengeDone.rotate;
+    document.getElementById("symComplete").disabled = !complete;
+    document.getElementById("symStatus").textContent = (state.prediction === actual ? "✓ " : "未通过：") + state.lastEvidence +
+      (complete ? "。两项挑战均通过，请写反思并记录。" : "。还需通过另一项挑战。 ");
+  }
+  document.getElementById("symComplete").addEventListener("click", function () {
+    var reflection = document.getElementById("symReflect").value.trim();
+    if (!reflection) { document.getElementById("symStatus").textContent = "请先写一句反思。"; document.getElementById("symReflect").focus(); return; }
+    var evidence = "镜像 1 折实际复制 2 笔；旋转 4 折实际复制 4 笔。反思：" + reflection;
+    var saved = window.Progress && Progress.complete("games/symmetry-studio.html", evidence);
+    document.getElementById("symStatus").textContent = saved ? "✓ 任务已完成并记录：" + evidence : "✓ 任务已完成；本机存储不可用，未能保存足迹。";
   });
 
   /* ---------- go ---------- */
@@ -429,5 +588,11 @@
 })();
 </script>
 
+<script src="../data/explorations.js"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../data/playful.js"></script>
+<script src="../assets/js/playful.js"></script>
+<script>if (window.Progress) Progress.visit("games/symmetry-studio.html", "对称工作室");</script>
+<script src="../assets/js/pwa.js"></script>
 </body>
 </html>

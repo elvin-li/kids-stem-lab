@@ -6,6 +6,11 @@
 <title>家长指南 · 怎么提问、怎么陪 | 少儿数理启蒙</title>
 <meta name="description" content="给 4–12 岁孩子家长的实操手册：提问代替给答案的话术、孩子卡住时怎么办、夸过程不夸天赋、屏幕时间边界、别把数学焦虑传下去、以及项目不合适的信号。附可打印的「饭桌上的 20 个问题」。" />
 <link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .hero-head { padding: 44px 0 6px; }
   .lede { font-size: 1.05rem; max-width: 68ch; }
@@ -97,6 +102,14 @@
   .tier p { font-size: .88rem; margin: 6px 0 0; }
   .tier .ex { font-size: .8rem; color: var(--ink-dim); margin-top: 8px; }
 
+  .scene-tool { margin:18px 0; padding:18px; }
+  .scene-controls { display:flex; gap:10px; align-items:end; flex-wrap:wrap; }
+  .scene-controls label { display:block; margin-bottom:5px; font-size:.76rem; color:var(--ink-dim); }
+  .companion-card { margin-top:14px; padding:18px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface-2); }
+  .companion-card h3 { margin:0 0 8px; }
+  .companion-card ol { margin:0; padding-left:1.2em; }
+  .companion-card li { margin:7px 0; color:var(--ink-mid); }
+
   /* 可打印区 */
   .print-sheet {
     margin-top: 22px; padding: 24px clamp(16px, 3vw, 28px);
@@ -137,6 +150,12 @@
       background: #fff !important; border: 0 !important; border-radius: 0 !important;
     }
     #dinner { display: block !important; }
+    body.print-companion #dinner { display:none!important; }
+    body.print-companion #ask { display:block!important; }
+    body.print-companion #ask > :not(.scene-tool) { display:none!important; }
+    body.print-companion .scene-tool { display:block!important; margin:0!important; padding:0!important; border:0!important; }
+    body.print-companion .companion-card { display:block!important; border:1pt solid #333!important; background:#fff!important; color:#000!important; }
+    body.print-companion .companion-card * { color:#000!important; }
     .sheet-head { border-bottom: 1.5pt solid #000; margin-bottom: 10pt; padding-bottom: 6pt; }
     .sheet-head h3 { font-size: 16pt; color: #000 !important; margin: 0 0 3pt; }
     .sheet-head p { color: #333 !important; font-size: 9pt; }
@@ -159,11 +178,12 @@
 
 <nav class="nav"><div class="nav-in wrap">
   <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
-  <div class="row">
+  <div class="row" aria-label="主导航">
     <a class="nav-link" href="../index.html">资源库</a>
     <a class="nav-link" href="../pages/paths.html">学习路径</a>
     <a class="nav-link" href="../games/index.html">互动实验</a>
     <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html" aria-current="page">家长指南</a>
   </div>
 </div></nav>
@@ -188,7 +208,8 @@
       <a href="#screen">④ 屏幕时间边界</a>
       <a href="#anxiety">⑤ 别把数学焦虑传下去</a>
       <a href="#badfit">⑥ 项目不合适的信号</a>
-      <a href="#dinner">⑦ 饭桌上的 20 个问题</a>
+      <a href="#motivation">⑦ 反奖励循环</a>
+      <a href="#dinner">⑧ 饭桌上的 20 个问题</a>
     </nav>
   </header>
 
@@ -199,6 +220,11 @@
       给答案能省十分钟，代价是孩子学会了「卡住就等大人」。提问累一点，但它把思考的所有权留在孩子那边。
       一个实用的门槛：<b>在你开口解释之前，先问三个问题。</b>
     </p>
+    <div class="card scene-tool">
+      <h3>按当下场景切换话术</h3>
+      <div class="scene-controls no-print"><div><label for="sceneSelect">孩子现在的状态</label><select class="input" id="sceneSelect" name="parentScene"><option value="stuck">卡住了</option><option value="wrong">猜错了</option><option value="quit">不想继续</option><option value="answer">只求答案</option><option value="upset">情绪崩了</option><option value="right">答对了</option><option value="experiment">正在做实验</option></select></div><button class="btn btn-ghost" type="button" id="printCompanion">打印陪伴卡</button></div>
+      <div class="companion-card" id="companionCard" aria-live="polite"></div>
+    </div>
 
     <div class="swap">
       <div class="swap-col swap-no">
@@ -453,9 +479,18 @@
     </p>
   </section>
 
-  <!-- ============ 7 · 可打印 ============ -->
+  <section class="sec" id="motivation">
+    <h2><span class="num">07</span> 反奖励循环：让反馈回到理解本身</h2>
+    <p class="sec-lede">童趣提示可以降低开始的门槛，但不应制造“再点一次”的压力。本站把贴纸当作孩子确实完成观察任务后的回看标记，而不是兑换物；随机探险卡只是可跳过的灵感，不替代任务，也不因每天回来给予额外优势。</p>
+    <div class="grid-2" style="margin-top:16px">
+      <div class="card"><h3>值得保留的反馈</h3><ul class="checks goodlist"><li><span class="mark" aria-hidden="true">✓</span><span><b>反馈紧跟证据。</b>完成意味着做过任务、留下观察或解释，不等于打开页面。</span></li><li><span class="mark" aria-hidden="true">✓</span><span><b>允许停下。</b>没有错过惩罚、稀缺奖励或连续使用压力，兴趣可以有自然起伏。</span></li><li><span class="mark" aria-hidden="true">✓</span><span><b>作品比数量重要。</b>回看一张预测卡、一句解释，往往比累计了多少标记更能看见成长。</span></li></ul></div>
+      <div class="card"><h3>家长怎么接</h3><ul class="checks goodlist"><li><span class="mark" aria-hidden="true">✓</span><span>少问“拿到了什么”，多问“哪一步和你猜的不一样”。</span></li><li><span class="mark" aria-hidden="true">✓</span><span>孩子只想抽卡、不想观察时，可以直接停下，不用拿完成作为交换条件。</span></li><li><span class="mark" aria-hidden="true">✓</span><span>贴纸册用于一起回忆经历，不用于兄弟姐妹之间比较。</span></li></ul></div>
+    </div>
+  </section>
+
+  <!-- ============ 8 · 可打印 ============ -->
   <section class="sec" id="dinner">
-    <h2><span class="num">07</span> 饭桌上的 20 个问题</h2>
+    <h2><span class="num">08</span> 饭桌上的 20 个问题</h2>
     <p class="sec-lede">
       不需要教具、不需要准备，一顿饭挑一两个就够。目的不是考察，是让「一起想一件事」变成家里的日常。
       <span class="no-print">点下面的按钮可以只打印这一页（打印时其余内容会自动隐藏）。</span>
@@ -524,15 +559,17 @@
 </footer>
 
 <script>
-(function () {
-  var btn = document.getElementById('printBtn');
-  if (btn) {
-    btn.addEventListener('click', function () {
-      window.print();
-    });
-  }
+(function () {"use strict";
+  var scenes={wrong:{title:"猜错时：把错误变成线索",lines:["跟我讲讲你刚才怎么想的。","我们怎么验证这个答案？","答案大概应该落在哪个范围？","我只提示出问题的大概位置，不替你做下一步。"]},stuck:{title:"卡住时：一次只给一级提示",lines:["先安静等 30 秒。","把题用自己的话再说一遍。","画出来，或退到更小的数字。","最后才一起做一步，然后把笔交回去。"]},quit:{title:"不想继续时：先找原因，不讲坚持",lines:["你是累了、觉得太难，还是今天不想做这个？","我们可以只做最后五分钟，也可以今天停下。","要不要换成画图、积木或另一个题目？","如果连续几次都不想做，就降难度或换项目，不把抗拒当懒惰。"]},answer:{title:"只求答案时：把最小一步交还给孩子",lines:["我可以帮你，但先告诉我题目在问什么。","你想要一个小提示，还是一起画张图？","我只做第一小步，下一步你来。","答案出来后，再问：我们怎么知道它合理？"]},upset:{title:"崩溃时：先处理人",lines:["这题确实难，我们先离开五分钟。","我看得出你很烦；现在不用解决它。","今天停下也可以，明天再看。","情绪平稳后只复盘一句，不补一堂课。"]},right:{title:"答对时：把答案变成理解",lines:["你是怎么想到的？","还有别的办法吗？","如果数字换大，方法还成立吗？","你怎么知道自己对了？"]},experiment:{title:"实验时：预测—观察—再改变",lines:["动手前：你猜会发生什么？为什么？","过程中：哪里和预测一样，哪里不同？","一次只改变一个条件。","结束后：用一句话说出你的发现。"]}};
+  var select=document.getElementById("sceneSelect"),card=document.getElementById("companionCard");
+  function render(){var s=scenes[select.value];card.textContent="";var h=document.createElement("h3");h.textContent=s.title;var ol=document.createElement("ol");s.lines.forEach(function(x){var li=document.createElement("li");li.textContent=x;ol.appendChild(li);});card.appendChild(h);card.appendChild(ol);}
+  select.addEventListener("change",render);render();
+  document.getElementById("printCompanion").addEventListener("click",function(){document.body.classList.add("print-companion");window.print();});
+  document.getElementById("printBtn").addEventListener("click",function(){document.body.classList.remove("print-companion");window.print();});
+  window.addEventListener("afterprint",function(){document.body.classList.remove("print-companion");});
 })();
 </script>
 
+<script src="../assets/js/pwa.js"></script>
 </body>
 </html>

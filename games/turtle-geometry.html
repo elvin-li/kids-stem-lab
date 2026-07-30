@@ -6,7 +6,11 @@
 <title>海龟几何 · 互动实验室</title>
 <meta name="description" content="写几行中文命令，让海龟在画布上画出正方形、星星、螺旋和花。用重复和转角理解角度、迭代与分解。适合 8-12 岁。">
 <link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/kid.css">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .head { padding: 30px 0 18px; }
   .head h1 { margin-bottom: .25em; }
@@ -45,18 +49,30 @@
   }
   .why { margin-top: 34px; }
   .why h2 { margin-bottom: .6em; }
+  .task-fields { display:grid; grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr) auto; gap:10px; align-items:end; }
+  .editor.has-error { border-color:var(--danger); box-shadow:0 0 0 3px rgba(248,113,113,.16); }
+  .playful-story { display:grid; gap:12px; margin-bottom:18px; }
+  .playful-story-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .playful-story h2 { font-size:1.12rem; margin:0 0 4px; }
+  .playful-story p { margin:0; }
+  .playful-story-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .playful-story [data-playful-task-output] { color:var(--ink-mid); min-height:1.5em; }
+  .work-snapshot { margin-top:16px; }
+  .work-snapshot textarea { min-height:130px; resize:vertical; }
+  @media (max-width:760px) { .task-fields { grid-template-columns:1fr; } }
 </style>
 </head>
-<body>
+<body data-playful-page="games/turtle-geometry.html">
 <a class="skip-link" href="#main">跳到主要内容</a>
 
 <nav class="nav"><div class="nav-in wrap">
   <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
-  <div class="row">
+  <div class="row" aria-label="主导航">
     <a class="nav-link" href="../index.html">资源库</a>
     <a class="nav-link" href="../pages/paths.html">学习路径</a>
     <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
     <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
   </div>
 </div></nav>
@@ -72,11 +88,40 @@
 </header>
 
 <main id="main" class="wrap">
+<section class="card playful-story" aria-labelledby="turtleStoryTitle">
+  <div data-playful-companion></div>
+  <div class="playful-story-head">
+    <div><h2 id="turtleStoryTitle">海龟绘图工坊：为作品展准备新画</h2><p>你是工坊里的几何设计师。给作品起名，用命令画出图案，再把当时的完整命令快照保存进作品柜。</p></div>
+    <span data-playful-sticker></span>
+  </div>
+  <div class="playful-story-actions">
+    <button class="btn btn-sm" id="turtleSurpriseBtn" type="button" data-playful-random-task="#turtleSurprise">抽取工坊惊喜任务</button>
+    <p id="turtleSurprise" data-playful-task-output>画架和颜料已经摆好，抽一张创作提示吧。</p>
+  </div>
+  <p id="turtlePlayfulFeedback" data-playful-feedback></p>
+</section>
+
+<section class="task" aria-labelledby="turtleTaskTitle">
+  <h2 class="task-title" id="turtleTaskTitle">任务：用代码画出一个闭合图形</h2>
+  <ol>
+    <li><b>预测：</b>选择挑战级别，并先判断执行后海龟能否回到起点和原朝向。</li>
+    <li><b>操作：</b>编写、运行或单步调试命令；错误时编辑器会选中具体出错行。</li>
+    <li><b>结果：</b>检查位置、朝向和步骤读数，确认图形闭合；需要时导出代码或图片。</li>
+    <li><b>反思：</b>解释每次转角为什么能让海龟回到起点，再保存完成证据。</li>
+  </ol>
+  <div class="task-fields">
+    <div><label for="turtleLevel">分级挑战</label><select class="input" id="turtleLevel"><option value="starter">入门：四边闭合图形</option><option value="builder">进阶：三边闭合图形</option><option value="creator">创作：嵌套重复图案</option></select></div>
+    <div><label for="turtleReflection">我的转角解释</label><textarea class="input" id="turtleReflection" rows="2" placeholder="例如：正方形每次转 90°，四次外角加起来是 360°。"></textarea></div>
+    <button class="btn btn-primary" id="turtleComplete" type="button" disabled>记录任务完成</button>
+  </div>
+  <p class="task-status status" id="turtleTaskStatus" role="status" aria-live="polite">入门任务：画出至少四条边，并回到起点和原朝向。</p>
+</section>
+
 <div class="lab">
 
   <div>
     <div class="lab-stage">
-      <canvas id="cv" width="640" height="450" role="img" aria-label="海龟绘图画布"></canvas>
+      <canvas id="cv" width="640" height="450" role="img" tabindex="0" aria-label="海龟绘图画布；位置、朝向、画笔和执行步骤可在画布右侧读取"></canvas>
     </div>
 
     <div class="panel" style="margin-top:14px">
@@ -89,12 +134,24 @@
         <button class="btn" type="button" id="step">单步</button>
         <button class="btn btn-ghost" type="button" id="reset">重来</button>
         <button class="btn btn-ghost btn-sm" type="button" id="clear">清空命令</button>
+        <button class="btn btn-ghost btn-sm" type="button" id="exportCode">导出代码</button>
+        <button class="btn btn-ghost btn-sm" type="button" id="exportImage">导出图片</button>
       </div>
 
       <div class="ctrl" style="margin-top:16px;margin-bottom:0">
         <div class="ctrl-head"><label for="speed">画得多快</label><b id="speedOut">中速</b></div>
         <input type="range" id="speed" min="1" max="5" step="1" value="3" aria-describedby="speedOut">
       </div>
+
+      <form class="work-card work-snapshot" id="turtleWorkForm" data-playful-work-form>
+        <input type="hidden" name="type" value="drawing">
+        <label for="turtleWorkTitle">作品名称</label>
+        <input class="input" id="turtleWorkTitle" name="title" maxlength="80" placeholder="例如：转角花园" required>
+        <label for="turtleWorkContent">命令快照</label>
+        <textarea class="input" id="turtleWorkContent" name="content" rows="7" readonly></textarea>
+        <button class="btn btn-primary btn-sm" id="turtleWorkSave" type="submit">保存作品与命令快照</button>
+        <p class="hint" data-playful-work-status role="status" aria-live="polite"></p>
+      </form>
     </div>
   </div>
 
@@ -384,15 +441,15 @@
         throw { msg: "步骤太多了（超过 " + MAX_ACTIONS + " 步），画不完。把「重复」的次数改小一点", line: n.line };
       }
       switch (n.k) {
-        case "fd": out.push({ t: "move", v: evalExpr(n.e, rc) }); break;
-        case "bk": out.push({ t: "move", v: -evalExpr(n.e, rc) }); break;
-        case "rt": out.push({ t: "turn", v: evalExpr(n.e, rc) }); break;
-        case "lt": out.push({ t: "turn", v: -evalExpr(n.e, rc) }); break;
-        case "pu": out.push({ t: "pen", v: false }); break;
-        case "pd": out.push({ t: "pen", v: true }); break;
-        case "home": out.push({ t: "home" }); break;
-        case "color": out.push({ t: "color", v: n.v }); break;
-        case "width": out.push({ t: "width", v: Math.max(1, Math.min(12, evalExpr(n.e, rc))) }); break;
+        case "fd": out.push({ t: "move", v: evalExpr(n.e, rc), line: n.line }); break;
+        case "bk": out.push({ t: "move", v: -evalExpr(n.e, rc), line: n.line }); break;
+        case "rt": out.push({ t: "turn", v: evalExpr(n.e, rc), line: n.line }); break;
+        case "lt": out.push({ t: "turn", v: -evalExpr(n.e, rc), line: n.line }); break;
+        case "pu": out.push({ t: "pen", v: false, line: n.line }); break;
+        case "pd": out.push({ t: "pen", v: true, line: n.line }); break;
+        case "home": out.push({ t: "home", line: n.line }); break;
+        case "color": out.push({ t: "color", v: n.v, line: n.line }); break;
+        case "width": out.push({ t: "width", v: Math.max(1, Math.min(12, evalExpr(n.e, rc))), line: n.line }); break;
         case "rep":
           var times = Math.floor(evalExpr(n.e, rc));
           if (!isFinite(times)) throw { msg: "「重复」的次数算不出来", line: n.line };
@@ -581,11 +638,53 @@
   var oPos = document.getElementById("oPos"), oDir = document.getElementById("oDir");
   var oPen = document.getElementById("oPen"), oStep = document.getElementById("oStep");
   var bar = document.getElementById("bar"), barWrap = document.getElementById("barWrap");
+  var turtleLevel = document.getElementById("turtleLevel"), turtleReflection = document.getElementById("turtleReflection");
+  var turtleComplete = document.getElementById("turtleComplete"), turtleTaskStatus = document.getElementById("turtleTaskStatus");
+  var turtleWorkContent = document.getElementById("turtleWorkContent");
+  var taskPassed = false, taskEvidence = "";
+  var LEVEL_TEXT = {
+    starter: "入门任务：画出至少四条边，并回到起点和原朝向。",
+    builder: "进阶任务：画出恰好三条边的闭合图形，并回到原朝向。",
+    creator: "创作任务：使用两层重复画出闭合图案，并回到起点和原朝向。"
+  };
+
+  function updateWorkSnapshot() {
+    turtleWorkContent.value = "挑战：" + turtleLevel.options[turtleLevel.selectedIndex].text + "\n命令快照：\n" + codeEl.value;
+  }
 
   function say(text, kind) {
     if (!text) { msgEl.className = "msg"; msgEl.textContent = ""; return; }
     msgEl.className = "msg on note " + (kind === "ok" ? "note-sci" : "note-warn");
     msgEl.textContent = text;
+  }
+
+  function locateError(line) {
+    var lines = codeEl.value.split("\n"), start = 0;
+    for (var i = 1; i < line && i <= lines.length; i++) start += lines[i - 1].length + 1;
+    var end = start + (lines[Math.max(0, line - 1)] || "").length;
+    codeEl.classList.add("has-error");
+    codeEl.setAttribute("aria-invalid", "true");
+    try { codeEl.focus(); codeEl.setSelectionRange(start, end); } catch (ignore) {}
+  }
+
+  function updateTurtleTask() {
+    var reflected = turtleReflection.value.trim().length >= 8;
+    turtleComplete.disabled = !(taskPassed && reflected);
+    if (!taskPassed) turtleTaskStatus.textContent = LEVEL_TEXT[turtleLevel.value];
+    else turtleTaskStatus.textContent = reflected ? "图形闭合且反思证据已齐，可以记录完成。" : "挑战通过；请写至少 8 个字解释转角。";
+  }
+
+  function assessTask() {
+    var h = homeState();
+    var closed = Math.hypot(turtle.x - h.x, turtle.y - h.y) <= 8;
+    var facing = Math.abs((((turtle.dir % 360) + 540) % 360) - 180) <= 5;
+    var moves = actions.filter(function (a) { return a.t === "move" && Math.abs(a.v) > 0.01; }).length;
+    var turns = actions.filter(function (a) { return a.t === "turn" && Math.abs(a.v) > 0.01; }).length;
+    var repeats = (codeEl.value.match(/重复|repeat/gi) || []).length;
+    var level = turtleLevel.value;
+    taskPassed = !outOfBounds && closed && facing && ((level === "starter" && moves >= 4 && turns >= 4) || (level === "builder" && moves === 3 && turns >= 3) || (level === "creator" && moves >= 12 && repeats >= 2));
+    taskEvidence = "级别：" + turtleLevel.options[turtleLevel.selectedIndex].text + "；" + moves + " 次移动、" + turns + " 次转向；" + (closed ? "回到起点" : "未回到起点") + "，" + (facing ? "回到原朝向" : "朝向不同");
+    updateTurtleTask();
   }
 
   function dirName(d) {
@@ -612,10 +711,12 @@
   function compile() {
     try {
       var nodes = parse(tokenize(codeEl.value));
+      codeEl.classList.remove("has-error");
+      codeEl.setAttribute("aria-invalid", "false");
       if (!nodes.length) { say("编辑器是空的。点右边一个预设例子试试，或者写「前进 100」。"); return null; }
       return flatten(nodes, null, [], 0);
     } catch (err) {
-      if (err && err.msg) say("第 " + err.line + " 行：" + err.msg);
+      if (err && err.msg) { say("第 " + err.line + " 行：" + err.msg); locateError(err.line); }
       else say("命令里有点问题，检查一下拼写和方括号。");
       return null;
     }
@@ -627,6 +728,7 @@
     runBtn.textContent = "运行";
     if (outOfBounds) say("画完了，不过海龟跑出画布外面了。把步数改小一点，或者先「抬笔」挪回来。", "warn");
     else say("画完了！试着改一个数字，再跑一遍。", "ok");
+    assessTask();
     updateReadout();
   }
 
@@ -674,7 +776,7 @@
         : a.t === "pen" ? (a.v ? "落笔" : "抬笔")
         : a.t === "color" ? "换颜色" : a.t === "width" ? "改粗细" : "回家";
       say("第 " + done + " 步：" + label + "（共 " + actions.length + " 步）", "ok");
-      if (done >= actions.length) { finished = true; runBtn.textContent = "运行"; }
+      if (done >= actions.length) { finished = true; runBtn.textContent = "运行"; assessTask(); }
     }
     updateReadout();
   });
@@ -701,6 +803,34 @@
       say("例子装好了，点「运行」看它怎么画。", "ok");
     });
   });
+
+  function download(name, href, revoke) {
+    var link = document.createElement("a"); link.href = href; link.download = name;
+    document.body.appendChild(link); link.click(); link.remove();
+    if (revoke) setTimeout(function () { URL.revokeObjectURL(href); }, 0);
+  }
+  document.getElementById("exportCode").addEventListener("click", function () {
+    var url = URL.createObjectURL(new Blob([codeEl.value], { type: "text/plain;charset=utf-8" }));
+    download("turtle-geometry.txt", url, true);
+    say("代码已导出为 turtle-geometry.txt。", "ok");
+  });
+  document.getElementById("exportImage").addEventListener("click", function () {
+    render();
+    try { download("turtle-geometry.png", cv.toDataURL("image/png"), false); say("图片已导出为 turtle-geometry.png。", "ok"); }
+    catch (err) { say("图片导出失败，请改为导出代码。", "warn"); }
+  });
+
+  turtleLevel.addEventListener("change", function () { taskPassed = false; updateTurtleTask(); updateWorkSnapshot(); });
+  turtleReflection.addEventListener("input", updateTurtleTask);
+  turtleComplete.addEventListener("click", function () {
+    if (turtleComplete.disabled || !window.Progress) return;
+    var evidence = taskEvidence + "；解释：" + turtleReflection.value.trim();
+    if (Progress.complete("games/turtle-geometry.html", evidence)) {
+      turtleTaskStatus.textContent = "已完成并保存证据：" + evidence;
+      say("海龟几何任务已完成并保存在本机。", "ok");
+    }
+  });
+  codeEl.addEventListener("input", function () { taskPassed = false; codeEl.classList.remove("has-error"); codeEl.setAttribute("aria-invalid", "false"); updateTurtleTask(); updateWorkSnapshot(); });
 
   var speedEl = document.getElementById("speed"), speedOut = document.getElementById("speedOut");
   speedEl.addEventListener("input", function () {
@@ -740,8 +870,16 @@
   sizeCanvas();
   codeEl.value = PRESETS.square;
   resetAll(false);
+  updateTurtleTask();
+  updateWorkSnapshot();
   requestAnimationFrame(frame);
 })();
 </script>
+<script src="../data/explorations.js"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../data/playful.js"></script>
+<script src="../assets/js/playful.js"></script>
+<script>if (window.Progress) Progress.visit("games/turtle-geometry.html", "海龟几何");</script>
+<script src="../assets/js/pwa.js"></script>
 </body>
 </html>

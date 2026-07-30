@@ -6,7 +6,11 @@
 <title>学习路径 · 4–12 岁分龄数理启蒙 | 少儿数理启蒙</title>
 <meta name="description" content="按 4–6、6–8、8–10、10–12 岁四个阶段安排的数学与物理启蒙路径：这个年龄真正重要的是什么、用哪几个具体资源、每周花多少时间、以及「学得好」长什么样。" />
 <link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/kid.css">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   /* ---- 页面局部样式（只用 base.css 里的变量） ---- */
   .hero-head { padding: 44px 0 8px; }
@@ -134,6 +138,18 @@
   .idea-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
   .idea-list li { font-size: .92rem; color: var(--ink-mid); }
   .idea-list b { color: var(--ink); }
+  .planner { margin: 28px 0 8px; padding: 20px; }
+  .planner-grid { display:grid; grid-template-columns:repeat(4,minmax(140px,1fr)); gap:12px; }
+  .planner label { display:block; margin-bottom:5px; font-size:.76rem; font-weight:700; color:var(--ink-dim); }
+  .planner select { width:100%; }
+  .plan-output { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+  .week-list, .task-map { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; padding:0; list-style:none; }
+  .week-list li, .task-map-step { padding:12px; border:1px solid var(--line-soft); border-radius:var(--r-sm); background:var(--surface-2); }
+  .week-list b, .task-map-step b { display:block; color:var(--ink); }
+  .week-list span, .task-map-step span { font-size:.84rem; color:var(--ink-mid); }
+  .map-note { font-size:.84rem; color:var(--ink-dim); }
+  @media(max-width:620px){.planner-grid{grid-template-columns:1fr}}
+  @media print { body.print-plan > .nav, body.print-plan > .foot, body.print-plan main > :not(#planner) { display:none!important; } body.print-plan #planner { margin:0; border:0; box-shadow:none; } body.print-plan .no-print { display:none!important; } }
 </style>
 </head>
 <body>
@@ -142,11 +158,12 @@
 
 <nav class="nav"><div class="nav-in wrap">
   <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
-  <div class="row">
+  <div class="row" aria-label="主导航">
     <a class="nav-link" href="../index.html">资源库</a>
     <a class="nav-link" href="../pages/paths.html" aria-current="page">学习路径</a>
     <a class="nav-link" href="../games/index.html">互动实验</a>
     <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
   </div>
 </div></nav>
@@ -172,6 +189,20 @@
       <a href="#s4" style="--tone: var(--code)"><span class="t-age">10–12 岁</span><span class="t-key">抽象与证明</span></a>
     </nav>
   </header>
+
+  <section class="card planner" id="planner" aria-labelledby="plannerTitle">
+    <h2 id="plannerTitle">可打印探险周地图</h2>
+    <p>按家庭可用时间、孩子兴趣和设备条件，从本站目录生成一周的探险站点。地图只安排路线，不设置打卡；是否完成仍由详情页中的真实任务判断。</p>
+    <div class="planner-grid no-print">
+      <div><label for="planAge">孩子当前年龄</label><select class="input" id="planAge" name="ageBand"><option value="4-6">4–6 岁</option><option value="6-8">6–8 岁</option><option value="8-10">8–10 岁</option><option value="10-12">10–12 岁</option></select></div>
+      <div><label for="planTime">每周可用时间</label><select class="input" id="planTime" name="weeklyTime"><option value="60">约 60 分钟</option><option value="120">约 2 小时</option><option value="240">约 4 小时</option></select></div>
+      <div><label for="planInterest">当前兴趣</label><select class="input" id="planInterest" name="interest"><option value="all">都想试试</option><option value="math">数学规律</option><option value="physics">物理现象</option><option value="code">编程创造</option><option value="nature">自然观察</option></select></div>
+      <div><label for="planDevice">设备条件</label><select class="input" id="planDevice" name="device"><option value="mixed">屏幕与动手都可以</option><option value="screen">有电脑 / 平板</option><option value="none">尽量不用屏幕</option></select></div>
+    </div>
+    <div class="row no-print" style="margin-top:14px"><button class="btn btn-primary" id="makePlan" type="button">生成并保存地图</button><button class="btn btn-ghost" id="printPlan" type="button">打印探险地图</button><span id="planMsg" role="status" aria-live="polite"></span></div>
+    <p class="map-note">每一站给出伙伴、任务与可获得的贴纸预告，但没有完成按钮，也不会因打开地图写入完成记录。</p>
+    <div class="plan-output" id="planOutput"><p>选择条件后生成探险地图。</p></div>
+  </section>
 
   <ol class="tl">
 
@@ -515,7 +546,7 @@
             </a>
             <a class="res-card" href="https://openscied.org/" target="_blank" rel="noopener">
               <span class="res-name">OpenSciEd</span>
-              <span class="res-zh">与 NGSS 对齐的免费开源科学课程</span>
+              <span class="res-zh">可免费下载的开源科学课程</span>
               <p class="res-how">想给科学一条正经主线就用它：每个单元围绕一个真实现象展开，一路建模型、找证据。</p>
               <span class="res-meta"><span class="pill pill-sci">科学</span><span class="pill pill-free">免费</span><span class="pill">10–18</span></span>
             </a>
@@ -607,5 +638,19 @@
   </div>
 </footer>
 
+<script src="../data/explorations.js"></script>
+<script src="../data/playful.js"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../assets/js/playful.js"></script>
+<script>
+(function(){"use strict";var key="kids-stem:weekly-plan:v1",age=document.getElementById("planAge"),time=document.getElementById("planTime"),interest=document.getElementById("planInterest"),device=document.getElementById("planDevice"),out=document.getElementById("planOutput"),msg=document.getElementById("planMsg");
+function read(){try{return JSON.parse(localStorage.getItem(key)||"null");}catch(e){return null;}}function write(v){try{localStorage.setItem(key,JSON.stringify(v));return true;}catch(e){return false;}}
+function range(text){var n=String(text).match(/\d+/g)||[];return[Number(n[0]||0),Number(n[1]||n[0]||99)];}function candidates(){var band=range(age.value),list=(window.EXPLORATIONS||[]).filter(function(x){var r=range(x.age);return x.ready&&r[0]<=band[1]&&r[1]>=band[0];});if(interest.value==="nature")list=list.filter(function(x){return x.type==="nature";});else if(interest.value!=="all")list=list.filter(function(x){return x.subject===interest.value;});if(device.value==="none")list=list.filter(function(x){return x.type==="nature";});return list.length?list:(window.EXPLORATIONS||[]).filter(function(x){return x.ready;});}
+function render(plan){out.textContent="";var h=document.createElement("h3");h.textContent="本周探险地图 · "+plan.age.replace("-","–")+" 岁 · 共约 "+plan.minutes+" 分钟";out.appendChild(h);var ul=document.createElement("ol");ul.className="task-map";plan.items.forEach(function(v,i){var li=document.createElement("li"),b=document.createElement("b"),span=document.createElement("span"),a=document.createElement("a"),cfg=window.PLAYFUL&&PLAYFUL.pages&&PLAYFUL.pages[v.id],friend=window.Playful&&Playful.companion(v.id);li.className="task-map-step";b.textContent="第 "+(i+1)+" 站 · "+v.minutes+" 分钟";a.href="../"+v.id;a.textContent=v.title;span.textContent=(friend?friend.emoji+" "+friend.name+"陪你 · ":"")+"任务："+v.task+(cfg&&cfg.sticker?" · 贴纸预告："+cfg.sticker.emoji+cfg.sticker.label:"");li.appendChild(b);li.appendChild(a);li.appendChild(document.createElement("br"));li.appendChild(span);ul.appendChild(li);});out.appendChild(ul);}
+function make(){var list=candidates(),minutes=Number(time.value),sessions=minutes<=60?3:minutes<=120?4:6,each=Math.max(15,Math.round(minutes/sessions)),items=[];for(var i=0;i<sessions;i++){var x=list[i%list.length];items.push({id:x.id,title:x.title,task:x.task,minutes:each});}var plan={minutes:each*sessions,age:age.value,time:time.value,interest:interest.value,device:device.value,items:items,savedAt:new Date().toISOString()};render(plan);msg.textContent=write(plan)?"探险地图已保存在本机；未产生任何完成记录":"地图已生成，但浏览器不允许保存；未产生任何完成记录";}
+document.getElementById("makePlan").addEventListener("click",make);document.getElementById("printPlan").addEventListener("click",function(){document.body.classList.add("print-plan");window.print();});window.addEventListener("afterprint",function(){document.body.classList.remove("print-plan");});var saved=read();if(saved&&saved.items){age.value=saved.age||"4-6";time.value=saved.time||"60";interest.value=saved.interest||"all";device.value=saved.device||"mixed";render(saved);msg.textContent="已恢复上次保存的计划";}
+})();
+</script>
+<script src="../assets/js/pwa.js"></script>
 </body>
 </html>
