@@ -16,6 +16,14 @@ const CHROME_CANDIDATES = [
   '/Applications/Chromium.app/Contents/MacOS/Chromium',
   '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser'
 ].filter(Boolean);
+const DETAIL_PAGES = [
+  'games/number-blocks.html', 'games/fraction-lab.html', 'games/pattern-machine.html',
+  'games/symmetry-studio.html', 'games/estimation-station.html', 'games/turtle-geometry.html',
+  'games/doodle-pad.html', 'games/gravity-drop.html', 'games/ramp-and-roll.html',
+  'games/light-and-shadow.html', 'games/wave-maker.html', 'nature/dinosaurs.html',
+  'nature/space.html', 'nature/ocean.html', 'nature/insects.html', 'nature/earth.html',
+  'nature/weather.html', 'nature/human-body.html'
+];
 
 async function findChrome() {
   for (const candidate of CHROME_CANDIDATES) {
@@ -150,10 +158,22 @@ try {
     step('干净状态');
     await go('pages/progress.html');
     check(await evaluate('return window.Progress && Progress.count() === 0;'), 'v3 初始访问数为 0');
-    check(await evaluate('return document.querySelectorAll("[data-view]").length === 3 && document.getElementById("viewTitle").textContent === "贴纸册";'), '足迹页提供贴纸、笔记、作品三视图');
+    check(await evaluate('return Progress.getPreference("mode") === "kid" && document.documentElement.getAttribute("data-mode") === "kid";'), '新设备默认进入孩子模式');
+    check(await evaluate(`
+      const control = document.querySelector('[data-playful-preference="mode"]');
+      if (!control) return false;
+      control.value = 'parent';
+      control.dispatchEvent(new Event('change', { bubbles: true }));
+      const parentSaved = Progress.getPreference('mode') === 'parent' && document.documentElement.getAttribute('data-mode') === 'parent';
+      control.value = 'kid';
+      control.dispatchEvent(new Event('change', { bubbles: true }));
+      return parentSaved && Progress.getPreference('mode') === 'kid' && document.documentElement.getAttribute('data-mode') === 'kid';
+    `), '孩子与家长模式可切换并保存');
+    check(await evaluate('return document.querySelectorAll("[data-view]").length === 3 && document.getElementById("viewTitle").textContent === "收藏卡册";'), '足迹页提供收藏卡、笔记、作品三视图');
     check(await evaluate('return document.getElementById("stickersTab").tabIndex === 0 && document.getElementById("notesTab").tabIndex === -1 && document.getElementById("collectionPanel").getAttribute("aria-labelledby") === "stickersTab";'), '标签页使用单一可聚焦项并正确标注面板');
-    check(await evaluate('document.getElementById("stickersTab").focus(); document.getElementById("stickersTab").dispatchEvent(new KeyboardEvent("keydown", {key:"ArrowRight", bubbles:true})); return document.activeElement === document.getElementById("notesTab") && document.getElementById("notesTab").getAttribute("aria-selected") === "true" && document.getElementById("viewTitle").textContent === "田野笔记";'), '方向键切换视图并移动焦点');
-    check(await evaluate('return ["visitedCount","stickerCount","noteCount","workCount"].every(id => document.getElementById(id).textContent === "0");'), '四项统计均为 0');
+    check(await evaluate('document.getElementById("stickersTab").focus(); document.getElementById("stickersTab").dispatchEvent(new KeyboardEvent("keydown", {key:"ArrowLeft", bubbles:true})); return document.activeElement === document.getElementById("notesTab") && document.getElementById("notesTab").getAttribute("aria-selected") === "true" && document.getElementById("viewTitle").textContent === "田野笔记";'), '方向键切换视图并移动焦点');
+    check(await evaluate('document.getElementById("stickersTab").click(); return document.querySelectorAll(".album-card").length === 18 && document.querySelectorAll(".album-card[data-unlocked=false]").length === 18 && document.getElementById("milestones").children.length === 4;'), '干净状态显示 18 个锁定卡槽和 4 个里程碑');
+    check(await evaluate('return ["visitedCount","stickerCount","noteCount","workCount"].every(id => document.getElementById(id).textContent === "0") && /0 \/ 18/.test(document.getElementById("albumCount").textContent);'), '四项统计和卡册进度均为 0');
     check(await evaluate('return document.getElementById("storageNotice").hidden;'), 'localStorage 可用时不显示降级提示');
 
     step('跨页面访问');
@@ -163,21 +183,72 @@ try {
     check(await evaluate('return Progress.count() === 2 && !!Progress.get("games/wave-maker.html");'), 'file:// 换页后仍能读取前页记录');
     check(await evaluate('return Progress.get("nature/ocean.html").n === 1;'), '专题访问次数独立记录');
 
-    step('完成、贴纸与作品语义');
-    const completion = await evaluate('return Progress.complete("games/wave-maker.html", "造出增强与抵消两种干涉");');
-    check(completion?.evidence === '造出增强与抵消两种干涉', '保存任务完成证据');
+    step('首次完成解锁收藏卡');
+    await go('games/wave-maker.html');
+    const completion = await evaluate(`
+      const probe = document.createElement('button');
+      probe.id = 'rewardFocusProbe';
+      probe.textContent = '焦点测试';
+      document.body.appendChild(probe);
+      probe.focus();
+      const saved = Progress.complete('games/wave-maker.html', '造出增强与抵消两种干涉');
+      const dialog = document.getElementById('playfulRewardDialog');
+      return {
+        saved,
+        opened: Boolean(dialog && (dialog.open || dialog.dataset.open === 'true')),
+        title: dialog && dialog.querySelector('#rewardDialogTitle').textContent
+      };
+    `);
+    check(completion?.saved?.evidence === '造出增强与抵消两种干涉', '保存任务完成证据');
+    check(completion?.opened && completion.title === '波浪倾听者', '首次完成自动打开对应收藏卡');
+    check(await evaluate(`
+      const dialog = document.getElementById('playfulRewardDialog');
+      dialog.querySelector('.reward-close').click();
+      return !dialog.open && !dialog.hasAttribute('data-open') && document.activeElement.id === 'rewardFocusProbe';
+    `), '关闭收藏卡后恢复触发前焦点');
+    check(await evaluate(`
+      Progress.complete('games/wave-maker.html', '造出增强与抵消两种干涉');
+      const dialog = document.getElementById('playfulRewardDialog');
+      return !dialog.open && !dialog.hasAttribute('data-open');
+    `), '重复完成同一任务不会再次自动弹卡');
+    check(await evaluate(`
+      const badge = document.querySelector('[data-playful-sticker]');
+      badge.click();
+      const dialog = document.getElementById('playfulRewardDialog');
+      const opened = Boolean(dialog && (dialog.open || dialog.dataset.open === 'true'));
+      dialog.querySelector('.reward-close').click();
+      return opened && badge.getAttribute('role') === 'button' && badge.tabIndex === 0;
+    `), '已解锁徽章可用键盘语义重新打开收藏卡');
     const work = await evaluate(`return Progress.saveWork("games/wave-maker.html", {
       type: "observation", title: "干涉记录", content: "波峰相遇增强，波峰与波谷接近抵消。"
     });`);
     check(work?.title === '干涉记录', '保存独立结构化作品');
     check(await evaluate('return Progress.count() === 2;'), '完成任务和保存作品都不增加访问数');
+    await go('games/wave-maker.html');
+    check(await evaluate('const dialog=document.getElementById("playfulRewardDialog"); return !dialog || (!dialog.open && !dialog.hasAttribute("data-open"));'), '刷新页面不会重放已解锁卡片');
 
-    step('足迹页三视图统计');
+    step('收藏卡册与里程碑');
     await go('pages/progress.html');
     check(await evaluate('return document.getElementById("visitedCount").textContent === "2";'), '访问过为 2');
-    check(await evaluate('return document.getElementById("stickerCount").textContent === "1";'), '正式完成派生 1 张贴纸');
+    check(await evaluate('return document.getElementById("stickerCount").textContent === "1" && /1 \/ 18/.test(document.getElementById("albumCount").textContent);'), '正式完成派生 1 张收藏卡');
+    check(await evaluate('return document.querySelectorAll(".album-card").length === 18 && document.querySelectorAll(".album-card[data-unlocked=true]").length === 1 && document.querySelectorAll(".album-card[data-unlocked=false]").length === 17;'), '卡册保留全部 18 个锁定与解锁位置');
+    check(await evaluate('return [...document.querySelectorAll(".album-card[data-unlocked=true]")].some(card => /波浪倾听者/.test(card.textContent) && /造波机/.test(card.textContent) && /造出增强与抵消两种干涉/.test(card.textContent) && /知识小卡/.test(card.textContent));'), '解锁卡显示来源、发现、知识和完成证据');
+    check(await evaluate('return [...document.querySelectorAll(".album-card[data-unlocked=false]")].every(card => !/我的发现|知识小卡|下一次试试/.test(card.textContent));'), '锁定卡不提前揭晓卡片内容');
     check(await evaluate('return document.getElementById("workCount").textContent === "1";'), '结构化作品为 1');
-    check(await evaluate('return [...document.querySelectorAll(".collection-card")].some(card => /波浪倾听者/.test(card.textContent) && /造波机/.test(card.textContent) && /造出增强与抵消两种干涉/.test(card.textContent));'), '贴纸册显示概念贴纸、来源和完成证据');
+    const oneCardBackup = await evaluate('return Progress.exportJSON();');
+    await evaluate(`
+      Progress.complete('games/pattern-machine.html', '找出重复单元');
+      Progress.complete('games/gravity-drop.html', '比较两次下落');
+      const dialog = document.getElementById('playfulRewardDialog');
+      if (dialog && (dialog.open || dialog.dataset.open === 'true')) dialog.querySelector('.reward-close').click();
+      return true;
+    `);
+    check(await evaluate('return /3 \/ 18/.test(document.getElementById("albumCount").textContent) && document.querySelectorAll(".milestone-card[data-unlocked=true]").length === 1;'), '收集 3 张时点亮首个反思里程碑');
+    check(await evaluate(`
+      const ok = Progress.importJSON(${JSON.stringify(oneCardBackup)});
+      const dialog = document.getElementById('playfulRewardDialog');
+      return ok && /1 \/ 18/.test(document.getElementById('albumCount').textContent) && (!dialog || (!dialog.open && !dialog.hasAttribute('data-open')));
+    `), '导入既有记录同步卡册但不制造新解锁弹窗');
     check(await evaluate('document.getElementById("worksTab").click(); return [...document.querySelectorAll(".collection-card")].some(card => /干涉记录/.test(card.textContent));'), '作品册显示保存的作品');
 
     step('田野笔记持久化');
@@ -204,18 +275,28 @@ try {
     const exported = await evaluate('return Progress.exportJSON();');
     const parsed = JSON.parse(exported);
     check(parsed.schemaVersion === 3 && parsed.revision >= 5, '导出为带 revision 的 progress v3');
+    check(!Object.hasOwn(parsed, 'cards') && !Object.hasOwn(parsed, 'milestones'), '导出不重复存储派生卡片与里程碑');
     check(Boolean(parsed.completions['games/wave-maker.html']?.evidence), '导出包含任务证据');
     check(Object.values(parsed.works).length === 1 && Object.values(parsed.works)[0].title === '干涉记录', '导出包含结构化作品');
     await evaluate('document.getElementById("clearData").click(); document.getElementById("clearData").click(); return true;');
     await WAIT(150);
-    check(await evaluate('return Progress.count() === 0 && document.getElementById("visitedCount").textContent === "0";'), '二次确认后清空并立即刷新');
+    check(await evaluate('return Progress.count() === 0 && document.getElementById("visitedCount").textContent === "0" && document.querySelectorAll(".album-card[data-unlocked=true]").length === 0;'), '二次确认后清空访问与卡片并立即刷新');
+    check(await evaluate(`
+      Progress.complete('games/wave-maker.html', '清空后重新完成');
+      const dialog = document.getElementById('playfulRewardDialog');
+      const opened = Boolean(dialog && (dialog.open || dialog.dataset.open === 'true'));
+      if (opened) dialog.querySelector('.reward-close').click();
+      Progress.reset();
+      return opened;
+    `), '清空后重新完成同一卡片会再次触发解锁反馈');
     const imported = await evaluate(`
       document.getElementById('jsonData').value = ${JSON.stringify(exported)};
       document.getElementById('importJson').click();
-      return Progress.count();
+      const dialog = document.getElementById('playfulRewardDialog');
+      return { count: Progress.count(), popup: Boolean(dialog && (dialog.open || dialog.dataset.open === 'true')) };
     `);
-    check(imported === 2, '从下框导入恢复两条访问记录');
-    check(await evaluate('return document.getElementById("stickerCount").textContent === "1" && document.getElementById("noteCount").textContent === "1" && document.getElementById("workCount").textContent === "1";'), '贴纸、笔记和作品均恢复');
+    check(imported?.count === 2 && !imported.popup, '从下框导入恢复记录且不误弹奖励');
+    check(await evaluate('return document.getElementById("stickerCount").textContent === "1" && document.getElementById("noteCount").textContent === "1" && document.getElementById("workCount").textContent === "1";'), '收藏卡、笔记和作品均恢复');
 
     step('删除作品不撤销完成');
     const deleted = await evaluate(`
@@ -228,15 +309,66 @@ try {
     `);
     check(deleted, '通过二次确认删除作品');
     await WAIT(100);
-    check(await evaluate('return Progress.getWorks().length === 0 && document.getElementById("workCount").textContent === "0" && /任务完成和贴纸不受影响/.test(document.getElementById("viewStatus").textContent);'), '删除后计数刷新且稳定反馈说明语义边界');
-    check(await evaluate('return Boolean(Progress.getCompletion("games/wave-maker.html")) && Progress.getStickers("games/wave-maker.html").length === 1;'), '删除作品不撤销任务完成或贴纸');
+    check(await evaluate('return Progress.getWorks().length === 0 && document.getElementById("workCount").textContent === "0" && /任务完成和收藏卡不受影响/.test(document.getElementById("viewStatus").textContent);'), '删除后计数刷新且稳定反馈说明语义边界');
+    check(await evaluate('return Boolean(Progress.getCompletion("games/wave-maker.html")) && Progress.getCards("games/wave-maker.html")[0].unlocked;'), '删除作品不撤销任务完成或收藏卡');
 
     step('首页汇总');
     await go('index.html');
     const trailText = await evaluate('return document.getElementById("trail-go").textContent;');
-    check(/已访问\s*2\s*\/\s*17/.test(trailText), `首页显示 2 / 17（实际“${trailText}”）`);
+    check(/已访问\s*2\s*\/\s*18/.test(trailText), `首页显示 2 / 18（实际“${trailText}”）`);
+    check(await evaluate('return /已收集 1 \/ 18/.test(document.getElementById("recentCardSummary").textContent) && /波浪倾听者/.test(document.getElementById("recentCards").textContent);'), '首页显示收藏卡总数和最近解锁卡');
 
-    step('三档响应式');
+    step('18 页儿童首屏');
+    await browser.send('Emulation.setDeviceMetricsOverride', {
+      width: 375, height: 812, deviceScaleFactor: 2, mobile: true
+    }, sessionId);
+    for (const page of DETAIL_PAGES) {
+      await go(page);
+      const childView = await evaluate(`
+        const root = document.documentElement;
+        const stage = document.querySelector('.kid-hero-scene,.kid-visual-stage');
+        const action = document.querySelector('.kid-action-strip');
+        const deep = document.querySelector('.parent-deep-dive');
+        const focusables = [...document.querySelectorAll('a[href],button:not([disabled]),select,textarea,input:not([type=hidden]),[tabindex]:not([tabindex="-1"])')]
+          .filter(el => getComputedStyle(el).visibility !== 'hidden' && getComputedStyle(el).display !== 'none');
+        const actionControl = action && action.querySelector('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),[role="button"]');
+        const stageRect = stage && stage.getBoundingClientRect();
+        const actionRect = action && action.getBoundingClientRect();
+        const visibleLongText = [...document.querySelectorAll('p,li')].filter(el => {
+          const rect = el.getBoundingClientRect();
+          const style = getComputedStyle(el);
+          return style.display !== 'none' && style.visibility !== 'hidden' && rect.top < innerHeight && rect.bottom > 0 && el.textContent.trim().length > 70;
+        }).length;
+        return {
+          mode: root.getAttribute('data-mode'),
+          stageVisible: Boolean(stageRect && stageRect.width > 0 && stageRect.height > 180),
+          stageArea: stageRect ? Math.round(stageRect.width * Math.min(stageRect.height, innerHeight)) : 0,
+          stageHeight: stageRect ? Math.round(stageRect.height) : 0,
+          viewportArea: innerWidth * innerHeight,
+          visibleLongText,
+          actionVisible: Boolean(actionRect && actionRect.width > 0 && actionRect.height > 0 && actionControl),
+          actionNearStage: Boolean(stageRect && actionRect && actionRect.top < innerHeight && actionRect.top <= stageRect.bottom + 240),
+          parentHidden: Boolean(deep && getComputedStyle(deep).display === 'none'),
+          overflow: root.scrollWidth - root.clientWidth,
+          unnamed: focusables.filter(el => !(el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.labels?.length || el.textContent.trim() || el.title)).length
+        };
+      `);
+      check(childView.mode === 'kid', `${page} 保持孩子模式`);
+      check(childView.stageVisible, `${page} 图形舞台可见`);
+      check(childView.stageArea >= childView.viewportArea * .24, `${page} 图形舞台占据足够首屏面积`);
+      check(childView.stageHeight <= 650, `${page} 图形舞台不过度拉成长卷（${childView.stageHeight}px）`);
+      check(childView.visibleLongText <= 1, `${page} 首屏没有文字墙（长段落 ${childView.visibleLongText} 个）`);
+      check(childView.actionVisible, `${page} 首要操作可用`);
+      check(childView.actionNearStage, `${page} 主操作紧邻舞台且首屏可触达`);
+      check(childView.parentHidden, `${page} 家长深读不占孩子首屏`);
+      check(childView.overflow <= 1, `${page} 375px 无页面级横向溢出（${childView.overflow}px）`);
+      check(childView.unnamed === 0, `${page} 可聚焦控件均有名称`);
+    }
+    await browser.send('Emulation.clearDeviceMetricsOverride', {}, sessionId);
+
+    step('减少动效与三档响应式');
+    check(await evaluate('Progress.setPreference("motion", "reduced"); return document.documentElement.getAttribute("data-playful-motion") === "reduced";'), '减少动效偏好即时生效');
+    await evaluate('Progress.setPreference("motion", "system"); return true;');
     for (const width of [375, 768, 1280]) {
       await browser.send('Emulation.setDeviceMetricsOverride', {
         width, height: width === 375 ? 750 : 900, deviceScaleFactor: width === 375 ? 2 : 1, mobile: width === 375
@@ -250,10 +382,12 @@ try {
         return {
           overflow: root.scrollWidth - root.clientWidth,
           clippedMain: main.left < -1 || main.right > innerWidth + 1,
+          cards: document.querySelectorAll('.album-card').length,
           unnamed: focusables.filter(el => !(el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.labels?.length || el.textContent.trim() || el.title)).length
         };
       `);
       check(layout.overflow <= 1 && !layout.clippedMain, `${width}px 无页面级横向溢出（${layout.overflow}px）`);
+      check(layout.cards === 18, `${width}px 保留完整 18 槽卡册`);
       check(layout.unnamed === 0, `${width}px 可聚焦控件均有名称`);
     }
     await browser.send('Emulation.clearDeviceMetricsOverride', {}, sessionId);

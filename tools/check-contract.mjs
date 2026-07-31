@@ -15,8 +15,10 @@ const EXPECTED_NAV = [
 ];
 /* Progress v3 允许的六种作品类型，data/playful.js 与页面表单共用这一份定义。 */
 const WORK_TYPES = ['observation', 'prediction', 'drawing', 'model', 'explanation', 'photo-note'];
+const VERSIONED_SHARED = /(?:^|\/)(?:assets\/css\/(?:base|kid|print)\.css|assets\/js\/(?:progress|playful|pwa)\.js|data\/(?:explorations|playful)\.js)(?:[?#]|$)/i;
 const errors = [];
 const sourceCache = new Map();
+let shellVersion = null;
 
 async function collect(dir = ROOT, out = []) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -189,9 +191,19 @@ if (!playful || typeof playful !== 'object' || Array.isArray(playful)) {
   const workTypes = Array.isArray(playful.workTypes) ? playful.workTypes : [];
   if (workTypes.map((item) => item && item.id).join('|') !== WORK_TYPES.join('|')) errors.push('data/playful.js: workTypes 类型或顺序不符合 Progress v3 契约');
 
+  const milestones = Array.isArray(playful.milestones) ? playful.milestones : [];
+  if (milestones.map((item) => item && item.count).join('|') !== '3|6|12|18') errors.push('data/playful.js: milestones 必须恰好为 3、6、12、18 四档');
+  milestones.forEach((item, index) => {
+    const where = `data/playful.js milestones[${index}]`;
+    if (!item || typeof item !== 'object') { errors.push(`${where}: 必须是对象`); return; }
+    if (!characterIds.has(item.companion)) errors.push(`${where}: companion 不在 4 个角色中`);
+    if (!String(item.title || '').trim() || String(item.title || '').length > 50) errors.push(`${where}: title 缺失或过长`);
+    if (!String(item.message || '').trim() || String(item.message || '').length > 180) errors.push(`${where}: message 缺失或过长`);
+  });
+
   const playfulPages = playful.pages && typeof playful.pages === 'object' && !Array.isArray(playful.pages) ? playful.pages : {};
   const playfulIds = Object.keys(playfulPages);
-  if (playfulIds.length !== 17) errors.push(`data/playful.js: pages 应恰好 17 项，实际 ${playfulIds.length}`);
+  if (playfulIds.length !== catalogById.size) errors.push(`data/playful.js: pages 应与探索目录同为 ${catalogById.size} 项，实际 ${playfulIds.length}`);
   for (const id of catalogById.keys()) {
     const item = playfulPages[id];
     const where = `data/playful.js pages[${JSON.stringify(id)}]`;
@@ -199,6 +211,15 @@ if (!playful || typeof playful !== 'object' || Array.isArray(playful)) {
     if (!characterIds.has(item.companion)) errors.push(`${where}: companion 不在 4 个角色中`);
     const sticker = item.sticker;
     if (!sticker || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(String(sticker.id || '')) || !String(sticker.label || '').trim() || !String(sticker.emoji || '').trim()) errors.push(`${where}: sticker 不完整`);
+    const card = item.card;
+    if (!card || typeof card !== 'object' || Array.isArray(card)) errors.push(`${where}: card 不完整`);
+    else {
+      for (const key of ['series', 'discovery', 'fact', 'next']) {
+        const value = String(card[key] || '').trim();
+        if (!value || value.length > (key === 'series' ? 30 : 140)) errors.push(`${where}: card.${key} 缺失或过长`);
+      }
+      if (!/^#[0-9a-f]{6}$/i.test(String(card.accent || ''))) errors.push(`${where}: card.accent 必须是 6 位十六进制颜色`);
+    }
     if (!Array.isArray(item.surprises) || item.surprises.length < 2 || item.surprises.length > 4 || item.surprises.some((task) => !String(task || '').trim())) errors.push(`${where}: surprises 必须是 2–4 条非空任务`);
   }
   for (const id of playfulIds) if (!catalogById.has(id)) errors.push(`data/playful.js: pages 含目录外 id: ${id}`);
@@ -210,7 +231,7 @@ try {
   const sandbox = { window: { PLAYFUL: playful, addEventListener() {} } };
   runInNewContext(playfulRuntime, sandbox, { filename: 'assets/js/playful.js', timeout: 1000 });
   const api = sandbox.window.Playful;
-  for (const name of ['init', 'page', 'companion', 'tone', 'randomTask', 'getSticker', 'completionFeedback', 'saveWork', 'validateWork', 'getPreference', 'setPreference', 'motionReduced']) {
+  for (const name of ['init', 'page', 'companion', 'tone', 'randomTask', 'getSticker', 'getCard', 'showCard', 'completionFeedback', 'saveWork', 'validateWork', 'getPreference', 'setPreference', 'motionReduced']) {
     if (!api || typeof api[name] !== 'function') errors.push(`assets/js/playful.js: 缺少 Playful.${name}()`);
   }
 } catch (error) {
@@ -319,7 +340,9 @@ if (!(await isFile(swPath))) {
     for (const required of ['./assets/css/base.css', './assets/css/kid.css', './assets/css/print.css', './assets/js/pwa.js', './manifest.webmanifest']) {
       if (!corePaths.includes(required)) errors.push(`sw.js: CORE 缺少必需的共享文件: ${required}`);
     }
-    if (!/\bCACHE\s*=\s*["'][^"']*v(\d+)["']/.test(swJs)) errors.push('sw.js: CACHE 名称必须带版本号，改动 CORE 后要升版本');
+    const cacheVersion = swJs.match(/\bCACHE\s*=\s*["'][^"']*v(\d+)["']/);
+    if (!cacheVersion) errors.push('sw.js: CACHE 名称必须带版本号，改动 CORE 后要升版本');
+    else shellVersion = cacheVersion[1];
   }
 }
 
@@ -382,6 +405,18 @@ for (const path of files) {
   else if (!/\bmanifest\b/i.test(String(manifestLink.rel || ''))) fail('manifest.webmanifest 必须用 rel="manifest" 引用');
   const pageScriptsAll = scriptSources(html, path);
   if (!pageScriptsAll.includes('assets/js/pwa.js')) fail('未加载 assets/js/pwa.js，本页无法进入离线应用');
+
+  /* 共享壳资源必须与 Service Worker 使用同一版本，防止新 HTML 混入旧 CSS/JS。 */
+  if (shellVersion) {
+    const mandatoryShellResources = ['assets/css/base.css', 'assets/css/kid.css', 'assets/js/pwa.js'];
+    const optionalShellResources = ['assets/js/progress.js', 'assets/js/playful.js'];
+    for (const resource of mandatoryShellResources.concat(optionalShellResources)) {
+      const referenced = new RegExp(`${escapeRe(resource)}(?:[?"'])`, 'i').test(html);
+      if (!referenced && optionalShellResources.includes(resource)) continue;
+      const pattern = new RegExp(`${escapeRe(resource)}\\?v=${escapeRe(shellVersion)}(?:["'#&]|$)`, 'i');
+      if (!pattern.test(html)) fail(`${resource} 必须使用与离线壳一致的 ?v=${shellVersion}`);
+    }
+  }
 
   /* 阶段 2：已废弃的 .playful-work-* 类名不得在页面 class 或页内 <style> 里复活。 */
   for (const token of DEPRECATED_CLASSES) {
@@ -486,6 +521,11 @@ for (const path of files) {
     if (!/data-playful-sticker(?:\s|=|>)/.test(html)) fail('详情页缺少贴纸接入点');
     if (!/data-playful-random-task(?:\s|=|>)/.test(html)) fail('详情页缺少随机探索任务入口');
 
+    /* 儿童图形化：每页都必须先给可理解的视觉舞台与一步主操作，完整原理退到家长层。 */
+    if (!/class=["'][^"']*\bkid-(?:hero-scene|visual-stage)\b/i.test(html)) fail('详情页缺少 kid-hero-scene 或 kid-visual-stage 图形舞台');
+    if (!/class=["'][^"']*\bkid-action-strip\b/i.test(html)) fail('详情页缺少 kid-action-strip 孩子主操作区');
+    if (!/class=["'][^"']*\bparent-deep-dive\b/i.test(html)) fail('详情页缺少 parent-deep-dive 家长深读分区');
+
     /* 阶段 2：作品表单必须真的接线，不只是长得像表单。 */
     const workForms = [...html.matchAll(/<form\b[^>]*>[\s\S]*?<\/form\s*>/gi)]
       .filter((match) => /data-playful-work-form(?:\s|=|>|\/)/.test(match[0].match(/^<form\b[^>]*>/i)?.[0] || ''));
@@ -528,7 +568,13 @@ for (const path of files) {
     if (/连胜|当前连对|\bstreak\b/i.test(html)) fail('详情页不得实现连胜、连对归零或 streak 状态');
   }
   if (top === 'games' && detail) {
-    for (const phrase of ['这在教什么', '给家长', '背后的原理']) if (!html.includes(phrase)) fail(`实验页缺少“${phrase}”`);
+    const hasDeepDive = /class=["'][^"']*\bparent-deep-dive\b/i.test(html);
+    if (!hasDeepDive) fail('实验页缺少家长深读分区');
+    else {
+      if (!/这在教什么|学到什么|今天的发现|学习目标|核心发现/.test(html)) fail('实验页家长层缺少学习目标或核心发现');
+      if (!/给家长|一起追问|陪玩提示|陪伴问题|陪伴追问|和孩子聊/.test(html)) fail('实验页家长层缺少陪伴追问');
+      if (!/背后的原理|科学原理|为什么会这样|原理说明|知识小站/.test(html)) fail('实验页家长层缺少科学原理');
+    }
   }
 }
 

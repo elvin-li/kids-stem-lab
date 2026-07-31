@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>对称工作室 · 互动实验室</title>
 <meta name="description" content="画一笔，镜子里同时出现好几笔。用镜像轴和旋转对称亲手画出雪花与万花筒，理解对称到底对的是什么。">
-<link rel="stylesheet" href="../assets/css/base.css">
-<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/base.css?v=13">
+<link rel="stylesheet" href="../assets/css/kid.css?v=13">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
@@ -94,8 +94,58 @@
   .playful-task-output { min-height:1.6em; margin:0; color:var(--ink); font-weight:700; }
   .playful-evidence { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
   @media (max-width:620px) { .playful-quest-head { grid-template-columns:1fr; } }
+  /* 镜面舞台：中线、左右映射热区和选择都贴着画板出现。 */
+  .mirror-board { position:relative; min-width:0; }
+  .mirror-map { position:absolute; inset:0; pointer-events:none; z-index:2; display:grid; grid-template-columns:1fr 1fr; }
+  .mirror-hot { display:flex; align-items:flex-start; justify-content:center; padding-top:12px; color:var(--ink-dim); font-size:.78rem; font-weight:850; letter-spacing:.06em; background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--math) 5%,transparent)); transition:background .16s var(--ease),color .16s var(--ease); }
+  .mirror-hot + .mirror-hot { background:linear-gradient(-90deg,transparent,color-mix(in srgb,var(--sci) 5%,transparent)); }
+  .mirror-hot.is-source { color:var(--math); background:color-mix(in srgb,var(--math) 13%,transparent); }
+  .mirror-hot.is-copy { color:var(--sci); background:color-mix(in srgb,var(--sci) 13%,transparent); }
+  .mirror-axis { position:absolute; z-index:3; inset:0 auto 0 50%; width:4px; translate:-2px 0; pointer-events:none; background:repeating-linear-gradient(to bottom,var(--warn) 0 13px,transparent 13px 21px); filter:drop-shadow(0 0 3px color-mix(in srgb,var(--warn) 60%,transparent)); }
+  .mirror-axis::before { content:"镜像线"; position:absolute; top:10px; left:8px; white-space:nowrap; padding:3px 8px; border-radius:999px; background:var(--surface); border:1px solid var(--line); color:var(--warn); font-size:.72rem; font-weight:850; }
+  .stage-kid-actions { margin-bottom:10px; }
+  .stage-kid-actions .kid-choice { flex:1 1 260px; }
+  .stage-kid-actions .kid-choice button { flex:1 1 112px; }
+  .mirror-predict { display:flex; flex:1 1 250px; gap:8px; align-items:center; flex-wrap:wrap; }
+  .mirror-predict label { flex:1 1 135px; }
+  .mirror-predict .input { width:76px; flex:0 0 76px; text-align:center; }
+  .canvas-card .kid-result-card { margin:10px; }
+  html[data-mode="kid"] .stage-wrap { grid-template-columns:minmax(0,1fr); max-width:820px; margin-inline:auto; }
+  @media (max-width:620px) {
+    .stage-kid-actions { align-items:stretch; }
+    .mirror-predict { flex-basis:100%; }
+    .mirror-axis::before { left:6px; font-size:.68rem; }
+  }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+  }
+
+  /* 雪花邮局 */
+  html, body { max-width:100%; overflow-x:clip; }
+  .story-hero { position:relative; display:grid; grid-template-columns:auto minmax(0,1fr); gap:16px; align-items:center; margin:22px 0 14px; padding:24px clamp(16px,4vw,30px); overflow:hidden; border:1px solid rgba(74,222,128,.38); border-radius:var(--r-lg); background:linear-gradient(135deg,rgba(74,222,128,.12),rgba(110,168,254,.1) 60%,var(--surface)); }
+  .story-hero::after { content:"❄  ✦"; position:absolute; right:20px; top:8px; color:rgba(110,168,254,.18); font-size:clamp(2.8rem,10vw,6rem); line-height:1; pointer-events:none; }
+  .story-guide { position:relative; z-index:1; width:88px; height:88px; display:grid; place-items:center; border-radius:50% 50% 48% 48%; background:linear-gradient(145deg,#d9fff0,#4ade80); color:#0b4729; font-size:2.5rem; box-shadow:0 10px 28px rgba(74,222,128,.22); transform:rotate(-2deg); }
+  .story-copy { position:relative; z-index:1; min-width:0; }
+  .story-kicker { margin:0 0 5px; color:var(--sci); font-weight:800; font-size:.82rem; }
+  .story-hero h1 { margin:0; }
+  .story-goal { margin:7px 0 0; max-width:52ch; color:var(--ink-mid); font-size:1.02rem; }
+  .story-goal b { color:var(--ink); }
+  .stage-ribbon { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 10px; padding:10px 14px; border-radius:var(--r); background:rgba(74,222,128,.08); color:var(--ink-mid); }
+  .learning-layers { display:grid; gap:12px; margin-top:28px; }
+  .learning-layers details { border:1px solid var(--line); border-radius:var(--r); background:var(--surface); padding:0 16px; }
+  .learning-layers summary { min-height:48px; display:flex; align-items:center; cursor:pointer; color:var(--ink); font-weight:800; }
+  .learning-layers details > div { padding:0 0 16px; color:var(--ink-mid); }
+  main#main > * { order:0 !important; }
+  [hidden] { display:none !important; }
+  button, .btn, .chip, select, input[type="range"] { min-height:44px; }
+  .sw { width:44px; height:44px; }
+  canvas { max-width:100%; }
+  .mission-grid, .work-card-fields, .stage-wrap { min-width:0; }
+  @media (max-width:620px) {
+    .story-hero { grid-template-columns:1fr; padding:18px 16px; }
+    .story-guide { width:68px; height:68px; font-size:2rem; }
+    .story-hero::after { font-size:2.8rem; }
+    .panel .seg .btn { flex:1 1 44%; }
   }
 </style>
 </head>
@@ -116,72 +166,54 @@
 
 <main class="wrap" id="main">
 
-  <header class="lab-head">
-    <div class="meta">
-      <span class="pill pill-math">数学</span>
-      <span class="pill">5–11 岁</span>
-      <span class="pill">对称与变换</span>
+  <header class="story-hero kid-hero-scene">
+    <div class="story-guide" aria-hidden="true">❄️</div>
+    <div class="story-copy">
+      <p class="story-kicker">果果从雪花邮局寄来半张图</p>
+      <div class="meta">
+        <span class="pill pill-math">数学</span>
+        <span class="pill">5–11 岁</span>
+        <span class="pill">对称与变换</span>
+      </div>
+      <h1>用魔法镜补完整张图</h1>
+      <p class="story-goal"><b>只画一笔：</b>看看镜子和旋转会帮你变出多少笔。</p>
     </div>
-    <h1>对称工作室</h1>
-    <p class="lead">
-      <b>这在教什么：</b>画一笔，镜子里同时出现好几笔。改变镜面的数量，看看什么时候能画出雪花、
-      什么时候能画出万花筒——对称不是「长得好看」，是「转过去 / 翻过来还是原样」。
-    </p>
   </header>
 
-  <section class="task mission" aria-labelledby="symMissionTitle">
-    <h2 class="task-title" id="symMissionTitle">任务：预测镜像与旋转会复制几笔</h2>
-    <ol>
-      <li><b>预测：</b>选择挑战，先预测一笔会变成几笔并锁定。</li>
-      <li><b>操作：</b>镜像挑战画一条直线，旋转挑战画一条曲线（鼠标、触摸或键盘均可）。</li>
-      <li><b>结果：</b>读出实际复制数，找出镜像轴或旋转中心。</li>
-      <li><b>反思：</b>写下反射对称与旋转对称哪里不同。</li>
-    </ol>
-    <div class="mission-grid">
-      <div role="group" aria-label="选择对称挑战">
-        <button class="chip" id="mirrorChallenge" type="button">镜像挑战 · 1 折</button>
-        <button class="chip" id="rotateChallenge" type="button">旋转挑战 · 4 折</button>
-      </div>
-      <div><label for="symPredict">我预测一笔会变成（笔）</label><input class="input" id="symPredict" type="number" min="1" max="32" step="1" inputmode="numeric"><button class="btn btn-sm" id="symLock" type="button" style="margin-top:6px">锁定预测</button></div>
-      <div><label for="symReflect">我的反思</label><textarea class="input" id="symReflect" placeholder="例如：镜像会翻面，旋转只绕中心转。"></textarea></div>
-      <button class="btn btn-primary" id="symComplete" type="button" disabled>记录任务完成</button>
-    </div>
-    <p class="task-status status" id="symStatus" role="status" aria-live="polite">尚未完成：先选择镜像挑战或旋转挑战。</p>
-      <div class="playful-quest" style="--quest-accent:var(--sci)" aria-labelledby="symmetryStoryTitle">
-      <div class="playful-quest-head">
-        <div><h3 id="symmetryStoryTitle">雪花邮局的半张图</h3><p class="playful-story">果果收到半张图案。请用镜像和旋转补全它，再保存一张“变换说明”作品卡。</p></div>
-        <div data-playful-companion role="note" aria-label="果果伙伴提示"></div>
-      </div>
-      <div class="playful-tools">
-        <button class="btn btn-sm" type="button" data-playful-random-task="#symmetrySurprise">拆开随机图案信</button>
-        <p class="playful-task-output" id="symmetrySurprise" data-playful-task-output role="status" aria-live="polite">信封里会出现一个新的对称任务。</p>
-      </div>
-      <div class="playful-evidence"><span data-playful-sticker aria-label="对称工作室贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
-      <form class="work-card work-card-form" data-playful-work-form aria-labelledby="symmetryWorkTitle">
-        <h4 id="symmetryWorkTitle">保存我的对称作品说明</h4>
-        <div class="work-card-fields">
-          <div><label for="symmetryWorkType">作品类型</label><select class="input" id="symmetryWorkType" name="type"><option value="drawing">发现画</option><option value="explanation">我的解释</option><option value="model">模型说明</option></select></div>
-          <div><label for="symmetryWorkName">作品名称</label><input class="input" id="symmetryWorkName" name="title" required maxlength="80" placeholder="例如：六折雪花"></div>
-          <div><label for="symmetryWorkContent">变换说明</label><textarea class="input" id="symmetryWorkContent" name="content" required maxlength="4000" placeholder="记录折数、是否镜像，以及图案怎样重合。"></textarea></div>
-          <button class="btn btn-primary btn-sm" type="submit">保存图案卡</button>
-        </div>
-        <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">PNG 可另存；这里保存的是作品文字说明。</p>
-      </form>
-    </div>
-  </section>
+  <div class="stage-ribbon" role="note"><span aria-hidden="true">✏️</span><strong>现在就画：</strong><span>在画板拖一笔；也可以聚焦画板，用方向键和空格。</span></div>
 
   <div class="stage-wrap">
-    <div class="canvas-card">
-      <canvas id="pad" width="760" height="760" role="application" tabindex="0"
-              aria-label="对称画板：拖动绘画；键盘方向键移动画笔，空格或回车画一小笔"></canvas>
-      <div class="canvas-hint" id="hint">
-        <span class="big">✎</span>
-        在这里拖动手指或鼠标
+    <div>
+      <div class="stage-kid-actions kid-action-strip" data-audience="kid-only">
+        <span>先选一种魔法，再在画板拖一笔</span>
+        <div class="kid-choice" data-kid-choice-group role="group" aria-label="选择对称方式">
+          <button id="kidMirrorMode" type="button" data-kid-choice data-value="镜像" aria-pressed="true">沿镜像线翻过去</button>
+          <button id="kidRotateMode" type="button" data-kid-choice data-value="旋转" aria-pressed="false">绕中心转过去</button>
+        </div>
       </div>
-      <p class="sr-only" id="canvasLive" aria-live="polite"></p>
+      <div class="canvas-card kid-visual-stage">
+        <div class="mirror-board">
+          <canvas id="pad" width="760" height="760" role="application" tabindex="0"
+                  aria-label="对称画板：中间是镜像线；拖动绘画；键盘方向键移动画笔，空格或回车画一小笔"></canvas>
+          <div class="mirror-map" id="mirrorMap" aria-hidden="true">
+            <div class="mirror-hot" id="mirrorLeft">左侧热区</div>
+            <div class="mirror-hot" id="mirrorRight">右侧热区</div>
+          </div>
+          <span class="mirror-axis" id="mirrorAxis" aria-hidden="true"></span>
+          <div class="canvas-hint" id="hint">
+            <span class="big">✎</span>
+            任选一边拖一笔，看另一边马上出现
+          </div>
+          <p class="sr-only" id="canvasLive" aria-live="polite"></p>
+        </div>
+        <div class="kid-result-card" role="status" aria-live="polite">
+          <svg viewBox="0 0 72 54" width="72" height="54" aria-hidden="true"><path d="M35 4v46" stroke="var(--warn)" stroke-width="3" stroke-dasharray="6 5"/><path d="M28 15L10 27l18 12M43 15l18 12-18 12" fill="none" stroke="var(--math)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><b id="mirrorStageResult">镜像线把左边和右边一一对应。</b><p id="mirrorStageSub">拖动时，蓝色是你画的一侧，绿色是映出的另一侧。</p></div>
+        </div>
+      </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-audience="parent">
       <div class="ctl">
         <span class="lbl">镜面数量 · <span class="val" id="foldVal">6</span> 折</span>
         <input id="fold" type="range" min="1" max="16" step="1" value="6"
@@ -227,7 +259,42 @@
     </div>
   </div>
 
-  <section class="ask">
+  <section class="task mission" aria-labelledby="symMissionTitle">
+    <div class="card parent-deep-dive" data-audience="parent" style="margin-bottom:14px">
+      <h2 style="font-size:1.1rem">这在教什么</h2>
+      <p style="margin:0">对称不是只要“好看”：翻过去仍重合是反射对称，绕中心转过一定角度仍重合是旋转对称。</p>
+    </div>
+    <h2 class="task-title" id="symMissionTitle">正式任务 · 补全两封图案信</h2>
+    <ol>
+      <li><b>先猜：</b>选择镜像或旋转，预测一笔会变几笔。</li>
+      <li><b>再画：</b>锁定预测后，在画板画一笔。</li>
+      <li><b>说发现：</b>比较翻面和绕中心转有什么不同。</li>
+    </ol>
+    <div class="mission-grid">
+      <div role="group" aria-label="选择对称挑战"><button class="chip" id="mirrorChallenge" type="button">打开镜像信 · 1 折</button><button class="chip" id="rotateChallenge" type="button">打开旋转信 · 4 折</button></div>
+      <div><label for="symPredict">我猜一笔会变成（笔）</label><input class="input" id="symPredict" type="number" min="1" max="32" step="1" inputmode="numeric"><button class="btn btn-sm" id="symLock" type="button" style="margin-top:6px">就猜这么多笔</button></div>
+      <div><label for="symReflect">我的发现</label><textarea class="input" id="symReflect" placeholder="例如：镜像会翻面，旋转只绕中心转。"></textarea></div>
+      <button class="btn btn-primary" id="symComplete" type="button" disabled>把图案发现记进足迹</button>
+    </div>
+    <p class="task-status status" id="symStatus" role="status" aria-live="polite">尚未完成：先选择镜像挑战或旋转挑战。</p>
+    <div class="playful-quest" style="--quest-accent:var(--sci)" aria-labelledby="symmetryStoryTitle">
+      <div class="playful-quest-head"><div><h3 id="symmetryStoryTitle">雪花邮局的作品袋</h3><p class="playful-story">用镜像和旋转补全图案，再留下“它怎样重合”的说明。</p></div><div data-playful-companion role="note" aria-label="果果伙伴提示"></div></div>
+      <div class="playful-tools"><button class="btn btn-sm" type="button" data-playful-random-task="#symmetrySurprise">拆开另一封图案信</button><p class="playful-task-output" id="symmetrySurprise" data-playful-task-output role="status" aria-live="polite">信封里会出现一个新对称任务。</p></div>
+      <div class="playful-evidence"><span data-playful-sticker aria-label="对称工作室贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
+      <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form aria-labelledby="symmetryWorkTitle">
+        <h4 id="symmetryWorkTitle">作品表单 · 保存对称图案</h4>
+        <div class="work-card-fields">
+          <div><label for="symmetryWorkType">作品类型</label><select class="input" id="symmetryWorkType" name="type"><option value="drawing">发现画</option><option value="explanation">我的解释</option><option value="model">模型说明</option></select></div>
+          <div><label for="symmetryWorkName">作品名称</label><input class="input" id="symmetryWorkName" name="title" required maxlength="80" placeholder="例如：六折雪花"></div>
+          <div><label for="symmetryWorkContent">变换说明</label><textarea class="input" id="symmetryWorkContent" name="content" required maxlength="4000" placeholder="记录折数、是否镜像，以及图案怎样重合。"></textarea></div>
+          <button class="btn btn-primary btn-sm" type="submit">寄出我的图案卡</button>
+        </div>
+        <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">PNG 可另存；文字说明只保存在这台设备上。</p>
+      </form>
+    </div>
+  </section>
+
+  <section class="ask parent-deep-dive" data-audience="parent">
     <h2>给家长：陪玩时可以这样问</h2>
     <ol>
       <li>把镜面调成 <b>1</b>，只剩一面镜子。这时候画出来的东西，像不像照镜子的你？</li>
@@ -257,7 +324,17 @@
   var ctx = canvas.getContext("2d");
   var hint = document.getElementById("hint");
 
-  var COLORS = ["#6ea8fe", "#4ade80", "#a78bfa", "#fb923c", "#f472b6", "#22d3ee", "#fbbf24", "#eef2ff"];
+  /* 画笔颜色读共享主题变量：浅色主题自动换成深一档的墨色，避免白纸白笔。 */
+  var CSSV = getComputedStyle(document.documentElement);
+  function V(name, fallback) {
+    var v = CSSV.getPropertyValue(name);
+    return (v && v.trim()) || fallback;
+  }
+  var COLORS = [
+    V('--math', '#1b64c8'), V('--sci', '#0b7a45'), V('--phys', '#6d31d4'),
+    V('--code', '#b8500f'), V('--kit', '#c01764'), V('--video', '#0a6f85'),
+    V('--warn', '#96650d'), V('--canvas-ink', '#16202e')
+  ];
 
   var state = {
     fold: 6,
@@ -302,7 +379,7 @@
   function clearSurface() {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.fillStyle = "#161d33";
+    ctx.fillStyle = V("--canvas-bg", "#ffffff");
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
   }
@@ -381,6 +458,39 @@
   }
 
   /* ---------- input ---------- */
+  var mirrorLeft = document.getElementById("mirrorLeft");
+  var mirrorRight = document.getElementById("mirrorRight");
+  var mirrorAxis = document.getElementById("mirrorAxis");
+  var mirrorStageResult = document.getElementById("mirrorStageResult");
+  var mirrorStageSub = document.getElementById("mirrorStageSub");
+
+  function updateMirrorMap(point) {
+    mirrorLeft.className = "mirror-hot";
+    mirrorRight.className = "mirror-hot";
+    if (!state.mirror) {
+      mirrorLeft.textContent = "绕中心";
+      mirrorRight.textContent = "旋转映射";
+      mirrorAxis.style.opacity = ".24";
+      mirrorStageResult.textContent = "现在不翻面：每一笔会绕中心旋转 " + state.fold + " 份。";
+      mirrorStageSub.textContent = "画一笔，再找它绕中心转过去的同伴。";
+      return;
+    }
+    mirrorLeft.textContent = "左侧热区";
+    mirrorRight.textContent = "右侧热区";
+    mirrorAxis.style.opacity = "1";
+    if (!point) {
+      mirrorStageResult.textContent = "镜像线把左边和右边一一对应。";
+      mirrorStageSub.textContent = "任选一边拖一笔，另一边会同时出现翻面图形。";
+      return;
+    }
+    var source = point.x < CSS / 2 ? mirrorLeft : mirrorRight;
+    var copy = source === mirrorLeft ? mirrorRight : mirrorLeft;
+    source.classList.add("is-source");
+    copy.classList.add("is-copy");
+    mirrorStageResult.textContent = source === mirrorLeft ? "左边是原笔，右边是镜像。" : "右边是原笔，左边是镜像。";
+    mirrorStageSub.textContent = "两点离镜像线一样远，方向左右相反。";
+  }
+
   function begin(ev) {
     ev.preventDefault();
     state.drawing = true;
@@ -390,6 +500,7 @@
       fold: state.fold, mirror: state.mirror, pts: [p]
     };
     hint.classList.add("gone");
+    updateMirrorMap(p);
     redraw();
   }
   function move(ev) {
@@ -401,6 +512,7 @@
     // skip micro-moves so stroke arrays stay small
     if (Math.abs(p.x - last.x) + Math.abs(p.y - last.y) < 1.2) return;
     pts.push(p);
+    updateMirrorMap(pts[0]);
     redraw();
     report();
   }
@@ -438,6 +550,7 @@
       var stroke = { color:state.color, size:state.size, fold:state.fold, mirror:state.mirror,
         pts:[{x:p.x - 10,y:p.y},{x:p.x,y:p.y - (state.challenge === "rotate" ? 8 : 0)},{x:p.x + 10,y:p.y}] };
       state.strokes.push(stroke); state.redo.length = 0; hint.classList.add("gone");
+      updateMirrorMap(p);
       evaluateChallenge(stroke); redraw(); report();
     } else return;
     ev.preventDefault();
@@ -451,6 +564,8 @@
       ? "反射 + 旋转对称（像雪花）"
       : "只有旋转对称（像风车）";
     var strokes = state.strokes.length + (state.current ? 1 : 0);
+    var latest = state.current || state.strokes[state.strokes.length - 1];
+    updateMirrorMap(latest && latest.pts.length ? latest.pts[0] : null);
     document.getElementById("readout").innerHTML =
       "你画的每一笔会变成 <span class='n'>" + copies + "</span> 笔。<br>" +
       "现在是 <b>" + kind + "</b>。<br>" +
@@ -473,14 +588,25 @@
   });
 
   var mOn = document.getElementById("mirrorOn"), mOff = document.getElementById("mirrorOff");
+  var kidMirrorMode = document.getElementById("kidMirrorMode"), kidRotateMode = document.getElementById("kidRotateMode");
   function setMirror(on) {
     state.mirror = on;
     mOn.setAttribute("aria-pressed", on ? "true" : "false");
     mOff.setAttribute("aria-pressed", on ? "false" : "true");
+    kidMirrorMode.setAttribute("aria-pressed", on ? "true" : "false");
+    kidRotateMode.setAttribute("aria-pressed", on ? "false" : "true");
     redraw(); report();
   }
   mOn.addEventListener("click", function () { setMirror(true); });
   mOff.addEventListener("click", function () { setMirror(false); });
+  kidMirrorMode.addEventListener("click", function () {
+    state.fold = 1; foldEl.value = "1"; document.getElementById("foldVal").textContent = "1";
+    setMirror(true);
+  });
+  kidRotateMode.addEventListener("click", function () {
+    state.fold = 4; foldEl.value = "4"; document.getElementById("foldVal").textContent = "4";
+    setMirror(false);
+  });
 
   var guideBtn = document.getElementById("guideBtn");
   guideBtn.addEventListener("click", function () {
@@ -589,10 +715,10 @@
 </script>
 
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js"></script>
-<script src="../data/playful.js"></script>
-<script src="../assets/js/playful.js"></script>
+<script src="../assets/js/progress.js?v=13"></script>
+<script src="../data/playful.js?v=13"></script>
+<script src="../assets/js/playful.js?v=13"></script>
 <script>if (window.Progress) Progress.visit("games/symmetry-studio.html", "对称工作室");</script>
-<script src="../assets/js/pwa.js"></script>
+<script src="../assets/js/pwa.js?v=13"></script>
 </body>
 </html>

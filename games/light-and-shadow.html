@@ -5,17 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>光与影 · 光走直线 | 少儿数理启蒙</title>
 <meta name="description" content="拖动灯和物体，看影子怎么变大变小；再用红绿蓝三盏灯玩加色混合。给 5–10 岁小朋友的光学直觉启蒙。" />
-<link rel="stylesheet" href="../assets/css/base.css">
-<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/base.css?v=13">
+<link rel="stylesheet" href="../assets/css/kid.css?v=13">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
-  .lab-head { margin: 24px 0 18px; }
-  .lab-head p.lead { font-size: 1.02rem; max-width: 62ch; }
+  * { box-sizing: border-box; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  main > *, .theater-lab > *, .control-stack > *, .task-fields > *, .step-card { min-width: 0; }
   .seg { display: flex; gap: 8px; flex-wrap: wrap; }
-  .hint { font-size: .78rem; color: var(--ink-dim); margin-top: 4px; }
+  .hint { font-size: .82rem; color: var(--ink-dim); margin-top: 4px; }
   .mono { font-family: var(--mono); }
   .qlist { margin: 0; padding-left: 1.15em; color: var(--ink-mid); font-size: .94rem; }
   .qlist li { margin-bottom: .5em; }
@@ -26,13 +27,227 @@
   .modehide { display: none; }
   .task-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto; gap:10px; align-items:end; }
   .text-result { line-height:1.6; color:var(--ink-mid); }
-  .playful-story { display:grid; gap:12px; margin-bottom:18px; }
-  .playful-story-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .playful-story h2 { font-size:1.12rem; margin:0 0 4px; }
-  .playful-story p { margin:0; }
-  .playful-story-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .playful-story [data-playful-task-output] { color:var(--ink-mid); min-height:1.5em; }
-  @media (max-width:760px) { .task-fields { grid-template-columns:1fr; } }
+
+  .theater-hero {
+    position: relative;
+    isolation: isolate;
+    margin: 24px 0 14px;
+    padding: clamp(20px, 4vw, 38px);
+    overflow: hidden;
+    border: 1px solid rgba(251,191,36,.32);
+    border-radius: 28px;
+    background:
+      radial-gradient(circle at 16% 20%, rgba(251,191,36,.20), transparent 22%),
+      radial-gradient(circle at 84% 18%, rgba(110,168,254,.18), transparent 24%),
+      linear-gradient(145deg, #21152e 0%, #14182c 52%, #10253a 100%);
+    box-shadow: 0 18px 48px rgba(4,7,18,.28);
+  }
+  .theater-hero::before,
+  .theater-hero::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    bottom: 0;
+    width: clamp(34px, 8vw, 96px);
+    opacity: .78;
+    pointer-events: none;
+    background: repeating-linear-gradient(90deg, #7f1d3f 0 18px, #a52b54 18px 34px, #641532 34px 46px);
+    filter: drop-shadow(0 0 14px rgba(0,0,0,.35));
+  }
+  .theater-hero::before { left: 0; clip-path: polygon(0 0, 100% 0, 68% 100%, 0 100%); }
+  .theater-hero::after { right: 0; clip-path: polygon(0 0, 100% 0, 100% 100%, 32% 100%); }
+  .theater-stars {
+    position: absolute;
+    inset: 10px 9% auto;
+    display: flex;
+    justify-content: space-between;
+    color: #ffe9a8;
+    font-size: clamp(.9rem, 2vw, 1.25rem);
+    letter-spacing: .16em;
+    opacity: .9;
+    pointer-events: none;
+  }
+  .hero-copy { position: relative; z-index: 1; max-width: 760px; margin-inline: auto; text-align: center; }
+  .hero-copy .row { justify-content: center; }
+  .hero-copy h1 { margin: 12px 0 8px; font-size: clamp(1.8rem, 5vw, 3.25rem); line-height: 1.08; }
+  .hero-copy .story-line { margin: 0 auto; max-width: 58ch; color: var(--ink-mid); font-size: clamp(1rem, 2vw, 1.12rem); }
+  .playful-story-actions { display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; margin-top:18px; }
+  .playful-story-actions p { margin: 0; min-height: 1.5em; color: var(--ink-mid); }
+  [data-playful-feedback] { margin: 10px 0 0; min-height: 1.4em; color: var(--ink-mid); }
+  .one-goal {
+    margin: 0 0 14px;
+    padding: 14px 18px;
+    border: 2px solid rgba(74,222,128,.38);
+    border-radius: 18px;
+    background: linear-gradient(100deg, rgba(74,222,128,.11), rgba(110,168,254,.09));
+    text-align: center;
+    font-size: clamp(1rem, 2.2vw, 1.18rem);
+  }
+  .one-goal strong { color: var(--sci); }
+
+  .mode-picker { margin-bottom: 12px; padding: 12px 14px; border-radius: 18px; background: rgba(110,168,254,.08); }
+  .mode-picker strong { margin-right: 4px; }
+  .mode-picker .chip { min-width: min(100%, 160px); }
+
+  .theater-lab-shell {
+    position: relative;
+    padding: 48px clamp(10px, 2vw, 20px) clamp(12px, 2vw, 20px);
+    border: 1px solid rgba(251,191,36,.35);
+    border-radius: 24px;
+    background: linear-gradient(180deg, #4c1733 0 38px, rgba(76,23,51,.16) 38px, rgba(11,15,26,.44) 100%);
+    box-shadow: 0 16px 42px rgba(4,7,18,.22);
+  }
+  .theater-lab-shell::before {
+    content: '●  ✦  ●  ★  ●  ✦  ●  ★  ●  ✦  ●';
+    position: absolute;
+    inset: 10px 18px auto;
+    overflow: hidden;
+    color: #ffe9a8;
+    text-align: center;
+    white-space: nowrap;
+    letter-spacing: clamp(.12em, 1.2vw, .55em);
+    text-shadow: 0 0 9px #ffd166;
+    pointer-events: none;
+  }
+  .theater-lab { margin: 0; }
+  .stage-curtain { position: relative; isolation: isolate; }
+  .stage-curtain::before,
+  .stage-curtain::after {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    top: 4px;
+    bottom: 44px;
+    width: 12px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #751837, #b32d58, #711532);
+    pointer-events: none;
+  }
+  .stage-curtain::before { left: -8px; }
+  .stage-curtain::after { right: -8px; transform: scaleX(-1); }
+  #scene {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    border: 2px solid rgba(255,233,168,.3);
+    border-radius: 16px;
+    background: #0a0e19;
+    box-shadow: inset 0 0 26px rgba(0,0,0,.42), 0 10px 24px rgba(4,7,18,.26);
+    touch-action: none;
+  }
+  #scene:focus-visible { outline: 3px solid var(--math); outline-offset: 3px; }
+  .stage-foot { position: relative; z-index: 1; }
+  .control-stack { display: grid; gap: 12px; align-content: start; }
+  .control-stack .panel { margin: 0; }
+  .control-stack h3 { margin-bottom: 12px; }
+  .ctrl label, .ctrl-head > span { font-weight: 750; }
+
+  button, .btn, .chip, input, select, textarea { max-width: 100%; }
+  button, .btn, .chip { min-height: 44px; }
+  input[type='range'] { min-height: 44px; touch-action: pan-y; }
+  .step-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:20px 0; }
+  .step-card {
+    position: relative;
+    overflow: hidden;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: linear-gradient(145deg, rgba(110,168,254,.10), rgba(251,191,36,.06));
+  }
+  .step-card::after { content: attr(data-icon); position:absolute; right:10px; top:6px; font-size:1.8rem; opacity:.22; pointer-events:none; }
+  .step-card h3 { margin: 0 0 7px; padding-right: 24px; font-size: 1rem; color: var(--ink); }
+  .step-card p { margin: 0; color: var(--ink-mid); font-size: .9rem; line-height: 1.55; }
+  .science-note { margin: 0 0 20px; border-left: 4px solid var(--sci); }
+  .science-note h2 { font-size: 1.15rem; margin-bottom: 6px; }
+  .science-note p { margin: 0; }
+  .formal-task { margin-top: 20px; }
+  .formal-task .task-title { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .formal-task form[data-playful-work-form] { margin-top: 18px; }
+  .parent-principle-grid { margin-top:22px; }
+
+  @media (max-width:900px) {
+    .step-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+  @media (max-width:760px) {
+    .task-fields { grid-template-columns:1fr; }
+    .theater-hero { border-radius: 22px; padding-inline: 42px; }
+    .theater-lab-shell { padding-inline: 8px; }
+    .stage-curtain::before, .stage-curtain::after { display:none; }
+    .mode-picker { align-items: stretch; }
+    .mode-picker .chip { flex: 1 1 145px; }
+  }
+  @media (max-width:480px) {
+    .theater-hero { padding: 28px 30px 22px; }
+    .theater-stars { inset-inline: 5%; }
+    .hero-copy .row { gap: 6px; }
+    .step-grid { grid-template-columns:1fr; }
+    .theater-lab-shell::before { font-size:.78rem; letter-spacing:.08em; }
+    .stage-foot { align-items:flex-start; }
+    .legend { gap:7px 10px; }
+  }
+
+  /* 本页儿童视觉层：首屏先看见空间关系，再动手。 */
+  .theater-hero.kid-story-intro { margin:14px 0 10px; padding:16px clamp(36px,7vw,72px); border-radius:22px; }
+  .theater-hero .hero-copy h1 { margin:6px 0 4px; font-size:clamp(1.55rem,4vw,2.45rem); }
+  .theater-hero .story-line { max-width:48ch; }
+  .theater-hero [data-playful-companion],
+  .theater-hero [data-playful-feedback] { display:none; }
+  .playful-story-actions { margin-top:10px; }
+  .one-goal { padding:10px 14px; margin-bottom:10px; }
+  .mode-picker { margin-bottom:10px; }
+  .theater-lab-shell { padding-top:44px; }
+  .stage-curtain.kid-visual-stage { min-width:0; }
+  .light-path {
+    display:grid; grid-template-columns:1fr auto 1fr auto 1fr; align-items:center; gap:8px;
+    margin:0 0 10px; padding:8px; border:1px solid rgba(255,233,168,.28); border-radius:16px;
+    background:rgba(5,8,18,.72); color:var(--ink); text-align:center;
+  }
+  .light-path-node { display:grid; place-items:center; gap:1px; min-height:58px; padding:5px; border-radius:12px; background:rgba(255,255,255,.06); font-weight:850; }
+  .light-path-node b { font-size:1.45rem; line-height:1; }
+  .light-path-node small { color:var(--ink-mid); font-size:.7rem; }
+  .light-path-arrow { color:#ffe9a8; font-size:1.35rem; font-weight:900; }
+  .shadow-hot-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:10px; }
+  .shadow-hot-actions button { min-height:48px; padding:7px 8px; border:1px solid var(--line); border-radius:14px; background:var(--surface); color:var(--ink); font-weight:800; cursor:pointer; }
+  .shadow-hot-actions button:hover,.shadow-hot-actions button:focus-visible { border-color:var(--warn); }
+  .result-glance { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+  .glance-card { padding:11px; border:1px solid var(--line); border-radius:14px; background:var(--bg-soft); }
+  .glance-card span { display:block; color:var(--ink-mid); font-size:.78rem; font-weight:750; }
+  .glance-card b { display:block; margin:3px 0 7px; font-size:1.05rem; }
+  .glance-track { height:10px; overflow:hidden; border-radius:99px; background:var(--line-soft); }
+  .glance-fill { display:block; width:45%; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--math),var(--sci)); transition:width .18s ease; }
+  #shadowSharpMeter { background:linear-gradient(90deg,var(--warn),var(--sci)); }
+  .choice-phrases { display:flex; flex-wrap:wrap; gap:8px; margin-top:7px; }
+  .choice-phrases button { min-height:44px; padding:8px 11px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); font-weight:750; }
+  [data-audience="parent"],.parent-deep-dive { scroll-margin-top:80px; }
+  @media (max-width:600px) {
+    html[data-mode="kid"] .theater-hero.kid-story-intro { margin:8px 0 6px; padding:10px 14px; }
+    html[data-mode="kid"] .theater-hero .hero-copy .row,
+    html[data-mode="kid"] .theater-hero .story-line,
+    html[data-mode="kid"] .playful-story-actions,
+    html[data-mode="kid"] .one-goal { display:none; }
+    html[data-mode="kid"] .theater-hero .hero-copy h1 { margin:0; font-size:1.4rem; }
+    html[data-mode="kid"] .mode-picker { margin:4px 0 6px; }
+    html[data-mode="kid"] .mode-picker strong { display:none; }
+    html[data-mode="kid"] .theater-lab-shell { padding-top:30px; }
+    html[data-mode="kid"] .light-path { margin-bottom:6px; padding:5px; }
+    html[data-mode="kid"] .stage-curtain.kid-visual-stage { min-height:0; max-height:none; padding:7px; }
+    html[data-mode="kid"] #scene { height:220px !important; }
+    .light-path { gap:4px; }
+    .light-path-node { min-height:48px; font-size:.74rem; }
+    .light-path-node b { font-size:1.15rem; }
+    .light-path-arrow { font-size:1rem; }
+    .shadow-hot-actions { grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; margin-top:6px; }
+    .shadow-hot-actions button { min-width:0; padding:5px 3px; font-size:.72rem; }
+    .stage-curtain.kid-visual-stage .stage-foot { display:none; }
+    .result-glance { grid-template-columns:1fr 1fr; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .glance-fill,.step-card,button { transition:none!important; animation:none!important; }
+  }
 </style>
 </head>
 <body data-playful-page="games/light-and-shadow.html">
@@ -51,47 +266,198 @@
 </div></nav>
 
 <main class="wrap" id="main">
-
-  <header class="lab-head stack">
-    <div class="row">
-      <span class="pill pill-sci">科学 · 光学</span>
-      <span class="pill">5–10 岁</span>
-      <span class="pill">约 12 分钟</span>
-    </div>
-    <h1>光走直线，影子会说话</h1>
-    <p class="lead">这在教什么：<b>光沿直线传播</b>。物体挡住光就留下影子；灯离得越近，影子越大。换成三盏彩色灯，还能看到红＋绿＝黄这种和调颜料完全相反的规律。</p>
-  </header>
-
-  <section class="card playful-story" aria-labelledby="lightStoryTitle">
-    <div data-playful-companion></div>
-    <div class="playful-story-head">
-      <div><h2 id="lightStoryTitle">影子剧场：为今晚的首演调灯</h2><p>你是小小灯光师。移动灯和道具，让墙上的影子忽大忽小，再用彩色灯为舞台换一幕气氛。</p></div>
+  <section class="theater-hero kid-story-intro" aria-labelledby="lightStoryTitle">
+    <div class="theater-stars" aria-hidden="true"><span>★</span><span>✦</span><span>★</span><span>✦</span><span>★</span></div>
+    <div class="hero-copy">
+      <div class="row">
+        <span class="pill pill-sci">科学 · 光学</span>
+        <span class="pill">5–10 岁</span>
+        <span class="pill">约 12 分钟</span>
+      </div>
+      <div data-playful-companion></div>
+      <h1 id="lightStoryTitle">小灯泡闪闪的影子剧场</h1>
+      <p class="story-line">小灯泡闪闪今晚第一次当灯光师，可幕布上的影子一会儿太小、一会儿又跑出墙。快来搬动灯和道具，帮它完成首演吧！</p>
       <span data-playful-sticker></span>
+      <div class="playful-story-actions">
+        <button class="btn btn-sm" id="lightSurpriseBtn" type="button" data-playful-random-task="#lightSurprise">抽一张导演小纸条</button>
+        <p id="lightSurprise" data-playful-task-output>幕布升起来啦，先随手搬一搬灯和道具。</p>
+      </div>
+      <p id="lightPlayfulFeedback" data-playful-feedback></p>
     </div>
-    <div class="playful-story-actions">
-      <button class="btn btn-sm" id="lightSurpriseBtn" type="button" data-playful-random-task="#lightSurprise">抽取剧场惊喜任务</button>
-      <p id="lightSurprise" data-playful-task-output>幕布已经升起，来抽一张导演提示吧。</p>
-    </div>
-    <p id="lightPlayfulFeedback" data-playful-feedback></p>
   </section>
 
-  <section class="task" aria-labelledby="lightTaskTitle">
-    <h2 class="task-title" id="lightTaskTitle">任务：让影子先变大，再变小</h2>
-    <ol>
-      <li><b>预测：</b>先判断灯靠近物体时，影子会变大还是变小。</li>
-      <li><b>操作：</b>移动灯或物体，让文字读数记录到一个较大的影子和一个较小的影子；再试两到三盏灯。</li>
-      <li><b>结果：</b>阅读影高、放大倍数和多光源形成的各个影子高度。</li>
-      <li><b>反思：</b>用“光沿直线传播”解释操作，再保存完成证据。</li>
-    </ol>
+  <p class="one-goal"><strong>这一幕的小目标：</strong>搬动灯和道具，让墙上的影子明显变大一次，再变小一次。</p>
+
+  <div class="row mode-picker" role="group" aria-label="选择实验模式">
+    <strong>先玩哪一幕？</strong>
+    <button class="chip" id="mShadow" type="button" aria-pressed="true">① 影子变变变</button>
+    <button class="chip" id="mColor" type="button" aria-pressed="false">② 彩光魔法</button>
+  </div>
+
+  <div class="theater-lab-shell">
+    <div class="light-path" role="img" aria-label="空间顺序：光源发出直线光，物体挡住光，幕布上出现影子。">
+      <span class="light-path-node"><b aria-hidden="true">☀</b>光源<small>发出光</small></span>
+      <span class="light-path-arrow" aria-hidden="true">→</span>
+      <span class="light-path-node"><b aria-hidden="true">▰</b>物体<small>挡住光</small></span>
+      <span class="light-path-arrow" aria-hidden="true">→</span>
+      <span class="light-path-node"><b aria-hidden="true">◖</b>影子<small>落在墙上</small></span>
+    </div>
+    <div class="lab theater-lab">
+      <div class="stage-stack">
+        <div class="lab-stage stage-curtain kid-visual-stage" id="stage">
+          <canvas id="scene"
+            aria-label="光源、物体、影子的空间实验画面。拖动灯泡或挡光物体，影子的大小和边缘清晰度会实时变化；也可用方向键操作。"
+            tabindex="0"></canvas>
+          <p id="live" class="sr-only" aria-live="polite"></p>
+          <div class="row stage-foot" style="margin-top:10px;justify-content:space-between">
+            <div class="legend" id="legend"></div>
+            <span class="hint" id="tip">拖动发光圆点或蓝色物体；也可以点下面的大按钮。</span>
+          </div>
+        </div>
+        <div class="shadow-hot-actions kid-action-strip" id="shadowHotActions" aria-label="影子快捷操作">
+          <button type="button" data-shadow-action="lamp-near"><span aria-hidden="true">☀→▰</span><br>灯靠近物体</button>
+          <button type="button" data-shadow-action="lamp-far"><span aria-hidden="true">☀←▰</span><br>灯远离物体</button>
+          <button type="button" data-shadow-action="soft"><span aria-hidden="true">◉→◌</span><br>影子边缘变软</button>
+        </div>
+      </div>
+
+      <div class="control-stack">
+        <!-- 影子模式 -->
+        <div class="panel" id="panelShadow">
+          <h3>灯光师操作台</h3>
+
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="lampX">把灯左右搬一搬</label><b id="lampXOut">30%</b></div>
+            <input class="input" type="range" id="lampX" min="2" max="60" step="1" value="30">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="lampY">把灯举高 / 放低</label><b id="lampYOut">30%</b></div>
+            <input class="input" type="range" id="lampY" min="8" max="92" step="1" value="30">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="objX">把道具搬近或搬远</label><b id="objXOut">45%</b></div>
+            <input class="input" type="range" id="objX" min="12" max="82" step="1" value="45">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="objH">把道具变高</label><b id="objHOut">0.90 m</b></div>
+            <input class="input" type="range" id="objH" min="0.2" max="2" step="0.05" value="0.9">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="lampR">让灯变大，看看影子边缘</label><b id="lampROut">0 cm</b></div>
+            <input class="input" type="range" id="lampR" min="0" max="60" step="1" value="0"
+                   aria-describedby="lampRHint">
+            <div class="hint" id="lampRHint">从小光点慢慢变大，看看影子边缘会不会变软。</div>
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><span id="sourceCountLabel">点亮几盏灯</span><b id="sourceCountOut">1 盏</b></div>
+            <div class="seg" role="group" aria-labelledby="sourceCountLabel">
+              <button class="chip btn-sm" type="button" data-sources="1" aria-pressed="true">点亮 1 盏</button>
+              <button class="chip btn-sm" type="button" data-sources="2" aria-pressed="false">点亮 2 盏</button>
+              <button class="chip btn-sm" type="button" data-sources="3" aria-pressed="false">点亮 3 盏</button>
+            </div>
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="sourceGap">把几盏灯分开一点</label><b id="sourceGapOut">12%</b></div>
+            <input class="input" type="range" id="sourceGap" min="4" max="25" step="1" value="12">
+          </div>
+
+          <div class="seg" style="margin-top:4px">
+            <button class="chip btn-sm" id="rayToggle" type="button" aria-pressed="true">打开光线路线</button>
+            <button class="chip btn-sm" id="animToggle" type="button" aria-pressed="true">让光点跑起来</button>
+          </div>
+        </div>
+
+        <div class="panel kid-result-card" id="panelShadowRead">
+          <h3>影子现在怎么样？</h3>
+          <div class="result-glance" aria-live="polite">
+            <div class="glance-card"><span>影子大小</span><b id="shadowSizeWord">中等 · 2.00×</b><div class="glance-track" aria-hidden="true"><i class="glance-fill" id="shadowSizeMeter"></i></div></div>
+            <div class="glance-card"><span>边缘清晰度</span><b id="shadowSharpWord">很清楚</b><div class="glance-track" aria-hidden="true"><i class="glance-fill" id="shadowSharpMeter"></i></div></div>
+          </div>
+          <div class="readout"><span>道具有多高</span><b id="rObj">0.90 m</b></div>
+          <div class="readout"><span>影子有多高</span><b id="rSha">1.80 m</b></div>
+          <div class="readout"><span>影子放大了</span><b id="rMag">2.00×</b></div>
+          <div class="readout"><span>灯→道具</span><b id="rD1">1.50 m</b></div>
+          <div class="readout"><span>灯→幕布</span><b id="rD2">3.00 m</b></div>
+          <div class="readout"><span>软边有多宽</span><b id="rPen">0 cm</b></div>
+          <p class="text-result" id="shadowText" role="status" aria-live="polite">一盏灯形成一个影子。移动灯或物体后，文字结果会同步更新。</p>
+          <p class="hint" style="margin-top:8px">小秘密：<span class="mono">影高 ÷ 物高 = 灯到墙 ÷ 灯到物</span></p>
+        </div>
+
+        <!-- 混色模式 -->
+        <div class="panel modehide" id="panelColor">
+          <h3>彩光魔法操作台</h3>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="iR">把红灯调亮 / 调暗</label><b id="iROut">100%</b></div>
+            <input class="input" type="range" id="iR" min="0" max="100" step="1" value="100">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="iG">把绿灯调亮 / 调暗</label><b id="iGOut">100%</b></div>
+            <input class="input" type="range" id="iG" min="0" max="100" step="1" value="100">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="iB">把蓝灯调亮 / 调暗</label><b id="iBOut">100%</b></div>
+            <input class="input" type="range" id="iB" min="0" max="100" step="1" value="100">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="spread">让彩色光圈变大 / 变小</label><b id="spreadOut">34%</b></div>
+            <input class="input" type="range" id="spread" min="16" max="52" step="1" value="34">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="sep">把三盏灯拉开 / 靠拢</label><b id="sepOut">30%</b></div>
+            <input class="input" type="range" id="sep" min="0" max="60" step="1" value="30">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head" style="margin-bottom:0"><label for="pickX" id="pickLbl">搬动取色圈找颜色</label><b id="pickOut">50%</b></div>
+            <input class="input" type="range" id="pickX" min="2" max="98" step="1" value="50">
+            <input class="input" type="range" id="pickY" min="2" max="98" step="1" value="50"
+                   aria-label="取色点位置（上下）">
+            <div class="swatch" id="swatch" role="img" aria-label="取色点的颜色预览"></div>
+            <div class="readout" style="margin-top:6px"><span>这个点变成</span><b id="pickVal" class="mono">rgb(255,255,255)</b></div>
+            <div class="readout"><span>颜色名字</span><b id="pickName">白色</b></div>
+          </div>
+          <div class="seg">
+            <button class="chip btn-sm" type="button" data-preset="rgb" aria-pressed="true">点亮三色</button>
+            <button class="chip btn-sm" type="button" data-preset="ry" aria-pressed="false">试试红 + 绿</button>
+            <button class="chip btn-sm" type="button" data-preset="cy" aria-pressed="false">试试绿 + 蓝</button>
+            <button class="chip btn-sm" type="button" data-preset="mg" aria-pressed="false">试试红 + 蓝</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section aria-labelledby="playStepsTitle">
+    <h2 class="sr-only" id="playStepsTitle">四步玩影子剧场</h2>
+    <div class="step-grid">
+      <article class="step-card" data-icon="💭"><h3>先猜</h3><p>灯靠近道具时，幕布上的影子会变大，还是变小？</p></article>
+      <article class="step-card" data-icon="🖐️"><h3>动手</h3><p>直接拖灯和道具；也可以选中画面，用方向键慢慢搬。</p></article>
+      <article class="step-card" data-icon="🔎"><h3>发现</h3><p>灯越靠近道具，影子通常越大；灯变大，影子边缘会变软。</p></article>
+      <article class="step-card" data-icon="🎤"><h3>讲给大人听</h3><p>指着绿色路线说一说：光直直地走，哪里被道具挡住了？</p></article>
+    </div>
+  </section>
+
+  <section class="card science-note" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">这在教什么</h2>
+    <p><b>光沿直线传播。</b>道具挡住光就留下影子；灯离道具越近，影子越大。换成红、绿、蓝三盏灯，还能发现光的加色混合。</p>
+  </section>
+
+  <section class="task formal-task kid-story-steps" aria-labelledby="lightTaskTitle">
+    <h2 class="task-title" id="lightTaskTitle">挑战：做出一大一小两个影子</h2>
+    <div class="step-grid" aria-label="光影任务四步">
+      <article class="step-card" data-icon="👀"><h3>① 猜</h3><p>灯靠近，影子会怎样？</p></article>
+      <article class="step-card" data-icon="☀"><h3>② 搬</h3><p>做出相差 0.35× 的大小影子。</p></article>
+      <article class="step-card" data-icon="🔦"><h3>③ 试</h3><p>再点亮两盏或三盏灯。</p></article>
+      <article class="step-card" data-icon="✓"><h3>④ 说</h3><p>选一句发现，留下操作证据。</p></article>
+    </div>
     <div class="task-fields">
       <div><label for="lightPrediction">我的预测</label><select class="input" id="lightPrediction"><option>灯靠近物体，影子变大</option><option>灯靠近物体，影子变小</option><option>影子不变</option></select></div>
-      <div><label for="lightReflection">我的解释</label><textarea class="input" id="lightReflection" rows="2" placeholder="例如：光沿直线走，灯越靠近物体，投向墙面的光线张得越开。"></textarea></div>
+      <div><label for="lightReflection">我的发现</label><div class="choice-phrases kid-choice" aria-label="点一句作为我的发现"><button type="button" data-light-phrase="光直直地走，物体挡住光就有影子。">物体挡光 → 有影子</button><button type="button" data-light-phrase="灯越靠近物体，墙上的影子就越大。">灯靠近 → 影子大</button><button type="button" data-light-phrase="光源变大以后，影子的边缘会变模糊。">灯变大 → 边缘软</button></div><textarea class="input" id="lightReflection" rows="2" placeholder="可以点上面一句，也可以自己说。"></textarea></div>
       <button class="btn btn-primary" id="lightComplete" type="button" disabled>记录任务完成</button>
     </div>
     <p class="task-status status" id="lightTaskStatus" role="status" aria-live="polite">尚未完成：请操作出明显不同的一大一小两个影子。</p>
 
-    <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="lightWorkTitle">
-      <h3 class="work-card-title" id="lightWorkTitle">给影子剧场留一份灯光记录</h3>
+    <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="lightWorkTitle">
+      <h3 class="work-card-title" id="lightWorkTitle">作品表单：留一份灯光记录</h3>
       <p class="work-card-meta">只保存文字，存在这台设备上。</p>
       <div class="work-card-fields">
         <div><label for="lightWorkType">作品类型</label><select class="input" id="lightWorkType" name="type"><option value="observation">观察记录</option><option value="drawing">发现画</option><option value="explanation">我的解释</option></select></div>
@@ -103,130 +469,15 @@
     </form>
   </section>
 
-  <div class="row" style="margin-bottom:14px" role="group" aria-label="选择实验模式">
-    <button class="chip" id="mShadow" type="button" aria-pressed="true">① 影子实验</button>
-    <button class="chip" id="mColor" type="button" aria-pressed="false">② 三色光混合</button>
-  </div>
-
-  <div class="lab">
-    <div class="lab-stage" id="stage">
-      <canvas id="scene"
-        aria-label="光学实验画面：可以用鼠标或手指拖动灯泡和挡光物体，也可以用键盘方向键移动被选中的物体。"
-        tabindex="0"></canvas>
-      <p id="live" class="sr-only" aria-live="polite"></p>
-      <div class="row" style="margin-top:10px;justify-content:space-between">
-        <div class="legend" id="legend"></div>
-        <span class="hint" id="tip">拖动灯泡或方块；Tab 选中画面后可用方向键微调。</span>
-      </div>
-    </div>
-
-    <div>
-      <!-- 影子模式 -->
-      <div class="panel" id="panelShadow">
-        <h3>影子设置</h3>
-
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="lampX">灯的左右位置</label><b id="lampXOut">30%</b></div>
-          <input class="input" type="range" id="lampX" min="2" max="60" step="1" value="30">
-        </div>
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="lampY">灯的高低位置</label><b id="lampYOut">30%</b></div>
-          <input class="input" type="range" id="lampY" min="8" max="92" step="1" value="30">
-        </div>
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="objX">物体离灯的距离</label><b id="objXOut">45%</b></div>
-          <input class="input" type="range" id="objX" min="12" max="82" step="1" value="45">
-        </div>
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="objH">物体高度</label><b id="objHOut">0.90 m</b></div>
-          <input class="input" type="range" id="objH" min="0.2" max="2" step="0.05" value="0.9">
-        </div>
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="lampR">灯的大小（软硬影）</label><b id="lampROut">0 cm</b></div>
-          <input class="input" type="range" id="lampR" min="0" max="60" step="1" value="0"
-                 aria-describedby="lampRHint">
-          <div class="hint" id="lampRHint">0 = 点光源，只有本影；变大后边缘出现半影。</div>
-        </div>
-        <div class="ctrl">
-          <div class="ctrl-head"><span id="sourceCountLabel">光源数量</span><b id="sourceCountOut">1 盏</b></div>
-          <div class="seg" role="group" aria-labelledby="sourceCountLabel">
-            <button class="chip btn-sm" type="button" data-sources="1" aria-pressed="true">1 盏</button>
-            <button class="chip btn-sm" type="button" data-sources="2" aria-pressed="false">2 盏</button>
-            <button class="chip btn-sm" type="button" data-sources="3" aria-pressed="false">3 盏</button>
-          </div>
-        </div>
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="sourceGap">光源上下间距</label><b id="sourceGapOut">12%</b></div>
-          <input class="input" type="range" id="sourceGap" min="4" max="25" step="1" value="12">
-        </div>
-
-        <div class="seg" style="margin-top:4px">
-          <button class="chip btn-sm" id="rayToggle" type="button" aria-pressed="true">显示光线</button>
-          <button class="chip btn-sm" id="animToggle" type="button" aria-pressed="true">光线流动</button>
-        </div>
-      </div>
-
-      <div class="panel" id="panelShadowRead">
-        <h3>读数</h3>
-        <div class="readout"><span>物体高</span><b id="rObj">0.90 m</b></div>
-        <div class="readout"><span>影子高</span><b id="rSha">1.80 m</b></div>
-        <div class="readout"><span>放大倍数</span><b id="rMag">2.00×</b></div>
-        <div class="readout"><span>灯→物体</span><b id="rD1">1.50 m</b></div>
-        <div class="readout"><span>灯→墙</span><b id="rD2">3.00 m</b></div>
-        <div class="readout"><span>半影宽度</span><b id="rPen">0 cm</b></div>
-        <p class="text-result" id="shadowText" role="status" aria-live="polite">一盏灯形成一个影子。移动灯或物体后，文字结果会同步更新。</p>
-        <p class="hint" style="margin-top:8px">规律：<span class="mono">影高 ÷ 物高 = 灯到墙 ÷ 灯到物</span></p>
-      </div>
-
-      <!-- 混色模式 -->
-      <div class="panel modehide" id="panelColor">
-        <h3>三盏灯的亮度</h3>
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="iR">红灯 R</label><b id="iROut">100%</b></div>
-          <input class="input" type="range" id="iR" min="0" max="100" step="1" value="100">
-        </div>
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="iG">绿灯 G</label><b id="iGOut">100%</b></div>
-          <input class="input" type="range" id="iG" min="0" max="100" step="1" value="100">
-        </div>
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="iB">蓝灯 B</label><b id="iBOut">100%</b></div>
-          <input class="input" type="range" id="iB" min="0" max="100" step="1" value="100">
-        </div>
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="spread">光圈大小</label><b id="spreadOut">34%</b></div>
-          <input class="input" type="range" id="spread" min="16" max="52" step="1" value="34">
-        </div>
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="sep">三灯间距</label><b id="sepOut">30%</b></div>
-          <input class="input" type="range" id="sep" min="0" max="60" step="1" value="30">
-        </div>
-        <div class="ctrl">
-          <div class="ctrl-head" style="margin-bottom:0"><label for="pickX" id="pickLbl">取色点位置（左右）</label><b id="pickOut">50%</b></div>
-          <input class="input" type="range" id="pickX" min="2" max="98" step="1" value="50">
-          <input class="input" type="range" id="pickY" min="2" max="98" step="1" value="50"
-                 aria-label="取色点位置（上下）">
-          <div class="swatch" id="swatch" role="img" aria-label="取色点的颜色预览"></div>
-          <div class="readout" style="margin-top:6px"><span>那一点的颜色</span><b id="pickVal" class="mono">rgb(255,255,255)</b></div>
-          <div class="readout"><span>名字</span><b id="pickName">白色</b></div>
-        </div>
-        <div class="seg">
-          <button class="chip btn-sm" type="button" data-preset="rgb" aria-pressed="true">三灯全开</button>
-          <button class="chip btn-sm" type="button" data-preset="ry" aria-pressed="false">红+绿=黄</button>
-          <button class="chip btn-sm" type="button" data-preset="cy" aria-pressed="false">绿+蓝=青</button>
-          <button class="chip btn-sm" type="button" data-preset="mg" aria-pressed="false">红+蓝=洋红</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="grid-2" style="margin-top:22px">
+  <div class="grid-2 parent-principle-grid parent-deep-dive" data-audience="parent">
     <section class="card">
-      <h2 style="font-size:1.15rem">给家长的提问脚本</h2>
+      <h2 style="font-size:1.15rem">学习目标</h2>
+      <p>孩子能指出“光源 → 挡光物 → 影子”的空间顺序，通过真实操作比较影子大小与边缘清晰度，并用一句话说明光被物体挡住后形成影子。</p>
+      <h3>给家长的追问</h3>
       <ol class="qlist">
-        <li><b>预测：</b>「把灯往方块那边推近一点，影子会变大还是变小？」（先猜再拖。答案是变大 —— 很多孩子会猜反）</li>
-        <li><b>观察：</b>「影子的边缘是刀切一样整齐的吗？」（把「灯的大小」滑块拉大，边缘出现模糊的半影。太阳、路灯都是有大小的光源，所以现实里的影子边缘都软）</li>
-        <li><b>推理：</b>「红光加绿光会得到什么颜色？用蜡笔混红和绿呢？」（光是加色，得到黄；颜料是减色，得到脏棕色。让孩子拿真蜡笔试一遍对比）</li>
+        <li><b>预测：</b>“把灯往方块那边推近一点，影子会变大还是变小？”先猜再拖，很多孩子会猜反。</li>
+        <li><b>观察：</b>“影子的边缘是刀切一样整齐的吗？”把灯变大，找一找模糊的半影。</li>
+        <li><b>推理：</b>“红光加绿光会得到什么颜色？用蜡笔混红和绿呢？”让孩子用真蜡笔对比光的加色。</li>
       </ol>
       <p class="hint" style="margin-top:10px">线下延伸：关灯，用手机手电筒和一个杯子在墙上做同样的实验，量一量影子的高度。</p>
     </section>
@@ -270,11 +521,12 @@
   var MODE = 'shadow';
   var PX_PER_M = 100;   // 影子模式：1 米 = 100 逻辑像素时的基准（实际按画面缩放换算）
 
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var S = {
     // 影子模式（归一化坐标 0..1，相对画面宽/高）
     lamp: { x: 0.30, y: 0.30, r: 0 },     // r 单位：厘米
     objX: 0.45, objH: 0.9,                // objH 单位：米
-    rays: true, anim: true, sourceCount: 1, sourceGap: 0.12,
+    rays: true, anim: !reduceMotion, sourceCount: 1, sourceGap: 0.12,
     // 混色模式
     iR: 1, iG: 1, iB: 1, spread: 0.34, sep: 0.30,
     pick: { x: 0.5, y: 0.5 }
@@ -551,6 +803,10 @@
       rMag = document.getElementById('rMag'), rD1 = document.getElementById('rD1'),
       rD2 = document.getElementById('rD2'), rPen = document.getElementById('rPen');
   var shadowText = document.getElementById('shadowText');
+  var shadowSizeWord = document.getElementById('shadowSizeWord');
+  var shadowSharpWord = document.getElementById('shadowSharpWord');
+  var shadowSizeMeter = document.getElementById('shadowSizeMeter');
+  var shadowSharpMeter = document.getElementById('shadowSharpMeter');
   var lightReflection = document.getElementById('lightReflection');
   var lightComplete = document.getElementById('lightComplete');
   var lightTaskStatus = document.getElementById('lightTaskStatus');
@@ -560,7 +816,16 @@
     var changed = taskMinMag !== null && taskMaxMag !== null && taskMaxMag - taskMinMag >= 0.35;
     var reflected = lightReflection.value.trim().length >= 8;
     lightComplete.disabled = !(changed && reflected);
-    lightTaskStatus.textContent = !changed ? '尚未完成：请移动灯或物体，让放大倍数至少相差 0.35。' : (reflected ? '大小影子与解释证据已齐，可以记录完成。' : '已经得到一大一小两个影子；请写至少 8 个字解释。');
+    lightTaskStatus.textContent = !changed ? '尚未完成：请移动灯或物体，让放大倍数至少相差 0.35。' : (reflected ? '大小影子与解释证据已齐，可以记录完成。' : '已经得到一大一小两个影子；请选择一句发现或自己说一说。');
+  }
+
+  function updateShadowGlance(mag, penCm) {
+    var sizeWord = mag < 1.5 ? '小' : (mag < 3 ? '中等' : '很大');
+    var sharpWord = penCm < 2 ? '很清楚' : (penCm < 12 ? '有一点软' : '很模糊');
+    shadowSizeWord.textContent = sizeWord + ' · ' + mag.toFixed(2) + '×';
+    shadowSharpWord.textContent = sharpWord;
+    shadowSizeMeter.style.width = Math.round(clamp(mag / 6, 0.08, 1) * 100) + '%';
+    shadowSharpMeter.style.width = Math.round(clamp(1 - penCm / 35, 0.08, 1) * 100) + '%';
   }
 
   function updateShadowReadout(g, umbraTop, penTop, floorY) {
@@ -571,14 +836,20 @@
       rSha.textContent = '无（灯在物后）';
       rMag.textContent = '—';
       rPen.textContent = '—';
+      shadowSizeWord.textContent = '没有投到墙上';
+      shadowSharpWord.textContent = '—';
+      shadowSizeMeter.style.width = '8%';
+      shadowSharpMeter.style.width = '8%';
       return;
     }
     var shaM = (floorY - umbraTop) * metersPerPx();
     rSha.textContent = shaM.toFixed(2) + ' m';
     rMag.textContent = (shaM / Math.max(0.01, S.objH)).toFixed(2) + '×';
     var penPx = (typeof penTop === 'number' && isFinite(penTop)) ? Math.max(0, umbraTop - penTop) : 0;
-    rPen.textContent = (penPx * metersPerPx() * 100).toFixed(1) + ' cm';
+    var penCm = penPx * metersPerPx() * 100;
+    rPen.textContent = penCm.toFixed(1) + ' cm';
     var mag = shaM / Math.max(0.01, S.objH);
+    updateShadowGlance(mag, penCm);
     taskMinMag = taskMinMag === null ? mag : Math.min(taskMinMag, mag);
     taskMaxMag = taskMaxMag === null ? mag : Math.max(taskMaxMag, mag);
     var heights = shadowSourceYs().map(function (sy) {
@@ -750,6 +1021,25 @@
   function announce(m) { liveEl.textContent = m; }
 
   lightReflection.addEventListener('input', updateLightTask);
+  Array.prototype.slice.call(document.querySelectorAll('[data-light-phrase]')).forEach(function (button) {
+    button.setAttribute('aria-pressed', 'false');
+    button.addEventListener('click', function () {
+      document.querySelectorAll('[data-light-phrase]').forEach(function (item) { item.setAttribute('aria-pressed', item === button ? 'true' : 'false'); });
+      lightReflection.value = button.dataset.lightPhrase;
+      updateLightTask();
+      announce('已选发现：' + button.textContent.trim());
+    });
+  });
+  Array.prototype.slice.call(document.querySelectorAll('[data-shadow-action]')).forEach(function (button) {
+    button.addEventListener('click', function () {
+      var action = button.dataset.shadowAction;
+      if (action === 'lamp-near') S.lamp.x = clamp(S.objX - 0.07, 0.02, 0.60);
+      if (action === 'lamp-far') S.lamp.x = clamp(S.objX - 0.35, 0.02, 0.60);
+      if (action === 'soft') S.lamp.r = 60;
+      syncShadowSliders();
+      announce(button.textContent.trim() + '，影子读数已更新。');
+    });
+  });
   lightComplete.addEventListener('click', function () {
     if (lightComplete.disabled || !window.Progress) return;
     var evidence = '预测：' + document.getElementById('lightPrediction').value + '；放大倍数范围 ' + taskMinMag.toFixed(2) + '×–' + taskMaxMag.toFixed(2) + '×；解释：' + lightReflection.value.trim();
@@ -976,10 +1266,10 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js"></script>
-<script src="../data/playful.js"></script>
-<script src="../assets/js/playful.js"></script>
+<script src="../assets/js/progress.js?v=13"></script>
+<script src="../data/playful.js?v=13"></script>
+<script src="../assets/js/playful.js?v=13"></script>
 <script>if (window.Progress) Progress.visit("games/light-and-shadow.html", "光与影");</script>
-<script src="../assets/js/pwa.js"></script>
+<script src="../assets/js/pwa.js?v=13"></script>
 </body>
 </html>

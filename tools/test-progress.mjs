@@ -65,11 +65,11 @@ test('空数据返回稳定 v3 结构与默认偏好且不主动写库', () => {
   assert.deepEqual(plain(P.all()), {
     schemaVersion: 3, revision: 0, updatedAt: null,
     pages: {}, recent: [], notes: {}, completions: {}, works: {},
-    preferences: { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'parent' }
+    preferences: { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'kid' }
   });
   assert.equal(P.count(), 0);
   assert.equal(P.getPreference('soundEnabled'), false);
-  assert.equal(P.getPreference('mode'), 'parent');
+  assert.equal(P.getPreference('mode'), 'kid');
   assert.equal(store.raw(), undefined);
 });
 
@@ -104,7 +104,7 @@ test('v2→v3 保留 pages/recent/notes/completions 并补齐新字段', () => {
   assert.equal(data.notes['nature/ocean.html'].t, '光会变少');
   assert.equal(data.completions['nature/ocean.html'].evidence, '解释了深度带');
   assert.deepEqual(plain(data.works), {});
-  assert.deepEqual(plain(data.preferences), { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'parent' });
+  assert.deepEqual(plain(data.preferences), { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'kid' });
   assert.equal(store.parsed(V2).schemaVersion, 2, '迁移不得删除或覆盖 v2');
 });
 
@@ -139,10 +139,50 @@ test('贴纸只从 completions + PLAYFUL 派生，不写入存储并去重', () 
   assert.equal(P.getStickers()[0].label, '波浪倾听者');
 });
 
-test('PLAYFUL 未加载时贴纸安全为空，完成数据仍保留', () => {
+test('收藏卡从 completions 派生且不写入 v3 存储', () => {
+  const { P, store } = fresh();
+  const initial = P.getCards();
+  assert.equal(initial.length, IDS.length);
+  assert.equal(initial.filter((card) => card.unlocked).length, 0);
+  assert.equal(P.getCards('games/wave-maker.html')[0].label, '波浪倾听者');
+  assert.deepEqual(plain(P.getCards('games/not-listed.html')), []);
+
+  P.complete('games/wave-maker.html', '完成干涉');
+  const card = P.getCards('games/wave-maker.html')[0];
+  assert.equal(card.unlocked, true);
+  isISO(card.unlockedAt);
+  assert.equal(card.unlockedAt, P.getCompletion('games/wave-maker.html').at);
+  assert.equal(card.series, '物理实验');
+  assert.match(card.discovery, /叠加/);
+  assert.equal('cards' in store.parsed(), false);
+  assert.equal('milestones' in store.parsed(), false);
+
+  card.label = '篡改';
+  assert.equal(P.getCards('games/wave-maker.html')[0].label, '波浪倾听者');
+  const exported = JSON.parse(P.exportJSON());
+  assert.equal('cards' in exported, false);
+  assert.equal('milestones' in exported, false);
+});
+
+test('收藏卡里程碑按完成数量即时派生', () => {
+  const { P } = fresh();
+  assert.deepEqual(plain(P.getMilestones().map((item) => item.unlocked)), [false, false, false, false]);
+  ['games/number-blocks.html', 'games/fraction-lab.html', 'games/wave-maker.html'].forEach((id) => P.complete(id, '完成'));
+  const milestones = P.getMilestones();
+  assert.equal(milestones[0].unlocked, true);
+  assert.equal(milestones[0].count, 3);
+  assert.equal(milestones[0].companion.name, '妙妙');
+  assert.equal(milestones[1].unlocked, false);
+  milestones[0].title = '篡改';
+  assert.equal(P.getMilestones()[0].title, '好奇心起步');
+});
+
+test('PLAYFUL 未加载时贴纸与收藏卡安全为空，完成数据仍保留', () => {
   const { P } = fresh({ playful: false });
   P.complete('nature/ocean.html', '完成');
   assert.deepEqual(plain(P.getStickers()), []);
+  assert.deepEqual(plain(P.getCards()), []);
+  assert.deepEqual(plain(P.getMilestones()), []);
   assert.equal(P.getCompletion('nature/ocean.html').evidence, '完成');
 });
 
@@ -230,7 +270,7 @@ test('preferences 有固定默认值和值域，写入失败不伪报成功', ()
   assert.equal(P.setPreference('motion', 'spin'), false);
   assert.equal(P.setPreference('unknown', true), false);
   assert.equal(P.getPreference('unknown'), null);
-  assert.equal(P.getPreference('mode'), 'parent', 'mode 默认家长模式');
+  assert.equal(P.getPreference('mode'), 'kid', '新设备 mode 默认孩子模式');
   assert.equal(P.setPreference('mode', 'kid'), true);
   assert.equal(P.getPreference('mode'), 'kid');
   assert.equal(P.setPreference('mode', 'adult'), false, '非法 mode 不得写入');
@@ -265,6 +305,14 @@ test('v3 JSON 完整往返 pages/notes/completions/works/preferences', () => {
   assert.match(target.P.exportText(), /我的作品/);
 });
 
+test('已有 v3 家长模式偏好不会被新默认值覆盖', () => {
+  const saved = validV3({ preferences: { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'parent' } });
+  const { P, store } = fresh({ seed: { [V3]: saved } });
+  assert.equal(P.getPreference('mode'), 'parent');
+  assert.equal(P.all().preferences.mode, 'parent');
+  assert.equal(store.parsed().preferences.mode, 'parent');
+});
+
 test('导入严格清洗非法 works/preferences 且忽略外部 revision', () => {
   const { P, events } = fresh();
   P.visit('games/wave-maker.html', '造波机');
@@ -282,7 +330,7 @@ test('导入严格清洗非法 works/preferences 且忽略外部 revision', () =
   assert.deepEqual(plain(P.getWorks().map((work) => work.id)), ['ok']);
   assert.equal(P.getWorks()[0].title, '海水');
   assert.equal('evil' in P.getWorks()[0], false);
-  assert.deepEqual(plain(P.all().preferences), { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'parent' });
+  assert.deepEqual(plain(P.all().preferences), { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'kid' });
   assert.equal(events.at(-1).detail.source, 'import');
   dirty.works.ok.title = '外部篡改';
   assert.equal(P.getWorks()[0].title, '海水');

@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>彩虹小画室 · iPad 涂鸦板 | 少儿数理启蒙</title>
+<meta name="description" content="为小孩子设计的 iPad 触控涂鸦板：彩虹画笔、橡皮擦、可爱印章、镜像画、撤销重做和本地下载。无需注册，离线也能画。" />
+<link rel="stylesheet" href="../assets/css/base.css?v=13">
+<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
+<style>
+  :root { --paint: #1f6fd0; }
+  .studio-head { padding: clamp(24px,4vw,48px) 0 18px; }
+  .studio-head-grid { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:18px; align-items:end; }
+  .studio-head h1 { margin:.12em 0; }
+  .studio-head .lead { max-width:62ch; font-size:1.04rem; margin:0; }
+  .tiny-steps { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .tiny-step { display:inline-flex; align-items:center; gap:6px; min-height:38px; padding:7px 11px; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink-mid); font-size:.8rem; font-weight:750; }
+  .tiny-step b { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:var(--surface-2); color:var(--ink); }
+
+  .playful-story { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; margin-bottom:16px; }
+  .playful-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+  [data-playful-task-output] { margin:0; min-height:1.5em; color:var(--ink-mid); font-size:.88rem; }
+
+  .studio-shell { display:grid; grid-template-columns:minmax(0,1fr) 248px; gap:14px; align-items:start; min-width:0; }
+  .studio-shell > *, .canvas-card, .canvas-wrap, .toolbox, .tool-group { min-width:0; max-width:100%; }
+  .canvas-card { width:100%; padding:12px; border-radius:var(--r-xl); background:linear-gradient(145deg,var(--surface),var(--bg-soft)); border:1px solid var(--line); box-shadow:var(--shadow-lg); }
+  .quick-tools { display:none; align-items:center; gap:8px; margin:0 0 10px; padding:8px; overflow-x:auto; border:1px solid var(--line-soft); border-radius:18px; background:var(--surface); scrollbar-width:none; }
+  .quick-tools::-webkit-scrollbar { display:none; }
+  .quick-tool,.quick-color { flex:0 0 auto; display:grid; place-items:center; min-width:46px; height:46px; border:2px solid var(--line); background:var(--bg-soft); color:var(--ink); border-radius:14px; font:800 .78rem/1 var(--font); cursor:pointer; }
+  .quick-color { min-width:42px; width:42px; border-radius:50%; border-color:var(--surface); box-shadow:0 0 0 1px var(--line); }
+  .quick-tool[aria-pressed="true"],.quick-color[aria-pressed="true"] { border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent); }
+  .quick-color[aria-pressed="true"]::after { content:"✓"; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.7); }
+  .canvas-wrap { position:relative; width:100%; aspect-ratio:4/3; min-height:320px; overflow:hidden; border-radius:calc(var(--r-xl) - 8px); background:#fffdf8; border:2px solid var(--line); touch-action:none; user-select:none; -webkit-user-select:none; }
+  #paintCanvas { display:block; width:100%; height:100%; touch-action:none; cursor:crosshair; }
+  .canvas-hint { position:absolute; inset:auto 14px 12px; display:flex; justify-content:space-between; gap:8px; pointer-events:none; color:#7d6b52; font-size:.76rem; font-weight:700; opacity:.78; }
+  .mirror-line { position:absolute; pointer-events:none; display:none; background:rgba(31,111,208,.34); }
+  .mirror-line.v { display:block; top:0; bottom:0; left:50%; width:1px; }
+  .mirror-line.h { display:block; left:0; right:0; top:50%; height:1px; }
+  .canvas-wrap.is-drawing .canvas-hint { opacity:0; }
+
+  .toolbox { display:grid; gap:12px; position:sticky; top:76px; }
+  .tool-group { padding:13px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); }
+  .tool-group h2 { margin:0 0 9px; font-size:.88rem; color:var(--ink-mid); }
+  .tool-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+  .tool-btn { display:grid; place-items:center; gap:2px; min-width:0; min-height:58px; padding:7px 4px; border:1px solid var(--line); border-radius:14px; background:var(--bg-soft); color:var(--ink); font:700 .72rem/1.2 var(--font); cursor:pointer; }
+  .tool-btn .tool-icon { font-size:1.25rem; line-height:1; }
+  .tool-btn:hover { border-color:var(--accent); transform:translateY(-1px); }
+  .tool-btn[aria-pressed="true"] { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,var(--surface)); box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 18%,transparent); }
+  .swatches { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; }
+  .swatch { position:relative; aspect-ratio:1; min-height:42px; border:3px solid var(--surface); border-radius:50%; box-shadow:0 0 0 1px var(--line); cursor:pointer; }
+  .swatch[aria-pressed="true"]::after { content:"✓"; position:absolute; inset:0; display:grid; place-items:center; color:#fff; font-weight:900; text-shadow:0 1px 3px rgba(0,0,0,.65); }
+  .size-line { display:grid; grid-template-columns:auto 1fr auto; gap:9px; align-items:center; }
+  .size-dot { display:block; width:9px; height:9px; border-radius:50%; background:var(--paint); }
+  .size-dot.big { width:23px; height:23px; }
+  .action-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .action-grid .btn { padding-inline:8px; }
+  .clear-ready { border-color:var(--danger)!important; color:var(--danger)!important; }
+
+  .challenge { margin-top:18px; display:grid; grid-template-columns:minmax(0,1fr) minmax(280px,.72fr); gap:14px; }
+  .mission { overflow:hidden; padding:0; }
+  .mission-top { padding:18px; background:linear-gradient(135deg,color-mix(in srgb,var(--kit) 10%,var(--surface)),color-mix(in srgb,var(--warn) 10%,var(--surface))); }
+  .mission-top h2 { margin:0 0 6px; font-size:1.2rem; }
+  .mission-top p { margin:0; }
+  .mission-meter { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:14px 18px 18px; }
+  .mission-check { min-height:78px; padding:11px; border:1px dashed var(--line); border-radius:var(--r); background:var(--bg-soft); text-align:center; color:var(--ink-dim); font-size:.78rem; font-weight:750; }
+  .mission-check b { display:block; font:800 1.35rem/1.2 var(--mono); color:var(--ink); margin-bottom:3px; }
+  .mission-check.done { border-style:solid; border-color:var(--sci); color:var(--sci); background:color-mix(in srgb,var(--sci) 8%,var(--surface)); }
+  .mission-actions { display:flex; gap:9px; align-items:center; flex-wrap:wrap; padding:0 18px 18px; }
+  .mission-status { margin:0; min-height:1.5em; color:var(--ink-mid); font-size:.84rem; }
+  .save-panel { margin-top:0; }
+  .save-panel h2 { font-size:1.08rem; }
+
+  .learn-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:18px; }
+  .learn-card { padding:17px; }
+  .learn-card h2 { font-size:1rem; margin-bottom:8px; }
+  .learn-card p,.learn-card li { font-size:.88rem; }
+  .learn-card ul { margin:0; padding-left:1.15em; color:var(--ink-mid); }
+  .learn-card li + li { margin-top:6px; }
+
+  @media (max-width:980px) {
+    .studio-shell { grid-template-columns:1fr; }
+    .quick-tools { display:flex; }
+    .toolbox { position:static; grid-template-columns:repeat(2,1fr); }
+    .tool-group:last-child { grid-column:1/-1; }
+    .canvas-wrap { min-height:0; }
+  }
+  @media (max-width:720px) {
+    .studio-head-grid,.playful-story,.challenge,.learn-grid { grid-template-columns:1fr; }
+    .tiny-steps,.playful-actions { justify-content:flex-start; }
+    .toolbox { grid-template-columns:1fr; }
+    .tool-group:last-child { grid-column:auto; }
+    .canvas-card { padding:7px; border-radius:var(--r-lg); }
+    .canvas-wrap { border-radius:calc(var(--r-lg) - 5px); aspect-ratio:1/1; }
+    .mission-meter { grid-template-columns:1fr 1fr 1fr; }
+  }
+  @media (max-width:420px) {
+    .mission-meter { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .mission-check { min-height:58px; padding:7px 3px; }
+  }
+
+  /* 本页儿童视觉层：先看到任务、工具和画布。 */
+  * { box-sizing:border-box; }
+  html,body { max-width:100%; overflow-x:hidden; }
+  main > *,.studio-shell > * { min-width:0; }
+  button,.btn,input,textarea { max-width:100%; }
+  button,.btn,.quick-tool,.quick-color,.swatch { min-height:44px; }
+  input[type="range"] { min-height:44px; }
+  .studio-head { padding:14px 0 8px; }
+  .studio-head h1 { font-size:clamp(1.65rem,5vw,2.5rem); }
+  .studio-head .lead { font-size:.92rem; }
+  .tiny-step { min-height:44px; }
+  .studio-shell { gap:12px; }
+  .canvas-wrap.kid-visual-stage { background:linear-gradient(145deg,color-mix(in srgb,var(--kit) 7%,var(--surface)),var(--bg-soft)); }
+  .studio-playful-strip {
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 0 10px; padding:6px 9px;
+    border:1px solid var(--line-soft); border-radius:16px; background:var(--surface);
+  }
+  .studio-playful-strip [data-playful-companion],.studio-playful-strip [data-playful-sticker] { flex:0 0 auto; }
+  .studio-playful-strip [data-playful-task-output] { flex:1 1 180px; min-width:0; font-size:.8rem; }
+  .studio-playful-strip .btn { min-height:44px; }
+  .canvas-mission-band {
+    display:grid; grid-template-columns:auto minmax(0,1fr); gap:10px; align-items:center;
+    margin:0 0 10px; padding:9px; border:1px solid var(--line); border-radius:18px;
+    background:linear-gradient(100deg,color-mix(in srgb,var(--warn) 13%,var(--surface)),color-mix(in srgb,var(--kit) 10%,var(--surface)));
+  }
+  .canvas-mission-title { margin:0; font-size:.9rem; line-height:1.25; }
+  .canvas-mission-title b { display:block; color:var(--kit); font-size:1rem; }
+  .canvas-mission-band .mission-meter { padding:0; }
+  .canvas-mission-band .mission-check { min-height:58px; padding:7px 5px; background:rgba(255,255,255,.55); }
+  .canvas-mission-band .mission-check b { font-size:1.12rem; }
+  .quick-tools.kid-action-strip { display:flex; }
+  .quick-tool { font-size:1.1rem; }
+  .quick-tool[data-quick-tool="pen"] { background:color-mix(in srgb,var(--math) 17%,var(--surface)); }
+  .quick-tool[data-quick-tool="marker"] { background:color-mix(in srgb,var(--warn) 20%,var(--surface)); }
+  .quick-tool[data-quick-tool="eraser"] { background:color-mix(in srgb,var(--kit) 14%,var(--surface)); }
+  .quick-tool[data-quick-stamp] { background:color-mix(in srgb,var(--sci) 16%,var(--surface)); }
+  .tool-btn .tool-icon { font-size:1.55rem; }
+  .swatch { min-height:44px; }
+  .playful-story { margin:14px 0 0; padding:10px 12px; border:1px solid var(--line-soft); border-radius:16px; }
+  .challenge { grid-template-columns:1fr; }
+  .challenge .mission-top p { margin-top:4px; font-size:.88rem; }
+  [data-audience="parent"],.parent-deep-dive { scroll-margin-top:80px; }
+  @media (max-width:720px) {
+    .canvas-wrap.kid-visual-stage { max-height:520px; }
+    .studio-head { padding:8px 0 5px; }
+    .studio-head-grid { gap:5px; }
+    .studio-head .row,.studio-head .lead { display:none; }
+    .studio-head h1 { margin:0; font-size:1.55rem; }
+    .tiny-steps { flex-wrap:nowrap; gap:5px; }
+    .tiny-step { flex:1 1 0; min-height:40px; justify-content:center; padding:4px; font-size:.7rem; }
+    .studio-playful-strip { min-height:44px; margin-bottom:6px; padding:0; border:0; background:transparent; justify-content:center; }
+    .studio-playful-strip [data-playful-companion],.studio-playful-strip [data-playful-sticker],.studio-playful-strip [data-playful-task-output] { display:none; }
+    .studio-playful-strip .btn { width:100%; min-height:44px; }
+    .canvas-mission-band { grid-template-columns:auto minmax(0,1fr); gap:6px; padding:6px; }
+    .canvas-mission-title { text-align:left; font-size:.7rem; }
+    .canvas-mission-title b { display:block; font-size:.78rem; }
+    .canvas-mission-band .mission-check { min-height:52px; padding:5px 2px; font-size:.65rem; }
+    .quick-tools { padding:6px; gap:6px; }
+    .quick-tool,.quick-color { min-width:44px; width:44px; height:44px; }
+    .canvas-hint { inset:auto 8px 8px; }
+    .canvas-hint span:last-child { display:none; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .tool-btn,.quick-tool,.quick-color,.mission-check { transition:none!important; animation:none!important; transform:none!important; }
+  }
+</style>
+</head>
+<body data-playful-page="games/doodle-pad.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="studio-head">
+    <div class="studio-head-grid">
+      <div>
+        <div class="row"><span class="pill pill-kit">4–10 岁</span><span class="pill">手指 / 触控笔</span><span class="pill pill-free">不用注册</span></div>
+        <h1>彩虹小画室</h1>
+        <p class="lead">选颜色，画出一只独一无二的彩虹怪兽。</p>
+      </div>
+      <div class="tiny-steps kid-story-steps" aria-label="画画步骤">
+        <span class="tiny-step"><b>1</b>选工具</span><span class="tiny-step"><b>2</b>画怪兽</span><span class="tiny-step"><b>3</b>盖印章</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="studio-playful-strip no-print" aria-label="画室伙伴与随机画画任务">
+    <div data-playful-companion></div>
+    <span data-playful-sticker></span>
+    <button class="btn btn-sm" type="button" data-playful-random-task="#studioSurprise">抽一个画画点子</button>
+    <p id="studioSurprise" data-playful-task-output>先画三笔、换三种颜色，再盖一个印章。</p>
+  </section>
+
+  <section class="studio-shell" aria-label="涂鸦画室">
+    <div class="canvas-card">
+      <div class="canvas-mission-band" aria-labelledby="missionTitle">
+        <p class="canvas-mission-title" id="missionTitle"><b>彩虹怪兽任务</b><span>3 笔 · 3 色 · 1 印章</span></p>
+        <div class="mission-meter" aria-label="任务进度">
+          <div class="mission-check" id="strokeCheck"><b id="strokeCount">0</b>笔 / 3</div>
+          <div class="mission-check" id="colorCheck"><b id="colorCount">0</b>颜色 / 3</div>
+          <div class="mission-check" id="stampCheck"><b id="stampCount">0</b>印章 / 1</div>
+        </div>
+      </div>
+      <div class="canvas-wrap kid-visual-stage" id="canvasWrap">
+        <canvas id="paintCanvas" aria-label="彩虹小画室画布。用手指或触控笔画至少三笔、使用三种颜色，并盖一个印章。"></canvas>
+        <i class="mirror-line" id="mirrorV" aria-hidden="true"></i>
+        <i class="mirror-line" id="mirrorH" aria-hidden="true"></i>
+        <div class="canvas-hint" aria-hidden="true"><span>从这里开始画</span><span>支持手指与 Apple Pencil</span></div>
+      </div>
+      <div class="quick-tools kid-action-strip no-print" id="quickTools" aria-label="常用画画工具">
+        <button class="quick-tool" type="button" data-quick-tool="pen" aria-label="画笔" aria-pressed="true">✎</button>
+        <button class="quick-tool" type="button" data-quick-tool="marker" aria-label="彩笔" aria-pressed="false">▰</button>
+        <button class="quick-tool" type="button" data-quick-tool="eraser" aria-label="橡皮擦" aria-pressed="false">◇</button>
+        <button class="quick-color" type="button" data-quick-color="0" aria-label="海洋蓝" aria-pressed="true"></button>
+        <button class="quick-color" type="button" data-quick-color="1" aria-label="森林绿" aria-pressed="false"></button>
+        <button class="quick-color" type="button" data-quick-color="3" aria-label="太阳橙" aria-pressed="false"></button>
+        <button class="quick-color" type="button" data-quick-color="4" aria-label="草莓粉" aria-pressed="false"></button>
+        <button class="quick-tool" type="button" data-quick-stamp="star" aria-label="星星印章">★</button>
+        <button class="quick-tool" type="button" id="quickUndo" aria-label="撤销" disabled>↶</button>
+      </div>
+    </div>
+
+    <aside class="toolbox no-print" aria-label="画画工具">
+      <section class="tool-group">
+        <h2>选一种工具</h2>
+        <div class="tool-grid" id="toolGrid">
+          <button class="tool-btn" type="button" data-tool="pen" aria-pressed="true"><span class="tool-icon" aria-hidden="true">✎</span><span>画笔</span></button>
+          <button class="tool-btn" type="button" data-tool="marker" aria-pressed="false"><span class="tool-icon" aria-hidden="true">▰</span><span>彩笔</span></button>
+          <button class="tool-btn" type="button" data-tool="eraser" aria-pressed="false"><span class="tool-icon" aria-hidden="true">◇</span><span>橡皮</span></button>
+        </div>
+      </section>
+
+      <section class="tool-group">
+        <h2>挑一个颜色</h2>
+        <div class="swatches" id="swatches" aria-label="画笔颜色"></div>
+      </section>
+
+      <section class="tool-group">
+        <h2><label for="brushSize">画笔粗细</label></h2>
+        <div class="size-line"><i class="size-dot" aria-hidden="true"></i><input id="brushSize" type="range" min="3" max="34" value="10" aria-label="画笔粗细"><i class="size-dot big" aria-hidden="true"></i></div>
+      </section>
+
+      <section class="tool-group">
+        <h2>镜像魔法</h2>
+        <div class="tool-grid" id="mirrorGrid">
+          <button class="tool-btn" type="button" data-mirror="none" aria-pressed="true"><span class="tool-icon" aria-hidden="true">1</span><span>普通</span></button>
+          <button class="tool-btn" type="button" data-mirror="vertical" aria-pressed="false"><span class="tool-icon" aria-hidden="true">↔</span><span>左右</span></button>
+          <button class="tool-btn" type="button" data-mirror="quad" aria-pressed="false"><span class="tool-icon" aria-hidden="true">✣</span><span>四面</span></button>
+        </div>
+      </section>
+
+      <section class="tool-group">
+        <h2>盖一个印章</h2>
+        <div class="tool-grid" id="stampGrid">
+          <button class="tool-btn" type="button" data-stamp="star"><span class="tool-icon" aria-hidden="true">★</span><span>星星</span></button>
+          <button class="tool-btn" type="button" data-stamp="heart"><span class="tool-icon" aria-hidden="true">♥</span><span>爱心</span></button>
+          <button class="tool-btn" type="button" data-stamp="flower"><span class="tool-icon" aria-hidden="true">✿</span><span>小花</span></button>
+        </div>
+      </section>
+
+      <section class="tool-group">
+        <h2>画布操作</h2>
+        <div class="action-grid">
+          <button class="btn btn-ghost" id="undoBtn" type="button" disabled>撤销</button>
+          <button class="btn btn-ghost" id="redoBtn" type="button" disabled>重做</button>
+          <button class="btn btn-ghost" id="clearBtn" type="button">清空</button>
+          <button class="btn btn-primary" id="downloadBtn" type="button">保存图片</button>
+        </div>
+        <p class="live-text" id="toolStatus" role="status" aria-live="polite">画布准备好了。</p>
+      </section>
+    </aside>
+  </section>
+
+  <section class="challenge">
+    <article class="card mission kid-result-card" aria-labelledby="finishTitle">
+      <div class="mission-top"><h2 id="finishTitle">画好后，给作品盖完成章</h2><p>上方任务带会实时核对：至少 3 笔、3 种颜色和 1 个印章，条件不变。</p></div>
+      <div class="mission-actions"><button class="btn btn-primary" id="completeBtn" type="button" disabled>完成这幅画</button><p class="mission-status" id="missionStatus" role="status" aria-live="polite">先自由画一画，进度会自动记录。</p></div>
+    </article>
+
+    <form class="work-card work-card-form save-panel parent-deep-dive" data-audience="parent" data-playful-work-form>
+      <h2 class="work-card-title">给作品起个名字</h2>
+      <p class="work-card-content">本站只保存标题和你讲的故事，不上传画布图片。想保留图片请点“保存图片”。</p>
+      <div class="work-card-fields">
+        <input type="hidden" name="type" value="drawing">
+        <div><label for="workTitle">作品名字</label><input class="input" id="workTitle" name="title" maxlength="80" placeholder="例如：会飞的彩虹怪兽"></div>
+        <div><label for="workStory">这幅画里发生了什么？</label><textarea class="input" id="workStory" name="content" maxlength="1200" placeholder="孩子可以说，家长帮忙写一句。"></textarea></div>
+      </div>
+      <button class="btn btn-primary" type="submit">保存作品说明</button>
+      <p class="work-card-status" data-playful-work-status role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section class="learn-grid parent-deep-dive" data-audience="parent">
+    <article class="card learn-card"><h2>学习目标</h2><p>孩子能主动选择工具与至少 3 种颜色，用连续轨迹和印章组织画面，并观察粗细、色彩与镜像如何改变作品。</p><h3>给家长的 3 个问题</h3><ul><li>“你最喜欢画里的哪一小块？为什么？”</li><li>“如果它会动，先动哪一部分？”</li><li>“镜像打开后，哪里让你吃惊？”</li></ul></article>
+    <article class="card learn-card"><h2>背后的原理</h2><p>连续的小点连在一起，就成了线。镜像会把每个点复制到对称的位置；这和蝴蝶翅膀、剪纸图案里的轴对称很像。</p></article>
+    <article class="card learn-card"><h2>玩得更有意思</h2><ul><li>轮流画：每个人一次只添一笔。</li><li>闭眼画一个形状，再睁眼把它变成动物。</li><li>只用圆形、直线和印章讲一个故事。</li></ul></article>
+  </section>
+</main>
+
+<footer class="foot"><div class="wrap">画布只在当前设备中运行；下载图片由浏览器直接生成，不上传到服务器。</div></footer>
+
+<script>
+(function () {
+  "use strict";
+  var canvas = document.getElementById("paintCanvas");
+  var wrap = document.getElementById("canvasWrap");
+  var ctx = canvas.getContext("2d", { alpha: false });
+  var css = getComputedStyle(document.documentElement);
+  function token(name, fallback) { var value = css.getPropertyValue(name).trim(); return value || fallback; }
+  var colors = [
+    { name:"海洋蓝", value:token("--math", "#1f6fd0") },
+    { name:"森林绿", value:token("--sci", "#0f8a4d") },
+    { name:"葡萄紫", value:token("--phys", "#7c3aed") },
+    { name:"太阳橙", value:token("--code", "#d2591a") },
+    { name:"草莓粉", value:token("--kit", "#d81b73") },
+    { name:"天空青", value:token("--video", "#0e7f97") },
+    { name:"蜂蜜黄", value:"#d68a00" },
+    { name:"可可棕", value:"#6b4f36" }
+  ];
+  var state = { tool:"pen", color:colors[0].value, size:10, mirror:"none", stamp:null, drawing:false, stampedThisPointer:false, last:null, strokes:0, stamps:0, used:new Set(), clearArmed:false };
+  var undo = [], redo = [], maxHistory = 24, logicalWidth = 900, logicalHeight = 675;
+  var bg = token("--canvas-bg", "#fffdf8");
+
+  function fitCanvas(preserve) {
+    var old = null;
+    if (preserve && canvas.width && canvas.height) { old = document.createElement("canvas"); old.width=canvas.width; old.height=canvas.height; old.getContext("2d").drawImage(canvas,0,0); }
+    var rect = wrap.getBoundingClientRect();
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.max(1, Math.round(rect.width * dpr));
+    canvas.height = Math.max(1, Math.round(rect.height * dpr));
+    logicalWidth = rect.width; logicalHeight = rect.height;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.fillStyle=bg; ctx.fillRect(0,0,logicalWidth,logicalHeight);
+    if (old) ctx.drawImage(old,0,0,old.width,old.height,0,0,logicalWidth,logicalHeight);
+    updateHistoryButtons();
+  }
+  function snapshot() {
+    try {
+      return {
+        image:canvas.toDataURL("image/png"),
+        strokes:state.strokes,
+        stamps:state.stamps,
+        used:Array.from(state.used)
+      };
+    } catch (_) { return null; }
+  }
+  function pushHistory() {
+    var snap=snapshot(); if (!snap) return;
+    undo.push(snap); if (undo.length>maxHistory) undo.shift(); redo=[]; updateHistoryButtons();
+  }
+  function restore(entry, done) {
+    if(!entry||!entry.image)return;
+    var img=new Image(); img.onload=function(){ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=bg;ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);ctx.restore();state.strokes=entry.strokes||0;state.stamps=entry.stamps||0;state.used=new Set(entry.used||[]);updateMission();if(done)done();};img.src=entry.image;
+  }
+  function updateHistoryButtons(){
+    var undoDisabled=undo.length<2;
+    document.getElementById("undoBtn").disabled=undoDisabled;
+    document.getElementById("redoBtn").disabled=!redo.length;
+    var quickUndo=document.getElementById("quickUndo");
+    if(quickUndo)quickUndo.disabled=undoDisabled;
+  }
+  function point(ev) { var r=canvas.getBoundingClientRect(); return { x:(ev.clientX-r.left)/r.width*logicalWidth, y:(ev.clientY-r.top)/r.height*logicalHeight, pressure:ev.pressure>0?ev.pressure:.5 }; }
+  function mirrors(p) {
+    var list=[p];
+    if(state.mirror==="vertical"||state.mirror==="quad") list.push({x:logicalWidth-p.x,y:p.y,pressure:p.pressure});
+    if(state.mirror==="quad") { list.push({x:p.x,y:logicalHeight-p.y,pressure:p.pressure}); list.push({x:logicalWidth-p.x,y:logicalHeight-p.y,pressure:p.pressure}); }
+    return list;
+  }
+  function line(a,b) {
+    var aa=mirrors(a), bb=mirrors(b);
+    ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
+    ctx.globalAlpha=state.tool==="marker"?.34:1;
+    ctx.globalCompositeOperation="source-over";
+    ctx.strokeStyle=state.tool==="eraser"?bg:state.color;
+    ctx.lineWidth=state.size*(state.tool==="marker"?1.8:1)*(b.pressure>.5?(.8+b.pressure*.45):1);
+    for(var i=0;i<aa.length;i++){ctx.beginPath();ctx.moveTo(aa[i].x,aa[i].y);ctx.lineTo(bb[i].x,bb[i].y);ctx.stroke();}
+    ctx.restore();
+  }
+  function stampShape(kind,p) {
+    var pts=mirrors(p); ctx.save();ctx.fillStyle=state.color;ctx.strokeStyle=state.color;ctx.lineWidth=3;
+    pts.forEach(function(q){ctx.save();ctx.translate(q.x,q.y);var s=Math.max(18,state.size*2.3);ctx.beginPath();
+      if(kind==="star"){for(var i=0;i<10;i++){var r=i%2?s*.42:s,ang=-Math.PI/2+i*Math.PI/5;var x=Math.cos(ang)*r,y=Math.sin(ang)*r;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();ctx.fill();}
+      else if(kind==="heart"){ctx.moveTo(0,s*.85);ctx.bezierCurveTo(-s*1.2,s*.05,-s*.72,-s*.72,0,-s*.22);ctx.bezierCurveTo(s*.72,-s*.72,s*1.2,s*.05,0,s*.85);ctx.fill();}
+      else {for(var j=0;j<6;j++){ctx.rotate(Math.PI/3);ctx.ellipse(0,-s*.52,s*.32,s*.58,0,0,Math.PI*2);ctx.fill();}ctx.beginPath();ctx.arc(0,0,s*.3,0,Math.PI*2);ctx.fillStyle="#d68a00";ctx.fill();}
+      ctx.restore();});ctx.restore();
+  }
+  function pointerDown(ev) {
+    ev.preventDefault(); canvas.setPointerCapture(ev.pointerId); var p=point(ev);
+    if(state.stamp){
+      stampShape(state.stamp,p);state.stamps++;state.used.add(state.color);state.stamp=null;
+      state.drawing=false;state.last=null;wrap.classList.remove("is-drawing");
+      setPressed("#stampGrid [data-stamp]",null);pushHistory();updateMission();status("印章盖好啦！");return;
+    }
+    state.drawing=true;wrap.classList.add("is-drawing");state.last=p;line(p,{x:p.x+.1,y:p.y+.1,pressure:p.pressure});
+  }
+  function pointerMove(ev) { if(!state.drawing||state.stamp||!state.last)return;ev.preventDefault();var p=point(ev);line(state.last,p);state.last=p; }
+  function pointerUp(ev) { if(!state.drawing)return;state.drawing=false;state.last=null;wrap.classList.remove("is-drawing");if(!state.stamp){state.strokes++;if(state.tool!=="eraser")state.used.add(state.color);pushHistory();updateMission();} }
+  function setPressed(selector,value){document.querySelectorAll(selector).forEach(function(b){b.setAttribute("aria-pressed",b.getAttribute(selector.indexOf("data-tool")>=0?"data-tool":selector.indexOf("data-mirror")>=0?"data-mirror":"data-stamp")===value?"true":"false");});}
+  function status(text){document.getElementById("toolStatus").textContent=text;}
+  function updateMission(){
+    var a=Math.min(state.strokes,3),b=Math.min(state.used.size,3),c=Math.min(state.stamps,1);
+    document.getElementById("strokeCount").textContent=state.strokes;document.getElementById("colorCount").textContent=state.used.size;document.getElementById("stampCount").textContent=state.stamps;
+    document.getElementById("strokeCheck").classList.toggle("done",a>=3);document.getElementById("colorCheck").classList.toggle("done",b>=3);document.getElementById("stampCheck").classList.toggle("done",c>=1);
+    var ready=a>=3&&b>=3&&c>=1;document.getElementById("completeBtn").disabled=!ready;document.getElementById("missionStatus").textContent=ready?"任务完成条件都满足了，给作品盖章吧！":"还差一点点：3 笔、3 种颜色和 1 个印章。";
+  }
+
+  var swatches=document.getElementById("swatches");
+  colors.forEach(function(item,index){var b=document.createElement("button");b.type="button";b.className="swatch";b.style.background=item.value;b.setAttribute("aria-label",item.name);b.setAttribute("aria-pressed",index===0?"true":"false");b.addEventListener("click",function(){state.color=item.value;document.documentElement.style.setProperty("--paint",item.value);document.querySelectorAll(".swatch").forEach(function(n){n.setAttribute("aria-pressed","false");});b.setAttribute("aria-pressed","true");if(state.tool==="eraser"){state.tool="pen";setPressed("#toolGrid [data-tool]","pen");}syncQuickControls();status("选好了“"+item.name+"”。");});swatches.appendChild(b);});
+  function syncQuickControls(){
+    document.querySelectorAll("[data-quick-tool]").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.quickTool===state.tool?"true":"false");});
+    document.querySelectorAll("[data-quick-color]").forEach(function(b){var item=colors[Number(b.dataset.quickColor)];b.style.background=item.value;b.setAttribute("aria-pressed",item.value===state.color?"true":"false");});
+  }
+  document.querySelectorAll("[data-quick-tool]").forEach(function(b){b.addEventListener("click",function(){var target=document.querySelector('#toolGrid [data-tool="'+b.dataset.quickTool+'"]');if(target)target.click();syncQuickControls();});});
+  document.querySelectorAll("[data-quick-color]").forEach(function(b){b.addEventListener("click",function(){var target=swatches.children[Number(b.dataset.quickColor)];if(target)target.click();});});
+  document.querySelectorAll("[data-quick-stamp]").forEach(function(b){b.addEventListener("click",function(){var target=document.querySelector('#stampGrid [data-stamp="'+b.dataset.quickStamp+'"]');if(target)target.click();});});
+  document.getElementById("quickUndo").addEventListener("click",function(){document.getElementById("undoBtn").click();});
+  document.querySelectorAll("#toolGrid [data-tool]").forEach(function(b){b.addEventListener("click",function(){state.tool=b.dataset.tool;state.stamp=null;setPressed("#toolGrid [data-tool]",state.tool);setPressed("#stampGrid [data-stamp]",null);syncQuickControls();status(state.tool==="eraser"?"橡皮擦准备好了。":"画笔准备好了。");});});
+  syncQuickControls();
+  document.querySelectorAll("#mirrorGrid [data-mirror]").forEach(function(b){b.addEventListener("click",function(){state.mirror=b.dataset.mirror;setPressed("#mirrorGrid [data-mirror]",state.mirror);document.getElementById("mirrorV").className="mirror-line"+(state.mirror!=="none"?" v":"");document.getElementById("mirrorH").className="mirror-line"+(state.mirror==="quad"?" h":"");status(state.mirror==="none"?"普通画法。":state.mirror==="vertical"?"左右镜像打开了。":"四面镜像打开了。");});});
+  document.querySelectorAll("#stampGrid [data-stamp]").forEach(function(b){b.setAttribute("aria-pressed","false");b.addEventListener("click",function(){state.stamp=b.dataset.stamp;setPressed("#stampGrid [data-stamp]",state.stamp);status("点一下画布，盖上印章。");});});
+  document.getElementById("brushSize").addEventListener("input",function(){state.size=Number(this.value);});
+  canvas.addEventListener("pointerdown",pointerDown);canvas.addEventListener("pointermove",pointerMove);canvas.addEventListener("pointerup",pointerUp);canvas.addEventListener("pointercancel",pointerUp);
+  document.getElementById("undoBtn").addEventListener("click",function(){if(undo.length<2)return;redo.push(undo.pop());restore(undo[undo.length-1],updateHistoryButtons);status("撤销了一步。");});
+  document.getElementById("redoBtn").addEventListener("click",function(){if(!redo.length)return;var snap=redo.pop();undo.push(snap);restore(snap,updateHistoryButtons);status("重做了一步。");});
+  var clearTimer=0;document.getElementById("clearBtn").addEventListener("click",function(){var btn=this;if(!state.clearArmed){state.clearArmed=true;btn.classList.add("clear-ready");btn.textContent="再点一次清空";status("再点一次才会清空，防止误碰。");clearTimeout(clearTimer);clearTimer=setTimeout(function(){state.clearArmed=false;btn.classList.remove("clear-ready");btn.textContent="清空";},3000);return;}state.clearArmed=false;btn.classList.remove("clear-ready");btn.textContent="清空";ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=bg;ctx.fillRect(0,0,canvas.width,canvas.height);ctx.restore();state.strokes=0;state.stamps=0;state.used.clear();pushHistory();updateMission();status("画布清空了，可以重新开始。");});
+  document.getElementById("downloadBtn").addEventListener("click",function(){var a=document.createElement("a");a.download="我的彩虹画-"+new Date().toISOString().slice(0,10)+".png";a.href=canvas.toDataURL("image/png");a.click();status("图片已经保存到设备。");});
+  document.getElementById("completeBtn").addEventListener("click",function(){var evidence="画了 "+state.strokes+" 笔，用了 "+state.used.size+" 种颜色和 "+state.stamps+" 个印章";if(window.Progress&&Progress.complete("games/doodle-pad.html",evidence)){document.getElementById("missionStatus").textContent="完成啦！作品任务已经记录在我的足迹。";this.disabled=true;}else{document.getElementById("missionStatus").textContent="作品完成啦；当前浏览器没有保存足迹。";}});
+  if(window.ResizeObserver)new ResizeObserver(function(){fitCanvas(true);}).observe(wrap);else window.addEventListener("resize",function(){fitCanvas(true);});
+  fitCanvas(false);pushHistory();updateMission();
+})();
+</script>
+<script src="../data/explorations.js"></script>
+<script src="../assets/js/progress.js?v=13"></script>
+<script src="../data/playful.js?v=13"></script>
+<script src="../assets/js/playful.js?v=13"></script>
+<script>if (window.Progress) Progress.visit("games/doodle-pad.html", "彩虹小画室");</script>
+<script src="../assets/js/pwa.js?v=13"></script>
+</body>
+</html>

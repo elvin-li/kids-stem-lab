@@ -38,6 +38,12 @@ window.EXPLORATIONS = [
     task: "让海龟画出一个闭合图形，并解释每次转角为什么能回到起点。"
   },
   {
+    id: "games/doodle-pad.html", file: "doodle-pad.html", title: "彩虹小画室",
+    type: "experiment", subject: "art", age: "4–10", icon: "🎨", ready: true,
+    description: "用手指或 Apple Pencil 画画，体验颜色、线条、印章与镜像对称。",
+    task: "用至少 3 种颜色画 3 笔，再盖 1 个印章，给作品讲一个小故事。"
+  },
+  {
     id: "games/gravity-drop.html", file: "gravity-drop.html", title: "自由落体",
     type: "experiment", subject: "physics", age: "6–12", icon: "🪶", ready: true,
     description: "比较重力与空气阻力对下落运动的影响。",

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>估算站 · 互动实验室</title>
 <meta name="description" content="扫一眼估个数，答「差不多」就算赢。练量级感、抽样估计和费米估算（Fermi estimation），适合 6–12 岁。">
-<link rel="stylesheet" href="../assets/css/base.css">
-<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/base.css?v=13">
+<link rel="stylesheet" href="../assets/css/kid.css?v=13">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
@@ -103,6 +103,55 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
   }
+
+  /* 云端补给站 */
+  html, body { max-width:100%; overflow-x:clip; }
+  .story-hero { position:relative; display:grid; grid-template-columns:auto minmax(0,1fr); gap:16px; align-items:center; margin:22px 0 14px; padding:24px clamp(16px,4vw,30px); overflow:hidden; border:1px solid rgba(34,211,238,.4); border-radius:var(--r-lg); background:linear-gradient(135deg,rgba(34,211,238,.13),rgba(251,191,36,.08) 60%,var(--surface)); }
+  .story-hero::after { content:"☁  · · ·"; position:absolute; right:18px; top:10px; color:rgba(34,211,238,.16); font-size:clamp(2.4rem,9vw,5.4rem); line-height:1; pointer-events:none; }
+  .story-guide { position:relative; z-index:1; width:88px; height:88px; display:grid; place-items:center; border-radius:50% 50% 44% 44%; background:linear-gradient(145deg,#c9f7ff,#22d3ee); color:#073a45; font-size:2.5rem; box-shadow:0 10px 28px rgba(34,211,238,.22); }
+  .story-copy { position:relative; z-index:1; min-width:0; }
+  .story-kicker { margin:0 0 5px; color:var(--video); font-weight:800; font-size:.82rem; }
+  .story-hero h1 { margin:0; }
+  .story-goal { margin:7px 0 0; max-width:52ch; color:var(--ink-mid); font-size:1.02rem; }
+  .story-goal b { color:var(--ink); }
+  .stage-ribbon { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 10px; padding:10px 14px; border-radius:var(--r); background:rgba(34,211,238,.09); color:var(--ink-mid); }
+  .learning-layers { display:grid; gap:12px; margin-top:28px; }
+  .learning-layers details { border:1px solid var(--line); border-radius:var(--r); background:var(--surface); padding:0 16px; }
+  .learning-layers summary { min-height:48px; display:flex; align-items:center; cursor:pointer; color:var(--ink); font-weight:800; }
+  .learning-layers details > div { padding:0 0 16px; color:var(--ink-mid); }
+  main#main > * { order:0 !important; }
+  [hidden] { display:none !important; }
+  button, .btn, .chip, select, input[type="range"] { min-height:44px; }
+  canvas { max-width:100%; }
+  .mission-grid, .work-card-fields { min-width:0; }
+  table { max-width:100%; }
+  .estimate-result { display:grid; gap:14px; margin-top:14px; padding:16px; }
+  .estimate-result[hidden] { display:none !important; }
+  .estimate-numbers { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; text-align:center; }
+  .estimate-numbers span { padding:10px 6px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface-2); color:var(--ink-mid); }
+  .estimate-numbers b { display:block; margin-top:4px; color:var(--ink); font:800 clamp(1.4rem,6vw,2.2rem)/1 var(--mono); }
+  .estimate-distance { display:grid; gap:8px; }
+  .estimate-distance-row { display:grid; grid-template-columns:44px minmax(0,1fr); gap:8px; align-items:center; color:var(--ink-mid); font-weight:700; }
+  .estimate-distance-track { height:24px; overflow:hidden; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); }
+  .estimate-distance-track i { display:block; height:100%; min-width:4px; border-radius:999px; transition:width .25s var(--ease); }
+  #kidGuessBar { background:linear-gradient(90deg,var(--math),var(--phys)); }
+  #kidTruthBar { background:linear-gradient(90deg,var(--sci),var(--warn)); }
+  .kid-picks { display:flex; flex-wrap:wrap; gap:8px; }
+  .kid-picks .kid-choice { min-height:44px; }
+  .kid-picks .kid-choice[aria-pressed="true"] { border-color:var(--sci); background:rgba(74,222,128,.14); }
+  html[data-mode="kid"] .story-hero { margin-bottom:8px; padding-block:14px; }
+  html[data-mode="kid"] #mode-count { display:block; }
+  html[data-mode="kid"] #mode-count > .lab-stage { width:100%; }
+  html[data-mode="kid"] #mode-count > div:last-child { width:100%; }
+  html[data-mode="kid"] .stage-wrap canvas { max-height:430px; }
+  @media (max-width:620px) {
+    .story-hero { grid-template-columns:1fr; padding:18px 16px; }
+    .story-guide { width:68px; height:68px; font-size:2rem; }
+    .story-hero::after { font-size:2.5rem; }
+    .tabs { display:grid; grid-template-columns:1fr; }
+    .guessbar > * { width:100%; }
+    .verdict .row .btn { flex:1 1 100%; }
+  }
 </style>
 </head>
 <body data-playful-page="games/estimation-station.html">
@@ -120,62 +169,30 @@
   </div>
 </div></nav>
 
-<header class="head wrap">
-  <p class="row" style="margin:0 0 10px">
-    <span class="pill pill-math">数学</span><span class="pill">6–12 岁</span><span class="pill">估算 · 量级感</span>
-  </p>
-  <h1>估算站</h1>
-  <p class="one"><b style="color:var(--ink)">这在教什么：</b>一眼扫过去大概多少个？这里答「差不多」就算赢——分数按百分比误差算，不要求精确。练的是量级感（order of magnitude）和抽样估计。</p>
+<header class="story-hero wrap">
+  <div class="story-guide" aria-hidden="true">☁️</div>
+  <div class="story-copy">
+    <p class="story-kicker">妙妙的云端补给站正在装箱</p>
+    <p class="row" style="margin:0 0 8px"><span class="pill pill-math">数学</span><span class="pill">6–12 岁</span><span class="pill">估算 · 量级感</span></p>
+    <h1>一眼猜出补给有多少</h1>
+    <p class="story-goal"><b>不用一个个数：</b>先看整体、分成小块，再猜一个差不多的数量。</p>
+  </div>
 </header>
 
 <main id="main" class="wrap">
-  <section class="task mission" aria-labelledby="estimateMissionTitle">
-    <h2 class="task-title" id="estimateMissionTitle">任务：用策略完成三轮估算并校准</h2>
-    <ol>
-      <li><b>预测：</b>扫一眼散点、聚类或网格分布，写下估计值。</li>
-      <li><b>操作：</b>至少使用两种策略（整体感觉、四分区或样方抽样）完成三轮。</li>
-      <li><b>结果：</b>比较每轮百分比误差，阅读偏大 / 偏小校准提示。</li>
-      <li><b>反思：</b>写下哪种分组方法让估计更接近。</li>
-    </ol>
-    <div class="mission-grid">
-      <div><label for="estimateReflect">我的反思</label><textarea class="input" id="estimateReflect" placeholder="例如：聚类时先估每团，再把几团相加。"></textarea></div>
-      <button class="btn btn-primary" id="estimateComplete" type="button" disabled>记录任务完成</button>
-    </div>
-    <p class="task-status status" id="estimateStatus" role="status" aria-live="polite">尚未完成：需要三轮估算，并至少使用两种策略。</p>
-      <div class="playful-quest" style="--quest-accent:var(--warn)" aria-labelledby="estimateStoryTitle">
-      <div class="playful-quest-head">
-        <div><h3 id="estimateStoryTitle">云端补给站的装箱单</h3><p class="playful-story">妙妙不需要精确点完每一颗糖豆。先分组、再估算，把校准方法写进观察记录。</p></div>
-        <div data-playful-companion role="note" aria-label="妙妙伙伴提示"></div>
-      </div>
-      <div class="playful-tools">
-        <button class="btn btn-sm" type="button" data-playful-random-task="#estimateSurprise">抽取随机补给任务</button>
-        <p class="playful-task-output" id="estimateSurprise" data-playful-task-output role="status" aria-live="polite">补给箱里会出现一种新的估算方法。</p>
-      </div>
-      <div class="playful-evidence"><span data-playful-sticker aria-label="估算站贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
-      <form class="work-card work-card-form" data-playful-work-form aria-labelledby="estimateWorkTitle">
-        <h4 id="estimateWorkTitle">保存我的估算观察</h4>
-        <div class="work-card-fields">
-          <div><label for="estimateWorkType">作品类型</label><select class="input" id="estimateWorkType" name="type"><option value="observation">观察记录</option><option value="prediction">预测卡</option><option value="explanation">我的解释</option></select></div>
-          <div><label for="estimateWorkName">记录名称</label><input class="input" id="estimateWorkName" name="title" required maxlength="80" placeholder="例如：四分区估算"></div>
-          <div><label for="estimateWorkContent">估算与校准</label><textarea class="input" id="estimateWorkContent" name="content" required maxlength="4000" placeholder="记录估计值、真实值、误差和下一次怎样调整。"></textarea></div>
-          <button class="btn btn-primary btn-sm" type="submit">保存观察卡</button>
-        </div>
-        <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">观察卡只保存在这台设备上。</p>
-      </form>
-    </div>
-  </section>
+  <div class="stage-ribbon" role="note"><span aria-hidden="true">🫘</span><strong>准备开箱：</strong><span>选一种估法，扫一眼糖豆，再写下你的判断。</span></div>
 
-  <div class="tabs" role="tablist" aria-label="选择模式">
+  <div class="tabs" role="tablist" aria-label="选择模式" data-audience="parent">
     <button class="chip" type="button" role="tab" id="tab-count" aria-selected="true"  aria-pressed="true"  aria-controls="mode-count" data-mode="count">模式一 · 数糖豆</button>
     <button class="chip" type="button" role="tab" id="tab-fermi" aria-selected="false" aria-pressed="false" aria-controls="mode-fermi" data-mode="fermi">模式二 · 费米问题</button>
   </div>
 
   <!-- ================= 模式一 ================= -->
   <section id="mode-count" role="tabpanel" aria-labelledby="tab-count" class="lab">
-    <div class="lab-stage stage-wrap">
+    <div class="lab-stage stage-wrap kid-visual-stage">
       <canvas id="cv" width="800" height="520" aria-label="散落着许多糖豆的画面，用于估算数量">糖豆数量估算图。糖豆短暂显示后会隐藏，请在表单中填写估计值。</canvas>
       <div class="veil" id="veil">
-        <div>
+        <div class="kid-action-strip">
           <h2 id="veil-title">准备好了吗？</h2>
           <p id="veil-text">糖豆会闪一下就藏起来。别去一个一个数，扫一眼，猜个大概。</p>
           <button class="btn btn-primary" type="button" id="flash">开始第 1 轮</button>
@@ -187,13 +204,13 @@
     <div>
       <div class="panel">
         <h3>你的估计</h3>
-        <div class="ctrl">
+        <div class="ctrl" data-audience="parent">
           <div class="ctrl-head"><label for="peek">看多久</label><b id="peek-out">1.2 秒</b></div>
           <input type="range" id="peek" min="4" max="30" step="1" value="12" aria-describedby="peek-hint">
           <p style="font-size:.78rem;color:var(--ink-dim);margin:2px 0 0" id="peek-hint">时间越短越只能靠「整体感觉」，这正是估算要练的。</p>
         </div>
 
-        <div class="ctrl">
+        <div class="ctrl" data-audience="parent">
           <div class="ctrl-head"><label for="level">难度</label><b id="level-out">中</b></div>
           <select class="input" id="level">
             <option value="easy">简单（10–40 个）</option>
@@ -202,7 +219,7 @@
           </select>
         </div>
 
-        <div class="ctrl">
+        <div class="ctrl" data-audience="parent">
           <div class="ctrl-head"><label for="layout-mode">点的分布</label></div>
           <select class="input" id="layout-mode">
             <option value="scatter">散点 · 随机铺开</option>
@@ -237,12 +254,20 @@
           <p class="sub" id="score-sub"></p>
           <div class="row" style="margin-top:10px">
             <button class="btn btn-primary btn-sm" type="button" id="next">下一轮 →</button>
-            <button class="btn btn-ghost btn-sm" type="button" id="again">再看一次这张</button>
+            <button class="btn btn-ghost btn-sm" type="button" id="again" data-audience="parent">再看一次这张</button>
           </div>
+        </div>
+        <div class="kid-result-card estimate-result" id="kidEstimateResult" hidden aria-live="polite">
+          <div class="estimate-numbers"><span>我猜<b id="kidGuessValue">—</b></span><span>真实<b id="kidTruthValue">—</b></span><span>相差<b id="kidDiffValue">—</b></span></div>
+          <div class="estimate-distance" role="img" id="kidDistanceVisual" aria-label="猜测和真实值的长度比较">
+            <div class="estimate-distance-row"><span>猜</span><div class="estimate-distance-track"><i id="kidGuessBar" style="width:0"></i></div></div>
+            <div class="estimate-distance-row"><span>真的</span><div class="estimate-distance-track"><i id="kidTruthBar" style="width:0"></i></div></div>
+          </div>
+          <p style="margin:0;text-align:center;font-weight:800" id="kidEstimateFinding">揭晓后看看两条相差多远。</p>
         </div>
       </div>
 
-      <div class="panel">
+      <div class="panel parent-deep-dive" data-audience="parent">
         <h3>你猜得有多准</h3>
         <div class="readout"><span>已完成</span><b id="r-rounds">0 轮</b></div>
         <div class="readout"><span>平均误差</span><b id="r-avg">—</b></div>
@@ -258,7 +283,7 @@
         <button class="btn btn-ghost btn-sm" type="button" id="clear" style="margin-top:12px">清空记录</button>
       </div>
 
-      <div class="panel">
+      <div class="panel parent-deep-dive" data-audience="parent">
         <h3>估算小技巧</h3>
         <ul class="steps" style="padding-left:1.1em">
           <li><b style="color:var(--ink)">框一块数：</b>心里圈出画面的 1/4，数那一块，再乘 4。</li>
@@ -270,7 +295,7 @@
   </section>
 
   <!-- ================= 模式二 ================= -->
-  <section id="mode-fermi" role="tabpanel" aria-labelledby="tab-fermi" class="lab" hidden>
+  <section id="mode-fermi" role="tabpanel" aria-labelledby="tab-fermi" class="lab parent-deep-dive" data-audience="parent" hidden>
     <div class="lab-stage">
       <div style="padding:6px 6px 2px">
         <p class="row" style="margin:0 0 10px"><span class="pill pill-phys">费米估算</span><span class="pill" id="f-no">第 1 题 / 共 8 题</span></p>
@@ -337,8 +362,42 @@
     </div>
   </section>
 
+  <section class="task mission" aria-labelledby="estimateMissionTitle">
+    <div class="card parent-deep-dive" data-audience="parent" style="margin-bottom:14px">
+      <h2 style="font-size:1.1rem">这在教什么</h2>
+      <p style="margin:0">估算不是乱猜，而是先分组、抽样、判断几十还是几百，再用误差校准下一次。</p>
+    </div>
+    <h2 class="task-title" id="estimateMissionTitle">正式任务 · 完成三张装箱单</h2>
+    <ol class="kid-story-steps">
+      <li><b>选一种估法</b>，扫一眼再猜。</li>
+      <li><b>揭晓差多少</b>，做满三轮并换一次方法。</li>
+      <li><b>点一句发现</b>，把经验记进足迹。</li>
+    </ol>
+    <div class="mission-grid">
+      <div data-audience="parent"><label for="estimateReflect">我的发现</label><textarea class="input" id="estimateReflect" placeholder="例如：聚类时先估每团，再把几团相加。"></textarea></div>
+      <div data-audience="kid-only"><p style="margin:0 0 6px;font-weight:700">我发现……</p><div class="kid-picks" id="estimateReflectChoices"><button class="kid-choice" type="button" data-estimate-reflect="分成四块，先估一块再乘四更容易。">分四块再乘 4</button><button class="kid-choice" type="button" data-estimate-reflect="先看是几十还是几百，再猜具体数量。">先判断几十还是几百</button><button class="kid-choice" type="button" data-estimate-reflect="看过差多少后，下一轮可以把猜测调大或调小。">看差值再调整</button></div></div>
+      <button class="btn btn-primary" id="estimateComplete" type="button" disabled>把装箱经验记进足迹</button>
+    </div>
+    <p class="task-status status" id="estimateStatus" role="status" aria-live="polite">尚未完成：需要三轮估算，并至少使用两种策略。</p>
+    <div class="playful-quest parent-deep-dive" data-audience="parent" style="--quest-accent:var(--warn)" aria-labelledby="estimateStoryTitle">
+      <div class="playful-quest-head"><div><h3 id="estimateStoryTitle">云端补给观察卡</h3><p class="playful-story">妙妙不需要精确点完。记录你的估法和下一次怎样校准。</p></div><div data-playful-companion role="note" aria-label="妙妙伙伴提示"></div></div>
+      <div class="playful-tools"><button class="btn btn-sm" type="button" data-playful-random-task="#estimateSurprise">打开一箱新补给</button><p class="playful-task-output" id="estimateSurprise" data-playful-task-output role="status" aria-live="polite">补给箱里会出现一种新估法。</p></div>
+      <div class="playful-evidence"><span data-playful-sticker aria-label="估算站贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
+      <form class="work-card work-card-form" data-playful-work-form aria-labelledby="estimateWorkTitle">
+        <h4 id="estimateWorkTitle">作品表单 · 保存估算观察</h4>
+        <div class="work-card-fields">
+          <div><label for="estimateWorkType">作品类型</label><select class="input" id="estimateWorkType" name="type"><option value="observation">观察记录</option><option value="prediction">预测卡</option><option value="explanation">我的解释</option></select></div>
+          <div><label for="estimateWorkName">记录名称</label><input class="input" id="estimateWorkName" name="title" required maxlength="80" placeholder="例如：四分区估算"></div>
+          <div><label for="estimateWorkContent">估算与校准</label><textarea class="input" id="estimateWorkContent" name="content" required maxlength="4000" placeholder="记录估计值、真实值和下次怎样调整。"></textarea></div>
+          <button class="btn btn-primary btn-sm" type="submit">收好我的观察卡</button>
+        </div>
+        <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">观察卡只保存在这台设备上。</p>
+      </form>
+    </div>
+  </section>
+
   <!-- ================= 家长脚本 + 原理 ================= -->
-  <section class="grid-2" style="margin-top:26px">
+  <section class="grid-2 parent-deep-dive" data-audience="parent" style="margin-top:26px">
     <div class="card">
       <h2 style="font-size:1.18rem">给家长的提问脚本</h2>
       <p style="font-size:.88rem">孩子猜完先别说对错，按顺序问这三句。目标是让孩子说出方法，而不是碰运气。</p>
@@ -619,6 +678,19 @@
       "你猜 " + g + "，差 " + Math.abs(g - truth) + " 个，相对误差 " +
       (s.err * 100).toFixed(1) + "%。得分 " + s.pts + "。";
     verdict.hidden = false;
+    var difference = Math.abs(g - truth);
+    var scaleMax = Math.max(g, truth, 1);
+    var kidResult = document.getElementById("kidEstimateResult");
+    document.getElementById("kidGuessValue").textContent = g;
+    document.getElementById("kidTruthValue").textContent = truth;
+    document.getElementById("kidDiffValue").textContent = difference;
+    document.getElementById("kidGuessBar").style.width = Math.max(4, g / scaleMax * 100) + "%";
+    document.getElementById("kidTruthBar").style.width = Math.max(4, truth / scaleMax * 100) + "%";
+    document.getElementById("kidDistanceVisual").setAttribute("aria-label", "猜测 " + g + "，真实 " + truth + "，相差 " + difference);
+    document.getElementById("kidEstimateFinding").textContent = g === truth
+      ? "刚好猜中！两条一样长。"
+      : "这次猜得" + (g > truth ? "偏大" : "偏小") + "，相差 " + difference + " 个。";
+    kidResult.hidden = false;
     liveCount.textContent = "真实数量 " + truth + " 个，你的相对误差 " + (s.err * 100).toFixed(1) + "%。";
 
     if (s.err <= 0.05) toast("误差 5% 以内，眼睛很准！");
@@ -638,6 +710,16 @@
       ? "✓ 已完成 " + history.length + " 轮，使用了 " + names.join("、") + "。请写反思并记录。"
       : "进度：" + history.length + "/3 轮；已用策略：" + (names.join("、") || "尚无") + "。至少需要两种策略。";
   }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-estimate-reflect]'), function (btn) {
+    btn.addEventListener("click", function () {
+      document.getElementById("estimateReflect").value = btn.getAttribute("data-estimate-reflect");
+      document.querySelectorAll('[data-estimate-reflect]').forEach(function (choice) {
+        choice.setAttribute("aria-pressed", String(choice === btn));
+      });
+      liveCount.textContent = "已选发现：" + btn.textContent;
+    });
+  });
 
   document.getElementById("estimateComplete").addEventListener("click", function () {
     var reflection = document.getElementById("estimateReflect").value.trim();
@@ -873,10 +955,10 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js"></script>
-<script src="../data/playful.js"></script>
-<script src="../assets/js/playful.js"></script>
+<script src="../assets/js/progress.js?v=13"></script>
+<script src="../data/playful.js?v=13"></script>
+<script src="../assets/js/playful.js?v=13"></script>
 <script>if (window.Progress) Progress.visit("games/estimation-station.html", "估算站");</script>
-<script src="../assets/js/pwa.js"></script>
+<script src="../assets/js/pwa.js?v=13"></script>
 </body>
 </html>

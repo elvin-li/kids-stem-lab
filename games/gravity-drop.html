@@ -5,39 +5,114 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>重力落体实验 · 羽毛与锤子 | 少儿数理启蒙</title>
 <meta name="description" content="切换有空气与真空，改变重力大小，看羽毛、皮球和锤子谁先落地。重现 Apollo 15 号在月球上的经典实验。" />
-<link rel="stylesheet" href="../assets/css/base.css">
-<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/base.css?v=13">
+<link rel="stylesheet" href="../assets/css/kid.css?v=13">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
-  .lab-head { margin: 24px 0 18px; }
-  .lab-head p.lead { font-size: 1.02rem; max-width: 62ch; }
-  .seg { display: flex; gap: 8px; flex-wrap: wrap; }
-  .obj-row { padding: 8px 0; border-bottom: 1px dashed var(--line-soft); }
-  .obj-row:last-child { border-bottom: 0; }
-  .obj-top { display: flex; align-items: center; gap: 7px; font-size: .82rem; font-weight: 700; color: var(--ink); }
-  .obj-top .sw { width: 11px; height: 11px; border-radius: 3px; flex: none; }
-  .obj-top .num { margin-left: auto; font-family: var(--mono); font-weight: 700; font-size: .8rem; }
-  .obj-sub { font-family: var(--mono); font-size: .72rem; color: var(--ink-dim); margin-top: 2px; }
-  .vbar { height: 6px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line-soft); overflow: hidden; margin-top: 5px; }
-  .vbar > i { display: block; height: 100%; width: 0; }
-  .qlist { margin: 0; padding-left: 1.15em; color: var(--ink-mid); font-size: .94rem; }
-  .qlist li { margin-bottom: .5em; }
-  .qlist b { color: var(--ink); }
-  .why { font-size: .95rem; }
-  .why h3 { margin-top: 1.1em; }
-  .tag-row { gap: 8px; }
-  .task-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto; gap:10px; align-items:end; }
+  html, body { overflow-x:hidden; }
+  button, .btn, .chip, input, select, textarea, .input { min-height:44px; }
+  button, .btn, .chip { touch-action:manipulation; }
+  input, select, textarea, .input { max-width:100%; }
+  textarea.input { min-height:88px; }
+  .tag-row, .seg { display:flex; gap:8px; flex-wrap:wrap; }
+  .obj-sub { margin-top:2px; color:var(--ink-dim); font:600 .72rem/1.5 var(--mono); }
+  .section-kicker { margin:0 0 5px; color:var(--phys); font-size:.76rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+
+  .kid-hero-scene { position:relative; isolation:isolate; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:14px; align-items:center; margin:14px 0 10px; padding:clamp(14px,3vw,22px); overflow:hidden; border:1px solid rgba(167,139,250,.35); border-radius:22px; background:linear-gradient(135deg,rgba(167,139,250,.15),rgba(110,168,254,.08) 55%,rgba(74,222,128,.06)); }
+  .kid-hero-scene::after { content:''; position:absolute; z-index:-1; width:150px; height:150px; right:-58px; bottom:-92px; border:2px solid rgba(167,139,250,.25); border-radius:50%; box-shadow:0 0 0 18px rgba(110,168,254,.05),0 0 0 36px rgba(167,139,250,.04); }
+  .mission-copy { min-width:0; }
+  .mission-copy h1 { margin:.28em 0 .18em; font-size:clamp(1.55rem,5vw,2.35rem); line-height:1.1; }
+  .mission-copy p { max-width:58ch; margin:.25em 0 0; color:var(--ink-mid); }
+  .mission-character { width:82px; min-height:82px; display:grid; place-items:center; border:2px solid rgba(238,242,255,.18); border-radius:50%; background:radial-gradient(circle at 38% 32%,rgba(255,255,255,.17),rgba(167,139,250,.16) 48%,rgba(11,15,26,.3) 49%); font-size:2.25rem; }
+
+  .kid-visual-stage { position:relative; margin-bottom:18px; padding:clamp(12px,2.5vw,20px); overflow:hidden; border:2px solid rgba(167,139,250,.48); border-radius:24px; background:radial-gradient(circle at 88% 5%,rgba(167,139,250,.15),transparent 28%),var(--surface-1); box-shadow:0 14px 38px rgba(0,0,0,.2); }
+  .stage-head { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  .stage-head h2 { margin:0; font-size:clamp(1.15rem,4vw,1.55rem); }
+  .stage-head p { margin:3px 0 0; color:var(--ink-mid); font-size:.88rem; }
+  .condition-badge { flex:none; padding:6px 10px; border:1px solid rgba(110,168,254,.45); border-radius:99px; background:rgba(110,168,254,.12); color:var(--ink); font-size:.8rem; font-weight:900; }
+  .kid-action-strip { display:grid; grid-template-columns:minmax(210px,1fr) minmax(150px,.65fr) auto; gap:10px; align-items:stretch; margin-bottom:12px; }
+  .condition-toggle { display:grid; grid-template-columns:1fr 1fr; gap:8px; min-width:0; }
+  .kid-choice { width:100%; border:2px solid var(--line); border-radius:14px; background:var(--surface-2); color:var(--ink-mid); font-weight:900; }
+  .kid-choice[aria-pressed="true"] { border-color:var(--phys); background:rgba(167,139,250,.18); color:var(--ink); box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); }
+  #go { width:100%; font-size:1rem; font-weight:900; }
+  #reset { align-self:center; min-width:76px; }
+  .canvas-shell { position:relative; overflow:hidden; border:2px solid rgba(110,168,254,.45); border-radius:18px; background:#0b0f1a; box-shadow:inset 0 0 24px rgba(110,168,254,.08); }
+  .canvas-label { position:absolute; z-index:1; top:9px; right:10px; padding:4px 8px; border-radius:99px; background:rgba(11,15,26,.78); color:var(--ink-mid); font-size:.72rem; font-weight:800; pointer-events:none; }
+  #scene { display:block; width:100%; max-width:100%; height:auto; }
+
+  .stage-results { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px; }
+  .kid-result-card { min-width:0; display:grid; grid-template-columns:72px minmax(0,1fr); gap:10px; align-items:center; padding:12px; border:2px solid var(--line-soft); border-radius:17px; background:rgba(29,37,64,.72); }
+  .kid-result-card[data-state="done"] { border-color:rgba(74,222,128,.62); background:linear-gradient(135deg,rgba(74,222,128,.1),rgba(29,37,64,.82)); }
+  .kid-result-card[data-state="mismatch"] { border-color:rgba(251,191,36,.68); background:linear-gradient(135deg,rgba(251,191,36,.1),rgba(29,37,64,.82)); }
+  .result-trajectory { width:72px; height:58px; color:var(--ink-dim); }
+  .kid-result-card[data-state="done"] .result-trajectory { color:var(--sci); }
+  .kid-result-card[data-state="mismatch"] .result-trajectory { color:var(--warn); }
+  .result-copy { min-width:0; }
+  .result-copy span, .result-copy b { display:block; }
+  .result-copy span { color:var(--ink-mid); font-size:.78rem; font-weight:800; }
+  .result-copy b { margin-top:3px; overflow-wrap:anywhere; color:var(--ink); font-size:clamp(.92rem,3vw,1.08rem); line-height:1.25; }
+  .result-copy small { display:block; margin-top:3px; color:var(--ink-dim); }
+  .stage-complete { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:12px; padding:10px 12px; border-radius:15px; background:rgba(251,191,36,.08); border:1px solid rgba(251,191,36,.24); }
+  .stage-complete p { margin:0; color:var(--ink-mid); font-size:.88rem; }
+  .stage-complete .btn { flex:none; }
+
+  .kid-story-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0 0 20px; padding:0; list-style:none; }
+  .kid-story-steps li { min-width:0; padding:14px; border:1px solid var(--line-soft); border-radius:16px; background:var(--surface-1,var(--surface-2)); color:var(--ink-mid); }
+  .kid-story-steps b { display:block; margin-bottom:4px; color:var(--ink); }
+
+  .parent-deep-dive { margin-top:18px; }
+  details.parent-deep-dive { border:1px solid var(--line-soft); border-radius:18px; background:var(--surface-1,var(--surface-2)); }
+  details.parent-deep-dive > summary { min-height:44px; display:flex; align-items:center; padding:12px 16px; cursor:pointer; color:var(--ink); font-weight:900; }
+  .parent-controls { padding:0 16px 16px; }
+  .parent-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  .panel { min-width:0; }
+  .panel h3 { line-height:1.25; }
+  .ctrl-head label { padding-right:8px; }
+  .obj-row { padding:8px 0; border-bottom:1px dashed var(--line-soft); }
+  .obj-row:last-child { border-bottom:0; }
+  .obj-top { display:flex; align-items:center; gap:7px; color:var(--ink); font-size:.82rem; font-weight:700; }
+  .obj-top .sw { width:11px; height:11px; flex:none; border-radius:3px; }
+  .obj-top .num { margin-left:auto; font:700 .8rem var(--mono); }
+  .vbar { height:6px; margin-top:5px; overflow:hidden; border:1px solid var(--line-soft); border-radius:99px; background:var(--surface-2); }
+  .vbar > i { display:block; width:0; height:100%; }
   .compare-list { display:grid; gap:7px; margin-top:8px; }
-  .playful-story { display:grid; gap:12px; margin-bottom:18px; }
-  .playful-story-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .playful-story h2 { font-size:1.12rem; margin:0 0 4px; }
-  .playful-story p { margin:0; }
-  .playful-story-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .playful-story [data-playful-task-output] { color:var(--ink-mid); min-height:1.5em; }
-  @media (max-width:760px) { .task-fields { grid-template-columns:1fr; } }
+  .task-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr); gap:10px; align-items:end; }
+  .formal-task form[data-playful-work-form] { margin-top:18px; }
+  .qlist { margin:0; padding-left:1.15em; color:var(--ink-mid); font-size:.94rem; }
+  .qlist li { margin-bottom:.5em; }
+  .qlist b { color:var(--ink); }
+  .why { font-size:.95rem; }
+  .why h3 { margin-top:1.1em; }
+  main :where(.kid-visual-stage,.stage-results,.kid-story-steps,.parent-grid,.grid-2,.task-fields) > * { min-width:0; }
+
+  @media (max-width:760px) {
+    .kid-action-strip { grid-template-columns:minmax(0,1fr) minmax(138px,.7fr); }
+    #reset { grid-column:1/-1; justify-self:end; }
+    .parent-grid, .task-fields { grid-template-columns:1fr; }
+    .mission-character { display:none; }
+    .kid-hero-scene { grid-template-columns:1fr; }
+  }
+  @media (max-width:520px) {
+    .kid-hero-scene { padding:13px; border-radius:18px; }
+    .kid-hero-scene .pill:nth-child(n+2) { display:none; }
+    .kid-action-strip { grid-template-columns:1fr; }
+    #reset { grid-column:auto; width:100%; }
+    .stage-head { align-items:flex-start; }
+    .stage-head p { max-width:24ch; }
+    .condition-badge { font-size:.72rem; }
+    .stage-results { gap:7px; }
+    .kid-result-card { grid-template-columns:1fr; gap:4px; padding:9px; }
+    .result-trajectory { width:100%; height:44px; }
+    .stage-complete { align-items:stretch; flex-direction:column; }
+    .stage-complete .btn { width:100%; }
+    .kid-story-steps { grid-template-columns:1fr; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+  }
 </style>
 </head>
 <body data-playful-page="games/gravity-drop.html">
@@ -57,171 +132,187 @@
 
 <main class="wrap" id="main">
 
-  <header class="lab-head stack">
-    <div class="row tag-row">
-      <span class="pill pill-phys">物理 · 力与运动</span>
-      <span class="pill">6–12 岁</span>
-      <span class="pill">约 10 分钟</span>
+  <header class="kid-hero-scene playful-story" aria-labelledby="gravityStoryTitle">
+    <div class="mission-copy">
+      <div class="tag-row">
+        <span class="pill pill-phys">月球急件 · 力与运动</span>
+        <span class="pill">6–12 岁</span>
+        <span class="pill">约 5 分钟</span>
+      </div>
+      <h1 id="gravityStoryTitle">羽毛和锤子，谁先落地？</h1>
+      <p>在同一个高度，先留着空气试一次，再抽成真空试一次。答案会自己出现在舞台上。</p>
+      <div data-playful-companion></div>
     </div>
-    <h1>羽毛、皮球和锤子，谁先落地？</h1>
-    <p class="lead">这在教什么：<b>重力让所有东西以同样的加速度下落</b>。看起来羽毛慢，是空气阻力在拖它 —— 抽掉空气，三个东西会一起落地。</p>
+    <div class="mission-character" aria-hidden="true">🐰🚀</div>
   </header>
 
-  <section class="card playful-story" aria-labelledby="gravityStoryTitle">
-    <div data-playful-companion></div>
-    <div class="playful-story-head">
-      <div><h2 id="gravityStoryTitle">月球实验舱：准备开启真空舱门</h2><p>你是今天的落体观察员。先在有空气的舱室试一次，再抽成真空，把两份数据送回地面研究站。</p></div>
-      <span data-playful-sticker></span>
+  <section class="kid-visual-stage" id="stage" aria-labelledby="stageTitle">
+    <div class="stage-head">
+      <div>
+        <h2 id="stageTitle">落体实验舞台</h2>
+        <p>保持高度和重力不变，完成有空气、真空各一次。</p>
+      </div>
+      <span class="condition-badge" id="airVal">有空气</span>
     </div>
-    <div class="playful-story-actions">
-      <button class="btn btn-sm" id="gravitySurpriseBtn" type="button" data-playful-random-task="#gravitySurprise">抽取月球惊喜任务</button>
-      <p id="gravitySurprise" data-playful-task-output>实验舱已就绪，想加一项小挑战吗？</p>
+
+    <div class="kid-action-strip" aria-label="实验主操作">
+      <div class="condition-toggle" role="group" aria-labelledby="airLbl">
+        <span class="sr-only" id="airLbl">切换实验中的空气条件</span>
+        <button class="kid-choice" id="airOn" type="button" aria-pressed="true">有空气</button>
+        <button class="kid-choice" id="airOff" type="button" aria-pressed="false">真空</button>
+      </div>
+      <button class="btn btn-primary" id="go" type="button">松手</button>
+      <button class="btn btn-ghost btn-sm" id="reset" type="button">重置</button>
     </div>
-    <p id="gravityPlayfulFeedback" data-playful-feedback></p>
+
+    <div class="canvas-shell">
+      <span class="canvas-label">当前轨迹</span>
+      <canvas id="scene" role="img" tabindex="0"
+        aria-label="下落实验画面：羽毛、皮球、锤子从同一高度落下，画面突出显示运动轨迹与落地结果。聚焦画面后按空格键可开始或暂停。"></canvas>
+      <p id="live" class="sr-only" aria-live="polite"></p>
+    </div>
+
+    <div class="stage-results" aria-labelledby="gravityCompareTitle">
+      <h3 class="sr-only" id="gravityCompareTitle">有空气和真空的实验结果</h3>
+      <article class="kid-result-card" id="airResultCard" data-state="waiting">
+        <svg class="result-trajectory" viewBox="0 0 80 60" role="img" aria-label="有空气的下落轨迹图">
+          <path d="M8 8v44h64" fill="none" stroke="currentColor" stroke-width="2" opacity=".45"/>
+          <path d="M18 10c4 8 2 15 9 21s6 15 12 21M42 10c1 15 4 29 8 42M62 10c0 16 1 29 2 42" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 6"/>
+        </svg>
+        <div class="result-copy"><span>有空气</span><b id="airResult">等你松手</b><small>羽毛会被空气拖住</small></div>
+      </article>
+      <article class="kid-result-card" id="vacuumResultCard" data-state="waiting">
+        <svg class="result-trajectory" viewBox="0 0 80 60" role="img" aria-label="真空的下落轨迹图">
+          <path d="M8 8v44h64" fill="none" stroke="currentColor" stroke-width="2" opacity=".45"/>
+          <path d="M24 10v42M42 10v42M60 10v42" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 6"/>
+        </svg>
+        <div class="result-copy"><span>真空</span><b id="vacuumResult">等你松手</b><small>没有空气阻力</small></div>
+      </article>
+    </div>
+    <p class="obj-sub" id="compareResult" role="status" aria-live="polite">还需要完成有空气和真空两次实验。</p>
+
+    <div class="stage-complete">
+      <p class="task-status status" id="gravityTaskStatus" role="status" aria-live="polite">先完成两种空气条件；两次的高度和重力必须相同。</p>
+      <button class="btn btn-primary" id="gravityComplete" type="button" disabled>收下实验徽章</button>
+    </div>
   </section>
 
-  <section class="task" aria-labelledby="gravityTaskTitle">
-    <h2 class="task-title" id="gravityTaskTitle">任务：比较有空气与真空中的落体</h2>
-    <ol>
-      <li><b>预测：</b>先选出你认为在有空气时最后落地的物体。</li>
-      <li><b>操作：</b>保持高度和重力不变，分别在“有空气”和“真空”各落一次。</li>
-      <li><b>结果：</b>比较两次的落地顺序、三件物体的时间和最大时间差。</li>
-      <li><b>反思：</b>说明为什么真空和有空气的结果不同，再记录完成证据。</li>
-    </ol>
-    <div class="task-fields">
-      <div><label for="gravityPrediction">我的预测</label><select class="input" id="gravityPrediction"><option>羽毛最后</option><option>皮球最后</option><option>锤子最后</option><option>三个同时</option></select></div>
-      <div><label for="gravityReflection">我的解释</label><textarea class="input" id="gravityReflection" rows="2" placeholder="例如：空气阻力对轻而宽的羽毛影响更明显。"></textarea></div>
-      <button class="btn btn-primary" id="gravityComplete" type="button" disabled>记录任务完成</button>
-    </div>
-    <p class="task-status status" id="gravityTaskStatus" role="status" aria-live="polite">尚未完成：请保持条件不变，先后完成有空气和真空两次实验。</p>
+  <ol class="kid-story-steps" aria-label="三步探索路线">
+    <li><b>1 · 有空气</b>选择“有空气”，点一次松手。</li>
+    <li><b>2 · 真空</b>只切换成“真空”，再点一次松手。</li>
+    <li><b>3 · 收证据</b>两张结果卡亮起后，收下实验徽章。</li>
+  </ol>
 
-    <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="gravityWorkTitle">
-      <h3 class="work-card-title" id="gravityWorkTitle">把这次落体数据存成研究站报告</h3>
+  <details class="parent-deep-dive" data-audience="parent">
+    <summary>家长与进阶观察：星球、高度、慢动作和详细读数</summary>
+    <div class="parent-controls">
+      <section class="card" aria-labelledby="gravityParentGoal">
+        <h2 id="gravityParentGoal" style="font-size:1.15rem">学习目标</h2>
+        <p>比较同高度、同重力下的有空气与真空实验，用轨迹和落地顺序发现：空气阻力会明显拖慢羽毛，真空中不同物体几乎同时落地。</p>
+      </section>
+      <div class="parent-grid">
+        <section class="panel" aria-labelledby="advancedControlsTitle">
+          <h3 id="advancedControlsTitle">进阶实验条件</h3>
+          <div class="ctrl">
+            <div class="ctrl-head"><label id="planetLbl">选择星球</label><b id="planetVal">地球</b></div>
+            <div class="seg" role="group" aria-labelledby="planetLbl">
+              <button class="chip" type="button" data-g="9.81" aria-pressed="true">地球</button>
+              <button class="chip" type="button" data-g="1.62" aria-pressed="false">月球</button>
+              <button class="chip" type="button" data-g="3.71" aria-pressed="false">火星</button>
+              <button class="chip" type="button" data-g="24.79" aria-pressed="false">木星</button>
+            </div>
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="gRange">重力加速度 g</label><b id="gOut">9.81 m/s²</b></div>
+            <input class="input" type="range" id="gRange" min="0.5" max="25" step="0.01" value="9.81" aria-describedby="gHint">
+            <div class="obj-sub" id="gHint">地球 9.81 · 月球 1.62 · 火星 3.71 · 木星 24.79</div>
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="hRange">下落高度</label><b id="hOut">8.0 m</b></div>
+            <input class="input" type="range" id="hRange" min="2" max="20" step="0.5" value="8">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-head"><label for="tsRange">慢动作</label><b id="tsOut">1.00×</b></div>
+            <input class="input" type="range" id="tsRange" min="0.1" max="1" step="0.05" value="1">
+          </div>
+        </section>
+
+        <section class="panel" data-audience="parent">
+          <h3>详细速度与时间读数</h3>
+          <div class="obj-row" data-row="0">
+            <div class="obj-top"><i class="sw" style="background:var(--sci)"></i><span>羽毛</span><span class="num" data-v>0.00 m/s</span></div>
+            <div class="vbar"><i data-bar style="background:var(--sci)"></i></div>
+            <div class="obj-sub">质量 5 g · <span data-t>未落地</span></div>
+          </div>
+          <div class="obj-row" data-row="1">
+            <div class="obj-top"><i class="sw" style="background:var(--math)"></i><span>皮球</span><span class="num" data-v>0.00 m/s</span></div>
+            <div class="vbar"><i data-bar style="background:var(--math)"></i></div>
+            <div class="obj-sub">质量 150 g · <span data-t>未落地</span></div>
+          </div>
+          <div class="obj-row" data-row="2">
+            <div class="obj-top"><i class="sw" style="background:var(--code)"></i><span>锤子</span><span class="num" data-v>0.00 m/s</span></div>
+            <div class="vbar"><i data-bar style="background:var(--code)"></i></div>
+            <div class="obj-sub">质量 1300 g · <span data-t>未落地</span></div>
+          </div>
+          <div class="readout" style="margin-top:10px"><span>已经过了</span><b id="clock">0.00 s</b></div>
+          <div class="readout"><span>最先与最后相差</span><b id="gap">—</b></div>
+        </section>
+      </div>
+    </div>
+  </details>
+
+  <section class="task formal-task parent-deep-dive" data-audience="parent" aria-labelledby="gravityTaskTitle">
+    <p class="section-kicker">可选 · 不影响儿童完成</p>
+    <h2 class="task-title" id="gravityTaskTitle">正式长任务与作品记录</h2>
+    <ol>
+      <li><b>预测：</b>选出有空气时最后落地的物体。</li>
+      <li><b>比较：</b>查看两次实验的落地顺序和最大时间差。</li>
+      <li><b>追问：</b>讨论空气阻力为什么更容易影响羽毛。</li>
+    </ol>
+    <div class="task-fields" data-audience="parent">
+      <div><label for="gravityPrediction">预测</label><select class="input" id="gravityPrediction"><option>羽毛最后</option><option>皮球最后</option><option>锤子最后</option><option>三个同时</option></select></div>
+      <div><label for="gravityReflection">可选反思</label><textarea class="input" id="gravityReflection" rows="2" placeholder="可选：用自己的话讲讲空气做了什么。"></textarea></div>
+    </div>
+
+    <div class="playful-story" data-audience="parent">
+      <button class="btn btn-sm" id="gravitySurpriseBtn" type="button" data-playful-random-task="#gravitySurprise">抽一张月球探索卡</button>
+      <p id="gravitySurprise" data-playful-task-output>想加一项进阶挑战吗？</p>
+      <span data-playful-sticker></span>
+      <p id="gravityPlayfulFeedback" data-playful-feedback></p>
+    </div>
+
+    <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="gravityWorkTitle">
+      <p class="section-kicker">可选作品表单</p>
+      <h3 class="work-card-title" id="gravityWorkTitle">我的月球落体报告</h3>
       <p class="work-card-meta">只保存文字，存在这台设备上。</p>
       <div class="work-card-fields">
         <div><label for="gravityWorkType">作品类型</label><select class="input" id="gravityWorkType" name="type"><option value="observation">观察记录</option><option value="prediction">预测卡</option><option value="explanation">我的解释</option></select></div>
-        <div><label for="gravityWorkName">报告名称</label><input class="input" id="gravityWorkName" name="title" required maxlength="80" placeholder="例如：真空舱三件一起落"></div>
-        <div><label for="gravityWorkContent">两次舱内的落地顺序</label><textarea class="input" id="gravityWorkContent" name="content" required maxlength="4000" placeholder="写下有空气时谁最后落地、真空时又怎样，以及你认为差别来自什么。"></textarea></div>
-        <button class="btn btn-primary btn-sm" type="submit">保存研究站报告</button>
+        <div><label for="gravityWorkName">报告名称</label><input class="input" id="gravityWorkName" name="title" required maxlength="80" placeholder="例如：真空舱里的同时落地"></div>
+        <div><label for="gravityWorkContent">实验故事</label><textarea class="input" id="gravityWorkContent" name="content" required maxlength="4000" placeholder="记录两次实验和你的解释。"></textarea></div>
+        <button class="btn btn-primary btn-sm" type="submit">保存报告</button>
       </div>
       <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
     </form>
   </section>
 
-  <div class="lab">
-    <!-- ================= 舞台 ================= -->
-    <div class="lab-stage" id="stage">
-      <canvas id="scene" role="img" tabindex="0"
-        aria-label="下落实验画面：羽毛、皮球、锤子从同一高度落下，画面显示运动轨迹与落地时间。聚焦画面后按空格键可开始或暂停。"></canvas>
-      <p id="live" class="sr-only" aria-live="polite"></p>
-    </div>
-
-    <!-- ================= 控制面板 ================= -->
-    <div>
-      <div class="panel">
-        <h3>实验条件</h3>
-
-        <div class="ctrl">
-          <div class="ctrl-head"><label id="airLbl">空气</label><b id="airVal">有空气</b></div>
-          <div class="seg" role="group" aria-labelledby="airLbl">
-            <button class="chip" id="airOn"  type="button" aria-pressed="true">有空气</button>
-            <button class="chip" id="airOff" type="button" aria-pressed="false">真空</button>
-          </div>
-        </div>
-
-        <div class="ctrl">
-          <div class="ctrl-head"><label id="planetLbl">星球</label><b id="planetVal">地球</b></div>
-          <div class="seg" role="group" aria-labelledby="planetLbl">
-            <button class="chip" type="button" data-g="9.81"  aria-pressed="true">地球</button>
-            <button class="chip" type="button" data-g="1.62"  aria-pressed="false">月球</button>
-            <button class="chip" type="button" data-g="3.71"  aria-pressed="false">火星</button>
-            <button class="chip" type="button" data-g="24.79" aria-pressed="false">木星</button>
-          </div>
-        </div>
-
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="gRange">重力加速度 g</label><b id="gOut">9.81 m/s²</b></div>
-          <input class="input" type="range" id="gRange" min="0.5" max="25" step="0.01" value="9.81"
-                 aria-describedby="gHint">
-          <div class="obj-sub" id="gHint">地球 9.81 · 月球 1.62 · 火星 3.71 · 木星 24.79</div>
-        </div>
-
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="hRange">下落高度</label><b id="hOut">8.0 m</b></div>
-          <input class="input" type="range" id="hRange" min="2" max="20" step="0.5" value="8">
-        </div>
-
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="tsRange">慢动作</label><b id="tsOut">1.00×</b></div>
-          <input class="input" type="range" id="tsRange" min="0.1" max="1" step="0.05" value="1">
-        </div>
-
-        <div class="row">
-          <button class="btn btn-primary" id="go" type="button">松手，开始下落</button>
-          <button class="btn btn-ghost btn-sm" id="reset" type="button">重置</button>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h3>实时数据</h3>
-        <div class="obj-row" data-row="0">
-          <div class="obj-top"><i class="sw" style="background:var(--sci)"></i><span>羽毛</span><span class="num" data-v>0.00 m/s</span></div>
-          <div class="vbar"><i data-bar style="background:var(--sci)"></i></div>
-          <div class="obj-sub">质量 5 g · <span data-t>未落地</span></div>
-        </div>
-        <div class="obj-row" data-row="1">
-          <div class="obj-top"><i class="sw" style="background:var(--math)"></i><span>皮球</span><span class="num" data-v>0.00 m/s</span></div>
-          <div class="vbar"><i data-bar style="background:var(--math)"></i></div>
-          <div class="obj-sub">质量 150 g · <span data-t>未落地</span></div>
-        </div>
-        <div class="obj-row" data-row="2">
-          <div class="obj-top"><i class="sw" style="background:var(--code)"></i><span>锤子</span><span class="num" data-v>0.00 m/s</span></div>
-          <div class="vbar"><i data-bar style="background:var(--code)"></i></div>
-          <div class="obj-sub">质量 1300 g · <span data-t>未落地</span></div>
-        </div>
-        <div class="readout" style="margin-top:10px"><span>计时</span><b id="clock">0.00 s</b></div>
-        <div class="readout"><span>最先与最后相差</span><b id="gap">—</b></div>
-      </div>
-
-      <div class="panel" aria-labelledby="gravityCompareTitle">
-        <h3 id="gravityCompareTitle">空气 / 真空比较数据</h3>
-        <div class="compare-list">
-          <div class="readout"><span>有空气</span><b id="airResult">尚未实验</b></div>
-          <div class="readout"><span>真空</span><b id="vacuumResult">尚未实验</b></div>
-        </div>
-        <p class="obj-sub" id="compareResult" role="status" aria-live="polite">完成两种条件后，这里会用文字比较结果。</p>
-      </div>
-
-      <div class="panel">
-        <h3>试试这个</h3>
-        <p class="obj-sub" style="font-size:.85rem;line-height:1.6;color:var(--ink-mid)">
-          先在「有空气」里落一次，记住谁最后到；再切到「真空」落一次。<br>
-          然后把重力换成月球，看下落变得多慢。
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ================= 家长 & 原理 ================= -->
-  <div class="grid-2" style="margin-top:22px">
+  <div class="grid-2 parent-deep-dive" data-audience="parent">
     <section class="card">
-      <h2 style="font-size:1.15rem">给家长的提问脚本</h2>
+      <h2 style="font-size:1.15rem">陪伴追问</h2>
       <ol class="qlist">
-        <li><b>预测：</b>「如果我同时松手，羽毛和锤子谁先掉到地上？为什么？」（先让孩子说完整理由，再一起看真空模式）</li>
-        <li><b>解释：</b>「真空里羽毛掉得和锤子一样快，那平时是什么在拖住羽毛？」（引导到「空气」这个看不见但真实存在的东西）</li>
-        <li><b>迁移：</b>「月球上的重力只有地球的六分之一，所以东西掉得更慢。那你在月球上能跳多高？」（可以让孩子把 g 拉到 1.62 数一数落地时间）</li>
+        <li><b>先听预测：</b>“如果同时松手，羽毛和锤子谁先落地？为什么？”</li>
+        <li><b>追问空气：</b>“真空里一样快，平时是什么拖住了羽毛？”</li>
+        <li><b>换个星球：</b>“月球重力更小，东西会掉得更快还是更慢？”</li>
       </ol>
-      <p class="obj-sub" style="margin-top:10px;color:var(--ink-dim)">小提示：孩子说「重的东西掉得快」是非常正常的直觉，亚里士多德也这么想了两千年。不要直接纠正，用真空模式让他自己看见。</p>
     </section>
 
     <section class="card why">
-      <h2 style="font-size:1.15rem">背后的原理</h2>
-      <p><b>重力加速度与质量无关。</b>物体受到的重力是 <code>F = m·g</code>，而牛顿第二定律说加速度是 <code>a = F / m</code>。两个 <code>m</code> 正好抵消，剩下 <code>a = g</code>。所以只要没有别的力，所有物体的下落加速度都一样。</p>
-      <h3>那空气做了什么？</h3>
-      <p>空气阻力大致是 <code>F_d = ½ · ρ · C_d · A · v²</code>：跟迎风面积 <code>A</code> 和速度平方成正比。羽毛面积大、质量小，阻力很快就追上重力，于是它进入<b>终端速度</b>（匀速下落）；锤子又重又小，阻力相对它的重量微不足道，几乎是自由落体。</p>
+      <h2 style="font-size:1.15rem">科学原理</h2>
+      <p><b>重力加速度与质量无关。</b>物体受到的重力是 <code>F = m·g</code>，加速度是 <code>a = F / m</code>，所以没有其他力时 <code>a = g</code>。</p>
+      <h3>空气做了什么？</h3>
+      <p>空气阻力约为 <code>F_d = ½ · ρ · C_d · A · v²</code>。羽毛面积大、质量小，阻力对它的影响特别明显；真空中没有空气阻力，三种物体会一起落地。</p>
       <h3>Apollo 15</h3>
-      <p>1971 年，航天员 David Scott 在月球表面同时松开一把地质锤和一根猎鹰羽毛。月球没有空气，两样东西并排落地。这是伽利略的猜想第一次在真空中被现场验证。</p>
-      <p class="obj-sub" style="color:var(--ink-dim)">本模拟说明：三个物体的画面大小做了夸张处理，方便观察；物理量（质量、面积、阻力系数）取的是接近真实的估值，积分用固定步长 1/480 秒，所以慢动作下数值依然稳定。</p>
+      <p>1971 年，航天员 David Scott 在月球同时松开地质锤和猎鹰羽毛，两样东西并排落地。</p>
+      <p class="obj-sub">本模拟使用固定步长 1/480 秒积分；物体画面大小经过夸张，便于观察。</p>
     </section>
   </div>
 
@@ -524,32 +615,54 @@
   var gapEl = document.getElementById('gap');
   var airResultEl = document.getElementById('airResult');
   var vacuumResultEl = document.getElementById('vacuumResult');
+  var airResultCard = document.getElementById('airResultCard');
+  var vacuumResultCard = document.getElementById('vacuumResultCard');
   var compareResultEl = document.getElementById('compareResult');
-  var gravityReflection = document.getElementById('gravityReflection');
   var gravityComplete = document.getElementById('gravityComplete');
   var gravityTaskStatus = document.getElementById('gravityTaskStatus');
 
   function resultText(result) {
-    if (!result) return '尚未实验';
-    return '羽 ' + result.times[0].toFixed(2) + 's · 球 ' + result.times[1].toFixed(2) + 's · 锤 ' + result.times[2].toFixed(2) + 's；差 ' + result.gap.toFixed(2) + 's';
+    if (!result) return '等你松手';
+    if (result.gap < 0.02) return '几乎一起到达';
+    var latest = Math.max.apply(null, result.times);
+    return BODIES[result.times.indexOf(latest)].name + '最后到';
+  }
+  function hasMatchingPair() {
+    return !!(comparison.air && comparison.vacuum &&
+      Math.abs(comparison.air.g - comparison.vacuum.g) < 0.005 &&
+      Math.abs(comparison.air.height - comparison.vacuum.height) < 0.001);
+  }
+  function setResultCardState(card, result, mismatch) {
+    card.setAttribute('data-state', result ? (mismatch ? 'mismatch' : 'done') : 'waiting');
   }
   function updateGravityTask() {
+    var both = !!(comparison.air && comparison.vacuum);
+    var matched = hasMatchingPair();
     airResultEl.textContent = resultText(comparison.air);
     vacuumResultEl.textContent = resultText(comparison.vacuum);
-    var both = comparison.air && comparison.vacuum;
-    var explained = gravityReflection.value.trim().length >= 8;
-    gravityComplete.disabled = !(both && explained);
+    setResultCardState(airResultCard, comparison.air, both && !matched);
+    setResultCardState(vacuumResultCard, comparison.vacuum, both && !matched);
+    gravityComplete.disabled = !matched;
+
     if (!both) {
-      compareResultEl.textContent = '还缺少' + (!comparison.air && !comparison.vacuum ? '两种条件' : (!comparison.air ? '有空气' : '真空')) + '的数据。';
-      gravityTaskStatus.textContent = '尚未完成：请保持高度和重力不变，完成有空气和真空两次实验。';
+      var missing = !comparison.air && !comparison.vacuum ? '有空气和真空' : (!comparison.air ? '有空气' : '真空');
+      compareResultEl.textContent = '还需要完成' + missing + '实验。';
+      gravityTaskStatus.textContent = '保持高度和重力不变，再完成另一种空气条件。';
+    } else if (!matched) {
+      compareResultEl.textContent = '两次的高度或重力不同，还不能比较。';
+      gravityTaskStatus.textContent = '请按同一高度、同一重力重做其中一次。';
     } else {
-      compareResultEl.textContent = '有空气时最大落地时间差 ' + comparison.air.gap.toFixed(2) + ' 秒；真空时 ' + comparison.vacuum.gap.toFixed(2) + ' 秒。真空中三者' + (comparison.vacuum.gap < 0.02 ? '几乎同时落地。' : '仍有可测时间差。');
-      gravityTaskStatus.textContent = explained ? '证据已齐：可以记录任务完成。' : '两组结果已得到；请写至少 8 个字解释差异。';
+      compareResultEl.textContent = '比较完成：有空气时' + resultText(comparison.air) + '，真空时' + resultText(comparison.vacuum) + '。';
+      gravityTaskStatus.textContent = '两次条件匹配，自动证据已生成。';
     }
   }
   function recordComparison(times, gap) {
     comparison[S.air ? 'air' : 'vacuum'] = { times: times.slice(), gap: gap, g: S.g, height: S.height };
     updateGravityTask();
+  }
+  function buildEvidence() {
+    function times(result) { return result.times.map(function (t) { return t.toFixed(2) + 's'; }).join('/'); }
+    return '同高度 ' + comparison.air.height.toFixed(1) + 'm、同重力 ' + comparison.air.g.toFixed(2) + 'm/s²；有空气 羽/球/锤 ' + times(comparison.air) + '，最大差 ' + comparison.air.gap.toFixed(2) + 's；真空 羽/球/锤 ' + times(comparison.vacuum) + '，最大差 ' + comparison.vacuum.gap.toFixed(2) + 's。';
   }
 
   function refreshPanel() {
@@ -603,13 +716,14 @@
   var liveEl = document.getElementById('live');
   function announce(msg) { liveEl.textContent = msg; }
 
-  gravityReflection.addEventListener('input', updateGravityTask);
   gravityComplete.addEventListener('click', function () {
-    if (gravityComplete.disabled || !window.Progress) return;
-    var evidence = '预测：' + document.getElementById('gravityPrediction').value + '；有空气差 ' + comparison.air.gap.toFixed(2) + 's，真空差 ' + comparison.vacuum.gap.toFixed(2) + 's；解释：' + gravityReflection.value.trim();
-    if (Progress.complete("games/gravity-drop.html", evidence)) {
-      gravityTaskStatus.textContent = '已完成并保存证据：' + evidence;
-      announce('重力比较任务已完成并保存在本机。');
+    if (!hasMatchingPair() || !window.Progress) return;
+    var evidence = buildEvidence();
+    if (window.Progress.complete("games/gravity-drop.html", evidence)) {
+      gravityTaskStatus.textContent = '实验徽章已收好，证据已自动保存。';
+      gravityComplete.textContent = '已完成';
+      gravityComplete.disabled = true;
+      announce('重力比较任务已完成，自动证据已保存在本机。');
     }
   });
 
@@ -695,10 +809,10 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js"></script>
-<script src="../data/playful.js"></script>
-<script src="../assets/js/playful.js"></script>
+<script src="../assets/js/progress.js?v=13"></script>
+<script src="../data/playful.js?v=13"></script>
+<script src="../assets/js/playful.js?v=13"></script>
 <script>if (window.Progress) Progress.visit("games/gravity-drop.html", "自由落体");</script>
-<script src="../assets/js/pwa.js"></script>
+<script src="../assets/js/pwa.js?v=13"></script>
 </body>
 </html>

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>规律机器 · 互动实验室</title>
 <meta name="description" content="给机器喂一个数，它吐出另一个数。孩子通过输入输出猜出隐藏规则，从算术走向代数思维。">
-<link rel="stylesheet" href="../assets/css/base.css">
-<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/base.css?v=13">
+<link rel="stylesheet" href="../assets/css/kid.css?v=13">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
@@ -49,8 +49,7 @@
 
   .box { position: relative; width: 132px; height: 118px; margin: 0 auto;
          border-radius: var(--r-lg);
-         background: linear-gradient(160deg, #263venue, var(--surface-2));
-         background: linear-gradient(160deg, #2b3559, var(--surface-2));
+         background: linear-gradient(160deg, var(--bg-soft), var(--surface-2));
          border: 1px solid var(--line);
          display: grid; place-items: center; box-shadow: var(--shadow); }
   .box.run { border-color: rgba(110,168,254,.75); box-shadow: var(--glow); }
@@ -181,8 +180,104 @@
   .playful-task-output { min-height:1.6em; margin:0; color:var(--ink); font-weight:700; }
   .playful-evidence { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
   @media (max-width:620px) { .playful-quest-head { grid-template-columns:1fr; } }
+  /* 孩子先看图：轨道由一个重复单元组成，选择下一块会真的喂数给机器。 */
+  .pattern-rail { display:grid; gap:12px; margin-bottom:14px; padding:14px; border:2px solid color-mix(in srgb,var(--phys) 28%,var(--line)); border-radius:var(--r); background:linear-gradient(180deg,color-mix(in srgb,var(--phys) 8%,var(--surface)),var(--surface)); }
+  .pattern-rail-head { display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; color:var(--ink-mid); font-weight:750; }
+  .pattern-rail-head b { color:var(--ink); }
+  .pattern-track { display:block; width:100%; height:auto; min-height:96px; border-radius:16px; background:color-mix(in srgb,var(--surface-2) 72%,var(--surface)); }
+  .pattern-track .rail-line { stroke:color-mix(in srgb,var(--ink-dim) 52%,transparent); stroke-width:5; stroke-linecap:round; }
+  .pattern-track .unit-box { fill:none; stroke:var(--phys); stroke-width:3; stroke-dasharray:7 6; }
+  .pattern-track .track-arrow { fill:var(--warn); }
+  .rail-choice { flex:1 1 92px; display:grid; grid-template-columns:42px auto; align-items:center; justify-content:center; gap:8px; min-height:52px; }
+  .rail-choice svg { width:36px; height:36px; overflow:visible; }
+  .next-piece-icon { width:54px; height:54px; display:grid; place-items:center; border-radius:16px; background:var(--surface); border:2px solid var(--line); }
+  .next-piece-icon svg { width:38px; height:38px; }
+  .next-piece-icon [data-shape] { display:none; }
+  .next-piece-icon[data-piece="circle"] [data-shape="circle"],
+  .next-piece-icon[data-piece="square"] [data-shape="square"] { display:block; }
+  .machine-flow { position:relative; }
+  .machine-flow::before { content:"变化轨道"; position:absolute; top:-10px; left:50%; translate:-50% 0; z-index:2; padding:2px 9px; border-radius:999px; background:var(--surface); color:var(--ink-dim); font-size:.72rem; font-weight:800; }
+  html[data-mode="kid"] .tbl-scroll[data-audience="parent"], html[data-mode="kid"] .plot-wrap[data-audience="parent"] { display:none !important; }
+  @media (max-width:640px) {
+    .pattern-rail { padding:10px; }
+    .pattern-track { min-height:82px; }
+    .rail-choice { flex-basis:100%; justify-content:flex-start; }
+
+    /* 孩子模式移动端：保留图形任务，把重复说明压缩掉，让选择紧跟轨道。 */
+    html[data-mode="kid"] .stage-ribbon,
+    html[data-mode="kid"] #panelGuess > .stage-head { display:none; }
+    html[data-mode="kid"] .pattern-rail.kid-visual-stage {
+      min-height:0;
+      margin-bottom:0;
+      padding:8px;
+      gap:8px;
+      align-content:start;
+    }
+    html[data-mode="kid"] .pattern-rail-head {
+      position:absolute;
+      width:1px;
+      height:1px;
+      padding:0;
+      margin:-1px;
+      overflow:hidden;
+      clip:rect(0, 0, 0, 0);
+      white-space:nowrap;
+      border:0;
+    }
+    html[data-mode="kid"] .pattern-track { min-height:72px; }
+    html[data-mode="kid"] .pattern-rail .kid-action-strip {
+      min-height:0;
+      padding:10px;
+      gap:8px;
+      align-items:stretch;
+      flex-direction:column;
+    }
+    html[data-mode="kid"] .pattern-rail .kid-choice {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      width:100%;
+    }
+    html[data-mode="kid"] .pattern-rail .rail-choice {
+      min-width:0;
+      width:100%;
+      min-height:52px;
+      padding:6px 8px;
+      justify-content:center;
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+  }
+
+  /* 规律侦探社 */
+  html, body { max-width:100%; overflow-x:clip; }
+  .story-hero { position:relative; display:grid; grid-template-columns:auto minmax(0,1fr); gap:16px; align-items:center; margin:22px 0 14px; padding:24px clamp(16px,4vw,30px); overflow:hidden; border:1px solid rgba(167,139,250,.42); border-radius:var(--r-lg); background:linear-gradient(135deg,rgba(167,139,250,.16),rgba(110,168,254,.08) 60%,var(--surface)); }
+  .story-hero::after { content:"? → 7"; position:absolute; right:20px; top:12px; color:rgba(167,139,250,.17); font:800 clamp(2.2rem,8vw,5rem)/1 var(--mono); pointer-events:none; }
+  .story-guide { position:relative; z-index:1; width:88px; height:88px; display:grid; place-items:center; border-radius:45% 55% 48% 52%; background:linear-gradient(145deg,#ddd3ff,#8b5cf6); color:#24134f; font-size:2.55rem; box-shadow:0 10px 28px rgba(139,92,246,.25); transform:rotate(3deg); }
+  .story-copy { position:relative; z-index:1; min-width:0; }
+  .story-kicker { margin:0 0 5px; color:var(--phys); font-weight:800; font-size:.82rem; }
+  .story-hero h1 { margin:0; }
+  .story-goal { margin:7px 0 0; max-width:52ch; color:var(--ink-mid); font-size:1.02rem; }
+  .story-goal b { color:var(--ink); }
+  .stage-ribbon { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin:0 0 10px; padding:10px 14px; border-radius:var(--r); background:rgba(167,139,250,.1); color:var(--ink-mid); }
+  .learning-layers { display:grid; gap:12px; margin-top:28px; }
+  .learning-layers details { border:1px solid var(--line); border-radius:var(--r); background:var(--surface); padding:0 16px; }
+  .learning-layers summary { min-height:48px; display:flex; align-items:center; cursor:pointer; color:var(--ink); font-weight:800; }
+  .learning-layers details > div { padding:0 0 16px; color:var(--ink-mid); }
+  main#main > * { order:0 !important; }
+  [hidden] { display:none !important; }
+  button, .btn, .chip, .modebar button, .opt, select, input[type="range"] { min-height:44px; }
+  .quick button { min-width:44px; min-height:44px; }
+  canvas { max-width:100%; }
+  .tbl-scroll { max-width:100%; overflow-x:auto; }
+  .mission-grid, .work-card-fields, .machine { min-width:0; }
+  @media (max-width:640px) {
+    .story-hero { grid-template-columns:1fr; padding:18px 16px; }
+    .story-guide { width:68px; height:68px; font-size:2rem; }
+    .story-hero::after { font-size:2.5rem; }
+    .modebar { width:100%; border-radius:var(--r); }
+    .modebar button { flex:1; padding-inline:8px; }
+    .feed .input { width:min(100%,110px); }
   }
 </style>
 </head>
@@ -203,62 +298,23 @@
 
 <main id="main" class="wrap">
 
-  <header class="hd">
-    <div class="row">
-      <span class="pill pill-math">数学 · 代数思维</span>
-      <span class="pill">适合 6–12 岁</span>
-      <span class="pill">函数 function</span>
-      <span class="pill">数列 sequence</span>
+  <header class="story-hero kid-hero-scene">
+    <div class="story-guide" aria-hidden="true">🕵️</div>
+    <div class="story-copy">
+      <p class="story-kicker">星星侦探递来一封密件</p>
+      <div class="row">
+        <span class="pill pill-math">数学 · 代数思维</span>
+        <span class="pill">适合 6–12 岁</span>
+        <span class="pill">规律与函数</span>
+      </div>
+      <h1>破解会变数字的机器</h1>
+      <p class="story-goal"><b>喂一个数进去：</b>收集“进 → 出”线索，猜出机器藏的规则。</p>
     </div>
-    <h1>规律机器</h1>
-    <p class="lede">
-      这在教什么：机器里藏着一条<b>规则</b>。孩子喂进一个数，看它吐出什么，
-      再从一堆「进 → 出」里反推出规则。这就是函数最原始的样子，
-      也是从<b>算术</b>走向<b>代数</b>的那一步。
-    </p>
   </header>
 
-  <section class="task mission" aria-labelledby="patternMissionTitle">
-    <h2 class="task-title" id="patternMissionTitle">任务：提出数列假设，再主动找反例</h2>
-    <ol>
-      <li><b>预测：</b>判断两个数列是固定差的线性规律，还是差在变化的非线性规律，并预测下一项。</li>
-      <li><b>操作：</b>提交分类；再检验“只看两组数据得到的规则”。</li>
-      <li><b>结果：</b>比较一阶差，并用新输入构造反例。</li>
-      <li><b>反思：</b>说明为什么三组数据也不一定能唯一确定规则。</li>
-    </ol>
-    <div class="mission-grid">
-      <div><label for="linearGuess">数列 2，5，8，11 是</label><select class="input" id="linearGuess"><option value="">请选择</option><option value="linear">线性（固定差）</option><option value="nonlinear">非线性（差在变）</option></select><label for="linearNext" style="margin-top:6px">下一项</label><input class="input" id="linearNext" type="number" inputmode="numeric"></div>
-      <div><label for="nonlinearGuess">数列 1，4，9，16 是</label><select class="input" id="nonlinearGuess"><option value="">请选择</option><option value="linear">线性（固定差）</option><option value="nonlinear">非线性（差在变）</option></select><label for="nonlinearNext" style="margin-top:6px">下一项</label><input class="input" id="nonlinearNext" type="number" inputmode="numeric"></div>
-      <button class="btn btn-sm" id="checkSequences" type="button">检验数列假设</button>
-      <button class="btn btn-sm" id="testCounterexample" type="button" disabled>用新输入寻找反例</button>
-      <div><label for="patternReflect">我的反思</label><textarea class="input" id="patternReflect" placeholder="例如：前两点都符合，不代表后面的点也符合。"></textarea></div>
-      <button class="btn btn-primary" id="patternComplete" type="button" disabled>记录任务完成</button>
-    </div>
-    <p class="task-status status" id="patternMissionStatus" role="status" aria-live="polite">尚未完成：先提交两个数列假设。</p>
-      <div class="playful-quest" style="--quest-accent:var(--phys)" aria-labelledby="patternStoryTitle">
-      <div class="playful-quest-head">
-        <div><h3 id="patternStoryTitle">规律侦探社的密件</h3><p class="playful-story">每个输入都是线索，但线索也会骗人。带上反例，再把规则写成别人能检验的作品卡。</p></div>
-        <div data-playful-companion role="note" aria-label="星星伙伴提示"></div>
-      </div>
-      <div class="playful-tools">
-        <button class="btn btn-sm" type="button" data-playful-random-task="#patternSurprise">打开随机密件</button>
-        <p class="playful-task-output" id="patternSurprise" data-playful-task-output role="status" aria-live="polite">密件里藏着一条额外规律任务。</p>
-      </div>
-      <div class="playful-evidence"><span data-playful-sticker aria-label="规律机器贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
-      <form class="work-card work-card-form" data-playful-work-form aria-labelledby="patternWorkTitle">
-        <h4 id="patternWorkTitle">保存我的规律说明</h4>
-        <div class="work-card-fields">
-          <div><label for="patternWorkType">作品类型</label><select class="input" id="patternWorkType" name="type"><option value="explanation">我的解释</option><option value="prediction">预测卡</option><option value="model">模型说明</option></select></div>
-          <div><label for="patternWorkName">规律名称</label><input class="input" id="patternWorkName" name="title" required maxlength="80" placeholder="例如：每次多 3"></div>
-          <div><label for="patternWorkContent">规则与反例</label><textarea class="input" id="patternWorkContent" name="content" required maxlength="4000" placeholder="写一句规则，再写一个能检验它的新输入或反例。"></textarea></div>
-          <button class="btn btn-primary btn-sm" type="submit">保存侦探密件</button>
-        </div>
-        <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">密件只保存在这台设备上。</p>
-      </form>
-    </div>
-  </section>
+  <div class="stage-ribbon" role="note"><span aria-hidden="true">🔎</span><strong>第一条线索：</strong><span>试试 0、1、2，小数字最容易看出变化。</span></div>
 
-  <div class="row" style="margin-bottom:16px">
+  <div class="row" style="margin-bottom:16px" data-audience="parent">
     <div class="modebar" role="tablist" aria-label="选择玩法">
       <button role="tab" id="mGuess" aria-selected="true"  aria-controls="panelGuess">猜规则</button>
       <button role="tab" id="mGrow"  aria-selected="false" aria-controls="panelGrow">生长图形</button>
@@ -278,7 +334,40 @@
         </div>
 
         <div class="machine-wrap">
-          <div class="machine">
+          <section class="pattern-rail kid-visual-stage" aria-labelledby="patternRailTitle" data-audience="kid-only">
+            <div class="pattern-rail-head">
+              <b id="patternRailTitle">看重复单元，选轨道的下一块</b>
+              <span>重复单元：圆 → 方</span>
+            </div>
+            <svg class="pattern-track" viewBox="0 0 620 112" role="img" aria-label="轨道上的图形依次是圆形、正方形、圆形、正方形，最后一格等待选择">
+              <line class="rail-line" x1="35" y1="75" x2="580" y2="75"/>
+              <rect class="unit-box" x="42" y="13" width="198" height="84" rx="18"/>
+              <rect class="unit-box" x="250" y="13" width="198" height="84" rx="18"/>
+              <circle cx="92" cy="55" r="25" fill="var(--math)"/>
+              <rect x="158" y="30" width="50" height="50" rx="9" fill="var(--warn)"/>
+              <circle cx="300" cy="55" r="25" fill="var(--math)"/>
+              <rect x="366" y="30" width="50" height="50" rx="9" fill="var(--warn)"/>
+              <path class="track-arrow" d="M458 55h54V39l34 22-34 22V67h-54z"/>
+              <rect x="556" y="25" width="58" height="60" rx="14" fill="none" stroke="var(--sci)" stroke-width="3" stroke-dasharray="6 5"/>
+              <text x="585" y="64" text-anchor="middle" fill="var(--sci)" font-size="28" font-weight="800">?</text>
+            </svg>
+            <div class="kid-action-strip">
+              <span>下一块是哪一个？</span>
+              <div class="kid-choice" data-kid-choice-group role="group" aria-label="选择轨道下一块">
+                <button class="rail-choice" id="nextCircle" type="button" data-kid-choice data-piece="circle" data-value="圆形">
+                  <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="15" fill="var(--math)"/></svg><span>圆形</span>
+                </button>
+                <button class="rail-choice" id="nextSquare" type="button" data-kid-choice data-piece="square" data-value="正方形">
+                  <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="5" width="30" height="30" rx="6" fill="var(--warn)"/></svg><span>正方形</span>
+                </button>
+              </div>
+            </div>
+            <div class="kid-result-card" role="status" aria-live="polite">
+              <svg class="next-piece-icon" id="patternRailIcon" viewBox="0 0 54 54" aria-hidden="true"><circle cx="27" cy="27" r="18" fill="var(--math)"/></svg>
+              <div><b id="patternRailResult">先看两个虚线框：每框都是“圆 → 方”。</b><p>选完后，机器也会真的处理下一个数字。</p></div>
+            </div>
+          </section>
+          <div class="machine machine-flow kid-visual-stage">
             <div class="port port-in">
               <div class="port-label">输入 IN</div>
               <div class="port-val" id="inVal" aria-live="off">—</div>
@@ -297,7 +386,7 @@
             </div>
           </div>
 
-          <div class="feed">
+          <div class="feed" data-audience="parent">
             <label for="feedIn" class="sr-only">要喂给机器的数字</label>
             <input class="input" id="feedIn" type="number" value="1" step="1" min="-20" max="99"
                    inputmode="numeric" aria-describedby="feedHelp">
@@ -305,7 +394,7 @@
             <span id="feedHelp" class="sr-only">输入一个整数，然后按喂进去，机器会算出结果</span>
           </div>
 
-          <div class="quick" role="group" aria-label="快捷输入">
+          <div class="quick" role="group" aria-label="快捷输入" data-audience="parent">
             <button type="button" data-q="0">0</button>
             <button type="button" data-q="1">1</button>
             <button type="button" data-q="2">2</button>
@@ -315,7 +404,7 @@
             <button type="button" id="feedAll">一次喂 0–5</button>
           </div>
 
-          <div class="tbl-scroll">
+          <div class="tbl-scroll" data-audience="parent">
             <table class="tbl">
               <caption>机器日记 · 进 → 出（差 = 这一行比上一行多多少）</caption>
               <thead>
@@ -326,7 +415,7 @@
             <div class="tbl-empty" id="logEmpty">还没有记录。喂一个数进去试试。</div>
           </div>
 
-          <div class="plot-wrap">
+          <div class="plot-wrap" data-audience="parent">
             <canvas id="cvPlot" aria-label="输入与输出的点图，横轴是输入，纵轴是输出"></canvas>
           </div>
         </div>
@@ -442,7 +531,7 @@
         </div>
       </div>
 
-      <div class="panel">
+      <div class="panel parent-deep-dive" data-audience="parent">
         <h3>给家长的提问脚本</h3>
         <ol class="qs" id="parentQs">
           <li>「你怎么知道规则是这个？换一个数字试试，还成立吗？」</li>
@@ -452,6 +541,43 @@
       </div>
     </aside>
   </div>
+
+  <section class="task mission" aria-labelledby="patternMissionTitle">
+    <div class="card" style="margin-bottom:14px">
+      <h2 style="font-size:1.1rem">这在教什么</h2>
+      <p style="margin:0">从“进 → 出”的线索猜规则，再用新数字检验。孩子会从算答案走向描述所有答案的代数思维。</p>
+    </div>
+    <h2 class="task-title" id="patternMissionTitle">正式任务 · 破解真假规律</h2>
+    <ol>
+      <li><b>先猜：</b>判断两列数的“差”是否固定，并写下一项。</li>
+      <li><b>再查：</b>用一个新输入寻找反例。</li>
+      <li><b>说发现：</b>解释为什么两条线索还不够。</li>
+    </ol>
+    <div class="mission-grid">
+      <div><label for="linearGuess">2，5，8，11 是</label><select class="input" id="linearGuess"><option value="">请选择</option><option value="linear">线性（固定差）</option><option value="nonlinear">非线性（差在变）</option></select><label for="linearNext" style="margin-top:6px">下一项</label><input class="input" id="linearNext" type="number" inputmode="numeric"></div>
+      <div><label for="nonlinearGuess">1，4，9，16 是</label><select class="input" id="nonlinearGuess"><option value="">请选择</option><option value="linear">线性（固定差）</option><option value="nonlinear">非线性（差在变）</option></select><label for="nonlinearNext" style="margin-top:6px">下一项</label><input class="input" id="nonlinearNext" type="number" inputmode="numeric"></div>
+      <button class="btn btn-sm" id="checkSequences" type="button">提交侦探推理</button>
+      <button class="btn btn-sm" id="testCounterexample" type="button" disabled>派新数字找反例</button>
+      <div><label for="patternReflect">我的发现</label><textarea class="input" id="patternReflect" placeholder="例如：前两点符合，不代表后面的点也符合。"></textarea></div>
+      <button class="btn btn-primary" id="patternComplete" type="button" disabled>把破案记录存进足迹</button>
+    </div>
+    <p class="task-status status" id="patternMissionStatus" role="status" aria-live="polite">尚未完成：先提交两个数列假设。</p>
+    <div class="playful-quest" style="--quest-accent:var(--phys)" aria-labelledby="patternStoryTitle">
+      <div class="playful-quest-head"><div><h3 id="patternStoryTitle">规律侦探社的密件</h3><p class="playful-story">每个输入都是线索。带上反例，规则才经得起检验。</p></div><div data-playful-companion role="note" aria-label="星星伙伴提示"></div></div>
+      <div class="playful-tools"><button class="btn btn-sm" type="button" data-playful-random-task="#patternSurprise">拆开另一封密件</button><p class="playful-task-output" id="patternSurprise" data-playful-task-output role="status" aria-live="polite">密件里藏着一条额外规律。</p></div>
+      <div class="playful-evidence"><span data-playful-sticker aria-label="规律机器贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
+      <form class="work-card work-card-form" data-playful-work-form aria-labelledby="patternWorkTitle">
+        <h4 id="patternWorkTitle">作品表单 · 保存规律密件</h4>
+        <div class="work-card-fields">
+          <div><label for="patternWorkType">作品类型</label><select class="input" id="patternWorkType" name="type"><option value="explanation">我的解释</option><option value="prediction">预测卡</option><option value="model">模型说明</option></select></div>
+          <div><label for="patternWorkName">规律名称</label><input class="input" id="patternWorkName" name="title" required maxlength="80" placeholder="例如：每次多 3"></div>
+          <div><label for="patternWorkContent">规则与反例</label><textarea class="input" id="patternWorkContent" name="content" required maxlength="4000" placeholder="写一句规则，再写一个检验它的新输入。"></textarea></div>
+          <button class="btn btn-primary btn-sm" type="submit">封存这份侦探密件</button>
+        </div>
+        <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">密件只保存在这台设备上。</p>
+      </form>
+    </div>
+  </section>
 
   <!-- ================= 原理 ================= -->
   <section class="panel why" style="margin-top:22px">
@@ -508,7 +634,7 @@
    'growBody','patSel','askSel','askOut','growReset','roSeq','roDiff','roFormula',
    'roGrowWins','revealF','toast','live','lv1','lv2','lv3','lv4','linearGuess',
    'linearNext','nonlinearGuess','nonlinearNext','checkSequences','testCounterexample',
-   'patternReflect','patternComplete','patternMissionStatus'
+   'patternReflect','patternComplete','patternMissionStatus','nextCircle','nextSquare','patternRailResult','patternRailIcon'
   ].forEach(function (id) { el[id] = document.getElementById(id); });
 
   function ce(tag, cls, txt) {
@@ -1232,6 +1358,21 @@
   // ============================================================
   //  事件
   // ============================================================
+  function chooseRailPiece(piece) {
+    var correct = piece === 'circle';
+    var nextX = G.log.length ? Math.max.apply(null, G.log.map(function (p) { return p.x; })) + 1 : 0;
+    el.patternRailIcon.innerHTML = correct
+      ? '<circle cx="27" cy="27" r="18" fill="var(--math)"/>'
+      : '<rect x="9" y="9" width="36" height="36" rx="7" fill="var(--warn)"/>';
+    el.patternRailResult.textContent = correct
+      ? '对了！“圆 → 方”又从圆开始。机器正在处理数字 ' + nextX + '。'
+      : '这会变成“方 → 方”。再看虚线框，下一块应从圆开始。机器仍会处理数字 ' + nextX + '。';
+    feed(nextX);
+    say((correct ? '选择正确。' : '选择了正方形。') + '机器处理输入 ' + nextX);
+  }
+  el.nextCircle.addEventListener('click', function () { chooseRailPiece('circle'); });
+  el.nextSquare.addEventListener('click', function () { chooseRailPiece('square'); });
+
   el.feedBtn.addEventListener('click', function () {
     feed(Number(el.feedIn.value));
   });
@@ -1357,10 +1498,10 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js"></script>
-<script src="../data/playful.js"></script>
-<script src="../assets/js/playful.js"></script>
+<script src="../assets/js/progress.js?v=13"></script>
+<script src="../data/playful.js?v=13"></script>
+<script src="../assets/js/playful.js?v=13"></script>
 <script>if (window.Progress) Progress.visit("games/pattern-machine.html", "规律机器");</script>
-<script src="../assets/js/pwa.js"></script>
+<script src="../assets/js/pwa.js?v=13"></script>
 </body>
 </html>

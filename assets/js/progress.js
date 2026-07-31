@@ -28,7 +28,7 @@
     soundEnabled: false,
     motion: "system",
     ageGroup: "all",
-    mode: "parent"
+    mode: "kid"
   };
 
   function dict() { return Object.create(null); }
@@ -338,6 +338,65 @@
     return { id: stickerId, pageId: id, label: label, emoji: emoji };
   }
 
+  function playfulCard(id) {
+    var pages = global.PLAYFUL && global.PLAYFUL.pages;
+    var page = pages && pages[id];
+    var card = page && page.card;
+    var sticker = playfulSticker(id);
+    if (!sticker || !card || typeof card !== "object" || Array.isArray(card)) return null;
+    var series = cleanText(card.series, 30);
+    var discovery = cleanText(card.discovery, 140);
+    var fact = cleanText(card.fact, 140);
+    var next = cleanText(card.next, 140);
+    var accent = cleanText(card.accent, 16).toLowerCase();
+    if (!series || !discovery || !fact || !next || !/^#[0-9a-f]{6}$/.test(accent)) return null;
+    return {
+      id: sticker.id, pageId: id, label: sticker.label, emoji: sticker.emoji,
+      series: series, discovery: discovery, fact: fact, next: next, accent: accent
+    };
+  }
+
+  function playfulCardIds() {
+    var pages = global.PLAYFUL && global.PLAYFUL.pages;
+    if (!pages || typeof pages !== "object" || Array.isArray(pages)) return [];
+    var ordered = [];
+    if (Array.isArray(global.EXPLORATIONS)) {
+      global.EXPLORATIONS.forEach(function (item) {
+        var id = item && cleanId(item.id);
+        if (id && pages[id] && ordered.indexOf(id) === -1) ordered.push(id);
+      });
+    }
+    Object.keys(pages).forEach(function (rawId) {
+      var id = cleanId(rawId);
+      if (id && ordered.indexOf(id) === -1) ordered.push(id);
+    });
+    return ordered;
+  }
+
+  function playfulMilestone(item, unlockedCount) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+    var count = Number(item.count);
+    var title = cleanText(item.title, 50);
+    var message = cleanText(item.message, 180);
+    var companionId = cleanText(item.companion, 32).toLowerCase();
+    if (!isFinite(count) || count < 1 || Math.floor(count) !== count || !title || !message || !/^[a-z][a-z0-9_-]{0,31}$/.test(companionId)) return null;
+    var characters = global.PLAYFUL && Array.isArray(global.PLAYFUL.characters) ? global.PLAYFUL.characters : [];
+    var character = null;
+    characters.some(function (candidate) {
+      if (candidate && candidate.id === companionId) { character = candidate; return true; }
+      return false;
+    });
+    if (!character) return null;
+    return {
+      count: count, title: title, message: message, unlocked: unlockedCount >= count,
+      companion: {
+        id: companionId,
+        name: cleanText(character.name, 30),
+        emoji: cleanText(character.emoji, 8)
+      }
+    };
+  }
+
   function workCheck(rawId, input) {
     var payload = input;
     var pageId = cleanId(rawId);
@@ -469,6 +528,30 @@
         list.push(sticker);
         return list;
       }, []);
+    },
+
+    getCards: function (rawId) {
+      var hasFilter = rawId !== undefined && rawId !== null;
+      var only = hasFilter ? cleanId(rawId) : "";
+      if (hasFilter && !only) return [];
+      var data = load();
+      return playfulCardIds().reduce(function (list, id) {
+        if (only && id !== only) return list;
+        var card = playfulCard(id);
+        if (!card) return list;
+        var completion = data.completions[id];
+        card.unlocked = Boolean(completion);
+        card.unlockedAt = completion ? completion.at : null;
+        list.push(card);
+        return list;
+      }, []);
+    },
+
+    getMilestones: function () {
+      var cards = Progress.getCards();
+      var unlockedCount = cards.filter(function (card) { return card.unlocked; }).length;
+      var source = global.PLAYFUL && Array.isArray(global.PLAYFUL.milestones) ? global.PLAYFUL.milestones : [];
+      return source.map(function (item) { return playfulMilestone(item, unlockedCount); }).filter(Boolean);
     },
 
     validateWork: function (rawId, input) {

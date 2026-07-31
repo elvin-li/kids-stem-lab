@@ -10,7 +10,10 @@
   var scope = new URL("../../", script.src);
 
   global.addEventListener("load", function () {
-    global.navigator.serviceWorker.register(worker.href, { scope: scope.pathname }).catch(function () {
+    global.navigator.serviceWorker.register(worker.href, {
+      scope: scope.pathname,
+      updateViaCache: "none"
+    }).catch(function () {
       /* PWA 是增强能力，注册失败不能影响核心页面。 */
     });
   });

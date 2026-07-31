@@ -4,27 +4,58 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>太空站 · 太阳系与每日天文图 | 少儿数理启蒙</title>
-<meta name="description" content="按真实比例看太阳系八大行星，比较重力、一天有多长、跑到太阳要多久。数据来自 NASA，含每日天文图。">
-<link rel="stylesheet" href="../assets/css/base.css">
-<link rel="stylesheet" href="../assets/css/kid.css">
+<meta name="description" content="用内置 NASA 常用数据比较八大行星的大小、距离、重力与周期，并可联网查看每日天文图。">
+<link rel="stylesheet" href="../assets/css/base.css?v=13">
+<link rel="stylesheet" href="../assets/css/kid.css?v=13">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
-  .hero { padding: 40px 0 20px; }
-  .hero h1 { margin-bottom: .3em; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  .hero { padding: 32px 0 20px; }
+  .hero h1 { margin: .18em 0; }
+  .space-hero { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(260px,.8fr); gap: 20px; align-items: stretch; padding: 22px; border: 1px solid var(--line); border-radius: var(--r-lg); background: radial-gradient(circle at 78% 24%,rgba(110,168,254,.2),transparent 24%),linear-gradient(145deg,#111b3b,var(--surface) 62%); }
+  .story-copy { min-width: 0; }
+  .character-invite { margin: .45em 0; color: var(--ink-mid); font-weight: 700; }
+  .character-invite .friend { display: inline-grid; place-items: center; width: 44px; height: 44px; margin-right: 8px; border-radius: 50%; background: var(--surface-2); font-size: 1.6rem; vertical-align: middle; }
+  .hero-question { max-width: 36ch; margin: .45em 0 .8em; font-size: clamp(1.05rem,2.4vw,1.35rem); line-height: 1.45; color: var(--ink); }
+  .hero-question b { color: var(--sci); }
+  .quick-look { padding: 13px 15px; border: 1px dashed var(--sci); border-radius: var(--r); background: rgba(11,15,26,.42); }
+  .quick-look h2 { margin: 0 0 6px; font-size: 1rem; }
+  .quick-look ol { margin: 6px 0; padding-left: 1.35em; }
+  .quick-look li + li { margin-top: 4px; }
+  .quick-look p { margin: 7px 0 0; color: var(--ink-mid); font-size: .82rem; }
+  .space-scene { position: relative; min-height: 290px; overflow: hidden; border: 1px solid rgba(255,255,255,.1); border-radius: var(--r); background: radial-gradient(circle at 50% 50%,rgba(251,191,36,.2),transparent 18%),radial-gradient(circle at 20% 16%,#fff 0 1px,transparent 2px),radial-gradient(circle at 82% 28%,#fff 0 1px,transparent 2px),radial-gradient(circle at 72% 78%,#fff 0 1px,transparent 2px),#081126; }
+  .scene-sun { position: absolute; left: 50%; top: 50%; display: grid; place-items: center; width: 70px; height: 70px; transform: translate(-50%,-50%); border-radius: 50%; background: #fbbf24; box-shadow: 0 0 32px rgba(251,191,36,.62); font-size: 2.4rem; }
+  .story-orbit { position: absolute; left: 50%; top: 50%; border: 1px solid rgba(255,255,255,.35); border-radius: 50%; transform: translate(-50%,-50%); }
+  .story-orbit span { position: absolute; left: 50%; top: -18px; min-width: 44px; min-height: 44px; display: grid; place-items: center; font-size: 1.55rem; }
+  .orbit-one { width: 150px; height: 100px; transform: translate(-50%,-50%) rotate(-12deg); }
+  .orbit-two { width: 245px; height: 170px; transform: translate(-50%,-50%) rotate(17deg); }
+  .scene-callout { position: absolute; inset: auto 12px 12px; padding: 8px 10px; border-radius: var(--r-sm); background: rgba(255,255,255,.9); color: #15213c; text-align: center; font-weight: 800; }
+  .space-words { grid-column: 1/-1; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; margin: 0; }
+  .space-words div { min-width: 0; padding: 10px 11px; border: 1px solid var(--line-soft); border-radius: var(--r-sm); background: var(--surface-2); }
+  .space-words dt { font-weight: 800; color: var(--ink); }
+  .space-words dd { margin: 3px 0 0; color: var(--ink-mid); font-size: .79rem; line-height: 1.45; }
+  .story-qa { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin: 10px 0; }
+  .story-qa p { margin: 0; padding: 10px; border-radius: var(--r-sm); background: var(--surface-2); color: var(--ink-mid); }
+  .story-qa b { display: block; margin-bottom: 3px; color: var(--ink); }
+  .explain-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); gap: 10px; }
+  .explain-grid article { padding: 13px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--surface-2); }
+  .explain-grid h3 { margin: 0 0 5px; font-size: 1rem; }
+  .explain-grid p { margin: 0; color: var(--ink-mid); font-size: .88rem; }
+  .data-source { margin: 12px 0 0; padding: 11px 13px; border-left: 3px solid var(--phys); background: var(--bg-soft); color: var(--ink-mid); }
 
   /* ---------- 太阳系轨道图 ---------- */
   .solar {
-    position: relative; overflow-x: auto; overflow-y: hidden;
+    position: relative; overflow: hidden;
     background:
       radial-gradient(90% 120% at 0% 50%, rgba(251,191,36,.16), transparent 55%),
       var(--surface);
     border: 1px solid var(--line); border-radius: var(--r-lg);
     padding: 26px 20px 20px;
   }
-  .solar-track { position: relative; height: 190px; min-width: 880px; }
+  .solar-track { position: relative; width: 100%; height: 230px; min-width: 0; }
   .sun-edge {
     position: absolute; left: 0; top: 0; bottom: 0; width: 46px;
     background: linear-gradient(90deg, #fbbf24, #f59e0b 40%, transparent);
@@ -39,7 +70,7 @@
   .planet {
     position: absolute; transform: translate(-50%, -50%);
     background: none; border: 0; padding: 0; cursor: pointer;
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    display: flex; min-width: 44px; min-height: 44px; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
   }
   .planet .body {
     border-radius: 50%;
@@ -67,7 +98,8 @@
 
   /* ---------- 行星详情 ---------- */
   .detail { display: grid; grid-template-columns: 1.1fr .9fr; gap: 18px; margin-top: 18px; }
-  @media (max-width: 780px) { .detail { grid-template-columns: 1fr; } }
+  @media (max-width: 780px) { .detail { grid-template-columns: 1fr; } .space-hero { grid-template-columns: 1fr; padding: 16px; } .space-words { grid-template-columns: repeat(2,minmax(0,1fr)); } .space-scene { min-height: 230px; } .solar-track { height: auto; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px 4px; padding: 12px 0; } .solar-track .sun-edge,.solar-track .sun-label { display: none; } .solar-track .planet { position: relative; left: auto !important; top: auto !important; transform: none; justify-self: center; } }
+  @media (max-width: 480px) { .space-words,.story-qa,.facts { grid-template-columns: 1fr; } .solar-track { grid-template-columns: repeat(2,minmax(0,1fr)); } .wbar { grid-template-columns: 52px minmax(0,1fr) 70px; gap: 6px; } .task-actions .btn { flex: 1 1 150px; } }
   .facts { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 14px; }
   .fact {
     background: var(--surface-2); border: 1px solid var(--line-soft);
@@ -146,6 +178,64 @@
   button, input, select, textarea, [role="button"] { min-height: 44px; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
 
+  /* ---------- 儿童首屏：真实操作舞台 ---------- */
+  .space-hero { display: block; }
+  .space-intro { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .space-intro > div { min-width: 0; }
+  .space-intro .character-invite { margin-bottom: 0; }
+  .space-stage { display: grid; gap: 14px; }
+  .space-stage .solar { padding: 20px 12px 12px; background: radial-gradient(circle at 8% 50%,rgba(251,191,36,.22),transparent 18%),radial-gradient(circle at 70% 15%,rgba(255,255,255,.7) 0 1px,transparent 2px),#081126; }
+  .space-stage .solar-track { height: 210px; }
+  .space-controls { display: grid; grid-template-columns: minmax(0,1fr) minmax(180px,.7fr) auto; gap: 12px; align-items: end; }
+  .scale-field { min-width: 0; margin: 0; padding: 0; border: 0; }
+  .scale-field legend, .space-controls label { margin-bottom: 7px; color: var(--ink); font-weight: 800; }
+  .scale-picks { display: flex; gap: 8px; flex-wrap: wrap; }
+  .scale-picks label { position: relative; flex: 1 1 120px; margin: 0; cursor: pointer; }
+  .scale-picks input { position: absolute; opacity: 0; pointer-events: none; }
+  .scale-picks span { display: grid; min-height: 48px; place-items: center; padding: 9px 13px; border: 2px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font-weight: 800; }
+  .scale-picks input:checked + span { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 14%,var(--surface)); box-shadow: 0 0 0 3px color-mix(in srgb,var(--sci) 15%,transparent); }
+  .scale-picks input:focus-visible + span { outline: 3px solid var(--warn); outline-offset: 2px; }
+  .scale-visual { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(220px,.8fr); gap: 12px; align-items: stretch; }
+  .scale-visual svg { width: 100%; min-height: 190px; border: 2px solid var(--line-soft); border-radius: var(--r); background: linear-gradient(180deg,#101a36,#081126); }
+  .scale-visual .text-result { margin: 0; display: flex; align-items: center; border: 2px solid color-mix(in srgb,var(--sci) 30%,var(--line)); border-left-width: 5px; border-radius: var(--r); font-size: 1rem; }
+  .kid-answer-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .kid-answer-group button { min-height: 48px; flex: 1 1 145px; padding: 9px 12px; border: 2px solid var(--line); border-radius: var(--r); background: var(--surface); color: var(--ink); font: 750 .9rem/1.35 var(--font); cursor: pointer; }
+  .kid-answer-group button[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 14%,var(--surface)); }
+  .mission-step .space-check-row { display: flex; min-height: 48px; align-items: center; gap: 9px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); }
+  .mission-step .space-check-row input { width: 22px; height: 22px; flex: none; }
+  .parent-deep-dive.space-terms { margin-top: 14px; }
+  .parent-deep-dive.space-terms .space-words { margin-top: 10px; }
+  @media (max-width: 780px) {
+    .space-controls, .scale-visual { grid-template-columns: 1fr; }
+    .space-stage .solar-track { height: auto; }
+  }
+  @media (max-width: 480px) {
+    .hero { padding: 14px 0 10px; }
+    .space-hero { padding: 12px; }
+    .space-intro { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 6px; margin-bottom: 8px; }
+    .space-intro .pill, .space-intro .character-invite { display: none; }
+    .space-intro h1 { margin: 0; font-size: 1.65rem; }
+    .space-intro .hero-question { margin: 3px 0 0; font-size: .92rem; line-height: 1.3; }
+    .space-intro .badge-live { align-self: start; max-width: 88px; padding: 3px 6px; font-size: .6rem; }
+    .space-stage { gap: 7px; padding: 8px; min-height: 0; }
+    .space-stage > .row h2 { font-size: 1rem; }
+    .space-stage > .row .pill { padding: 3px 7px; font-size: .65rem; }
+    .space-stage .solar { padding: 6px 4px; }
+    .space-stage .solar-track { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 4px 0; padding: 0; }
+    .space-stage .planet { min-width: 44px; min-height: 58px; gap: 2px; }
+    .space-stage .planet .nm { font-size: .65rem; }
+    .space-controls { grid-template-columns: minmax(0,1fr) auto; gap: 7px; align-items: end; padding: 7px; }
+    .space-controls .planet-select-wrap { display: none; }
+    .scale-field legend { margin-bottom: 3px; font-size: .72rem; }
+    .scale-picks { flex-wrap: nowrap; gap: 5px; }
+    .scale-picks label { flex-basis: 0; }
+    .scale-picks span { min-height: 44px; padding: 6px 8px; font-size: .78rem; }
+    #spaceRun { min-height: 44px; padding: 7px 10px; white-space: nowrap; }
+    .scale-visual { grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); gap: 7px; }
+    .scale-visual svg { min-height: 108px; }
+    .scale-visual .text-result { min-height: 108px; padding: 7px 8px; font-size: .72rem; line-height: 1.35; }
+  }
+
 </style>
 </head>
 <body data-playful-page="nature/space.html">
@@ -164,74 +254,124 @@
 </div></nav>
 
 <header class="hero wrap">
-  <h1>太空站</h1>
-  <p class="lead">
-    八大行星按真实数据排开。点一颗行星，看它有多大、多远、一天多长、你在上面有多重。
-    每日天文图来自 NASA，网络不通时页面仍然完整可用。
-  </p>
-  <span id="netBadge" class="badge-live"><span class="d"></span><span id="netTxt">正在连接 NASA…</span></span>
+  <section class="space-hero kid-hero-scene" aria-labelledby="spaceHeroTitle">
+    <div class="space-intro">
+      <div>
+        <p class="pill pill-phys">5–11 岁 · 离线也能出发</p>
+        <p class="character-invite"><span class="friend" aria-hidden="true">🛰️</span>星星邀请你挑一颗行星！</p>
+        <h1 id="spaceHeroTitle">太空站</h1>
+        <p class="hero-question"><b>大问题：</b>太阳系这么大，怎样把它装进一张小小的图？</p>
+      </div>
+      <span id="netBadge" class="badge-live" role="status" aria-live="polite"><span class="d"></span><span id="netTxt">正在连接 NASA…</span></span>
+    </div>
+
+    <div class="space-stage kid-visual-stage" aria-labelledby="spaceStageTitle">
+      <div class="row spread"><h2 id="spaceStageTitle" style="margin:0">先点一颗行星</h2><span class="pill">距离已压缩</span></div>
+      <div class="solar">
+        <div class="solar-track" id="track" aria-label="可点选的八大行星">
+          <div class="sun-edge"></div><span class="sun-label">太阳</span>
+        </div>
+      </div>
+      <p class="scale-note" id="scaleNote" data-audience="parent"></p>
+
+      <div class="space-controls kid-action-strip">
+        <fieldset class="scale-field">
+          <legend>换哪一把尺？</legend>
+          <div class="scale-picks">
+            <label><input type="radio" name="spaceScale" value="size" checked><span>比大小</span></label>
+            <label><input type="radio" name="spaceScale" value="distance"><span>比距离</span></label>
+          </div>
+        </fieldset>
+        <div class="planet-select-wrap"><label for="spacePlanet">目的地</label><select class="input" id="spacePlanet"><option value="mercury">水星</option><option value="venus">金星</option><option value="earth" selected>地球</option><option value="mars">火星</option><option value="jupiter">木星</option><option value="saturn">土星</option><option value="uranus">天王星</option><option value="neptune">海王星</option></select></div>
+        <button class="btn btn-primary" id="spaceRun" type="button">换尺看看</button>
+      </div>
+
+      <div class="scale-visual">
+        <svg id="spaceScaleViz" viewBox="0 0 420 190" role="img" aria-label="地球与所选行星的尺度对比图"></svg>
+        <output class="text-result" id="spaceOutput" aria-live="polite">已选地球。换一把尺，或直接点另一颗行星。</output>
+      </div>
+    </div>
+
+    <details class="parent-deep-dive space-terms" data-audience="parent">
+      <summary>家长层：四张词语卡与安全观察</summary>
+      <div class="quick-look"><h2>手掌小观察</h2><ol><li>伸直手臂，用一根手指挡住远处一个安全的小物体。</li><li>把手指移近眼睛，比较它看起来的大小。</li><li>追问：看起来大，真的就一定更大吗？</li></ol><p>不要直视太阳。室内也能完成。</p></div>
+      <dl class="space-words" aria-label="出发前的四张词语卡">
+        <div><dt>尺度</dt><dd>把真实大小按同一种规则放大或缩小，像把地球缩成一颗小珠子。</dd></div>
+        <div><dt>轨道</dt><dd>天体绕另一个天体运动的路线；它不是画在太空里的实体圆环。</dd></div>
+        <div><dt>重力</dt><dd>有质量的物体互相吸引的作用。它让行星绕太阳，也让我们站在地面上。</dd></div>
+        <div><dt>AU（天文单位）</dt><dd>量太阳系距离的尺。1 AU 约等于地球到太阳的平均距离，约 1.496 亿千米。</dd></div>
+      </dl>
+    </details>
+  </section>
 </header>
 
 <main class="wrap stack" id="main">
 
   <section class="mission task" aria-labelledby="spaceMissionTitle">
-    <p class="pill pill-phys">核心任务 · 轨道与重力</p><h2 id="spaceMissionTitle">先换尺度，再规划一次行星观察</h2>
-    <p>这在教什么：同一张太阳系图不能同时忠实呈现行星大小和行星间距离；模型必须说明自己保留了什么、压缩了什么。</p>
-    <div class="work-card" aria-labelledby="spaceStoryTitle">
-      <div data-playful-companion>解释伙伴正在检查航线……</div>
-      <div class="row spread"><div><p class="pill pill-phys">剧情 · 行星护照</p><h3 id="spaceStoryTitle" class="work-card-title">太阳系入境任务</h3></div><span data-playful-sticker>○ 完成任务可获得贴纸</span></div>
-      <p class="work-card-content">星星要为行星护照盖章：先换一次尺度，再用两个数字说明目的地的大小、距离或重力，护照才算有效。</p>
-      <div class="row"><button class="btn btn-ghost" type="button" data-playful-random-task="#spaceSurprise">抽取护照加签任务</button><span id="spaceSurprise" data-playful-task-output role="status" aria-live="polite">加签任务会在这里出现。</span></div>
-      <p data-playful-feedback role="status" aria-live="polite">护照等待盖章：完成核心任务后会收到贴纸反馈。</p>
-    </div>
+    <p class="pill pill-phys">正式任务 · 行星护照</p><h2 id="spaceMissionTitle">选证据，给目的地盖章</h2>
+    <p>先在上面的舞台点行星、换尺度，再完成三次真实选择。</p>
     <div class="mission-grid">
-      <div class="mission-step"><h3>1 预测</h3><label for="spacePredict">如果地球缩成直径 1 厘米，你猜木星多大、太阳离地球多远？</label><textarea class="input" id="spacePredict"></textarea></div>
-      <div class="mission-step"><h3>2 操作</h3><fieldset><legend>尺度切换</legend><label><input type="radio" name="spaceScale" value="size" checked> 直径尺度</label><label><input type="radio" name="spaceScale" value="distance"> 距离尺度</label></fieldset><label for="spacePlanet">轨道与重力目标</label><select class="input" id="spacePlanet"><option value="mars">火星</option><option value="jupiter">木星</option><option value="saturn">土星</option><option value="neptune">海王星</option></select><button class="btn btn-primary" id="spaceRun" type="button">切换尺度并计算</button><fieldset><legend>观察清单（至少勾 2 项）</legend><label><input class="space-check" type="checkbox"> 找到行星大小差异</label><label><input class="space-check" type="checkbox"> 比较表面重力</label><label><input class="space-check" type="checkbox"> 比较公转周期</label></fieldset></div>
-      <div class="mission-step"><h3>3 结果</h3><output class="text-result" id="spaceOutput" aria-live="polite">等待选择尺度与行星。</output><label for="spaceResult">写下两个数字，并说明它们分别表示什么</label><textarea class="input" id="spaceResult"></textarea></div>
-      <div class="mission-step"><h3>4 反思</h3><label for="spaceReflect">为什么“行星排得很近”的图不能用来量真实距离？</label><textarea class="input" id="spaceReflect"></textarea></div>
-    </div><div class="task-actions"><button class="btn btn-primary" id="spaceComplete" type="button">完成任务</button><span class="task-status" id="spaceStatus" role="status" aria-live="polite">尚未完成：操作后还要记录和反思。</span></div>
-    <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="spaceWorkTitle">
+      <div class="mission-step">
+        <h3>1 先猜一猜</h3>
+        <p>地球缩成 1 厘米，木星会怎样？</p>
+        <div class="kid-answer-group" data-answer-target="spacePredict">
+          <button type="button" data-value="我猜木星只比地球大一点。">只大一点</button>
+          <button type="button" data-value="我猜木星大约是地球的十倍宽。">大约十倍宽</button>
+        </div>
+        <div data-audience="parent"><label for="spacePredict">家长层：补充预测</label><textarea class="input" id="spacePredict"></textarea></div>
+      </div>
+      <div class="mission-step">
+        <h3>2 找两条证据</h3>
+        <label class="space-check-row"><input class="space-check" type="checkbox"> <span>我比较了行星大小</span></label>
+        <label class="space-check-row"><input class="space-check" type="checkbox"> <span>我比较了表面重力</span></label>
+        <label class="space-check-row"><input class="space-check" type="checkbox"> <span>我比较了公转时间</span></label>
+      </div>
+      <div class="mission-step">
+        <h3>3 收下结果</h3>
+        <p>上方每次“换尺看看”都会把真实数字放进护照。</p>
+        <div class="kid-result-card"><span aria-hidden="true">🔭</span><p><b>已实际操作才算完成</b>结果会自动保存到下面的原记录栏。</p></div>
+        <div data-audience="parent"><label for="spaceResult">家长层：编辑两个数字与含义</label><textarea class="input" id="spaceResult"></textarea></div>
+      </div>
+      <div class="mission-step">
+        <h3>4 选出模型提醒</h3>
+        <div class="kid-answer-group" data-answer-target="spaceReflect">
+          <button type="button" data-value="全景图压缩了距离，所以不能直接拿尺量真实距离。">图上距离被压缩</button>
+          <button type="button" data-value="行星圆点为了容易点击被放大，所以不能直接量真实大小。">行星圆点被放大</button>
+        </div>
+        <div data-audience="parent"><label for="spaceReflect">家长层：补充反思</label><textarea class="input" id="spaceReflect"></textarea></div>
+      </div>
+    </div>
+    <div class="task-actions kid-done-row"><button class="btn btn-primary kid-done-btn" id="spaceComplete" type="button">给护照盖章</button><span class="task-status" id="spaceStatus" role="status" aria-live="polite">还差：点行星、换尺、勾两条证据。</span></div>
+    <div class="work-card" aria-labelledby="spaceStoryTitle" data-audience="parent">
+      <div data-playful-companion>解释伙伴正在检查航线……</div>
+      <div class="row spread"><div><p class="pill pill-phys">家长延伸</p><h3 id="spaceStoryTitle" class="work-card-title">行星护照追问</h3></div><span data-playful-sticker>○ 完成任务可获得贴纸</span></div>
+      <div class="story-qa"><p><b>为什么要换尺？</b>同一小图不能同时画准大小与距离。</p><p><b>怎样读数字？</b>先说单位，再说它代表大小、距离、重力还是时间。</p></div>
+      <div class="row"><button class="btn btn-ghost" type="button" data-playful-random-task="#spaceSurprise">抽取护照加签任务</button><span id="spaceSurprise" data-playful-task-output role="status" aria-live="polite">加签任务会在这里出现。</span></div>
+      <p data-playful-feedback role="status" aria-live="polite">护照等待盖章。</p>
+    </div>
+    <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="spaceWorkTitle">
       <h3 class="work-card-title" id="spaceWorkTitle">给行星护照留一页作品</h3>
-      <p class="work-card-meta">用换算后的数字说明目的地，不用照片也能写完。作品只保存在这台设备上。</p>
+      <p class="work-card-meta">作品只保存在这台设备上。</p>
       <div class="work-card-fields">
-        <div>
-          <label for="spaceWorkType">作品类型</label>
-          <select class="input" id="spaceWorkType" name="type">
-            <option value="model">模型说明</option>
-            <option value="observation">观察记录</option>
-            <option value="explanation">我的解释</option>
-          </select>
-        </div>
-        <div>
-          <label for="spaceWorkName">护照页名称</label>
-          <input class="input" id="spaceWorkName" name="title" required maxlength="80" placeholder="例如：地球缩成 1 厘米">
-        </div>
-        <div>
-          <label for="spaceWorkContent">尺度与两个数字</label>
-          <textarea class="input" id="spaceWorkContent" name="content" required maxlength="4000" placeholder="选了哪种尺度、换算后这颗行星有多大或多远、它的重力和公转周期说明了什么。"></textarea>
-        </div>
+        <div><label for="spaceWorkType">作品类型</label><select class="input" id="spaceWorkType" name="type"><option value="model">模型说明</option><option value="observation">观察记录</option><option value="explanation">我的解释</option></select></div>
+        <div><label for="spaceWorkName">护照页名称</label><input class="input" id="spaceWorkName" name="title" required maxlength="80" placeholder="例如：地球缩成 1 厘米"></div>
+        <div><label for="spaceWorkContent">尺度与两个数字</label><textarea class="input" id="spaceWorkContent" name="content" required maxlength="4000"></textarea></div>
         <button class="btn btn-primary" type="submit">保存护照页</button>
       </div>
       <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和数字后就能存档。</p>
     </form>
   </section>
-  <section class="card" style="padding:20px"><h2>数据来源与离线替代</h2><p class="principle"><b>背后的原理：</b>轨道由引力持续改变运动方向形成；表面重力取决于质量和半径，不只看“个头”。行星直径、距离、重力和周期采用 <a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/" target="_blank" rel="noopener">NASA Planetary Fact Sheet</a> 的常用值，并已内置在本页。每日天文图和照片是可选联网增强；在 <code>file://</code> 或断网时，内置猎户座示例、文字行星卡和全部计算仍可用。</p><ol class="parent-q"><li>哪一种尺度最容易误导人？为什么？</li><li>木星更大，为什么公转一年反而更久？</li><li>如果只有文字数据，没有照片，还能完成哪些观察？</li></ol></section>
-
-
-  <!-- ============ 太阳系 ============ -->
-  <section>
-    <h2>太阳系全景</h2>
-    <p class="muted" style="color:var(--ink-mid);font-size:.9rem">
-      距离用了压缩尺度（否则海王星要画到 30 米开外）；行星大小之间是<b>真实比例</b>。
-    </p>
-    <div class="solar">
-      <div class="solar-track" id="track">
-        <div class="sun-edge"></div>
-        <span class="sun-label">太阳</span>
-      </div>
+  <details class="card parent-deep-dive" data-audience="parent" style="padding:20px" aria-labelledby="spaceCabinetTitle">
+    <summary id="spaceCabinetTitle">家长层：原理、来源与追问</summary>
+    <div class="explain-grid">
+      <article><h3>为什么不会直直掉下去？</h3><p>行星一边向前运动，一边被太阳吸引，运动方向不断改变。</p></article>
+      <article><h3>大就一定拉得更用力吗？</h3><p>不一定。表面重力与天体质量和半径都有关。</p></article>
+      <article><h3>图上能直接量距离吗？</h3><p>不能。全景图把距离压缩了。</p></article>
+      <article><h3>没网还能做什么？</h3><p>内置文字行星卡、尺度任务和计算都能继续使用。</p></article>
     </div>
-    <p class="scale-note" id="scaleNote"></p>
-  </section>
+    <p class="data-source"><b>数据来源：</b> <a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/" target="_blank" rel="noopener">NASA Planetary Fact Sheet</a> 常用值已内置；联网图片只是增强。</p>
+    <h3>给家长的三个问题</h3><ol class="parent-q"><li>哪一种尺度最容易误导人？</li><li>木星更大，为什么公转一年更久？</li><li>没有照片还能完成哪些观察？</li></ol>
+  </details>
 
   <!-- ============ 行星详情 ============ -->
   <section class="detail">
@@ -243,9 +383,9 @@
         </div>
         <span id="pEmoji" style="font-size:2rem" aria-hidden="true">🌍</span>
       </div>
-      <p id="pDesc" style="margin:.9em 0 0;color:var(--ink-mid);font-size:.92rem;line-height:1.6"></p>
+      <p id="pDesc" data-audience="parent" style="margin:.9em 0 0;color:var(--ink-mid);font-size:.92rem;line-height:1.6"></p>
       <div class="facts" id="pFacts"></div>
-      <p id="pWow" style="margin:.9em 0 0;font-size:.88rem;color:var(--ink);background:var(--surface-2);border-left:3px solid var(--sci);padding:9px 12px;border-radius:0 var(--r-sm) var(--r-sm) 0"></p>
+      <p id="pWow" data-audience="parent" style="margin:.9em 0 0;font-size:.88rem;color:var(--ink);background:var(--surface-2);border-left:3px solid var(--sci);padding:9px 12px;border-radius:0 var(--r-sm) var(--r-sm) 0"></p>
     </div>
 
     <div class="card" style="padding:20px">
@@ -264,9 +404,9 @@
 
   <!-- ============ 距离 ============ -->
   <section>
-    <h2>坐飞机去要多久？</h2>
+    <h2>把距离换成“飞机时间”</h2>
     <p style="color:var(--ink-mid);font-size:.9rem;margin-top:-.3em">
-      假设一直以民航客机的速度（900 公里/小时）飞，永不停歇。
+      这是距离尺，不是真实航线：用行星与地球的平均轨道半径之差，再按民航客机 900 公里/小时不停飞来换算。
     </p>
     <div class="card" style="padding:18px">
       <div class="ruler" id="ruler"></div>
@@ -327,11 +467,11 @@
   </section>
 </main>
 
-<footer class="foot wrap-narrow" style="text-align:center;padding:28px 0">
+<footer class="foot wrap-narrow" data-audience="parent" style="text-align:center;padding:28px 0">
   <p style="color:var(--ink-dim);font-size:.8rem;line-height:1.7">
     行星物理数据来自 NASA Planetary Fact Sheet（内置，不依赖网络）。<br>
-    每日天文图与照片来自 NASA APOD 与 NASA Image Library，可能因网络不可用而显示内置内容。<br>
-    NASA 图像为公有领域素材。
+    每日天文图与照片来自 NASA APOD 与 NASA Image Library；联网失败时会显示内置内容与提示。<br>
+    图片按 NASA 接口返回的素材信息展示，不影响离线任务。
   </p>
 </footer>
 
@@ -409,7 +549,7 @@
   var minD = Math.min.apply(null, PLANETS.map(function (p) { return p.dkm; }));
 
   function bodyPx(dkm) {
-    // 真实比例但整体缩放：木星 46px，水星约 1.6px 太小，故设下限 9px 并做 sqrt 压缩
+    // 教学图为保证小行星可点按，设置 9px 下限并做平方根压缩；真实直径见数据卡
     var t = Math.sqrt((dkm - minD) / (maxD - minD));   // 0..1
     return 9 + t * 37;
   }
@@ -462,8 +602,8 @@
   });
 
   document.getElementById("scaleNote").textContent =
-    "行星直径为真实比例（木星 = " + Math.round(bodyPx(142984)) +
-    "px，水星 = " + Math.round(bodyPx(4879)) + "px）；横向距离经过压缩以便同屏显示。";
+    "图中圆点为可点击而放大：木星约 " + Math.round(bodyPx(142984)) +
+    "px，水星约 " + Math.round(bodyPx(4879)) + "px；横向距离也经过压缩，不能用尺直接测量。";
 
   // ---------- 详情 ----------
   var pName = document.getElementById("pName");
@@ -745,37 +885,97 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js"></script>
-<script src="../data/playful.js"></script>
-<script src="../assets/js/playful.js"></script>
+<script src="../assets/js/progress.js?v=13"></script>
+<script src="../data/playful.js?v=13"></script>
+<script src="../assets/js/playful.js?v=13"></script>
 <script>
 (function () {
   "use strict";
   var id = "nature/space.html", operated = false;
-  var data = { mars:[6792,.38,1.52,1.88,"火星"], jupiter:[142984,2.36,5.20,11.86,"木星"], saturn:[120536,.92,9.54,29.4,"土星"], neptune:[49528,1.11,30.1,164.8,"海王星"] };
+  var data = {
+    mercury:[4879,.38,.39,.24,"水星","#b8b0a4"], venus:[12104,.91,.72,.62,"金星","#e8c07a"],
+    earth:[12756,1,1,1,"地球","#5b9bd5"], mars:[6792,.38,1.52,1.88,"火星","#c1613c"],
+    jupiter:[142984,2.36,5.20,11.86,"木星","#d8a373"], saturn:[120536,.92,9.54,29.4,"土星","#e0cd9a"],
+    uranus:[51118,.89,19.2,84,"天王星","#93d3dd"], neptune:[49528,1.11,30.1,164.8,"海王星","#4b6ed8"]
+  };
   var predict = document.getElementById("spacePredict"), result = document.getElementById("spaceResult");
   var reflect = document.getElementById("spaceReflect"), output = document.getElementById("spaceOutput"), status = document.getElementById("spaceStatus");
-  if (window.Progress) Progress.visit("nature/space.html", "太空站");
-  document.getElementById("spaceRun").addEventListener("click", function () {
-    var key = document.getElementById("spacePlanet").value, p = data[key];
+  var picker = document.getElementById("spacePlanet"), viz = document.getElementById("spaceScaleViz");
+  var ns = "http://www.w3.org/2000/svg";
+
+  function svgEl(name, attrs, text) {
+    var el = document.createElementNS(ns, name);
+    Object.keys(attrs || {}).forEach(function (key) { el.setAttribute(key, attrs[key]); });
+    if (text) el.textContent = text;
+    return el;
+  }
+  function renderScale(markOperated) {
+    var p = data[picker.value] || data.earth;
     var scale = document.querySelector('input[name="spaceScale"]:checked').value;
     var scaleText = scale === "size"
-      ? "若地球直径为 1 cm，" + p[4] + "直径约 " + (p[0] / 12756).toFixed(2) + " cm。"
-      : "若日地距离为 1 m，" + p[4] + "到太阳约 " + p[2].toFixed(2) + " m；此时地球直径仅约 0.085 mm。";
-    output.textContent = scaleText + " 表面重力为地球的 " + p[1].toFixed(2) + " 倍，公转周期为 " + p[3] + " 地球年。轨道不是“没有重力”，而是天体在引力作用下持续自由落体。";
-    operated = true;
+      ? "地球直径 1 cm 时，" + p[4] + "约 " + (p[0] / 12756).toFixed(2) + " cm。"
+      : "日地距离 1 m 时，" + p[4] + "离太阳约 " + p[2].toFixed(2) + " m。";
+    output.textContent = scaleText + " 重力是地球的 " + p[1].toFixed(2) + " 倍，公转一圈约 " + p[3] + " 地球年。";
+    viz.textContent = "";
+    viz.appendChild(svgEl("text", {x:18,y:24,fill:"#dce7ff","font-size":14,"font-weight":700}, scale === "size" ? "直径按同一把尺" : "到太阳的距离按同一把尺"));
+    if (scale === "size") {
+      var ratio = p[0] / 12756, targetR = Math.max(3, Math.min(65, 6 * ratio));
+      viz.appendChild(svgEl("circle", {cx:105,cy:100,r:6,fill:data.earth[5],stroke:"#fff","stroke-width":1}));
+      viz.appendChild(svgEl("circle", {cx:300,cy:100,r:targetR,fill:p[5],stroke:"#fff","stroke-width":1}));
+      viz.appendChild(svgEl("text", {x:105,y:165,fill:"#dce7ff","text-anchor":"middle","font-size":13}, "地球 1 cm"));
+      viz.appendChild(svgEl("text", {x:300,y:180,fill:"#dce7ff","text-anchor":"middle","font-size":13}, p[4] + " " + ratio.toFixed(2) + " cm"));
+    } else {
+      var end = 48 + Math.pow(p[2] / 30.1, .42) * 330;
+      viz.appendChild(svgEl("circle", {cx:38,cy:100,r:18,fill:"#fbbf24"}));
+      viz.appendChild(svgEl("line", {x1:58,y1:100,x2:end,y2:100,stroke:"#6ea8fe","stroke-width":6,"stroke-linecap":"round"}));
+      viz.appendChild(svgEl("circle", {cx:end,cy:100,r:10,fill:p[5],stroke:"#fff","stroke-width":2}));
+      viz.appendChild(svgEl("text", {x:38,y:145,fill:"#dce7ff","text-anchor":"middle","font-size":13}, "太阳"));
+      viz.appendChild(svgEl("text", {x:end,y:145,fill:"#dce7ff","text-anchor":"middle","font-size":13}, p[4] + " " + p[2].toFixed(2) + " AU"));
+    }
+    viz.setAttribute("aria-label", scaleText);
+    if (markOperated) {
+      operated = true;
+      result.value = scaleText + " 重力 " + p[1].toFixed(2) + " 倍；公转 " + p[3] + " 年。";
+      status.textContent = "已换尺！再勾两条证据、完成预测和模型提醒。";
+    }
+  }
+
+  if (window.Progress) Progress.visit("nature/space.html", "太空站");
+  document.getElementById("spaceRun").addEventListener("click", function () { renderScale(true); });
+  picker.addEventListener("change", function () {
+    var planetButton = document.querySelector('.planet[data-id="' + picker.value + '"]');
+    if (planetButton) planetButton.click();
+    renderScale(false);
+  });
+  document.querySelectorAll('input[name="spaceScale"]').forEach(function (radio) {
+    radio.addEventListener("change", function () { renderScale(false); });
+  });
+  document.getElementById("track").addEventListener("click", function (event) {
+    var button = event.target.closest(".planet");
+    if (!button) return;
+    picker.value = button.dataset.id;
+    renderScale(false);
+  });
+  document.querySelectorAll("[data-answer-target] button").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var group = button.closest("[data-answer-target]");
+      group.querySelectorAll("button").forEach(function (item) { item.setAttribute("aria-pressed", item === button ? "true" : "false"); });
+      document.getElementById(group.dataset.answerTarget).value = button.dataset.value;
+      status.textContent = "选择已记下。继续完成舞台操作和两条证据。";
+    });
   });
   document.getElementById("spaceComplete").addEventListener("click", function () {
     var checked = document.querySelectorAll(".space-check:checked").length;
     if (!predict.value.trim() || !operated || checked < 2 || !result.value.trim() || !reflect.value.trim()) {
-      status.textContent = "还不能完成：请预测、计算、勾选至少两项观察、记录并反思。"; return;
+      status.textContent = "还不能盖章：请先猜、实际换尺、勾至少两条证据，再选模型提醒。"; return;
     }
     var done = window.Progress && Progress.complete("nature/space.html", "切换了太阳系尺度，并用两个数字比较行星轨道与重力。");
-    status.textContent = done ? "已完成任务：尺度与观察证据已保存。" : "四步已完成；当前浏览器无法保存。";
+    status.textContent = done ? "护照盖章成功：尺度证据已保存。" : "任务完成；当前浏览器无法保存。";
   });
+  renderScale(false);
   if (window.Progress && Progress.getCompletion(id)) status.textContent = "此任务已完成；可以换一颗行星更新证据。";
 })();
 </script>
-<script src="../assets/js/pwa.js"></script>
+<script src="../assets/js/pwa.js?v=13"></script>
 </body>
 </html>

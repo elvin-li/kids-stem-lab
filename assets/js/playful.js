@@ -8,6 +8,9 @@
   var initialized = false;
   var motionMediaBound = false;
   var characterById = Object.create(null);
+  var knownCardIds = Object.create(null);
+  var cardDialog = null;
+  var cardReturnFocus = null;
 
   function config() { return global.PLAYFUL && typeof global.PLAYFUL === "object" ? global.PLAYFUL : null; }
   function progress() { return global.Progress && typeof global.Progress === "object" ? global.Progress : null; }
@@ -48,7 +51,7 @@
     if (name === "soundEnabled") return false;
     if (name === "motion") return "system";
     if (name === "ageGroup") return "all";
-    if (name === "mode") return "parent";
+    if (name === "mode") return "kid";
     return null;
   }
   function setPreference(name, value) {
@@ -102,6 +105,89 @@
     var stickers = store.getStickers(rawId);
     return stickers && stickers.length ? copy(stickers[0]) : null;
   }
+  function card(rawId) {
+    var store = progress();
+    if (!store || typeof store.getCards !== "function") return null;
+    var cards = store.getCards(rawId);
+    return cards && cards.length ? copy(cards[0]) : null;
+  }
+  function rememberUnlockedCards(reset) {
+    var store = progress();
+    if (reset) knownCardIds = Object.create(null);
+    if (!store || typeof store.getCards !== "function") return [];
+    var newlyUnlocked = [];
+    store.getCards().forEach(function (item) {
+      if (!item.unlocked) return;
+      if (!knownCardIds[item.id]) newlyUnlocked.push(item);
+      knownCardIds[item.id] = true;
+    });
+    return newlyUnlocked;
+  }
+  function albumHref() {
+    try { return new URL("../pages/progress.html?view=cards#collectionPanel", global.location.href).href; }
+    catch (e) { return "../pages/progress.html?view=cards#collectionPanel"; }
+  }
+  function closeCardDialog() {
+    if (!cardDialog) return;
+    if (typeof cardDialog.close === "function" && cardDialog.open) cardDialog.close();
+    else {
+      cardDialog.hidden = true;
+      cardDialog.removeAttribute("data-open");
+    }
+    if (cardReturnFocus && typeof cardReturnFocus.focus === "function") cardReturnFocus.focus();
+    cardReturnFocus = null;
+  }
+  function ensureCardDialog() {
+    if (cardDialog || !global.document || !global.document.body) return cardDialog;
+    var supportsDialog = typeof global.HTMLDialogElement === "function";
+    cardDialog = global.document.createElement(supportsDialog ? "dialog" : "div");
+    cardDialog.className = "reward-dialog";
+    cardDialog.id = "playfulRewardDialog";
+    if (!supportsDialog) {
+      cardDialog.hidden = true;
+      cardDialog.setAttribute("role", "dialog");
+      cardDialog.setAttribute("aria-modal", "true");
+    }
+    cardDialog.setAttribute("aria-labelledby", "rewardDialogTitle");
+    cardDialog.innerHTML = '<div class="reward-card" data-reward-card>' +
+      '<button class="reward-close" type="button" aria-label="关闭收藏卡">×</button>' +
+      '<div class="reward-card-head"><span class="reward-card-emoji" aria-hidden="true"></span><div><span class="reward-card-series"></span><h2 id="rewardDialogTitle"></h2></div></div>' +
+      '<div class="reward-card-section"><b>我的发现</b><p data-reward-discovery></p></div>' +
+      '<div class="reward-card-section"><b>知识小卡</b><p data-reward-fact></p></div>' +
+      '<div class="reward-card-section reward-card-next"><b>下一次试试</b><p data-reward-next></p></div>' +
+      '<div class="reward-card-actions"><a class="btn btn-primary" data-reward-album>收进卡册</a><button class="btn btn-ghost" type="button" data-reward-continue>继续玩</button></div>' +
+      '</div>';
+    cardDialog.querySelector(".reward-close").addEventListener("click", closeCardDialog);
+    cardDialog.querySelector("[data-reward-continue]").addEventListener("click", closeCardDialog);
+    cardDialog.querySelector("[data-reward-album]").href = albumHref();
+    cardDialog.addEventListener("cancel", function (event) { event.preventDefault(); closeCardDialog(); });
+    if (!supportsDialog) cardDialog.addEventListener("click", function (event) { if (event.target === cardDialog) closeCardDialog(); });
+    global.document.body.appendChild(cardDialog);
+    return cardDialog;
+  }
+  function showCard(rawId, trigger) {
+    var item = card(rawId);
+    if (!item || !item.unlocked || !global.document) return null;
+    var dialog = ensureCardDialog();
+    if (!dialog) return null;
+    cardReturnFocus = trigger || global.document.activeElement;
+    var face = dialog.querySelector("[data-reward-card]");
+    face.style.setProperty("--card-accent", item.accent);
+    text(dialog.querySelector(".reward-card-emoji"), item.emoji);
+    text(dialog.querySelector(".reward-card-series"), item.series + " · 新收藏卡");
+    text(dialog.querySelector("#rewardDialogTitle"), item.label);
+    text(dialog.querySelector("[data-reward-discovery]"), item.discovery);
+    text(dialog.querySelector("[data-reward-fact]"), item.fact);
+    text(dialog.querySelector("[data-reward-next]"), item.next);
+    if (typeof dialog.showModal === "function") {
+      if (!dialog.open) dialog.showModal();
+    } else {
+      dialog.hidden = false;
+      dialog.setAttribute("data-open", "true");
+      dialog.querySelector(".reward-close").focus();
+    }
+    return item;
+  }
   function text(node, value) { if (node) node.textContent = value; }
   function findOutput(button) {
     var selector = button.getAttribute("data-playful-random-task");
@@ -134,17 +220,37 @@
     node.appendChild(bubble);
     node.setAttribute("data-playful-rendered", rendered);
   }
+  function openCardFromBadge(node) {
+    if (node.getAttribute("data-earned") !== "true") return;
+    showCard(pageIdFrom(node), node);
+  }
+  function bindCardBadge(node) {
+    if (node.getAttribute("data-playful-bound") === "card-badge") return;
+    node.setAttribute("data-playful-bound", "card-badge");
+    node.addEventListener("click", function () { openCardFromBadge(node); });
+    node.addEventListener("keydown", function (event) {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      openCardFromBadge(node);
+    });
+  }
   function renderSticker(node) {
-    var earned = sticker(pageIdFrom(node));
+    var pageId = pageIdFrom(node);
+    var earned = sticker(pageId);
     node.classList.add("playful-sticker");
     node.setAttribute("data-earned", earned ? "true" : "false");
     if (earned) {
-      node.textContent = earned.emoji + " " + earned.label;
-      node.setAttribute("aria-label", "已获得贴纸：" + earned.label);
+      node.textContent = earned.emoji + " " + earned.label + " · 查看收藏卡";
+      node.setAttribute("aria-label", "查看已解锁收藏卡：" + earned.label);
+      node.setAttribute("role", "button");
+      node.setAttribute("tabindex", "0");
+      bindCardBadge(node);
     } else {
-      var item = page(pageIdFrom(node));
-      node.textContent = item && item.sticker ? "○ 完成任务可获得“" + item.sticker.label + "”" : "○ 完成任务可获得贴纸";
-      node.setAttribute("aria-label", "贴纸尚未获得");
+      var item = page(pageId);
+      node.textContent = item && item.sticker ? "○ 完成任务解锁“" + item.sticker.label + "”" : "○ 完成任务解锁收藏卡";
+      node.setAttribute("aria-label", "收藏卡尚未解锁");
+      node.removeAttribute("role");
+      node.removeAttribute("tabindex");
     }
   }
   function confetti(target) {
@@ -168,7 +274,7 @@
       target.classList.add("playful-feedback");
       target.setAttribute("role", "status");
       target.setAttribute("aria-live", "polite");
-      target.textContent = earned.emoji + " 新贴纸：" + earned.label;
+      target.textContent = earned.emoji + " 新收藏卡“" + earned.label + "”已收进卡册";
       confetti(target);
     }
     return earned;
@@ -244,6 +350,48 @@
       }));
     });
   }
+  function ensureModeSwitch() {
+    if (!global.document || global.document.querySelector('[data-playful-preference="mode"]')) return;
+    var nav = global.document.querySelector(".nav .nav-in");
+    if (!nav) return;
+    var label = global.document.createElement("label");
+    label.className = "mode-switch no-print";
+    label.setAttribute("for", "playfulModeSwitch");
+    label.innerHTML = '<span aria-hidden="true">🧸</span><span>显示模式</span>' +
+      '<select class="input" id="playfulModeSwitch" data-playful-preference="mode" aria-label="显示模式">' +
+      '<option value="kid">孩子模式</option><option value="parent">家长模式</option></select>';
+    nav.appendChild(label);
+  }
+  function bindKidChoice(button) {
+    if (button.getAttribute("data-playful-bound") === "kid-choice") return;
+    button.setAttribute("data-playful-bound", "kid-choice");
+    if (!button.hasAttribute("aria-pressed")) button.setAttribute("aria-pressed", "false");
+    function choicesFor() {
+      var group = button.closest ? button.closest("[data-kid-choice-group],.kid-choice") : null;
+      return group ? nodes(group, "[data-kid-choice]") : [button];
+    }
+    function choose() {
+      choicesFor().forEach(function (item) { item.setAttribute("aria-pressed", item === button ? "true" : "false"); });
+      button.dispatchEvent(new CustomEvent("playful:choice", {
+        bubbles: true,
+        detail: { value: button.getAttribute("data-value") || button.textContent.trim() }
+      }));
+    }
+    button.addEventListener("click", choose);
+    button.addEventListener("keydown", function (event) {
+      if (["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"].indexOf(event.key) < 0) return;
+      var choices = choicesFor();
+      if (choices.length < 2) return;
+      var index = choices.indexOf(button);
+      if (event.key === "Home") index = 0;
+      else if (event.key === "End") index = choices.length - 1;
+      else if (event.key === "ArrowRight" || event.key === "ArrowDown") index = (index + 1) % choices.length;
+      else index = (index + choices.length - 1) % choices.length;
+      event.preventDefault();
+      choices[index].focus();
+      choices[index].click();
+    });
+  }
   function nodes(root, selector) {
     var list = [];
     if (!root) return list;
@@ -261,7 +409,7 @@
     });
     if (global.document.documentElement) {
       global.document.documentElement.setAttribute("data-playful-age", getPreference("ageGroup") || "all");
-      global.document.documentElement.setAttribute("data-mode", getPreference("mode") || "parent");
+      global.document.documentElement.setAttribute("data-mode", getPreference("mode") || "kid");
     }
     nodes(global.document, "[data-playful-companion]").forEach(renderCompanion);
     syncMotion();
@@ -270,8 +418,10 @@
   function enhance(root) {
     if (!global.document || !config()) return false;
     root = root || global.document;
+    ensureModeSwitch();
     nodes(root, "[data-playful-companion]").forEach(renderCompanion);
     nodes(root, "[data-playful-sticker]").forEach(renderSticker);
+    nodes(root, "[data-kid-choice]").forEach(bindKidChoice);
     nodes(root, "[data-playful-random-task]").forEach(function (button) {
       if (button.getAttribute("data-playful-bound") === "task") return;
       button.setAttribute("data-playful-bound", "task");
@@ -295,12 +445,27 @@
     var result = enhance(root || global.document);
     if (!initialized && typeof global.addEventListener === "function") {
       initialized = true;
+      rememberUnlockedCards();
       global.addEventListener("kids-stem:progress", function (event) {
         if (!global.document) return;
         syncPreferences(global.document);
         nodes(global.document, "[data-playful-sticker]").forEach(renderSticker);
-        if (event && event.detail && event.detail.source === "complete") {
+        var source = event && event.detail ? event.detail.source : "";
+        if (source === "reset") rememberUnlockedCards(true);
+        else if (source === "import") rememberUnlockedCards(true);
+        if (source === "complete") {
+          var newlyUnlocked = [];
+          var store = progress();
+          if (store && typeof store.getCards === "function") {
+            store.getCards().forEach(function (item) {
+              if (item.unlocked && !knownCardIds[item.id]) {
+                knownCardIds[item.id] = true;
+                newlyUnlocked.push(item);
+              }
+            });
+          }
           nodes(global.document, "[data-playful-feedback]").forEach(function (node) { completionFeedback(pageIdFrom(node), node); });
+          if (newlyUnlocked.length) showCard(newlyUnlocked[0].pageId, global.document.activeElement);
         }
       });
       try {
@@ -319,6 +484,8 @@
     tone: tone,
     randomTask: randomTask,
     getSticker: sticker,
+    getCard: card,
+    showCard: showCard,
     completionFeedback: completionFeedback,
     saveWork: saveWork,
     validateWork: validateWork,

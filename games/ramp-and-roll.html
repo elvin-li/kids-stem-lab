@@ -5,37 +5,116 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>斜坡滚球 · 能量去哪了 | 少儿数理启蒙</title>
 <meta name="description" content="调节斜坡角度、摩擦和球的质量，用实时能量柱看势能怎么变成动能、又怎么被摩擦变成热。还能先猜球停在哪里。" />
-<link rel="stylesheet" href="../assets/css/base.css">
-<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/base.css?v=13">
+<link rel="stylesheet" href="../assets/css/kid.css?v=13">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
-  .lab-head { margin: 24px 0 18px; }
-  .lab-head p.lead { font-size: 1.02rem; max-width: 62ch; }
-  .seg { display: flex; gap: 8px; flex-wrap: wrap; }
-  .ebar { margin-bottom: 11px; }
-  .ebar-top { display: flex; justify-content: space-between; align-items: baseline; font-size: .78rem; font-weight: 700; color: var(--ink); gap: 8px; }
-  .ebar-top i.sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 5px; vertical-align: -1px; }
-  .ebar-top span.val { font-family: var(--mono); font-size: .76rem; color: var(--ink-mid); font-weight: 700; }
-  .ebar-track { height: 12px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line-soft); overflow: hidden; margin-top: 4px; }
-  .ebar-track > i { display: block; height: 100%; width: 0; }
-  .hint { font-size: .78rem; color: var(--ink-dim); font-family: var(--mono); margin-top: 3px; }
-  .qlist { margin: 0; padding-left: 1.15em; color: var(--ink-mid); font-size: .94rem; }
-  .qlist li { margin-bottom: .5em; }
-  .qlist b { color: var(--ink); }
-  .why h3 { margin-top: 1.1em; }
+  html, body { max-width:100%; overflow-x:hidden; }
+  *, *::before, *::after { box-sizing:border-box; }
+  .lab-head { margin:18px 0 8px; }
+  .hint { color:var(--ink-dim); font-family:var(--mono); font-size:.78rem; }
+  .ramp-kid-shell { position:relative; display:grid; gap:14px; margin:0; padding:clamp(12px,3vw,22px); overflow:hidden; isolation:isolate; }
+  .ramp-kid-shell::before { content:""; position:absolute; inset:-30% -12% auto 42%; height:240px; border-radius:50%; background:radial-gradient(circle,rgba(167,139,250,.2),transparent 68%); z-index:-1; pointer-events:none; }
+  .hero-top { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:14px; }
+  .hero-top h1 { margin:2px 0 5px; font-size:clamp(1.55rem,5vw,2.5rem); line-height:1.08; }
+  .hero-top p { margin:0; color:var(--ink-mid); }
+  .story-eyebrow { color:var(--phys)!important; font-weight:850; letter-spacing:.04em; }
+  .story-track { position:relative; display:flex; gap:9px; align-items:flex-end; min-width:145px; padding:8px 8px 14px; font-size:1.9rem; }
+  .story-track::after { content:""; position:absolute; right:2px; bottom:6px; left:2px; border-bottom:4px dashed rgba(251,191,36,.65); transform:skewX(-18deg); }
+  .story-ball { animation:ball-bob 1.8s ease-in-out infinite; }
+  .story-flag { transform:translateY(-5px); }
+  @keyframes ball-bob { 0%,100% { transform:translateY(0) rotate(0); } 50% { transform:translateY(-7px) rotate(18deg); } }
+  .kid-story-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0; padding:0; list-style:none; }
+  .kid-story-steps li { display:flex; align-items:center; gap:8px; min-height:44px; padding:8px 10px; border:1px solid var(--line-soft); border-radius:13px; background:rgba(255,255,255,.035); color:var(--ink-mid); font-weight:750; }
+  .kid-story-steps b { display:grid; place-items:center; flex:0 0 28px; width:28px; height:28px; border-radius:50%; background:var(--phys); color:#0b0f1a; }
+  .kid-visual-stage { position:relative; min-width:0; padding:10px; border:2px solid rgba(167,139,250,.35); border-radius:20px; background:rgba(11,15,26,.28); overflow:hidden; }
+  .stage-sign { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; color:var(--ink-mid); font-size:.88rem; }
+  .stage-sign b { color:var(--ink); }
+  #scene { display:block; width:100%; max-width:100%; border-radius:14px; touch-action:none; }
+  #scene:focus-visible { outline:3px solid var(--warn); outline-offset:3px; }
+  .stage-hint { margin:7px 2px 0; }
+  .ab-results { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .kid-result-card { min-width:0; padding:12px; border:2px solid var(--line-soft); border-radius:16px; background:var(--surface-2); }
+  .kid-result-card[data-state="done"] { border-color:rgba(74,222,128,.55); }
+  .result-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:9px; }
+  .result-letter { display:grid; place-items:center; width:32px; height:32px; border-radius:10px; background:var(--math); color:#0b0f1a; font-size:1.08rem; font-weight:900; }
+  .result-head strong { overflow:hidden; color:var(--ink-mid); font-size:.8rem; text-overflow:ellipsis; white-space:nowrap; }
+  .result-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:0; }
+  .result-stats div { min-width:0; }
+  .result-stats dt { color:var(--ink-dim); font-size:.72rem; font-weight:750; }
+  .result-stats dd { margin:2px 0 0; color:var(--ink); font-family:var(--mono); font-size:clamp(.82rem,2.5vw,1rem); font-weight:850; white-space:nowrap; }
+  .distance-track { position:relative; height:13px; margin-top:11px; border:1px solid var(--line-soft); border-radius:99px; background:rgba(255,255,255,.05); overflow:hidden; }
+  .distance-fill { display:block; width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--math),var(--sci)); transition:width .25s ease; }
+  .distance-marker { position:absolute; top:-2px; left:0; width:3px; height:17px; background:var(--warn); transform:translateX(-1px); transition:left .25s ease; }
+  .change-callout { display:flex; align-items:center; justify-content:center; gap:7px; min-height:44px; margin-top:10px; padding:8px 12px; border-radius:13px; background:rgba(251,191,36,.1); color:var(--ink-mid); text-align:center; }
+  .change-callout b { color:var(--warn); }
+  .kid-choice { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; align-items:end; }
+  .kid-choice .ctrl { min-width:0; padding:10px; border:1px solid var(--line-soft); border-radius:14px; background:var(--surface-2); }
+  .ctrl-head { display:flex; align-items:baseline; justify-content:space-between; gap:7px; }
+  .ctrl-head label { font-weight:800; }
+  .ctrl-head b { color:var(--warn); font-family:var(--mono); white-space:nowrap; }
+  .kid-choice input[type="range"], .parent-deep-dive input[type="range"] { width:100%; min-height:44px; touch-action:pan-y; }
+  .kid-action-strip { display:grid; grid-template-columns:minmax(0,1fr) minmax(100px,.36fr); gap:10px; }
+  .kid-action-strip .btn { width:100%; min-height:48px; }
+  .child-status { margin:0; padding:9px 12px; border-radius:12px; background:rgba(74,222,128,.08); color:var(--ink-mid); font-weight:750; }
+  #rampComplete[hidden] { display:none; }
+  .finish-row { display:flex; justify-content:center; }
+  .finish-row .btn { min-width:min(100%,280px); min-height:48px; }
+  .parent-deep-dive { margin-top:18px; }
+  details.parent-deep-dive > summary { min-height:44px; padding:12px 15px; border:1px solid var(--line-soft); border-radius:14px; color:var(--ink); cursor:pointer; font-weight:800; }
+  details.parent-deep-dive[open] > summary { margin-bottom:12px; }
+  .parent-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  .panel, .card, .task, .parent-grid > *, .task-fields > * { min-width:0; }
+  .seg, .row { display:flex; gap:8px; flex-wrap:wrap; }
+  .parent-deep-dive button, .parent-deep-dive input:not([type="hidden"]), .parent-deep-dive textarea, .task button { min-height:44px; }
+  .ebar { margin-bottom:11px; }
+  .ebar-top { display:flex; justify-content:space-between; align-items:baseline; gap:8px; color:var(--ink); font-size:.78rem; font-weight:700; }
+  .ebar-top i.sw { display:inline-block; width:10px; height:10px; margin-right:5px; border-radius:3px; vertical-align:-1px; }
+  .ebar-top span.val { color:var(--ink-mid); font-family:var(--mono); font-size:.76rem; }
+  .ebar-track { height:12px; margin-top:4px; border:1px solid var(--line-soft); border-radius:99px; background:var(--surface-2); overflow:hidden; }
+  .ebar-track > i { display:block; width:0; height:100%; }
+  .qlist { margin:0; padding-left:1.15em; color:var(--ink-mid); font-size:.94rem; }
+  .qlist li { margin-bottom:.5em; }
+  .qlist b { color:var(--ink); }
   .task-fields { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:end; }
-  .playful-story { display:grid; gap:12px; margin-bottom:18px; }
-  .playful-story-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .playful-story h2 { font-size:1.12rem; margin:0 0 4px; }
-  .playful-story p { margin:0; }
-  .playful-story-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .playful-story [data-playful-task-output] { color:var(--ink-mid); min-height:1.5em; }
-  .fair-card { margin-top:14px; }
   .fair-card textarea { min-height:120px; resize:vertical; }
-  @media (max-width:680px) { .task-fields { grid-template-columns:1fr; } }
+  @media (max-width:760px) {
+    .hero-top { grid-template-columns:minmax(0,1fr); }
+    .story-track { display:none; }
+    .kid-choice { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .kid-choice .prediction-choice { grid-column:1 / -1; }
+    .parent-grid { grid-template-columns:minmax(0,1fr); }
+  }
+  @media (max-width:480px) {
+    .lab-head { margin:8px 0 6px; }
+    .lab-head .row { gap:5px; }
+    .lab-head .pill:nth-child(n+2) { display:none; }
+    .ramp-kid-shell { padding:9px; border-radius:16px; }
+    html[data-mode="kid"] .ramp-kid-shell > .playful-companion,
+    html[data-mode="kid"] .kid-story-steps { display:none; }
+    html[data-mode="kid"] .hero-top h1 { margin:0; font-size:1.45rem; }
+    html[data-mode="kid"] .hero-top p { display:none; }
+    html[data-mode="kid"] .kid-visual-stage { min-height:0; padding:7px; }
+    html[data-mode="kid"] .stage-sign { margin-bottom:4px; }
+    html[data-mode="kid"] #scene { height:230px !important; }
+    html[data-mode="kid"] .stage-hint { display:none; }
+    .kid-choice { grid-template-columns:minmax(0,1fr); }
+    .kid-choice .prediction-choice { grid-column:auto; }
+    .ab-results { gap:7px; }
+    .kid-result-card { padding:9px 8px; }
+    .result-stats { grid-template-columns:minmax(0,1fr); gap:3px; }
+    .result-stats div { display:flex; justify-content:space-between; gap:5px; }
+    .result-stats dd { margin:0; }
+    .kid-action-strip { grid-template-columns:minmax(0,1.35fr) minmax(92px,.65fr); }
+    .task-fields { grid-template-columns:minmax(0,1fr); }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    *, *::before, *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
+    .story-ball { animation:none; }
+  }
 </style>
 </head>
 <body data-playful-page="games/ramp-and-roll.html">
@@ -55,162 +134,170 @@
 
 <main class="wrap" id="main">
 
-  <header class="lab-head stack">
+  <header class="lab-head">
     <div class="row">
       <span class="pill pill-phys">物理 · 能量与摩擦</span>
       <span class="pill">7–12 岁</span>
       <span class="pill">约 15 分钟</span>
     </div>
-    <h1>球从斜坡滚下来，能量去哪了？</h1>
-    <p class="lead">这在教什么：<b>能量不会消失，只会换形式</b>。高处的势能变成滚动的动能，摩擦又把动能变成热。三根柱子加起来永远是同一个数。</p>
   </header>
 
-  <section class="card playful-story" aria-labelledby="rampStoryTitle">
+  <section class="card ramp-kid-shell" aria-labelledby="rampStoryTitle">
     <div data-playful-companion></div>
-    <div class="playful-story-head">
-      <div><h2 id="rampStoryTitle">山坡试车场：测试新轮胎</h2><p>你是试车工程师。每次只换一项条件，让两轮测试公平可比，再把结果保存成实验卡交给设计组。</p></div>
-      <span data-playful-sticker></span>
+    <div class="hero-top">
+      <div>
+        <p class="story-eyebrow">斜坡 A/B 试车</p>
+        <h1 id="rampStoryTitle">哪一条斜坡滚得更远？</h1>
+        <p>先做 A，再只改一项做 B。</p>
+      </div>
+      <div class="story-track" aria-hidden="true"><span>⛰️</span><span class="story-ball">🔵</span><span class="story-flag">🚩</span></div>
     </div>
-    <div class="playful-story-actions">
-      <button class="btn btn-sm" id="rampSurpriseBtn" type="button" data-playful-random-task="#rampSurprise">抽取试车惊喜任务</button>
-      <p id="rampSurprise" data-playful-task-output>测试跑道已清空，抽一项额外试车要求吧。</p>
-    </div>
-    <p id="rampPlayfulFeedback" data-playful-feedback></p>
-  </section>
 
-  <section class="task" aria-labelledby="rampTaskTitle">
-    <h2 class="task-title" id="rampTaskTitle">任务：做一次公平的斜坡实验</h2>
-    <ol>
-      <li><b>预测：</b>用“预测停止位置”放好旗子，说出球会停在哪里。</li>
-      <li><b>操作：</b>完成第一轮后，只改变角度、高度、摩擦或质量中的一项，再预测并运行第二轮。</li>
-      <li><b>结果：</b>比较两轮实际停止位置和预测误差，确认其余条件相同。</li>
-      <li><b>反思：</b>写下改变的变量怎样影响结果，再保存完成证据。</li>
+    <ol class="kid-story-steps" aria-label="三步试车">
+      <li><b>1</b><span>插旗猜距离</span></li>
+      <li><b>2</b><span>放球完成 A</span></li>
+      <li><b>3</b><span>只改一项做 B</span></li>
     </ol>
-    <div class="task-fields">
-      <div><label for="rampReflection">我的反思</label><textarea class="input" id="rampReflection" rows="2" placeholder="例如：只把质量加倍，停止距离几乎没变，因为质量在等式两边抵消。"></textarea></div>
-      <button class="btn btn-primary" id="rampComplete" type="button" disabled>记录任务完成</button>
+
+    <div class="kid-visual-stage" id="stage" aria-label="山坡试车主舞台">
+      <div class="stage-sign"><b>试车舞台</b><span id="roundLabel">准备 A 轮</span></div>
+      <canvas id="scene" tabindex="0" aria-label="斜坡实验画面：小球从斜坡顶端滚下，滑过地面后停下。点击地面可以移动预测旗。"></canvas>
+      <p id="live" class="sr-only" aria-live="polite"></p>
+      <p class="hint stage-hint">点跑道插旗；空格键可放球或暂停。</p>
     </div>
-    <p class="task-status status" id="rampTaskStatus" role="status" aria-live="polite">尚未完成：需要两轮锁定预测的实验，且两轮只能改变一个变量。</p>
+
+    <div class="kid-action-strip" aria-label="试车操作">
+      <button class="btn btn-primary" id="check" type="button">插旗并放球</button>
+      <button class="btn btn-ghost" id="reset" type="button">重来</button>
+      <button id="go" type="button" hidden>放球出发</button>
+    </div>
+
+    <div class="kid-choice" aria-label="斜坡与预测设置">
+      <div class="ctrl">
+        <div class="ctrl-head"><label for="hgt">高度</label><b id="hgtOut">1.20 m</b></div>
+        <input class="input" type="range" id="hgt" min="0.3" max="2.5" step="0.05" value="1.2">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-head"><label for="ang">角度</label><b id="angOut">30°</b></div>
+        <input class="input" type="range" id="ang" min="5" max="45" step="1" value="30">
+      </div>
+      <div class="ctrl prediction-choice">
+        <div class="ctrl-head"><label for="pred">猜停止点</label><b id="predOut">1.50 m</b></div>
+        <input class="input" type="range" id="pred" min="0" max="6" step="0.05" value="1.5">
+      </div>
+    </div>
+
+    <div class="ab-results" aria-label="A 与 B 两轮视觉结果">
+      <article class="kid-result-card" id="abCardA" data-state="waiting">
+        <div class="result-head"><span class="result-letter">A</span><strong id="abStatusA">等待试车</strong></div>
+        <dl class="result-stats">
+          <div><dt>高度</dt><dd id="abHeightA">—</dd></div>
+          <div><dt>角度</dt><dd id="abAngleA">—</dd></div>
+          <div><dt>停止</dt><dd id="abDistanceA">—</dd></div>
+        </dl>
+        <div class="distance-track" aria-hidden="true"><i class="distance-fill" id="abFillA"></i><i class="distance-marker" id="abMarkerA"></i></div>
+      </article>
+      <article class="kid-result-card" id="abCardB" data-state="waiting">
+        <div class="result-head"><span class="result-letter">B</span><strong id="abStatusB">等待 A 轮</strong></div>
+        <dl class="result-stats">
+          <div><dt>高度</dt><dd id="abHeightB">—</dd></div>
+          <div><dt>角度</dt><dd id="abAngleB">—</dd></div>
+          <div><dt>停止</dt><dd id="abDistanceB">—</dd></div>
+        </dl>
+        <div class="distance-track" aria-hidden="true"><i class="distance-fill" id="abFillB"></i><i class="distance-marker" id="abMarkerB"></i></div>
+      </article>
+    </div>
+    <p class="change-callout"><span>只改变：</span><b id="changedVariable">先完成 A 轮</b></p>
+    <p class="child-status"><span>停止 <b id="actV">—</b></span> · <span>差 <b id="errV" class="mono">—</b></span></p>
+    <p id="fairResult" role="status" aria-live="polite">先锁定预测，完成 A 轮。</p>
+    <p class="task-status status" id="rampTaskStatus" role="status" aria-live="polite">还差两轮公平试车。</p>
+    <div class="finish-row"><button class="btn btn-primary" id="rampComplete" type="button" disabled hidden>记录完成</button></div>
+    <p id="rampPlayfulFeedback" data-playful-feedback></p>
+    <span data-playful-sticker></span>
   </section>
 
-  <div class="lab">
-    <div class="lab-stage" id="stage">
-      <canvas id="scene"
-        aria-label="斜坡实验画面：小球从斜坡顶端滚下，滑过地面后停下。可以点击地面放置预测旗子。"></canvas>
-      <p id="live" class="sr-only" aria-live="polite"></p>
-      <p class="hint" style="margin:8px 2px 0">在地面上点一下可以放「预测旗」，也可以用下面的滑块。</p>
-    </div>
+  <details class="parent-deep-dive" data-audience="parent">
+    <summary>家长区：学习目标、陪伴追问、科学原理与作品</summary>
 
-    <div>
-      <div class="panel">
-        <h3>斜坡设置</h3>
+    <section class="card" aria-labelledby="rampParentGoal">
+      <h2 id="rampParentGoal" style="font-size:1.15rem">学习目标</h2>
+      <p>完成两轮公平 A/B 试车，只改变高度、角度、跑道或球重中的一项，并用两张结果卡比较斜坡条件与停止距离。</p>
+    </section>
 
+    <div class="parent-grid">
+      <section class="panel" aria-labelledby="moreControlsTitle">
+        <h2 id="moreControlsTitle" style="font-size:1.15rem">详细设置</h2>
         <div class="ctrl">
-          <div class="ctrl-head"><label for="ang">斜坡角度 θ</label><b id="angOut">30°</b></div>
-          <input class="input" type="range" id="ang" min="5" max="45" step="1" value="30">
-        </div>
-
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="hgt">起点高度 h</label><b id="hgtOut">1.20 m</b></div>
-          <input class="input" type="range" id="hgt" min="0.3" max="2.5" step="0.05" value="1.2">
-        </div>
-
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="mu">摩擦系数 μ</label><b id="muOut">0.10</b></div>
-          <input class="input" type="range" id="mu" min="0" max="0.5" step="0.01" value="0.1"
-                 aria-describedby="muHint">
-          <div class="hint" id="muHint">冰 0.02 · 木板 0.15 · 地毯 0.35</div>
+          <div class="ctrl-head"><label for="mu">跑道摩擦</label><b id="muOut">0.10</b></div>
+          <input class="input" type="range" id="mu" min="0" max="0.5" step="0.01" value="0.1" aria-describedby="muHint">
+          <div class="hint" id="muHint">冰面 0.02 · 木板 0.15 · 地毯 0.35</div>
           <div class="seg" style="margin-top:8px" role="group" aria-label="常见表面">
             <button class="chip btn-sm" type="button" data-mu="0.02" aria-pressed="false">冰面</button>
             <button class="chip btn-sm" type="button" data-mu="0.15" aria-pressed="false">木板</button>
             <button class="chip btn-sm" type="button" data-mu="0.35" aria-pressed="false">地毯</button>
           </div>
         </div>
-
         <div class="ctrl">
-          <div class="ctrl-head"><label for="mass">球的质量 m</label><b id="massOut">0.50 kg</b></div>
+          <div class="ctrl-head"><label for="mass">球的质量</label><b id="massOut">0.50 kg</b></div>
           <input class="input" type="range" id="mass" min="0.1" max="3" step="0.05" value="0.5">
         </div>
-
         <div class="ctrl">
-          <div class="ctrl-head"><label for="ts">慢动作</label><b id="tsOut">1.00×</b></div>
+          <div class="ctrl-head"><label for="ts">播放速度</label><b id="tsOut">1.00×</b></div>
           <input class="input" type="range" id="ts" min="0.15" max="1" step="0.05" value="1">
         </div>
+      </section>
 
-        <div class="row">
-          <button class="btn btn-primary" id="go" type="button">放手</button>
-          <button class="btn btn-ghost btn-sm" id="reset" type="button">重置</button>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h3>能量柱（单位：焦耳 J）</h3>
-
-        <div class="ebar">
-          <div class="ebar-top"><span><i class="sw" style="background:var(--phys)"></i>势能 PE</span><span class="val" id="peV">5.89 J</span></div>
-          <div class="ebar-track"><i id="peB" style="background:var(--phys)"></i></div>
-        </div>
-        <div class="ebar">
-          <div class="ebar-top"><span><i class="sw" style="background:var(--math)"></i>动能 KE</span><span class="val" id="keV">0.00 J</span></div>
-          <div class="ebar-track"><i id="keB" style="background:var(--math)"></i></div>
-        </div>
-        <div class="ebar">
-          <div class="ebar-top"><span><i class="sw" style="background:var(--code)"></i>摩擦生热 Q</span><span class="val" id="qV">0.00 J</span></div>
-          <div class="ebar-track"><i id="qB" style="background:var(--code)"></i></div>
-        </div>
-
-        <div class="readout"><span>三者之和</span><b id="sumV">5.89 J</b></div>
-        <div class="readout"><span>速度 v</span><b id="vV">0.00 m/s</b></div>
-        <div class="readout"><span>已滑行</span><b id="dV">0.00 m</b></div>
-      </div>
-
-      <div class="panel">
-        <h3>挑战：猜它停在哪</h3>
-        <div class="ctrl">
-          <div class="ctrl-head"><label for="pred">预测停止位置（离坡底）</label><b id="predOut">1.50 m</b></div>
-          <input class="input" type="range" id="pred" min="0" max="6" step="0.05" value="1.5">
-        </div>
-        <div class="row">
-          <button class="btn" id="check" type="button">锁定预测并开跑</button>
-        </div>
-        <div class="readout" style="margin-top:8px"><span>实际停止</span><b id="actV">—</b></div>
-        <div class="readout"><span>预测误差</span><b id="errV" class="mono">—</b></div>
-        <h4 style="margin:14px 0 6px">公平实验比较</h4>
-        <p class="hint" id="fairResult" role="status" aria-live="polite">完成两轮“锁定预测并开跑”，这里会检查是否只改变一个变量。</p>
-        <form class="work-card fair-card" id="rampFairCardForm" data-playful-work-form>
-          <input type="hidden" name="type" value="observation">
-          <label for="rampFairCardTitle">公平实验卡名称</label>
-          <input class="input" id="rampFairCardTitle" name="title" value="斜坡试车场公平实验卡" maxlength="80" required>
-          <label for="rampFairCardContent">两轮条件与结果快照</label>
-          <textarea class="input" id="rampFairCardContent" name="content" rows="6" readonly>完成一组公平比较后，这里会生成实验快照。</textarea>
-          <button class="btn btn-primary btn-sm" id="rampFairCardSave" type="submit" disabled>保存公平实验卡</button>
-          <p class="hint" data-playful-work-status role="status" aria-live="polite"></p>
-        </form>
-      </div>
+      <section class="panel" aria-labelledby="energyTitle">
+        <h2 id="energyTitle" style="font-size:1.15rem">详细能量读数（J）</h2>
+        <div class="ebar"><div class="ebar-top"><span><i class="sw" style="background:var(--phys)"></i>势能 PE</span><span class="val" id="peV">5.89 J</span></div><div class="ebar-track"><i id="peB" style="background:var(--phys)"></i></div></div>
+        <div class="ebar"><div class="ebar-top"><span><i class="sw" style="background:var(--math)"></i>动能 KE</span><span class="val" id="keV">0.00 J</span></div><div class="ebar-track"><i id="keB" style="background:var(--math)"></i></div></div>
+        <div class="ebar"><div class="ebar-top"><span><i class="sw" style="background:var(--code)"></i>摩擦热 Q</span><span class="val" id="qV">0.00 J</span></div><div class="ebar-track"><i id="qB" style="background:var(--code)"></i></div></div>
+        <div class="readout"><span>总能量</span><b id="sumV">5.89 J</b></div>
+        <div class="readout"><span>速度</span><b id="vV">0.00 m/s</b></div>
+        <div class="readout"><span>总路程</span><b id="dV">0.00 m</b></div>
+      </section>
     </div>
-  </div>
 
-  <div class="grid-2" style="margin-top:22px">
-    <section class="card">
-      <h2 style="font-size:1.15rem">给家长的提问脚本</h2>
-      <ol class="qlist">
-        <li><b>预测：</b>「把球换成两倍重，它会滚得更远吗？」（先猜，再把质量滑块拉到 2 倍。答案是滑行距离不变 —— 重的球动能更多，摩擦力也更大，正好抵消）</li>
-        <li><b>观察：</b>「摩擦那根橙色柱子一直在长，紫色和蓝色柱子在缩。它们的总和有变过吗？」（引导孩子发现能量守恒）</li>
-        <li><b>推理：</b>「同样的高度，把坡变陡一点，球到坡底会更快吗？」（会稍快一点，因为陡坡更短、摩擦作用的路程更少；如果完全没有摩擦，就一样快）</li>
+    <section class="task parent-deep-dive" data-audience="parent" aria-labelledby="rampTaskTitle">
+      <h2 class="task-title" id="rampTaskTitle">陪伴追问</h2>
+      <ol>
+        <li>让孩子先锁定预测并完成 A 轮。</li>
+        <li>提醒孩子在高度、角度、摩擦或质量中只改变一项，再锁定预测完成 B 轮。</li>
+        <li>追问：「改变的条件怎样影响停止距离？」文字反思可选，不影响完成。</li>
       </ol>
-      <p class="hint" style="margin-top:10px">玩法建议：让孩子先在纸上写下预测的距离，再用滑块锁定，比「随手拖一下」学得多。</p>
+      <div class="task-fields">
+        <div><label for="rampReflection">可选反思</label><textarea class="input" id="rampReflection" rows="2" placeholder="例如：只增加高度，小球停得更远。"></textarea></div>
+        <button class="btn" id="rampSurpriseBtn" type="button" data-playful-random-task="#rampSurprise">抽一个追问</button>
+      </div>
+      <p id="rampSurprise" data-playful-task-output>可选：抽一张家长追问卡。</p>
     </section>
 
-    <section class="card">
-      <h2 style="font-size:1.15rem">背后的原理</h2>
-      <p><b>能量守恒。</b>球在高处时拥有重力势能 <code>PE = m·g·h</code>。往下滚时高度减少，势能变成动能 <code>KE = ½·m·v²</code>。同时接触面的摩擦力做负功，把一部分能量变成热 <code>Q = μ·m·g·cosθ·d</code>。任何时刻：<code>PE + KE + Q = m·g·h</code>，也就是一开始的总能量。</p>
-      <h3>为什么质量不影响滑行距离</h3>
-      <p>到坡底时 <code>½mv² = mgh − Q</code>，两边都带 <code>m</code>。在平地上继续滑，停止距离 <code>d = v² / (2·μ·g)</code> —— 式子里根本没有 <code>m</code>。这是个很反直觉但可以亲手验证的结论。</p>
-      <h3>斜坡是「省力」的机器</h3>
-      <p>把重物抬到高 <code>h</code> 需要的能量是固定的，但沿着长长的斜坡推上去，每一步用的<b>力</b>更小（<code>F = m·g·sinθ</code>）。力小、路长，能量不变 —— 这就是杠杆、螺丝、山路盘旋的共同道理。</p>
-      <p class="hint">本模拟说明：为了让能量柱一目了然，把滚动摩擦和滑动摩擦合并成一个系数 μ，并且没有单独区分小球的转动动能（真实的实心球有 2/7 的动能藏在自转里）。角度太小时（<code>tanθ ≤ μ</code>）球会静止不动，这也是真实现象。</p>
+    <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="rampWorkTitle">
+      <h2 id="rampWorkTitle">作品表单</h2>
+      <p>公平比较通过后，自动快照可以保存为作品卡。</p>
+      <form class="work-card fair-card" id="rampFairCardForm" data-playful-work-form>
+        <input type="hidden" name="type" value="observation">
+        <label for="rampFairCardTitle">作品名</label>
+        <input class="input" id="rampFairCardTitle" name="title" value="斜坡试车场公平实验卡" maxlength="80" required>
+        <label for="rampFairCardContent">自动证据</label>
+        <textarea class="input" id="rampFairCardContent" name="content" rows="6" readonly>完成一组公平比较后，这里会生成实验快照。</textarea>
+        <button class="btn btn-primary btn-sm" id="rampFairCardSave" type="submit" disabled>保存作品卡</button>
+        <p class="hint" data-playful-work-status role="status" aria-live="polite"></p>
+      </form>
     </section>
-  </div>
+
+    <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="teachTitle">
+      <h2 id="teachTitle">科学原理</h2>
+      <p><b>能量守恒。</b>球在高处拥有重力势能 <code>PE = m·g·h</code>；下滚时变成动能 <code>KE = ½·m·v²</code>，摩擦做功变成热 <code>Q = μ·m·g·cosθ·d</code>。理想模型中 <code>PE + KE + Q = m·g·h</code>。</p>
+      <h3>为什么质量不影响滑行距离</h3>
+      <p>坡底满足 <code>½mv² = mgh − Q</code>，平地停止距离 <code>d = v² / (2·μ·g)</code>，质量会约去。角度太小时（<code>tanθ ≤ μ</code>），球会被静摩擦锁住。</p>
+      <ol class="qlist">
+        <li><b>预测：</b>质量加倍，停止距离会变吗？</li>
+        <li><b>观察：</b>势能、动能和摩擦热怎样交换？</li>
+        <li><b>推理：</b>同高度时，改变角度为何仍可能改变坡底速度？</li>
+      </ol>
+    </section>
+  </details>
 
   <footer class="foot wrap" style="padding-left:0;padding-right:0">
     少儿数理启蒙 · 互动实验 — 斜坡与能量。所有计算在你的浏览器里完成，不联网。
@@ -266,7 +353,7 @@
     S.phase = 'ready'; S.s = 0; S.d = 0; S.v = 0; S.t = 0; S.heat = 0; S.spin = 0;
     S.stopAt = null;
     if (!keepPred) S.predLocked = false;
-    btnGo.textContent = '放手';
+    btnGo.textContent = '放球出发';
     actV.textContent = '—';
     if (!keepPred) { errV.textContent = '—'; }
   }
@@ -330,9 +417,11 @@
     running = false;
     btnGo.textContent = '再来一次';
     if (stuckOnRamp) {
-      actV.textContent = '没动（坡太平）';
-      announce('斜坡太平缓，摩擦力大于下滑力，球没有动。');
-      toast('球不动 —— μ 比 tanθ 还大');
+      S.predLocked = false;
+      actV.textContent = '没动';
+      announce('斜坡太平缓，摩擦力大于下滑力，球没有动；这一轮不会记录。');
+      toast('球没滚动，请把坡调陡或减小摩擦');
+      updateABDisplay();
       return;
     }
     actV.textContent = (hitWall ? '≥ ' : '') + S.d.toFixed(2) + ' m';
@@ -348,6 +437,7 @@
       S.predLocked = false;
     } else {
       announce('球停在离坡底 ' + S.d.toFixed(2) + ' 米。');
+      updateABDisplay();
     }
     if (hitWall) toast('冲到跑道尽头了，把摩擦调大一点');
   }
@@ -550,43 +640,106 @@
   var rampReflection = document.getElementById('rampReflection');
   var rampComplete = document.getElementById('rampComplete');
   var rampTaskStatus = document.getElementById('rampTaskStatus');
-  var fairPassed = false, fairChanged = '';
-  var VAR_LABELS = { ang: '斜坡角度', h: '起点高度', mu: '摩擦系数', m: '球的质量' };
+  var fairPassed = false, fairChanged = '', progressSaved = false;
+  var VAR_LABELS = { ang: '角度', h: '高度', mu: '跑道', m: '球重' };
+  var roundLabel = document.getElementById('roundLabel');
+  var changedVariable = document.getElementById('changedVariable');
+  var checkButton = document.getElementById('check');
+  var abCards = [document.getElementById('abCardA'), document.getElementById('abCardB')];
+  var abStatuses = [document.getElementById('abStatusA'), document.getElementById('abStatusB')];
+  var abHeights = [document.getElementById('abHeightA'), document.getElementById('abHeightB')];
+  var abAngles = [document.getElementById('abAngleA'), document.getElementById('abAngleB')];
+  var abDistances = [document.getElementById('abDistanceA'), document.getElementById('abDistanceB')];
+  var abFills = [document.getElementById('abFillA'), document.getElementById('abFillB')];
+  var abMarkers = [document.getElementById('abMarkerA'), document.getElementById('abMarkerB')];
 
+  function changedKeysFromA() {
+    if (!S.trials.length) return [];
+    var first = S.trials[0];
+    return ['ang', 'h', 'mu', 'm'].filter(function (key) { return Math.abs(first[key] - S[key]) > 0.0001; });
+  }
+  function paintTrial(index, trial) {
+    if (!trial) return;
+    abCards[index].dataset.state = 'done';
+    abStatuses[index].textContent = '已完成';
+    abHeights[index].textContent = trial.h.toFixed(2) + 'm';
+    abAngles[index].textContent = trial.ang.toFixed(0) + '°';
+    abDistances[index].textContent = (trial.hitWall ? '≥' : '') + trial.actual.toFixed(2) + 'm';
+    abFills[index].style.width = Math.min(100, trial.actual / RUNWAY * 100).toFixed(1) + '%';
+    abMarkers[index].style.left = Math.min(100, trial.pred / RUNWAY * 100).toFixed(1) + '%';
+  }
+  function clearTrialCard(index, status) {
+    abCards[index].dataset.state = 'waiting';
+    abStatuses[index].textContent = status;
+    abHeights[index].textContent = '—';
+    abAngles[index].textContent = '—';
+    abDistances[index].textContent = '—';
+    abFills[index].style.width = '0';
+    abMarkers[index].style.left = '0';
+  }
+  function updateABDisplay() {
+    clearTrialCard(0, '等待试车');
+    clearTrialCard(1, S.trials.length ? '只改一项' : '等待 A 轮');
+    paintTrial(0, S.trials[0]);
+    paintTrial(1, S.trials[1]);
+    var changed = changedKeysFromA();
+    if (!S.trials.length) {
+      roundLabel.textContent = running ? 'A 轮试车中' : '准备 A 轮';
+      changedVariable.textContent = '先完成 A 轮';
+      checkButton.textContent = running ? '试车中…' : '插旗并放球';
+    } else if (!S.trials[1]) {
+      roundLabel.textContent = running ? 'B 轮试车中' : (changed.length === 1 ? '可以开始 B 轮' : '准备 B 轮');
+      changedVariable.textContent = changed.length ? changed.map(function (key) { return VAR_LABELS[key]; }).join('、') : '请改一项';
+      checkButton.textContent = running ? '试车中…' : '插旗并放球';
+    } else {
+      roundLabel.textContent = fairPassed ? 'A/B 完成' : '需要重来';
+      changedVariable.textContent = fairPassed ? fairChanged : '不符合一项';
+      checkButton.textContent = fairPassed ? (progressSaved ? '已记录完成' : '记录完成') : '重来再试';
+    }
+    checkButton.disabled = running || progressSaved || (S.trials.length >= 2 && !fairPassed);
+  }
   function recordFairTrial(err, hitWall) {
-    S.trials.push({ ang: S.ang, h: S.h, mu: S.mu, m: S.m, pred: S.pred, actual: S.d, err: err, hitWall: !!hitWall });
-    if (S.trials.length > 2) S.trials.shift();
+    if (S.trials.length >= 2 || !S.predLocked) return;
+    S.trials.push({ ang: S.ang, h: S.h, mu: S.mu, m: S.m, pred: S.pred, actual: S.d, err: err, hitWall: !!hitWall, locked: true });
     checkFairPair();
   }
   function checkFairPair() {
     fairPassed = false; fairChanged = '';
     if (S.trials.length < 2) {
-      fairResult.textContent = '已记录第 1 轮；现在只改变一个变量，再做第 2 轮。';
+      fairResult.textContent = 'A 已完成。只改变高度、角度、跑道或球重中的一项，再锁定 B 的预测。';
     } else {
       var a = S.trials[0], b = S.trials[1];
       var changed = ['ang', 'h', 'mu', 'm'].filter(function (key) { return Math.abs(a[key] - b[key]) > 0.0001; });
       if (changed.length === 1) {
         fairPassed = true; fairChanged = VAR_LABELS[changed[0]];
-        fairResult.textContent = '公平比较通过：只改变了' + fairChanged + '；实际停止从 ' + a.actual.toFixed(2) + ' m 变为 ' + b.actual.toFixed(2) + ' m，预测误差分别为 ' + a.err.toFixed(2) + ' m 和 ' + b.err.toFixed(2) + ' m。';
+        fairResult.textContent = '公平通过：只改变了' + fairChanged + '。';
       } else {
-        fairResult.textContent = changed.length ? '还不是公平实验：两轮改变了 ' + changed.map(function (key) { return VAR_LABELS[key]; }).join('、') + '。请保留第二轮作为新基准，再只改一项。' : '两轮条件完全相同。请只改变一个变量后再做一轮。';
+        fairResult.textContent = changed.length ? '这次改变了' + changed.length + '项，请点“重来”再做。' : 'A、B 完全相同，请点“重来”后只改变一项。';
       }
     }
     updateRampTask();
+    updateABDisplay();
   }
   function trialSnapshot(trial, number) {
     return '第' + number + '轮：角度 ' + trial.ang.toFixed(0) + '°，高度 ' + trial.h.toFixed(2) + 'm，摩擦 ' + trial.mu.toFixed(2) + '，质量 ' + trial.m.toFixed(2) + 'kg；预测 ' + trial.pred.toFixed(2) + 'm，实际 ' + trial.actual.toFixed(2) + 'm，误差 ' + trial.err.toFixed(2) + 'm。';
   }
+  function evidenceText() {
+    var a = S.trials[0], b = S.trials[1];
+    return '公平变量：' + fairChanged + '；A 高' + a.h.toFixed(2) + 'm/角' + a.ang.toFixed(0) + '°/停' + a.actual.toFixed(2) + 'm；B 高' + b.h.toFixed(2) + 'm/角' + b.ang.toFixed(0) + '°/停' + b.actual.toFixed(2) + 'm。';
+  }
   function updateRampTask() {
-    var reflected = rampReflection.value.trim().length >= 8;
-    rampComplete.disabled = !(fairPassed && reflected);
-    rampFairCardSave.disabled = !fairPassed;
-    if (fairPassed) {
-      rampFairCardContent.value = '公平变量：只改变' + fairChanged + '。\n' + trialSnapshot(S.trials[0], 1) + '\n' + trialSnapshot(S.trials[1], 2);
+    var canComplete = fairPassed && S.trials.length === 2;
+    rampComplete.disabled = !canComplete || progressSaved;
+    rampComplete.hidden = true;
+    rampComplete.textContent = progressSaved ? '已记录完成' : '记录完成';
+    rampFairCardSave.disabled = !canComplete;
+    if (canComplete) {
+      rampFairCardContent.value = evidenceText() + '\n' + trialSnapshot(S.trials[0], 1) + '\n' + trialSnapshot(S.trials[1], 2) + (rampReflection.value.trim() ? '\n可选反思：' + rampReflection.value.trim() : '');
+      rampTaskStatus.textContent = progressSaved ? '已记录完成。' : '两轮公平试车完成，可以记录了！';
     } else {
       rampFairCardContent.value = '完成一组公平比较后，这里会生成实验快照。';
+      rampTaskStatus.textContent = S.trials.length ? 'A 已完成：B 轮必须只改一项。' : '还差两轮公平试车。';
     }
-    rampTaskStatus.textContent = !fairPassed ? '尚未完成：需要两轮锁定预测，且两轮只能改变一个变量。' : (reflected ? '公平比较与反思证据已齐，可以记录完成。' : '公平比较已通过；请写至少 8 个字反思结果。');
   }
 
   function refresh() {
@@ -635,11 +788,11 @@
 
   rampReflection.addEventListener('input', updateRampTask);
   rampComplete.addEventListener('click', function () {
-    if (rampComplete.disabled || !window.Progress) return;
-    var a = S.trials[0], b = S.trials[1];
-    var evidence = '公平变量：' + fairChanged + '；实际停止 ' + a.actual.toFixed(2) + 'm → ' + b.actual.toFixed(2) + 'm；反思：' + rampReflection.value.trim();
+    if (rampComplete.disabled || progressSaved || !fairPassed || S.trials.length !== 2 || !window.Progress) return;
+    var evidence = evidenceText();
     if (Progress.complete("games/ramp-and-roll.html", evidence)) {
-      rampTaskStatus.textContent = '已完成并保存证据：' + evidence;
+      progressSaved = true;
+      updateRampTask();
       announce('公平斜坡实验已完成并保存在本机。');
     }
   });
@@ -649,14 +802,25 @@
     if (S.phase === 'stopped') reset(true);
     if (S.phase === 'ready') { S.phase = 'ramp'; }
     running = true;
+    predEl.disabled = true;
     btnGo.textContent = '暂停';
+    updateABDisplay();
   }
   btnGo.addEventListener('click', function () {
-    if (running) { running = false; btnGo.textContent = '继续'; return; }
+    if (running) { running = false; btnGo.textContent = '继续'; updateABDisplay(); return; }
     start();
   });
   document.getElementById('reset').addEventListener('click', function () {
-    running = false; reset(false);
+    running = false;
+    S.trials = [];
+    fairPassed = false;
+    fairChanged = '';
+    progressSaved = false;
+    reset(false);
+    fairResult.textContent = '先锁定预测，完成 A 轮。';
+    updateRampTask();
+    updateABDisplay();
+    announce('已清空 A/B 试车，重新开始 A 轮。');
   });
 
   function bindRange(id, outId, fmt, apply) {
@@ -706,14 +870,34 @@
     predOut.textContent = S.pred.toFixed(2) + ' m';
     if (!silent) announce('预测位置 ' + S.pred.toFixed(2) + ' 米');
   }
-  predEl.addEventListener('input', function () { setPred(parseFloat(predEl.value) || 0, true); });
-  document.getElementById('check').addEventListener('click', function () {
+  predEl.addEventListener('input', function () {
+    if (running || S.predLocked) { predEl.value = String(S.pred); return; }
+    setPred(parseFloat(predEl.value) || 0, true);
+  });
+  checkButton.addEventListener('click', function () {
+    if (running || progressSaved) return;
+    if (fairPassed && S.trials.length === 2) {
+      rampComplete.click();
+      return;
+    }
+    if (S.trials.length >= 2) return;
+    if (S.trials.length === 1) {
+      var changed = changedKeysFromA();
+      if (changed.length !== 1) {
+        fairResult.textContent = changed.length === 0 ? '先只改变一项，再做 B 轮。' : '现在改了' + changed.length + '项，请调回到只改一项。';
+        changedVariable.textContent = changed.length ? changed.map(function (key) { return VAR_LABELS[key]; }).join('、') : '请改一项';
+        toast('B 轮必须只改变一项');
+        announce(fairResult.textContent);
+        return;
+      }
+    }
+    running = false;
+    reset(true);
     S.predLocked = true;
-    running = false; reset(true); S.predLocked = true;
     errV.textContent = '…';
     errV.style.color = C.mid;
     start();
-    announce('预测已锁定在 ' + S.pred.toFixed(2) + ' 米，开始运行。');
+    announce((S.trials.length ? 'B' : 'A') + ' 轮预测已锁定在 ' + S.pred.toFixed(2) + ' 米，开始运行。');
   });
 
   // 点击地面放旗
@@ -733,7 +917,9 @@
 
   document.addEventListener('keydown', function (e) {
     if (e.code === 'Space' && !/INPUT|BUTTON|SELECT|TEXTAREA/.test(e.target.tagName)) {
-      e.preventDefault(); btnGo.click();
+      e.preventDefault();
+      if (running) btnGo.click();
+      else checkButton.click();
     }
   });
 
@@ -747,10 +933,10 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js"></script>
-<script src="../data/playful.js"></script>
-<script src="../assets/js/playful.js"></script>
+<script src="../assets/js/progress.js?v=13"></script>
+<script src="../data/playful.js?v=13"></script>
+<script src="../assets/js/playful.js?v=13"></script>
 <script>if (window.Progress) Progress.visit("games/ramp-and-roll.html", "斜坡滚球");</script>
-<script src="../assets/js/pwa.js"></script>
+<script src="../assets/js/pwa.js?v=13"></script>
 </body>
 </html>

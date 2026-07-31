@@ -5,38 +5,198 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>造波机 · 振幅、频率与干涉 | 少儿数理启蒙</title>
 <meta name="description" content="调两列波的振幅、频率、波长，看它们相加的样子；再用双点源水波槽看干涉条纹。给 7–12 岁小朋友的波动启蒙。" />
-<link rel="stylesheet" href="../assets/css/base.css">
-<link rel="stylesheet" href="../assets/css/kid.css">
+<link rel="stylesheet" href="../assets/css/base.css?v=13">
+<link rel="stylesheet" href="../assets/css/kid.css?v=13">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
-  .lab-head { margin: 24px 0 18px; }
-  .lab-head p.lead { font-size: 1.02rem; max-width: 62ch; }
-  .hint { font-size: .78rem; color: var(--ink-dim); margin-top: 4px; }
-  .mono { font-family: var(--mono); }
-  .qlist { margin: 0; padding-left: 1.15em; color: var(--ink-mid); font-size: .94rem; }
-  .qlist li { margin-bottom: .5em; }
-  .qlist b { color: var(--ink); }
-  .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: .78rem; color: var(--ink-mid); }
-  .legend i { width: 12px; height: 3px; border-radius: 2px; display: inline-block; margin-right: 5px; vertical-align: 3px; }
-  .legend i.sq { height: 11px; border-radius: 3px; vertical-align: -1px; border: 1px solid rgba(255,255,255,.2); }
-  .modehide { display: none; }
-  .wsrc { border: 1px solid var(--line-soft); border-radius: var(--r-sm); padding: 10px 11px 2px; margin-bottom: 12px; }
-  .wsrc > h4 { margin: 0 0 9px; font-size: .84rem; letter-spacing: .01em; }
-  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: 0; }
-  .seg { display: flex; gap: 8px; flex-wrap: wrap; }
-  .task-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto; gap:10px; align-items:end; }
+  :root { --sea-foam:#dff8f4; --sea-sky:#dff1ff; --sea-blue:#156c87; --boat-wood:#bd744b; }
+  html, body { overflow-x:clip; }
+  #main, #main > *, .lab, .lab > *, .panel, .wsrc, .ctrl, .task-fields > *, .voyage-log > div > * { min-width:0; }
+  #main { padding-top:22px; }
+  .hint { font-size:.8rem; color:var(--ink-dim); margin-top:4px; }
+  .mono { font-family:var(--mono); }
+  .qlist { margin:0; padding-left:1.15em; color:var(--ink-mid); font-size:.94rem; }
+  .qlist li { margin-bottom:.55em; }
+  .qlist b { color:var(--ink); }
+  .legend { display:flex; gap:12px; flex-wrap:wrap; font-size:.78rem; color:var(--ink-mid); }
+  .legend i { width:12px; height:3px; border-radius:2px; display:inline-block; margin-right:5px; vertical-align:3px; }
+  .legend i.sq { height:11px; border-radius:3px; vertical-align:-1px; border:1px solid rgba(255,255,255,.2); }
+  .modehide { display:none; }
+  .seg { display:flex; gap:8px; flex-wrap:wrap; }
+  .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px; }
+  button, .btn, .chip, .input, input[type="range"] { min-height:44px; }
+  input[type="range"] { width:100%; touch-action:pan-y; }
+
+  .voyage-hero { position:relative; overflow:hidden; display:grid; grid-template-columns:minmax(0,1fr) minmax(180px,280px); gap:18px; align-items:center; margin-bottom:14px; padding:clamp(18px,4vw,34px); border-color:rgba(79,196,214,.38); background:linear-gradient(145deg,rgba(19,85,111,.28),rgba(38,42,89,.52)); }
+  .voyage-hero::before, .voyage-hero::after { content:""; position:absolute; border-radius:50%; border:2px solid rgba(152,235,238,.23); pointer-events:none; }
+  .voyage-hero::before { width:34px; height:34px; right:31%; top:14px; box-shadow:28px 37px 0 -9px rgba(152,235,238,.2),-24px 64px 0 -5px rgba(152,235,238,.16); }
+  .voyage-hero::after { width:16px; height:16px; left:18px; bottom:22px; box-shadow:19px -27px 0 5px rgba(152,235,238,.12); }
+  .hero-copy { position:relative; z-index:1; min-width:0; }
+  .hero-copy .row { margin-bottom:12px; }
+  .hero-copy h1 { margin:0 0 8px; font-size:clamp(1.8rem,5vw,3rem); line-height:1.08; }
+  .hero-kicker { margin:0 0 6px; color:#79d8e7; font-weight:800; letter-spacing:.06em; }
+  .hero-story { max-width:62ch; margin:0; color:var(--ink-mid); font-size:1.02rem; line-height:1.7; }
+  .hero-boat { position:relative; z-index:1; width:100%; max-width:270px; justify-self:center; filter:drop-shadow(0 14px 12px rgba(0,0,0,.28)); }
+  .playful-story-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  .playful-story-actions p { margin:0; flex:1 1 220px; color:var(--ink-mid); min-height:1.5em; }
+  [data-playful-feedback] { margin:8px 0 0; }
+
+  .simple-goal { display:flex; align-items:center; gap:12px; margin:0 0 14px; padding:14px 16px; border:2px solid rgba(251,191,36,.42); border-radius:18px; background:linear-gradient(90deg,rgba(251,191,36,.13),rgba(74,222,128,.08)); }
+  .goal-icon { flex:0 0 auto; display:grid; place-items:center; width:48px; height:48px; border-radius:50%; background:#fff3bd; font-size:1.55rem; }
+  .simple-goal p { margin:0; font-size:1.05rem; line-height:1.55; }
+  .simple-goal strong { color:#f8d56b; }
+
+  .mode-dock { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:10px; padding:10px 12px; border:1px solid rgba(118,207,220,.28); border-radius:16px 16px 8px 8px; background:linear-gradient(180deg,rgba(26,99,119,.3),rgba(13,38,60,.32)); }
+  .mode-dock p { margin:0; color:var(--ink-mid); font-size:.9rem; }
+  .mode-buttons { display:flex; gap:8px; flex-wrap:wrap; }
+  .mode-buttons .chip[aria-pressed="true"] { border-color:#7ce0e4; box-shadow:0 0 0 2px rgba(124,224,228,.14); }
+
+  .lab-shell { position:relative; margin-bottom:22px; }
+  .ship-rail { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:46px; padding:5px 14px; border:1px solid rgba(135,83,53,.7); border-bottom:4px solid #7e4c35; border-radius:18px 18px 4px 4px; background:linear-gradient(#d39262,#a95f3d); color:#251811; font-weight:900; }
+  .ship-rail span { white-space:nowrap; }
+  .ship-rail .rail-line { flex:1 1 auto; height:5px; min-width:20px; border-radius:999px; background:repeating-linear-gradient(90deg,#633824 0 18px,transparent 18px 26px); opacity:.72; }
+  .lab { display:grid; gap:14px; align-items:start; grid-template-columns:minmax(0,1fr); }
+  .lab-stage { position:relative; overflow:hidden; padding:14px; border:5px solid #916044; border-radius:12px 12px 24px 24px; background:linear-gradient(180deg,#ca895d,#9d5d3c); box-shadow:inset 0 0 0 2px rgba(255,255,255,.11),0 14px 30px rgba(0,0,0,.18); }
+  .lab-stage::before, .lab-stage::after { content:""; position:absolute; z-index:2; top:7px; width:13px; height:13px; border-radius:50%; background:#f2d58b; box-shadow:inset 0 0 0 3px #6c4935; pointer-events:none; }
+  .lab-stage::before { left:7px; }
+  .lab-stage::after { right:7px; }
+  #scene { display:block; width:100%; max-width:100%; border:2px solid #263852; border-radius:8px; background:#0a0e19; box-shadow:0 0 0 4px #6d4938,0 8px 18px rgba(0,0,0,.32); }
+  #scene:focus-visible { outline:4px solid #fbbf24; outline-offset:3px; }
+  .stage-meta { margin-top:12px; justify-content:space-between; }
+  .controls-stack { display:grid; gap:14px; min-width:0; }
+  .ship-water { display:flex; justify-content:space-around; align-items:flex-start; overflow:hidden; min-height:34px; margin-top:-2px; color:#8de6ea; font-size:1.25rem; background:linear-gradient(180deg,rgba(64,168,190,.18),transparent); }
+  .ship-water span:nth-child(even) { padding-top:8px; font-size:.9rem; opacity:.65; }
+  .panel { overflow:hidden; }
+  .panel h3 { display:flex; align-items:center; gap:8px; }
+  .panel h3::before { content:"⚙"; font-size:1rem; }
+  .wsrc { border:1px solid var(--line-soft); border-radius:14px; padding:12px 12px 4px; margin-bottom:12px; }
+  .wsrc-blue { background:linear-gradient(135deg,rgba(110,168,254,.1),transparent 52%); }
+  .wsrc-pink { background:linear-gradient(135deg,rgba(244,114,182,.1),transparent 52%); }
+  .wsrc > h4 { margin:0 0 9px; font-size:.92rem; letter-spacing:.01em; }
+  .ctrl-head { gap:8px; }
+  .ctrl-head label { line-height:1.35; }
   .probe-result { color:var(--ink-mid); line-height:1.55; }
-  .playful-story { display:grid; gap:12px; margin-bottom:18px; }
-  .playful-story-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .playful-story h2 { font-size:1.12rem; margin:0 0 4px; }
-  .playful-story p { margin:0; }
-  .playful-story-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .playful-story [data-playful-task-output] { color:var(--ink-mid); min-height:1.5em; }
-  @media (max-width:760px) { .task-fields { grid-template-columns:1fr; } }
-  @media (prefers-reduced-motion: reduce) { #scene { scroll-behavior:auto; } }
+
+  .discovery-route { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:0 0 22px; }
+  .discovery-card { position:relative; overflow:hidden; min-width:0; padding:16px; border:1px solid var(--line-soft); border-radius:16px; background:linear-gradient(145deg,rgba(35,55,92,.72),rgba(17,27,48,.76)); }
+  .discovery-card::after { position:absolute; right:10px; top:7px; font-size:1.7rem; opacity:.25; }
+  .discovery-card:nth-child(1)::after { content:"💭"; }
+  .discovery-card:nth-child(2)::after { content:"🎛️"; }
+  .discovery-card:nth-child(3)::after { content:"🔎"; }
+  .discovery-card:nth-child(4)::after { content:"🗣️"; }
+  .card-step { display:block; margin-bottom:8px; color:#f8d56b; font:800 .75rem var(--mono); letter-spacing:.08em; }
+  .discovery-card h2 { margin:0 0 6px; padding-right:24px; font-size:1rem; color:#86e3e7; }
+  .discovery-card p { margin:0; color:var(--ink-mid); font-size:.9rem; line-height:1.55; }
+
+  .teaching-card { margin-bottom:18px; padding:18px; border:1px solid var(--line-soft); border-left:5px solid #4ade80; border-radius:var(--r-sm); background:var(--surface); }
+  .teaching-card h2 { margin:0 0 6px; font-size:1.2rem; }
+  .teaching-card p:last-child { margin-bottom:0; color:var(--ink-mid); line-height:1.65; }
+  .section-kicker { margin:0 0 5px; color:#79d8e7; font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+  .formal-task { margin-bottom:18px; }
+  .formal-task .task-title { margin-bottom:8px; }
+  .task-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto; gap:10px; align-items:end; }
+  .voyage-log { margin-top:18px; }
+  .voyage-log > h2::before { content:"📒 "; }
+  .grownup-grid { margin-top:22px; }
+
+  @media (max-width:980px) {
+    .lab { grid-template-columns:1fr; }
+    .discovery-route { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+  @media (max-width:760px) {
+    #main { padding-inline:12px; }
+    .voyage-hero { grid-template-columns:1fr; }
+    .hero-boat { max-width:220px; }
+    .simple-goal { align-items:flex-start; }
+    .task-fields { grid-template-columns:1fr; }
+    .mode-dock { align-items:stretch; }
+    .mode-buttons, .mode-buttons .chip { width:100%; }
+    .ship-rail { font-size:.82rem; }
+  }
+  @media (max-width:520px) {
+    .discovery-route { grid-template-columns:1fr; }
+    .lab-stage { padding:10px; border-width:4px; }
+    .stage-meta { align-items:flex-start; }
+    .legend { width:100%; }
+    .seg > button, .seg > .chip { flex:1 1 100%; }
+    .goal-icon { width:44px; height:44px; }
+  }
+  /* 儿童 A/B 首屏：先看舞台，再做两个真实实验。 */
+  .wave-story-intro { padding:16px 20px; grid-template-columns:minmax(0,1fr) 150px; }
+  .wave-story-intro .hero-story { max-width:52ch; line-height:1.5; }
+  .wave-canvas-stage.kid-visual-stage { display:grid; gap:12px; min-width:0; }
+  .kid-action-strip { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .kid-choice { position:relative; min-height:72px; padding:10px 12px; border:3px solid currentColor; border-radius:16px; font:900 clamp(.94rem,3vw,1.08rem)/1.25 var(--font); cursor:pointer; overflow:hidden; }
+  .kid-choice::after { display:block; margin-top:4px; font:800 .78rem/1.2 var(--font); opacity:.9; }
+  .kid-choice-enhance { color:#1c1300; background:#ffd84d; box-shadow:inset 0 -7px 0 rgba(135,78,0,.18); }
+  .kid-choice-enhance::before { content:"↑ ↑"; margin-right:7px; letter-spacing:.06em; }
+  .kid-choice-enhance::after { content:"两座波峰叠在一起"; }
+  .kid-choice-cancel { color:#06192b; background:#7ee7ff; box-shadow:inset 0 -7px 0 rgba(0,72,112,.18); }
+  .kid-choice-cancel::before { content:"— —"; margin-right:7px; letter-spacing:.06em; }
+  .kid-choice-cancel::after { content:"一高一低互相抵消"; }
+  .kid-choice:focus-visible { outline:4px solid #fff; outline-offset:3px; }
+  .kid-choice[aria-pressed="true"] { box-shadow:inset 0 0 0 4px #101827,0 0 0 3px #fff; }
+  .kid-result-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .kid-result-card { position:relative; min-width:0; padding:12px; border:3px solid rgba(255,255,255,.45); border-radius:16px; color:#fff; isolation:isolate; }
+  .kid-result-card::before { content:"待实验"; position:absolute; right:7px; top:7px; padding:3px 7px; border-radius:99px; background:#101827; color:#fff; font:800 .68rem var(--font); }
+  .kid-result-card.is-complete::before { content:"完成 ✓"; background:#fff; color:#101827; }
+  .kid-result-card h2 { margin:7px 0 2px; font-size:1.06rem; }
+  .kid-result-card p { margin:0; font-size:.8rem; line-height:1.4; }
+  .result-enhance { background-color:#8f4d00; background-image:repeating-linear-gradient(45deg,rgba(255,224,89,.2) 0 9px,transparent 9px 18px); }
+  .result-cancel { background-color:#064d69; background-image:repeating-linear-gradient(0deg,rgba(126,231,255,.2) 0 4px,transparent 4px 12px); }
+  .result-mark { display:flex; align-items:center; justify-content:center; min-height:54px; padding-right:56px; color:#fff; font:1000 1.55rem/1 var(--font); letter-spacing:.06em; text-shadow:0 2px 0 rgba(0,0,0,.35); }
+  .result-enhance .result-mark::before { content:"⌃  ⌃  ↑"; }
+  .result-cancel .result-mark::before { content:"⌃ + ⌄ = ━"; }
+  .kid-story-steps { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .kid-story-steps .discovery-card:nth-child(4) { display:none; }
+  .parent-deep-dive { margin-top:16px; border:1px solid var(--line-soft); border-radius:16px; background:rgba(12,20,36,.68); }
+  details.parent-deep-dive > summary { min-height:44px; padding:12px 14px; color:var(--ink); font-weight:900; cursor:pointer; }
+  details.parent-deep-dive > .parent-tools { padding:0 12px 12px; }
+  .child-completion { margin:18px 0; padding:16px; border:2px solid rgba(126,231,255,.45); border-radius:18px; background:linear-gradient(135deg,rgba(0,116,154,.19),rgba(255,201,64,.13)); }
+  .child-completion h2 { margin:0 0 6px; font-size:1.15rem; }
+  .child-completion .task-status { margin:8px 0 12px; }
+  .child-completion .btn { width:100%; }
+  [data-audience="parent"] { scroll-margin-top:70px; }
+
+  @media (max-width:760px) {
+    .wave-story-intro { grid-template-columns:1fr; padding:12px 14px; }
+    .wave-story-intro .hero-boat, .wave-story-intro .playful-story-actions, .wave-story-intro [data-playful-feedback] { display:none; }
+    .wave-story-intro .row { margin-bottom:5px; }
+    .wave-story-intro h1 { font-size:1.55rem; }
+    .wave-story-intro .hero-story { font-size:.92rem; }
+    .simple-goal { padding:9px 12px; }
+    .simple-goal p { font-size:.92rem; }
+    .ship-rail { min-height:44px; }
+    .kid-story-steps { grid-template-columns:1fr; }
+  }
+  @media (max-width:520px) {
+    #main { padding-top:6px; }
+    html[data-mode="kid"] .wave-story-intro { margin-bottom:6px; padding:9px 12px; }
+    html[data-mode="kid"] .wave-story-intro .row,
+    html[data-mode="kid"] .wave-story-intro .hero-kicker,
+    html[data-mode="kid"] .wave-story-intro .hero-story,
+    html[data-mode="kid"] .simple-goal,
+    html[data-mode="kid"] .ship-rail { display:none; }
+    html[data-mode="kid"] .wave-story-intro h1 { margin:0; font-size:1.4rem; }
+    html[data-mode="kid"] .lab-stage { padding:7px; }
+    html[data-mode="kid"] .wave-canvas-stage.kid-visual-stage { min-height:0; padding:6px; }
+    html[data-mode="kid"] #scene { height:220px !important; min-height:0; }
+    .kid-action-strip, .kid-result-grid { gap:7px; }
+    .kid-choice { min-height:68px; padding:7px 5px; font-size:.86rem; overflow-wrap:anywhere; }
+    .kid-choice::after { font-size:.68rem; }
+    .kid-result-card { padding:9px; }
+    .kid-result-card::before { position:static; display:inline-block; }
+    .result-mark { min-height:42px; padding-right:0; font-size:1.12rem; }
+    .kid-result-card h2 { font-size:.92rem; }
+    .kid-result-card p { font-size:.72rem; }
+    .stage-meta { display:none; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
+  }
 </style>
 </head>
 <body data-playful-page="games/wave-maker.html">
@@ -56,179 +216,205 @@
 
 <main class="wrap" id="main">
 
-  <header class="lab-head stack">
-    <div class="row">
-      <span class="pill pill-phys">物理 · 波动</span>
-      <span class="pill">7–12 岁</span>
-      <span class="pill">约 15 分钟</span>
+  <section class="card voyage-hero wave-story-intro" aria-labelledby="waveStoryTitle">
+    <div class="hero-copy">
+      <div class="row">
+        <span class="pill pill-phys">物理 · 波动</span>
+        <span class="pill">7–12 岁</span>
+        <span class="pill">约 15 分钟</span>
+      </div>
+      <p class="hero-kicker">欢迎登上“小浪花号”</p>
+      <h1 id="waveStoryTitle">水波研究船出航啦！</h1>
+      <p class="hero-story">船长泡泡收到两座浮标的神秘信号：有时浪花一起长高，有时又悄悄消失。请你当今天的水波研究员，操纵蓝波和粉波，帮研究船找出秘密。</p>
+      <div data-playful-companion></div>
+      <div class="playful-story-actions">
+        <button class="btn btn-sm" id="waveSurpriseBtn" type="button" data-playful-random-task="#waveSurprise">抽一张航海惊喜卡</button>
+        <p id="waveSurprise" data-playful-task-output>观测甲板已开放，先玩一玩，随时可以抽取额外挑战。</p>
+        <span data-playful-sticker></span>
+      </div>
+      <p id="wavePlayfulFeedback" data-playful-feedback></p>
     </div>
-    <h1>造波机：两列波相遇会发生什么</h1>
-    <p class="lead">这在教什么：<b>振幅、频率、波长</b>三个词分别管波的哪一部分；两列波相遇时会<b>逐点相加</b>，同相加倍（建设性干涉）、反相抵消（破坏性干涉）。全程只用眼睛看，不需要声音。</p>
-  </header>
-
-  <section class="card playful-story" aria-labelledby="waveStoryTitle">
-    <div data-playful-companion></div>
-    <div class="playful-story-head">
-      <div><h2 id="waveStoryTitle">水波研究船：读取两座浮标的信号</h2><p>研究船正穿过平静水面。让两列波相遇，找出增强与抵消的时刻，把探针读数写进航海记录。</p></div>
-      <span data-playful-sticker></span>
-    </div>
-    <div class="playful-story-actions">
-      <button class="btn btn-sm" id="waveSurpriseBtn" type="button" data-playful-random-task="#waveSurprise">抽取航海惊喜任务</button>
-      <p id="waveSurprise" data-playful-task-output>观测甲板已开放，抽一张额外研究任务吧。</p>
-    </div>
-    <p id="wavePlayfulFeedback" data-playful-feedback></p>
+    <svg class="hero-boat" viewBox="0 0 280 220" role="img" aria-label="小浪花号研究船在浮标之间航行">
+      <defs><linearGradient id="seaHull" x1="0" x2="1"><stop stop-color="#ffca72"/><stop offset="1" stop-color="#f07a62"/></linearGradient></defs>
+      <circle cx="224" cy="43" r="25" fill="#ffe28a" opacity=".92"/>
+      <path d="M25 176 Q64 154 102 176 T179 176 T255 176" fill="none" stroke="#83e1e7" stroke-width="10" stroke-linecap="round"/>
+      <path d="M38 190 Q74 170 110 190 T182 190 T254 190" fill="none" stroke="#3d9db8" stroke-width="7" stroke-linecap="round"/>
+      <path d="M63 120h167l-28 52H92z" fill="url(#seaHull)" stroke="#643d39" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M105 74h78v48h-78z" fill="#effcff" stroke="#4b5d72" stroke-width="5"/>
+      <path d="M117 86h20v20h-20zm34 0h20v20h-20z" fill="#7ed9eb"/>
+      <path d="M143 73V29" stroke="#684538" stroke-width="6" stroke-linecap="round"/>
+      <path d="M147 35l49 18-49 18z" fill="#f472b6" stroke="#684538" stroke-width="4"/>
+      <circle cx="82" cy="92" r="14" fill="#6ea8fe" stroke="#eaf7ff" stroke-width="4"/><path d="M82 107v28" stroke="#eaf7ff" stroke-width="4"/>
+      <circle cx="228" cy="98" r="14" fill="#f472b6" stroke="#fff0f7" stroke-width="4"/><path d="M228 112v25" stroke="#fff0f7" stroke-width="4"/>
+      <circle cx="35" cy="72" r="8" fill="none" stroke="#b9f4ef" stroke-width="4"/><circle cx="55" cy="45" r="5" fill="none" stroke="#b9f4ef" stroke-width="3"/>
+    </svg>
   </section>
 
-  <section class="task" aria-labelledby="waveTaskTitle">
-    <h2 class="task-title" id="waveTaskTitle">任务：制造增强与抵消两种干涉</h2>
-    <ol>
-      <li><b>预测：</b>先判断两列同相波与相差 180° 的波相遇后会怎样。</li>
-      <li><b>操作：</b>调相位滑块或使用预设，分别制造明显增强和接近抵消。</li>
-      <li><b>结果：</b>移动探针，比较该点波 1、波 2 和叠加位移的文字读数。</li>
-      <li><b>反思：</b>描述两列波相遇时发生什么，再保存完成证据。</li>
-    </ol>
-    <div class="task-fields">
-      <div><label for="wavePrediction">我的预测</label><select class="input" id="wavePrediction"><option>同相增强，反相抵消</option><option>同相抵消，反相增强</option><option>两种都不改变</option></select></div>
-      <div><label for="waveReflection">我的描述</label><textarea class="input" id="waveReflection" rows="2" placeholder="例如：两列波相遇时逐点相加，之后仍各自传播。"></textarea></div>
-      <button class="btn btn-primary" id="waveComplete" type="button" disabled>记录任务完成</button>
-    </div>
-    <p class="task-status status" id="waveTaskStatus" role="status" aria-live="polite">尚未完成：请制造一次增强和一次接近抵消。</p>
-
-    <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="waveWorkTitle">
-      <h3 class="work-card-title" id="waveWorkTitle">写进研究船的航海记录</h3>
-      <p class="work-card-meta">只保存文字，存在这台设备上。</p>
-      <div class="work-card-fields">
-        <div><label for="waveWorkType">作品类型</label><select class="input" id="waveWorkType" name="type"><option value="observation">观察记录</option><option value="prediction">预测卡</option><option value="explanation">我的解释</option></select></div>
-        <div><label for="waveWorkName">记录名称</label><input class="input" id="waveWorkName" name="title" required maxlength="80" placeholder="例如：两波同相时浮标最高"></div>
-        <div><label for="waveWorkContent">探针读数与相位</label><textarea class="input" id="waveWorkContent" name="content" required maxlength="4000" placeholder="写下增强和抵消时的相位差，以及探针上波 1、波 2 和叠加位移各是多少。"></textarea></div>
-        <button class="btn btn-primary btn-sm" type="submit">保存航海记录</button>
-      </div>
-      <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
-    </form>
+  <section class="simple-goal" aria-label="今天的浅显目标">
+    <span class="goal-icon" aria-hidden="true">🔭</span>
+    <p><strong>今天只做一件事：</strong>让蓝波和粉波相遇，看看它们什么时候一起变高、什么时候互相藏起来。</p>
   </section>
 
-  <div class="row" style="margin-bottom:14px" role="group" aria-label="选择实验模式">
-    <button class="chip" id="mWave" type="button" aria-pressed="true">① 两列波相加</button>
-    <button class="chip" id="mTank" type="button" aria-pressed="false">② 水波槽干涉</button>
-  </div>
+  <section class="wave-kid-shell" aria-labelledby="kidStageTitle">
+    <h2 class="sr-only" id="kidStageTitle">波峰对齐与错开实验舞台</h2>
+    <div class="lab-shell">
+      <div class="ship-rail" aria-hidden="true"><span>小浪花号观测甲板</span><i class="rail-line"></i><span>两次实验</span></div>
+      <div class="lab">
+        <div class="lab-stage">
+          <div class="wave-canvas-stage kid-visual-stage" id="stage">
+            <canvas id="scene" aria-label="波动实验画面：显示两列正弦波与它们的叠加结果，或双点源水波槽的干涉图案。" tabindex="0"></canvas>
+            <div class="row stage-meta">
+              <div class="legend" id="legend"></div>
+              <span class="hint" id="tip"></span>
+            </div>
+            <p id="live" class="sr-only" aria-live="polite"></p>
+          </div>
+          <div class="kid-action-strip" role="group" aria-label="选择一种波峰实验">
+            <button class="kid-choice kid-choice-enhance" id="kidSameChoice" type="button" data-preset="same" aria-pressed="false">波峰对齐／增强</button>
+            <button class="kid-choice kid-choice-cancel" id="kidAntiChoice" type="button" data-preset="anti" aria-pressed="false">波峰错开／抵消</button>
+          </div>
+          <p id="kidExperimentStatus" class="status" role="status" aria-live="polite">请把两种都按一次，比较“变高”和“变平”。</p>
+          <div class="kid-result-grid" aria-label="两种实验结果">
+            <article class="kid-result-card result-enhance" id="enhanceResultCard">
+              <div class="result-mark" aria-hidden="true"></div>
+              <h2>对齐后：变高</h2>
+              <p>波峰和波峰叠在一起，下面的结果波更高。</p>
+            </article>
+            <article class="kid-result-card result-cancel" id="cancelResultCard">
+              <div class="result-mark" aria-hidden="true"></div>
+              <h2>错开后：变平</h2>
+              <p>一高一低正好相反，下面的结果波变成平线。</p>
+            </article>
+          </div>
+        </div>
+      </div>
+      <div class="ship-water" aria-hidden="true"><span>○</span><span>°</span><span>◌</span><span>○</span><span>°</span></div>
+    </div>
+  </section>
 
-  <div class="lab">
-    <div class="lab-stage" id="stage">
-      <canvas id="scene" aria-label="波动实验画面：显示两列正弦波与它们的叠加结果，或双点源水波槽的干涉图案。" tabindex="0"></canvas>
-      <p id="live" class="sr-only" aria-live="polite"></p>
-      <div class="row" style="margin-top:10px;justify-content:space-between">
-        <div class="legend" id="legend"></div>
-        <span class="hint" id="tip"></span>
+  <details class="parent-deep-dive" data-audience="parent">
+    <summary>家长与进阶工具：播放、参数、水波槽、拍频、驻波和详细读数</summary>
+    <div class="parent-tools">
+      <section class="mode-dock" aria-label="选择实验模式">
+        <p>选择进阶观测模式：</p>
+        <div class="mode-buttons" role="group" aria-label="选择实验模式">
+          <button class="chip" id="mWave" type="button" aria-pressed="true">看两列波相遇</button>
+          <button class="chip" id="mTank" type="button" aria-pressed="false">看两座浮标造浪</button>
+        </div>
+      </section>
+      <div class="controls-stack">
+        <div class="panel">
+          <h3 id="ctrlTitle">波的参数</h3>
+          <div class="wsrc wsrc-blue">
+            <h4 style="color:var(--math)"><span class="dot" style="background:var(--math)"></span>蓝波控制舱</h4>
+            <div class="ctrl"><div class="ctrl-head"><label for="a1">振幅</label><b id="a1Out">1.00</b></div><input class="input" type="range" id="a1" min="0" max="1.5" step="0.05" value="1"></div>
+            <div class="ctrl"><div class="ctrl-head"><label for="w1">波长</label><b id="w1Out">1.20 m</b></div><input class="input" type="range" id="w1" min="0.3" max="3" step="0.05" value="1.2"></div>
+            <div class="ctrl"><div class="ctrl-head"><label for="f1">频率</label><b id="f1Out">0.80 Hz</b></div><input class="input" type="range" id="f1" min="0" max="2.5" step="0.05" value="0.8"></div>
+            <div class="ctrl"><div class="ctrl-head"><label for="p1">相位</label><b id="p1Out">0°</b></div><input class="input" type="range" id="p1" min="0" max="360" step="5" value="0"></div>
+          </div>
+          <div class="wsrc wsrc-pink">
+            <h4 style="color:var(--kit)"><span class="dot" style="background:var(--kit)"></span>粉波控制舱</h4>
+            <div class="ctrl"><div class="ctrl-head"><label for="a2">振幅</label><b id="a2Out">1.00</b></div><input class="input" type="range" id="a2" min="0" max="1.5" step="0.05" value="1"></div>
+            <div class="ctrl"><div class="ctrl-head"><label for="w2">波长</label><b id="w2Out">1.20 m</b></div><input class="input" type="range" id="w2" min="0.3" max="3" step="0.05" value="1.2"></div>
+            <div class="ctrl"><div class="ctrl-head"><label for="f2">频率</label><b id="f2Out">0.80 Hz</b></div><input class="input" type="range" id="f2" min="0" max="2.5" step="0.05" value="0.8"></div>
+            <div class="ctrl"><div class="ctrl-head"><label for="p2">相位</label><b id="p2Out">0°</b></div><input class="input" type="range" id="p2" min="0" max="360" step="5" value="0"></div>
+          </div>
+          <div class="ctrl modehide" id="ctrlSep"><div class="ctrl-head"><label for="sep">波源间距</label><b id="sepOut">1.60 m</b></div><input class="input" type="range" id="sep" min="0.2" max="3.4" step="0.05" value="1.6"></div>
+          <div class="seg" style="margin-bottom:12px" aria-label="波形时间控制">
+            <button class="btn btn-sm btn-primary" id="playBtn" type="button" aria-pressed="true">停住看看</button>
+            <button class="btn btn-sm" id="stepFrameBtn" type="button">前进 1/12 秒</button>
+            <button class="btn btn-sm" id="stillFrameBtn" type="button">回到起点</button>
+            <button class="btn btn-sm" id="resetBtn" type="button">重置参数</button>
+          </div>
+          <p class="hint" id="motionHint">可随时暂停，并逐帧观察。</p>
+          <div class="seg">
+            <button class="chip btn-sm" type="button" data-preset="same">完全同相</button>
+            <button class="chip btn-sm" type="button" data-preset="anti">完全反相</button>
+            <button class="chip btn-sm" type="button" data-preset="beat">拍频 beats</button>
+            <button class="chip btn-sm" type="button" data-preset="stand">驻波</button>
+          </div>
+          <p class="hint" id="presetHint">选择预设，比较叠加结果。</p>
+        </div>
+        <div class="panel" id="panelRead">
+          <h3>详细读数</h3>
+          <div class="readout"><span>波 1 速度 v=fλ</span><b id="rV1">0.96 m/s</b></div>
+          <div class="readout"><span>波 2 速度 v=fλ</span><b id="rV2">0.96 m/s</b></div>
+          <div class="readout"><span>相位差</span><b id="rDPhi">0°</b></div>
+          <div class="readout"><span>叠加最大振幅</span><b id="rSum">2.00</b></div>
+          <div class="readout"><span>干涉类型</span><b id="rType">建设性</b></div>
+          <div class="ctrl" style="margin-top:12px"><div class="ctrl-head"><label for="probe">探针位置 x</label><b id="probeOut">1.00 m</b></div><input class="input" type="range" id="probe" min="0" max="4" step="0.05" value="1"></div>
+          <p class="probe-result" id="probeText" role="status" aria-live="polite">探针读数准备中。</p>
+          <div class="readout modehide" id="rowFringe"><span>亮纹间距（远处）</span><b id="rFringe">—</b></div>
+        </div>
       </div>
     </div>
+  </details>
 
-    <div>
-      <div class="panel">
-        <h3 id="ctrlTitle">波的参数</h3>
+  <section class="discovery-route kid-story-steps" aria-label="三步水波探索路线">
+    <article class="discovery-card guess-card"><span class="card-step">01</span><h2>先猜</h2><p>哪一个会让结果波变高？哪一个会变平？</p></article>
+    <article class="discovery-card try-card"><span class="card-step">02</span><h2>各按一次</h2><p>只用上面的两个大按钮，真实切换两种波峰位置。</p></article>
+    <article class="discovery-card find-card"><span class="card-step">03</span><h2>看见证据</h2><p>比较最下面的结果波；两张结果卡都会自动标记完成。</p></article>
+  </section>
 
-        <div class="wsrc">
-          <h4 style="color:var(--math)"><span class="dot" style="background:var(--math)"></span>波 1（蓝）</h4>
-          <div class="ctrl">
-            <div class="ctrl-head"><label for="a1">振幅 amplitude</label><b id="a1Out">1.00</b></div>
-            <input class="input" type="range" id="a1" min="0" max="1.5" step="0.05" value="1">
-          </div>
-          <div class="ctrl">
-            <div class="ctrl-head"><label for="w1">波长 wavelength</label><b id="w1Out">1.20 m</b></div>
-            <input class="input" type="range" id="w1" min="0.3" max="3" step="0.05" value="1.2">
-          </div>
-          <div class="ctrl">
-            <div class="ctrl-head"><label for="f1">频率 frequency</label><b id="f1Out">0.80 Hz</b></div>
-            <input class="input" type="range" id="f1" min="0" max="2.5" step="0.05" value="0.8">
-          </div>
-          <div class="ctrl">
-            <div class="ctrl-head"><label for="p1">相位 phase</label><b id="p1Out">0°</b></div>
-            <input class="input" type="range" id="p1" min="0" max="360" step="5" value="0">
-          </div>
-        </div>
+  <section class="child-completion" aria-labelledby="waveTaskTitle">
+    <p class="section-kicker">船长挑战</p>
+    <h2 id="waveTaskTitle">找到一次“变高”和一次“变平”</h2>
+    <p>不需要写长答案。完成两次真实实验后，证据会自动生成。</p>
+    <p class="task-status status" id="waveTaskStatus" role="status" aria-live="polite">尚未完成：请分别执行增强和抵消。</p>
+    <button class="btn btn-primary" id="waveComplete" type="button" disabled>完成两次实验后保存证据</button>
+  </section>
 
-        <div class="wsrc">
-          <h4 style="color:var(--kit)"><span class="dot" style="background:var(--kit)"></span>波 2（粉）</h4>
-          <div class="ctrl">
-            <div class="ctrl-head"><label for="a2">振幅 amplitude</label><b id="a2Out">1.00</b></div>
-            <input class="input" type="range" id="a2" min="0" max="1.5" step="0.05" value="1">
-          </div>
-          <div class="ctrl">
-            <div class="ctrl-head"><label for="w2">波长 wavelength</label><b id="w2Out">1.20 m</b></div>
-            <input class="input" type="range" id="w2" min="0.3" max="3" step="0.05" value="1.2">
-          </div>
-          <div class="ctrl">
-            <div class="ctrl-head"><label for="f2">频率 frequency</label><b id="f2Out">0.80 Hz</b></div>
-            <input class="input" type="range" id="f2" min="0" max="2.5" step="0.05" value="0.8">
-          </div>
-          <div class="ctrl">
-            <div class="ctrl-head"><label for="p2">相位 phase</label><b id="p2Out">0°</b></div>
-            <input class="input" type="range" id="p2" min="0" max="360" step="5" value="0">
-          </div>
-        </div>
-
-        <div class="ctrl modehide" id="ctrlSep">
-          <div class="ctrl-head"><label for="sep">两个波源的间距</label><b id="sepOut">1.60 m</b></div>
-          <input class="input" type="range" id="sep" min="0.2" max="3.4" step="0.05" value="1.6">
-        </div>
-
-        <div class="seg" style="margin-bottom:12px" aria-label="波形时间控制">
-          <button class="btn btn-sm btn-primary" id="playBtn" type="button" aria-pressed="true">⏸ 暂停</button>
-          <button class="btn btn-sm" id="stepFrameBtn" type="button">前进一步（1/12 秒）</button>
-          <button class="btn btn-sm" id="stillFrameBtn" type="button">回到静态起点</button>
-          <button class="btn btn-sm" id="resetBtn" type="button">重置参数</button>
-        </div>
-        <p class="hint" id="motionHint">可随时暂停，并用“前进一步”逐帧观察。</p>
-        <div class="seg">
-          <button class="chip btn-sm" type="button" data-preset="same">完全同相</button>
-          <button class="chip btn-sm" type="button" data-preset="anti">完全反相</button>
-          <button class="chip btn-sm" type="button" data-preset="beat">拍频 beats</button>
-          <button class="chip btn-sm" type="button" data-preset="stand">驻波</button>
-        </div>
-        <p class="hint" id="presetHint">选一个预设，看看叠加波（绿色）有什么不同。</p>
+  <details class="parent-deep-dive" data-audience="parent">
+    <summary>家长可选：预测、文字反思与教学说明</summary>
+    <div class="parent-tools task formal-task">
+      <div class="task-fields">
+        <div><label for="wavePrediction">预测</label><select class="input" id="wavePrediction"><option>同相增强，反相抵消</option><option>同相抵消，反相增强</option><option>两种都不改变</option></select></div>
+        <div><label for="waveReflection">可选发现（不影响完成）</label><textarea class="input" id="waveReflection" rows="2" placeholder="例如：两列波会逐点相加。"></textarea></div>
       </div>
-
-      <div class="panel" id="panelRead">
-        <h3>读数</h3>
-        <div class="readout"><span>波 1 速度 v=fλ</span><b id="rV1">0.96 m/s</b></div>
-        <div class="readout"><span>波 2 速度 v=fλ</span><b id="rV2">0.96 m/s</b></div>
-        <div class="readout"><span>相位差</span><b id="rDPhi">0°</b></div>
-        <div class="readout"><span>叠加最大振幅</span><b id="rSum">2.00</b></div>
-        <div class="readout"><span>干涉类型</span><b id="rType">建设性</b></div>
-        <div class="ctrl" style="margin-top:12px">
-          <div class="ctrl-head"><label for="probe">测量探针位置 x</label><b id="probeOut">1.00 m</b></div>
-          <input class="input" type="range" id="probe" min="0" max="4" step="0.05" value="1">
-        </div>
-        <p class="probe-result" id="probeText" role="status" aria-live="polite">探针读数准备中。</p>
-        <div class="readout modehide" id="rowFringe"><span>亮纹间距（远处）</span><b id="rFringe">—</b></div>
-      </div>
+      <section class="teaching-card" aria-labelledby="teachingTitle">
+        <p class="section-kicker">研究员知识卡</p>
+        <h2 id="teachingTitle">学习目标</h2>
+        <p><b>振幅</b>管波有多高，<b>波长</b>管波峰间距，<b>频率</b>管一秒摇几下，<b>相位</b>管从哪里起步。两列波逐点相加：同向增强，反向抵消。</p>
+      </section>
     </div>
-  </div>
+  </details>
 
-  <div class="grid-2" style="margin-top:22px">
+  <form class="work-card work-card-form voyage-log parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="waveWorkTitle">
+    <p class="section-kicker">家长与进阶作品记录</p>
+    <h2 class="work-card-title" id="waveWorkTitle">作品表单｜写进研究船航海记录</h2>
+    <p class="work-card-meta">可选填写，只保存文字在这台设备上，不影响儿童任务完成。</p>
+    <div class="work-card-fields">
+      <div><label for="waveWorkType">作品类型</label><select class="input" id="waveWorkType" name="type"><option value="observation">观察记录</option><option value="prediction">预测卡</option><option value="explanation">我的解释</option></select></div>
+      <div><label for="waveWorkName">记录名称</label><input class="input" id="waveWorkName" name="title" required maxlength="80" placeholder="例如：两波同相时最高"></div>
+      <div><label for="waveWorkContent">探针读数与起步位置</label><textarea class="input" id="waveWorkContent" name="content" required maxlength="4000" placeholder="可记录相位差和探针读数。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存这份航海记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+  <div class="grid-2 grownup-grid parent-deep-dive" data-audience="parent" style="margin-top:22px">
     <section class="card">
-      <h2 style="font-size:1.15rem">给家长的提问脚本</h2>
+      <p class="section-kicker">一起观察，不急着讲答案</p>
+      <h2 style="font-size:1.15rem">陪伴追问</h2>
       <ol class="qlist">
-        <li><b>分辨概念：</b>「振幅变大，波看起来哪里不一样？频率变大呢？」（振幅管高矮、频率管快慢、波长管疏密。让孩子只动一个滑块，说出变化）</li>
-        <li><b>预测：</b>「两列一模一样的波叠在一起，会变成两倍高，还是消失？」（先猜，再点「完全同相」和「完全反相」各试一次。抵消这件事最反直觉）</li>
-        <li><b>迁移：</b>「水波槽里那些黑色的线是什么？为什么水面在那里一直不动？」（那是两个波源永远反相抵消的位置。声学降噪耳机、双缝实验都是同一件事）</li>
+        <li><b>分辨概念：</b>「振幅变大，波看起来哪里不一样？频率变大呢？」</li>
+        <li><b>预测：</b>「两列一样的波叠在一起，会变成两倍高，还是消失？」</li>
+        <li><b>迁移：</b>「水波槽里为什么有些位置几乎不动？」</li>
       </ol>
-      <p class="hint" style="margin-top:10px">线下延伸：往洗手池里同时滴两滴水，看两圈水纹相遇处；或者两人同时轻抖一根长绳的两端。</p>
+      <p class="hint" style="margin-top:10px">线下延伸：往洗手池同时滴两滴水，观察水纹相遇处。</p>
     </section>
 
     <section class="card">
-      <h2 style="font-size:1.15rem">背后的原理</h2>
-      <p>一列正弦波可以写成 <code>y(x,t) = A · sin(2π(x/λ − f·t) + φ)</code>。四个字母各管一件事：<b>A 振幅</b>决定波多高（对应声音多响、光多亮）、<b>λ 波长</b>决定波峰之间多远、<b>f 频率</b>决定一秒钟过去几个波峰、<b>φ 相位</b>决定起跑位置。三者关系是 <code>v = f · λ</code> —— 同一种介质里波速固定，所以频率越高，波长必然越短。</p>
+      <h2 style="font-size:1.15rem">科学原理</h2>
+      <p>正弦波可写成 <code>y(x,t) = A · sin(2π(x/λ − f·t) + φ)</code>，且 <code>v = f · λ</code>。</p>
       <h3>叠加原理（superposition）</h3>
-      <p>两列波相遇时不会撞坏对方，只是把位移<b>逐点相加</b>：<code>y = y₁ + y₂</code>。相加后走过彼此，各自波形不变。这是波和小球最大的区别。</p>
+      <p>两列波相遇时把位移逐点相加：<code>y = y₁ + y₂</code>。相位差 0° 时振幅相加；相位差 180° 且等幅时完全抵消。</p>
       <ul style="color:var(--ink-mid);font-size:.92rem">
-        <li><b>建设性干涉：</b>相位差 0°（或路程差 = 整数个波长），振幅相加变大。</li>
-        <li><b>破坏性干涉：</b>相位差 180°（路程差 = 半波长的奇数倍），等幅时完全抵消。</li>
-        <li><b>拍频 beats：</b>两个频率只差一点，叠加后忽强忽弱，跳动频率 = <code>|f₁ − f₂|</code>。调吉他就靠听这个。</li>
-        <li><b>驻波：</b>两列反向传播的同频波叠加，出现不动的<b>波节</b>和大幅摆动的<b>波腹</b>。琴弦、笛管发声都靠它。</li>
+        <li><b>拍频：</b>两个频率只差一点，叠加波忽大忽小。</li>
+        <li><b>驻波：</b>同频反向传播的波叠加，出现波节和波腹。</li>
+        <li><b>水波槽：</b>路程差决定增强纹与抵消的波节线。</li>
       </ul>
-      <h3>水波槽里的条纹</h3>
-      <p>两个点源发出的圆形波，在<b>到两源距离差 = 整数波长</b>的地方永远同相 → 亮纹（波动剧烈）；在<b>距离差 = 半波长的奇数倍</b>处永远反相 → 暗的<b>波节线</b>（水面几乎不动）。把波源拉近，条纹变宽；波长变短，条纹变密。托马斯·杨的双缝实验就是用这个证明了光是波。</p>
-      <p class="hint">本模拟说明：为可视化清晰，波速与色散未按真实水波（有色散）建模，两源振幅按 1/√r 做几何衰减近似；条纹间距读数使用远场小角近似 <code>Δ ≈ λL/d</code>。</p>
+      <p class="hint">模拟使用 1/√r 几何衰减近似；条纹间距读数使用远场小角近似 <code>Δ ≈ λL/d</code>。</p>
     </section>
   </div>
 
@@ -299,8 +485,28 @@
 
   // ---------- 模式 1：三条曲线 ----------
   function drawWaveMode() {
-    ctx.fillStyle = '#0a0e19';
+    var phaseDiff = ((S.p2 - S.p1) % 360 + 360) % 360;
+    var matched = dir2 === 1 && Math.abs(S.f1 - S.f2) < 0.001 && Math.abs(S.w1 - S.w2) < 0.001;
+    var resultKind = matched && (phaseDiff < 1 || phaseDiff > 359) ? 'enhance' :
+      (matched && Math.abs(phaseDiff - 180) < 1 && Math.abs(S.a1 - S.a2) < 0.001 ? 'cancel' : 'other');
+    ctx.fillStyle = resultKind === 'enhance' ? '#181207' : (resultKind === 'cancel' ? '#061923' : '#0a0e19');
     ctx.fillRect(0, 0, W, H);
+    // 结果底纹不只靠颜色：增强用上升斜纹，抵消用水平条纹。
+    if (resultKind !== 'other') {
+      ctx.save();
+      ctx.strokeStyle = resultKind === 'enhance' ? 'rgba(255,216,77,.16)' : 'rgba(126,231,255,.16)';
+      ctx.lineWidth = 2;
+      if (resultKind === 'enhance') {
+        for (var stripeX = -H; stripeX < W; stripeX += 24) {
+          ctx.beginPath(); ctx.moveTo(stripeX, H); ctx.lineTo(stripeX + H, 0); ctx.stroke();
+        }
+      } else {
+        for (var stripeY = 10; stripeY < H; stripeY += 18) {
+          ctx.beginPath(); ctx.moveTo(0, stripeY); ctx.lineTo(W, stripeY); ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
 
     var padL = 44, padR = 12;
     var plotW = Math.max(40, W - padL - padR);
@@ -312,7 +518,7 @@
     var titles = [
       { label: '波 1', col: C.math, get: function (x, tt) { return waveY(S.a1, S.w1, S.f1, S.p1, x, tt); } },
       { label: '波 2', col: C.kit, get: function (x, tt) { return waveY(S.a2, S.w2, S.f2, S.p2, x, tt, dir2); } },
-      { label: '叠加 = 波1 + 波2', col: C.sci, get: function (x, tt) {
+      { label: resultKind === 'enhance' ? '结果：变高 ↑↑' : (resultKind === 'cancel' ? '结果：变平 ━' : '结果：波 1 + 波 2'), col: resultKind === 'enhance' ? '#ffd84d' : (resultKind === 'cancel' ? '#7ee7ff' : C.sci), get: function (x, tt) {
           return waveY(S.a1, S.w1, S.f1, S.p1, x, tt) + waveY(S.a2, S.w2, S.f2, S.p2, x, tt, dir2);
         } }
     ];
@@ -327,6 +533,23 @@
       ctx.strokeStyle = C.soft; ctx.lineWidth = 1;
       rr(padL - 6, y0, plotW + 10, rowH, 8);
       ctx.fill(); ctx.stroke();
+      // 结果行同时用纹理区分：增强用斜纹，抵消用横纹，避免只依赖颜色。
+      if (r === 2 && resultKind !== 'other') {
+        ctx.save();
+        ctx.globalAlpha = 0.2;
+        ctx.strokeStyle = resultKind === 'enhance' ? '#ffd84d' : '#7ee7ff';
+        ctx.lineWidth = 2;
+        if (resultKind === 'enhance') {
+          for (var hx = padL - rowH; hx < padL + plotW; hx += 18) {
+            ctx.beginPath(); ctx.moveTo(hx, y0 + rowH); ctx.lineTo(hx + rowH, y0); ctx.stroke();
+          }
+        } else {
+          for (var hy = y0 + 12; hy < y0 + rowH; hy += 12) {
+            ctx.beginPath(); ctx.moveTo(padL, hy); ctx.lineTo(padL + plotW, hy); ctx.stroke();
+          }
+        }
+        ctx.restore();
+      }
 
       // 零线
       ctx.strokeStyle = 'rgba(125,136,171,.35)';
@@ -613,7 +836,11 @@
       rType = document.getElementById('rType'), rFringe = document.getElementById('rFringe');
   var probeEl = document.getElementById('probe'), probeOut = document.getElementById('probeOut'), probeText = document.getElementById('probeText');
   var waveReflection = document.getElementById('waveReflection'), waveComplete = document.getElementById('waveComplete'), waveTaskStatus = document.getElementById('waveTaskStatus');
+  var kidExperimentStatus = document.getElementById('kidExperimentStatus');
+  var enhanceResultCard = document.getElementById('enhanceResultCard'), cancelResultCard = document.getElementById('cancelResultCard');
   var seenEnhance = false, seenCancel = false;
+  var activeResultPreset = '';
+  var presetEvidence = { same: '', anti: '' };
 
   function updateProbe() {
     var values = probeValues();
@@ -621,15 +848,32 @@
     probeText.textContent = '在 x=' + probeX.toFixed(2) + ' m：波 1 位移 ' + values[0].toFixed(2) + '，波 2 位移 ' + values[1].toFixed(2) + '，逐点相加结果 ' + values[2].toFixed(2) + '。';
   }
   function updateWaveTask() {
-    var reflected = waveReflection.value.trim().length >= 8;
-    waveComplete.disabled = !(seenEnhance && seenCancel && reflected);
-    waveTaskStatus.textContent = !seenEnhance || !seenCancel ? '尚未完成：还需要' + (!seenEnhance && !seenCancel ? '增强和抵消两种结果。' : (!seenEnhance ? '一次明显增强。' : '一次接近抵消。')) : (reflected ? '增强、抵消和反思证据已齐，可以记录完成。' : '两种干涉都已制造；请写至少 8 个字描述结果。');
+    var ready = seenEnhance && seenCancel;
+    waveComplete.disabled = !ready;
+    waveComplete.textContent = ready ? '保存两次实验的自动证据' : '完成两次实验后保存证据';
+    enhanceResultCard.classList.toggle('is-complete', seenEnhance);
+    cancelResultCard.classList.toggle('is-complete', seenCancel);
+    if (ready) {
+      waveTaskStatus.textContent = '两种结果都看到了，可以保存自动证据。';
+      kidExperimentStatus.textContent = '实验完成：你让结果波变高，也让它变成了平线。';
+    } else {
+      var missing = !seenEnhance && !seenCancel ? '“波峰对齐”和“波峰错开”' : (!seenEnhance ? '“波峰对齐／增强”' : '“波峰错开／抵消”');
+      waveTaskStatus.textContent = '尚未完成：还要真实执行' + missing + '。';
+      kidExperimentStatus.textContent = '已完成 ' + (seenEnhance || seenCancel ? '1 / 2' : '0 / 2') + '：还要按一次' + missing + '。';
+    }
   }
-  function markInterference() {
-    var same = Math.abs(S.f1 - S.f2) < 0.001 && Math.abs(S.w1 - S.w2) < 0.001;
-    var phaseDiff = ((S.p2 - S.p1) % 360 + 360) % 360;
-    if (same && (phaseDiff < 20 || phaseDiff > 340)) seenEnhance = true;
-    if (same && phaseDiff > 160 && phaseDiff < 200 && Math.abs(S.a1 - S.a2) < 0.08) seenCancel = true;
+  function recordPresetResult(name) {
+    var dphi = ((S.p2 - S.p1) % 360 + 360) % 360;
+    var sameWave = Math.abs(S.f1 - S.f2) < 0.001 && Math.abs(S.w1 - S.w2) < 0.001;
+    var actualMax = sameWave ? Math.sqrt(S.a1 * S.a1 + S.a2 * S.a2 + 2 * S.a1 * S.a2 * Math.cos(dphi * Math.PI / 180)) : S.a1 + S.a2;
+    if (name === 'same' && sameWave && (dphi < 1 || dphi > 359) && actualMax > 1.9) {
+      seenEnhance = true;
+      presetEvidence.same = '波峰对齐：相位差 0°，结果最大振幅 ' + actualMax.toFixed(2) + '（变高）';
+    }
+    if (name === 'anti' && sameWave && Math.abs(dphi - 180) < 1 && Math.abs(S.a1 - S.a2) < 0.001 && actualMax < 0.01) {
+      seenCancel = true;
+      presetEvidence.anti = '波峰错开：相位差 180°，结果最大振幅 ' + actualMax.toFixed(2) + '（变平）';
+    }
     updateWaveTask();
   }
 
@@ -724,7 +968,6 @@
       document.getElementById(id + 'Out').textContent = fmt[id](S[id]);
       syncPresets();
       updateReadout();
-      markInterference();
     });
   });
 
@@ -732,14 +975,15 @@
     probeX = clamp(num(probeEl.value, 1), 0, 4);
     updateProbe();
   });
-  waveReflection.addEventListener('input', updateWaveTask);
+  waveReflection.addEventListener('input', function () {});
   waveComplete.addEventListener('click', function () {
-    if (waveComplete.disabled || !window.Progress) return;
-    var values = probeValues();
-    var evidence = '完成增强与抵消；探针 x=' + probeX.toFixed(2) + 'm 时叠加位移 ' + values[2].toFixed(2) + '；描述：' + waveReflection.value.trim();
+    if (waveComplete.disabled || !window.Progress || !seenEnhance || !seenCancel) return;
+    var evidence = presetEvidence.same + '；' + presetEvidence.anti;
+    var optionalReflection = waveReflection.value.trim();
+    if (optionalReflection) evidence += '；可选发现：' + optionalReflection;
     if (Progress.complete("games/wave-maker.html", evidence)) {
-      waveTaskStatus.textContent = '已完成并保存证据：' + evidence;
-      announce('波的干涉任务已完成并保存在本机。');
+      waveTaskStatus.textContent = '已完成并保存自动证据：' + evidence;
+      announce('波峰对齐和波峰错开实验已完成并保存在本机。');
     }
   });
 
@@ -747,8 +991,8 @@
   function setPlay(p) {
     playing = p;
     playBtn.setAttribute('aria-pressed', p ? 'true' : 'false');
-    playBtn.textContent = p ? '⏸ 暂停' : '▶ 播放';
-    announce(p ? '动画播放中' : '动画已暂停，波形静止');
+    playBtn.textContent = p ? '停住看看' : '让波动起来';
+    announce(p ? '波动起来了' : '已经停住，可以仔细看看波形');
   }
   playBtn.addEventListener('click', function () { setPlay(!playing); });
   var motionHint = document.getElementById('motionHint');
@@ -798,12 +1042,11 @@
     if (!p) return;
     PKEYS.forEach(function (id) { S[id] = clamp(p[id], lim[id][0], lim[id][1]); });
     dir2 = p.dir;
+    activeResultPreset = name === 'same' || name === 'anti' ? name : '';
     t = 0; acc = 0;
     syncUI();
     presetHint.textContent = p.hint;
-    if (name === 'same') seenEnhance = true;
-    if (name === 'anti') seenCancel = true;
-    updateWaveTask();
+    recordPresetResult(name);
     announce('已应用预设：' + (b2label(name) || name));
   }
   function b2label(name) {
@@ -927,10 +1170,10 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js"></script>
-<script src="../data/playful.js"></script>
-<script src="../assets/js/playful.js"></script>
+<script src="../assets/js/progress.js?v=13"></script>
+<script src="../data/playful.js?v=13"></script>
+<script src="../assets/js/playful.js?v=13"></script>
 <script>if (window.Progress) Progress.visit("games/wave-maker.html", "造波机");</script>
-<script src="../assets/js/pwa.js"></script>
+<script src="../assets/js/pwa.js?v=13"></script>
 </body>
 </html>
