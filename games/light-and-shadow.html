@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>光与影 · 光走直线 | 少儿数理启蒙</title>
 <meta name="description" content="拖动灯和物体，看影子怎么变大变小；再用红绿蓝三盏灯玩加色混合。给 5–10 岁小朋友的光学直觉启蒙。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#0b0f1a">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   * { box-sizing: border-box; }
@@ -25,7 +25,10 @@
   .legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; margin-right: 5px; vertical-align: -1px; border: 1px solid rgba(255,255,255,.25); }
   .swatch { width: 100%; height: 42px; border-radius: var(--r-sm); border: 1px solid var(--line); margin-top: 6px; }
   .modehide { display: none; }
-  .task-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto; gap:10px; align-items:end; }
+  /* 轨道给下限，否则在 760–900px 之间（单列断点之上、三列又放不开）
+     select 和 textarea 会被挤到 30px 宽，完全没法用。
+     min(100%, …) 保证极窄视口下不会反过来把网格撑出横向溢出。 */
+  .task-fields { display:grid; grid-template-columns:minmax(min(100%,190px),1fr) minmax(min(100%,220px),1.4fr) minmax(min(100%,140px),auto); gap:10px; align-items:end; }
   .text-result { line-height:1.6; color:var(--ink-mid); }
 
   .theater-hero {
@@ -34,13 +37,17 @@
     margin: 24px 0 14px;
     padding: clamp(20px, 4vw, 38px);
     overflow: hidden;
-    border: 1px solid rgba(251,191,36,.32);
+    border: 1px solid rgba(251,191,36,.55);
     border-radius: 28px;
     background:
       radial-gradient(circle at 16% 20%, rgba(251,191,36,.20), transparent 22%),
       radial-gradient(circle at 84% 18%, rgba(110,168,254,.18), transparent 24%),
       linear-gradient(145deg, #21152e 0%, #14182c 52%, #10253a 100%);
     box-shadow: 0 18px 48px rgba(4,7,18,.28);
+    /* 幕布是有意的深色（影子剧场）。这里必须显式给浅色文字：
+       h1 会继承这个色，而 base.css 的 `p { color: var(--ink-mid) }` 具有选择器权重，
+       会盖掉继承色，所以下面单独给 p 上色，否则标题和剧情文字都是深底深字。 */
+    color: #f7eddb;
   }
   .theater-hero::before,
   .theater-hero::after {
@@ -75,12 +82,20 @@
   .playful-story-actions { display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; margin-top:18px; }
   .playful-story-actions p { margin: 0; min-height: 1.5em; color: var(--ink-mid); }
   [data-playful-feedback] { margin: 10px 0 0; min-height: 1.4em; color: var(--ink-mid); }
+
+  /* 幕布上的文字：必须放在上面这几条 --ink-mid 规则之后，且权重更高，
+     否则深色幕布上会出现深色文字。h1 继承 .theater-hero 的 color。 */
+  .theater-hero .story-line,
+  .theater-hero p,
+  .theater-hero .playful-story-actions p,
+  .theater-hero [data-playful-feedback] { color: #e4d6bb; }
+
   .one-goal {
     margin: 0 0 14px;
     padding: 14px 18px;
-    border: 2px solid rgba(74,222,128,.38);
+    border: 2px solid color-mix(in srgb, var(--sci) 45%, var(--line));
     border-radius: 18px;
-    background: linear-gradient(100deg, rgba(74,222,128,.11), rgba(110,168,254,.09));
+    background: linear-gradient(100deg, color-mix(in srgb, var(--sci) 10%, var(--surface)), color-mix(in srgb, var(--math) 8%, var(--surface)));
     text-align: center;
     font-size: clamp(1rem, 2.2vw, 1.18rem);
   }
@@ -93,10 +108,11 @@
   .theater-lab-shell {
     position: relative;
     padding: 48px clamp(10px, 2vw, 20px) clamp(12px, 2vw, 20px);
-    border: 1px solid rgba(251,191,36,.35);
-    border-radius: 24px;
-    background: linear-gradient(180deg, #4c1733 0 38px, rgba(76,23,51,.16) 38px, rgba(11,15,26,.44) 100%);
-    box-shadow: 0 16px 42px rgba(4,7,18,.22);
+    border: 2px solid color-mix(in srgb, var(--warn) 55%, var(--line));
+    /* 顶部 38px 是深红台口（::before 的奶油色跑马灯压在这上面），
+       台口以下换成暖色浅底：原先的 rgba(11,15,26,.44) 在浅色主题下是一层灰蒙版。 */
+    background: linear-gradient(180deg, #4c1733 0 38px, color-mix(in srgb, #4c1733 12%, var(--surface)) 38px, color-mix(in srgb, #4c1733 5%, var(--surface)) 100%);
+    box-shadow: var(--shadow-lg);
   }
   .theater-lab-shell::before {
     content: '●  ✦  ●  ★  ●  ✦  ●  ★  ●  ✦  ●';
@@ -111,6 +127,7 @@
     pointer-events: none;
   }
   .theater-lab { margin: 0; }
+  .stage-stack { display: grid; gap: 10px; min-width: 0; }
   .stage-curtain { position: relative; isolation: isolate; }
   .stage-curtain::before,
   .stage-curtain::after {
@@ -201,16 +218,18 @@
   .mode-picker { margin-bottom:10px; }
   .theater-lab-shell { padding-top:44px; }
   .stage-curtain.kid-visual-stage { min-width:0; }
+  /* 「灯 → 物 → 影」这条链是有意的深色小舞台（暗房里才看得见影子），
+     所以文字写死浅色。原先是 var(--ink)，浅色主题下深底深字，对比度只有 1.90。 */
   .light-path {
     display:grid; grid-template-columns:1fr auto 1fr auto 1fr; align-items:center; gap:8px;
-    margin:0 0 10px; padding:8px; border:1px solid rgba(255,233,168,.28); border-radius:16px;
-    background:rgba(5,8,18,.72); color:var(--ink); text-align:center;
+    margin:0 0 10px; padding:8px; border:1px solid rgba(255,233,168,.42); border-radius:16px;
+    background:rgba(5,8,18,.72); color:#ffe9a8; text-align:center;
   }
   .light-path-node { display:grid; place-items:center; gap:1px; min-height:58px; padding:5px; border-radius:12px; background:rgba(255,255,255,.06); font-weight:850; }
   .light-path-node b { font-size:1.45rem; line-height:1; }
-  .light-path-node small { color:var(--ink-mid); font-size:.7rem; }
+  .light-path-node small { color:#e6d3ab; font-size:.7rem; }
   .light-path-arrow { color:#ffe9a8; font-size:1.35rem; font-weight:900; }
-  .shadow-hot-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:10px; }
+  .shadow-hot-actions { display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr)); gap:8px; margin-top:10px; }
   .shadow-hot-actions button { min-height:48px; padding:7px 8px; border:1px solid var(--line); border-radius:14px; background:var(--surface); color:var(--ink); font-weight:800; cursor:pointer; }
   .shadow-hot-actions button:hover,.shadow-hot-actions button:focus-visible { border-color:var(--warn); }
   .result-glance { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
@@ -220,8 +239,6 @@
   .glance-track { height:10px; overflow:hidden; border-radius:99px; background:var(--line-soft); }
   .glance-fill { display:block; width:45%; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--math),var(--sci)); transition:width .18s ease; }
   #shadowSharpMeter { background:linear-gradient(90deg,var(--warn),var(--sci)); }
-  .choice-phrases { display:flex; flex-wrap:wrap; gap:8px; margin-top:7px; }
-  .choice-phrases button { min-height:44px; padding:8px 11px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); font-weight:750; }
   [data-audience="parent"],.parent-deep-dive { scroll-margin-top:80px; }
   @media (max-width:600px) {
     html[data-mode="kid"] .theater-hero.kid-story-intro { margin:8px 0 6px; padding:10px 14px; }
@@ -235,12 +252,13 @@
     html[data-mode="kid"] .theater-lab-shell { padding-top:30px; }
     html[data-mode="kid"] .light-path { margin-bottom:6px; padding:5px; }
     html[data-mode="kid"] .stage-curtain.kid-visual-stage { min-height:0; max-height:none; padding:7px; }
-    html[data-mode="kid"] #scene { height:220px !important; }
+    /* 这里原来写 #scene{height:220px!important}：!important 能盖掉 JS 写的 style.height，
+       但盖不掉 canvas 的像素缓冲尺寸，结果整幅画面被纵向压扁。高度上限改由 resize() 按视口算。 */
     .light-path { gap:4px; }
     .light-path-node { min-height:48px; font-size:.74rem; }
     .light-path-node b { font-size:1.15rem; }
     .light-path-arrow { font-size:1rem; }
-    .shadow-hot-actions { grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; margin-top:6px; }
+    .shadow-hot-actions { grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; margin-top:6px; }
     .shadow-hot-actions button { min-width:0; padding:5px 3px; font-size:.72rem; }
     .stage-curtain.kid-visual-stage .stage-foot { display:none; }
     .result-glance { grid-template-columns:1fr 1fr; }
@@ -248,9 +266,100 @@
   @media (prefers-reduced-motion:reduce) {
     .glance-fill,.step-card,button { transition:none!important; animation:none!important; }
   }
+
+  /* 插画舞台（共享 SVG 场景铺底，内容都放在不透明卡片上保证对比度） */
+  .ls-scene-stage { margin:0 0 16px; padding:clamp(12px,2.6vw,20px); }
+  .ls-scene-copy { display:grid; gap:12px; min-width:0; }
+  .ls-scene-stage .kid-steps-visual { margin:0; }
+  @media (max-width:560px) {
+    .ls-scene-stage { padding:10px; }
+  }
+
+  /* ---------- 图像优先三件套（本页前缀 ls-）：材料图鉴 / 影子量表 / 灯往哪边走 ---------- */
+  .ls-shell { display:grid; gap:16px; margin:26px 0; }
+  .ls-card { position:relative; padding:18px; border:3px solid var(--ink); border-radius:22px; background:var(--surface); box-shadow:0 6px 0 rgba(4,7,18,.22); }
+  .ls-card > h3 { margin:.1em 0 .3em; font-size:1.16rem; }
+  .ls-lead { margin:0 0 12px; color:var(--ink-mid); font-weight:750; font-size:.92rem; }
+  .ls-stage { display:block; width:100%; height:auto; max-height:340px; border:3px solid var(--ink); border-radius:18px; background:#fdf6e3; }
+  .ls-shell .kid-figure-art { padding:6px; }
+  .ls-shell .kid-figure-art > svg { width:100%; max-width:152px; height:auto; }
+  .ls-shell .kid-figure-fact { display:block; }
+  .ls-say-row { margin:12px 0 0; }
+  .ls-card details { margin-top:12px; border:1px solid var(--line-soft); border-radius:var(--r); padding:0 13px; }
+  .ls-card details[open] { padding-bottom:10px; }
+  .ls-card details > p, .ls-card details > ol { color:var(--ink-mid); font-size:.88rem; line-height:1.58; }
+  .ls-card details > ol { padding-left:1.3em; }
+  .ls-card details > ol li + li { margin-top:6px; }
+
+  /* 图鉴 SVG 取色：SVG 属性里不写 var()，统一在这里定义 fill/stroke */
+  .ls-bg { fill:#fdf6e3; }
+  .ls-wall { fill:#efe2c4; }
+  .ls-wall-lit { fill:#fff5cd; }
+  .ls-floor { fill:#e0d2ae; }
+  .ls-panel { fill:#fdf6e3; stroke:#3a2c14; stroke-width:2.5; }
+  .ls-lamp { fill:#ffd166; stroke:#3a2c14; stroke-width:2.5; }
+  .ls-lamp-body { fill:#8ea6cf; stroke:#3a2c14; stroke-width:2.5; }
+  .ls-lamp-q { fill:#fff5cd; stroke:#3a2c14; stroke-width:2.5; stroke-dasharray:5 4; }
+  .ls-ray { fill:none; stroke:#e8a400; stroke-width:2.4; stroke-linecap:round; }
+  .ls-ray-soft { fill:none; stroke:#e8a400; stroke-width:2.2; stroke-linecap:round; stroke-dasharray:4 4; }
+  .ls-keyray { fill:none; stroke:#127a45; stroke-width:2.4; stroke-linecap:round; stroke-dasharray:7 5; }
+  .ls-mark { fill:none; stroke:#b45309; stroke-width:2.6; stroke-linecap:round; }
+  .ls-slab-wood { fill:#a9662f; stroke:#3a2c14; stroke-width:2.5; }
+  .ls-slab-card { fill:#d8a86a; stroke:#3a2c14; stroke-width:2.5; }
+  .ls-slab-frost { fill:#cfe4ee; fill-opacity:.92; stroke:#3a2c14; stroke-width:2.5; }
+  .ls-slab-gauze { fill:#f3e2ee; fill-opacity:.7; stroke:#3a2c14; stroke-width:2.5; stroke-dasharray:4 3; }
+  .ls-slab-glass { fill:#e2f4fc; fill-opacity:.42; stroke:#3a2c14; stroke-width:2.5; }
+  .ls-slab-water { fill:#8fd0ef; fill-opacity:.6; stroke:#3a2c14; stroke-width:2.5; }
+  .ls-water-line { fill:none; stroke:#2b83a8; stroke-width:2; stroke-linecap:round; }
+  .ls-shade-100 { fill:#1d160c; fill-opacity:.9; }
+  .ls-shade-90 { fill:#1d160c; fill-opacity:.8; }
+  .ls-shade-55 { fill:#1d160c; fill-opacity:.48; }
+  .ls-shade-30 { fill:#1d160c; fill-opacity:.28; }
+  .ls-shade-14 { fill:#1d160c; fill-opacity:.14; }
+  .ls-shade-08 { fill:#1d160c; fill-opacity:.08; }
+  .ls-badge { fill:#ffffff; stroke:#3a2c14; stroke-width:2.5; }
+  .ls-ink { fill:#2a2114; font-weight:800; }
+  .ls-ink-soft { fill:#5d5138; }
+
+  .ls-meters { display:grid; gap:14px; margin:0 0 12px; }
+  .ls-dist-picks { grid-template-columns:repeat(auto-fit,minmax(96px,1fr)); margin:0 0 10px; }
+  .ls-slide-cap { margin:0 0 6px; color:var(--ink-mid); font-weight:750; font-size:.88rem; }
+  .ls-slide-cap b { color:var(--ink); font-family:var(--mono); }
+  .ls-dots-row { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin:10px 0 0; }
+  .ls-dots-cap { color:var(--ink-mid); font-weight:750; font-size:.88rem; }
+  .ls-tests { display:flex; flex-wrap:wrap; gap:9px; margin:12px 0; }
+  .ls-test { display:inline-flex; align-items:center; min-height:36px; padding:6px 12px; border:2px solid var(--line); border-radius:999px; color:var(--ink-mid); font-weight:800; font-size:.86rem; }
+  .ls-test[data-ok="true"] { border-color:#0f8a4d; background:#ddf8e8; color:#0b4a2a; }
+
+  .ls-quiz-stage { display:grid; place-items:center; margin:0 0 12px; }
+  .ls-quiz-art { display:block; width:100%; max-width:380px; height:auto; border:3px solid var(--ink); border-radius:18px; background:#fdf6e3; }
+  .ls-quiz-picks { grid-template-columns:repeat(2,minmax(0,1fr)); margin:0 0 12px; }
+  .ls-quiz-actions { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 12px; }
+  .ls-quiz-actions .btn { min-height:48px; }
+  .ls-quiz-score { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0 0; color:var(--ink-mid); font-weight:750; }
+  .ls-quiz-stars { min-height:1.4em; font-size:1.3rem; line-height:1; letter-spacing:2px; }
+
+  /* 原来靠读句子才能选的地方，换成大图卡；下拉与文本框移到家长层 */
+  .ls-pick-cap { margin:0 0 6px; color:var(--ink-mid); font-weight:750; font-size:.86rem; }
+  .ls-source-picks { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0; }
+  .ls-source-picks .kid-tile { min-height:92px; padding:9px 5px; }
+  .ls-source-picks .kid-tile > .kid-tile-art { font-size:1.35rem; }
+  .ls-preset-picks { grid-template-columns:repeat(auto-fit,minmax(80px,1fr)); gap:8px; margin:0; }
+  .ls-preset-picks .kid-tile { min-height:92px; padding:9px 5px; }
+  .ls-preset-picks .kid-tile > .kid-tile-art { font-size:1.2rem; }
+  .ls-predict-picks,
+  .ls-phrase-picks { grid-template-columns:repeat(auto-fit,minmax(92px,1fr)); gap:9px; margin:0 0 8px; }
+  .ls-predict-picks .kid-tile,
+  .ls-phrase-picks .kid-tile { min-height:96px; padding:10px 6px; }
+  .ls-predict-picks .kid-tile > .kid-tile-art,
+  .ls-phrase-picks .kid-tile > .kid-tile-art { font-size:1.5rem; }
+  @media (max-width:560px) {
+    .ls-card { padding:12px; }
+  }
 </style>
 </head>
 <body data-playful-page="games/light-and-shadow.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
 <a class="skip-link" href="#stage">跳到实验画面</a>
 
 <nav class="nav"><div class="nav-in wrap">
@@ -286,9 +395,29 @@
     </div>
   </section>
 
+
+  <!-- 插画舞台：不识字也能看懂这一页在玩什么 -->
+  <div class="kid-visual-stage ls-scene-stage" data-scene-layer="back"
+       data-playful-scene="spotlight"
+       data-playful-scene-title="影子剧场"
+       data-playful-scene-desc="左上角有一盏灯，光斜着照过来，地面上留下一片影子">
+    <div class="ls-scene-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🔦</span>
+        <p class="kid-speech">灯走近一点，影子就<b>变大</b>。</p>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步玩法">
+        <li><span class="kid-tile-art" aria-hidden="true">💡</span>搬灯</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🧸</span>摆道具</li>
+        <li><span class="kid-tile-art" aria-hidden="true">👤</span>看影子</li>
+      </ol>
+    </div>
+  </div>
   <p class="one-goal"><strong>这一幕的小目标：</strong>搬动灯和道具，让墙上的影子明显变大一次，再变小一次。</p>
 
-  <div class="row mode-picker" role="group" aria-label="选择实验模式">
+  <!-- 选哪一幕是孩子在本页的第一个操作，所以它才是 .kid-action-strip；
+       下面 lab 里的 .shadow-hot-actions 是进入实验后的快捷操作，属次级。 -->
+  <div class="row mode-picker kid-action-strip" role="group" aria-label="选择实验模式">
     <strong>先玩哪一幕？</strong>
     <button class="chip" id="mShadow" type="button" aria-pressed="true">① 影子变变变</button>
     <button class="chip" id="mColor" type="button" aria-pressed="false">② 彩光魔法</button>
@@ -306,59 +435,98 @@
       <div class="stage-stack">
         <div class="lab-stage stage-curtain kid-visual-stage" id="stage">
           <canvas id="scene"
-            aria-label="光源、物体、影子的空间实验画面。拖动灯泡或挡光物体，影子的大小和边缘清晰度会实时变化；也可用方向键操作。"
+            aria-label="影子剧场的侧视画面：左边一盏灯，中间立着挡光道具，右边是墙（幕布），地板在下面。拖动灯或道具，墙上和地板上的影子、大小和边缘清晰度会实时变化；也可用方向键操作。"
             tabindex="0"></canvas>
           <p id="live" class="sr-only" aria-live="polite"></p>
           <div class="row stage-foot" style="margin-top:10px;justify-content:space-between">
             <div class="legend" id="legend"></div>
-            <span class="hint" id="tip">拖动发光圆点或蓝色物体；也可以点下面的大按钮。</span>
+            <span class="hint" id="tip">拖动左边的灯或中间的道具；也可以点下面的大按钮。</span>
           </div>
         </div>
         <div class="shadow-hot-actions kid-action-strip" id="shadowHotActions" aria-label="影子快捷操作">
-          <button type="button" data-shadow-action="lamp-near"><span aria-hidden="true">☀→▰</span><br>灯靠近物体</button>
-          <button type="button" data-shadow-action="lamp-far"><span aria-hidden="true">☀←▰</span><br>灯远离物体</button>
-          <button type="button" data-shadow-action="soft"><span aria-hidden="true">◉→◌</span><br>影子边缘变软</button>
+          <button type="button" data-shadow-action="lamp-near" aria-label="把灯搬到靠近道具的地方，影子会变大"><span aria-hidden="true">☀→▰</span><br>灯靠近道具</button>
+          <button type="button" data-shadow-action="lamp-far" aria-label="把灯搬到远离道具的地方，影子会变小"><span aria-hidden="true">☀←▰</span><br>灯远离道具</button>
+          <button type="button" data-shadow-action="lamp-high" aria-label="把灯举高，影子会从墙上缩下来、躺到地板上"><span aria-hidden="true">☀↑</span><br>把灯举高</button>
+          <button type="button" data-shadow-action="soft" aria-label="把灯变大，影子边缘会变软"><span aria-hidden="true">◉→◌</span><br>影子边缘变软</button>
         </div>
       </div>
 
       <div class="control-stack">
+        <!-- 操作台里的 h3 需要 h2 父级，否则 h1→h3 跳级；.sr-only 是绝对定位，不会在 grid 里占一行。 -->
+        <h2 class="sr-only">实验操作台</h2>
         <!-- 影子模式 -->
         <div class="panel" id="panelShadow">
           <h3>灯光师操作台</h3>
 
           <div class="ctrl">
             <div class="ctrl-head"><label for="lampX">把灯左右搬一搬</label><b id="lampXOut">30%</b></div>
-            <input class="input" type="range" id="lampX" min="2" max="60" step="1" value="30">
+            <div class="kid-slide-row">
+              <span class="kid-slide-end" aria-hidden="true">⬅️</span>
+              <input class="input" type="range" id="lampX" min="2" max="60" step="1" value="30">
+              <span class="kid-slide-end" aria-hidden="true">➡️</span>
+            </div>
           </div>
           <div class="ctrl">
             <div class="ctrl-head"><label for="lampY">把灯举高 / 放低</label><b id="lampYOut">30%</b></div>
-            <input class="input" type="range" id="lampY" min="8" max="92" step="1" value="30">
+            <div class="kid-slide-row">
+              <span class="kid-slide-end" aria-hidden="true">⬆️</span>
+              <input class="input" type="range" id="lampY" min="8" max="92" step="1" value="30">
+              <span class="kid-slide-end" aria-hidden="true">⬇️</span>
+            </div>
           </div>
           <div class="ctrl">
             <div class="ctrl-head"><label for="objX">把道具搬近或搬远</label><b id="objXOut">45%</b></div>
-            <input class="input" type="range" id="objX" min="12" max="82" step="1" value="45">
+            <div class="kid-slide-row">
+              <span class="kid-slide-end" aria-hidden="true">☀</span>
+              <input class="input" type="range" id="objX" min="12" max="82" step="1" value="45">
+              <span class="kid-slide-end" aria-hidden="true">🧱</span>
+            </div>
           </div>
           <div class="ctrl">
             <div class="ctrl-head"><label for="objH">把道具变高</label><b id="objHOut">0.90 m</b></div>
-            <input class="input" type="range" id="objH" min="0.2" max="2" step="0.05" value="0.9">
+            <div class="kid-slide-row">
+              <span class="kid-slide-end" aria-hidden="true">🐜</span>
+              <input class="input" type="range" id="objH" min="0.2" max="2" step="0.05" value="0.9">
+              <span class="kid-slide-end" aria-hidden="true">🦒</span>
+            </div>
           </div>
           <div class="ctrl">
             <div class="ctrl-head"><label for="lampR">让灯变大，看看影子边缘</label><b id="lampROut">0 cm</b></div>
-            <input class="input" type="range" id="lampR" min="0" max="60" step="1" value="0"
-                   aria-describedby="lampRHint">
+            <div class="kid-slide-row">
+              <span class="kid-slide-end" aria-hidden="true">◦</span>
+              <input class="input" type="range" id="lampR" min="0" max="60" step="1" value="0"
+                     aria-describedby="lampRHint">
+              <span class="kid-slide-end" aria-hidden="true">●</span>
+            </div>
             <div class="hint" id="lampRHint">从小光点慢慢变大，看看影子边缘会不会变软。</div>
           </div>
           <div class="ctrl">
             <div class="ctrl-head"><span id="sourceCountLabel">点亮几盏灯</span><b id="sourceCountOut">1 盏</b></div>
-            <div class="seg" role="group" aria-labelledby="sourceCountLabel">
-              <button class="chip btn-sm" type="button" data-sources="1" aria-pressed="true">点亮 1 盏</button>
-              <button class="chip btn-sm" type="button" data-sources="2" aria-pressed="false">点亮 2 盏</button>
-              <button class="chip btn-sm" type="button" data-sources="3" aria-pressed="false">点亮 3 盏</button>
+            <div class="kid-tiles ls-source-picks" role="group" aria-labelledby="sourceCountLabel">
+              <button class="kid-tile" type="button" data-sources="1" aria-pressed="true" aria-label="点亮 1 盏灯，墙上出现 1 个影子">
+                <span class="kid-tile-art" aria-hidden="true">🔦</span>
+                <span class="kid-tile-label">1 盏灯</span>
+                <span class="kid-tile-sub">1 个影子</span>
+              </button>
+              <button class="kid-tile" type="button" data-sources="2" aria-pressed="false" aria-label="点亮 2 盏灯，墙上出现 2 个影子">
+                <span class="kid-tile-art" aria-hidden="true">🔦🔦</span>
+                <span class="kid-tile-label">2 盏灯</span>
+                <span class="kid-tile-sub">2 个影子</span>
+              </button>
+              <button class="kid-tile" type="button" data-sources="3" aria-pressed="false" aria-label="点亮 3 盏灯，墙上出现 3 个影子">
+                <span class="kid-tile-art" aria-hidden="true">🔦🔦🔦</span>
+                <span class="kid-tile-label">3 盏灯</span>
+                <span class="kid-tile-sub">3 个影子</span>
+              </button>
             </div>
           </div>
           <div class="ctrl">
             <div class="ctrl-head"><label for="sourceGap">把几盏灯分开一点</label><b id="sourceGapOut">12%</b></div>
-            <input class="input" type="range" id="sourceGap" min="4" max="25" step="1" value="12">
+            <div class="kid-slide-row">
+              <span class="kid-slide-end" aria-hidden="true">🤏</span>
+              <input class="input" type="range" id="sourceGap" min="4" max="25" step="1" value="12">
+              <span class="kid-slide-end" aria-hidden="true">↔️</span>
+            </div>
           </div>
 
           <div class="seg" style="margin-top:4px">
@@ -370,17 +538,18 @@
         <div class="panel kid-result-card" id="panelShadowRead">
           <h3>影子现在怎么样？</h3>
           <div class="result-glance" aria-live="polite">
-            <div class="glance-card"><span>影子大小</span><b id="shadowSizeWord">中等 · 2.00×</b><div class="glance-track" aria-hidden="true"><i class="glance-fill" id="shadowSizeMeter"></i></div></div>
+            <div class="glance-card"><span>影子大小</span><b id="shadowSizeWord">中等 · 1.90×</b><div class="glance-track" aria-hidden="true"><i class="glance-fill" id="shadowSizeMeter"></i></div></div>
             <div class="glance-card"><span>边缘清晰度</span><b id="shadowSharpWord">很清楚</b><div class="glance-track" aria-hidden="true"><i class="glance-fill" id="shadowSharpMeter"></i></div></div>
           </div>
           <div class="readout"><span>道具有多高</span><b id="rObj">0.90 m</b></div>
-          <div class="readout"><span>影子有多高</span><b id="rSha">1.80 m</b></div>
-          <div class="readout"><span>影子放大了</span><b id="rMag">2.00×</b></div>
+          <div class="readout"><span>墙上影子有多高</span><b id="rSha">1.71 m</b></div>
+          <div class="readout"><span>影子放大了</span><b id="rMag">1.90×</b></div>
           <div class="readout"><span>灯→道具</span><b id="rD1">1.50 m</b></div>
           <div class="readout"><span>灯→幕布</span><b id="rD2">3.00 m</b></div>
+          <div class="readout"><span>灯到墙 ÷ 灯到物</span><b id="rRatio">2.00×</b></div>
           <div class="readout"><span>软边有多宽</span><b id="rPen">0 cm</b></div>
           <p class="text-result" id="shadowText" role="status" aria-live="polite">一盏灯形成一个影子。移动灯或物体后，文字结果会同步更新。</p>
-          <p class="hint" style="margin-top:8px">小秘密：<span class="mono">影高 ÷ 物高 = 灯到墙 ÷ 灯到物</span></p>
+          <p class="hint" style="margin-top:8px">小秘密：把灯放低到和道具底边差不多高时，<span class="mono">影高 ÷ 物高</span> 就等于 <span class="mono">灯到墙 ÷ 灯到物</span>（上面两个数会变成一样）。把灯举高，影子会往下缩、躺到地板上。</p>
         </div>
 
         <!-- 混色模式 -->
@@ -388,23 +557,43 @@
           <h3>彩光魔法操作台</h3>
           <div class="ctrl">
             <div class="ctrl-head"><label for="iR">把红灯调亮 / 调暗</label><b id="iROut">100%</b></div>
-            <input class="input" type="range" id="iR" min="0" max="100" step="1" value="100">
+            <div class="kid-slide-row">
+              <span class="kid-slide-end" aria-hidden="true">🌑</span>
+              <input class="input" type="range" id="iR" min="0" max="100" step="1" value="100">
+              <span class="kid-slide-end" aria-hidden="true">🔴</span>
+            </div>
           </div>
           <div class="ctrl">
             <div class="ctrl-head"><label for="iG">把绿灯调亮 / 调暗</label><b id="iGOut">100%</b></div>
-            <input class="input" type="range" id="iG" min="0" max="100" step="1" value="100">
+            <div class="kid-slide-row">
+              <span class="kid-slide-end" aria-hidden="true">🌑</span>
+              <input class="input" type="range" id="iG" min="0" max="100" step="1" value="100">
+              <span class="kid-slide-end" aria-hidden="true">🟢</span>
+            </div>
           </div>
           <div class="ctrl">
             <div class="ctrl-head"><label for="iB">把蓝灯调亮 / 调暗</label><b id="iBOut">100%</b></div>
-            <input class="input" type="range" id="iB" min="0" max="100" step="1" value="100">
+            <div class="kid-slide-row">
+              <span class="kid-slide-end" aria-hidden="true">🌑</span>
+              <input class="input" type="range" id="iB" min="0" max="100" step="1" value="100">
+              <span class="kid-slide-end" aria-hidden="true">🔵</span>
+            </div>
           </div>
           <div class="ctrl">
             <div class="ctrl-head"><label for="spread">让彩色光圈变大 / 变小</label><b id="spreadOut">34%</b></div>
-            <input class="input" type="range" id="spread" min="16" max="52" step="1" value="34">
+            <div class="kid-slide-row">
+              <span class="kid-slide-end" aria-hidden="true">◦</span>
+              <input class="input" type="range" id="spread" min="16" max="52" step="1" value="34">
+              <span class="kid-slide-end" aria-hidden="true">●</span>
+            </div>
           </div>
           <div class="ctrl">
             <div class="ctrl-head"><label for="sep">把三盏灯拉开 / 靠拢</label><b id="sepOut">30%</b></div>
-            <input class="input" type="range" id="sep" min="0" max="60" step="1" value="30">
+            <div class="kid-slide-row">
+              <span class="kid-slide-end" aria-hidden="true">🤏</span>
+              <input class="input" type="range" id="sep" min="0" max="60" step="1" value="30">
+              <span class="kid-slide-end" aria-hidden="true">↔️</span>
+            </div>
           </div>
           <div class="ctrl">
             <div class="ctrl-head" style="margin-bottom:0"><label for="pickX" id="pickLbl">搬动取色圈找颜色</label><b id="pickOut">50%</b></div>
@@ -415,11 +604,27 @@
             <div class="readout" style="margin-top:6px"><span>这个点变成</span><b id="pickVal" class="mono">rgb(255,255,255)</b></div>
             <div class="readout"><span>颜色名字</span><b id="pickName">白色</b></div>
           </div>
-          <div class="seg">
-            <button class="chip btn-sm" type="button" data-preset="rgb" aria-pressed="true">点亮三色</button>
-            <button class="chip btn-sm" type="button" data-preset="ry" aria-pressed="false">试试红 + 绿</button>
-            <button class="chip btn-sm" type="button" data-preset="cy" aria-pressed="false">试试绿 + 蓝</button>
-            <button class="chip btn-sm" type="button" data-preset="mg" aria-pressed="false">试试红 + 蓝</button>
+          <div class="kid-tiles ls-preset-picks" role="group" aria-label="选一组彩灯">
+            <button class="kid-tile" type="button" data-preset="rgb" aria-pressed="true" aria-label="点亮红绿蓝三色，重叠处是白色">
+              <span class="kid-tile-art" aria-hidden="true">🔴🟢🔵</span>
+              <span class="kid-tile-label">三色齐</span>
+              <span class="kid-tile-sub">＝白</span>
+            </button>
+            <button class="kid-tile" type="button" data-preset="ry" aria-pressed="false" aria-label="只点红灯和绿灯，重叠处是黄色">
+              <span class="kid-tile-art" aria-hidden="true">🔴🟢</span>
+              <span class="kid-tile-label">红+绿</span>
+              <span class="kid-tile-sub">＝黄</span>
+            </button>
+            <button class="kid-tile" type="button" data-preset="cy" aria-pressed="false" aria-label="只点绿灯和蓝灯，重叠处是青色">
+              <span class="kid-tile-art" aria-hidden="true">🟢🔵</span>
+              <span class="kid-tile-label">绿+蓝</span>
+              <span class="kid-tile-sub">＝青</span>
+            </button>
+            <button class="kid-tile" type="button" data-preset="mg" aria-pressed="false" aria-label="只点红灯和蓝灯，重叠处是洋红">
+              <span class="kid-tile-art" aria-hidden="true">🔴🔵</span>
+              <span class="kid-tile-label">红+蓝</span>
+              <span class="kid-tile-sub">＝洋红</span>
+            </button>
           </div>
         </div>
       </div>
@@ -450,8 +655,53 @@
       <article class="step-card" data-icon="✓"><h3>④ 说</h3><p>选一句发现，留下操作证据。</p></article>
     </div>
     <div class="task-fields">
-      <div><label for="lightPrediction">我的预测</label><select class="input" id="lightPrediction"><option>灯靠近物体，影子变大</option><option>灯靠近物体，影子变小</option><option>影子不变</option></select></div>
-      <div><label for="lightReflection">我的发现</label><div class="choice-phrases kid-choice" aria-label="点一句作为我的发现"><button type="button" data-light-phrase="光直直地走，物体挡住光就有影子。">物体挡光 → 有影子</button><button type="button" data-light-phrase="灯越靠近物体，墙上的影子就越大。">灯靠近 → 影子大</button><button type="button" data-light-phrase="光源变大以后，影子的边缘会变模糊。">灯变大 → 边缘软</button></div><textarea class="input" id="lightReflection" rows="2" placeholder="可以点上面一句，也可以自己说。"></textarea></div>
+      <div>
+        <p class="ls-pick-cap" id="lightPredictCap">我的预测：灯靠近物体，影子会怎样？点一张大图卡。</p>
+        <div class="kid-tiles ls-predict-picks" id="lightPredictPicks" role="group" aria-labelledby="lightPredictCap">
+          <button class="kid-tile" type="button" data-light-predict="灯靠近物体，影子变大" aria-pressed="false" aria-label="我猜影子会变大">
+            <span class="kid-tile-art" aria-hidden="true">▪→◼</span>
+            <span class="kid-tile-label">变大</span>
+            <span class="kid-tile-sub">影子撑大</span>
+          </button>
+          <button class="kid-tile" type="button" data-light-predict="灯靠近物体，影子变小" aria-pressed="false" aria-label="我猜影子会变小">
+            <span class="kid-tile-art" aria-hidden="true">◼→▪</span>
+            <span class="kid-tile-label">变小</span>
+            <span class="kid-tile-sub">影子缩小</span>
+          </button>
+          <button class="kid-tile" type="button" data-light-predict="影子不变" aria-pressed="false" aria-label="我猜影子不变">
+            <span class="kid-tile-art" aria-hidden="true">◼＝◼</span>
+            <span class="kid-tile-label">不变</span>
+            <span class="kid-tile-sub">一样大</span>
+          </button>
+        </div>
+        <div data-audience="parent"><label for="lightPrediction">图卡上选中的预测</label><select class="input" id="lightPrediction"><option>灯靠近物体，影子变大</option><option>灯靠近物体，影子变小</option><option>影子不变</option></select></div>
+      </div>
+      <div>
+        <p class="ls-pick-cap" id="lightPhraseCap">我的发现：点一张大图卡当作我的结论。</p>
+        <div class="kid-tiles ls-phrase-picks kid-choice" id="lightPhrasePicks" role="group" aria-labelledby="lightPhraseCap">
+          <button class="kid-tile" type="button" data-light-phrase="光直直地走，物体挡住光就有影子。" aria-pressed="false" aria-label="我的发现：光直直地走，物体挡住光就有影子">
+            <span class="kid-tile-art" aria-hidden="true">▮◼</span>
+            <span class="kid-tile-label">有影子</span>
+            <span class="kid-tile-sub">物体挡光</span>
+          </button>
+          <button class="kid-tile" type="button" data-light-phrase="灯越靠近物体，墙上的影子就越大。" aria-pressed="false" aria-label="我的发现：灯越靠近物体，影子越大">
+            <span class="kid-tile-art" aria-hidden="true">☀→▮</span>
+            <span class="kid-tile-label">灯近影大</span>
+            <span class="kid-tile-sub">相似三角形</span>
+          </button>
+          <button class="kid-tile" type="button" data-light-phrase="光源变大以后，影子的边缘会变模糊。" aria-pressed="false" aria-label="我的发现：光源变大以后，影子边缘会变模糊">
+            <span class="kid-tile-art" aria-hidden="true">◉→◌</span>
+            <span class="kid-tile-label">边缘变软</span>
+            <span class="kid-tile-sub">半影出现</span>
+          </button>
+          <button class="kid-tile" type="button" data-light-phrase="换成半透明的材料，透过去一部分光，影子就变淡了。" aria-pressed="false" aria-label="我的发现：换成半透明材料，影子会变淡">
+            <span class="kid-tile-art" aria-hidden="true">▤◻</span>
+            <span class="kid-tile-label">影子变淡</span>
+            <span class="kid-tile-sub">半透明</span>
+          </button>
+        </div>
+        <div data-audience="parent"><label for="lightReflection">图卡上选中的发现（也可以自己改写）</label><textarea class="input" id="lightReflection" rows="2" placeholder="可以点上面一张卡，也可以自己说。"></textarea></div>
+      </div>
       <button class="btn btn-primary" id="lightComplete" type="button" disabled>记录任务完成</button>
     </div>
     <p class="task-status status" id="lightTaskStatus" role="status" aria-live="polite">尚未完成：请操作出明显不同的一大一小两个影子。</p>
@@ -469,32 +719,286 @@
     </form>
   </section>
 
+  <section class="ls-shell" aria-labelledby="lsShellTitle">
+    <h2 id="lsShellTitle">看图就懂：材料图鉴 · 影子量表 · 灯往哪边走</h2>
+    <p class="ls-lead">这一段全是大图，点一点就能玩，不用先读句子。</p>
+
+    <article class="ls-card" aria-labelledby="lsAtlasTitle">
+      <h3 id="lsAtlasTitle">① 材料图鉴：光照过去会怎样</h3>
+      <p class="ls-lead">点一张卡，下面的主舞台就换成这种材料的影子：全挡住＝黑影，透一半＝淡影，全透过＝几乎没有影子。</p>
+      <svg class="ls-stage" id="lsStage" viewBox="0 0 320 200" role="img" aria-labelledby="lsStageTitle lsStageDesc">
+        <title id="lsStageTitle">影子主舞台</title>
+        <desc id="lsStageDesc">按你点的材料卡变化的大图：左边一盏灯，中间立着一块材料，右边墙上出现深浅不同的影子。</desc>
+        <g id="lsStageArt"></g>
+      </svg>
+      <p class="kid-scene-caption">绿色虚线是「灯 → 材料顶 → 影子顶」那一条关键光线，它永远是直的。</p>
+      <ul class="kid-legend" aria-label="主舞台图例">
+        <li style="--tone:var(--warn)"><span class="kid-legend-mark" aria-hidden="true">☀</span>灯（光源）</li>
+        <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">▮</span>材料（挡光的东西）</li>
+        <li style="--tone:var(--ink-dim)"><span class="kid-legend-mark" aria-hidden="true">◼</span>墙上的影子</li>
+      </ul>
+      <div class="kid-figure-grid" id="lsAtlasGrid" aria-label="材料图鉴：六张大图卡">
+        <button class="kid-figure" type="button" data-ls-mat="wood" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="ls-bg" x="0" y="0" width="120" height="90"/>
+              <rect class="ls-wall" x="100" y="8" width="20" height="68"/>
+              <rect class="ls-shade-100" x="100" y="22" width="20" height="54"/>
+              <rect class="ls-floor" x="0" y="76" width="120" height="14"/>
+              <path class="ls-ray" d="M27 30 L45 25 M27 36 L45 36 M27 42 L45 47"/>
+              <rect class="ls-slab-wood" x="47" y="28" width="12" height="48"/>
+              <circle class="ls-lamp" cx="17" cy="36" r="9"/>
+              <path class="ls-ray" d="M17 22 L17 14 M8 28 L2 22 M26 28 L32 22"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">木板</span>
+          <span class="kid-figure-sub">不透明</span>
+          <span class="kid-figure-fact">光一点也过不去 → 影子最黑</span>
+        </button>
+        <button class="kid-figure" type="button" data-ls-mat="card" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="ls-bg" x="0" y="0" width="120" height="90"/>
+              <rect class="ls-wall" x="100" y="8" width="20" height="68"/>
+              <rect class="ls-shade-90" x="100" y="22" width="20" height="54"/>
+              <rect class="ls-floor" x="0" y="76" width="120" height="14"/>
+              <path class="ls-ray" d="M27 30 L45 25 M27 36 L45 36 M27 42 L45 47"/>
+              <rect class="ls-slab-card" x="47" y="28" width="12" height="48"/>
+              <path class="ls-water-line" d="M50 40 L56 40 M50 52 L56 52"/>
+              <circle class="ls-lamp" cx="17" cy="36" r="9"/>
+              <path class="ls-ray" d="M17 22 L17 14 M8 28 L2 22 M26 28 L32 22"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">纸板</span>
+          <span class="kid-figure-sub">不透明</span>
+          <span class="kid-figure-fact">光也过不去 → 影子几乎一样黑</span>
+        </button>
+        <button class="kid-figure" type="button" data-ls-mat="frost" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="ls-bg" x="0" y="0" width="120" height="90"/>
+              <rect class="ls-wall" x="100" y="8" width="20" height="68"/>
+              <rect class="ls-shade-55" x="100" y="22" width="20" height="54"/>
+              <rect class="ls-floor" x="0" y="76" width="120" height="14"/>
+              <path class="ls-ray" d="M27 30 L45 25 M27 36 L45 36 M27 42 L45 47"/>
+              <path class="ls-ray-soft" d="M61 30 L96 24 M61 38 L96 38 M61 48 L96 54"/>
+              <rect class="ls-slab-frost" x="47" y="28" width="12" height="48"/>
+              <circle class="ls-lamp" cx="17" cy="36" r="9"/>
+              <path class="ls-ray" d="M17 22 L17 14 M8 28 L2 22 M26 28 L32 22"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">毛玻璃</span>
+          <span class="kid-figure-sub">半透明</span>
+          <span class="kid-figure-fact">透过去一半 → 影子变淡</span>
+        </button>
+        <button class="kid-figure" type="button" data-ls-mat="gauze" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="ls-bg" x="0" y="0" width="120" height="90"/>
+              <rect class="ls-wall" x="100" y="8" width="20" height="68"/>
+              <rect class="ls-shade-30" x="100" y="22" width="20" height="54"/>
+              <rect class="ls-floor" x="0" y="76" width="120" height="14"/>
+              <path class="ls-ray" d="M27 30 L45 25 M27 36 L45 36 M27 42 L45 47"/>
+              <path class="ls-ray-soft" d="M61 29 L96 23 M61 37 L96 37 M61 47 L96 53"/>
+              <rect class="ls-slab-gauze" x="47" y="28" width="12" height="48"/>
+              <circle class="ls-lamp" cx="17" cy="36" r="9"/>
+              <path class="ls-ray" d="M17 22 L17 14 M8 28 L2 22 M26 28 L32 22"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">薄纱</span>
+          <span class="kid-figure-sub">半透明</span>
+          <span class="kid-figure-fact">大半都透过去 → 影子很淡</span>
+        </button>
+        <button class="kid-figure" type="button" data-ls-mat="glass" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="ls-bg" x="0" y="0" width="120" height="90"/>
+              <rect class="ls-wall" x="100" y="8" width="20" height="68"/>
+              <rect class="ls-shade-08" x="100" y="22" width="20" height="54"/>
+              <rect class="ls-floor" x="0" y="76" width="120" height="14"/>
+              <path class="ls-ray" d="M27 30 L45 25 M27 36 L45 36 M27 42 L45 47"/>
+              <path class="ls-ray" d="M61 28 L96 22 M61 36 L96 36 M61 46 L96 52"/>
+              <rect class="ls-slab-glass" x="47" y="28" width="12" height="48"/>
+              <circle class="ls-lamp" cx="17" cy="36" r="9"/>
+              <path class="ls-ray" d="M17 22 L17 14 M8 28 L2 22 M26 28 L32 22"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">清玻璃</span>
+          <span class="kid-figure-sub">透明</span>
+          <span class="kid-figure-fact">光几乎全透过 → 几乎没有影子</span>
+        </button>
+        <button class="kid-figure" type="button" data-ls-mat="water" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="ls-bg" x="0" y="0" width="120" height="90"/>
+              <rect class="ls-wall" x="100" y="8" width="20" height="68"/>
+              <rect class="ls-shade-14" x="100" y="22" width="20" height="54"/>
+              <rect class="ls-floor" x="0" y="76" width="120" height="14"/>
+              <path class="ls-ray" d="M27 30 L45 25 M27 36 L45 36 M27 42 L45 47"/>
+              <path class="ls-ray" d="M61 32 L96 21 M61 38 L96 35 M61 47 L96 55"/>
+              <rect class="ls-slab-water" x="47" y="28" width="12" height="48"/>
+              <path class="ls-water-line" d="M47 36 C50 33 56 39 59 36 M47 50 C50 47 56 53 59 50"/>
+              <circle class="ls-lamp" cx="17" cy="36" r="9"/>
+              <path class="ls-ray" d="M17 22 L17 14 M8 28 L2 22 M26 28 L32 22"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">水</span>
+          <span class="kid-figure-sub">透明</span>
+          <span class="kid-figure-fact">光穿过去还会拐弯 → 影子很淡</span>
+        </button>
+      </div>
+      <div class="kid-speech-row ls-say-row">
+        <span class="kid-mascot" aria-hidden="true">🔦</span>
+        <p class="kid-speech" id="lsAtlasSay" role="status" aria-live="polite">点一张卡，主舞台就换成那种材料的影子。</p>
+      </div>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：材料图鉴在教什么</summary>
+        <p><b>这在教什么：</b>影子的深浅由「材料让多少光通过」决定，而不是由材料的颜色决定。三档词汇一次给足：<b>不透明</b>（光过不去）、<b>半透明</b>（透过一部分，而且被打散了方向）、<b>透明</b>（几乎原样通过）。</p>
+        <p><b>一起追问：</b>「毛玻璃和清玻璃都是玻璃，为什么影子不一样黑？」答案在表面：毛玻璃表面粗糙，光透过时被打散到各个方向，所以能看见亮但看不清形状。这就是浴室玻璃的做法。</p>
+        <p><b>背后的原理：</b>穿过材料的光强按朗伯－比尔关系衰减——越厚、越吸光，透过的比例越小。所以同一张纸叠两层，影子会更黑一点；一杯清水影子很淡，一杯牛奶影子就很明显。</p>
+      </details>
+    </article>
+
+    <article class="ls-card" aria-labelledby="lsMeterTitle">
+      <h3 id="lsMeterTitle">② 影子量表：有多大 · 有多黑</h3>
+      <p class="ls-lead">把灯挪近挪远，第一条就变长变短；上面点了哪张材料卡，第二条就跟着变。</p>
+      <div class="kid-tiles ls-dist-picks" id="lsDistPicks" role="group" aria-label="把灯放到哪里">
+        <button class="kid-tile" type="button" data-ls-dist="0.9" aria-pressed="false" aria-label="灯贴很近：离材料 0.9 米，影子最大">
+          <span class="kid-tile-art" aria-hidden="true">☀→▮</span>
+          <span class="kid-tile-label">贴很近</span>
+          <span class="kid-tile-sub">影子最大</span>
+        </button>
+        <button class="kid-tile" type="button" data-ls-dist="1.5" aria-pressed="false" aria-label="灯放中间：离材料 1.5 米，影子中等">
+          <span class="kid-tile-art" aria-hidden="true">☀·▮</span>
+          <span class="kid-tile-label">放中间</span>
+          <span class="kid-tile-sub">影子中等</span>
+        </button>
+        <button class="kid-tile" type="button" data-ls-dist="2.5" aria-pressed="false" aria-label="灯拉很远：离材料 2.5 米，影子最小">
+          <span class="kid-tile-art" aria-hidden="true">☀←▮</span>
+          <span class="kid-tile-label">拉很远</span>
+          <span class="kid-tile-sub">影子最小</span>
+        </button>
+      </div>
+      <p class="ls-slide-cap"><label for="lsDist">想慢慢挪：灯离材料 <b id="lsDistOut">1.50 m</b>（灯到墙一直是 3.00 m）</label></p>
+      <div class="kid-slide-row">
+        <span class="kid-slide-end" aria-hidden="true">🔆</span>
+        <input class="input" type="range" id="lsDist" min="0.85" max="2.5" step="0.05" value="1.5">
+        <span class="kid-slide-end" aria-hidden="true">🕯️</span>
+      </div>
+      <div class="ls-meters">
+        <div class="kid-meter" style="--tone:var(--warn)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">📏</span>
+            <span id="lsSizeLabel">影子有多大</span>
+            <span class="kid-meter-value" id="lsSizeValue">2.0 倍</span>
+          </div>
+          <div class="kid-meter-track" id="lsSizeMeter" role="img" aria-labelledby="lsSizeLabel lsSizeValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">满格是 4 倍。<span class="mono">影高 ÷ 物高 = 灯到墙 ÷ 灯到物</span>：灯越靠近材料，倍数越大。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--math)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">🌑</span>
+            <span id="lsDarkLabel">影子有多黑</span>
+            <span class="kid-meter-value" id="lsDarkValue">100%</span>
+          </div>
+          <div class="kid-meter-track" id="lsDarkMeter" role="img" aria-labelledby="lsDarkLabel lsDarkValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">满格是完全挡光的黑影。这一条只看材料，和灯放在哪儿没有关系。</p>
+        </div>
+      </div>
+      <p class="ls-tests" aria-label="两条判断">
+        <span class="ls-test" id="lsTestSize" data-ok="false">○ 影子比材料大一倍</span>
+        <span class="ls-test" id="lsTestDark" data-ok="false">○ 影子是深黑的</span>
+      </p>
+      <p class="ls-dots-row">
+        <span class="ls-dots-cap" id="lsDarkDotsCap">用点点数挡光（十格）：</span>
+        <span class="kid-dots" id="lsDarkDots" role="img" aria-labelledby="lsDarkDotsCap"></span>
+      </p>
+      <p class="kid-speech" id="lsMeterSay" role="status" aria-live="polite">挪一挪灯，两条量表会一起告诉你影子有多大、有多黑。</p>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：两条量表在教什么</summary>
+        <p><b>这在教什么：</b>把两件常被混在一起的事拆开——影子的<b>大小</b>只由几何位置决定，影子的<b>深浅</b>只由材料的透光率决定。孩子看到第二条不随灯移动，就会自己发现「这是两件事」。</p>
+        <p><b>一起追问：</b>「灯挪远了，影子为什么会变小？」引导孩子指着绿色虚线数：灯到墙没变，灯到材料变长了，比值就变小了。</p>
+        <p><b>背后的原理：</b>放大率就是相似三角形的比值 <code>影高 / 物高 = d₂ / d₁</code>。倍数永远大于 1（因为 d₂ &gt; d₁），并且随 d₁ 减小而急剧变大——这就是手电筒贴近玩偶时影子会撑满整面墙的原因。太阳的 d₂/d₁ ≈ 1，所以阳光下的影子和人差不多高。</p>
+      </details>
+    </article>
+
+    <article class="ls-card" aria-labelledby="lsQuizTitle">
+      <h3 id="lsQuizTitle">③ 灯往哪边走：看影子猜灯</h3>
+      <p class="ls-lead">材料一直站在原地没动，只有灯偷偷挪了一下。比一比「刚才」和「现在」两片影子，再猜灯往哪边走。猜错不要紧，可以接着猜。</p>
+      <div class="ls-quiz-stage">
+        <svg class="ls-quiz-art" id="lsQuizArt" viewBox="0 0 320 180" role="img" aria-labelledby="lsQuizArtTitle lsQuizArtDesc">
+          <title id="lsQuizArtTitle">影子的前后对比</title>
+          <desc id="lsQuizArtDesc">左边一幅是「刚才」的影子，右边一幅是「现在」的影子。两幅里的材料位置一样，只有墙上影子的高矮不同，灯的位置画成一个问号。</desc>
+          <g id="lsQuizArtBody"></g>
+        </svg>
+      </div>
+      <div class="kid-tiles ls-quiz-picks" id="lsQuizPicks" role="group" aria-labelledby="lsQuizTitle">
+        <button class="kid-tile" type="button" data-ls-answer="near" aria-pressed="false" aria-label="我猜灯靠近了材料">
+          <span class="kid-tile-art" aria-hidden="true">☀→▮</span>
+          <span class="kid-tile-label">灯靠近了</span>
+          <span class="kid-tile-sub">影子会变大</span>
+        </button>
+        <button class="kid-tile" type="button" data-ls-answer="far" aria-pressed="false" aria-label="我猜灯走远了材料">
+          <span class="kid-tile-art" aria-hidden="true">☀←▮</span>
+          <span class="kid-tile-label">灯走远了</span>
+          <span class="kid-tile-sub">影子会变小</span>
+        </button>
+      </div>
+      <div class="ls-quiz-actions">
+        <button class="btn btn-primary" type="button" id="lsQuizNext"><span aria-hidden="true">🔄</span> 换一题</button>
+        <button class="btn btn-ghost" type="button" id="lsQuizHint"><span aria-hidden="true">👀</span> 给点提示</button>
+      </div>
+      <p class="kid-speech" id="lsQuizSay" role="status" aria-live="polite">先比一比两边的影子谁高，再点一张大图卡。</p>
+      <p class="ls-quiz-score">
+        <span class="ls-quiz-stars" id="lsQuizStars" role="img" aria-label="已经猜对 0 次"></span>
+        <span id="lsQuizTotal">猜对 0 次</span>
+      </p>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：这个小游戏在教什么</summary>
+        <p><b>这在教什么：</b>反过来推理——从结果（影子变大了）推出原因（灯更近了）。这一步比正向操作难得多，是「因果可逆」思维的起点。猜错只给提示，不清零、不计时，因为要练的是把两幅图比清楚。</p>
+        <p><b>一起追问：</b>「你是怎么看出来的？」让孩子指着两片影子的顶端比高矮，说出「右边更高，所以灯更近」。能说出理由比猜对更重要。</p>
+        <p><b>背后的原理：</b>倍数 <code>d₂ / d₁</code> 里只有 <code>d₁</code> 变了，所以影子变大只可能是 <code>d₁</code> 变小，也就是灯走近了。真实房间里还有第二种可能：物体往灯那边挪了。这个游戏特意把物体固定住，先把一个变量说清楚，再回到上面的舞台去玩两个变量。</p>
+      </details>
+    </article>
+  </section>
+
   <div class="grid-2 parent-principle-grid parent-deep-dive" data-audience="parent">
     <section class="card">
-      <h2 style="font-size:1.15rem">学习目标</h2>
+      <h2 style="font-size:1.15rem">学习目标 · 这在教什么</h2>
       <p>孩子能指出“光源 → 挡光物 → 影子”的空间顺序，通过真实操作比较影子大小与边缘清晰度，并用一句话说明光被物体挡住后形成影子。</p>
+      <p>本页新增的三段图形模块各管一件事：<b>材料图鉴</b>让孩子把「不透明 / 半透明 / 透明」和影子的深浅对上；<b>影子量表</b>把「有多大（倍数）」和「有多黑（挡光百分比）」拆成两条能比长短的条；<b>灯往哪边走</b>练的是反向推理——从影子的变化推回灯的移动。</p>
       <h3>给家长的追问</h3>
       <ol class="qlist">
-        <li><b>预测：</b>“把灯往方块那边推近一点，影子会变大还是变小？”先猜再拖，很多孩子会猜反。</li>
-        <li><b>观察：</b>“影子的边缘是刀切一样整齐的吗？”把灯变大，找一找模糊的半影。</li>
-        <li><b>推理：</b>“红光加绿光会得到什么颜色？用蜡笔混红和绿呢？”让孩子用真蜡笔对比光的加色。</li>
+        <li><b>预测：</b>“把灯往道具那边推近一点，影子会变大还是变小？”先猜再拖，很多孩子会猜反。猜完再看量表上的倍数对不对得上。</li>
+        <li><b>再问一层：</b>“把灯举高会怎样？”影子会从墙上缩下来、躺到地板上——因为光线在到墙之前就落地了。这正是正午影子短、傍晚影子长的原因，画面里会如实画出这两种情况。</li>
+        <li><b>观察：</b>“影子的边缘是刀切一样整齐的吗？”把灯变大，找一找模糊的半影；再问“为什么灯小的时候边缘就很利？”</li>
+        <li><b>推理：</b>“毛玻璃和清玻璃都是玻璃，为什么影子不一样黑？”接着问“红光加绿光会得到什么颜色？用蜡笔混红和绿呢？”让孩子用真蜡笔对比光的加色。</li>
       </ol>
-      <p class="hint" style="margin-top:10px">线下延伸：关灯，用手机手电筒和一个杯子在墙上做同样的实验，量一量影子的高度。</p>
+      <p class="hint" style="margin-top:10px">线下延伸：关灯，用手机手电筒和一个杯子在墙上做同样的实验，量一量影子的高度；再换成保鲜膜、烘焙纸、毛巾各挡一次，把影子按深浅排队。</p>
     </section>
 
     <section class="card">
       <h2 style="font-size:1.15rem">背后的原理</h2>
       <p><b>光沿直线传播。</b>正因为光不会绕弯，物体背后才会出现一块光到不了的区域，那就是影子。把灯、物体顶点、影子顶点三点连起来，永远是一条直线 —— 这是所有影子几何的唯一秘密。</p>
-      <h3>影子为什么会放大</h3>
-      <p>灯到物体的距离叫 <code>d₁</code>，灯到墙的距离叫 <code>d₂</code>，那么<code>影高 / 物高 = d₂ / d₁</code>。这就是相似三角形。灯越靠近物体，<code>d₁</code> 越小，比值越大，影子越大。太阳离我们极远，<code>d₂/d₁ ≈ 1</code>，所以阳光下的影子和物体差不多大。</p>
-      <h3>本影（umbra）与半影（penumbra）</h3>
-      <p>点光源只产生<b>本影</b>：完全黑。光源有大小时，墙上有些地方只能看到灯的一部分，就形成了亮度渐变的<b>半影</b>。日食里的全食带就是月亮的本影，偏食区就是半影。</p>
+      <h3>相似三角形与影子的放大率</h3>
+      <p>灯到物体的距离叫 <code>d₁</code>，灯到墙的距离叫 <code>d₂</code>，那么<b>放大率</b> <code>M = 影高 / 物高 = d₂ / d₁</code>。灯、物体顶点、影子顶点这三点连成一条直线，于是「灯—物体」和「灯—墙」构成两个相似三角形，对应边成比例——这就是整条公式的全部来源，页面上那条绿色虚线画的正是这条线。</p>
+      <p class="hint">一个容易被跳过的前提：<code>M = 影高 / 物高</code> 这一步要求<b>灯和物体底边差不多齐高</b>（光轴贴着地面）。灯举高以后，那条「灯 → 物顶」的光线会斜着往下走，先落到地板上，墙上的影子就变短甚至消失。所以画面里同时给出 <code>影高 ÷ 物高</code> 和 <code>灯到墙 ÷ 灯到物</code> 两个数：灯放低时两个数相等，灯举高时孩子会看到它们分开——这个「分开」本身就是值得追问的现象，而不是程序算错了。</p>
+      <p>三个可以直接验证的推论：① 因为墙一定在物体后面，<code>d₂ &gt; d₁</code>，所以 <code>M</code> 永远大于 1，影子只会比物体大，不会比物体小。② <code>M</code> 随 <code>d₁</code> 变小而急剧增大：<code>d₁</code> 减半，倍数翻倍，所以手电筒贴到玩偶跟前时影子能撑满整面墙。③ 太阳离我们极远，<code>d₂/d₁ ≈ 1</code>，所以阳光下的影子和物体差不多大。</p>
+      <h3>本影（umbra）与半影（penumbra）：为什么半影会出现</h3>
+      <p>关键在于<b>光源有面积，不是一个数学点</b>。理想点光源发出的光只有「照到」和「照不到」两种情况，所以只有边缘刀切一样整齐的<b>本影</b>。可是真实的灯泡、灯管、太阳都有大小：把灯看成许多小点组成的一片，墙上就出现了三种区域——能看见整个灯的地方最亮；一个小点也看不见的地方是全黑的本影；<b>只能看见灯的一部分</b>的地方就是亮度渐变的<b>半影</b>。灯越大、物体离墙越远，半影越宽，边缘就越软。日食里的全食带是月亮的本影，偏食区就是半影，道理完全一样。</p>
+      <h3>三个常见误区</h3>
+      <ol class="qlist">
+        <li><b>“影子是一种黑色的物质。”</b>影子不是东西，是「光到不了的那块地方」，它没有重量也不会沾在墙上。可以把手电筒关掉让孩子看：影子和光同时消失，因为影子本来就是光的缺口。也可以从旁边再打一盏灯，那块「黑东西」立刻被填亮。</li>
+        <li><b>“挡住的东西越大，影子一定越大。”</b>影子的大小同时由<b>物体大小</b>和<b>三段距离</b>决定。一枚硬币贴到灯前，影子能盖住整面墙；一张大纸板贴到墙上，影子几乎和纸板一样大。所以比较影子必须先说清楚灯、物体、墙分别在哪儿——这也是量表第一条要写成倍数而不是厘米的原因。</li>
+        <li><b>“影子的颜色由物体的颜色决定。”</b>不透明物体不管是红的还是蓝的，影子都是同样的暗；决定影子深浅的是<b>透光率</b>，不是颜色。所以红玻璃的影子是淡的（透光多），黑纸板的影子是深的（透光少），跟它们看起来的颜色没有直接关系。</li>
+      </ol>
       <h3>加色混合 vs 减色混合</h3>
       <p>光是<b>加</b>上去的：红+绿=黄，绿+蓝=青，红+蓝=洋红，三色齐全就是白。颜料是<b>减</b>掉光：每一层颜料都吸收一部分光，混得越多越暗。屏幕用 RGB 加色，打印机用 CMY 减色，就是这个区别。</p>
       <p class="hint">本模拟说明：为了让规律清楚，画面按二维截面处理，忽略光的衍射与墙面反射；亮度直接线性叠加后截断到 255，没有做 gamma 与真实光度学换算。</p>
     </section>
   </div>
 
+  <p class="lab-exit"><a class="btn btn-ghost" href="index.html"><span aria-hidden="true">←</span> 回到实验室目录</a></p>
   <footer class="foot wrap" style="padding-left:0;padding-right:0">
     少儿数理启蒙 · 互动实验 — 光与影。所有绘制在你的浏览器里完成，不联网。
   </footer>
@@ -506,11 +1010,30 @@
 
   var css = getComputedStyle(document.documentElement);
   function V(n, fb) { var v = css.getPropertyValue(n); return (v && v.trim()) || fb; }
-  var C = {
-    ink: V('--ink', '#eef2ff'), mid: V('--ink-mid', '#b6c0e0'), dim: V('--ink-dim', '#7d88ab'),
-    line: V('--line', '#2a3355'), soft: V('--line-soft', '#202844'),
-    warn: V('--warn', '#fbbf24'), sci: V('--sci', '#4ade80'), math: V('--math', '#6ea8fe'),
-    mono: V('--mono', 'monospace'), font: V('--font', 'sans-serif')
+  /* 画面配色写死在这里，只有字体跟随主题。
+     #scene 的底色是固定的深色「剧场」，而 --ink / --math / --ink-mid 这些 token
+     在家长模式（浅底）和孩子模式（奶油底）下都是深色，直接拿来画字会糊在黑底上
+     看不见 —— 之前画面里的「灯」「墙」和光源编号就是这样丢掉的。 */
+  var T = {
+    mono: V('--mono', 'monospace'), font: V('--font', 'sans-serif'),
+    ink: '#eaf0ff', mid: '#b3bedd', dim: '#93a0c2',
+    line: '#2b3557', soft: '#212a46',
+    warn: '#ffcf5c', sci: '#6ee7a0', math: '#8fb8ff',
+    /* 房间六个面 */
+    roomTop: '#0a0f1e', roomBottom: '#161f38',
+    ceil: '#05080f', ceilEdge: '#232c46', truss: '#39456a',
+    wall: '#2b3557', wallSeam: '#222b47', wallTop: '#3c4a72', wallBase: '#1a2237', wallCorner: '#04070e',
+    floor: '#121a2b', floorSeam: '#1b2440', floorEdge: '#05080f',
+    /* 影子：用「这个面没被照亮时的本色」，不是纯黑 —— 影子是光的缺口，不是黑颜料。
+       所以墙上的影子用墙的本色、地板上的影子用地板的本色，两者都比空气亮一点，
+       孩子才看得出「这片暗的东西是贴在墙上的」。 */
+    wallShadeRGB: '43,53,87', floorShadeRGB: '18,26,43', airShadeRGB: '10,15,30',
+    shadeEdge: 'rgba(150,165,210,.5)',
+    /* 挡光道具：朝灯那面亮，背光那面暗 */
+    propLit: '#adbeea', propDark: '#39456b', propEdge: '#05080f', propTop: '#e6eeff', propBase: '#2a3352',
+    lampBody: '#93a6d0', bulb: '#fffbe4',
+    /* 文字底片：深底配浅字、浅底配深字，两种都够看清 */
+    chipDark: 'rgba(7,11,20,.88)', chipWarm: '#ffe6a3', chipCool: '#cbd9ff', inkOnLight: '#1a1508'
   };
 
   var cv = document.getElementById('scene');
@@ -519,281 +1042,528 @@
   var W = 640, H = 400, dpr = 1;
 
   var MODE = 'shadow';
-  var PX_PER_M = 100;   // 影子模式：1 米 = 100 逻辑像素时的基准（实际按画面缩放换算）
 
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* 本块脚本先于 playful.js 执行，首屏只能读系统偏好；
+     等共享层就绪后再用站内「动效」偏好覆盖一次（见文件末尾的 syncMotionPreference）。 */
+  function motionReducedNow() {
+    if (window.Playful && Playful.motionReduced) return Playful.motionReduced();
+    return Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+  var reduceMotion = motionReducedNow();
+  /* 默认站位很关键：灯要放得比道具顶端「低」，光线才会向上打到墙上。
+     原来的默认值（灯在 30% 高、道具在 45% 处）灯比道具高得多，光线在墙前
+     就落到地板上了 —— 墙上根本没有影子，读数还是 0.00 m，一进来就像坏的。
+     现在按 d1=1.5 m、d2=3.0 m 摆好：影子正好是道具的 2 倍高，占墙面六成。 */
   var S = {
     // 影子模式（归一化坐标 0..1，相对画面宽/高）
-    lamp: { x: 0.30, y: 0.30, r: 0 },     // r 单位：厘米
-    objX: 0.45, objH: 0.9,                // objH 单位：米
+    lamp: { x: 0.24, y: 0.90, r: 0 },     // r 单位：厘米
+    objX: 0.54, objH: 0.9,                // objH 单位：米
     rays: true, anim: !reduceMotion, sourceCount: 1, sourceGap: 0.12,
     // 混色模式
     iR: 1, iG: 1, iB: 1, spread: 0.34, sep: 0.30,
     pick: { x: 0.5, y: 0.5 }
   };
 
-  var wallX = 0.90;   // 墙在画面 90% 处
+  var wallX = 0.84;   // 墙（幕布）从画面 84% 处开始，留出足够宽的投影面
   var phase = 0;
 
   function resize() {
     var cssW = Math.max(260, stage.clientWidth - 28);
-    var cssH = Math.round(Math.min(520, Math.max(300, cssW * 0.62)));
+    /* 高度上限跟着视口算，而不是用 CSS 的 height:!important 去压。
+       CSS 的 !important 会覆盖这里写的 style.height，但覆盖不了 canvas 的
+       像素缓冲尺寸，结果整幅画面被纵向压扁 —— 手机上的「粗糙感」有一半来自这里。 */
+    var vh = window.innerHeight || 800;
+    var cap = vh < 640 ? Math.max(230, Math.round(vh * 0.44)) : 480;
+    /* 0.62 的高宽比会在灯的上方留出一大片什么都没有的暗空气；压到 0.55 之后
+       墙、道具、影子这三样占的比例明显变大。道具最高 2 m = 0.4W 像素，仍放得下。 */
+    var cssH = Math.round(Math.min(cap, Math.max(230, cssW * 0.55)));
     dpr = Math.min(3, window.devicePixelRatio || 1);
     cv.style.height = cssH + 'px';
     cv.width = Math.round(cssW * dpr);
     cv.height = Math.round(cssH * dpr);
     W = cssW; H = cssH;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // resize 不是 DOM 事件委托能覆盖的路径（ResizeObserver），循环已可休眠，必须显式唤醒重画。
+    if (typeof requestDraw === 'function') requestDraw();
   }
 
   function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
 
   // ================= 影子模式 =================
-  // 场景标度：把画面宽度当作 5 米
+  /* 场景标度：画面宽度 = 5 米。顶棚和地板各占一条带子，
+     房间的三个面（顶 / 墙 / 地）在画面里都真的画出来，孩子才认得出「这是间屋子」。 */
   function metersPerPx() { return 5 / Math.max(1, W); }
+  var CEIL_BAND = 15;    // 顶棚厚度（逻辑像素）
+  var FLOOR_BAND = 26;   // 地板带厚度
 
   function shadowGeom() {
-    var lx = S.lamp.x * W, ly = S.lamp.y * H;
+    var floorY = H - FLOOR_BAND, ceilY = CEIL_BAND;
+    var lx = S.lamp.x * W;
     var ox = clamp(S.objX, 0.02, wallX - 0.02) * W;
     var wx = wallX * W;
-    var floorY = H - 26;
-    var objTopY = floorY - (S.objH / metersPerPx()) * 0.001 * 1000; // 见下方修正
-    // 直接换算：objH 米 → 像素
-    objTopY = floorY - S.objH / metersPerPx();
-    var d1 = (ox - lx);
-    var d2 = (wx - lx);
-    var ratio = d1 !== 0 ? d2 / d1 : Infinity;
+    var d1 = ox - lx, d2 = wx - lx;
     return {
-      lx: lx, ly: ly, ox: ox, wx: wx, floorY: floorY, objTopY: objTopY,
-      d1: d1, d2: d2, ratio: ratio,
+      lx: lx,
+      ly: clamp(S.lamp.y * H, ceilY + 10, floorY - 4),
+      ox: ox, wx: wx, floorY: floorY, ceilY: ceilY,
+      objTopY: floorY - S.objH / metersPerPx(),
+      d1: d1, d2: d2, ratio: d1 !== 0 ? d2 / d1 : Infinity,
       d1m: d1 * metersPerPx(), d2m: d2 * metersPerPx()
     };
   }
 
-  // 从光源点 P 经过遮挡物端点 Q，投到墙上的 y
-  function projectY(px, py, qx, qy, wx) {
-    var dx = qx - px;
-    if (Math.abs(dx) < 1e-6) return null;
-    var t = (wx - px) / dx;
-    if (t < 1) return null;              // 墙在遮挡物前面，投不出去
-    return py + (qy - py) * t;
+  /* 一条「光源 → 道具顶点」的光线最后落在哪儿。
+     先算它走到墙面时的高度：如果那时候已经掉到地板以下，说明它在墙前就落地了，
+     影子只铺在地板上、墙上没有影子 —— 灯举得比道具还高时就是这种情况，
+     这不是 bug，是真实的几何，所以要如实画出来、如实读出来。 */
+  function solveShadow(g, sy) {
+    var dx = g.ox - g.lx, dy = g.objTopY - sy;
+    if (dx <= 0.5) return { floorTo: null, wallTop: null };   // 灯在道具右边：投不出影子
+    var yWall = sy + dy * ((g.wx - g.lx) / dx);
+    if (yWall >= g.floorY) {
+      var xf = dy > 0 ? g.lx + dx * ((g.floorY - sy) / dy) : g.wx;
+      return { floorTo: clamp(xf, g.ox, g.wx), wallTop: null };
+    }
+    return { floorTo: g.wx, wallTop: yWall };
   }
 
-  function shadowSourceYs() {
-    var y = S.lamp.y * H, gap = S.sourceGap * H;
-    if (S.sourceCount === 2) return [y, clamp(y + gap, 12, H - 32)];
-    if (S.sourceCount === 3) return [clamp(y - gap, 12, H - 32), y, clamp(y + gap, 12, H - 32)];
+  /* 多光源：几盏灯在同一条竖线上错开，各自投一个影子。 */
+  function shadowSourceYs(g) {
+    var y = g.ly, gap = S.sourceGap * H;
+    var lo = g.ceilY + 10, hi = g.floorY - 4;
+    if (S.sourceCount === 2) return [y, clamp(y + gap, lo, hi)];
+    if (S.sourceCount === 3) return [clamp(y - gap, lo, hi), y, clamp(y + gap, lo, hi)];
     return [y];
+  }
+
+  /* 光源有大小（不是数学点）时，用它的上下两个边缘各解一次光线：
+     两条边界之间就是亮度渐变的半影 penumbra，两边都挡住的部分才是全黑的本影 umbra。 */
+  function shadowBandsFor(g, sy) {
+    var halfR = (S.lamp.r / 100) / metersPerPx() / 2;   // 厘米 → 米 → 像素，取半径
+    var a = solveShadow(g, sy - halfR), b = solveShadow(g, sy + halfR);
+    var band = { halfR: halfR, umbraWallTop: null, penWallTop: null, umbraFloorTo: null, penFloorTo: null };
+    if (a.wallTop !== null && b.wallTop !== null) {
+      band.umbraWallTop = Math.max(a.wallTop, b.wallTop);
+      band.penWallTop = Math.min(a.wallTop, b.wallTop);
+    } else if (a.wallTop !== null || b.wallTop !== null) {
+      // 只有一侧边缘打到墙上：本影只到墙根，剩下全靠半影过渡
+      band.penWallTop = (a.wallTop === null ? b.wallTop : a.wallTop);
+      band.umbraWallTop = g.floorY;
+    }
+    if (a.floorTo !== null && b.floorTo !== null) {
+      band.umbraFloorTo = Math.min(a.floorTo, b.floorTo);
+      band.penFloorTo = Math.max(a.floorTo, b.floorTo);
+    }
+    return band;
+  }
+  function shadowBands(g) { return shadowBandsFor(g, g.ly); }
+
+  function wallShade(a) { return 'rgba(' + T.wallShadeRGB + ',' + a.toFixed(3) + ')'; }
+  function floorShade(a) { return 'rgba(' + T.floorShadeRGB + ',' + a.toFixed(3) + ')'; }
+  function airShade(a) { return 'rgba(' + T.airShadeRGB + ',' + a.toFixed(3) + ')'; }
+
+  /* 文字一律画在小圆底片上：深底配浅字、浅底配深字。
+     直接把字画在渐变的墙面上，亮处和暗处总有一头看不清。 */
+  function chip(x, y, text, bg, fg, align, size) {
+    var fs = size || 11;
+    ctx.font = '800 ' + fs + 'px ' + T.font;
+    var w = ctx.measureText(text).width + 13, h = fs + 10;
+    var bx = align === 'right' ? x - w : (align === 'center' ? x - w / 2 : x);
+    bx = clamp(bx, 3, Math.max(3, W - w - 3));
+    var by = clamp(y - h / 2, 2, Math.max(2, H - h - 2));
+    ctx.fillStyle = bg;
+    roundRect(bx, by, w, h, h / 2); ctx.fill();
+    ctx.fillStyle = fg;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, bx + w / 2, by + h / 2 + .5);
   }
 
   function drawShadow() {
     var g = shadowGeom();
-    var floorY = g.floorY;
+    var sourceYs = shadowSourceYs(g);
+    var band = shadowBands(g);
 
-    // 背景
-    ctx.fillStyle = '#0a0e19';
-    ctx.fillRect(0, 0, W, H);
+    drawRoom(g);
+    drawSurfaceLight(g, sourceYs);
+    drawBeam(g, sourceYs);
+    drawShadowShapes(g, sourceYs);
+    drawWallDetails(g);          // 接缝和踢脚线画在影子之上：墙面的纹理要能穿过影子
+    if (S.rays) drawRays(g);
+    drawKeyRay(g);
+    drawProp(g);
+    drawLamps(g, sourceYs, band.halfR);
+    drawSceneLabels(g, band, sourceYs);
 
-    // 墙
-    var wallGrad = ctx.createLinearGradient(g.wx, 0, W, 0);
-    wallGrad.addColorStop(0, '#20283f');
-    wallGrad.addColorStop(1, '#161d33');
-    ctx.fillStyle = wallGrad;
-    ctx.fillRect(g.wx, 0, W - g.wx, H);
+    if (hover === 'lamp' || drag === 'lamp') ring(g.lx, g.ly, 16);
+    if (hover === 'obj' || drag === 'obj') ring(g.ox, (g.objTopY + g.floorY) / 2, 18);
 
-    // 墙上被照亮的区域（灯到墙的距离衰减）
-    var lampSizePx = (S.lamp.r / 100) / metersPerPx();   // 厘米→米→像素
-    var halfR = lampSizePx / 2;
-
-    // 墙上光照：先整体铺一层亮，再挖影
-    var lit = ctx.createRadialGradient(g.lx, g.ly, 10, g.lx, g.ly, Math.max(W, H) * 1.1);
-    lit.addColorStop(0, 'rgba(255,246,214,.95)');
-    lit.addColorStop(0.35, 'rgba(255,244,205,.42)');
-    lit.addColorStop(1, 'rgba(255,240,200,.05)');
-    ctx.save();
-    ctx.beginPath(); ctx.rect(g.wx, 0, W - g.wx, H); ctx.clip();
-    ctx.fillStyle = lit; ctx.fillRect(g.wx, 0, W - g.wx, H);
-    ctx.restore();
-
-    // 地面
-    ctx.fillStyle = '#131a2c';
-    ctx.fillRect(0, floorY, W, H - floorY);
-    ctx.strokeStyle = C.line; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0, floorY + .5); ctx.lineTo(W, floorY + .5); ctx.stroke();
-
-    // ---- 光线 ----
-    if (S.rays) {
-      ctx.save();
-      ctx.lineWidth = 1;
-      var N = 46;
-      for (var i = 0; i < N; i++) {
-        var a = (i / N) * Math.PI * 2;
-        var dx = Math.cos(a), dy = Math.sin(a);
-        // 求与遮挡物 / 墙 / 边界的最近交点
-        var tEnd = Math.max(W, H) * 1.6;
-        // 墙
-        if (dx > 0) { var tw = (g.wx - g.lx) / dx; if (tw > 0) tEnd = Math.min(tEnd, tw); }
-        // 遮挡物（竖直线段 x=ox, y in [objTopY, floorY]）
-        if (dx > 0) {
-          var to = (g.ox - g.lx) / dx;
-          if (to > 0) {
-            var yh = g.ly + dy * to;
-            if (yh >= g.objTopY && yh <= floorY) tEnd = Math.min(tEnd, to);
-          }
-        }
-        // 地面
-        if (dy > 0) { var tf = (floorY - g.ly) / dy; if (tf > 0) tEnd = Math.min(tEnd, tf); }
-        var ex = g.lx + dx * tEnd, ey = g.ly + dy * tEnd;
-        var grd = ctx.createLinearGradient(g.lx, g.ly, ex, ey);
-        grd.addColorStop(0, 'rgba(255,236,170,.55)');
-        grd.addColorStop(1, 'rgba(255,236,170,.05)');
-        ctx.strokeStyle = grd;
-        ctx.beginPath(); ctx.moveTo(g.lx, g.ly); ctx.lineTo(ex, ey); ctx.stroke();
-
-        if (S.anim) {
-          var frac = ((phase * 0.35 + i * 0.11) % 1);
-          var px = g.lx + dx * tEnd * frac, py = g.ly + dy * tEnd * frac;
-          ctx.fillStyle = 'rgba(255,248,214,.85)';
-          ctx.beginPath(); ctx.arc(px, py, 1.8, 0, Math.PI * 2); ctx.fill();
-        }
-      }
-      ctx.restore();
-    }
-
-    // ---- 影子（墙上）----
-    var wallShadeTop = null, wallShadeTopSoftA = null, wallShadeTopSoftB = null;
-    if (g.d1 > 1 && g.d2 > g.d1) {
-      // 本影：由光源两端边缘决定的重叠区
-      var lampTopY = g.ly - halfR, lampBotY = g.ly + halfR;
-      var yFromTop = projectY(g.lx, lampTopY, g.ox, g.objTopY, g.wx);      // 灯上沿 → 物顶
-      var yFromBot = projectY(g.lx, lampBotY, g.ox, g.objTopY, g.wx);      // 灯下沿 → 物顶
-      // 影子从墙底往上延伸；umbra 上边界 = max(两条线) ，penumbra 上边界 = min
-      var umbraTop = Math.max(yFromTop === null ? -1e5 : yFromTop, yFromBot === null ? -1e5 : yFromBot);
-      var penTop = Math.min(yFromTop === null ? 1e5 : yFromTop, yFromBot === null ? 1e5 : yFromBot);
-      umbraTop = clamp(umbraTop, -H, floorY);
-      penTop = clamp(penTop, -H, floorY);
-      wallShadeTop = umbraTop; wallShadeTopSoftA = penTop; wallShadeTopSoftB = umbraTop;
-
-      ctx.save();
-      ctx.beginPath(); ctx.rect(g.wx, 0, W - g.wx, floorY); ctx.clip();
-
-      // 半影渐变带
-      if (umbraTop - penTop > 0.5) {
-        var pg = ctx.createLinearGradient(0, penTop, 0, umbraTop);
-        pg.addColorStop(0, 'rgba(8,12,22,0)');
-        pg.addColorStop(1, 'rgba(8,12,22,.92)');
-        ctx.fillStyle = pg;
-        ctx.fillRect(g.wx, penTop, W - g.wx, umbraTop - penTop);
-      }
-      // 本影
-      ctx.fillStyle = 'rgba(8,12,22,.92)';
-      ctx.fillRect(g.wx, umbraTop, W - g.wx, floorY - umbraTop);
-      ctx.restore();
-
-      // 影高标注线
-      ctx.save();
-      ctx.strokeStyle = C.warn; ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(g.wx + 12, umbraTop); ctx.lineTo(g.wx + 12, floorY);
-      ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(g.wx + 6, umbraTop); ctx.lineTo(g.wx + 18, umbraTop); ctx.stroke();
-      ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.warn;
-      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      var shaM = (floorY - umbraTop) * metersPerPx();
-      ctx.fillText(shaM.toFixed(2) + 'm', g.wx + 22, (umbraTop + floorY) / 2);
-      ctx.restore();
-
-      // 关键光线（灯中心 → 物顶 → 墙）
-      ctx.save();
-      ctx.strokeStyle = 'rgba(74,222,128,.9)';
-      ctx.lineWidth = 1.6;
-      ctx.setLineDash([6, 4]);
-      var yc = projectY(g.lx, g.ly, g.ox, g.objTopY, g.wx);
-      if (yc !== null) {
-        ctx.beginPath(); ctx.moveTo(g.lx, g.ly); ctx.lineTo(g.wx, clamp(yc, -H, H * 2)); ctx.stroke();
-      }
-      ctx.restore();
-    }
-
-    // ---- 遮挡物 ----
-    var objW = 14;
-    ctx.fillStyle = '#5b6b95';
-    ctx.strokeStyle = C.math; ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.rect(g.ox - objW / 2, g.objTopY, objW, floorY - g.objTopY);
-    ctx.fill(); ctx.stroke();
-    // 物体高度标注
-    ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.math;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-    ctx.fillText(S.objH.toFixed(2) + 'm', g.ox, g.objTopY - 5);
-
-    // 地面上的投影（物体到墙之间）
-    ctx.save();
-    ctx.fillStyle = 'rgba(8,12,22,.55)';
-    ctx.beginPath();
-    ctx.moveTo(g.ox, floorY);
-    ctx.lineTo(g.wx, floorY);
-    ctx.lineTo(g.wx, floorY + 8);
-    ctx.lineTo(g.ox, floorY + 6);
-    ctx.closePath(); ctx.fill();
-    ctx.restore();
-
-    // ---- 灯 ----
-    var glow = ctx.createRadialGradient(g.lx, g.ly, 0, g.lx, g.ly, Math.max(26, halfR + 26));
-    glow.addColorStop(0, 'rgba(255,250,220,.95)');
-    glow.addColorStop(1, 'rgba(255,240,180,0)');
-    ctx.fillStyle = glow;
-    ctx.beginPath(); ctx.arc(g.lx, g.ly, Math.max(26, halfR + 26), 0, Math.PI * 2); ctx.fill();
-
-    if (halfR > 2) {
-      ctx.strokeStyle = 'rgba(255,240,180,.85)'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(g.lx, g.ly - halfR); ctx.lineTo(g.lx, g.ly + halfR); ctx.stroke();
-    }
-    ctx.fillStyle = '#fff8d8';
-    ctx.beginPath(); ctx.arc(g.lx, g.ly, 7, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#0b0f1a'; ctx.lineWidth = 1.5; ctx.stroke();
-
-    // 额外点光源及各自影子上边界：颜色和编号同时区分，不只依赖颜色。
-    var sourceYs = shadowSourceYs();
-    for (var si = 0; si < sourceYs.length; si++) {
-      var sy = sourceYs[si];
-      if (Math.abs(sy - g.ly) > 1) {
-        ctx.fillStyle = si % 2 ? '#ffd38a' : '#b9d8ff';
-        ctx.beginPath(); ctx.arc(g.lx, sy, 6, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#0b0f1a'; ctx.stroke();
-      }
-      var shadowTop = projectY(g.lx, sy, g.ox, g.objTopY, g.wx);
-      if (shadowTop !== null) {
-        shadowTop = clamp(shadowTop, -H, floorY);
-        ctx.strokeStyle = si % 2 ? 'rgba(251,191,36,.8)' : 'rgba(110,168,254,.8)';
-        ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]);
-        ctx.beginPath(); ctx.moveTo(g.wx + 3 + si * 4, shadowTop); ctx.lineTo(g.wx + 3 + si * 4, floorY); ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = C.ink; ctx.font = '700 9px ' + C.mono; ctx.textAlign = 'left';
-        ctx.fillText(String(si + 1), g.wx + 5 + si * 4, shadowTop + 10);
-      }
-    }
-
-    // 标签
-    ctx.font = '700 11px ' + C.font;
-    ctx.fillStyle = C.mid; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-    ctx.fillText('灯', g.lx, g.ly - Math.max(14, halfR + 12));
-    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-    ctx.fillStyle = C.dim; ctx.font = '600 11px ' + C.mono;
-    ctx.fillText('墙', g.wx + 4, 6);
-
-    // 拖动提示热区
-    if (hover === 'lamp' || drag === 'lamp') ring(g.lx, g.ly, 15);
-    if (hover === 'obj' || drag === 'obj') ring(g.ox, (g.objTopY + floorY) / 2, 16);
-
-    updateShadowReadout(g, umbraTopSafe(wallShadeTop), wallShadeTopSoftA, floorY);
+    updateShadowReadout(g, band, sourceYs);
   }
 
-  function umbraTopSafe(v) { return (typeof v === 'number' && isFinite(v)) ? v : null; }
+  /* ---------- 房间：顶棚 / 空气 / 墙（幕布）/ 地板 ----------
+     原来「墙」只是右边一条和背景几乎同色的深色带子，孩子看不出那是一面墙。
+     现在墙有上檐、接缝和踢脚线，地板有木缝和收边，墙角还有一条深线把两个面分开。 */
+  function drawRoom(g) {
+    var air = ctx.createLinearGradient(0, 0, 0, g.floorY);
+    air.addColorStop(0, T.roomTop);
+    air.addColorStop(1, T.roomBottom);
+    ctx.fillStyle = air;
+    ctx.fillRect(0, 0, W, g.floorY);
 
+    // 顶棚 + 灯杆上挂着的几盏备用灯：交代这是剧场室内，也让上方那片暗区不至于全空
+    ctx.fillStyle = T.ceil;
+    ctx.fillRect(0, 0, W, g.ceilY);
+    ctx.fillStyle = T.ceilEdge;
+    ctx.fillRect(0, g.ceilY - 2, W, 2);
+    ctx.fillStyle = T.truss;
+    ctx.fillRect(6, 4, W - 12, 2);
+    for (var tx = 30; tx < W - 24; tx += 78) {
+      ctx.fillStyle = T.truss;
+      ctx.fillRect(tx - 1, 6, 2, 3);                        // 吊杆
+      roundRect(tx - 7, 9, 14, 5, 2); ctx.fill();           // 没开的备用灯
+      ctx.fillStyle = 'rgba(255,232,170,.35)';
+      ctx.fillRect(tx - 5, 14, 10, 1);
+    }
+
+    // 墙（幕布）本色
+    ctx.fillStyle = T.wall;
+    ctx.fillRect(g.wx, g.ceilY, W - g.wx, g.floorY - g.ceilY);
+
+    /* 地板：像剖开的娃娃屋，地板是一整块横板，墙立在它上面，所以地板要通到右边。
+       不过墙根后面那一段照不到光，单独压暗，否则会出现「地板从墙后面亮过去」的错觉。 */
+    ctx.fillStyle = T.floor;
+    ctx.fillRect(0, g.floorY, W, H - g.floorY);
+    ctx.strokeStyle = T.floorSeam; ctx.lineWidth = 1;
+    for (var fx = 20; fx < W; fx += 36) {
+      ctx.beginPath(); ctx.moveTo(fx + .5, g.floorY + 4); ctx.lineTo(fx - 6.5, H - 2); ctx.stroke();
+    }
+    ctx.strokeStyle = T.floorEdge; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, g.floorY + .5); ctx.lineTo(W, g.floorY + .5); ctx.stroke();
+  }
+
+  /* 墙面的细节：上檐、竖向接缝、踢脚线、墙角深线。
+     这些要画在光照和影子「之上」——墙的纹理必须能穿过影子，
+     否则影子一盖，墙就退回一块没有质感的黑色，又变成「看不出有墙」。 */
+  function drawWallDetails(g) {
+    ctx.fillStyle = T.wallTop;
+    ctx.fillRect(g.wx, g.ceilY, W - g.wx, 7);
+    ctx.save();
+    ctx.globalAlpha = 0.55;
+    ctx.strokeStyle = T.wallSeam; ctx.lineWidth = 1;
+    for (var i = 1; i < 3; i++) {
+      var sx = Math.round(g.wx + (W - g.wx) * (i / 3)) + .5;
+      ctx.beginPath(); ctx.moveTo(sx, g.ceilY + 9); ctx.lineTo(sx, g.floorY - 10); ctx.stroke();
+    }
+    ctx.restore();
+    ctx.fillStyle = T.wallBase;
+    ctx.fillRect(g.wx, g.floorY - 9, W - g.wx, 9);
+    ctx.fillStyle = 'rgba(190,205,245,.22)';
+    ctx.fillRect(g.wx, g.floorY - 9, W - g.wx, 1);
+    ctx.fillStyle = T.wallCorner;
+    ctx.fillRect(g.wx - 2, g.ceilY, 2, g.floorY - g.ceilY + 1);
+  }
+
+  /* 墙面与地板上的光照：每盏灯叠一层径向渐变（加色），离灯越近越亮。
+     渐变半径按「灯到墙的距离」算，而不是按画布尺寸：按画布算时墙正好落在
+     渐变很淡的位置，被照亮的墙会变成一块冷灰色，和图例里的暖色对不上。
+     几盏灯一起点时按 1/√n 收一点，避免叠成一片死白。 */
+  function drawSurfaceLight(g, sourceYs) {
+    var k = 1 / Math.sqrt(sourceYs.length);
+    var reach = Math.max(40, g.wx - g.lx) * 3.1;   // 墙大约落在 0.32 处
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(g.wx, g.ceilY, W - g.wx, g.floorY - g.ceilY);
+    ctx.rect(0, g.floorY, g.wx, H - g.floorY);   // 墙根后面那段地板照不到，不进光照区
+    ctx.clip();
+    ctx.globalCompositeOperation = 'lighter';
+    for (var i = 0; i < sourceYs.length; i++) {
+      var lit = ctx.createRadialGradient(g.lx, sourceYs[i], 8, g.lx, sourceYs[i], reach);
+      lit.addColorStop(0, 'rgba(255,240,196,' + (0.72 * k).toFixed(3) + ')');
+      lit.addColorStop(0.32, 'rgba(255,231,168,' + (0.66 * k).toFixed(3) + ')');
+      lit.addColorStop(0.70, 'rgba(255,224,152,' + (0.30 * k).toFixed(3) + ')');
+      lit.addColorStop(1, 'rgba(255,220,150,0)');
+      ctx.fillStyle = lit;
+      ctx.fillRect(0, 0, W, H);
+    }
+    ctx.restore();
+  }
+
+  /* 空气里的光锥。裁剪用「从灯发散的锥形」而不是矩形：
+     矩形裁剪会在灯的正上方留下一条突兀的竖直亮暗分界线，看着像画坏了；
+     锥形的两条边从灯本身出发，不会有接缝，而且正好就是聚光灯该有的样子。 */
+  function drawBeam(g, sourceYs) {
+    var k = 1 / Math.sqrt(sourceYs.length);
+    var far = W * 1.7;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(g.lx, g.ly);
+    ctx.lineTo(far, g.ceilY - (g.ly - g.ceilY) * 0.75);
+    ctx.lineTo(far, g.floorY + (g.floorY - g.ly) * 0.75);
+    ctx.closePath();
+    ctx.clip();
+    ctx.globalCompositeOperation = 'lighter';
+    for (var i = 0; i < sourceYs.length; i++) {
+      var beam = ctx.createRadialGradient(g.lx, sourceYs[i], 4, g.lx, sourceYs[i], (g.wx - g.lx) * 1.35 + 46);
+      beam.addColorStop(0, 'rgba(255,239,188,' + (0.34 * k).toFixed(3) + ')');
+      beam.addColorStop(0.45, 'rgba(255,233,172,' + (0.15 * k).toFixed(3) + ')');
+      beam.addColorStop(1, 'rgba(255,227,160,0)');
+      ctx.fillStyle = beam;
+      ctx.fillRect(0, 0, W, H);
+    }
+    ctx.restore();
+  }
+
+  /* 影子有三块，缺一块就看不懂：① 空气里被挡住的光柱 ② 地板上那一片 ③ 墙上那一片。
+     每盏灯各画一层 1/n 的暗度：重叠越多越暗，全部挡住的地方才是最黑的本影。 */
+  function drawShadowShapes(g, sourceYs) {
+    var n = sourceYs.length;
+    var kWall = 0.94 / n, kFloor = 0.80 / n, kAir = 0.46 / n;
+    for (var i = 0; i < n; i++) {
+      var band = shadowBandsFor(g, sourceYs[i]);
+      if (band.penFloorTo === null) continue;
+      var reachWall = band.penWallTop !== null;
+
+      // ① 空气里被挡住的那条光柱
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(g.ox, g.objTopY);
+      if (reachWall) {
+        ctx.lineTo(g.wx, clamp(band.penWallTop, -H, g.floorY));
+        ctx.lineTo(g.wx, g.floorY);
+      } else {
+        ctx.lineTo(band.penFloorTo, g.floorY);
+      }
+      ctx.lineTo(g.ox, g.floorY);
+      ctx.closePath();
+      ctx.fillStyle = airShade(kAir);
+      ctx.fill();
+      ctx.restore();
+
+      // ② 地板上的影子：从道具脚下铺到落点，边缘同样有半影
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, g.floorY, g.wx, H - g.floorY); ctx.clip();
+      var fUm = clamp(band.umbraFloorTo, g.ox, g.wx), fPen = clamp(band.penFloorTo, g.ox, g.wx);
+      ctx.fillStyle = floorShade(kFloor);
+      ctx.fillRect(g.ox, g.floorY, Math.max(0, fUm - g.ox), H - g.floorY);
+      if (fPen > fUm + 0.5) {
+        var fgd = ctx.createLinearGradient(fUm, 0, fPen, 0);
+        fgd.addColorStop(0, floorShade(kFloor));
+        fgd.addColorStop(1, floorShade(0));
+        ctx.fillStyle = fgd;
+        ctx.fillRect(fUm, g.floorY, fPen - fUm, H - g.floorY);
+      }
+      ctx.restore();
+
+      // ③ 墙上的影子：本影 + 上沿的半影渐变
+      if (reachWall) {
+        var um = clamp(band.umbraWallTop, g.ceilY, g.floorY);
+        var pen = clamp(band.penWallTop, g.ceilY, g.floorY);
+        ctx.save();
+        ctx.beginPath(); ctx.rect(g.wx, g.ceilY, W - g.wx, g.floorY - g.ceilY); ctx.clip();
+        if (um - pen > 0.5) {
+          var pgd = ctx.createLinearGradient(0, pen, 0, um);
+          pgd.addColorStop(0, wallShade(0));
+          pgd.addColorStop(1, wallShade(kWall));
+          ctx.fillStyle = pgd;
+          ctx.fillRect(g.wx, pen, W - g.wx, um - pen);
+        }
+        ctx.fillStyle = wallShade(kWall);
+        ctx.fillRect(g.wx, um, W - g.wx, g.floorY - um);
+        ctx.restore();
+        if (band.halfR < 3 || n > 1) {
+          ctx.strokeStyle = T.shadeEdge; ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(g.wx, Math.round(um) + .5); ctx.lineTo(W, Math.round(um) + .5);
+          ctx.stroke();
+        }
+        if (n > 1) chip(g.wx + 5, um + 12, String(i + 1), T.chipWarm, T.inkOnLight, 'left', 10);
+      }
+    }
+    // 道具脚下的接触影：少了这一笔，道具会像浮在空中
+    var cg = ctx.createLinearGradient(g.ox - 24, 0, g.ox + 28, 0);
+    cg.addColorStop(0, airShade(0));
+    cg.addColorStop(0.42, airShade(0.55));
+    cg.addColorStop(1, airShade(0));
+    ctx.fillStyle = cg;
+    ctx.fillRect(g.ox - 24, g.floorY, 52, 5);
+  }
+
+  /* 光线路线：只画灯朝墙那一侧的一把扇形光线，每条在遇到道具或地板处停住。
+     停下来的那几条末端点一个小方块 —— 影子就是从这里开始的。
+     原来是绕着灯画 46 条 360° 放射线，又乱又看不出被谁挡住。 */
+  function drawRays(g) {
+    var N = 14;
+    ctx.save();
+    ctx.lineWidth = 1.2;
+    for (var i = 0; i <= N; i++) {
+      var ty = g.ceilY + (g.floorY - g.ceilY) * (i / N);
+      var dx = g.wx - g.lx, dy = ty - g.ly;
+      var len = Math.sqrt(dx * dx + dy * dy);
+      if (len < 1) continue;
+      var ux = dx / len, uy = dy / len;
+      var tEnd = len, blocked = false;
+      if (ux > 0.001) {
+        var to = (g.ox - g.lx) / ux;
+        if (to > 0 && to < tEnd) {
+          var yh = g.ly + uy * to;
+          if (yh >= g.objTopY && yh <= g.floorY) { tEnd = to; blocked = true; }
+        }
+      }
+      if (uy > 0.001) {
+        var tf = (g.floorY - g.ly) / uy;
+        if (tf > 0 && tf < tEnd) { tEnd = tf; blocked = false; }
+      }
+      var ex = g.lx + ux * tEnd, ey = g.ly + uy * tEnd;
+      var grd = ctx.createLinearGradient(g.lx, g.ly, ex, ey);
+      grd.addColorStop(0, 'rgba(255,238,178,.60)');
+      grd.addColorStop(1, blocked ? 'rgba(255,238,178,.52)' : 'rgba(255,238,178,.14)');
+      ctx.strokeStyle = grd;
+      ctx.beginPath(); ctx.moveTo(g.lx, g.ly); ctx.lineTo(ex, ey); ctx.stroke();
+      if (blocked) {
+        ctx.fillStyle = '#ffdf8f';
+        ctx.fillRect(ex - 2, ey - 2, 4, 4);
+      }
+      if (S.anim) {
+        var frac = ((phase * 0.35 + i * 0.13) % 1);
+        ctx.fillStyle = 'rgba(255,250,222,.9)';
+        ctx.beginPath();
+        ctx.arc(g.lx + ux * tEnd * frac, g.ly + uy * tEnd * frac, 1.9, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  /* 关键光线：灯 → 道具顶 → 影子顶，三点永远共线。这是整页唯一的秘密，要一直看得见。 */
+  function drawKeyRay(g) {
+    var s = solveShadow(g, g.ly);
+    if (s.floorTo === null) return;
+    var ex = s.wallTop !== null ? g.wx : s.floorTo;
+    var ey = s.wallTop !== null ? s.wallTop : g.floorY;
+    ctx.save();
+    ctx.strokeStyle = T.sci; ctx.lineWidth = 1.8; ctx.setLineDash([7, 5]);
+    ctx.beginPath();
+    ctx.moveTo(g.lx, g.ly);
+    ctx.lineTo(g.ox, g.objTopY);
+    ctx.lineTo(ex, clamp(ey, -H, H * 2));
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = T.sci;
+    ctx.beginPath();
+    ctx.arc(clamp(ex, 0, W), clamp(ey, g.ceilY + 2, H - 2), 3.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  /* 挡光道具：朝灯那面亮、背光那面暗，脚下有底座，顶边有高光。
+     原来是一个 14px 宽的纯色长条，既看不出是什么，也看不出哪面被照到。 */
+  function drawProp(g) {
+    var w = 17, x0 = g.ox - w / 2;
+    var top = clamp(g.objTopY, g.ceilY + 3, g.floorY - 6);
+    var lampLeft = g.lx <= g.ox;
+    ctx.fillStyle = T.propBase;
+    roundRect(g.ox - 15, g.floorY - 4, 30, 6, 3); ctx.fill();
+    var body = ctx.createLinearGradient(x0, 0, x0 + w, 0);
+    body.addColorStop(0, lampLeft ? T.propLit : T.propDark);
+    body.addColorStop(1, lampLeft ? T.propDark : T.propLit);
+    roundRect(x0, top, w, g.floorY - top, 4);
+    ctx.fillStyle = body; ctx.fill();
+    ctx.strokeStyle = T.propEdge; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = T.propTop; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x0 + 2.5, top + 1.5); ctx.lineTo(x0 + w - 2.5, top + 1.5); ctx.stroke();
+    ctx.strokeStyle = 'rgba(5,8,15,.32)'; ctx.lineWidth = 1;
+    for (var k = 1; k <= 2; k++) {
+      var gy = Math.round(top + (g.floorY - top) * (k / 3)) + .5;
+      ctx.beginPath(); ctx.moveTo(x0 + 2, gy); ctx.lineTo(x0 + w - 2, gy); ctx.stroke();
+    }
+  }
+
+  /* 灯：一个朝墙开口的灯罩 + 灯泡 + 外发光。
+     光源调大时画成一条竖着的发光棒 —— 半影就是从「光源有大小」来的。 */
+  function drawLamps(g, sourceYs, halfR) {
+    for (var i = 0; i < sourceYs.length; i++) {
+      var sy = sourceYs[i];
+      var r = Math.max(24, halfR + 24);
+      var glow = ctx.createRadialGradient(g.lx, sy, 0, g.lx, sy, r);
+      glow.addColorStop(0, 'rgba(255,250,220,.85)');
+      glow.addColorStop(1, 'rgba(255,240,180,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(g.lx, sy, r, 0, Math.PI * 2); ctx.fill();
+
+      ctx.save();
+      ctx.translate(g.lx, sy);
+      ctx.fillStyle = T.lampBody;
+      ctx.strokeStyle = T.propEdge; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(-4, -9); ctx.lineTo(-15, -13); ctx.lineTo(-15, 13); ctx.lineTo(-4, 9);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.restore();
+
+      if (halfR > 2) {
+        ctx.strokeStyle = '#fff6cf'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(g.lx, sy - halfR); ctx.lineTo(g.lx, sy + halfR); ctx.stroke();
+        ctx.lineCap = 'butt';
+      }
+      ctx.fillStyle = T.bulb;
+      ctx.beginPath(); ctx.arc(g.lx, sy, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = T.propEdge; ctx.lineWidth = 1.5; ctx.stroke();
+      if (sourceYs.length > 1) chip(g.lx - 20, sy, String(i + 1), T.chipWarm, T.inkOnLight, 'right', 10);
+    }
+  }
+
+  /* 场景文字：全部画在小圆底片上，亮墙上和暗墙上都能看清。
+     窄画面上底片会大到盖住半面墙，所以字号和文案都跟着宽度收一档。 */
+  function drawSceneLabels(g, band, sourceYs) {
+    var mpp = metersPerPx();
+    var narrow = W < 480;
+    var fs = narrow ? 9 : 11;
+    chip(W - 5, g.ceilY + (narrow ? 15 : 18), narrow ? '墙' : '墙（幕布）', T.chipDark, T.ink, 'right', fs);
+    chip(6, H - 12, '地板', T.chipDark, T.mid, 'left', narrow ? 9 : 10);
+    chip(g.lx, g.ly - Math.max(narrow ? 19 : 22, band.halfR + 20),
+      sourceYs.length > 1 ? sourceYs.length + ' 盏灯' : '灯', T.chipWarm, T.inkOnLight, 'center', fs);
+    chip(g.ox, clamp(g.objTopY - 13, g.ceilY + 14, g.floorY - 22),
+      S.objH.toFixed(2) + ' m', T.chipCool, T.inkOnLight, 'center', fs);
+
+    if (band.umbraWallTop !== null) {
+      var um = band.umbraWallTop, umC = clamp(um, g.ceilY, g.floorY);
+      var bx = g.wx + 13;
+      ctx.strokeStyle = T.warn; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(bx - 5, umC + 1); ctx.lineTo(bx + 5, umC + 1);
+      ctx.moveTo(bx, umC + 1); ctx.lineTo(bx, g.floorY - 1);
+      ctx.moveTo(bx - 5, g.floorY - 1); ctx.lineTo(bx + 5, g.floorY - 1);
+      ctx.stroke();
+      chip(bx + 9, (umC + g.floorY) / 2,
+        (narrow ? '' : '影子 ') + ((g.floorY - um) * mpp).toFixed(2) + ' m',
+        T.chipWarm, T.inkOnLight, 'left', fs);
+      if (um < g.ceilY + 2) {
+        // 影子比幕布还高：给一个朝上的角标，别让孩子以为整面墙本来就是黑的
+        var mx = g.wx + (W - g.wx) / 2;
+        ctx.fillStyle = T.warn;
+        ctx.beginPath();
+        ctx.moveTo(mx, g.ceilY + 4); ctx.lineTo(mx - 7, g.ceilY + 14); ctx.lineTo(mx + 7, g.ceilY + 14);
+        ctx.closePath(); ctx.fill();
+        chip(g.wx - 6, g.ceilY + 32, narrow ? '影子比墙高' : '影子比幕布还高', T.chipDark, T.warn, 'right', narrow ? 9 : 10);
+      }
+    } else if (band.penFloorTo !== null) {
+      // 影子还躺在地板上：把长度标出来，孩子才知道「墙上没影子」不是坏了
+      var fx1 = clamp(band.penFloorTo, g.ox, g.wx);
+      var fy = g.floorY + (H - g.floorY) / 2;
+      ctx.strokeStyle = T.warn; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(g.ox, fy - 4); ctx.lineTo(g.ox, fy + 4);
+      ctx.moveTo(g.ox, fy); ctx.lineTo(fx1, fy);
+      ctx.moveTo(fx1, fy - 4); ctx.lineTo(fx1, fy + 4);
+      ctx.stroke();
+      chip((g.ox + fx1) / 2, g.floorY - 14,
+        (narrow ? '地板上 ' : '影子躺在地板上 ') + ((fx1 - g.ox) * mpp).toFixed(2) + ' m',
+        T.chipWarm, T.inkOnLight, 'center', narrow ? 9 : 10);
+    }
+  }
+
+  /* 拖动热区提示：鼠标悬停或正在拖的那个东西外面套一圈虚线 */
   function ring(x, y, r) {
     ctx.save();
-    ctx.strokeStyle = 'rgba(110,168,254,.8)'; ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(160,196,255,.9)'; ctx.lineWidth = 2;
     ctx.setLineDash([3, 3]);
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
     ctx.restore();
@@ -801,7 +1571,8 @@
 
   var rObj = document.getElementById('rObj'), rSha = document.getElementById('rSha'),
       rMag = document.getElementById('rMag'), rD1 = document.getElementById('rD1'),
-      rD2 = document.getElementById('rD2'), rPen = document.getElementById('rPen');
+      rD2 = document.getElementById('rD2'), rPen = document.getElementById('rPen'),
+      rRatio = document.getElementById('rRatio');
   var shadowText = document.getElementById('shadowText');
   var shadowSizeWord = document.getElementById('shadowSizeWord');
   var shadowSharpWord = document.getElementById('shadowSharpWord');
@@ -828,35 +1599,66 @@
     shadowSharpMeter.style.width = Math.round(clamp(1 - penCm / 35, 0.08, 1) * 100) + '%';
   }
 
-  function updateShadowReadout(g, umbraTop, penTop, floorY) {
+  function setGlance(sizeWord, sharpWord, sizeRatio, sharpRatio) {
+    shadowSizeWord.textContent = sizeWord;
+    shadowSharpWord.textContent = sharpWord;
+    shadowSizeMeter.style.width = Math.round(sizeRatio * 100) + '%';
+    shadowSharpMeter.style.width = Math.round(sharpRatio * 100) + '%';
+  }
+
+  function updateShadowReadout(g, band, sourceYs) {
+    var mpp = metersPerPx();
     rObj.textContent = S.objH.toFixed(2) + ' m';
-    rD1.textContent = (g.d1m > 0 ? g.d1m.toFixed(2) : '—') + (g.d1m > 0 ? ' m' : '');
+    rD1.textContent = g.d1m > 0.01 ? g.d1m.toFixed(2) + ' m' : '—';
     rD2.textContent = g.d2m.toFixed(2) + ' m';
-    if (umbraTop === null || g.d1 <= 1 || g.d2 <= g.d1) {
-      rSha.textContent = '无（灯在物后）';
+    rRatio.textContent = g.d1m > 0.01 ? g.ratio.toFixed(2) + '×' : '—';
+
+    // 灯在道具右边（或重合）：光线根本到不了道具背后，没有影子
+    if (band.penFloorTo === null) {
+      rSha.textContent = '无（灯在道具右边）';
       rMag.textContent = '—';
       rPen.textContent = '—';
-      shadowSizeWord.textContent = '没有投到墙上';
-      shadowSharpWord.textContent = '—';
-      shadowSizeMeter.style.width = '8%';
-      shadowSharpMeter.style.width = '8%';
+      setGlance('没有影子', '—', 0.08, 0.08);
+      shadowText.textContent = '灯跑到道具右边去了，光线到不了道具背后，所以没有影子。把灯拖回道具左边试试。';
+      updateLightTask();
       return;
     }
-    var shaM = (floorY - umbraTop) * metersPerPx();
-    rSha.textContent = shaM.toFixed(2) + ' m';
-    rMag.textContent = (shaM / Math.max(0.01, S.objH)).toFixed(2) + '×';
-    var penPx = (typeof penTop === 'number' && isFinite(penTop)) ? Math.max(0, umbraTop - penTop) : 0;
-    var penCm = penPx * metersPerPx() * 100;
-    rPen.textContent = penCm.toFixed(1) + ' cm';
+
+    // 灯比道具顶端还高：光线在墙前就落地，影子躺在地板上 —— 这是正确结果，要说清楚
+    if (band.umbraWallTop === null) {
+      var floorLen = Math.max(0, (clamp(band.penFloorTo, g.ox, g.wx) - g.ox) * mpp);
+      rSha.textContent = '0.00 m（影子在地板上）';
+      rMag.textContent = '—';
+      rPen.textContent = '—';
+      setGlance('躺在地板上 · 长 ' + floorLen.toFixed(2) + ' m', '—', clamp(floorLen / 3, 0.08, 1), 0.08);
+      shadowText.textContent = '灯举得比道具还高，光线在墙之前就落到地板上了：影子躺在地板上，长 ' +
+        floorLen.toFixed(2) + ' m，墙上没有影子。把灯放低一点，影子就会站起来爬上墙。';
+      updateLightTask();
+      return;
+    }
+
+    // 墙上有影子：影高按真实几何算，不因为幕布不够高就截断
+    var shaM = (g.floorY - band.umbraWallTop) * mpp;
     var mag = shaM / Math.max(0.01, S.objH);
+    var penCm = Math.max(0, band.umbraWallTop - band.penWallTop) * mpp * 100;
+    rSha.textContent = shaM.toFixed(2) + ' m' + (band.umbraWallTop < g.ceilY ? '（比幕布还高）' : '');
+    rMag.textContent = mag.toFixed(2) + '×';
+    rPen.textContent = penCm.toFixed(1) + ' cm';
     updateShadowGlance(mag, penCm);
     taskMinMag = taskMinMag === null ? mag : Math.min(taskMinMag, mag);
     taskMaxMag = taskMaxMag === null ? mag : Math.max(taskMaxMag, mag);
-    var heights = shadowSourceYs().map(function (sy) {
-      var top = projectY(g.lx, sy, g.ox, g.objTopY, g.wx);
-      return top === null ? null : Math.max(0, (floorY - clamp(top, -H, floorY)) * metersPerPx());
+
+    var parts = sourceYs.map(function (sy, i) {
+      var s = solveShadow(g, sy);
+      if (s.floorTo === null) return (i + 1) + ' 号没有影子';
+      if (s.wallTop === null) return (i + 1) + ' 号躺在地板上（长 ' + ((s.floorTo - g.ox) * mpp).toFixed(2) + ' m）';
+      return (i + 1) + ' 号墙上影高 ' + ((g.floorY - s.wallTop) * mpp).toFixed(2) + ' m';
     });
-    shadowText.textContent = S.sourceCount + ' 盏灯形成 ' + S.sourceCount + ' 个方向略有不同的影子；影高分别为 ' + heights.map(function (value, i) { return value === null ? (i + 1) + '号无投影' : (i + 1) + '号 ' + value.toFixed(2) + ' m'; }).join('、') + '。重叠越多，区域越暗。';
+    shadowText.textContent = S.sourceCount === 1
+      ? '一盏灯形成一个影子：墙上影高 ' + shaM.toFixed(2) + ' m，是道具的 ' + mag.toFixed(2) + ' 倍。'
+        + (penCm > 2 ? '边缘有一条 ' + penCm.toFixed(1) + ' cm 宽的软边（半影）。' : '光源很小，影子边缘很利。')
+      : S.sourceCount + ' 盏灯形成 ' + S.sourceCount + ' 个方向略有不同的影子：' + parts.join('、')
+        + '。重叠越多，区域越暗。';
     updateLightTask();
   }
 
@@ -904,11 +1706,11 @@
       ctx.fillStyle = 'rgba(' + Lj.col.join(',') + ',' + (0.35 + 0.65 * Lj.I).toFixed(2) + ')';
       ctx.beginPath(); ctx.arc(Lj.x, Lj.y, 9, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = '#0b0f1a'; ctx.lineWidth = 2; ctx.stroke();
-      ctx.font = '800 12px ' + C.font; ctx.fillStyle = '#0b0f1a';
+      ctx.font = '800 12px ' + T.font; ctx.fillStyle = '#0b0f1a';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(Lj.name, Lj.x, Lj.y + .5);
       // 亮度标签
-      ctx.font = '700 10px ' + C.mono; ctx.fillStyle = 'rgba(238,242,255,.9)';
+      ctx.font = '700 10px ' + T.mono; ctx.fillStyle = 'rgba(238,242,255,.9)';
       ctx.textBaseline = 'top';
       ctx.fillText(Math.round(Lj.I * 100) + '%', Lj.x, Lj.y + 13);
     }
@@ -931,13 +1733,13 @@
     // 文本框
     var name = colorName(col);
     var label = name + '  rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
-    ctx.font = '700 12px ' + C.mono;
+    ctx.font = '700 12px ' + T.mono;
     var tw = ctx.measureText(label).width + 16;
     var bx = clamp(px - tw / 2, 4, W - tw - 4), by = clamp(py - 44, 4, H - 30);
-    ctx.fillStyle = 'rgba(11,15,26,.82)';
-    ctx.strokeStyle = C.line; ctx.lineWidth = 1;
+    ctx.fillStyle = 'rgba(9,13,24,.9)';
+    ctx.strokeStyle = T.line; ctx.lineWidth = 1;
     roundRect(bx, by, tw, 24, 7); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = C.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = T.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.fillText(label, bx + 8, by + 12.5);
 
     updateColorReadout(col, name);
@@ -1005,20 +1807,38 @@
   }
 
   // ================= 循环 =================
-  var lastT = 0;
+  // 这里原来是永久 rAF：即使关掉动效、也没人操作，画布每秒仍重画 60 次，平板上白耗电。
+  // 现在只在「光线动效开着」或「刚刚有交互」时跑；空闲就自己停下，下次交互再唤醒。
+  var lastT = 0, rafId = 0, settle = 0;
+  var SETTLE_FRAMES = 30;   // 交互后多画约 0.5 秒，等拖动、异步提示等状态落定
   function loop(now) {
     if (!lastT) lastT = now;
     var dt = Math.min(0.05, (now - lastT) / 1000);
     lastT = now;
     phase = (phase + dt) % 1000;
     if (MODE === 'shadow') drawShadow(); else drawColor();
-    requestAnimationFrame(loop);
+    if (settle > 0) settle--;
+    if (S.anim || settle > 0) { rafId = requestAnimationFrame(loop); }
+    else { rafId = 0; lastT = 0; }
   }
+  function requestDraw() {
+    settle = SETTLE_FRAMES;
+    if (!rafId) { lastT = 0; rafId = requestAnimationFrame(loop); }
+  }
+  // 用捕获阶段的委托监听唤醒循环：不必逐个改 30 多个控件处理器，
+  // 且即使某个处理器阻止冒泡也能收到；真正的绘制发生在下一帧，状态已经更新完。
+  // pointerleave 不冒泡，但捕获阶段仍会经过 document，所以放在这里同样能收到；
+  // 它会把 hover 清空，而 hover 参与绘制（灯泡/挡光物的高亮圈），必须唤醒重画。
+  ['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'pointerleave', 'input', 'change', 'click', 'keydown']
+    .forEach(function (type) { document.addEventListener(type, requestDraw, true); });
 
   // ================= 交互 =================
   var drag = null, hover = null;
   var liveEl = document.getElementById('live');
   function announce(m) { liveEl.textContent = m; }
+
+  /* 大图卡里的文字被 aria-hidden 的图形挤占，宣告时优先读 aria-label */
+  function labelOf(el) { return (el.getAttribute('aria-label') || el.textContent || '').trim(); }
 
   lightReflection.addEventListener('input', updateLightTask);
   Array.prototype.slice.call(document.querySelectorAll('[data-light-phrase]')).forEach(function (button) {
@@ -1027,17 +1847,37 @@
       document.querySelectorAll('[data-light-phrase]').forEach(function (item) { item.setAttribute('aria-pressed', item === button ? 'true' : 'false'); });
       lightReflection.value = button.dataset.lightPhrase;
       updateLightTask();
-      announce('已选发现：' + button.textContent.trim());
+      announce('已选发现：' + labelOf(button));
     });
   });
+
+  /* 预测：大图卡与家长层的下拉双向同步，完成证据仍从下拉读取 */
+  var lightPrediction = document.getElementById('lightPrediction');
+  var predictTiles = Array.prototype.slice.call(document.querySelectorAll('[data-light-predict]'));
+  function syncPredictTiles() {
+    predictTiles.forEach(function (item) {
+      item.setAttribute('aria-pressed', item.getAttribute('data-light-predict') === lightPrediction.value ? 'true' : 'false');
+    });
+  }
+  predictTiles.forEach(function (button) {
+    button.addEventListener('click', function () {
+      lightPrediction.value = button.getAttribute('data-light-predict');
+      syncPredictTiles();
+      announce('已选预测：' + labelOf(button));
+    });
+  });
+  lightPrediction.addEventListener('change', syncPredictTiles);
+  /* 快捷按钮的落点是挑过的：靠近约 2.6 倍、远离约 1.7 倍，
+     两下就能凑出任务要求的 0.35 倍差，而且影子都还留在幕布里，不会一按就撑满整面墙。 */
   Array.prototype.slice.call(document.querySelectorAll('[data-shadow-action]')).forEach(function (button) {
     button.addEventListener('click', function () {
       var action = button.dataset.shadowAction;
-      if (action === 'lamp-near') S.lamp.x = clamp(S.objX - 0.07, 0.02, 0.60);
-      if (action === 'lamp-far') S.lamp.x = clamp(S.objX - 0.35, 0.02, 0.60);
+      if (action === 'lamp-near') { S.lamp.x = clamp(S.objX - 0.20, 0.02, 0.60); S.lamp.y = 0.90; }
+      if (action === 'lamp-far') { S.lamp.x = clamp(S.objX - 0.45, 0.02, 0.60); S.lamp.y = 0.90; }
+      if (action === 'lamp-high') S.lamp.y = 0.28;
       if (action === 'soft') S.lamp.r = 60;
       syncShadowSliders();
-      announce(button.textContent.trim() + '，影子读数已更新。');
+      announce(labelOf(button) + '，影子读数已更新。');
     });
   });
   lightComplete.addEventListener('click', function () {
@@ -1173,6 +2013,19 @@
     S.anim = !S.anim; animBtn.setAttribute('aria-pressed', S.anim ? 'true' : 'false');
   });
 
+  /* 站内「动效」偏好优先于系统设置。共享层就绪后与偏好变化时各同步一次。 */
+  function syncMotionPreference() {
+    S.anim = !motionReducedNow();
+    animBtn.setAttribute('aria-pressed', S.anim ? 'true' : 'false');
+    // load 和 playful:preference 都不在委托唤醒的事件列表里；S.anim 由关变开时循环可能正在休眠，要唤醒。
+    requestDraw();
+  }
+  window.addEventListener('load', syncMotionPreference);
+  document.addEventListener('playful:preference', function (event) {
+    var detail = event && event.detail;
+    if (detail && detail.name === 'motion') syncMotionPreference();
+  });
+
   var iREl = document.getElementById('iR'), iGEl = document.getElementById('iG'), iBEl = document.getElementById('iB'),
       spreadEl = document.getElementById('spread'), sepEl = document.getElementById('sep'),
       pickXEl = document.getElementById('pickX'), pickYEl = document.getElementById('pickY');
@@ -1217,7 +2070,7 @@
       if (!p) return;
       S.iR = p[0]; S.iG = p[1]; S.iB = p[2];
       syncColorSliders(); syncPresets();
-      announce('已切换灯组：' + b.textContent);
+      announce('已切换灯组：' + labelOf(b));
     });
   });
 
@@ -1236,12 +2089,14 @@
     panels.shadow.forEach(function (p) { p.classList.toggle('modehide', m !== 'shadow'); });
     panels.color.forEach(function (p) { p.classList.toggle('modehide', m !== 'color'); });
     if (m === 'shadow') {
-      legend.innerHTML = '<span><i style="background:#fff8d8"></i>光源</span>' +
-        '<span><i style="background:#5b6b95"></i>挡光物</span>' +
-        '<span><i style="background:#0a0e19"></i>本影 umbra</span>' +
-        '<span><i style="background:#3a3f52"></i>半影 penumbra</span>';
-      tip.textContent = '拖动灯泡或方块；按 O 键切换键盘控制对象，方向键微调。';
-      cv.setAttribute('aria-label', '影子实验画面：拖动灯泡和挡光物体，墙上的影子随几何关系变化。');
+      legend.innerHTML = '<span><i style="background:#fffbe4"></i>灯（光源）</span>' +
+        '<span><i style="background:#adbeea"></i>挡光道具</span>' +
+        '<span><i style="background:#d3cdc2"></i>被照亮的墙</span>' +
+        '<span><i style="background:#2b3557"></i>本影 umbra</span>' +
+        '<span><i style="background:#4a5680"></i>半影 penumbra</span>' +
+        '<span><i style="background:#6ee7a0"></i>关键光线</span>';
+      tip.textContent = '拖动灯或道具；按 O 键切换键盘控制对象，方向键微调。';
+      cv.setAttribute('aria-label', '影子实验画面：一间侧视的小屋子，左边一盏灯，中间立着挡光道具，右边是墙（幕布）。拖动灯和道具，墙上和地板上的影子随几何关系变化。');
       announce('已进入影子实验模式');
     } else {
       legend.innerHTML = '<span><i style="background:#ff2828"></i>红 R</span>' +
@@ -1262,14 +2117,363 @@
   syncShadowSliders(); syncColorSliders(); syncPickSliders(); syncPresets();
   setMode('shadow');
   resize();
-  requestAnimationFrame(loop);
+  requestDraw();   // 走 requestDraw 而不是裸 rAF：否则首帧待执行时 rafId 仍为 0，交互唤醒会重复排帧
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>if (window.Progress) Progress.visit("games/light-and-shadow.html", "光与影");</script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script>
+/* 图像优先三件套：① 材料图鉴 ② 影子量表 ③ 灯往哪边走 */
+(function () {
+  "use strict";
+
+  var NS = "http://www.w3.org/2000/svg";
+  function sv(name, attrs) {
+    var node = document.createElementNS(NS, name);
+    Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    return node;
+  }
+  function svText(x, y, str, cls, size, anchor) {
+    var t = sv("text", { x: x, y: y, "class": cls, "font-size": size, "text-anchor": anchor || "middle" });
+    t.textContent = str;
+    return t;
+  }
+  function clearGroup(g) { while (g && g.firstChild) g.removeChild(g.firstChild); }
+  function n1(v) { return Number(v).toFixed(1); }
+
+  /* 六种材料：dark 是「挡住多少光」的百分比，直接决定影子有多黑。
+     pass 决定舞台上要不要画穿过去的光线：none 全挡 / soft 打散 / clear 原样通过。 */
+  var MAT = {
+    wood:  { cap: "木板", kind: "不透明", dark: 100, slab: "ls-slab-wood",  pass: "none",
+      say: "木板把光全挡住了，墙上是最黑的影子，一点光都漏不过去。" },
+    card:  { cap: "纸板", kind: "不透明", dark: 90,  slab: "ls-slab-card",  pass: "none",
+      say: "纸板也不透明，影子几乎一样黑；再叠一层会更黑一点。" },
+    frost: { cap: "毛玻璃", kind: "半透明", dark: 55, slab: "ls-slab-frost", pass: "soft",
+      say: "毛玻璃让一半的光透过去，但把光打散了：影子变淡，形状也看不清。" },
+    gauze: { cap: "薄纱", kind: "半透明", dark: 30,  slab: "ls-slab-gauze", pass: "soft",
+      say: "薄纱上有好多小洞，大半的光都钻过去了，影子只剩淡淡一片。" },
+    glass: { cap: "清玻璃", kind: "透明", dark: 8,   slab: "ls-slab-glass", pass: "clear",
+      say: "清玻璃几乎不挡光，墙上几乎没有影子 —— 只剩边框一条细影。" },
+    water: { cap: "水", kind: "透明", dark: 14,      slab: "ls-slab-water", pass: "clear",
+      say: "水也是透明的，影子很淡；不过光穿进水里会拐一下弯，影子边上会有亮纹。" }
+  };
+
+  /* 舞台几何（viewBox 320×200）：灯心与物体底都在 y=160 的地面线上，
+     所以「影高 ÷ 物高」正好等于「灯到墙 ÷ 灯到物」，相似三角形是画出来的，不是编的。 */
+  var LX = 34, LY = 160, WALLX = 264, WALLW = 50, WALLTOP = 38, FLOORY = 160;
+  var OBJTOP = 128, OBJH = FLOORY - OBJTOP;   // 32 单位 = 舞台里的物体高度
+  var D2 = 3.0;                               // 灯到墙固定 3.00 m
+  var state = { mat: "wood", dist: 1.5 };     // dist：灯到物体的米数（默认对应「放中间」那张图卡）
+
+  function magNow() { return D2 / state.dist; }
+
+  var stageSvg = document.getElementById("lsStage");
+  var stageArt = document.getElementById("lsStageArt");
+  var atlasSay = document.getElementById("lsAtlasSay");
+  var atlasButtons = [].slice.call(document.querySelectorAll("#lsAtlasGrid [data-ls-mat]"));
+
+  function drawStage() {
+    if (!stageArt) return;
+    var m = MAT[state.mat];
+    var mag = magNow();
+    var objX = LX + (WALLX - LX) / mag;
+    var shadowTop = FLOORY - OBJH * mag;
+    if (shadowTop < WALLTOP + 4) shadowTop = WALLTOP + 4;
+    var alpha = (m.dark / 100) * 0.9;
+    clearGroup(stageArt);
+
+    stageArt.appendChild(sv("rect", { x: 0, y: 0, width: 320, height: 200, "class": "ls-bg" }));
+    stageArt.appendChild(sv("rect", { x: WALLX, y: WALLTOP, width: WALLW, height: FLOORY - WALLTOP, "class": "ls-wall" }));
+    if (shadowTop > WALLTOP + 1) {
+      stageArt.appendChild(sv("rect", { x: WALLX, y: WALLTOP, width: WALLW, height: n1(shadowTop - WALLTOP), "class": "ls-wall-lit" }));
+    }
+    stageArt.appendChild(sv("rect", {
+      x: WALLX, y: n1(shadowTop), width: WALLW, height: n1(FLOORY - shadowTop),
+      fill: "#1d160c", "fill-opacity": alpha.toFixed(2)
+    }));
+    stageArt.appendChild(sv("rect", { x: 0, y: FLOORY, width: 320, height: 200 - FLOORY, "class": "ls-floor" }));
+    stageArt.appendChild(sv("rect", {
+      x: n1(objX), y: FLOORY, width: n1(WALLX - objX), height: 10,
+      fill: "#1d160c", "fill-opacity": (alpha * 0.7).toFixed(2)
+    }));
+
+    /* 入射光线：灯 → 材料 */
+    stageArt.appendChild(sv("path", { "class": "ls-ray", d:
+      "M45 156 L" + n1(objX - 9) + " 134" +
+      " M45 160 L" + n1(objX - 9) + " 148" +
+      " M45 164 L" + n1(objX - 9) + " 159" }));
+    /* 透过材料的光线：半透明画虚线（被打散），透明画实线 */
+    if (m.pass !== "none") {
+      stageArt.appendChild(sv("path", { "class": m.pass === "soft" ? "ls-ray-soft" : "ls-ray", d:
+        "M" + n1(objX + 9) + " 134 L256 126" +
+        " M" + n1(objX + 9) + " 148 L256 144" +
+        " M" + n1(objX + 9) + " 158 L256 157" }));
+    }
+    /* 关键光线：灯 → 材料顶 → 影子顶，三点永远共线 */
+    stageArt.appendChild(sv("path", { "class": "ls-keyray", d:
+      "M" + LX + " " + LY + " L" + n1(objX) + " " + OBJTOP + " L" + WALLX + " " + n1(shadowTop) }));
+
+    /* 材料本体 */
+    stageArt.appendChild(sv("rect", { x: n1(objX - 6.5), y: OBJTOP, width: 13, height: OBJH, "class": m.slab }));
+    if (state.mat === "water") {
+      stageArt.appendChild(sv("path", { "class": "ls-water-line", d:
+        "M" + n1(objX - 6.5) + " 138 C" + n1(objX - 3) + " 134 " + n1(objX + 3) + " 142 " + n1(objX + 6.5) + " 138" +
+        " M" + n1(objX - 6.5) + " 152 C" + n1(objX - 3) + " 148 " + n1(objX + 3) + " 156 " + n1(objX + 6.5) + " 152" }));
+    }
+
+    /* 影高标尺：橙色方括号，把「影子有多高」画出来 */
+    stageArt.appendChild(sv("path", { "class": "ls-mark", d:
+      "M252 " + n1(shadowTop) + " L260 " + n1(shadowTop) +
+      " M256 " + n1(shadowTop) + " L256 " + FLOORY +
+      " M252 " + FLOORY + " L260 " + FLOORY }));
+
+    /* 灯 */
+    stageArt.appendChild(sv("rect", { x: 8, y: 151, width: 26, height: 18, rx: 7, "class": "ls-lamp-body" }));
+    stageArt.appendChild(sv("circle", { cx: LX, cy: LY, r: 10, "class": "ls-lamp" }));
+    stageArt.appendChild(sv("path", { "class": "ls-ray", d: "M34 146 L34 138 M24 150 L18 144 M44 150 L50 144" }));
+
+    /* 顶部信息条：名字 + 三档词 + 两个数字 */
+    stageArt.appendChild(sv("rect", { x: 8, y: 6, width: 304, height: 26, rx: 13, "class": "ls-badge" }));
+    stageArt.appendChild(svText(18, 25, m.cap + " · " + m.kind, "ls-ink", 15, "start"));
+    stageArt.appendChild(svText(302, 25, "影子 " + mag.toFixed(1) + " 倍 · 挡光 " + m.dark + "%", "ls-ink-soft", 13, "end"));
+
+    /* 地面标签 */
+    stageArt.appendChild(svText(LX, 184, "灯", "ls-ink", 13));
+    stageArt.appendChild(svText(n1(objX), 184, m.cap, "ls-ink", 13));
+    stageArt.appendChild(svText(WALLX + WALLW / 2, 178, "影子", "ls-ink", 13));
+    stageArt.appendChild(svText(WALLX + WALLW / 2, 193, mag.toFixed(1) + " 倍", "ls-ink-soft", 12));
+
+    if (stageSvg) {
+      stageSvg.setAttribute("aria-label",
+        "影子主舞台：材料是" + m.cap + "（" + m.kind + "），挡住 " + m.dark +
+        "% 的光，墙上的影子是物体的 " + mag.toFixed(1) + " 倍高，灯离材料 " + state.dist.toFixed(2) + " 米。");
+    }
+  }
+
+  /* ---------- ② 影子量表：影子有多大（倍数）/ 影子有多黑（挡光） ---------- */
+  var MAG_MAX = 4;
+  var distTiles = [].slice.call(document.querySelectorAll("#lsDistPicks [data-ls-dist]"));
+  var distSlider = document.getElementById("lsDist");
+  var distOut = document.getElementById("lsDistOut");
+  var sizeMeter = document.getElementById("lsSizeMeter");
+  var darkMeter = document.getElementById("lsDarkMeter");
+  var sizeValue = document.getElementById("lsSizeValue");
+  var darkValue = document.getElementById("lsDarkValue");
+  var testSize = document.getElementById("lsTestSize");
+  var testDark = document.getElementById("lsTestDark");
+  var darkDots = document.getElementById("lsDarkDots");
+  var meterSay = document.getElementById("lsMeterSay");
+
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+
+  function setMeter(track, value, max) {
+    if (!track) return;
+    if (window.Playful && Playful.setMeter) { Playful.setMeter(track, value, max); return; }
+    var fill = track.querySelector(".kid-meter-fill");
+    var ratio = clamp(Number(value) / Number(max), 0, 1);
+    if (fill) fill.style.setProperty("--fill", (ratio * 100).toFixed(1) + "%");
+  }
+
+  function paintDarkDots(dark) {
+    if (!darkDots) return;
+    darkDots.textContent = "";
+    var lit = Math.round(dark / 10);
+    for (var i = 0; i < 10; i++) {
+      var dot = document.createElement("i");
+      if (i >= lit) dot.setAttribute("data-empty", "true");
+      darkDots.appendChild(dot);
+    }
+    darkDots.setAttribute("aria-label", "十格里点亮了 " + lit + " 格，就是挡住大约 " + dark + "% 的光");
+  }
+
+  function drawMeters() {
+    var m = MAT[state.mat];
+    var mag = magNow();
+    if (sizeValue) sizeValue.textContent = mag.toFixed(1) + " 倍";
+    setMeter(sizeMeter, mag, MAG_MAX);
+    if (darkValue) darkValue.textContent = m.dark + "%";
+    setMeter(darkMeter, m.dark, 100);
+
+    var bigOk = mag >= 2;
+    var darkOk = m.dark >= 60;
+    if (testSize) {
+      testSize.setAttribute("data-ok", bigOk ? "true" : "false");
+      testSize.textContent = (bigOk ? "✓" : "○") + " 影子比材料大一倍（现在 " + mag.toFixed(1) + " 倍）";
+    }
+    if (testDark) {
+      testDark.setAttribute("data-ok", darkOk ? "true" : "false");
+      testDark.textContent = (darkOk ? "✓" : "○") + " 影子是深黑的（挡光 " + m.dark + "%）";
+    }
+    paintDarkDots(m.dark);
+    if (meterSay) {
+      meterSay.textContent = "灯离" + m.cap + " " + state.dist.toFixed(2) + " m，灯到墙 " + D2.toFixed(2) +
+        " m：影子是材料的 " + mag.toFixed(1) + " 倍高。" + m.cap + "挡住 " + m.dark + "% 的光，所以影子" +
+        (m.dark >= 60 ? "很黑" : (m.dark >= 25 ? "很淡" : "几乎看不出来")) + "。";
+    }
+  }
+
+  function refresh() { drawStage(); drawMeters(); }
+
+  function syncDistUI() {
+    if (distSlider) distSlider.value = String(state.dist);
+    if (distOut) distOut.textContent = state.dist.toFixed(2) + " m";
+    distTiles.forEach(function (tile) {
+      var v = parseFloat(tile.getAttribute("data-ls-dist"));
+      tile.setAttribute("aria-pressed", Math.abs(v - state.dist) < 0.03 ? "true" : "false");
+    });
+  }
+
+  function setDist(v, announce) {
+    state.dist = clamp(Number(v) || 1.25, 0.85, 2.5);
+    syncDistUI();
+    refresh();
+    if (announce && meterSay) {
+      meterSay.textContent = "灯放到离" + MAT[state.mat].cap + " " + state.dist.toFixed(2) + " m 的地方：影子变成 " +
+        magNow().toFixed(1) + " 倍高。" + meterSay.textContent;
+    }
+  }
+
+  distTiles.forEach(function (tile) {
+    tile.addEventListener("click", function () { setDist(tile.getAttribute("data-ls-dist"), true); });
+  });
+  if (distSlider) {
+    distSlider.addEventListener("input", function () { setDist(this.value, false); });
+  }
+
+  /* ---------- ① 材料图鉴 ---------- */
+  function selectMat(key) {
+    if (!MAT[key]) return;
+    state.mat = key;
+    var m = MAT[key];
+    atlasButtons.forEach(function (btn) {
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-ls-mat") === key ? "true" : "false");
+    });
+    refresh();
+    if (atlasSay) {
+      atlasSay.textContent = (m.dark >= 60 ? "✓ " : "○ ") + "你选了" + m.cap + "（" + m.kind + "）：" + m.say +
+        "挡光 " + m.dark + "%。";
+    }
+  }
+
+  atlasButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () { selectMat(btn.getAttribute("data-ls-mat")); });
+  });
+
+  /* ---------- ③ 灯往哪边走：影子变大 / 变小的前后对比 ---------- */
+  var quizArt = document.getElementById("lsQuizArt");
+  var quizBody = document.getElementById("lsQuizArtBody");
+  var quizSay = document.getElementById("lsQuizSay");
+  var quizStars = document.getElementById("lsQuizStars");
+  var quizTotal = document.getElementById("lsQuizTotal");
+  var quizPicks = [].slice.call(document.querySelectorAll("#lsQuizPicks [data-ls-answer]"));
+  /* 每题一对倍数：前 → 后。变大的一定是灯靠近，变小的一定是灯走远。 */
+  var NEAR_ROUNDS = [[1.4, 2.6], [1.6, 3.2], [1.5, 2.2], [1.3, 3.0]];
+  var FAR_ROUNDS = [[2.8, 1.5], [3.4, 1.9], [2.4, 1.3], [3.1, 1.6]];
+  var Q_OBJTOP = 128, Q_FLOOR = 150, Q_OBJH = Q_FLOOR - Q_OBJTOP, Q_WALLTOP = 40;
+  var quizNow = null, quizSolved = false, quizWins = 0, quizWantNear = true;
+
+  function drawQuizPanel(x0, title, mag) {
+    var shadowTop = Q_FLOOR - Q_OBJH * mag;
+    if (shadowTop < Q_WALLTOP + 4) shadowTop = Q_WALLTOP + 4;
+    var wallX = x0 + 116;
+    quizBody.appendChild(sv("rect", { x: x0, y: 8, width: 148, height: 164, rx: 12, "class": "ls-panel" }));
+    quizBody.appendChild(sv("rect", { x: wallX, y: Q_WALLTOP, width: 28, height: Q_FLOOR - Q_WALLTOP, "class": "ls-wall" }));
+    quizBody.appendChild(sv("rect", { x: wallX, y: Q_WALLTOP, width: 28, height: n1(shadowTop - Q_WALLTOP), "class": "ls-wall-lit" }));
+    quizBody.appendChild(sv("rect", {
+      x: wallX, y: n1(shadowTop), width: 28, height: n1(Q_FLOOR - shadowTop),
+      fill: "#1d160c", "fill-opacity": "0.82"
+    }));
+    quizBody.appendChild(sv("rect", { x: x0 + 2, y: Q_FLOOR, width: 144, height: 20, "class": "ls-floor" }));
+    quizBody.appendChild(sv("rect", { x: x0 + 62, y: Q_OBJTOP, width: 12, height: Q_OBJH, "class": "ls-slab-wood" }));
+    quizBody.appendChild(sv("path", { "class": "ls-mark", d:
+      "M" + (x0 + 104) + " " + n1(shadowTop) + " L" + (x0 + 112) + " " + n1(shadowTop) +
+      " M" + (x0 + 108) + " " + n1(shadowTop) + " L" + (x0 + 108) + " " + Q_FLOOR +
+      " M" + (x0 + 104) + " " + Q_FLOOR + " L" + (x0 + 112) + " " + Q_FLOOR }));
+    quizBody.appendChild(sv("circle", { cx: x0 + 28, cy: 62, r: 16, "class": "ls-lamp-q" }));
+    quizBody.appendChild(svText(x0 + 28, 69, "?", "ls-ink", 20));
+    quizBody.appendChild(svText(x0 + 28, 92, "灯在哪儿", "ls-ink-soft", 11));
+    quizBody.appendChild(sv("rect", { x: x0 + 8, y: 12, width: 132, height: 22, rx: 11, "class": "ls-badge" }));
+    quizBody.appendChild(svText(x0 + 74, 28, title, "ls-ink", 14));
+    quizBody.appendChild(svText(x0 + 68, 165, "材料没动", "ls-ink-soft", 11));
+  }
+
+  function drawQuiz() {
+    if (!quizBody || !quizNow) return;
+    clearGroup(quizBody);
+    drawQuizPanel(6, "刚才", quizNow.before);
+    drawQuizPanel(166, "现在", quizNow.after);
+    if (quizArt) {
+      quizArt.setAttribute("aria-label",
+        "影子的前后对比：左边「刚才」的影子约是材料的 " + quizNow.before.toFixed(1) +
+        " 倍高，右边「现在」的影子约是材料的 " + quizNow.after.toFixed(1) +
+        " 倍高，材料位置没变，灯的位置画成问号。");
+    }
+  }
+
+  function quizNext() {
+    var list = quizWantNear ? NEAR_ROUNDS : FAR_ROUNDS;
+    var pick = list[Math.floor(Math.random() * list.length)] || list[0];
+    if (quizNow && pick[0] === quizNow.before && pick[1] === quizNow.after && list.length > 1) {
+      pick = list[(list.indexOf(pick) + 1) % list.length];
+    }
+    quizWantNear = !quizWantNear;
+    quizNow = { before: pick[0], after: pick[1], answer: pick[1] > pick[0] ? "near" : "far" };
+    quizSolved = false;
+    drawQuiz();
+    quizPicks.forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+    if (quizSay) quizSay.textContent = "换好了。比一比两边影子谁高，再点一张大图卡。";
+  }
+
+  function quizHintText() {
+    return "提示：先比两边影子的顶端谁更高。影子变大说明灯更近，影子变小说明灯更远。";
+  }
+
+  quizPicks.forEach(function (button) {
+    button.addEventListener("click", function () {
+      if (!quizNow || quizSolved) return;
+      var ok = button.getAttribute("data-ls-answer") === quizNow.answer;
+      var grew = quizNow.after > quizNow.before;
+      if (ok) {
+        quizSolved = true;
+        quizPicks.forEach(function (other) {
+          other.setAttribute("aria-pressed", other === button ? "true" : "false");
+        });
+        quizWins += 1;
+        if (quizStars) {
+          quizStars.textContent = new Array(Math.min(quizWins, 10) + 1).join("⭐");
+          quizStars.setAttribute("aria-label", "已经猜对 " + quizWins + " 次");
+        }
+        if (quizTotal) quizTotal.textContent = "猜对 " + quizWins + " 次";
+        if (quizSay) {
+          quizSay.textContent = "✓ 猜对了！影子从 " + quizNow.before.toFixed(1) + " 倍变成 " + quizNow.after.toFixed(1) +
+            " 倍，" + (grew ? "变大了，所以灯靠近了材料。" : "变小了，所以灯走远了。") + "按「换一题」再来一个。";
+        }
+        if (window.Playful && Playful.confetti) Playful.confetti(quizArt && quizArt.parentNode);
+        return;
+      }
+      /* 猜错：只给提示，不清零、不换题，可以接着再比一次 */
+      button.setAttribute("aria-pressed", "false");
+      if (quizSay) quizSay.textContent = "○ 再看看：影子变大说明灯更近，影子变小说明灯更远。" + quizHintText();
+    });
+  });
+
+  var quizNextBtn = document.getElementById("lsQuizNext");
+  var quizHintBtn = document.getElementById("lsQuizHint");
+  if (quizNextBtn) quizNextBtn.addEventListener("click", quizNext);
+  if (quizHintBtn) {
+    quizHintBtn.addEventListener("click", function () {
+      if (quizSay) quizSay.textContent = quizHintText();
+    });
+  }
+
+  syncDistUI();
+  selectMat(state.mat);
+  quizNext();
+})();
+</script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

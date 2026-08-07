@@ -104,6 +104,11 @@ window.PLAYFUL = {
       card: { series: "自然观察", discovery: "昆虫有头、胸、腹三个主要部分，六条腿连接在胸部。", fact: "小动物的表面积相对体积更大，这会影响散热和身体强度。", next: "不碰昆虫，观察一分钟并画下它重复最多的动作。", accent: "#ea580c" },
       surprises: ["不碰昆虫，记录它一分钟里的动作。", "画出昆虫身体的三个主要部分。", "比较昆虫和自己的移动方式。"]
     },
+    "nature/beetles.html": {
+      companion: "bo", sticker: { id: "beetle-keeper", label: "甲虫馆长", emoji: "🪲" },
+      card: { series: "自然观察", discovery: "甲虫背上那层硬壳是变硬的前翅（鞘翅），飞行用的软翅折在下面。", fact: "已命名的甲虫约 40 万种，占全部已知动物物种的约四分之一。", next: "找一只甲虫，说出它的鞘翅、腿和口器分别解决了什么问题。", accent: "#7c4a12" },
+      surprises: ["找一只甲虫，数一数它合起来的鞘翅中间有几条缝。", "比较两只甲虫的腿：哪一只更适合挖土，哪一只更适合抓握。", "不碰它，观察一分钟，记录它遇到影子时的反应。"]
+    },
     "nature/earth.html": {
       companion: "guo", sticker: { id: "earth-reader", label: "地球读图员", emoji: "🌍" },
       card: { series: "自然观察", discovery: "震级、深度和位置描述地震的不同方面，不能互相替代。", fact: "震级每增加 1，记录到的振幅约增加 10 倍。", next: "找两次震级接近但深度不同的地震，比较它们。", accent: "#0f766e" },

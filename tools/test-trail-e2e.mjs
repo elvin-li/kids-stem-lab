@@ -2,10 +2,11 @@
  * 验证 file:// 跨页共享、四层语义、JSON 恢复和三档响应式布局。
  */
 import { spawn } from 'node:child_process';
-import { access, mkdtemp, rm } from 'node:fs/promises';
+import { access, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { runInNewContext } from 'node:vm';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const PORT = 9700 + (process.pid % 200);
@@ -16,14 +17,16 @@ const CHROME_CANDIDATES = [
   '/Applications/Chromium.app/Contents/MacOS/Chromium',
   '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser'
 ].filter(Boolean);
-const DETAIL_PAGES = [
-  'games/number-blocks.html', 'games/fraction-lab.html', 'games/pattern-machine.html',
-  'games/symmetry-studio.html', 'games/estimation-station.html', 'games/turtle-geometry.html',
-  'games/doodle-pad.html', 'games/gravity-drop.html', 'games/ramp-and-roll.html',
-  'games/light-and-shadow.html', 'games/wave-maker.html', 'nature/dinosaurs.html',
-  'nature/space.html', 'nature/ocean.html', 'nature/insects.html', 'nature/earth.html',
-  'nature/weather.html', 'nature/human-body.html'
-];
+/* 详情页清单从唯一探索目录推导，不再手写。
+   以前这里写死 18 页，新增探索页时会被静默漏掉，等于新页从不进儿童首屏审计。 */
+const catalogSandbox = { window: {} };
+runInNewContext(await readFile(join(ROOT, 'data', 'explorations.js'), 'utf8'), catalogSandbox, {
+  filename: 'data/explorations.js', timeout: 1000
+});
+const DETAIL_PAGES = (catalogSandbox.window.EXPLORATIONS || [])
+  .filter((x) => x && x.ready)
+  .map((x) => String(x.id));
+if (!DETAIL_PAGES.length) throw new Error('data/explorations.js 没有可用条目，无法推导详情页清单');
 
 async function findChrome() {
   for (const candidate of CHROME_CANDIDATES) {
@@ -172,8 +175,13 @@ try {
     check(await evaluate('return document.querySelectorAll("[data-view]").length === 3 && document.getElementById("viewTitle").textContent === "收藏卡册";'), '足迹页提供收藏卡、笔记、作品三视图');
     check(await evaluate('return document.getElementById("stickersTab").tabIndex === 0 && document.getElementById("notesTab").tabIndex === -1 && document.getElementById("collectionPanel").getAttribute("aria-labelledby") === "stickersTab";'), '标签页使用单一可聚焦项并正确标注面板');
     check(await evaluate('document.getElementById("stickersTab").focus(); document.getElementById("stickersTab").dispatchEvent(new KeyboardEvent("keydown", {key:"ArrowLeft", bubbles:true})); return document.activeElement === document.getElementById("notesTab") && document.getElementById("notesTab").getAttribute("aria-selected") === "true" && document.getElementById("viewTitle").textContent === "田野笔记";'), '方向键切换视图并移动焦点');
-    check(await evaluate('document.getElementById("stickersTab").click(); return document.querySelectorAll(".album-card").length === 18 && document.querySelectorAll(".album-card[data-unlocked=false]").length === 18 && document.getElementById("milestones").children.length === 4;'), '干净状态显示 18 个锁定卡槽和 4 个里程碑');
-    check(await evaluate('return ["visitedCount","stickerCount","noteCount","workCount"].every(id => document.getElementById(id).textContent === "0") && /0 \/ 18/.test(document.getElementById("albumCount").textContent);'), '四项统计和卡册进度均为 0');
+    /* 卡册槽位数跟着探索目录走，不写死。断言里不再嵌正则字面量：
+       '\/' 在普通字符串里会塌成 '/'，注入页面后正则提前收尾并抛 SyntaxError，
+       整条流程会在这里中断，后面的断言其实从未跑过。改用 includes()。 */
+    const cardTotal = await evaluate('return Progress.getCards().length;');
+    check(cardTotal === DETAIL_PAGES.length, `卡册槽位与探索目录一致（${cardTotal} / ${DETAIL_PAGES.length}）`);
+    check(await evaluate(`document.getElementById("stickersTab").click(); return document.querySelectorAll(".album-card").length === ${cardTotal} && document.querySelectorAll(".album-card[data-unlocked=false]").length === ${cardTotal} && document.getElementById("milestones").children.length === 4;`), `干净状态显示 ${cardTotal} 个锁定卡槽和 4 个里程碑`);
+    check(await evaluate(`return ["visitedCount","stickerCount","noteCount","workCount"].every(id => document.getElementById(id).textContent === "0") && document.getElementById("albumCount").textContent.includes("0 / ${cardTotal}");`), '四项统计和卡册进度均为 0');
     check(await evaluate('return document.getElementById("storageNotice").hidden;'), 'localStorage 可用时不显示降级提示');
 
     step('跨页面访问');
@@ -230,8 +238,8 @@ try {
     step('收藏卡册与里程碑');
     await go('pages/progress.html');
     check(await evaluate('return document.getElementById("visitedCount").textContent === "2";'), '访问过为 2');
-    check(await evaluate('return document.getElementById("stickerCount").textContent === "1" && /1 \/ 18/.test(document.getElementById("albumCount").textContent);'), '正式完成派生 1 张收藏卡');
-    check(await evaluate('return document.querySelectorAll(".album-card").length === 18 && document.querySelectorAll(".album-card[data-unlocked=true]").length === 1 && document.querySelectorAll(".album-card[data-unlocked=false]").length === 17;'), '卡册保留全部 18 个锁定与解锁位置');
+    check(await evaluate(`return document.getElementById("stickerCount").textContent === "1" && document.getElementById("albumCount").textContent.includes("1 / ${cardTotal}");`), '正式完成派生 1 张收藏卡');
+    check(await evaluate(`return document.querySelectorAll(".album-card").length === ${cardTotal} && document.querySelectorAll(".album-card[data-unlocked=true]").length === 1 && document.querySelectorAll(".album-card[data-unlocked=false]").length === ${cardTotal - 1};`), `卡册保留全部 ${cardTotal} 个锁定与解锁位置`);
     check(await evaluate('return [...document.querySelectorAll(".album-card[data-unlocked=true]")].some(card => /波浪倾听者/.test(card.textContent) && /造波机/.test(card.textContent) && /造出增强与抵消两种干涉/.test(card.textContent) && /知识小卡/.test(card.textContent));'), '解锁卡显示来源、发现、知识和完成证据');
     check(await evaluate('return [...document.querySelectorAll(".album-card[data-unlocked=false]")].every(card => !/我的发现|知识小卡|下一次试试/.test(card.textContent));'), '锁定卡不提前揭晓卡片内容');
     check(await evaluate('return document.getElementById("workCount").textContent === "1";'), '结构化作品为 1');
@@ -243,11 +251,11 @@ try {
       if (dialog && (dialog.open || dialog.dataset.open === 'true')) dialog.querySelector('.reward-close').click();
       return true;
     `);
-    check(await evaluate('return /3 \/ 18/.test(document.getElementById("albumCount").textContent) && document.querySelectorAll(".milestone-card[data-unlocked=true]").length === 1;'), '收集 3 张时点亮首个反思里程碑');
+    check(await evaluate(`return document.getElementById("albumCount").textContent.includes("3 / ${cardTotal}") && document.querySelectorAll(".milestone-card[data-unlocked=true]").length === 1;`), '收集 3 张时点亮首个反思里程碑');
     check(await evaluate(`
       const ok = Progress.importJSON(${JSON.stringify(oneCardBackup)});
       const dialog = document.getElementById('playfulRewardDialog');
-      return ok && /1 \/ 18/.test(document.getElementById('albumCount').textContent) && (!dialog || (!dialog.open && !dialog.hasAttribute('data-open')));
+      return ok && document.getElementById('albumCount').textContent.includes('1 / ${cardTotal}') && (!dialog || (!dialog.open && !dialog.hasAttribute('data-open')));
     `), '导入既有记录同步卡册但不制造新解锁弹窗');
     check(await evaluate('document.getElementById("worksTab").click(); return [...document.querySelectorAll(".collection-card")].some(card => /干涉记录/.test(card.textContent));'), '作品册显示保存的作品');
 
@@ -315,10 +323,10 @@ try {
     step('首页汇总');
     await go('index.html');
     const trailText = await evaluate('return document.getElementById("trail-go").textContent;');
-    check(/已访问\s*2\s*\/\s*18/.test(trailText), `首页显示 2 / 18（实际“${trailText}”）`);
-    check(await evaluate('return /已收集 1 \/ 18/.test(document.getElementById("recentCardSummary").textContent) && /波浪倾听者/.test(document.getElementById("recentCards").textContent);'), '首页显示收藏卡总数和最近解锁卡');
+    check(new RegExp(`已访问\\s*2\\s*/\\s*${cardTotal}`).test(trailText), `首页显示 2 / ${cardTotal}（实际“${trailText}”）`);
+    check(await evaluate(`return document.getElementById("recentCardSummary").textContent.includes("已收集 1 / ${cardTotal}") && /波浪倾听者/.test(document.getElementById("recentCards").textContent);`), '首页显示收藏卡总数和最近解锁卡');
 
-    step('18 页儿童首屏');
+    step(`${DETAIL_PAGES.length} 页儿童首屏`);
     await browser.send('Emulation.setDeviceMetricsOverride', {
       width: 375, height: 812, deviceScaleFactor: 2, mobile: true
     }, sessionId);
@@ -326,14 +334,31 @@ try {
       await go(page);
       const childView = await evaluate(`
         const root = document.documentElement;
-        const stage = document.querySelector('.kid-hero-scene,.kid-visual-stage');
-        const action = document.querySelector('.kid-action-strip');
+        /* 一页可以有多个舞台，也可以有家长版 + 孩子版两条操作条。
+           以前这里直接取 querySelector 的第一个，于是量到的常常是首个舞台
+           和孩子模式下 display:none 的家长操作条，结论跟实际布局无关。
+           现在只取真正可见的那条操作条，并跟它自己所属的舞台比距离。 */
+        const shown = (el) => {
+          if (!el) return false;
+          const s = getComputedStyle(el);
+          if (s.display === 'none' || s.visibility === 'hidden') return false;
+          const r = el.getBoundingClientRect();
+          return r.width > 0 && r.height > 0;
+        };
+        const stages = [...document.querySelectorAll('.kid-hero-scene,.kid-visual-stage')].filter(shown);
+        const stage = stages[0] || null;
+        const action = [...document.querySelectorAll('.kid-action-strip')].find(shown) || null;
         const deep = document.querySelector('.parent-deep-dive');
         const focusables = [...document.querySelectorAll('a[href],button:not([disabled]),select,textarea,input:not([type=hidden]),[tabindex]:not([tabindex="-1"])')]
           .filter(el => getComputedStyle(el).visibility !== 'hidden' && getComputedStyle(el).display !== 'none');
         const actionControl = action && action.querySelector('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),[role="button"]');
         const stageRect = stage && stage.getBoundingClientRect();
         const actionRect = action && action.getBoundingClientRect();
+        /* 操作条到各个可见舞台底部的距离。负值表示两者并排或操作条在舞台上方
+           （hero 左右分栏就是这种情况），同样算“贴着舞台”。 */
+        const gaps = actionRect
+          ? stages.map((el) => Math.round(actionRect.top - el.getBoundingClientRect().bottom))
+          : [];
         const visibleLongText = [...document.querySelectorAll('p,li')].filter(el => {
           const rect = el.getBoundingClientRect();
           const style = getComputedStyle(el);
@@ -347,7 +372,11 @@ try {
           viewportArea: innerWidth * innerHeight,
           visibleLongText,
           actionVisible: Boolean(actionRect && actionRect.width > 0 && actionRect.height > 0 && actionControl),
-          actionNearStage: Boolean(stageRect && actionRect && actionRect.top < innerHeight && actionRect.top <= stageRect.bottom + 240),
+          /* 拆成两项：贴不贴舞台，和够不够得着。混在一条里看不出是哪个问题。 */
+          actionNearStage: gaps.some((g) => g <= 240),
+          actionGap: gaps.length ? gaps.reduce((a, b) => (Math.abs(b) < Math.abs(a) ? b : a)) : null,
+          actionTop: actionRect ? Math.round(actionRect.top) : null,
+          actionAboveFold: Boolean(actionRect && actionRect.top < innerHeight),
           parentHidden: Boolean(deep && getComputedStyle(deep).display === 'none'),
           overflow: root.scrollWidth - root.clientWidth,
           unnamed: focusables.filter(el => !(el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.labels?.length || el.textContent.trim() || el.title)).length
@@ -359,7 +388,8 @@ try {
       check(childView.stageHeight <= 650, `${page} 图形舞台不过度拉成长卷（${childView.stageHeight}px）`);
       check(childView.visibleLongText <= 1, `${page} 首屏没有文字墙（长段落 ${childView.visibleLongText} 个）`);
       check(childView.actionVisible, `${page} 首要操作可用`);
-      check(childView.actionNearStage, `${page} 主操作紧邻舞台且首屏可触达`);
+      check(childView.actionNearStage, `${page} 主操作紧邻舞台（最近间距 ${childView.actionGap}px）`);
+      check(childView.actionAboveFold, `${page} 主操作首屏可触达（top ${childView.actionTop ?? '?'}px）`);
       check(childView.parentHidden, `${page} 家长深读不占孩子首屏`);
       check(childView.overflow <= 1, `${page} 375px 无页面级横向溢出（${childView.overflow}px）`);
       check(childView.unnamed === 0, `${page} 可聚焦控件均有名称`);
@@ -387,7 +417,7 @@ try {
         };
       `);
       check(layout.overflow <= 1 && !layout.clippedMain, `${width}px 无页面级横向溢出（${layout.overflow}px）`);
-      check(layout.cards === 18, `${width}px 保留完整 18 槽卡册`);
+      check(layout.cards === cardTotal, `${width}px 保留完整 ${cardTotal} 槽卡册`);
       check(layout.unnamed === 0, `${width}px 可聚焦控件均有名称`);
     }
     await browser.send('Emulation.clearDeviceMetricsOverride', {}, sessionId);

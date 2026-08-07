@@ -1,27 +1,31 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>太空站 · 太阳系与每日天文图 | 少儿数理启蒙</title>
 <meta name="description" content="用内置 NASA 常用数据比较八大行星的大小、距离、重力与周期，并可联网查看每日天文图。">
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#0b0f1a">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   html, body { max-width: 100%; overflow-x: hidden; }
   .hero { padding: 32px 0 20px; }
   .hero h1 { margin: .18em 0; }
-  .space-hero { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(260px,.8fr); gap: 20px; align-items: stretch; padding: 22px; border: 1px solid var(--line); border-radius: var(--r-lg); background: radial-gradient(circle at 78% 24%,rgba(110,168,254,.2),transparent 24%),linear-gradient(145deg,#111b3b,var(--surface) 62%); }
+  /* 渐变原来从 #111b3b（近黑navy）起笔，而 h1「太空站」、.character-invite、.hero-question
+     都在左上角这一侧，用的是深色 --ink/--ink-mid → 深底深字（1.03:1）。
+     夜空留给右侧的 .space-stage .solar 和 .space-scene，hero 本身改成浅紫底。 */
+  .space-hero { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(260px,.8fr); gap: 20px; align-items: stretch; padding: 22px; border: 1px solid var(--line); border-radius: var(--r-lg); background: radial-gradient(circle at 78% 24%,color-mix(in srgb,var(--math) 16%,transparent),transparent 24%),linear-gradient(145deg,color-mix(in srgb,var(--phys) 14%,var(--surface)),var(--surface) 62%); }
   .story-copy { min-width: 0; }
   .character-invite { margin: .45em 0; color: var(--ink-mid); font-weight: 700; }
   .character-invite .friend { display: inline-grid; place-items: center; width: 44px; height: 44px; margin-right: 8px; border-radius: 50%; background: var(--surface-2); font-size: 1.6rem; vertical-align: middle; }
   .hero-question { max-width: 36ch; margin: .45em 0 .8em; font-size: clamp(1.05rem,2.4vw,1.35rem); line-height: 1.45; color: var(--ink); }
   .hero-question b { color: var(--sci); }
-  .quick-look { padding: 13px 15px; border: 1px dashed var(--sci); border-radius: var(--r); background: rgba(11,15,26,.42); }
+  /* rgba(11,15,26,.42) 在浅色主题下是一层灰蒙版，里面的 --ink-mid 说明文字只有 2.9:1。 */
+  .quick-look { padding: 13px 15px; border: 1px dashed var(--sci); border-radius: var(--r); background: color-mix(in srgb,var(--sci) 7%,var(--surface)); }
   .quick-look h2 { margin: 0 0 6px; font-size: 1rem; }
   .quick-look ol { margin: 6px 0; padding-left: 1.35em; }
   .quick-look li + li { margin-top: 4px; }
@@ -45,6 +49,10 @@
   .explain-grid h3 { margin: 0 0 5px; font-size: 1rem; }
   .explain-grid p { margin: 0; color: var(--ink-mid); font-size: .88rem; }
   .data-source { margin: 12px 0 0; padding: 11px 13px; border-left: 3px solid var(--phys); background: var(--bg-soft); color: var(--ink-mid); }
+  .online-opt { margin: 0 0 12px; padding: 12px 14px; border: 2px dashed var(--warn); border-radius: var(--r); background: var(--bg-soft); }
+  .online-opt label { display: flex; min-height: 48px; align-items: center; gap: 10px; color: var(--ink); font-weight: 800; cursor: pointer; }
+  .online-opt input { width: 22px; height: 22px; flex: none; }
+  .online-opt span { display: block; margin-top: 4px; color: var(--ink-mid); font-size: .84rem; line-height: 1.55; }
 
   /* ---------- 太阳系轨道图 ---------- */
   .solar {
@@ -64,8 +72,8 @@
   }
   .sun-label {
     position: absolute; left: 4px; bottom: -2px;
-    font-size: .68rem; font-weight: 700; color: var(--warn);
-    font-family: var(--mono);
+    font-size: .68rem; font-weight: 800; color: #ffd979;
+    font-family: var(--mono); text-shadow: 0 1px 2px rgba(0,0,0,.6);
   }
   .planet {
     position: absolute; transform: translate(-50%, -50%);
@@ -81,11 +89,12 @@
     transform: scale(1.16);
     box-shadow: inset -3px -3px 8px rgba(0,0,0,.45), 0 0 0 3px rgba(110,168,254,.5);
   }
+  /* .solar 恒为深色夜空底，因此这里用固定亮色，不跟随主题的深色墨水变量 */
   .planet .nm {
-    font-size: .72rem; color: var(--ink-mid); white-space: nowrap;
-    font-weight: 600;
+    font-size: .72rem; color: #cbdaf6; white-space: nowrap;
+    font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,.55);
   }
-  .planet[aria-pressed="true"] .nm { color: var(--ink); }
+  .planet[aria-pressed="true"] .nm { color: #fff; }
   .ring {
     position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
     border: 1px solid rgba(251,191,36,.55); border-radius: 50%;
@@ -175,7 +184,7 @@
   .task-status { min-height: 1.5em; color: var(--ink-mid); }
   .principle { border-left: 3px solid var(--phys); padding-left: 12px; color: var(--ink-mid); }
   .parent-q li + li { margin-top: 7px; }
-  button, input, select, textarea, [role="button"] { min-height: 44px; }
+  button, input, select, textarea, [role="button"] { min-height: 48px; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
 
   /* ---------- 儿童首屏：真实操作舞台 ---------- */
@@ -198,9 +207,7 @@
   .scale-visual { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(220px,.8fr); gap: 12px; align-items: stretch; }
   .scale-visual svg { width: 100%; min-height: 190px; border: 2px solid var(--line-soft); border-radius: var(--r); background: linear-gradient(180deg,#101a36,#081126); }
   .scale-visual .text-result { margin: 0; display: flex; align-items: center; border: 2px solid color-mix(in srgb,var(--sci) 30%,var(--line)); border-left-width: 5px; border-radius: var(--r); font-size: 1rem; }
-  .kid-answer-group { display: flex; flex-wrap: wrap; gap: 8px; }
-  .kid-answer-group button { min-height: 48px; flex: 1 1 145px; padding: 9px 12px; border: 2px solid var(--line); border-radius: var(--r); background: var(--surface); color: var(--ink); font: 750 .9rem/1.35 var(--font); cursor: pointer; }
-  .kid-answer-group button[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 14%,var(--surface)); }
+  /* 图卡样式统一由 kid.css 的 .kid-tiles/.kid-tile 提供，此处不再覆盖 */
   .mission-step .space-check-row { display: flex; min-height: 48px; align-items: center; gap: 9px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); }
   .mission-step .space-check-row input { width: 22px; height: 22px; flex: none; }
   .parent-deep-dive.space-terms { margin-top: 14px; }
@@ -229,16 +236,549 @@
     .scale-field legend { margin-bottom: 3px; font-size: .72rem; }
     .scale-picks { flex-wrap: nowrap; gap: 5px; }
     .scale-picks label { flex-basis: 0; }
-    .scale-picks span { min-height: 44px; padding: 6px 8px; font-size: .78rem; }
-    #spaceRun { min-height: 44px; padding: 7px 10px; white-space: nowrap; }
+    .scale-picks span { min-height: 48px; padding: 6px 8px; font-size: .78rem; }
+    #spaceRun { min-height: 48px; padding: 7px 10px; white-space: nowrap; }
     .scale-visual { grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); gap: 7px; }
     .scale-visual svg { min-height: 108px; }
     .scale-visual .text-result { min-height: 108px; padding: 7px 8px; font-size: .72rem; line-height: 1.35; }
+    .scale-picks span i { font-size: 1.05rem; }
   }
 
+  /* ---------- 本轮精修：图形优先、间距节奏、对比度 ---------- */
+
+  /* 段落节奏：主区各板块之间统一呼吸，标题与引导句距离收紧 */
+  main.stack > section > h2 { margin: 0 0 .35em; }
+  .section-lead { margin: 0 0 14px; color: var(--ink-mid); font-size: .92rem; line-height: 1.62; }
+  .card > h2:first-child, .card > h3:first-child { margin-top: 0; }
+
+  /* 孩子也能读的提示条：大图标 + 一句话 */
+  .kid-note {
+    display: flex; gap: 11px; align-items: center;
+    margin: 12px 0 0; padding: 11px 13px;
+    border: 2px dashed var(--line); border-radius: var(--r);
+    background: var(--bg-soft); color: var(--ink);
+    font-size: .92rem; line-height: 1.5;
+  }
+  .kid-note .kid-note-art { flex: none; font-size: 1.9rem; line-height: 1; }
+  .kid-note p { margin: 0; }
+
+  /* 选择按钮：图标在前、短标签在后 */
+  .scale-picks span { grid-auto-flow: column; gap: 7px; align-items: center; }
+  .scale-picks span i { font-size: 1.4rem; line-height: 1; font-style: normal; }
+
+  /* 行星大小真实比例对比 */
+  .size-compare {
+    display: block; width: 100%; height: auto; margin-top: 12px;
+    border: 2px solid var(--line); border-radius: var(--r);
+    background: linear-gradient(180deg,#101a36,#070f22);
+  }
+  .size-picks { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+  .size-picks button {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    flex: 1 1 150px; min-height: 48px; padding: 9px 14px;
+    border: 2px solid var(--line); border-radius: 999px;
+    background: var(--surface); color: var(--ink);
+    font: 800 .95rem/1.25 inherit; cursor: pointer;
+  }
+  .size-picks button i { font-size: 1.35rem; line-height: 1; font-style: normal; }
+  .size-picks button[aria-pressed="true"] {
+    border-color: var(--sci); background: color-mix(in srgb,var(--sci) 14%,var(--surface));
+    box-shadow: 0 0 0 3px color-mix(in srgb,var(--sci) 16%,transparent);
+  }
+  .size-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 0 0; padding: 0; list-style: none; color: var(--ink-mid); font-size: .84rem; }
+  .size-legend li { display: flex; align-items: center; gap: 6px; }
+  .size-legend b { color: var(--ink); }
+
+  /* 距离尺：加宽轨道，用飞机与行星图形标位置 */
+  .ruler-ends { display: flex; justify-content: space-between; margin: 0 0 6px; padding: 0 2px; color: var(--ink-dim); font-size: .78rem; font-weight: 700; }
+  .rrow { grid-template-columns: 84px minmax(0,1fr); gap: 12px; padding: 7px 0; }
+  .rrow + .rrow { border-top: 1px solid var(--line-soft); }
+  .rrow .lb { display: flex; align-items: center; gap: 6px; color: var(--ink); font-size: .86rem; font-weight: 700; }
+  .rrow .lb i { font-size: 1.25rem; line-height: 1; font-style: normal; }
+  .rrow .bar {
+    height: 26px; border: 1px solid var(--line-soft);
+    background: linear-gradient(90deg,color-mix(in srgb,var(--warn) 22%,var(--surface-2)),var(--surface-2) 55%);
+  }
+  .rrow .plane { position: absolute; left: 7px; top: 50%; transform: translateY(-50%); font-size: 1rem; line-height: 1; }
+  .rrow .mk { position: absolute; top: 50%; transform: translate(-50%,-50%); font-size: 1.2rem; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
+  .rrow .tx { font-size: .82rem; color: var(--ink-mid); font-family: var(--mono); }
+
+  /* 体重计：每行带行星图标，数字对比度提高 */
+  .wbar { grid-template-columns: 82px minmax(0,1fr) 84px; }
+  .wbar .pl { display: flex; align-items: center; gap: 6px; color: var(--ink); font-size: .86rem; font-weight: 650; }
+  .wbar .pl i { font-size: 1.2rem; line-height: 1; font-style: normal; }
+  .wbar .track { height: 26px; }
+  .wbar .val { font-size: .88rem; font-weight: 700; }
+
+  /* 联网增强的占位卡：不再只是一行灰字 */
+  .apod-media[data-ph="1"] {
+    display: grid; place-items: center; align-content: center; gap: 8px;
+    min-height: 190px; padding: 18px; border-style: dashed;
+    color: var(--ink-mid); font-size: .92rem; line-height: 1.55; text-align: center;
+  }
+  .apod-media[data-ph="1"] b { font-size: 2.8rem; line-height: 1; }
+  .shots-note {
+    grid-column: 1/-1; display: flex; gap: 11px; align-items: center;
+    padding: 13px 15px; border: 2px dashed var(--line); border-radius: var(--r);
+    background: var(--bg-soft); color: var(--ink); font-size: .9rem; line-height: 1.55;
+  }
+  .shots-note .kid-note-art { flex: none; font-size: 2rem; line-height: 1; }
+  .shots-note p { margin: 0; }
+
+  @media (max-width: 480px) {
+    .rrow { grid-template-columns: 70px minmax(0,1fr); gap: 9px; }
+    .wbar { grid-template-columns: 68px minmax(0,1fr) 74px; }
+    .size-picks button { flex-basis: 100%; }
+  }
+
+
+  /* 插画舞台（共享 SVG 场景铺底，内容都放在不透明卡片上保证对比度） */
+  .sp-scene-stage { margin:0 0 16px; padding:clamp(12px,2.6vw,20px); }
+  .sp-scene-copy { display:grid; gap:12px; min-width:0; }
+  .sp-scene-stage .kid-steps-visual { margin:0; }
+  @media (max-width:560px) {
+    .sp-scene-stage { padding:10px; }
+  }
+
+  /* ---------- 图像优先三件套（本页前缀 spx-）：太阳系图鉴 / 三条量表 / 猜猜这是哪颗星 ---------- */
+  .spx-shell { display:grid; gap:16px; margin:26px 0; }
+  .spx-card { position:relative; padding:18px; border:3px solid var(--line); border-radius:22px; background:var(--surface); box-shadow:0 6px 0 rgba(16,26,54,.16); }
+  .spx-card > h3 { margin:.1em 0 .3em; font-size:1.16rem; }
+  .spx-lead { margin:0 0 12px; color:var(--ink-mid); font-weight:750; font-size:.92rem; }
+  .spx-card details { margin-top:12px; border:1px solid var(--line-soft); border-radius:var(--r); padding:0 13px; }
+  .spx-card details[open] { padding-bottom:10px; }
+  .spx-card details > p { color:var(--ink-mid); font-size:.88rem; line-height:1.58; }
+  .spx-card details > summary { min-height:48px; display:flex; align-items:center; cursor:pointer; font-weight:850; }
+
+  /* 图鉴：每张卡的圆盘都是内联 SVG，底色是夜空 */
+  /* 夜空底色由 SVG 里的 .spx-space 铺，卡片外框仍走主题 token */
+  .spx-shell .kid-figure-art { padding:6px; background:var(--surface-2); }
+  .spx-shell .kid-figure-art > svg { width:100%; max-width:132px; height:auto; }
+  .spx-shell .kid-figure-fact { display:block; }
+  .spx-scale-hint { display:flex; gap:10px; align-items:center; margin:12px 0 0; padding:10px 12px; border:2px dashed var(--line); border-radius:var(--r); background:var(--bg-soft); color:var(--ink); font-size:.88rem; line-height:1.5; }
+  .spx-scale-hint span { flex:none; font-size:1.7rem; line-height:1; }
+  .spx-scale-hint p { margin:0; }
+
+  /* 量表：min-width 让极短的条也能看见一小截，真实数字始终写在右边 */
+  .spx-meters { display:grid; gap:14px; margin:0 0 12px; }
+  .spx-meters .kid-meter-fill { min-width:8px; }
+  .spx-picks { grid-template-columns:repeat(auto-fit,minmax(96px,1fr)); margin:0 0 14px; }
+  .spx-say-row { margin:12px 0 0; }
+
+  /* 分龄三层：只借用共享的 .age-tier 显隐规则，外观留在本页 */
+  .spx-tiers { display:grid; grid-template-columns:repeat(auto-fit,minmax(205px,1fr)); gap:10px; margin:14px 0 0; }
+  .spx-tiers .age-tier { min-width:0; padding:12px 14px; border:1px solid var(--line-soft); border-radius:var(--r); background:var(--bg-soft); }
+  .spx-tiers .age-tier b { display:block; margin-bottom:5px; font-size:.73rem; letter-spacing:.05em; }
+  .spx-tiers .age-tier p { margin:0; color:var(--ink-mid); font-size:.86rem; line-height:1.52; }
+  .spx-tiers .tier-kid { border-color:rgba(74,222,128,.42); } .spx-tiers .tier-kid b { color:var(--sci); }
+  .spx-tiers .tier-mid { border-color:rgba(110,168,254,.42); } .spx-tiers .tier-mid b { color:var(--math); }
+  .spx-tiers .tier-adv { border-color:rgba(167,139,250,.42); } .spx-tiers .tier-adv b { color:var(--phys); }
+
+  /* 小游戏舞台 */
+  .spx-quiz-stage { display:grid; place-items:center; margin:0 0 12px; padding:12px; border:3px solid var(--line); border-radius:18px; background:var(--surface-2); }
+  .spx-quiz-art { display:block; width:100%; max-width:230px; height:auto; }
+  .spx-quiz-picks { grid-template-columns:repeat(auto-fit,minmax(108px,1fr)); }
+  .spx-quiz-actions { display:flex; flex-wrap:wrap; gap:10px; margin:12px 0; }
+  .spx-dots-row { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin:12px 0 0; }
+  .spx-dots-cap { color:var(--ink-mid); font-weight:750; font-size:.9rem; }
+
+  /* SVG 取色：形状在 markup 里，颜色全部由这些 class 决定 */
+  .spx-space { fill:#070f22; }
+  .spx-star { fill:#ffffff; opacity:.85; }
+  .spx-sun { fill:#fbbf24; }
+  .spx-sun-glow { fill:#f59e0b; opacity:.28; }
+  .spx-sun-ray { stroke:#fcd34d; stroke-width:3; stroke-linecap:round; }
+  .spx-sun-spot { fill:#b45309; opacity:.55; }
+  .spx-mercury { fill:#b8b0a4; }
+  .spx-crater { fill:#8d857a; opacity:.8; }
+  .spx-venus { fill:#e8c07a; }
+  .spx-venus-cloud { fill:#f7dcae; opacity:.75; }
+  .spx-earth { fill:#3a86c8; }
+  .spx-earth-land { fill:#4ca85f; }
+  .spx-earth-cloud { fill:#ffffff; opacity:.72; }
+  .spx-earth-ice { fill:#eef6ff; }
+  .spx-mars { fill:#c1613c; }
+  .spx-mars-dark { fill:#8e4327; opacity:.85; }
+  .spx-mars-ice { fill:#f1e6df; }
+  .spx-jupiter { fill:#d8a373; }
+  .spx-jup-band { fill:#a9764c; opacity:.8; }
+  .spx-jup-spot { fill:#c0492f; }
+  .spx-saturn { fill:#e0cd9a; }
+  .spx-sat-band { fill:#c3ac74; opacity:.85; }
+  .spx-ring { fill:none; stroke:#f0e2b8; stroke-width:5; opacity:.92; }
+  .spx-ring-inner { fill:none; stroke:#cbb98a; stroke-width:2.5; opacity:.9; }
+  .spx-ring-thin { fill:none; stroke:#b8e6ef; stroke-width:2.5; opacity:.85; }
+  .spx-uranus { fill:#93d3dd; }
+  .spx-neptune { fill:#3b5fd0; }
+  .spx-nep-spot { fill:#24408f; }
+  .spx-nep-haze { fill:#dce7ff; opacity:.6; }
+  .spx-moon { fill:#cfcabe; }
+  .spx-maria { fill:#a8a294; opacity:.85; }
+
+  @media (max-width:560px) {
+    .spx-card { padding:14px; }
+    .spx-tiers { grid-template-columns:1fr; }
+  }
 </style>
 </head>
 <body data-playful-page="nature/space.html">
+<!-- ART:START 插画图库由 tools/art-build.mjs 生成，请改 tools/art-library.mjs -->
+<svg class="art-sprite" aria-hidden="true" focusable="false" width="0" height="0" viewBox="0 0 0 0">
+  <symbol id="art-earth" viewBox="0 0 120 120">
+    <radialGradient id="ag-ea-ocean" cx=".34" cy=".3" r=".82">
+    <stop offset="0" stop-color="#5fb3e8"/><stop offset=".55" stop-color="#1d6fbd"/><stop offset="1" stop-color="#0a3a75"/>
+    </radialGradient>
+    <radialGradient id="ag-ea-air" cx=".5" cy=".5" r=".5">
+    <stop offset=".88" stop-color="#8fd0ff" stop-opacity="0"/>
+    <stop offset=".96" stop-color="#8fd0ff" stop-opacity=".55"/>
+    <stop offset="1" stop-color="#8fd0ff" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="ag-ea-clip"><circle cx="60" cy="60" r="40"/></clipPath>
+    <circle cx="60" cy="60" r="40" fill="url(#ag-ea-ocean)"/>
+    <g clip-path="url(#ag-ea-clip)">
+    <!-- 陆地：这一面看到的是非洲＋欧亚，左缘露出一点美洲。
+    轮廓按真实大陆画（非洲上宽下尖、阿拉伯半岛的楔形、印度的倒三角），
+    而不是随手点几块绿斑 —— 认不认得出「这是地球」全靠这几笔。 -->
+    <g fill="#3d8a41">
+    <path d="M52 47 C60 44 70 45 76 49 C80 53 79 60 76 64 C73 69 70 74 68 80
+    C66 87 63 92 60 93 C57 90 56 84 55 78 C53 71 49 63 49 56 C49 51 50 48 52 47 Z"/>
+    <path d="M52 39 C58 35 66 35 72 37 C70 41 64 43 58 43 C54 43 52 41 52 39 Z"/>
+    <path d="M64 31 C76 27 92 28 100 34 C96 39 88 42 80 43 C74 44 68 41 64 37 Z"/>
+    <path d="M78 47 C84 46 88 49 88 54 C84 56 80 54 78 51 Z"/>
+    <path d="M88 49 C93 50 96 54 95 59 C92 65 89 68 87 69 C85 63 85 54 88 49 Z"/>
+    <path d="M26 38 C33 36 37 41 37 47 C36 53 32 57 29 60 C25 54 23 44 26 38 Z"/>
+    <path d="M30 66 C36 66 39 72 38 80 C37 89 33 96 30 99 C26 92 25 74 30 66 Z"/>
+    <path d="M92 78 C98 78 101 83 100 88 C95 89 91 85 90 81 Z"/>
+    </g>
+    <!-- 沙漠与高原：撒哈拉、阿拉伯和中亚是黄的，陆地不是一块纯绿 -->
+    <g fill="#c9a758">
+    <path d="M52 47 C60 44 70 45 76 49 C78 52 78 55 76 57 C68 57 58 54 52 51 Z" opacity=".85"/>
+    <path d="M78 47 C84 46 88 49 88 54 C84 55 80 53 78 50 Z" opacity=".85"/>
+    <path d="M68 32 C80 29 92 31 99 35 C92 39 80 40 70 37 Z" opacity=".5"/>
+    </g>
+    <!-- 极地冰盖 -->
+    <path d="M20 26 C34 18 86 18 100 26 C84 32 36 32 20 26 Z" fill="#f2fbff" opacity=".9"/>
+    <path d="M26 96 C40 90 80 90 94 96 C80 102 40 102 26 96 Z" fill="#f2fbff" opacity=".85"/>
+    <!-- 云系：几条旋着的细云带。云是薄的，画厚了会把大陆整块盖掉。 -->
+    <g fill="none" stroke="#fdffff" stroke-linecap="round">
+    <path d="M22 54 C32 47 46 47 54 52" stroke-width="4" opacity=".45"/>
+    <path d="M64 68 C76 63 90 65 96 71" stroke-width="4.5" opacity=".42"/>
+    <path d="M36 81 C46 76 58 78 64 84" stroke-width="4" opacity=".42"/>
+    <path d="M70 40 C80 36 92 38 97 43" stroke-width="3.4" opacity=".38"/>
+    <path d="M24 68 C32 65 40 67 44 71" stroke-width="3" opacity=".38"/>
+    <path d="M46 90 C56 86 68 88 74 92" stroke-width="3" opacity=".32"/>
+    </g>
+    <!-- 一个温带气旋的旋涡：地球最有生气的细节 -->
+    <path d="M33 44 C41 40 47 44 45 50 C43 54 37 54 35 51" fill="none" stroke="#fdffff" stroke-width="3.2" stroke-linecap="round" opacity=".5"/>
+    </g>
+    <radialGradient id="ag-ea-sh" cx=".33" cy=".28" r=".92">
+    <stop offset=".45" stop-color="#000" stop-opacity="0"/>
+    <stop offset=".82" stop-color="#000" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#000" stop-opacity=".62"/>
+    </radialGradient>
+    <circle cx="60" cy="60" r="40" fill="url(#ag-ea-sh)"/>
+    <!-- 大气层：临边那一圈蓝色薄光 -->
+    <circle cx="60" cy="60" r="42" fill="url(#ag-ea-air)"/>
+  </symbol>
+  <symbol id="art-jupiter" viewBox="0 0 120 120">
+    <radialGradient id="ag-ju-base" cx=".34" cy=".3" r=".85">
+    <stop offset="0" stop-color="#f5dfc0"/><stop offset=".6" stop-color="#d9ae7c"/><stop offset="1" stop-color="#8f6338"/>
+    </radialGradient>
+    <clipPath id="ag-ju-clip"><circle cx="60" cy="60" r="40"/></clipPath>
+    <circle cx="60" cy="60" r="40" fill="url(#ag-ju-base)"/>
+    <g clip-path="url(#ag-ju-clip)">
+    <!-- 条纹：一条条平行的带与区，边界有湍流的扭动，不是等宽色块 -->
+    <path d="M18 34 C40 28 82 30 102 36 C82 42 40 42 18 40 Z" fill="#b07e4c" opacity=".8"/>
+    <path d="M16 46 C40 41 84 43 104 48 C82 54 38 53 16 51 Z" fill="#a06d3c" opacity=".85"/>
+    <path d="M16 58 C40 54 82 55 104 60 C82 65 38 64 16 63 Z" fill="#c69a68" opacity=".7"/>
+    <path d="M16 70 C38 65 84 67 104 72 C82 78 38 77 16 75 Z" fill="#a06d3c" opacity=".8"/>
+    <path d="M20 82 C42 78 80 80 100 85 C80 90 40 89 20 87 Z" fill="#b07e4c" opacity=".75"/>
+    <path d="M24 92 C44 89 76 90 94 94 C76 98 42 97 24 95 Z" fill="#8f6338" opacity=".6"/>
+    <path d="M22 24 C42 20 78 21 98 26 C78 30 42 29 22 27 Z" fill="#8f6338" opacity=".5"/>
+    <!-- 带内湍流 -->
+    <g fill="none" stroke="#f7e6cc" stroke-width="2" opacity=".45" stroke-linecap="round">
+    <path d="M24 44 C34 40 44 46 54 42 C64 38 74 44 86 41"/>
+    <path d="M22 68 C32 64 44 70 56 66 C66 62 78 68 90 65"/>
+    <path d="M28 88 C38 84 50 90 62 86 C72 83 82 88 92 86"/>
+    </g>
+    <!-- 大红斑：一个逆时针的巨型风暴，外面还有一圈尾流 -->
+    <ellipse cx="70" cy="72" rx="15" ry="9" fill="#c9704a" opacity=".5"/>
+    <ellipse cx="70" cy="72" rx="11" ry="6.4" fill="#c2482a"/>
+    <ellipse cx="70" cy="72" rx="6" ry="3.4" fill="#e0653f"/>
+    <ellipse cx="68" cy="71" rx="2.4" ry="1.4" fill="#f3a583" opacity=".8"/>
+    </g>
+    <radialGradient id="ag-ju-sh" cx=".33" cy=".28" r=".92">
+    <stop offset=".45" stop-color="#000" stop-opacity="0"/>
+    <stop offset=".82" stop-color="#000" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#000" stop-opacity=".62"/>
+    </radialGradient>
+    <circle cx="60" cy="60" r="40" fill="url(#ag-ju-sh)"/>
+  </symbol>
+  <symbol id="art-mars" viewBox="0 0 120 120">
+    <radialGradient id="ag-ma-base" cx=".34" cy=".3" r=".82">
+    <stop offset="0" stop-color="#e8a06a"/><stop offset=".55" stop-color="#c05f2c"/><stop offset="1" stop-color="#7a3312"/>
+    </radialGradient>
+    <clipPath id="ag-ma-clip"><circle cx="60" cy="60" r="40"/></clipPath>
+    <circle cx="60" cy="60" r="40" fill="url(#ag-ma-base)"/>
+    <g clip-path="url(#ag-ma-clip)">
+    <!-- 暗区：望远镜里看到的那些深色斑（如大瑟提斯），是被风吹净的岩石 -->
+    <g fill="#8a3f18" opacity=".8">
+    <path d="M62 34 C74 32 84 40 82 52 C80 62 70 66 62 60 C56 54 54 40 62 34 Z"/>
+    <path d="M28 56 C38 52 48 56 48 64 C46 72 36 74 30 70 C26 66 24 60 28 56 Z"/>
+    <path d="M66 74 C76 72 86 76 86 82 C82 88 72 88 66 82 Z"/>
+    </g>
+    <!-- 水手号峡谷：一条横贯的大裂谷 -->
+    <path d="M30 66 C48 72 70 72 90 66" fill="none" stroke="#6d2f0f" stroke-width="3.4" stroke-linecap="round" opacity=".7"/>
+    <!-- 奥林帕斯山：一座带凹口的巨型火山 -->
+    <g><circle cx="40" cy="44" r="7" fill="#d98a52" opacity=".9"/><circle cx="40" cy="44" r="2.8" fill="#8a3f18" opacity=".8"/></g>
+    <!-- 极冠：白色的干冰＋水冰帽 -->
+    <path d="M40 24 C50 19 74 19 84 25 C72 30 50 30 40 24 Z" fill="#f6fbff" opacity=".92"/>
+    <path d="M46 97 C54 93 70 93 78 97 C70 101 54 101 46 97 Z" fill="#f6fbff" opacity=".6"/>
+    <!-- 沙尘：淡淡的黄雾 -->
+    <g fill="#e6b483" opacity=".28"><ellipse cx="55" cy="86" rx="24" ry="8"/><ellipse cx="70" cy="46" rx="16" ry="6"/></g>
+    </g>
+    <radialGradient id="ag-ma-sh" cx=".33" cy=".28" r=".92">
+    <stop offset=".45" stop-color="#000" stop-opacity="0"/>
+    <stop offset=".82" stop-color="#000" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#000" stop-opacity=".62"/>
+    </radialGradient>
+    <circle cx="60" cy="60" r="40" fill="url(#ag-ma-sh)"/>
+  </symbol>
+  <symbol id="art-mercury" viewBox="0 0 120 120">
+    <radialGradient id="ag-me-base" cx=".34" cy=".3" r=".8">
+    <stop offset="0" stop-color="#d5cfc6"/><stop offset=".6" stop-color="#a49c92"/><stop offset="1" stop-color="#6d675f"/>
+    </radialGradient>
+    <clipPath id="ag-me-clip"><circle cx="60" cy="60" r="40"/></clipPath>
+    <circle cx="60" cy="60" r="40" fill="url(#ag-me-base)"/>
+    <g clip-path="url(#ag-me-clip)">
+    <!-- 撞击坑：一圈亮的坑缘 + 里面的暗坑底，密密麻麻。水星最大的特征就是「全是坑」 -->
+    <g fill="#8b847a" opacity=".85">
+    <circle cx="45" cy="42" r="11"/><circle cx="74" cy="52" r="8"/><circle cx="52" cy="72" r="9"/>
+    <circle cx="78" cy="80" r="6"/><circle cx="33" cy="60" r="6"/><circle cx="64" cy="34" r="5"/>
+    <circle cx="40" cy="86" r="5"/><circle cx="88" cy="64" r="4.5"/><circle cx="62" cy="92" r="4"/>
+    <circle cx="26" cy="44" r="3.6"/><circle cx="70" cy="66" r="3.4"/><circle cx="55" cy="55" r="4"/>
+    </g>
+    <g fill="none" stroke="#e0dad1" stroke-width="1.5" opacity=".55">
+    <circle cx="45" cy="42" r="11"/><circle cx="74" cy="52" r="8"/><circle cx="52" cy="72" r="9"/>
+    <circle cx="78" cy="80" r="6"/><circle cx="33" cy="60" r="6"/><circle cx="64" cy="34" r="5"/>
+    <circle cx="40" cy="86" r="5"/><circle cx="88" cy="64" r="4.5"/>
+    </g>
+    <g fill="#5f5952" opacity=".5">
+    <circle cx="45" cy="43" r="6"/><circle cx="74" cy="53" r="4.4"/><circle cx="52" cy="73" r="5"/><circle cx="33" cy="61" r="3.2"/>
+    </g>
+    <!-- 皱脊：水星冷却收缩时挤出来的长坎 -->
+    <g fill="none" stroke="#7d766d" stroke-width="2" opacity=".6">
+    <path d="M24 72 C38 78 56 82 76 78"/><path d="M30 34 C44 28 62 26 80 30"/>
+    </g>
+    </g>
+    <radialGradient id="ag-me-sh" cx=".33" cy=".28" r=".92">
+    <stop offset=".45" stop-color="#000" stop-opacity="0"/>
+    <stop offset=".82" stop-color="#000" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#000" stop-opacity=".62"/>
+    </radialGradient>
+    <circle cx="60" cy="60" r="40" fill="url(#ag-me-sh)"/>
+  </symbol>
+  <symbol id="art-moon" viewBox="0 0 120 120">
+    <radialGradient id="ag-mo-base" cx=".34" cy=".3" r=".8">
+    <stop offset="0" stop-color="#e6e2d9"/><stop offset=".6" stop-color="#b7b2a8"/><stop offset="1" stop-color="#7c776e"/>
+    </radialGradient>
+    <clipPath id="ag-mo-clip"><circle cx="60" cy="60" r="40"/></clipPath>
+    <circle cx="60" cy="60" r="40" fill="url(#ag-mo-base)"/>
+    <g clip-path="url(#ag-mo-clip)">
+    <!-- 月海：肉眼看到的那些暗斑，是古老的玄武岩平原，不是坑 -->
+    <g fill="#8e897f" opacity=".8">
+    <path d="M40 34 C54 30 66 34 68 44 C70 54 60 60 48 58 C36 56 32 44 40 34 Z"/>
+    <path d="M70 30 C80 28 88 32 88 40 C86 46 78 48 72 44 C68 40 66 34 70 30 Z"/>
+    <path d="M34 62 C44 60 52 64 52 70 C50 76 40 78 34 74 C30 70 30 64 34 62 Z"/>
+    <path d="M72 58 C80 56 86 60 86 66 C82 70 76 70 72 66 Z"/>
+    </g>
+    <!-- 撞击坑 + 第谷坑的辐射亮纹 -->
+    <g fill="#9d978c"><circle cx="56" cy="88" r="7"/><circle cx="78" cy="78" r="5"/><circle cx="30" cy="46" r="4.4"/><circle cx="64" cy="70" r="4"/><circle cx="44" cy="80" r="3.4"/></g>
+    <g fill="none" stroke="#eae5db" stroke-width="1.6" opacity=".7">
+    <circle cx="56" cy="88" r="7"/><circle cx="78" cy="78" r="5"/><circle cx="30" cy="46" r="4.4"/><circle cx="64" cy="70" r="4"/>
+    </g>
+    <g stroke="#efeae0" stroke-width="1.6" opacity=".45" stroke-linecap="round">
+    <path d="M56 81 L52 66"/><path d="M63 84 L76 74"/><path d="M49 84 L36 76"/><path d="M56 95 L58 106"/><path d="M50 92 L40 100"/>
+    </g>
+    <g fill="#6f6a62" opacity=".45"><circle cx="56" cy="88" r="3.4"/><circle cx="78" cy="78" r="2.6"/><circle cx="30" cy="46" r="2.2"/></g>
+    </g>
+    <radialGradient id="ag-mo-sh" cx=".33" cy=".28" r=".92">
+    <stop offset=".45" stop-color="#000" stop-opacity="0"/>
+    <stop offset=".82" stop-color="#000" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#000" stop-opacity=".62"/>
+    </radialGradient>
+    <circle cx="60" cy="60" r="40" fill="url(#ag-mo-sh)"/>
+  </symbol>
+  <symbol id="art-neptune" viewBox="0 0 120 120">
+    <radialGradient id="ag-ne-base" cx=".34" cy=".3" r=".85">
+    <stop offset="0" stop-color="#6f9dff"/><stop offset=".55" stop-color="#2d55d8"/><stop offset="1" stop-color="#14267a"/>
+    </radialGradient>
+    <clipPath id="ag-ne-clip"><circle cx="60" cy="60" r="38"/></clipPath>
+    <circle cx="60" cy="60" r="38" fill="url(#ag-ne-base)"/>
+    <g clip-path="url(#ag-ne-clip)">
+    <g fill="#4a75e8" opacity=".55">
+    <ellipse cx="60" cy="40" rx="36" ry="7"/><ellipse cx="60" cy="60" rx="37" ry="7"/><ellipse cx="60" cy="80" rx="33" ry="7"/>
+    </g>
+    <!-- 大暗斑：和木星大红斑同类的巨型风暴 -->
+    <ellipse cx="48" cy="52" rx="13" ry="8" fill="#16265f" opacity=".75" transform="rotate(-12 48 52)"/>
+    <ellipse cx="48" cy="52" rx="7" ry="4.2" fill="#101c4a" transform="rotate(-12 48 52)"/>
+    <!-- 高空的白色甲烷卷云：海王星风最猛，云被拉成长条 -->
+    <g fill="#eaf2ff" opacity=".7">
+    <path d="M26 68 C40 63 62 64 74 70 C60 74 38 74 26 68 Z"/>
+    <path d="M56 84 C68 80 84 82 92 86 C82 90 66 89 56 84 Z" opacity=".8"/>
+    <path d="M40 38 C50 34 66 35 74 39 C64 42 48 42 40 38 Z" opacity=".6"/>
+    </g>
+    <g fill="none" stroke="#eaf2ff" stroke-width="2" opacity=".45" stroke-linecap="round">
+    <path d="M24 76 C38 72 56 74 68 78"/><path d="M34 46 C46 42 62 43 72 47"/>
+    </g>
+    </g>
+    <radialGradient id="ag-ne-sh" cx=".33" cy=".28" r=".92">
+    <stop offset=".45" stop-color="#000" stop-opacity="0"/>
+    <stop offset=".82" stop-color="#000" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#000" stop-opacity=".62"/>
+    </radialGradient>
+    <circle cx="60" cy="60" r="38" fill="url(#ag-ne-sh)"/>
+  </symbol>
+  <symbol id="art-saturn" viewBox="0 0 120 120">
+    <radialGradient id="ag-sa-base" cx=".34" cy=".3" r=".85">
+    <stop offset="0" stop-color="#f6e7c4"/><stop offset=".6" stop-color="#d8bd84"/><stop offset="1" stop-color="#8f7640"/>
+    </radialGradient>
+    <linearGradient id="ag-sa-ring" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#8f7c52" stop-opacity=".55"/><stop offset=".3" stop-color="#e8d6a8"/>
+    <stop offset=".7" stop-color="#e8d6a8"/><stop offset="1" stop-color="#8f7c52" stop-opacity=".55"/>
+    </linearGradient>
+    <clipPath id="ag-sa-clip"><circle cx="60" cy="58" r="32"/></clipPath>
+    <!-- 环的后半段先画（被球体挡住一部分），这样环才是「穿过」球而不是「贴在」球上 -->
+    <g transform="rotate(-17 60 58)">
+    <ellipse cx="60" cy="58" rx="55" ry="15" fill="none" stroke="url(#ag-sa-ring)" stroke-width="9"/>
+    <ellipse cx="60" cy="58" rx="55" ry="15" fill="none" stroke="#6d5c38" stroke-width="1.2" opacity=".5"/>
+    <ellipse cx="60" cy="58" rx="46" ry="12.4" fill="none" stroke="#c9b483" stroke-width="4" opacity=".85"/>
+    </g>
+    <circle cx="60" cy="58" r="32" fill="url(#ag-sa-base)"/>
+    <g clip-path="url(#ag-sa-clip)">
+    <path d="M26 42 C42 38 78 39 94 44 C78 48 42 48 26 46 Z" fill="#bfa268" opacity=".7"/>
+    <path d="M24 54 C42 50 78 51 96 56 C78 60 42 60 24 58 Z" fill="#ad9153" opacity=".7"/>
+    <path d="M26 68 C42 64 78 65 94 70 C78 74 42 74 26 72 Z" fill="#bfa268" opacity=".65"/>
+    <path d="M32 80 C46 77 74 78 88 82 C74 86 46 86 32 84 Z" fill="#ad9153" opacity=".55"/>
+    <path d="M30 30 C44 27 76 28 90 32 C76 35 44 35 30 33 Z" fill="#9c8347" opacity=".45"/>
+    <!-- 环在球面上投下的影子 -->
+    <path d="M22 62 C42 70 80 70 100 60 L100 68 C80 78 40 78 22 70 Z" fill="#5c4a26" opacity=".26"/>
+    </g>
+    <radialGradient id="ag-sa-sh" cx=".33" cy=".28" r=".92">
+    <stop offset=".45" stop-color="#000" stop-opacity="0"/>
+    <stop offset=".82" stop-color="#000" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#000" stop-opacity=".62"/>
+    </radialGradient>
+    <circle cx="60" cy="60" r="32" fill="url(#ag-sa-sh)"/>
+    <!-- 环的前半段：盖在球体前面，并留出卡西尼缝 -->
+    <g transform="rotate(-17 60 58)">
+    <path d="M5 58 A55 15 0 0 0 115 58 L115 58 A55 15 0 0 0 5 58 Z" fill="none"/>
+    <path d="M6 60.5 A55 15 0 0 0 114 60.5" fill="none" stroke="url(#ag-sa-ring)" stroke-width="9"/>
+    <path d="M14 60 A46 12.4 0 0 0 106 60" fill="none" stroke="#c9b483" stroke-width="4" opacity=".9"/>
+    <path d="M6 60.5 A55 15 0 0 0 114 60.5" fill="none" stroke="#f2e6c6" stroke-width="1.6" opacity=".6"/>
+    </g>
+  </symbol>
+  <symbol id="art-sun" viewBox="0 0 120 120">
+    <radialGradient id="ag-su-core" cx=".42" cy=".38" r=".7">
+    <stop offset="0" stop-color="#fffbe8"/><stop offset=".35" stop-color="#ffe066"/>
+    <stop offset=".78" stop-color="#ffa514"/><stop offset="1" stop-color="#e2650a"/>
+    </radialGradient>
+    <radialGradient id="ag-su-corona" cx=".5" cy=".5" r=".5">
+    <stop offset=".58" stop-color="#ffb527" stop-opacity=".55"/>
+    <stop offset=".78" stop-color="#ff8a1e" stop-opacity=".26"/>
+    <stop offset="1" stop-color="#ff6a10" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="ag-su-clip"><circle cx="60" cy="60" r="35"/></clipPath>
+    <!-- 日冕：外面那层散开的光，不是几根直线 -->
+    <circle cx="60" cy="60" r="58" fill="url(#ag-su-corona)"/>
+    <!-- 日珥：边缘窜出去的火舌 -->
+    <g fill="#ff8c1a" opacity=".8">
+    <path d="M60 26 C56 16 62 8 70 6 C66 14 68 20 64 26 Z"/>
+    <path d="M91 42 C100 36 108 40 110 46 C102 44 96 48 92 47 Z"/>
+    <path d="M31 74 C22 78 14 74 12 68 C20 70 26 66 30 68 Z"/>
+    <path d="M60 94 C62 104 56 111 48 113 C53 105 51 99 55 94 Z"/>
+    </g>
+    <circle cx="60" cy="60" r="35" fill="url(#ag-su-core)"/>
+    <g clip-path="url(#ag-su-clip)">
+    <!-- 米粒组织：表面不是光滑的，是一颗颗对流单元 -->
+    <g fill="#fff3bd" opacity=".3">
+    <circle cx="42" cy="42" r="6"/><circle cx="56" cy="34" r="5"/><circle cx="72" cy="44" r="5.5"/>
+    <circle cx="38" cy="60" r="5"/><circle cx="80" cy="62" r="4.5"/><circle cx="50" cy="76" r="5.5"/>
+    <circle cx="68" cy="82" r="5"/><circle cx="60" cy="56" r="6"/>
+    </g>
+    <g fill="#e07a0c" opacity=".28">
+    <circle cx="48" cy="34" r="4"/><circle cx="66" cy="36" r="3.4"/><circle cx="34" cy="52" r="3.6"/>
+    <circle cx="84" cy="52" r="3.4"/><circle cx="42" cy="84" r="3.6"/><circle cx="78" cy="76" r="3.4"/>
+    </g>
+    <!-- 黑子：中间本影深、外圈半影浅，不是一个纯色圆点 -->
+    <g>
+    <ellipse cx="47" cy="52" rx="9" ry="6.5" fill="#c2540a" opacity=".75" transform="rotate(-18 47 52)"/>
+    <ellipse cx="47" cy="52" rx="4.6" ry="3.2" fill="#5d2603" transform="rotate(-18 47 52)"/>
+    <ellipse cx="73" cy="72" rx="6.5" ry="4.6" fill="#c2540a" opacity=".7" transform="rotate(14 73 72)"/>
+    <ellipse cx="73" cy="72" rx="3.2" ry="2.2" fill="#5d2603" transform="rotate(14 73 72)"/>
+    <ellipse cx="62" cy="38" rx="4" ry="2.8" fill="#c2540a" opacity=".55"/>
+    </g>
+    </g>
+    <circle cx="60" cy="60" r="35" fill="none" stroke="#ffd166" stroke-width="1.6" opacity=".7"/>
+  </symbol>
+  <symbol id="art-uranus" viewBox="0 0 120 120">
+    <radialGradient id="ag-ur-base" cx=".34" cy=".3" r=".85">
+    <stop offset="0" stop-color="#d6f6f7"/><stop offset=".6" stop-color="#8fd6dd"/><stop offset="1" stop-color="#3f8f9c"/>
+    </radialGradient>
+    <clipPath id="ag-ur-clip"><circle cx="60" cy="60" r="38"/></clipPath>
+    <!-- 天王星躺着转，所以它的环几乎是竖着的一圈细线，而不是土星那种宽盘 -->
+    <g transform="rotate(9 60 60)">
+    <ellipse cx="60" cy="60" rx="13" ry="53" fill="none" stroke="#9ed6dd" stroke-width="1.8" opacity=".65"/>
+    <ellipse cx="60" cy="60" rx="9" ry="46" fill="none" stroke="#8ac6ce" stroke-width="1.1" opacity=".45"/>
+    </g>
+    <circle cx="60" cy="60" r="38" fill="url(#ag-ur-base)"/>
+    <g clip-path="url(#ag-ur-clip)">
+    <!-- 极淡的带纹：天王星几乎没花纹，这一点本身就是它的特征 -->
+    <g fill="#a9e6ea" opacity=".35">
+    <ellipse cx="60" cy="42" rx="36" ry="6"/><ellipse cx="60" cy="60" rx="37" ry="6"/><ellipse cx="60" cy="78" rx="34" ry="6"/>
+    </g>
+    <ellipse cx="46" cy="46" rx="12" ry="9" fill="#eafcfd" opacity=".3" transform="rotate(-24 46 46)"/>
+    </g>
+    <radialGradient id="ag-ur-sh" cx=".33" cy=".28" r=".92">
+    <stop offset=".45" stop-color="#000" stop-opacity="0"/>
+    <stop offset=".82" stop-color="#000" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#000" stop-opacity=".62"/>
+    </radialGradient>
+    <circle cx="60" cy="60" r="38" fill="url(#ag-ur-sh)"/>
+    <!-- 环的近侧半圈压在球体前面，环才是穿过球而不是套在球外 -->
+    <g transform="rotate(9 60 60)">
+    <path d="M60 7 A13 53 0 0 0 60 113" fill="none" stroke="#bfeaf0" stroke-width="1.8" opacity=".9"/>
+    <path d="M60 14 A9 46 0 0 0 60 106" fill="none" stroke="#a6d8e0" stroke-width="1.1" opacity=".65"/>
+    </g>
+  </symbol>
+  <symbol id="art-venus" viewBox="0 0 120 120">
+    <radialGradient id="ag-ve-base" cx=".34" cy=".3" r=".82">
+    <stop offset="0" stop-color="#fff4d6"/><stop offset=".55" stop-color="#e8c887"/><stop offset="1" stop-color="#a8813d"/>
+    </radialGradient>
+    <clipPath id="ag-ve-clip"><circle cx="60" cy="60" r="40"/></clipPath>
+    <!-- 大气比星球本体大一圈：金星整颗被厚云裹着，看不到地面 -->
+    <circle cx="60" cy="60" r="44" fill="#f3dda8" opacity=".3"/>
+    <circle cx="60" cy="60" r="40" fill="url(#ag-ve-base)"/>
+    <g clip-path="url(#ag-ve-clip)">
+    <!-- 云带：向一侧倾斜的 Y 形涡旋，是金星云顶的真实样子 -->
+    <g fill="none" stroke="#fff8e4" stroke-width="6" stroke-linecap="round" opacity=".45">
+    <path d="M20 42 C38 34 62 34 84 42"/><path d="M22 56 C42 50 66 52 92 60"/>
+    <path d="M24 72 C44 68 68 72 90 80"/><path d="M32 88 C50 86 70 90 84 96"/>
+    </g>
+    <g fill="none" stroke="#c9a25c" stroke-width="4" stroke-linecap="round" opacity=".45">
+    <path d="M20 48 C40 42 64 44 88 52"/><path d="M22 64 C44 60 68 64 92 72"/><path d="M28 80 C48 78 70 82 86 88"/>
+    </g>
+    <path d="M52 24 C56 40 54 56 44 68 C56 62 64 48 62 24 Z" fill="#fff8e4" opacity=".3"/>
+    </g>
+    <radialGradient id="ag-ve-sh" cx=".33" cy=".28" r=".92">
+    <stop offset=".45" stop-color="#000" stop-opacity="0"/>
+    <stop offset=".82" stop-color="#000" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#000" stop-opacity=".62"/>
+    </radialGradient>
+    <circle cx="60" cy="60" r="40" fill="url(#ag-ve-sh)"/>
+  </symbol>
+</svg>
+<!-- ART:END -->
 <a class="skip-link" href="#main">跳到主要内容</a>
 
 <nav class="nav"><div class="nav-in wrap">
@@ -278,11 +818,11 @@
         <fieldset class="scale-field">
           <legend>换哪一把尺？</legend>
           <div class="scale-picks">
-            <label><input type="radio" name="spaceScale" value="size" checked><span>比大小</span></label>
-            <label><input type="radio" name="spaceScale" value="distance"><span>比距离</span></label>
+            <label><input type="radio" name="spaceScale" value="size" checked><span><i aria-hidden="true">⚪</i>比大小</span></label>
+            <label><input type="radio" name="spaceScale" value="distance"><span><i aria-hidden="true">📏</i>比距离</span></label>
           </div>
         </fieldset>
-        <div class="planet-select-wrap"><label for="spacePlanet">目的地</label><select class="input" id="spacePlanet"><option value="mercury">水星</option><option value="venus">金星</option><option value="earth" selected>地球</option><option value="mars">火星</option><option value="jupiter">木星</option><option value="saturn">土星</option><option value="uranus">天王星</option><option value="neptune">海王星</option></select></div>
+        <div class="planet-select-wrap"><label for="spacePlanet">目的地</label><select class="input" id="spacePlanet"><option value="mercury">🪨 水星</option><option value="venus">🔥 金星</option><option value="earth" selected>🌍 地球</option><option value="mars">🔴 火星</option><option value="jupiter">🌀 木星</option><option value="saturn">💫 土星</option><option value="uranus">🧊 天王星</option><option value="neptune">💨 海王星</option></select></div>
         <button class="btn btn-primary" id="spaceRun" type="button">换尺看看</button>
       </div>
 
@@ -294,6 +834,7 @@
 
     <details class="parent-deep-dive space-terms" data-audience="parent">
       <summary>家长层：四张词语卡与安全观察</summary>
+      <p class="online-opt"><label><input type="checkbox" data-playful-preference="onlineData"> 允许联网加载照片与实时数据</label><span>默认关闭。关闭时本页只用内置的 NASA 行星数值，每日天文图与照片墙显示内置示例。</span></p>
       <div class="quick-look"><h2>手掌小观察</h2><ol><li>伸直手臂，用一根手指挡住远处一个安全的小物体。</li><li>把手指移近眼睛，比较它看起来的大小。</li><li>追问：看起来大，真的就一定更大吗？</li></ol><p>不要直视太阳。室内也能完成。</p></div>
       <dl class="space-words" aria-label="出发前的四张词语卡">
         <div><dt>尺度</dt><dd>把真实大小按同一种规则放大或缩小，像把地球缩成一颗小珠子。</dd></div>
@@ -304,6 +845,26 @@
     </details>
   </section>
 </header>
+<div class="wrap scene-wrap">
+  <!-- 插画舞台：不识字也能看懂这一页在玩什么 -->
+  <div class="kid-visual-stage sp-scene-stage" data-scene-layer="back"
+       data-playful-scene="space"
+       data-playful-scene-title="星空行星"
+       data-playful-scene-desc="黑色的太空里有星星，还有一颗带光环的行星">
+    <div class="sp-scene-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🚀</span>
+        <p class="kid-speech">同样跳一下，<b>在别的星球会跳多高？</b></p>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步玩法">
+        <li><span class="kid-tile-art" aria-hidden="true">🪐</span>选星球</li>
+        <li><span class="kid-tile-art" aria-hidden="true">⚖️</span>比大小</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🦘</span>试着跳</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
 
 <main class="wrap stack" id="main">
 
@@ -314,9 +875,15 @@
       <div class="mission-step">
         <h3>1 先猜一猜</h3>
         <p>地球缩成 1 厘米，木星会怎样？</p>
-        <div class="kid-answer-group" data-answer-target="spacePredict">
-          <button type="button" data-value="我猜木星只比地球大一点。">只大一点</button>
-          <button type="button" data-value="我猜木星大约是地球的十倍宽。">大约十倍宽</button>
+        <div class="kid-answer-group kid-tiles" data-answer-target="spacePredict">
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我猜木星只比地球大一点。">
+            <span class="kid-tile-art" aria-hidden="true">🥎</span>
+            <span class="kid-tile-label">只大一点</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我猜木星大约是地球的十倍宽。">
+            <span class="kid-tile-art" aria-hidden="true">🏀</span>
+            <span class="kid-tile-label">大十倍</span>
+          </button>
         </div>
         <div data-audience="parent"><label for="spacePredict">家长层：补充预测</label><textarea class="input" id="spacePredict"></textarea></div>
       </div>
@@ -334,9 +901,15 @@
       </div>
       <div class="mission-step">
         <h3>4 选出模型提醒</h3>
-        <div class="kid-answer-group" data-answer-target="spaceReflect">
-          <button type="button" data-value="全景图压缩了距离，所以不能直接拿尺量真实距离。">图上距离被压缩</button>
-          <button type="button" data-value="行星圆点为了容易点击被放大，所以不能直接量真实大小。">行星圆点被放大</button>
+        <div class="kid-answer-group kid-tiles" data-answer-target="spaceReflect">
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="全景图压缩了距离，所以不能直接拿尺量真实距离。">
+            <span class="kid-tile-art" aria-hidden="true">📏</span>
+            <span class="kid-tile-label">距离被压扁</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="行星圆点为了容易点击被放大，所以不能直接量真实大小。">
+            <span class="kid-tile-art" aria-hidden="true">🔍</span>
+            <span class="kid-tile-label">圆点被放大</span>
+          </button>
         </div>
         <div data-audience="parent"><label for="spaceReflect">家长层：补充反思</label><textarea class="input" id="spaceReflect"></textarea></div>
       </div>
@@ -344,7 +917,7 @@
     <div class="task-actions kid-done-row"><button class="btn btn-primary kid-done-btn" id="spaceComplete" type="button">给护照盖章</button><span class="task-status" id="spaceStatus" role="status" aria-live="polite">还差：点行星、换尺、勾两条证据。</span></div>
     <div class="work-card" aria-labelledby="spaceStoryTitle" data-audience="parent">
       <div data-playful-companion>解释伙伴正在检查航线……</div>
-      <div class="row spread"><div><p class="pill pill-phys">家长延伸</p><h3 id="spaceStoryTitle" class="work-card-title">行星护照追问</h3></div><span data-playful-sticker>○ 完成任务可获得贴纸</span></div>
+      <div class="row spread"><div><p class="pill pill-phys">家长延伸</p><h3 id="spaceStoryTitle" class="work-card-title">行星护照追问</h3></div><span data-playful-sticker>○ 完成任务解锁收藏卡</span></div>
       <div class="story-qa"><p><b>为什么要换尺？</b>同一小图不能同时画准大小与距离。</p><p><b>怎样读数字？</b>先说单位，再说它代表大小、距离、重力还是时间。</p></div>
       <div class="row"><button class="btn btn-ghost" type="button" data-playful-random-task="#spaceSurprise">抽取护照加签任务</button><span id="spaceSurprise" data-playful-task-output role="status" aria-live="polite">加签任务会在这里出现。</span></div>
       <p data-playful-feedback role="status" aria-live="polite">护照等待盖章。</p>
@@ -361,6 +934,270 @@
       <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和数字后就能存档。</p>
     </form>
   </section>
+  <section class="spx-shell" aria-labelledby="spxShellTitle">
+    <h2 id="spxShellTitle">看图就懂：太阳系图鉴 · 三条量表 · 猜猜这是哪颗星</h2>
+    <p class="spx-lead">这一段全是大图，点一点就能玩，不用先读句子。</p>
+
+    <article class="spx-card" aria-labelledby="spxAtlasTitle">
+      <h3 id="spxAtlasTitle">① 太阳系图鉴：十张圆盘</h3>
+      <p class="spx-lead">先看颜色和花纹：谁有环、谁有条纹、谁是红的。名字写在图下面。</p>
+      <div class="kid-figure-grid" aria-label="太阳系图鉴：太阳、八大行星和月球">
+
+        <div class="kid-figure" style="--tone:#fbbf24" data-spx-art="sun">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="spx-space" x="0" y="0" width="120" height="120" rx="10"/>
+              <circle class="spx-star" cx="13" cy="17" r="1.4"/>
+              <circle class="spx-star" cx="105" cy="104" r="1.2"/>
+              <use href="#art-sun"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">太阳</span>
+          <span class="kid-figure-sub">唯一会自己发光的那颗</span>
+          <span class="kid-figure-fact">直径约 139 万 km，能装下约 130 万个地球。</span>
+        </div>
+
+        <div class="kid-figure" style="--tone:#b8b0a4" data-spx-art="mercury">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="spx-space" x="0" y="0" width="120" height="120" rx="10"/>
+              <circle class="spx-star" cx="16" cy="22" r="1.3"/>
+              <circle class="spx-star" cx="99" cy="30" r="1.1"/>
+              <circle class="spx-star" cx="26" cy="99" r="1.2"/>
+              <use href="#art-mercury"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">水星</span>
+          <span class="kid-figure-sub">最小，离太阳最近，跑得最快</span>
+          <span class="kid-figure-fact">一年只有 88 天，是八颗里最短的一年。</span>
+        </div>
+
+        <div class="kid-figure" style="--tone:#e8c07a" data-spx-art="venus">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="spx-space" x="0" y="0" width="120" height="120" rx="10"/>
+              <circle class="spx-star" cx="14" cy="26" r="1.3"/>
+              <circle class="spx-star" cx="103" cy="97" r="1.2"/>
+              <use href="#art-venus"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">金星</span>
+          <span class="kid-figure-sub">厚云裹住，看不见地面</span>
+          <span class="kid-figure-fact">一天 243 地球日，比它的一年（225 天）还长。</span>
+        </div>
+
+        <div class="kid-figure" style="--tone:#3a86c8" data-spx-art="earth">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="spx-space" x="0" y="0" width="120" height="120" rx="10"/>
+              <circle class="spx-star" cx="15" cy="19" r="1.4"/>
+              <circle class="spx-star" cx="101" cy="28" r="1.1"/>
+              <circle class="spx-star" cx="24" cy="101" r="1.2"/>
+              <use href="#art-earth"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">地球</span>
+          <span class="kid-figure-sub">有海、有陆地、有生命</span>
+          <span class="kid-figure-fact">直径 12,756 km，一天 24 小时，1 颗卫星。</span>
+        </div>
+
+        <div class="kid-figure" style="--tone:#cfcabe" data-spx-art="moon">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="spx-space" x="0" y="0" width="120" height="120" rx="10"/>
+              <circle class="spx-star" cx="18" cy="24" r="1.3"/>
+              <circle class="spx-star" cx="98" cy="94" r="1.2"/>
+              <use href="#art-moon"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">月球</span>
+          <span class="kid-figure-sub">地球唯一的卫星，不是行星</span>
+          <span class="kid-figure-fact">直径 3,475 km，离地球约 384,400 km。</span>
+        </div>
+
+        <div class="kid-figure" style="--tone:#c1613c" data-spx-art="mars">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="spx-space" x="0" y="0" width="120" height="120" rx="10"/>
+              <circle class="spx-star" cx="16" cy="20" r="1.3"/>
+              <circle class="spx-star" cx="102" cy="99" r="1.2"/>
+              <use href="#art-mars"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">火星</span>
+          <span class="kid-figure-sub">土里有铁锈，所以偏红</span>
+          <span class="kid-figure-fact">一天 24 小时 37 分，和地球几乎一样长。</span>
+        </div>
+
+        <div class="kid-figure" style="--tone:#d8a373" data-spx-art="jupiter">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="spx-space" x="0" y="0" width="120" height="120" rx="10"/>
+              <circle class="spx-star" cx="10" cy="12" r="1.3"/>
+              <circle class="spx-star" cx="110" cy="110" r="1.2"/>
+              <use href="#art-jupiter"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">木星</span>
+          <span class="kid-figure-sub">最大，有条纹和大红斑</span>
+          <span class="kid-figure-fact">一天不到 10 小时（约 9.9 小时），转得最快。</span>
+        </div>
+
+        <div class="kid-figure" style="--tone:#e0cd9a" data-spx-art="saturn">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="spx-space" x="0" y="0" width="120" height="120" rx="10"/>
+              <circle class="spx-star" cx="12" cy="18" r="1.3"/>
+              <circle class="spx-star" cx="107" cy="103" r="1.2"/>
+              <use href="#art-saturn"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">土星</span>
+          <span class="kid-figure-sub">戴着又宽又薄的冰环</span>
+          <span class="kid-figure-fact">146 颗已确认卫星，是太阳系里最多的。</span>
+        </div>
+
+        <div class="kid-figure" style="--tone:#93d3dd" data-spx-art="uranus">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="spx-space" x="0" y="0" width="120" height="120" rx="10"/>
+              <circle class="spx-star" cx="14" cy="16" r="1.3"/>
+              <circle class="spx-star" cx="104" cy="100" r="1.2"/>
+              <use href="#art-uranus"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">天王星</span>
+          <span class="kid-figure-sub">淡青色，躺着转，环立着</span>
+          <span class="kid-figure-fact">一年要 84 个地球年，自转轴倾斜 98 度。</span>
+        </div>
+
+        <div class="kid-figure" style="--tone:#3b5fd0" data-spx-art="neptune">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="spx-space" x="0" y="0" width="120" height="120" rx="10"/>
+              <circle class="spx-star" cx="17" cy="21" r="1.3"/>
+              <circle class="spx-star" cx="100" cy="98" r="1.2"/>
+              <use href="#art-neptune"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">海王星</span>
+          <span class="kid-figure-sub">最深的蓝，风最猛</span>
+          <span class="kid-figure-fact">一年 164.8 个地球年，风速可达 2000 km/h。</span>
+        </div>
+      </div>
+      <div class="spx-scale-hint"><span aria-hidden="true">📐</span><p>图里的圆盘为了看清花纹都画得差不多大。真实的大小差多少，看下面第 ② 段的量表。</p></div>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：图鉴在教什么</summary>
+        <p><b>学习目标：</b>用可以直接看见的特征（颜色、条纹、有没有环）区分天体，再把名字挂上去。先看再命名，顺序和天文观测一致。</p>
+        <p><b>要说清楚的一点：</b>十张卡的圆盘画得差不多大，只为让孩子看清花纹。真实直径从月球 3,475 km 到太阳约 139 万 km，差 400 倍，任何一张纸都装不下。月球是卫星，不算行星。</p>
+        <p><b>数字来源：</b>直径、周期、卫星数量取自 NASA Planetary Fact Sheet 的常用值，卫星数量是已确认数，会随新发现更新。</p>
+      </details>
+    </article>
+
+    <article class="spx-card" aria-labelledby="spxMeterTitle">
+      <h3 id="spxMeterTitle">② 三条量表：大小 · 远近 · 一天多长</h3>
+      <p class="spx-lead">点一颗行星，三条一起变长变短。条越长，数字越大。</p>
+      <div class="kid-tiles spx-picks" id="spxPicks" role="group" aria-label="选一颗行星，更新下面三条量表">
+        <button class="kid-tile" type="button" data-spx-planet="mercury" aria-pressed="false" aria-label="选水星，三条量表跟着变">
+          <span class="kid-tile-art" aria-hidden="true">🪨</span><span class="kid-tile-label">水星</span>
+        </button>
+        <button class="kid-tile" type="button" data-spx-planet="venus" aria-pressed="false" aria-label="选金星，三条量表跟着变">
+          <span class="kid-tile-art" aria-hidden="true">🔥</span><span class="kid-tile-label">金星</span>
+        </button>
+        <button class="kid-tile" type="button" data-spx-planet="earth" aria-pressed="false" aria-label="选地球，三条量表跟着变">
+          <span class="kid-tile-art" aria-hidden="true">🌍</span><span class="kid-tile-label">地球</span>
+        </button>
+        <button class="kid-tile" type="button" data-spx-planet="mars" aria-pressed="false" aria-label="选火星，三条量表跟着变">
+          <span class="kid-tile-art" aria-hidden="true">🔴</span><span class="kid-tile-label">火星</span>
+        </button>
+        <button class="kid-tile" type="button" data-spx-planet="jupiter" aria-pressed="false" aria-label="选木星，三条量表跟着变">
+          <span class="kid-tile-art" aria-hidden="true">🌀</span><span class="kid-tile-label">木星</span>
+        </button>
+        <button class="kid-tile" type="button" data-spx-planet="saturn" aria-pressed="false" aria-label="选土星，三条量表跟着变">
+          <span class="kid-tile-art" aria-hidden="true">💫</span><span class="kid-tile-label">土星</span>
+        </button>
+        <button class="kid-tile" type="button" data-spx-planet="uranus" aria-pressed="false" aria-label="选天王星，三条量表跟着变">
+          <span class="kid-tile-art" aria-hidden="true">🧊</span><span class="kid-tile-label">天王星</span>
+        </button>
+        <button class="kid-tile" type="button" data-spx-planet="neptune" aria-pressed="false" aria-label="选海王星，三条量表跟着变">
+          <span class="kid-tile-art" aria-hidden="true">💨</span><span class="kid-tile-label">海王星</span>
+        </button>
+      </div>
+      <div class="spx-meters">
+        <div class="kid-meter" style="--tone:var(--math)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">⚪</span>
+            <span id="spxSizeLabel">有多宽（地球＝1）</span>
+            <b class="kid-meter-value" id="spxSizeValue">—</b>
+          </div>
+          <div class="kid-meter-track" id="spxSizeMeter" role="img" aria-labelledby="spxSizeLabel spxSizeValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">满格＝木星：宽 142,984 km，是地球的 11.21 倍。水星只有 0.38 倍，条最短。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--sci)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">📏</span>
+            <span id="spxAuLabel">离太阳多远</span>
+            <b class="kid-meter-value" id="spxAuValue">—</b>
+          </div>
+          <div class="kid-meter-track" id="spxAuMeter" role="img" aria-labelledby="spxAuLabel spxAuValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">1 AU＝地球到太阳的距离，约 1.496 亿 km。满格＝海王星 30.1 AU。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--phys)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">🕒</span>
+            <span id="spxDayLabel">「一天」有多长</span>
+            <b class="kid-meter-value" id="spxDayValue">—</b>
+          </div>
+          <div class="kid-meter-track" id="spxDayMeter" role="img" aria-labelledby="spxDayLabel spxDayValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">这条按小时量。满格＝金星 5,833 小时（243 地球日）；木星只有 9.9 小时，条短到只剩一小截。</p>
+        </div>
+      </div>
+      <div class="kid-speech-row spx-say-row">
+        <span class="kid-mascot" aria-hidden="true">🛰️</span>
+        <p class="kid-speech" id="spxMeterSay" role="status" aria-live="polite">点一颗行星，三条量表就一起变。</p>
+      </div>
+      <div class="spx-tiers" aria-label="按年龄分层的解释：一天为什么有长有短">
+        <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>金星转得特别慢，转一圈要 243 天。最大的木星反而转得最快，不到 10 小时。</p></div>
+        <div class="age-tier tier-mid"><b>7–9 岁</b><p>「一天」是自转一圈，「一年」是绕太阳一圈，这是两件事。金星的一天 243 天，比它的一年 225 天还长。</p></div>
+        <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>自转快慢来自形成时聚起来的角动量，后来又被撞击和潮汐作用改动。金星还是反着转的，所以那里的太阳从西边升起。</p></div>
+      </div>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：三条量表在教什么</summary>
+        <p><b>学习目标：</b>同一组数字换三种量纲看，孩子会发现「大」「远」「慢」互不决定：木星最宽却转得最快，金星和地球差不多宽却慢 240 倍。</p>
+        <p><b>怎么用：</b>先让孩子只看条的长短说出排名，再读右边的数字核对。第三条最值得停一停——问他「一天比一年长，可能吗」。</p>
+        <p><b>要说清楚的一点：</b>三条都是线性刻度，所以水星的距离条和木星的时间条都很短，这不是坏了，是真实比例。数字写在条的右边，以条长为主、数字为准。</p>
+      </details>
+    </article>
+
+    <article class="spx-card" aria-labelledby="spxQuizTitle">
+      <h3 id="spxQuizTitle">③ 猜猜这是哪颗星</h3>
+      <p class="spx-lead">画面只给形状和颜色，不给名字。先找特征：有环吗？有条纹吗？什么颜色？一共 6 颗。</p>
+      <div class="spx-quiz-stage">
+        <svg class="spx-quiz-art" id="spxQuizArt" viewBox="0 0 120 120" role="img" aria-labelledby="spxQuizArtTitle spxQuizArtDesc">
+          <title id="spxQuizArtTitle">要猜的那一颗</title>
+          <desc id="spxQuizArtDesc">一颗没有写名字的星球，只画出圆盘的颜色、花纹，以及有没有环。</desc>
+          <g id="spxQuizArtBody"></g>
+        </svg>
+      </div>
+      <div class="kid-tiles spx-quiz-picks" id="spxQuizPicks" role="group" aria-label="四个名字，选你认为对的那一个"></div>
+      <div class="spx-quiz-actions">
+        <button class="btn btn-ghost" type="button" id="spxQuizHint" aria-label="给一句看图提示"><span aria-hidden="true">👀</span> 给点提示</button>
+        <button class="btn btn-primary" type="button" id="spxQuizNext" aria-label="换下一颗星"><span aria-hidden="true" id="spxQuizNextIcon">➡️</span> <span id="spxQuizNextLabel">下一颗</span></button>
+      </div>
+      <p class="kid-speech" id="spxQuizSay" role="status" aria-live="polite">看一眼这颗星，再点下面的名字。</p>
+      <p class="spx-dots-row">
+        <span class="spx-dots-cap" id="spxQuizDotsCap">六颗里认出了 0 颗：</span>
+        <span class="kid-dots" id="spxQuizDots" role="img" aria-labelledby="spxQuizDotsCap"></span>
+      </p>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：这个小游戏在教什么</summary>
+        <p><b>学习目标：</b>把「特征 → 名字」的推理说出声：有环所以是土星，有大红斑所以是木星，偏红所以是火星。认错也会解释那个特征真正属于谁，不清零、不计时。</p>
+        <p><b>一起做：</b>让孩子先说「我看到……」再点名字。说得出理由比点得对更重要。</p>
+        <p><b>要说清楚的一点：</b>真实望远镜里的行星只是一个小亮点，颜色和条纹要长时间曝光或探测器近距离拍摄才看得见。这里的图是示意画，不是照片。</p>
+      </details>
+    </article>
+  </section>
+
   <details class="card parent-deep-dive" data-audience="parent" style="padding:20px" aria-labelledby="spaceCabinetTitle">
     <summary id="spaceCabinetTitle">家长层：原理、来源与追问</summary>
     <div class="explain-grid">
@@ -490,13 +1327,13 @@
   //   moons : 已确认卫星数
   // ---------------------------------------------------------------
   var PLANETS = [
-    { id:"mercury", zh:"水星", en:"Mercury", emoji:"☿", col:"#b8b0a4",
+    { id:"mercury", zh:"水星", en:"Mercury", emoji:"🪨", col:"#b8b0a4",
       au:0.39, dkm:4879, g:0.38, day:58.6, year:0.24, tempC:167, moons:0,
       tag:"最小、最快、最极端",
       desc:"离太阳最近的行星，几乎没有大气。白天能到 430℃，夜里降到 -180℃——同一天里温差 600 度以上。它绕太阳一圈只要 88 天，是跑得最快的行星。",
       wow:"水星上看日出，太阳会先升起、停住、往回落一点，再重新升起。因为它自转和公转的速度太接近了。",
       q:"mercury planet" },
-    { id:"venus", zh:"金星", en:"Venus", emoji:"♀", col:"#e8c07a",
+    { id:"venus", zh:"金星", en:"Venus", emoji:"🔥", col:"#e8c07a",
       au:0.72, dkm:12104, g:0.91, day:243, year:0.62, tempC:464, moons:0,
       tag:"最热的行星",
       desc:"大小几乎和地球一样，却是太阳系最热的地方。厚厚的二氧化碳大气把热量牢牢锁住，地表气压是地球的 90 倍——相当于在海里下潜 900 米。",
@@ -508,31 +1345,31 @@
       desc:"目前已知唯一有液态水海洋和生命的星球。大气层里 21% 是氧气，还有一层臭氧挡住紫外线。地球有一个相对巨大的卫星——月球。",
       wow:"地球表面 71% 是水，但其中 97% 是咸水。所有淡水加起来只占 3%，而大部分还冻在冰川里。",
       q:"earth from space" },
-    { id:"mars", zh:"火星", en:"Mars", emoji:"♂", col:"#c1613c",
+    { id:"mars", zh:"火星", en:"Mars", emoji:"🔴", col:"#c1613c",
       au:1.52, dkm:6792, g:0.38, day:1.03, year:1.88, tempC:-65, moons:2,
       tag:"红色的邻居",
       desc:"表面的铁锈让它看起来是红色的。有太阳系最高的火山（奥林帕斯山，约 22 公里高）和最长的峡谷。两极有冰盖，地下可能还有水冰。",
       wow:"火星上的一天只比地球长 37 分钟，所以火星车团队会按「火星时间」上班，每天晚 37 分钟。",
       q:"mars surface" },
-    { id:"jupiter", zh:"木星", en:"Jupiter", emoji:"♃", col:"#d8a373",
+    { id:"jupiter", zh:"木星", en:"Jupiter", emoji:"🌀", col:"#d8a373",
       au:5.20, dkm:142984, g:2.36, day:0.41, year:11.86, tempC:-110, moons:95,
       tag:"最大的行星",
       desc:"气体巨行星，能装下 1300 个地球。表面那些条纹是高速气流，大红斑是一场刮了至少几百年的风暴，比地球还大。它有 95 颗已确认卫星。",
       wow:"木星自转极快，一天不到 10 小时。转得太快，把自己甩成了一个扁球——赤道明显鼓出来。",
       q:"jupiter" },
-    { id:"saturn", zh:"土星", en:"Saturn", emoji:"♄", col:"#e0cd9a",
+    { id:"saturn", zh:"土星", en:"Saturn", emoji:"💫", col:"#e0cd9a",
       au:9.54, dkm:120536, g:0.92, day:0.44, year:29.4, tempC:-140, moons:146,
       tag:"戴环的星",
       desc:"最漂亮的行星，环由无数冰块和石块组成，从几厘米到几米大。环很宽（几十万公里）却极薄，平均只有几十米厚。",
       wow:"土星的平均密度比水还小。如果有一个足够大的浴缸，土星能浮起来。",
       q:"saturn rings" },
-    { id:"uranus", zh:"天王星", en:"Uranus", emoji:"♅", col:"#93d3dd",
+    { id:"uranus", zh:"天王星", en:"Uranus", emoji:"🧊", col:"#93d3dd",
       au:19.2, dkm:51118, g:0.89, day:0.72, year:84, tempC:-195, moons:28,
       tag:"躺着转的星",
       desc:"冰巨行星，甲烷让它呈青蓝色。自转轴几乎躺平（倾斜 98 度），所以它是「滚着」绕太阳走的，两极各有 21 年的极昼和极夜。",
       wow:"天王星绕太阳一圈要 84 年。1781 年被发现至今，它才走完不到三圈。",
       q:"uranus planet" },
-    { id:"neptune", zh:"海王星", en:"Neptune", emoji:"♆", col:"#4b6ed8",
+    { id:"neptune", zh:"海王星", en:"Neptune", emoji:"💨", col:"#4b6ed8",
       au:30.1, dkm:49528, g:1.11, day:0.67, year:164.8, tempC:-200, moons:16,
       tag:"风最猛的星",
       desc:"最远的行星，深蓝色。风速可达每小时 2000 公里，是太阳系最猛的风。它不是靠望远镜偶然看到的，而是先用数学算出位置再找到的。",
@@ -727,11 +1564,21 @@
   }
 
   // ---------------------------------------------------------------
-  // 网络部分：全部可失败，失败即降级
+  // 网络部分：默认关闭。第三方请求（NASA APOD / NASA Image Library）
+  // 只在家长于家长区开启 onlineData 后才发出；未开启时直接用内置数据。
   // ---------------------------------------------------------------
   var badge = document.getElementById("netBadge");
   var netTxt = document.getElementById("netTxt");
   var netState = { ok: 0, fail: 0 };
+
+  function onlineAllowed() {
+    return Boolean(window.Playful && Playful.onlineAllowed && Playful.onlineAllowed());
+  }
+
+  function markOffPreference() {
+    badge.className = "badge-live off";
+    netTxt.textContent = "内置数据 · 照片需家长开启联网";
+  }
 
   function mark(ok) {
     if (ok) netState.ok++; else netState.fail++;
@@ -802,13 +1649,33 @@
 
   renderApod(APOD_FALLBACK);           // 先渲染内置
 
-  (function loadApod() {
+  /* apod: 的 key 带日期，每天一个新键，原来只写不删——用得久了 localStorage 里
+     会堆上几百条过期图文（每条含 explanation，好几 KB），最终把配额撑满，
+     连 Progress 的写入一起拖垮。这里在读缓存前先扫掉今天以外的 apod: 键。
+     其余缓存前缀（shots:、inat-*:、pbdb:）的 key 来自固定名单，数量有上限，不需要裁剪。 */
+  function pruneApodCache(keep) {
+    try {
+      var stale = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf("apod:") === 0 && k !== keep) stale.push(k);
+      }
+      // 先收集再删除：删除会让 localStorage.key(i) 的下标错位。
+      for (var j = 0; j < stale.length; j++) localStorage.removeItem(stale[j]);
+    } catch (e) {}
+  }
+
+  // 缓存是上次已获授权时写入的，读缓存不产生新请求，可以照用。
+  function loadApod() {
     var today = new Date().toISOString().slice(0, 10);
     var ck = "apod:" + today;
+    pruneApodCache(ck);
     try {
       var c = localStorage.getItem(ck);
       if (c) { renderApod(JSON.parse(c)); mark(true); return; }
     } catch (e) {}
+
+    if (!onlineAllowed()) return;
 
     getJSON("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY")
       .then(function (d) {
@@ -818,12 +1685,32 @@
         try { localStorage.setItem(ck, JSON.stringify(d)); } catch (e) {}
       })
       .catch(function () { mark(false); });
-  })();
+  }
 
   // ---------- 图片墙 ----------
   var shots = document.getElementById("shots");
 
+  function shotsPlaceholder(text) {
+    shots.textContent = "";
+    var d = document.createElement("p");
+    d.style.cssText = "color:var(--ink-mid);font-size:.84rem;grid-column:1/-1";
+    d.textContent = text;
+    shots.appendChild(d);
+  }
+
   function loadShots(p) {
+    var ck = "shots:" + p.id;
+    // 缓存是上次已获授权时写入的，读缓存不产生新请求，可以照用。
+    try {
+      var c = localStorage.getItem(ck);
+      if (c) { paintShots(JSON.parse(c)); mark(true); return; }
+    } catch (e) {}
+
+    if (!onlineAllowed()) {
+      shotsPlaceholder("照片需要家长在家长区开启联网后才会加载。上面的行星数据是内置的，不受影响。");
+      return;
+    }
+
     shots.textContent = "";
     for (var i = 0; i < 4; i++) {
       var sk = document.createElement("div");
@@ -831,11 +1718,6 @@
       sk.style.opacity = ".4";
       shots.appendChild(sk);
     }
-    var ck = "shots:" + p.id;
-    try {
-      var c = localStorage.getItem(ck);
-      if (c) { paintShots(JSON.parse(c)); mark(true); return; }
-    } catch (e) {}
 
     getJSON("https://images-api.nasa.gov/search?q=" +
             encodeURIComponent(p.q) + "&media_type=image&page_size=8")
@@ -853,11 +1735,7 @@
       })
       .catch(function () {
         mark(false);
-        shots.textContent = "";
-        var d = document.createElement("p");
-        d.style.cssText = "color:var(--ink-dim);font-size:.84rem;grid-column:1/-1";
-        d.textContent = "照片需要联网才能显示。上面的行星数据是内置的，不受影响。";
-        shots.appendChild(d);
+        shotsPlaceholder("照片这次没取到。上面的行星数据是内置的，不受影响。");
       });
   }
 
@@ -880,14 +1758,34 @@
     });
   }
 
-  // 启动
+  // ---------- 启动 ----------
+  // 本块脚本在 playful.js 之前执行，直接读 Playful 会拿不到偏好。
+  // 因此先渲染内置内容，等 DOMContentLoaded（共享层已就绪）再决定是否联网。
   select("earth");
+
+  function runNetwork() {
+    loadApod();
+    loadShots(current);
+    if (netState.ok === 0 && !onlineAllowed()) markOffPreference();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", runNetwork, { once: true });
+  } else {
+    runNetwork();
+  }
+
+  // 家长在家长区打开开关后，立刻补一次加载，不需要刷新页面。
+  document.addEventListener("playful:preference", function (event) {
+    var detail = event.detail || {};
+    if (detail.name === "onlineData" && detail.value) runNetwork();
+  });
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>
 (function () {
   "use strict";
@@ -976,6 +1874,238 @@
   if (window.Progress && Progress.getCompletion(id)) status.textContent = "此任务已完成；可以换一颗行星更新证据。";
 })();
 </script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script>
+/* 图像优先三件套（前缀 spx-）：太阳系图鉴 · 三条量表 · 猜猜这是哪颗星。
+   数值取 NASA Planetary Fact Sheet 常用值，与本页上方的行星数据一致。 */
+(function () {
+  "use strict";
+
+  var SP = {
+    mercury: { zh:"水星", dkm:4879,   au:0.39, hours:1407.6, year:"88 天",    moons:0,
+      feat:"灰色、坑坑洼洼，看不到云",
+      why:"灰色又布满环形坑 → 水星。它几乎没有大气，坑砸出来就一直留着。",
+      line:"最小的一颗，一年只有 88 天。" },
+    venus:   { zh:"金星", dkm:12104,  au:0.72, hours:5832.5, year:"225 天",   moons:0,
+      feat:"整颗被黄白色的厚云裹住",
+      why:"看不见地面、只有黄白厚云 → 金星。二氧化碳大气把热锁住，表面约 464℃。",
+      line:"它的一天 243 天，比它的一年还长。" },
+    earth:   { zh:"地球", dkm:12756,  au:1.00, hours:23.9,   year:"365 天",   moons:1,
+      feat:"蓝色的海、绿色的陆地，还有白云",
+      why:"蓝海加绿陆地 → 地球。目前只在这里找到液态水的海洋。",
+      line:"三条量表的 1 倍基准都是它。" },
+    mars:    { zh:"火星", dkm:6792,   au:1.52, hours:24.6,   year:"687 天",   moons:2,
+      feat:"偏红，北边有一块白色冰盖",
+      why:"偏红 → 火星，因为土里有氧化铁，也就是铁锈。",
+      line:"一天只比地球长 37 分钟。" },
+    jupiter: { zh:"木星", dkm:142984, au:5.20, hours:9.9,    year:"11.9 年",  moons:95,
+      feat:"一条条横纹，还有一个大红斑",
+      why:"有条纹和大红斑 → 木星。大红斑是一场比地球还大的风暴。",
+      line:"最大的一颗，却转得最快。" },
+    saturn:  { zh:"土星", dkm:120536, au:9.54, hours:10.7,   year:"29.4 年",  moons:146,
+      feat:"腰上一圈又宽又薄的环",
+      why:"有环 → 土星。环是无数冰块和石块，宽几十万 km，却只有几十米厚。",
+      line:"146 颗已确认卫星，最多。" },
+    uranus:  { zh:"天王星", dkm:51118, au:19.2, hours:17.2,  year:"84 年",    moons:28,
+      feat:"淡青色，环几乎是立着的",
+      why:"淡青色、环立着 → 天王星。甲烷让它发青，自转轴倾斜 98 度，所以它躺着转。",
+      line:"一年要 84 个地球年。" },
+    neptune: { zh:"海王星", dkm:49528, au:30.1, hours:16.1,  year:"164.8 年", moons:16,
+      feat:"很深的蓝，看不到明显的环",
+      why:"深蓝 → 海王星。也是甲烷让它发蓝；天王星雾霾更厚，所以看起来更淡。",
+      line:"最远的一颗，风速可达 2000 km/h。" }
+  };
+
+  var MAX_WIDE = 142984 / 12756;   /* 木星满格 */
+  var MAX_AU = 30.1;               /* 海王星满格 */
+  var MAX_HOURS = 5832.5;          /* 金星满格 */
+
+  function setMeter(track, value, max) {
+    if (!track) return;
+    if (window.Playful && Playful.setMeter) { Playful.setMeter(track, value, max); return; }
+    var fill = track.querySelector(".kid-meter-fill");
+    var ratio = Math.max(0, Math.min(1, Number(value) / Number(max)));
+    if (fill) fill.style.setProperty("--fill", (ratio * 100).toFixed(1) + "%");
+  }
+
+  function fmtHours(h) {
+    if (h < 100) return h.toFixed(1) + " 小时";
+    return Math.round(h).toLocaleString() + " 小时（约 " + Math.round(h / 24) + " 地球日）";
+  }
+
+  /* ---------- ② 三条量表 ---------- */
+  var picks = [].slice.call(document.querySelectorAll("#spxPicks [data-spx-planet]"));
+  var sizeMeter = document.getElementById("spxSizeMeter");
+  var auMeter = document.getElementById("spxAuMeter");
+  var dayMeter = document.getElementById("spxDayMeter");
+  var sizeValue = document.getElementById("spxSizeValue");
+  var auValue = document.getElementById("spxAuValue");
+  var dayValue = document.getElementById("spxDayValue");
+  var meterSay = document.getElementById("spxMeterSay");
+
+  function showPlanet(key) {
+    var p = SP[key];
+    if (!p) return;
+    var wide = p.dkm / 12756;
+    picks.forEach(function (button) {
+      button.setAttribute("aria-pressed", button.getAttribute("data-spx-planet") === key ? "true" : "false");
+    });
+    sizeValue.textContent = wide.toFixed(2) + " × 地球";
+    setMeter(sizeMeter, wide, MAX_WIDE);
+    auValue.textContent = p.au.toFixed(2) + " AU";
+    setMeter(auMeter, p.au, MAX_AU);
+    dayValue.textContent = fmtHours(p.hours);
+    setMeter(dayMeter, p.hours, MAX_HOURS);
+    meterSay.textContent = "你选了" + p.zh + "：宽度是地球的 " + wide.toFixed(2) +
+      " 倍，离太阳 " + p.au.toFixed(2) + " AU，一天 " + fmtHours(p.hours) +
+      "，一年 " + p.year + "，" + p.moons + " 颗卫星。" + p.line;
+  }
+
+  picks.forEach(function (button) {
+    button.addEventListener("click", function () { showPlanet(button.getAttribute("data-spx-planet")); });
+  });
+
+  /* ---------- ③ 猜猜这是哪颗星 ---------- */
+  var ROUNDS = [
+    { answer:"saturn",  options:["saturn", "jupiter", "earth", "mars"],       hint:"看它的腰：有一圈又宽又薄的东西套在外面。" },
+    { answer:"jupiter", options:["jupiter", "saturn", "venus", "neptune"],    hint:"看花纹：一条条横着的带子，右下角还有一个大红点。" },
+    { answer:"mars",    options:["mars", "mercury", "earth", "jupiter"],      hint:"看颜色：像铁锈那样的红棕色，上边还有一小块白。" },
+    { answer:"earth",   options:["earth", "neptune", "moon", "venus"],        hint:"看颜色：蓝色里夹着绿色的块，还有白色的云。" },
+    { answer:"neptune", options:["neptune", "uranus", "earth", "saturn"],     hint:"看蓝的深浅：这颗蓝得很深，而且看不到环。" },
+    { answer:"uranus",  options:["uranus", "neptune", "saturn", "venus"],     hint:"看颜色和环的方向：颜色很淡，环几乎是立着的。" }
+  ];
+  var NAMES = { moon: "月球" };
+  function zhOf(key) { return SP[key] ? SP[key].zh : NAMES[key]; }
+  function featOf(key) {
+    if (SP[key]) return SP[key].feat;
+    return "灰色、布满环形坑，比行星小得多";
+  }
+
+  var quizArtBody = document.getElementById("spxQuizArtBody");
+  var quizPicks = document.getElementById("spxQuizPicks");
+  var quizSay = document.getElementById("spxQuizSay");
+  var quizDots = document.getElementById("spxQuizDots");
+  var quizNextBtn = document.getElementById("spxQuizNext");
+  var quizNextIcon = document.getElementById("spxQuizNextIcon");
+  var quizNextLabel = document.getElementById("spxQuizNextLabel");
+  var quizHintBtn = document.getElementById("spxQuizHint");
+  var quizDotsCap = document.getElementById("spxQuizDotsCap");
+  var round = 0, solved = [false, false, false, false, false, false], wrongTries = 0, resolved = false;
+
+  /* 点点的说明文字就是 aria-labelledby 的目标，所以计数写在文字里，不另设 aria-label */
+  function paintDots() {
+    var got = 0;
+    quizDots.textContent = "";
+    solved.forEach(function (ok) {
+      var dot = document.createElement("i");
+      if (ok) got += 1; else dot.setAttribute("data-empty", "true");
+      quizDots.appendChild(dot);
+    });
+    quizDotsCap.textContent = "六颗里认出了 " + got + " 颗：";
+    return got;
+  }
+
+  function drawTarget(key) {
+    var source = document.querySelector('[data-spx-art="' + key + '"] svg');
+    quizArtBody.textContent = "";
+    if (!source) return;
+    [].slice.call(source.children).forEach(function (node) {
+      quizArtBody.appendChild(node.cloneNode(true));
+    });
+  }
+
+  function shuffle(list) {
+    var out = list.slice();
+    for (var i = out.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+    }
+    return out;
+  }
+
+  function buildOptions(item) {
+    quizPicks.textContent = "";
+    shuffle(item.options).forEach(function (key) {
+      var button = document.createElement("button");
+      button.className = "kid-tile";
+      button.type = "button";
+      button.setAttribute("aria-pressed", "false");
+      button.setAttribute("aria-label", "选" + zhOf(key));
+      button.setAttribute("data-spx-answer", key);
+      var art = document.createElement("span");
+      art.className = "kid-tile-art";
+      art.setAttribute("aria-hidden", "true");
+      art.textContent = key === "moon" ? "🌑" : "🪐";
+      var label = document.createElement("span");
+      label.className = "kid-tile-label";
+      label.textContent = zhOf(key);
+      button.appendChild(art);
+      button.appendChild(label);
+      quizPicks.appendChild(button);
+    });
+  }
+
+  function renderRound() {
+    var item = ROUNDS[round];
+    wrongTries = 0;
+    resolved = false;
+    drawTarget(item.answer);
+    buildOptions(item);
+    var last = round === ROUNDS.length - 1;
+    quizNextIcon.textContent = last ? "🔄" : "➡️";
+    quizNextLabel.textContent = last ? "再玩一遍" : "下一颗";
+    quizNextBtn.setAttribute("aria-label", last ? "从第一颗重新开始这六颗" : "换下一颗星");
+    quizSay.textContent = "第 " + (round + 1) + " 颗：先找特征，再点名字。";
+    paintDots();
+  }
+
+  quizPicks.addEventListener("click", function (event) {
+    var button = event.target.closest("[data-spx-answer]");
+    if (!button || resolved) return;
+    var item = ROUNDS[round];
+    var key = button.getAttribute("data-spx-answer");
+    var target = SP[item.answer];
+    if (key === item.answer) {
+      resolved = true;
+      solved[round] = true;
+      [].slice.call(quizPicks.children).forEach(function (other) {
+        other.setAttribute("aria-pressed", other === button ? "true" : "false");
+      });
+      var got = paintDots();
+      quizSay.textContent = "✓ 认出来了！" + target.why +
+        (got === ROUNDS.length ? " 六颗全认出来了，想再认一遍就按「再玩一遍」。" : " 按「下一颗」继续。");
+      if (window.Playful && Playful.confetti) Playful.confetti(quizPicks.parentNode);
+      return;
+    }
+    wrongTries += 1;
+    if (wrongTries === 1) {
+      quizSay.textContent = "你点的是" + zhOf(key) + "。" + zhOf(key) + "的样子是" + featOf(key) +
+        "，屏幕上这颗不是这样。再看一眼颜色、花纹和有没有环，挑一次。";
+      return;
+    }
+    resolved = true;
+    paintDots();
+    quizSay.textContent = "你点的是" + zhOf(key) + "，" + zhOf(key) + "的样子是" + featOf(key) +
+      "。屏幕上这颗是" + target.feat + "，所以它是" + target.zh + "。" + target.why + " 按「下一颗」继续。";
+  });
+
+  quizHintBtn.addEventListener("click", function () {
+    quizSay.textContent = "提示：" + ROUNDS[round].hint;
+  });
+
+  quizNextBtn.addEventListener("click", function () {
+    if (round < ROUNDS.length - 1) {
+      round += 1;
+    } else {
+      round = 0;
+      solved = [false, false, false, false, false, false];
+    }
+    renderRound();
+  });
+
+  showPlanet("earth");
+  renderRound();
+})();
+</script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

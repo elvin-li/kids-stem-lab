@@ -231,7 +231,7 @@ try {
   const sandbox = { window: { PLAYFUL: playful, addEventListener() {} } };
   runInNewContext(playfulRuntime, sandbox, { filename: 'assets/js/playful.js', timeout: 1000 });
   const api = sandbox.window.Playful;
-  for (const name of ['init', 'page', 'companion', 'tone', 'randomTask', 'getSticker', 'getCard', 'showCard', 'completionFeedback', 'saveWork', 'validateWork', 'getPreference', 'setPreference', 'motionReduced']) {
+  for (const name of ['init', 'page', 'companion', 'tone', 'randomTask', 'getSticker', 'getCard', 'showCard', 'completionFeedback', 'saveWork', 'validateWork', 'getPreference', 'setPreference', 'motionReduced', 'onlineAllowed']) {
     if (!api || typeof api[name] !== 'function') errors.push(`assets/js/playful.js: 缺少 Playful.${name}()`);
   }
 } catch (error) {
@@ -281,7 +281,7 @@ for (const rel of ['assets/css/base.css', 'assets/css/print.css', 'assets/js/pla
 /* 阶段 2：pwa.js 必须只在 https/localhost 注册 SW，file:// 下静默跳过。 */
 const pwaPath = join(ROOT, 'assets', 'js', 'pwa.js');
 if (!(await isFile(pwaPath))) {
-  errors.push('assets/js/pwa.js: 缺失，26 个页面都引用它');
+  errors.push('assets/js/pwa.js: 缺失，28 个页面都引用它');
 } else {
   const pwaJs = await source(pwaPath);
   if (!/https:/.test(pwaJs) || !/localhost/.test(pwaJs)) errors.push('assets/js/pwa.js: 必须显式判断 https:/localhost，file:// 下不得注册 Service Worker');
@@ -292,7 +292,7 @@ if (!(await isFile(pwaPath))) {
 /* 阶段 2：manifest 必须是可解析 JSON 且只用相对路径。 */
 const manifestPath = join(ROOT, 'manifest.webmanifest');
 if (!(await isFile(manifestPath))) {
-  errors.push('manifest.webmanifest: 缺失，26 个页面都引用它');
+  errors.push('manifest.webmanifest: 缺失，28 个页面都引用它');
 } else {
   let manifest = null;
   try { manifest = JSON.parse(await source(manifestPath)); } catch (error) {
@@ -487,6 +487,33 @@ for (const path of files) {
 
   for (const match of html.matchAll(/\bfetch\s*\(\s*(["'])(.*?)\1/gi)) {
     if (!/^(?:https?:)?\/\//i.test(match[2]) && !/^(?:data:|blob:)/i.test(match[2])) fail(`禁止用 fetch() 读取站内文件: ${match[2]}`);
+  }
+
+  /* 第三方联网必须默认关闭：既要有 onlineAllowed() 门禁，也要有家长区内的开关入口。 */
+  if (/\bfetch\s*\(/i.test(html)) {
+    if (!/Playful\.onlineAllowed\s*\(\s*\)/.test(html)) {
+      fail('页面发起 fetch() 时必须用 Playful.onlineAllowed() 门禁，默认不联网');
+    }
+    const gate = html.match(/<input\b[^>]*data-playful-preference\s*=\s*(["'])onlineData\1[^>]*>/i);
+    if (!gate) fail('页面发起 fetch() 时必须提供 onlineData 开关入口');
+    else {
+      const before = html.slice(0, gate.index);
+      const openParents = (before.match(/data-audience\s*=\s*(["'])parent\1/gi) || []).length;
+      if (!openParents) fail('onlineData 开关必须位于家长区（data-audience="parent"）内');
+    }
+  }
+
+  /* data-mode 必须静态写死：playful.js 在 body 末尾才运行，
+     若首屏没有 data-mode，kid.css 的两条 display:none 都不命中，
+     孩子会先看到一整屏家长层的学术说明再被收起。 */
+  const modeAttr = html.match(/<html\b[^>]*\bdata-mode\s*=\s*(["'])(.*?)\1/i);
+  if (/data-audience\s*=/.test(html)) {
+    if (!modeAttr) fail('使用 data-audience 的页面必须在 <html> 上静态写 data-mode，避免首屏闪现家长内容');
+    else if (modeAttr[2] !== 'kid' && modeAttr[2] !== 'parent') fail(`<html data-mode> 只能是 kid 或 parent，实际 ${modeAttr[2]}`);
+    /* 不加载共享层的页面无法切换模式，其静态值就是最终值。 */
+    if (modeAttr && !/assets\/js\/playful\.js/.test(html) && modeAttr[2] === 'kid' && /data-audience\s*=\s*(["'])parent\1/i.test(html)) {
+      fail('未加载 playful.js 的页面写死 data-mode="kid" 会永久隐藏家长内容');
+    }
   }
 
   /* 阶段 1 兼容：不要求页面立即接入；只校验已选择接入的页面。 */

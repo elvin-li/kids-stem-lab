@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>学习路径 · 4–12 岁分龄数理启蒙 | 少儿数理启蒙</title>
 <meta name="description" content="按 4–6、6–8、8–10、10–12 岁四个阶段安排的数学与物理启蒙路径：这个年龄真正重要的是什么、用哪几个具体资源、每周花多少时间、以及「学得好」长什么样。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#f7f3ea">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   :root {
@@ -20,15 +20,19 @@
     --surface-2: #fbf8f2;
     --ink: #203c35;
     --ink-mid: #405c54;
-    --ink-dim: #687a73;
+    /* 下面这几个都按本页最亮的纸色底（--surface-2 #fbf8f2 / 卡片浅绿 #e6f5e4）重算过：
+       原值在真实渲染里是 3.71–4.45:1，全部低于正文 AA 4.5。加深后最紧的一组 4.80:1。
+       check-contrast.mjs 只看 base.css / kid.css，看不到页面级 :root 覆盖，
+       这一层由 check-rendered-contrast.mjs 兜。 */
+    --ink-dim: #5e7069;
     --line: #d6ded8;
     --line-soft: #e5e9e5;
     --accent: #377866;
-    --math: #5679a6;
-    --sci: #367c67;
-    --phys: #a36b45;
-    --code: #74659a;
-    --warn: #9a6a22;
+    --math: #456a97;
+    --sci: #31735f;
+    --phys: #8e5a37;
+    --code: #6a5b8e;
+    --warn: #8a5c17;
     --shadow: 0 12px 32px rgba(47, 72, 62, .08);
   }
   html, body { overflow-x: clip; }
@@ -223,7 +227,149 @@
   html[data-mode="kid"] .task-map-step { border-width: 2px; min-height: 132px; }
   html[data-mode="kid"] .task-map-step b { font-size: 1rem; }
   @media (max-width: 420px) { html[data-mode="kid"] .track { grid-template-columns: minmax(0, 1fr); } }
+
+  /* ---- 儿童图形化闯关地图 ---- */
+  .trail-card { margin: 18px 0 10px; padding: 20px clamp(15px, 3vw, 24px); border-top: 5px solid var(--accent); }
+  .route-tiles { margin-top: 6px; }
+  .route-hero {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 12px 15px; border: 3px solid var(--line-soft); border-radius: 28px;
+    background: linear-gradient(140deg, #fffaf0, #fff1d8);
+  }
+  .route-name { font-size: 1.2rem; font-weight: 900; color: var(--ink); letter-spacing: -.01em; }
+  .route-sub { display: block; margin-top: 2px; font-size: .88rem; font-weight: 700; color: var(--ink-dim); }
+  .trail-art { width: 100%; max-width: 262px; height: auto; }
+  .trail { position: relative; display: grid; gap: 12px; margin: 18px 0 0; padding: 0; list-style: none; }
+  .trail::before {
+    content: ""; position: absolute; left: 60px; top: 46px; bottom: 46px; z-index: 0;
+    border-left: 6px dotted color-mix(in srgb, var(--accent) 32%, var(--line));
+  }
+  .trail > li { min-width: 0; }
+  .trail-step {
+    position: relative; z-index: 1; display: grid; gap: 12px; align-items: center;
+    grid-template-columns: 92px minmax(0, 1fr) auto;
+    min-height: 104px; padding: 12px 15px;
+    border: 3px solid var(--line); border-radius: 30px;
+    background: var(--surface); color: var(--ink); text-decoration: none;
+    box-shadow: 0 5px 0 rgba(180, 130, 60, .18);
+  }
+  a.trail-step:hover { text-decoration: none; border-color: var(--accent); }
+  a.trail-step:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(180, 130, 60, .18); }
+  .trail-mark { font-size: 2.5rem; }
+  .trail-body { min-width: 0; }
+  .trail-name { font-size: 1.18rem; font-weight: 900; letter-spacing: -.01em; }
+  .trail-friend { display: block; margin-top: 2px; font-size: .92rem; font-weight: 750; color: var(--ink-dim); }
+  .trail-task { display: block; margin-top: 4px; font-size: .86rem; color: var(--ink-mid); }
+  .trail-flag {
+    display: grid; place-items: center; gap: 3px; min-width: 72px; min-height: 68px;
+    padding: 8px 11px; border: 3px solid var(--line); border-radius: 22px;
+    background: var(--surface-2); color: var(--ink-mid); font-size: .8rem; font-weight: 800;
+  }
+  .trail-flag .flag-art { font-size: 1.6rem; line-height: 1; }
+  .trail-step[data-state="done"] { border-color: #0f8a4d; background: linear-gradient(140deg, #f2fdf6, #dcf6e6); }
+  .trail-step[data-state="done"] .trail-flag { border-color: #0f8a4d; background: #ddf8e8; color: #0b4a2a; }
+  .trail-step[data-state="next"] { border-color: var(--accent); box-shadow: 0 5px 0 rgba(180, 130, 60, .18), 0 0 0 5px rgba(55, 120, 102, .16); }
+  .trail-step[data-state="next"] .trail-flag { border-color: var(--accent); background: #eef8f4; color: #26584a; }
+  .trail-step[data-state="soon"] { border-style: dashed; background: var(--surface-2); }
+  .trail-step[data-state="soon"] .trail-mark { filter: grayscale(1); opacity: .55; }
+  .trail-step.is-pick { border-color: #c2560f; box-shadow: 0 5px 0 rgba(180, 130, 60, .18), 0 0 0 6px rgba(194, 86, 15, .18); }
+  .trail-empty { margin: 16px 0 0; }
+  .trail-count {
+    display: inline-flex; align-items: center; gap: 10px; margin: 16px 0 4px;
+    padding: 9px 18px; border: 3px solid #c98a2a; border-radius: 999px;
+    background: linear-gradient(140deg, #fffaf0, #ffeecb);
+    font-size: 1.06rem; font-weight: 900; color: #7a4c12;
+    box-shadow: 0 4px 0 rgba(180, 130, 60, .2);
+  }
+  .trail-count .count-art { font-size: 1.5rem; line-height: 1; }
+  #pickCard { margin-top: 12px; }
+  .trail-tools { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .trail-tools .kid-icon-btn { min-height: 52px; }
+  html[data-mode="kid"] .trail-count { font-size: 1.24rem; }
+  @media (max-width: 560px) {
+    .trail-step { grid-template-columns: 76px minmax(0, 1fr); }
+    .trail-flag { grid-column: 1 / -1; justify-self: start; min-height: 52px; }
+    .trail::before { left: 52px; }
+  }
+  html[data-mode="kid"] #planner { display: none; }
+  html[data-mode="kid"] .trail-name { font-size: 1.34rem; }
+  html[data-mode="kid"] .trail-step { min-height: 116px; }
   @media print { body.print-plan > .nav, body.print-plan > .foot, body.print-plan main > :not(#planner) { display:none!important; } body.print-plan #planner { margin:0; border:0; box-shadow:none; } body.print-plan .no-print { display:none!important; } }
+
+  /* ---- 本页专属：招呼插画 · 路线插画 · 帮我选一条（前缀 pth-） ---- */
+  .pth-hello-stage { margin: 16px 0 14px; }
+  .pth-hello-copy { display: grid; gap: 10px; justify-items: start; }
+
+  .pth-pick { margin: 0 0 14px; padding: 18px clamp(15px, 3vw, 24px); border-top: 5px solid var(--accent); }
+  .pth-pick > h2 { margin: 0 0 6px; font-size: 1.22rem; }
+  .pth-pick > p { margin: 0; color: var(--ink-mid); }
+  .pth-pick-label { display: flex; align-items: center; gap: 8px; margin: 15px 0 8px; font-size: .96rem; font-weight: 800; color: var(--ink); }
+  .pth-pick-label > span { font-size: 1.4rem; line-height: 1; }
+  .pth-pick-say { margin-top: 18px; }
+  .pth-why { display: block; margin-top: 5px; font-weight: 600; color: var(--ink-mid); font-size: .88rem; }
+
+  .pth-roads { margin: 0 0 12px; }
+  .pth-roads > h2 { margin: 0 0 5px; font-size: 1.22rem; }
+  .pth-roads > p { margin: 0 0 13px; color: var(--ink-mid); }
+  .pth-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(266px, 1fr)); }
+  .pth-card {
+    display: flex; flex-direction: column; gap: 9px; min-width: 0;
+    padding: 15px 16px 17px;
+    border-top: 6px solid color-mix(in srgb, var(--card-tone, var(--accent)) 45%, var(--line));
+    transition: box-shadow .18s var(--ease);
+  }
+  .pth-card[data-picked="true"] {
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--card-tone, var(--accent)) 24%, var(--surface)), var(--shadow);
+  }
+  .pth-card .kid-meter { --tone: var(--card-tone, var(--accent)); margin-bottom: 2px; }
+  .pth-name { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 1.16rem; color: var(--ink); }
+  .pth-name-art { font-size: 1.85rem; line-height: 1; }
+  .pth-age { margin: 0; font-size: .84rem; font-weight: 800; color: color-mix(in srgb, var(--card-tone, var(--accent)) 74%, var(--ink)); }
+  .pth-road-box { min-width: 0; }
+  .pth-go { align-self: flex-start; margin-top: auto; min-height: 44px; }
+
+  /* 路线插画：取色全部跟着卡片的 --card-tone，SVG 属性里不写死颜色 */
+  .pth-scene {
+    display: block; width: 100%; height: auto;
+    border: 2px solid color-mix(in srgb, var(--card-tone, var(--accent)) 30%, var(--line));
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--card-tone, var(--accent)) 7%, var(--surface));
+  }
+  .pth-scene .pth-sky { fill: color-mix(in srgb, var(--card-tone, var(--accent)) 10%, var(--surface)); }
+  .pth-scene .pth-hill { fill: color-mix(in srgb, var(--card-tone, var(--accent)) 22%, var(--surface-2)); }
+  .pth-scene .pth-road {
+    fill: none; stroke: color-mix(in srgb, var(--card-tone, var(--accent)) 36%, var(--line));
+    stroke-width: 7; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .pth-scene .pth-stop {
+    fill: color-mix(in srgb, var(--card-tone, var(--accent)) 5%, var(--surface));
+    stroke: color-mix(in srgb, var(--card-tone, var(--accent)) 60%, var(--ink));
+    stroke-width: 3; stroke-dasharray: 4 4;
+  }
+  .pth-scene .pth-stop-done {
+    fill: color-mix(in srgb, var(--card-tone, var(--accent)) 72%, var(--ink));
+    stroke: color-mix(in srgb, var(--card-tone, var(--accent)) 26%, var(--surface));
+    stroke-width: 3;
+  }
+  .pth-scene .pth-check { fill: none; stroke: var(--surface); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .pth-scene .pth-flag {
+    fill: color-mix(in srgb, var(--card-tone, var(--accent)) 66%, var(--ink));
+    stroke: color-mix(in srgb, var(--card-tone, var(--accent)) 66%, var(--ink));
+    stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .pth-scene .pth-goal {
+    fill: color-mix(in srgb, var(--card-tone, var(--accent)) 30%, var(--warn));
+    stroke: color-mix(in srgb, var(--card-tone, var(--accent)) 30%, var(--ink));
+    stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  html[data-mode="kid"] .pth-name { font-size: 1.3rem; }
+  html[data-mode="kid"] .pth-name-art { font-size: 2.1rem; }
+  html[data-mode="kid"] .pth-pick-label { font-size: 1.04rem; }
+  @media (max-width: 700px) {
+    .pth-grid { grid-template-columns: minmax(0, 1fr); }
+    .pth-card, .pth-road-box { min-width: 0; }
+  }
 </style>
 </head>
 <body>
@@ -254,7 +400,7 @@
     <aside class="today-card" data-audience="parent" aria-labelledby="todayPlanTitle">
       <h2 id="todayPlanTitle"><span data-audience="parent">今天就能做</span><span data-audience="kid-only">先选年龄</span></h2>
       <p data-audience="parent">先选孩子当前年龄和这周可用时间，再生成一张探险周地图。兴趣和设备条件按家里现在的情况选就行。</p>
-      <p class="quick-line" data-audience="parent"><a href="#planner">去选年龄和时间，生成路线</a></p>
+      <p class="quick-line" data-audience="parent"><a class="btn btn-ghost" href="#planner">去选年龄和时间，生成路线</a></p>
       <p data-audience="kid-only">点一条路线，地图马上出现。</p>
     </aside>
     <p class="lede" data-audience="parent">
@@ -266,13 +412,185 @@
       <a href="#s3" style="--tone: var(--phys)"><span class="t-age">8–10 岁</span><span class="t-key">问题解决</span></a>
       <a href="#s4" style="--tone: var(--code)"><span class="t-age">10–12 岁</span><span class="t-key">抽象与证明</span></a>
     </nav>
-    <nav class="track kid-routes" data-audience="kid-only" aria-label="选择年龄路线">
-      <a href="#planner" data-plan-age="4-6" style="--tone: var(--math)"><span class="t-age">4–6 岁</span><span class="t-key">🧱 玩数量</span></a>
-      <a href="#planner" data-plan-age="6-8" style="--tone: var(--sci)"><span class="t-age">6–8 岁</span><span class="t-key">🧩 画关系</span></a>
-      <a href="#planner" data-plan-age="8-10" style="--tone: var(--phys)"><span class="t-age">8–10 岁</span><span class="t-key">🔎 找办法</span></a>
-      <a href="#planner" data-plan-age="10-12" style="--tone: var(--code)"><span class="t-age">10–12 岁</span><span class="t-key">💡 讲理由</span></a>
-    </nav>
   </header>
+
+  <!-- 招呼插画：不识字也看得懂这一页在干什么（放在 .wrap 里，避免全幅出血） -->
+  <div class="kid-visual-stage pth-hello-stage" data-scene-layer="back"
+       data-playful-scene="meadow"
+       data-playful-scene-title="草地上的几条小路"
+       data-playful-scene-desc="太阳和云下面是一片草地，几条弯弯的小路从近处通向远处的奖杯">
+    <div class="pth-hello-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🦊</span>
+        <p class="kid-speech">这里有<b>四条小路</b>。挑一条，一站一站走到奖杯。</p>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步走法">
+        <li><span class="kid-tile-art" aria-hidden="true">🗺️</span>选一条</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🧩</span>一站一站玩</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🏆</span>走到奖杯</li>
+      </ol>
+    </div>
+  </div>
+
+  <section class="card pth-pick" id="pthPick" aria-labelledby="pthPickTitle">
+    <h2 id="pthPickTitle">帮我选一条</h2>
+    <p data-audience="parent">点两下就有结果：先点年龄，再点想玩的东西。推荐规则写死在本页，选完会说明为什么推荐这一条，并把那张路线卡圈出来。</p>
+    <p class="pth-pick-label" id="pthAgeLabel"><span aria-hidden="true">🎂</span>我几岁</p>
+    <div class="kid-tiles" id="pthAgeTiles" role="group" aria-labelledby="pthAgeLabel">
+      <button class="kid-tile" type="button" data-pth-age="4-6" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true">🐣</span>
+        <span class="kid-tile-label">4–6 岁</span>
+      </button>
+      <button class="kid-tile" type="button" data-pth-age="7-9" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true">🐬</span>
+        <span class="kid-tile-label">7–9 岁</span>
+      </button>
+      <button class="kid-tile" type="button" data-pth-age="10-12" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true">🦉</span>
+        <span class="kid-tile-label">10–12 岁</span>
+      </button>
+    </div>
+    <p class="pth-pick-label" id="pthLikeLabel"><span aria-hidden="true">✨</span>我想玩什么</p>
+    <div class="kid-tiles" id="pthLikeTiles" role="group" aria-labelledby="pthLikeLabel">
+      <button class="kid-tile" type="button" data-pth-like="num" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true">🔢</span>
+        <span class="kid-tile-label">数</span>
+      </button>
+      <button class="kid-tile" type="button" data-pth-like="shape" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true">🔷</span>
+        <span class="kid-tile-label">形状</span>
+      </button>
+      <button class="kid-tile" type="button" data-pth-like="hand" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true">🔨</span>
+        <span class="kid-tile-label">动手做</span>
+      </button>
+      <button class="kid-tile" type="button" data-pth-like="nature" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true">🐞</span>
+        <span class="kid-tile-label">自然</span>
+      </button>
+    </div>
+    <div class="kid-speech-row pth-pick-say">
+      <span class="kid-mascot" aria-hidden="true">🦉</span>
+      <p class="kid-speech" id="pthSay" role="status" aria-live="polite">先点「我几岁」，再点「我想玩什么」。</p>
+    </div>
+  </section>
+
+  <section class="pth-roads" id="pthRoads" aria-labelledby="pthRoadsTitle">
+    <h2 id="pthRoadsTitle">四条路，长得不一样</h2>
+    <p data-audience="parent">每条路的站点取自本站探索目录，圆点数量就是这条路的关卡数：实心带对勾的是已完成的站点，虚线空心圈是还没走到的。完成状态只读取本机记录，不写入。</p>
+    <div class="pth-grid">
+
+      <article class="card pth-card" data-pth-card="4-6" style="--card-tone: var(--math)" aria-labelledby="pthName1">
+        <h3 class="pth-name" id="pthName1"><span class="pth-name-art" aria-hidden="true">🧱</span>玩数量</h3>
+        <p class="pth-age">4–6 岁 · 第一条路</p>
+        <div class="pth-road-box" id="pthRoadBox1"></div>
+        <div class="kid-meter">
+          <div class="kid-meter-head"><span class="kid-meter-icon" aria-hidden="true">🚶</span><span id="pthMeterLabel1">走到第几站了</span><span class="kid-meter-value" id="pthMeterValue1">0 / 0</span></div>
+          <div class="kid-meter-track" id="pthMeterTrack1" role="img" aria-labelledby="pthMeterLabel1 pthMeterValue1"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note" id="pthMeterNote1">正在数</p>
+        </div>
+        <button class="btn btn-ghost pth-go" type="button" data-pth-open="4-6">看这条路的每一站</button>
+      </article>
+
+      <article class="card pth-card" data-pth-card="6-8" style="--card-tone: var(--sci)" aria-labelledby="pthName2">
+        <h3 class="pth-name" id="pthName2"><span class="pth-name-art" aria-hidden="true">🧩</span>画关系</h3>
+        <p class="pth-age">6–8 岁 · 第二条路</p>
+        <div class="pth-road-box" id="pthRoadBox2"></div>
+        <div class="kid-meter">
+          <div class="kid-meter-head"><span class="kid-meter-icon" aria-hidden="true">🚶</span><span id="pthMeterLabel2">走到第几站了</span><span class="kid-meter-value" id="pthMeterValue2">0 / 0</span></div>
+          <div class="kid-meter-track" id="pthMeterTrack2" role="img" aria-labelledby="pthMeterLabel2 pthMeterValue2"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note" id="pthMeterNote2">正在数</p>
+        </div>
+        <button class="btn btn-ghost pth-go" type="button" data-pth-open="6-8">看这条路的每一站</button>
+      </article>
+
+      <article class="card pth-card" data-pth-card="8-10" style="--card-tone: var(--phys)" aria-labelledby="pthName3">
+        <h3 class="pth-name" id="pthName3"><span class="pth-name-art" aria-hidden="true">🔎</span>找办法</h3>
+        <p class="pth-age">8–10 岁 · 第三条路</p>
+        <div class="pth-road-box" id="pthRoadBox3"></div>
+        <div class="kid-meter">
+          <div class="kid-meter-head"><span class="kid-meter-icon" aria-hidden="true">🚶</span><span id="pthMeterLabel3">走到第几站了</span><span class="kid-meter-value" id="pthMeterValue3">0 / 0</span></div>
+          <div class="kid-meter-track" id="pthMeterTrack3" role="img" aria-labelledby="pthMeterLabel3 pthMeterValue3"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note" id="pthMeterNote3">正在数</p>
+        </div>
+        <button class="btn btn-ghost pth-go" type="button" data-pth-open="8-10">看这条路的每一站</button>
+      </article>
+
+      <article class="card pth-card" data-pth-card="10-12" style="--card-tone: var(--code)" aria-labelledby="pthName4">
+        <h3 class="pth-name" id="pthName4"><span class="pth-name-art" aria-hidden="true">💡</span>讲理由</h3>
+        <p class="pth-age">10–12 岁 · 第四条路</p>
+        <div class="pth-road-box" id="pthRoadBox4"></div>
+        <div class="kid-meter">
+          <div class="kid-meter-head"><span class="kid-meter-icon" aria-hidden="true">🚶</span><span id="pthMeterLabel4">走到第几站了</span><span class="kid-meter-value" id="pthMeterValue4">0 / 0</span></div>
+          <div class="kid-meter-track" id="pthMeterTrack4" role="img" aria-labelledby="pthMeterLabel4 pthMeterValue4"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note" id="pthMeterNote4">正在数</p>
+        </div>
+        <button class="btn btn-ghost pth-go" type="button" data-pth-open="10-12">看这条路的每一站</button>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="card trail-card" id="trail" aria-labelledby="trailTitle">
+    <h2 id="trailTitle"><span data-audience="kid-only">闯关地图</span><span data-audience="parent">图形化闯关地图（孩子入口）</span></h2>
+    <p data-audience="parent">下面这张地图是给孩子看的入口：点一个大图标选路线，地图按本站探索目录生成 5 站，已收集到收藏卡的站点显示为已通关。它只读取收藏卡记录，不会写入任何完成状态。</p>
+
+    <div class="route-hero">
+      <svg class="trail-art" viewBox="0 0 260 130" role="img" aria-labelledby="trailArtTitle" aria-describedby="trailArtDesc">
+        <title id="trailArtTitle">闯关地图的主题图</title>
+        <desc id="trailArtDesc">一条虚线小路从起点弯到终点的旗子，路上有伙伴和太阳。</desc>
+        <circle cx="228" cy="26" r="16" fill="#ffd98a" stroke="#c98a2a" stroke-width="3" />
+        <path d="M4 118 C60 118 44 74 96 74 C148 74 132 34 214 34" fill="none" stroke="#c9a06a" stroke-width="7" stroke-linecap="round" stroke-dasharray="2 13" />
+        <circle cx="12" cy="118" r="11" fill="#fff" stroke="#377866" stroke-width="3" />
+        <text x="96" y="66" font-size="30" text-anchor="middle" id="trailArtFace">🐱</text>
+        <text x="220" y="30" font-size="22" text-anchor="middle">🚩</text>
+      </svg>
+      <div>
+        <span class="route-name" id="routeName">🧱 玩数量</span>
+        <span class="route-sub" id="routeSub">4–6 岁</span>
+      </div>
+    </div>
+
+    <div class="kid-tiles route-tiles" role="group" aria-label="选一条路线">
+      <button class="kid-tile" type="button" data-plan-age="4-6" data-route-label="🧱 玩数量" aria-pressed="true">
+        <span class="kid-tile-art" aria-hidden="true">🧱</span>
+        <span class="kid-tile-label">玩数量</span>
+        <span class="kid-tile-sub">4–6 岁</span>
+      </button>
+      <button class="kid-tile" type="button" data-plan-age="6-8" data-route-label="🧩 画关系" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true">🧩</span>
+        <span class="kid-tile-label">画关系</span>
+        <span class="kid-tile-sub">6–8 岁</span>
+      </button>
+      <button class="kid-tile" type="button" data-plan-age="8-10" data-route-label="🔎 找办法" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true">🔎</span>
+        <span class="kid-tile-label">找办法</span>
+        <span class="kid-tile-sub">8–10 岁</span>
+      </button>
+      <button class="kid-tile" type="button" data-plan-age="10-12" data-route-label="💡 讲理由" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true">💡</span>
+        <span class="kid-tile-label">讲理由</span>
+        <span class="kid-tile-sub">10–12 岁</span>
+      </button>
+    </div>
+
+    <p class="trail-count" id="trailCount"><span class="count-art" aria-hidden="true">🏅</span><span id="trailCountText">收藏卡 0 / 5</span></p>
+    <div class="kid-result-card" id="pickCard" hidden>
+      <span aria-hidden="true" id="pickArt">🎲</span>
+      <div>
+        <b id="pickName">先摇一次</b>
+        <p id="pickHint">点下面的骰子</p>
+      </div>
+    </div>
+    <ol class="trail" id="trailList"></ol>
+    <p class="trail-empty" id="trailEmpty" hidden>这条路线还没有站点，换一个大图标试试。</p>
+    <p class="live-text" id="trailStatus" role="status" aria-live="polite"></p>
+    <div class="trail-tools">
+      <button class="kid-icon-btn" type="button" data-trail-jump><span class="kid-tile-art" aria-hidden="true">⭐</span> 现在玩</button>
+      <button class="kid-icon-btn" type="button" data-trail-dice><span class="kid-tile-art" aria-hidden="true">🎲</span> 摇一个</button>
+      <button class="kid-icon-btn" type="button" data-trail-shuffle><span class="kid-tile-art" aria-hidden="true">🔄</span> 换一批</button>
+    </div>
+  </section>
 
   <section class="card planner" id="planner" aria-labelledby="plannerTitle">
     <h2 id="plannerTitle">可打印探险周地图</h2>
@@ -284,7 +602,7 @@
       <div><label for="planDevice">设备条件</label><select class="input" id="planDevice" name="device"><option value="mixed">屏幕与动手都可以</option><option value="screen">有电脑 / 平板</option><option value="none">尽量不用屏幕</option></select></div>
     </div>
     <div class="row no-print" style="margin-top:14px"><button class="btn btn-primary" id="makePlan" type="button">生成并保存地图</button><button class="btn btn-ghost" id="printPlan" type="button">打印探险地图</button><span id="planMsg" role="status" aria-live="polite"></span></div>
-    <p class="map-note">每一站给出伙伴、任务与可获得的贴纸预告，但没有完成按钮，也不会因打开地图写入完成记录。</p>
+    <p class="map-note">每一站给出伙伴、任务与可获得的收藏卡预告，但没有完成按钮，也不会因打开地图写入完成记录。</p>
     <div class="plan-output" id="planOutput"><p>选择条件后生成探险地图。</p></div>
   </section>
 
@@ -747,18 +1065,252 @@
 </footer>
 
 <script src="../data/explorations.js"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>
 (function(){"use strict";var key="kids-stem:weekly-plan:v1",age=document.getElementById("planAge"),time=document.getElementById("planTime"),interest=document.getElementById("planInterest"),device=document.getElementById("planDevice"),out=document.getElementById("planOutput"),msg=document.getElementById("planMsg");
 function read(){try{return JSON.parse(localStorage.getItem(key)||"null");}catch(e){return null;}}function write(v){try{localStorage.setItem(key,JSON.stringify(v));return true;}catch(e){return false;}}
 function range(text){var n=String(text).match(/\d+/g)||[];return[Number(n[0]||0),Number(n[1]||n[0]||99)];}function candidates(){var band=range(age.value),list=(window.EXPLORATIONS||[]).filter(function(x){var r=range(x.age);return x.ready&&r[0]<=band[1]&&r[1]>=band[0];});if(interest.value==="nature")list=list.filter(function(x){return x.type==="nature";});else if(interest.value!=="all")list=list.filter(function(x){return x.subject===interest.value;});if(device.value==="none")list=list.filter(function(x){return x.type==="nature";});return list.length?list:(window.EXPLORATIONS||[]).filter(function(x){return x.ready;});}
-function render(plan){out.textContent="";var h=document.createElement("h3");h.textContent="本周探险地图 · "+plan.age.replace("-","–")+" 岁 · 共约 "+plan.minutes+" 分钟";out.appendChild(h);var ul=document.createElement("ol");ul.className="task-map";plan.items.forEach(function(v,i){var li=document.createElement("li"),b=document.createElement("b"),span=document.createElement("span"),a=document.createElement("a"),cfg=window.PLAYFUL&&PLAYFUL.pages&&PLAYFUL.pages[v.id],friend=window.Playful&&Playful.companion(v.id);li.className="task-map-step";b.textContent="第 "+(i+1)+" 站 · "+v.minutes+" 分钟";a.href="../"+v.id;a.textContent=v.title;span.textContent=(friend?friend.emoji+" "+friend.name+"陪你 · ":"")+"任务："+v.task+(cfg&&cfg.sticker?" · 贴纸预告："+cfg.sticker.emoji+cfg.sticker.label:"");li.appendChild(b);li.appendChild(a);li.appendChild(document.createElement("br"));li.appendChild(span);ul.appendChild(li);});out.appendChild(ul);}
+function render(plan){out.textContent="";var h=document.createElement("h3");h.textContent="本周探险地图 · "+plan.age.replace("-","–")+" 岁 · 共约 "+plan.minutes+" 分钟";out.appendChild(h);var ul=document.createElement("ol");ul.className="task-map";plan.items.forEach(function(v,i){var li=document.createElement("li"),b=document.createElement("b"),span=document.createElement("span"),a=document.createElement("a"),cfg=window.PLAYFUL&&PLAYFUL.pages&&PLAYFUL.pages[v.id],friend=window.Playful&&Playful.companion(v.id);li.className="task-map-step";b.textContent="第 "+(i+1)+" 站 · "+v.minutes+" 分钟";a.href="../"+v.id;a.textContent=v.title;span.textContent=(friend?friend.emoji+" "+friend.name+"陪你 · ":"")+"任务："+v.task+(cfg&&cfg.sticker?" · 收藏卡预告："+cfg.sticker.emoji+cfg.sticker.label:"");li.appendChild(b);li.appendChild(a);li.appendChild(document.createElement("br"));li.appendChild(span);ul.appendChild(li);});out.appendChild(ul);}
 function make(){var list=candidates(),minutes=Number(time.value),sessions=minutes<=60?3:minutes<=120?4:6,each=Math.max(15,Math.round(minutes/sessions)),items=[];for(var i=0;i<sessions;i++){var x=list[i%list.length];items.push({id:x.id,title:x.title,task:x.task,minutes:each});}var plan={minutes:each*sessions,age:age.value,time:time.value,interest:interest.value,device:device.value,items:items,savedAt:new Date().toISOString()};render(plan);msg.textContent=write(plan)?"探险地图已保存在本机；未产生任何完成记录":"地图已生成，但浏览器不允许保存；未产生任何完成记录";}
-Array.prototype.slice.call(document.querySelectorAll("[data-plan-age]")).forEach(function(route){route.addEventListener("click",function(){age.value=route.dataset.planAge;make();});});document.getElementById("makePlan").addEventListener("click",make);document.getElementById("printPlan").addEventListener("click",function(){document.body.classList.add("print-plan");window.print();});window.addEventListener("afterprint",function(){document.body.classList.remove("print-plan");});var saved=read();if(saved&&saved.items){age.value=saved.age||"4-6";time.value=saved.time||"60";interest.value=saved.interest||"all";device.value=saved.device||"mixed";render(saved);msg.textContent="已恢复上次保存的计划";}
+Array.prototype.slice.call(document.querySelectorAll(".route-tiles [data-plan-age]")).forEach(function(route){route.addEventListener("click",function(){age.value=route.dataset.planAge;make();});});document.getElementById("makePlan").addEventListener("click",make);document.getElementById("printPlan").addEventListener("click",function(){document.body.classList.add("print-plan");window.print();});window.addEventListener("afterprint",function(){document.body.classList.remove("print-plan");});var saved=read();if(saved&&saved.items){age.value=saved.age||"4-6";time.value=saved.time||"60";interest.value=saved.interest||"all";device.value=saved.device||"mixed";render(saved);msg.textContent="已恢复上次保存的计划";}
+})();
+(function(){"use strict";
+var tiles=Array.prototype.slice.call(document.querySelectorAll(".route-tiles [data-plan-age]"));
+if(!tiles.length)return;
+var listEl=document.getElementById("trailList"),emptyEl=document.getElementById("trailEmpty"),statusEl=document.getElementById("trailStatus"),countText=document.getElementById("trailCountText"),routeName=document.getElementById("routeName"),routeSub=document.getElementById("routeSub"),artFace=document.getElementById("trailArtFace"),pickCard=document.getElementById("pickCard"),pickArt=document.getElementById("pickArt"),pickName=document.getElementById("pickName"),pickHint=document.getElementById("pickHint");
+var faces={"4-6":"🐱","6-8":"🐳","8-10":"🦊","10-12":"🐰"},STEPS=5,offset=0,current="4-6",stops=[],nextIndex=-1;
+function say(text){statusEl.textContent=text;}
+function band(text){var n=String(text).match(/\d+/g)||[];return[Number(n[0]||0),Number(n[1]||n[0]||99)];}
+function unlockedMap(){var map={};if(window.Progress&&Progress.getCards){Progress.getCards().forEach(function(c){if(c.unlocked)map[c.pageId]=true;});}return map;}
+function pool(){var b=band(current),all=(window.EXPLORATIONS||[]).filter(function(x){return x.ready;}),hit=all.filter(function(x){var r=band(x.age);return r[0]<=b[1]&&r[1]>=b[0];});return hit.length?hit:all;}
+function stopArt(x){var cfg=window.PLAYFUL&&PLAYFUL.pages&&PLAYFUL.pages[x.id];return(cfg&&cfg.sticker&&cfg.sticker.emoji)||x.icon||"⭐";}
+function flag(state){if(state==="done")return["🏅","收好了"];if(state==="next")return["⭐","现在玩"];return["🌱","没玩过"];}
+function render(){
+  var p=pool(),i;stops=[];for(i=0;i<STEPS&&p.length;i++){stops.push(p[(i+offset)%p.length]);}
+  var done=unlockedMap(),count=0;nextIndex=-1;
+  for(i=0;i<stops.length;i++){if(done[stops[i].id])count++;else if(nextIndex<0)nextIndex=i;}
+  listEl.textContent="";
+  stops.forEach(function(x,idx){
+    var li=document.createElement("li"),a=document.createElement("a"),mark=document.createElement("span"),body=document.createElement("span"),name=document.createElement("span"),friend=document.createElement("span"),task=document.createElement("span"),fl=document.createElement("span"),fa=document.createElement("span"),ft=document.createElement("span");
+    var state=done[x.id]?"done":(idx===nextIndex?"next":"soon"),pal=flag(state),mate=window.Playful&&Playful.companion?Playful.companion(x.id):null;
+    a.className="trail-step";a.href="../"+x.id;a.setAttribute("data-state",state);
+    mark.className="trail-mark";mark.setAttribute("aria-hidden","true");mark.textContent=stopArt(x);
+    name.className="trail-name";name.textContent="第 "+(idx+1)+" 站 · "+x.title;
+    friend.className="trail-friend";friend.textContent=mate?mate.emoji+" "+mate.name:"⭐ 一起玩";
+    task.className="trail-task";task.setAttribute("data-audience","parent");task.textContent="任务："+x.task;
+    fl.className="trail-flag";fa.className="flag-art";fa.setAttribute("aria-hidden","true");fa.textContent=pal[0];ft.textContent=pal[1];
+    fl.appendChild(fa);fl.appendChild(ft);
+    body.className="trail-body";body.appendChild(name);body.appendChild(friend);body.appendChild(task);
+    a.appendChild(mark);a.appendChild(body);a.appendChild(fl);
+    a.setAttribute("aria-label","第 "+(idx+1)+" 站 "+x.title+"，"+pal[1]);
+    li.appendChild(a);listEl.appendChild(li);
+  });
+  emptyEl.hidden=stops.length>0;
+  countText.textContent="收藏卡 "+count+" / "+stops.length;
+  var tile=null;tiles.forEach(function(t){if(t.dataset.planAge===current)tile=t;});
+  routeName.textContent=tile?tile.dataset.routeLabel:"🧱 玩数量";
+  routeSub.textContent=current.replace("-","–")+" 岁";
+  artFace.textContent=faces[current]||"🐱";
+}
+function choose(value){current=value;offset=0;
+  tiles.forEach(function(t){t.setAttribute("aria-pressed",t.dataset.planAge===value?"true":"false");});
+  pickCard.hidden=true;render();
+  say("路线：" + (routeName.textContent||value) + "，共 " + stops.length + " 站");
+}
+tiles.forEach(function(t){t.addEventListener("click",function(){choose(t.dataset.planAge);});});
+var jump=document.querySelector("[data-trail-jump]");
+if(jump)jump.addEventListener("click",function(){
+  if(!stops.length){say("还没有站点");return;}
+  var idx=nextIndex<0?0:nextIndex,target=listEl.querySelectorAll(".trail-step")[idx];
+  if(!target){say("还没有站点");return;}
+  say("去玩：" + stops[idx].title);target.focus();window.location.href=target.getAttribute("href");
+});
+var dice=document.querySelector("[data-trail-dice]");
+if(dice)dice.addEventListener("click",function(){
+  if(!stops.length){say("还没有站点");return;}
+  var idx=Math.floor(Math.random()*stops.length),x=stops[idx],steps=listEl.querySelectorAll(".trail-step");
+  Array.prototype.forEach.call(steps,function(s,i){if(i===idx)s.classList.add("is-pick");else s.classList.remove("is-pick");});
+  pickCard.hidden=false;pickArt.textContent=stopArt(x);pickName.textContent=x.title;pickHint.textContent="第 "+(idx+1)+" 站";
+  if(steps[idx])steps[idx].focus();
+  say("摇到：" + x.title);
+});
+var shuffle=document.querySelector("[data-trail-shuffle]");
+if(shuffle)shuffle.addEventListener("click",function(){
+  var p=pool();if(!p.length){say("还没有站点");return;}
+  offset=(offset+STEPS)%p.length;pickCard.hidden=true;render();say("换了一批，共 "+stops.length+" 站");
+});
+window.addEventListener("kids-stem:progress",render);
+choose(current);say("");
+})();
+(function(){"use strict";
+/* ---- 本页专属：每条路的路线插画 + 进度量表 + 「帮我选一条」 ----
+   画法照 nature/index.html 的 scene(x)：createElementNS 生成 SVG，
+   取色类写在本页 <style> 里，跟着卡片的 --card-tone 走，SVG 属性不写死颜色。 */
+var NS="http://www.w3.org/2000/svg";
+function sv(name,attrs){var n=document.createElementNS(NS,name);if(attrs)Object.keys(attrs).forEach(function(k){n.setAttribute(k,attrs[k]);});return n;}
+/* 四条路：关卡数写死在这里，年龄越大一条路上的站点越多。 */
+var PATHS=[
+  {n:1,key:"4-6",art:"🧱",name:"玩数量",age:"4–6 岁",steps:4},
+  {n:2,key:"6-8",art:"🧩",name:"画关系",age:"6–8 岁",steps:5},
+  {n:3,key:"8-10",art:"🔎",name:"找办法",age:"8–10 岁",steps:5},
+  {n:4,key:"10-12",art:"💡",name:"讲理由",age:"10–12 岁",steps:6}
+];
+function band(text){var m=String(text).match(/\d+/g)||[];return[Number(m[0]||0),Number(m[1]||m[0]||99)];}
+function stopsFor(p){
+  var b=band(p.key),all=(window.EXPLORATIONS||[]).filter(function(x){return x.ready;});
+  var hit=all.filter(function(x){var r=band(x.age);return r[0]<=b[1]&&r[1]>=b[0];});
+  var use=hit.length?hit:all,out=[],i;
+  for(i=0;i<p.steps;i++)out.push(use.length?use[i%use.length]:null);
+  return out;
+}
+/* 完成状态只读：读不到 Progress 就全部当未完成，不抛错。 */
+function isDone(x){
+  if(!x||!x.id)return false;
+  try{ if(window.Progress&&typeof Progress.getCompletion==="function")return !!Progress.getCompletion(x.id); }catch(e){}
+  return false;
+}
+/* 小路的参数方程：一条从左下弯到右上的曲线，站点就落在这条线上。 */
+function at(t){return[26+t*248,108-t*70+Math.sin(t*Math.PI*2)*11];}
+function roadPath(){var d="",i,pt;for(i=0;i<=48;i++){pt=at(i/48);d+=(i?" L ":"M ")+pt[0].toFixed(1)+" "+pt[1].toFixed(1);}return d;}
+function num(v){return Number(v).toFixed(1);}
+function drawRoad(box,p,flags){
+  var total=flags.length,got=0,i,t,pt;
+  for(i=0;i<total;i++)if(flags[i])got++;
+  box.textContent="";
+  var titleId="pthRoadTitle"+p.n,descId="pthRoadDesc"+p.n;
+  var s=sv("svg",{viewBox:"0 0 300 140","class":"pth-scene",role:"img",focusable:"false"});
+  s.setAttribute("aria-labelledby",titleId+" "+descId);
+  var title=sv("title",{id:titleId});title.textContent=p.name+"这条路的路线图";
+  var desc=sv("desc",{id:descId});
+  desc.textContent="一条弯弯的小路从起点的小旗子通到终点的奖杯。路上有 "+total+" 个站点，已经走过 "+got+" 个（实心带对勾），还没走到的 "+(total-got)+" 个是虚线空心圈。";
+  s.appendChild(title);s.appendChild(desc);
+  s.appendChild(sv("rect",{"class":"pth-sky",x:"0",y:"0",width:"300",height:"140"}));
+  s.appendChild(sv("path",{"class":"pth-hill",d:"M-6 140 Q66 96 152 122 T306 104 L306 140 Z"}));
+  s.appendChild(sv("path",{"class":"pth-road",d:roadPath()}));
+  /* 起点：一面小旗子 */
+  var a=at(0),g=sv("g",{"class":"pth-flag"});
+  g.appendChild(sv("path",{fill:"none",d:"M "+num(a[0])+" "+num(a[1]+8)+" L "+num(a[0])+" "+num(a[1]-22)}));
+  g.appendChild(sv("path",{d:"M "+num(a[0])+" "+num(a[1]-22)+" L "+num(a[0]+17)+" "+num(a[1]-16)+" L "+num(a[0])+" "+num(a[1]-10)+" Z"}));
+  s.appendChild(g);
+  /* 站点：已完成实心加对勾，未完成空心虚线圈 */
+  for(i=0;i<total;i++){
+    t=(i+1)/(total+1);pt=at(t);
+    if(flags[i]){
+      s.appendChild(sv("circle",{"class":"pth-stop-done",cx:num(pt[0]),cy:num(pt[1]),r:"9"}));
+      s.appendChild(sv("path",{"class":"pth-check",fill:"none",d:"M "+num(pt[0]-4.2)+" "+num(pt[1]+0.2)+" L "+num(pt[0]-1)+" "+num(pt[1]+3.6)+" L "+num(pt[0]+4.6)+" "+num(pt[1]-3.8)}));
+    } else {
+      s.appendChild(sv("circle",{"class":"pth-stop",cx:num(pt[0]),cy:num(pt[1]),r:"8.5"}));
+    }
+  }
+  /* 终点：一个奖杯 */
+  var b=at(1),bx=b[0],by=b[1],cup=sv("g",{"class":"pth-goal"});
+  cup.appendChild(sv("path",{d:"M "+num(bx-11)+" "+num(by-16)+" H "+num(bx+11)+" V "+num(by-6)+" A 11 11 0 0 1 "+num(bx-11)+" "+num(by-6)+" Z"}));
+  cup.appendChild(sv("path",{fill:"none",d:"M "+num(bx-11)+" "+num(by-14)+" A 6 6 0 0 0 "+num(bx-11)+" "+num(by-3)}));
+  cup.appendChild(sv("path",{fill:"none",d:"M "+num(bx+11)+" "+num(by-14)+" A 6 6 0 0 1 "+num(bx+11)+" "+num(by-3)}));
+  cup.appendChild(sv("path",{fill:"none",d:"M "+num(bx)+" "+num(by+5)+" L "+num(bx)+" "+num(by+12)}));
+  cup.appendChild(sv("path",{fill:"none",d:"M "+num(bx-8)+" "+num(by+12)+" H "+num(bx+8)}));
+  s.appendChild(cup);
+  box.appendChild(s);
+}
+/* 量表：共享层没加载时做本地回退，只改 --fill。 */
+function meter(track,value,max){
+  if(window.Playful&&typeof Playful.setMeter==="function")return Playful.setMeter(track,value,max);
+  if(!track)return 0;
+  var top=Number(max);if(!isFinite(top)||top<=0)top=1;
+  var ratio=Number(value)/top;if(!isFinite(ratio))ratio=0;
+  ratio=Math.max(0,Math.min(1,ratio));
+  var fill=track.querySelector(".kid-meter-fill");
+  if(fill)fill.style.setProperty("--fill",(ratio*100).toFixed(1)+"%");
+  return ratio;
+}
+function render(){
+  PATHS.forEach(function(p){
+    var box=document.getElementById("pthRoadBox"+p.n);
+    if(!box)return;
+    var flags=stopsFor(p).map(isDone),total=flags.length,got=0;
+    flags.forEach(function(v){if(v)got++;});
+    drawRoad(box,p,flags);
+    var value=document.getElementById("pthMeterValue"+p.n),
+        track=document.getElementById("pthMeterTrack"+p.n),
+        note=document.getElementById("pthMeterNote"+p.n);
+    if(value)value.textContent=got+" / "+total+" 站";
+    meter(track,got,total);
+    if(note)note.textContent=(total&&got>=total)?"这条路走完了 🎉":"还剩 "+(total-got)+" 站";
+  });
+}
+/* 「帮我选一条」的规则写死在这里，每一格都带一句「为什么推荐这条」。 */
+var REC={
+  "4-6":{
+    num:[1,"4–6 岁先把数量玩熟。这条路每一站都能用积木和豆子数得着，不用写字。"],
+    shape:[1,"这条路上的形状都是用手摆出来、拼出来的，正好是 4–6 岁的玩法。"],
+    hand:[1,"这条路一站一站都在动手摆东西，是四条路里最靠手的一条。"],
+    nature:[1,"先在这条路上把「数一数、比多少」玩顺，之后看虫子看星星就更会数了。"]
+  },
+  "7-9":{
+    num:[2,"7–9 岁正从「摆出来」走到「画出来」。这条路教你把数量画成一条一条，看得见谁比谁多。"],
+    shape:[2,"这条路把形状和图当同一件事：先学会把想法画下来，再算。"],
+    hand:[3,"这条路每一站都是先猜、再动手试。喜欢动手的人在这里最占便宜。"],
+    nature:[3,"这条路练「只改一个条件再试一次」，看天气、看虫子刚好要用这一招。"]
+  },
+  "10-12":{
+    num:[4,"10–12 岁可以开始问「所有数都成立吗」。这条路专门练把理由讲清楚。"],
+    shape:[4,"这条路带你从「看出来是对的」走到「说清为什么一定对」。"],
+    hand:[3,"先走这条路：它的关卡要搭、要测、要改一个条件再试，动手的部分最多。"],
+    nature:[4,"这条路教你用数据说话——记下来、画成图、再解释，观察自然正好需要这个。"]
+  }
+};
+var pickedAge="",pickedLike="",say=document.getElementById("pthSay");
+var ageTiles=Array.prototype.slice.call(document.querySelectorAll("#pthAgeTiles [data-pth-age]")),
+    likeTiles=Array.prototype.slice.call(document.querySelectorAll("#pthLikeTiles [data-pth-like]"));
+function pathByNumber(n){var found=null;PATHS.forEach(function(x){if(x.n===n)found=x;});return found;}
+function suggest(){
+  if(!say)return;
+  if(!pickedAge||!pickedLike){
+    say.textContent=pickedAge?"再点一个「我想玩什么」。":"先点「我几岁」，再点「我想玩什么」。";
+    return;
+  }
+  var rule=(REC[pickedAge]||{})[pickedLike];
+  if(!rule)return;
+  var p=pathByNumber(rule[0]);
+  if(!p)return;
+  say.textContent="";
+  var head=document.createElement("b");
+  head.textContent="给你这条：" + p.art + " " + p.name + "（" + p.age + "）";
+  var why=document.createElement("span");
+  why.className="pth-why";
+  why.textContent="为什么推荐这条：" + rule[1];
+  say.appendChild(head);say.appendChild(why);
+  Array.prototype.forEach.call(document.querySelectorAll("[data-pth-card][data-picked]"),function(node){node.removeAttribute("data-picked");});
+  var card=document.querySelector('[data-pth-card="'+p.key+'"]');
+  if(card){card.setAttribute("data-picked","true");card.scrollIntoView({block:"center"});}
+}
+function bind(tiles,attr,set){
+  tiles.forEach(function(tile){
+    tile.addEventListener("click",function(){
+      set(tile.getAttribute(attr));
+      tiles.forEach(function(other){other.setAttribute("aria-pressed",other===tile?"true":"false");});
+      suggest();
+    });
+  });
+}
+bind(ageTiles,"data-pth-age",function(v){pickedAge=v;});
+bind(likeTiles,"data-pth-like",function(v){pickedLike=v;});
+/* 「看这条路的每一站」：复用下面闯关地图已有的路线按钮，不另写一套渲染。 */
+Array.prototype.forEach.call(document.querySelectorAll("[data-pth-open]"),function(btn){
+  btn.addEventListener("click",function(){
+    var key=btn.getAttribute("data-pth-open"),
+        tile=document.querySelector('.route-tiles [data-plan-age="'+key+'"]'),
+        trail=document.getElementById("trail");
+    if(tile)tile.click();
+    if(trail)trail.scrollIntoView({block:"start"});
+  });
+});
+window.addEventListener("kids-stem:progress",render);
+render();
 })();
 </script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>海底世界 · 一万米下潜 | 少儿数理启蒙</title>
 <meta name="description" content="从海面一直沉到马里亚纳海沟：光在哪一层消失、压力有多大、谁住在那里。含压强计算器与真实海洋生物照片。">
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#0b0f1a">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .hero { padding: 28px 0 20px; }
@@ -65,23 +65,31 @@
     border-bottom: 1px solid rgba(255,255,255,.06);
   }
   .zone:last-child { border-bottom: 0; }
+  /* 分区文字统一用不透明浅色。
+     每个分区的底色是 JS 设的深度渐变，从阳光层的 #38bdf8 一路到超深渊层的 #05070f，
+     单个分区内部就横跨「亮蓝 → 近黑」，所以任何单一文字色都会在其中一段读不出来：
+     原先 h3 没有 color、继承深色 --ink，在深层分区上几乎不可见；而 .zone p 的
+     rgba(255,255,255,.76) 在阳光层上只有 2.77:1。
+     解决办法是 JS 在渐变之上再叠一层固定深色蒙版（见 ZONES 渲染处），
+     把所有分区的底色压到同一个可读区间，这里就可以放心用不透明浅色。
+     最暗的一档 #b8cce4 在最亮的底色上仍有 4.51:1。 */
   .zone-hd { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .zone-hd h3 { margin: 0; font-size: 1.08rem; }
+  .zone-hd h3 { margin: 0; font-size: 1.08rem; color: #fff; }
   .zone-hd .en {
     font-family: var(--mono); font-size: .7rem; letter-spacing: .06em;
-    color: rgba(255,255,255,.5); text-transform: uppercase;
+    color: #b8cce4; text-transform: uppercase;
   }
   .zone-depth {
     margin-left: auto; font-family: var(--mono); font-size: .78rem;
-    font-weight: 700; color: rgba(255,255,255,.82);
+    font-weight: 700; color: #e8f2ff;
   }
-  .zone p { margin: 8px 0 0; font-size: .89rem; color: rgba(255,255,255,.76); max-width: 68ch; }
+  .zone p { margin: 8px 0 0; font-size: .89rem; color: #dce8f7; max-width: 68ch; }
   .zone .lightbar {
     height: 5px; border-radius: 3px; margin-top: 12px;
     border: 1px solid rgba(255,255,255,.14);
   }
   .zone .lightnote {
-    font-size: .74rem; color: rgba(255,255,255,.6); margin-top: 5px;
+    font-size: .74rem; color: #c3d6ea; margin-top: 5px;
     font-family: var(--mono);
   }
   .zone .who {
@@ -89,8 +97,8 @@
   }
   .zone .who span {
     font-size: .74rem; padding: 3px 9px; border-radius: 999px;
-    background: rgba(255,255,255,.1); color: rgba(255,255,255,.85);
-    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.16); color: #fff;
+    border: 1px solid rgba(255,255,255,.34);
   }
 
   /* ---------- 深度标尺 ---------- */
@@ -210,8 +218,347 @@
   .principle { border-left: 3px solid var(--phys); padding-left: 12px; color: var(--ink-mid); }
   .parent-q li + li { margin-top: 7px; }
   button, input, select, textarea, [role="button"] { min-height: 44px; }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
 
+  /* ---------- 分层解释 · 这在教什么 · 追问 ---------- */
+  .age-tiers { display: grid; grid-template-columns: repeat(auto-fit,minmax(205px,1fr)); gap: 10px; margin: 12px 0 0; }
+  .age-tier { min-width: 0; padding: 12px 14px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--bg-soft); }
+  .age-tier b { display: block; margin-bottom: 5px; font-size: .73rem; letter-spacing: .05em; }
+  .age-tier p { margin: 0; color: var(--ink-mid); font-size: .86rem; line-height: 1.52; }
+  .tier-kid { border-color: rgba(74,222,128,.42); } .tier-kid b { color: var(--sci); }
+  .tier-mid { border-color: rgba(110,168,254,.42); } .tier-mid b { color: var(--math); }
+  .tier-adv { border-color: rgba(167,139,250,.42); } .tier-adv b { color: var(--phys); }
+  .teach-note { margin: 10px 0 0; padding: 11px 13px; border-left: 3px solid var(--sci); background: var(--bg-soft); color: var(--ink-mid); font-size: .88rem; line-height: 1.55; }
+  .teach-note b { color: var(--sci); }
+  .ask-list { margin: 12px 0 0; padding-left: 19px; color: var(--ink-mid); font-size: .88rem; }
+  .ask-list li + li { margin-top: 6px; }
+  .parent-note { margin: 14px 0 0; padding: 12px 14px; border: 1px dashed rgba(167,139,250,.45); border-radius: var(--r); background: rgba(167,139,250,.07); color: var(--ink-mid); font-size: .87rem; line-height: 1.55; }
+  .parent-note b { color: var(--phys); }
+  .lab-card { padding: 18px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .info-result { min-height: 64px; margin-top: 10px; padding: 11px 13px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--bg-soft); color: var(--ink); font-size: .86rem; line-height: 1.5; }
+  .info-result b { color: var(--video); }
+  .diagram { display: block; width: 100%; height: auto; margin-top: 12px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--surface-2); }
+  /* .diagram 的底色是 var(--surface-2)，浅色/孩子模式下是浅灰或奶油色；
+     但图里的标签和箭头还是当年为暗底写的浅色系（#e2e8f0 / #7dd3fc / #a7f3d0 …），
+     在浅底上标签只有 1.11–1.62:1、箭头约 1.5:1，等于整张图是空的。
+     这里把这些写死的浅色映射到会随主题走的 token 上：CSS 的优先级高于 SVG 的
+     presentation attribute，所以不必改动 28 处 markup。
+     只作用于 .diagram —— .light-svg 是深色渐变底，它里面的浅色文字是对的。 */
+  .diagram [fill="#e2e8f0"] { fill: var(--ink); }
+  .diagram [fill="#bfdbfe"] { fill: var(--ink-mid); }
+  .diagram [fill="#93c5fd"] { fill: var(--math); }
+  .diagram [fill="#7dd3fc"] { fill: var(--video); }
+  .diagram [fill="#a7f3d0"] { fill: var(--sci); }
+  .diagram [fill="#fde68a"] { fill: var(--warn); }
+  .diagram [stroke="#7dd3fc"] { stroke: var(--video); }
+  .diagram [stroke="#a7f3d0"] { stroke: var(--sci); }
+
+  /* ---------- 任务快捷答案 ---------- */
+  .quick-picks { display: grid; grid-template-columns: repeat(auto-fit,minmax(148px,1fr)); gap: 8px; margin: 9px 0; }
+  .quick-picks .kid-choice { min-width: 0; min-height: 48px; padding: 8px 10px; border: 2px solid var(--line); border-radius: 13px; background: var(--bg-soft); color: var(--ink); font-weight: 800; font-size: .84rem; cursor: pointer; }
+  .quick-picks .kid-choice[aria-pressed="true"] { border-color: var(--video); box-shadow: 0 0 0 2px rgba(34,211,238,.28); }
+  .mission-step textarea[data-audience="parent"] { min-height: 58px; }
+  .child-hint { margin: 6px 0 0; color: var(--ink-dim); font-size: .76rem; }
+
+  /* ---------- 五层海：层内分层解释 ---------- */
+  .zone-tiers { display: grid; grid-template-columns: repeat(auto-fit,minmax(198px,1fr)); gap: 8px; margin-top: 11px; }
+  .zone-tier { min-width: 0; padding: 9px 11px; border: 1px solid rgba(255,255,255,.18); border-radius: var(--r-sm); background: rgba(5,15,35,.34); }
+  .zone-tier b { display: block; margin-bottom: 3px; color: #fff; font-size: .7rem; letter-spacing: .05em; }
+  .zone-tier span { color: rgba(255,255,255,.84); font-size: .8rem; line-height: 1.45; }
+
+  /* ---------- 颜色实验室 ---------- */
+  .light-svg { display: block; width: 100%; height: auto; border-radius: var(--r); background: linear-gradient(180deg,#7dd3fc 0 7%,#0284c7 7% 32%,#1e3a8a 32% 66%,#050f22 66%); }
+  .lbeam { opacity: .3; transition: opacity .18s ease; }
+  .light-lab[data-light="red"] .lbeam-red,
+  .light-lab[data-light="orange"] .lbeam-orange,
+  .light-lab[data-light="yellow"] .lbeam-yellow,
+  .light-lab[data-light="green"] .lbeam-green,
+  .light-lab[data-light="blue"] .lbeam-blue { opacity: 1; }
+
+  /* ---------- 潜水器与鲸：部件高亮 ---------- */
+  .dpart { opacity: .35; transition: opacity .18s ease; }
+  .sub-cut[data-part="ballast"] .dpart-ballast,
+  .sub-cut[data-part="sphere"] .dpart-sphere,
+  .sub-cut[data-part="foam"] .dpart-foam,
+  .whale-cut[data-phase="breathe"] .dpart-breathe,
+  .whale-cut[data-phase="dive"] .dpart-dive,
+  .whale-cut[data-phase="rise"] .dpart-rise { opacity: 1; }
+
+  /* ---------- 适应策略卡 / 食物网 ---------- */
+  .adapt-cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); gap: 11px; margin-top: 12px; }
+  .adapt-card { min-width: 0; padding: 13px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--bg-soft); }
+  .adapt-card h3 { margin: 0 0 5px; font-size: .95rem; color: var(--video); }
+  .adapt-card p { margin: 0; color: var(--ink-mid); font-size: .84rem; line-height: 1.5; }
+
+  @media (max-width: 560px) {
+    .quick-picks { grid-template-columns: 1fr; }
+    .age-tiers, .zone-tiers, .adapt-cards { grid-template-columns: 1fr; }
+  }
+  /* ---------- 低龄图形舞台 ---------- */
+  .picture-stage { overflow: hidden; border: 3px solid #402d1c !important; border-radius: 30px !important; background: #fff8ec; box-shadow: 0 7px 0 rgba(120,82,42,.22); color: #402d1c; }
+  .kid-scene-art { display: block; width: 100%; height: auto; }
+  .scene-strip { display: grid; grid-template-columns: repeat(auto-fit,minmax(108px,1fr)); gap: 9px; margin: 12px 0; }
+  .scene-chip { min-height: 82px; display: grid; place-items: center; gap: 3px; padding: 9px; border: 3px solid #402d1c; border-radius: 22px; background: #fff8ec; box-shadow: 0 5px 0 rgba(120,82,42,.2); color: #402d1c; text-align: center; font-weight: 900; }
+  .scene-chip span { font-size: 2rem; line-height: 1; }
+  .pick-feedback { min-height: 1.5em; margin: 5px 0 0; color: #0d6b4f; font-weight: 800; font-size: .82rem; }
+  .activity-art { min-height: 112px; display: grid; place-items: center; margin: -17px -19px 12px; border-bottom: 3px solid #402d1c; background: linear-gradient(180deg,#bde3f7 0 52%,#d9eefb 52%); font-size: 3rem; }
+  .activity-quick { margin: 4px 0 9px; padding: 7px 10px; border-radius: 999px; background: #fff0b5; color: #402d1c; font-weight: 900; text-align: center; }
+  .cgrid.picture-stage, .grid.picture-stage, .adapt-cards.picture-stage { padding: 14px; }
+  .picture-stage .crit, .picture-stage > .card { border: 3px solid #402d1c; border-radius: 22px; box-shadow: 0 5px 0 rgba(120,82,42,.18); }
+  details.parent-deep-dive > summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; font-weight: 850; }
+  button, input, select, textarea, [role="button"], .nav-link, .brand { min-height: 48px; }
+  .float-friend { animation: ocean-bob 2.4s ease-in-out infinite alternate; transform-origin: center; }
+  @keyframes ocean-bob { to { transform: translateY(-7px) rotate(2deg); } }
+
+  /* 图形优先：深度快捷按钮（滑块之外的可点路径） */
+  .depth-picks { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 14px; }
+  .depth-picks button { display: flex; min-height: 48px; align-items: center; gap: 7px; padding: 8px 15px; border: 2px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 800 .95rem/1.25 var(--font); cursor: pointer; }
+  .depth-picks button > span { font-size: 1.3rem; line-height: 1; }
+  .depth-picks button[aria-pressed="true"] { border-color: var(--video); background: var(--bg-soft); box-shadow: 0 0 0 3px color-mix(in srgb,var(--video) 18%,transparent); }
+
+  /* 在家做：实验卡先图后字 */
+  .act-card { display: flex; flex-direction: column; }
+  .act-head { display: flex; gap: 12px; align-items: center; }
+  .act-head > div { min-width: 0; }
+  .act-art { flex: none; font-size: 2.5rem; line-height: 1; }
+  .act-short { margin: 0; color: var(--video); font-size: .86rem; font-weight: 800; }
+  .act-card > details.parent-deep-dive { margin-top: auto; }
+  .act-card > details.parent-deep-dive > summary { font-size: .82rem; }
+
+  /* 家长区联网开关样式已提升到 assets/css/base.css，dinosaurs 等页共用。 */
+  @media (max-width: 560px) { .scene-strip { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } .float-friend { animation: none !important; } }
+
+
+  /* 插画舞台（共享 SVG 场景铺底，内容都放在不透明卡片上保证对比度） */
+  .oc-scene-stage { margin:0 0 16px; padding:clamp(12px,2.6vw,20px); }
+  .oc-scene-copy { display:grid; gap:12px; min-width:0; }
+  .oc-scene-stage .kid-steps-visual { margin:0; }
+  @media (max-width:560px) {
+    .oc-scene-stage { padding:10px; }
+  }
+
+  /* ======================================================================
+     图像优先层：下潜电梯 + 底部小游戏。页面独有前缀 oc-，
+     不覆盖共享 .kid-* / .pf-* 的语义；SVG 取色一律走 class，属性里不写 var()。
+     ====================================================================== */
+
+  /* ---------- 下潜电梯 ---------- */
+  .oc-lift-shell { margin:18px 0 4px; padding:clamp(13px,2.8vw,20px); border:3px solid color-mix(in srgb,var(--video) 32%,var(--line)); border-radius:var(--r-xl,28px); background:color-mix(in srgb,var(--video) 6%,var(--surface)); }
+  .oc-lift-title { display:flex; align-items:center; gap:9px; margin:0 0 4px; font-size:clamp(1.12rem,3.6vw,1.5rem); }
+  .oc-lift-title > span { font-size:1.35em; line-height:1; }
+  .oc-lift-sub { margin:0 0 10px; color:var(--ink-mid); }
+  .oc-lift-tabs { grid-template-columns:repeat(5,minmax(0,1fr)); margin:0 0 12px; }
+  .oc-lift-tabs .kid-tile { min-height:98px; padding:10px 6px; }
+  .oc-lift { display:grid; grid-template-columns:minmax(0,210px) minmax(0,1fr); gap:14px; align-items:start; }
+  .oc-lift-stage { display:grid; place-items:center; padding:6px; border:3px solid var(--line-soft); border-radius:var(--r-lg,22px); background:#04101f; }
+  .oc-lift-stage svg { display:block; width:100%; max-width:240px; height:auto; }
+  .oc-lift-side { display:grid; gap:10px; min-width:0; }
+  .oc-lift-read { margin:0; font-size:clamp(1rem,3.4vw,1.22rem); font-weight:800; color:var(--ink); }
+  .oc-lift-read b { font-family:var(--mono); color:var(--video); }
+  .oc-meters { display:grid; gap:8px; }
+  .oc-say { min-height:1.6em; margin:0; color:var(--ink); font-weight:800; }
+  .oc-slide-label { margin:0; color:var(--ink-mid); font-size:.88rem; font-weight:700; }
+
+  /* ---------- 底部小游戏 ---------- */
+  .oc-games { margin:26px 0 0; padding:clamp(14px,3vw,22px); border:3px solid color-mix(in srgb,var(--phys) 30%,var(--line)); border-radius:var(--r-xl,28px); background:color-mix(in srgb,var(--phys) 6%,var(--surface)); }
+  .oc-games-title { display:flex; align-items:center; gap:9px; margin:0 0 4px; font-size:clamp(1.15rem,3.6vw,1.5rem); }
+  .oc-games-title > span { font-size:1.35em; line-height:1; }
+  .oc-games-sub { margin:0 0 12px; color:var(--ink-mid); }
+  .oc-tabs { grid-template-columns:repeat(4,minmax(0,1fr)); margin:0 0 12px; }
+  .oc-panel { display:grid; gap:11px; padding:clamp(11px,2.4vw,17px); border:3px dashed var(--line); border-radius:var(--r-lg,22px); background:var(--surface); }
+  .oc-panel[hidden] { display:none !important; }
+  .oc-ask { display:flex; align-items:center; justify-content:center; gap:8px; margin:0; color:var(--ink); font-weight:800; font-size:clamp(1.02rem,3.4vw,1.24rem); text-align:center; }
+  .oc-ask > span[aria-hidden="true"] { font-size:1.35em; line-height:1; }
+  .oc-actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+  .oc-actions .btn { min-height:48px; }
+  .oc-stage { display:grid; place-items:center; padding:8px; border:2px solid var(--line-soft); border-radius:var(--r,18px); background:color-mix(in srgb,var(--video) 8%,var(--surface-2)); }
+  .oc-stage svg { display:block; width:100%; max-width:400px; height:auto; }
+  .oc-stage-sm svg { max-width:250px; }
+  .oc-sub-block { display:grid; gap:9px; padding:11px; border:2px solid var(--line-soft); border-radius:var(--r,18px); background:var(--surface-2); }
+  .oc-picks { margin:0; }
+  .oc-picks .kid-figure-art > svg { width:100%; max-width:126px; height:auto; }
+  .oc-score { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:13px 0 0; }
+  .oc-stars { min-height:1.4em; font-size:1.4rem; line-height:1; letter-spacing:2px; }
+  .oc-zone-grid { margin:12px 0 0; }
+  .oc-zone-grid .kid-figure-art > svg,
+  .oc-crit-grid .kid-figure-art > svg { width:100%; max-width:132px; height:auto; }
+
+  /* ---------- SVG 取色（全部走 class） ---------- */
+  .oc-sky      { fill:#cfeeff; }
+  .oc-w1       { fill:#8ed8f8; }
+  .oc-w2       { fill:#2f93cb; }
+  .oc-w3       { fill:#1b4a8d; }
+  .oc-w4       { fill:#132449; }
+  .oc-w5       { fill:#070d1f; }
+  .oc-veil     { fill:#02060f; }
+  .oc-sun      { fill:#ffe08a; }
+  .oc-beam     { fill:#fff6cf; }
+  .oc-bubble   { fill:none; stroke:#e8f7ff; stroke-width:2; }
+  .oc-dash     { fill:none; stroke:#9fd6f5; stroke-width:2; stroke-dasharray:5 5; }
+  .oc-tick     { stroke:#bfe3fa; stroke-width:1.5; }
+  .oc-num      { fill:#e4f4ff; font:700 10px var(--mono); }
+  .oc-cap      { fill:#f6fcff; font:800 11px var(--font); }
+  /* 压在浅色层带（oc-w1 #8ed8f8 / oc-w2 #2f93cb）上的深色字。
+     原来的 #123049 在 oc-w2 上只有 3.99，加深到 #0a1d2e 后两层分别是 11.0 和 5.1。 */
+  .oc-cap-dark { fill:#0a1d2e; font:800 11px var(--font); }
+  .oc-num-dark { fill:#0a1d2e; font:700 10px var(--mono); }
+  .oc-glyph    { font-size:21px; }
+  .oc-glyph-sm { font-size:15px; }
+  .oc-car      { fill:#ffd166; stroke:#5a3a06; stroke-width:2.5; }
+  .oc-car-win  { fill:#c8f2ff; stroke:#5a3a06; stroke-width:2; }
+  .oc-band-on  { fill:none; stroke:#ffd166; stroke-width:3.5; }
+
+  /* 罐子 */
+  .oc-can-body  { fill:#d6dfe9; stroke:#3c4757; stroke-width:3; }
+  .oc-can-lid   { fill:#a3b4c7; stroke:#3c4757; stroke-width:2.5; }
+  .oc-can-inner { fill:none; stroke:#3c4757; stroke-width:1.6; stroke-dasharray:4 4; }
+  .oc-arrow     { fill:none; stroke:#ef6a5a; stroke-width:3; stroke-linecap:round; }
+  .oc-arrow-tip { fill:#ef6a5a; }
+
+  /* 手电筒 */
+  .oc-torch      { fill:#ffce6b; stroke:#5a3a06; stroke-width:2.5; }
+  .oc-beam-red    { fill:#f87171; opacity:.86; }
+  .oc-beam-orange { fill:#fb923c; opacity:.86; }
+  .oc-beam-yellow { fill:#fde047; opacity:.86; }
+  .oc-beam-green  { fill:#4ade80; opacity:.86; }
+  .oc-beam-blue   { fill:#60a5fa; opacity:.86; }
+  .oc-swatch-red    { fill:#f87171; }
+  .oc-swatch-orange { fill:#fb923c; }
+  .oc-swatch-yellow { fill:#fde047; }
+  .oc-swatch-green  { fill:#4ade80; }
+  .oc-swatch-blue   { fill:#60a5fa; }
+  .oc-swatch-ring   { fill:none; stroke:#3c4757; stroke-width:2.5; }
+
+  /* 生物 */
+  .oc-cr-bg     { fill:#0d2340; }
+  .oc-cr-bg-lit { fill:#bfe6fb; }
+  .oc-cr-whale  { fill:#4d6f9a; }
+  .oc-cr-whale2 { fill:#89aed6; }
+  .oc-cr-fish   { fill:#37485f; }
+  .oc-cr-fish2  { fill:#5a7290; }
+  .oc-cr-eye    { fill:#ffffff; }
+  .oc-cr-pupil  { fill:#10233c; }
+  .oc-cr-glow   { fill:#ffe9a3; }
+  .oc-cr-halo   { fill:#ffe9a3; opacity:.28; }
+  .oc-cr-line   { fill:none; stroke:#e8f2ff; stroke-width:2; stroke-linecap:round; }
+  .oc-cr-jelly  { fill:#f2b3de; }
+  .oc-cr-tent   { fill:none; stroke:#f2b3de; stroke-width:2.4; stroke-linecap:round; }
+  .oc-cr-tube   { fill:#e6ebf1; }
+  .oc-cr-plume  { fill:#ef6a6a; }
+  .oc-cr-tooth  { fill:#ffffff; }
+  .oc-cr-shell  { fill:#cfd8e3; }
+
+  @media (max-width:720px) {
+    .oc-lift { grid-template-columns:minmax(0,1fr); }
+    .oc-lift-stage { max-width:280px; margin-inline:auto; }
+  }
+  @media (max-width:560px) {
+    .oc-lift-tabs { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .oc-lift-tabs .kid-tile { min-height:88px; }
+    .oc-tabs { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+
+  /* ======================================================================
+     深海三件套（本页新增，前缀 ocx-）：
+     ① 深度分层图鉴  ② 三条量表 + 深度图卡  ③ 小游戏「它住在哪一层」
+     内联 SVG 一律用 class 上色，属性里不写颜色，孩子模式与打印才好统一调。
+     ====================================================================== */
+  .ocx-shell { display:grid; gap:16px; margin:26px 0; }
+  .ocx-card { position:relative; padding:18px; border:3px solid var(--ink); border-radius:22px; background:var(--surface); box-shadow:0 6px 0 rgba(36,24,16,.18); }
+  .ocx-card > h3 { margin:.1em 0 .3em; font-size:1.16rem; }
+  .ocx-lead { margin:0 0 12px; color:var(--ink-mid); font-weight:750; font-size:.92rem; }
+  .ocx-shell .kid-figure-art { padding:6px; }
+  .ocx-shell .kid-figure-art > svg { width:100%; max-width:138px; height:auto; }
+  .ocx-shell .kid-figure-fact { display:block; }
+  .ocx-atlas { margin:0; }
+  .ocx-say-row { margin:12px 0 0; }
+  .ocx-card details { margin-top:12px; border:1px solid var(--line-soft); border-radius:var(--r); padding:0 13px; }
+  .ocx-card details[open] { padding-bottom:10px; }
+  .ocx-card details > p { color:var(--ink-mid); font-size:.88rem; line-height:1.58; }
+  .ocx-depth-picks { grid-template-columns:repeat(3,minmax(0,1fr)); margin:0 0 14px; }
+  .ocx-meters { display:grid; gap:14px; margin:0 0 12px; }
+  .ocx-dots-row { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin:0 0 10px; }
+  .ocx-dots-cap { color:var(--ink-mid); font-weight:750; font-size:.9rem; }
+  .ocx-game-stage { display:grid; place-items:center; margin:0 0 12px; }
+  /* 底色不写在这里：标本盘由 SVG 内的 .ocx-tray 铺满整个 viewBox，
+     CSS 背景永远看不见，写死深色只会在浅色主题里留下残留。 */
+  .ocx-game-art { display:block; width:100%; max-width:360px; height:auto; border:3px solid var(--ink); border-radius:18px; background:var(--surface-2); }
+  .ocx-ask { margin:0 0 10px; padding:10px 13px; border-left:4px solid var(--video); border-radius:0 var(--r-sm) var(--r-sm) 0; background:var(--bg-soft); color:var(--ink); font-weight:800; font-size:1rem; line-height:1.5; }
+  .ocx-game-picks { grid-template-columns:repeat(4,minmax(0,1fr)); margin:0 0 12px; }
+  .ocx-game-actions { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 12px; }
+  .ocx-game-actions .btn { min-height:48px; }
+  .ocx-score { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0 0; color:var(--ink-mid); font-weight:750; }
+  .ocx-stars { min-height:1.4em; font-size:1.3rem; line-height:1; letter-spacing:2px; }
+
+  /* --- 图鉴底色：从阳光层到海沟层，一张比一张暗 --- */
+  .ocx-z1 { fill:#7fd0f2; }
+  .ocx-z2 { fill:#2f7fb8; }
+  .ocx-z3 { fill:#23568f; }
+  .ocx-z4 { fill:#1a3f70; }
+  .ocx-z5 { fill:#142c56; }
+  .ocx-z6 { fill:#0e1c39; }
+  .ocx-z7 { fill:#06101f; }
+  .ocx-z8 { fill:#03070d; }
+
+  /* --- 光、水、地形 --- */
+  .ocx-sun { fill:#ffe07a; }
+  .ocx-ray { fill:#fff4c4; opacity:.5; }
+  .ocx-ray-dim { fill:#cfe8fb; opacity:.2; }
+  .ocx-floor { fill:#3a3149; }
+  .ocx-mud { fill:#4a3b31; }
+  .ocx-wall { fill:#141b28; }
+  .ocx-snow { fill:#dbe9f7; opacity:.8; }
+  .ocx-dive-path { fill:none; stroke:#ffd166; stroke-width:2.4; stroke-dasharray:6 5; }
+  .ocx-cap-dark { fill:#f2fbff; font:800 9px var(--font); }
+
+  /* --- 生物公用 --- */
+  .ocx-body { fill:#5c7fa6; }
+  .ocx-fin { fill:#42607f; }
+  .ocx-limb { fill:none; stroke:#42607f; stroke-width:3.2; stroke-linecap:round; }
+  .ocx-shell-green { fill:#4e8a6b; }
+  .ocx-eye { fill:#ffffff; }
+  .ocx-eye-shine { fill:#bfe6ff; }
+  .ocx-pupil { fill:#0d1b2c; }
+  .ocx-glow { fill:#ffe9a3; }
+  .ocx-halo { fill:#ffe9a3; opacity:.24; }
+  .ocx-rod { fill:none; stroke:#e6f2ff; stroke-width:2.6; stroke-linecap:round; }
+  .ocx-maw { fill:#2a1420; }
+  .ocx-tooth { fill:#ffffff; }
+  .ocx-line { fill:none; stroke:#e2eefa; stroke-width:2; stroke-linecap:round; }
+  .ocx-jelly { fill:#9fb8d2; opacity:.82; }
+  .ocx-jelly-line { fill:none; stroke:#e2eefa; stroke-width:2.4; stroke-dasharray:6 5; }
+  .ocx-cuke { fill:#a8593f; }
+  .ocx-bump { fill:#8c422e; }
+  .ocx-foot { fill:none; stroke:#c98a6a; stroke-width:3.2; stroke-linecap:round; }
+  .ocx-tent { fill:none; stroke:#d79a7c; stroke-width:2.6; stroke-linecap:round; }
+  .ocx-sponge { fill:#dfe9f2; opacity:.86; }
+  .ocx-sponge-lip { fill:#f2f7fb; }
+  .ocx-mesh { fill:none; stroke:#7f95ab; stroke-width:1.4; }
+  .ocx-chimney { fill:#2b2530; }
+  .ocx-smoke { fill:#6f6270; opacity:.85; }
+  .ocx-tube { fill:#e6ebf1; }
+  .ocx-plume { fill:#e2564f; }
+  .ocx-whale { fill:#4a5f7a; }
+  .ocx-whale2 { fill:#8aa2bd; }
+
+  /* --- 小游戏：标本盘与六位主角 --- */
+  .ocx-tray { fill:#0e2338; }
+  .ocx-tray-in { fill:#12314c; stroke:#3d5c7d; stroke-width:2; }
+  .ocx-label-soft { fill:#a9c6e2; font:700 11px var(--font); }
+  .ocx-fish-orange { fill:#f2802f; }
+  .ocx-fish-white { fill:#fdf4e6; }
+  .ocx-fin-orange { fill:#d9691f; }
+  .ocx-fish-dark { fill:#3c5573; }
+  .ocx-fin-dark { fill:#2c4058; }
+  .ocx-squid { fill:#c4809c; }
+  .ocx-squid-fin { fill:#a9678a; }
+  .ocx-arm { fill:none; stroke:#b7708f; stroke-width:6; stroke-linecap:round; }
+
+  @media (max-width:560px) {
+    .ocx-card { padding:12px; }
+    .ocx-depth-picks { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .ocx-game-picks { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
 </style>
 </head>
 <body data-playful-page="nature/ocean.html">
@@ -259,6 +606,26 @@
     <output class="text-result" id="oceanOutput" aria-live="polite">拖动深度，选择物种，再执行一次真实下潜。</output>
   </div>
 </header>
+<div class="wrap scene-wrap">
+  <!-- 插画舞台：不识字也能看懂这一页在玩什么 -->
+  <div class="kid-visual-stage oc-scene-stage" data-scene-layer="back"
+       data-playful-scene="deepsea"
+       data-playful-scene-title="海洋分层"
+       data-playful-scene-desc="海水越往下越暗，气泡往上飘，一束光从水面照进来">
+    <div class="oc-scene-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🐋</span>
+        <p class="kid-speech">越往下越黑，<b>压力也越大</b>。</p>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步玩法">
+        <li><span class="kid-tile-art" aria-hidden="true">⬇️</span>往下潜</li>
+        <li><span class="kid-tile-art" aria-hidden="true">💡</span>看光</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🐠</span>找住户</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
 
 <main class="wrap stack" id="main">
 
@@ -274,17 +641,53 @@
     <p class="plain-note"><b>下潜目标：</b>深度不是孤立数字。往下时，光通常变少、温度通常降低、压力上升，生物的身体也要适应环境。</p>
     <div class="work-card" aria-labelledby="oceanStoryTitle">
       <div data-playful-companion>观察伙伴正在校准深度计……</div>
-      <div class="row spread"><div><p class="pill pill-video">剧情 · 潜艇日志</p><h3 id="oceanStoryTitle" class="work-card-title">“微光号”下潜记录</h3></div><span data-playful-sticker>○ 完成任务可获得贴纸</span></div>
+      <div class="row spread"><div><p class="pill pill-video">剧情 · 潜艇日志</p><h3 id="oceanStoryTitle" class="work-card-title">“微光号”下潜记录</h3></div><span data-playful-sticker>○ 完成任务解锁收藏卡</span></div>
       <p class="work-card-content">波波驾驶“微光号”向海沟下潜。每到一层都要把光、温度、压力和生物装备写在同一条日志里，潜艇才能继续前进。</p>
       <div class="row"><button class="btn btn-ghost" type="button" data-playful-random-task="#oceanSurprise">抽取临时下潜任务</button><span id="oceanSurprise" data-playful-task-output role="status" aria-live="polite">临时任务会在这里出现。</span></div>
-      <p data-playful-feedback role="status" aria-live="polite">日志等待签收：完成核心任务后会收到贴纸反馈。</p>
+      <p data-playful-feedback role="status" aria-live="polite">日志等待签收：完成核心任务后会解锁这一站的收藏卡。</p>
     </div>
     <div class="mission-grid">
-      <div class="mission-step"><h3>1 预测</h3><label for="oceanPredict">在你选择的深度，还有阳光吗？压力约是海面的多少倍？</label><textarea class="input" id="oceanPredict"></textarea></div>
+      <div class="mission-step"><h3>1 预测</h3><p>在你选择的深度，还有阳光吗？压力比海面大吗？先点一个你猜的答案。</p>
+        <div class="quick-picks" data-fill="oceanPredict" role="group" aria-label="预测快捷选项">
+          <button class="kid-choice" type="button" data-value="我猜那里还很亮，阳光照得到，压力和海面差不多。" aria-pressed="false">☀️ 还很亮</button>
+          <button class="kid-choice" type="button" data-value="我猜那里只剩一点微光，压力已经比海面大好几倍了。" aria-pressed="false">🌫️ 只剩微光</button>
+          <button class="kid-choice" type="button" data-value="我猜那里完全是黑的，压力比海面大很多很多倍。" aria-pressed="false">🌑 完全是黑的</button>
+          <button class="kid-choice" type="button" data-value="我还不确定，要先下潜一次，看看仪表怎么说。" aria-pressed="false">❓ 先下潜再说</button>
+        </div>
+        <label class="sr-only" for="oceanPredict">预测记录</label><textarea class="input" id="oceanPredict" data-audience="parent" placeholder="也可以补充自己的理由"></textarea>
+        <p class="child-hint">点按钮就算完成；想加理由再打字。</p>
+      </div>
       <div class="mission-step"><h3>2 操作</h3><p>主操作就在上方深度剖面旁。至少执行一次下潜，文字结果会留在舞台下方。</p><div class="checks" aria-label="下潜操作状态"><span id="oceanDiveCheck">○ 尚未执行下潜</span></div></div>
-      <div class="mission-step"><h3>3 结果</h3><label for="oceanResult">记录光、温度、压力和生物适应中的两项联系</label><textarea class="input" id="oceanResult"></textarea></div>
-      <div class="mission-step"><h3>4 反思</h3><label for="oceanReflect">为什么深海鱼更怕“快速上浮”，而不是一直待在高压水中？</label><textarea class="input" id="oceanReflect"></textarea></div>
-    </div><div class="task-actions"><button class="btn btn-primary" id="oceanComplete" type="button">完成任务</button><span class="task-status" id="oceanStatus" role="status" aria-live="polite">尚未完成：请完成一次下潜并写记录。</span></div>
+      <div class="mission-step"><h3>3 结果</h3><p>光、温度、压力、生物适应——挑出你看到的两项联系。</p>
+        <div class="quick-picks" data-fill="oceanResult" role="group" aria-label="结果快捷选项">
+          <button class="kid-choice" type="button" data-value="越往下光越少，温度也越低，所以那里又黑又冷。" aria-pressed="false">🔅 越深越黑越冷</button>
+          <button class="kid-choice" type="button" data-value="越往下压力越大，所以潜水器要做成很结实的圆球形。" aria-pressed="false">⚙️ 越深压力越大</button>
+          <button class="kid-choice" type="button" data-value="没有阳光的地方，有些动物自己发光，用光来找伴或找食物。" aria-pressed="false">✨ 黑处自己发光</button>
+          <button class="kid-choice" type="button" data-value="上面掉下来的碎屑是深处的食物来源，所以深海动物吃得很省。" aria-pressed="false">🍚 靠上面掉下的食物</button>
+        </div>
+        <label class="sr-only" for="oceanResult">结果记录</label><textarea class="input" id="oceanResult" data-audience="parent" placeholder="也可以写下自己发现的联系"></textarea>
+      </div>
+      <div class="mission-step"><h3>4 反思</h3><p>为什么深海鱼更怕“快速上浮”，而不是一直待在高压水中？</p>
+        <div class="quick-picks" data-fill="oceanReflect" role="group" aria-label="反思快捷选项">
+          <button class="kid-choice" type="button" data-value="因为它的身体一直在那个压力里，本来就习惯了，不觉得难受。" aria-pressed="false">🐟 它早就习惯了</button>
+          <button class="kid-choice" type="button" data-value="因为快速上浮时外面压力突然变小，身体里的气会往外胀，把它弄伤。" aria-pressed="false">🎈 上浮时气会胀</button>
+          <button class="kid-choice" type="button" data-value="因为变化太快身体来不及调整，慢慢变就没那么危险。" aria-pressed="false">🐢 变太快来不及</button>
+        </div>
+        <label class="sr-only" for="oceanReflect">反思记录</label><textarea class="input" id="oceanReflect" data-audience="parent" placeholder="也可以写下你自己的想法"></textarea>
+      </div>
+    </div>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>越往下潜，海就越黑、越冷、挤得越紧。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>阳光只能照进海的最上面一层。再往下光越来越少，温度降下来，头顶的水越来越重，压力就越来越大。住在那里的动物身体得跟着变。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>深度不是一个孤立数字，它同时改变光照、温度和压力这几个条件；生物的形状、颜色、发光能力和吃东西的方式，都可以看成对这几个条件的一整套回应。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>把一个可以调的量（深度）和好几个跟着变的量（光、温度、压力、生物特征）连起来，是科学里最常用的思考方式——先改一个条件，再看什么跟着变。</p>
+    <ul class="ask-list">
+      <li>如果太阳一整天都不落，海底会变亮吗？为什么？</li>
+      <li>你能想出一种“又黑又冷又高压”的地方里，动物可能用得上的本领吗？</li>
+      <li>海面和海底之间，你觉得哪一段变化最快？怎么才能验证？</li>
+    </ul>
+    <p class="parent-note" data-audience="parent"><b>给家长：</b>孩子点了快捷选项后，可以顺着问一句“你是怎么想到的”。不必纠正“错答案”——让他先下潜一次，再回来看自己的预测，比直接告诉他结论更有价值。若孩子还不会打字，四个步骤全部用按钮完成即可。</p><div class="task-actions"><button class="btn btn-primary" id="oceanComplete" type="button">完成任务</button><span class="task-status" id="oceanStatus" role="status" aria-live="polite">尚未完成：请完成一次下潜并写记录。</span></div>
     <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="oceanWorkTitle">
       <h3 class="work-card-title" id="oceanWorkTitle">把这次下潜存进作品册</h3>
       <p class="work-card-meta">把光、温度、压力和生物写在同一个深度上。作品只保存在这台设备上。</p>
@@ -303,7 +706,13 @@
         </div>
         <div>
           <label for="oceanWorkContent">这一层的四项记录</label>
+          <div class="quick-picks" data-fill="oceanWorkContent" role="group" aria-label="作品内容快捷选项">
+            <button class="kid-choice" type="button" data-value="🌑 深处没有阳光，水很冷，压力很大；我带的深海鱼身体软软的，不怕挤。" aria-pressed="false">🌑 黑冷高压</button>
+            <button class="kid-choice" type="button" data-value="✨ 我发现深海动物会自己发光，用小灯找食物和同伴。" aria-pressed="false">✨ 自带小灯</button>
+            <button class="kid-choice" type="button" data-value="🐋 鲸先在海面呼吸，再省着用氧气下潜，最后慢慢回到海面。" aria-pressed="false">🐋 鲸的旅程</button>
+          </div>
           <textarea class="input" id="oceanWorkContent" name="content" required maxlength="4000" placeholder="下潜到多少米、还有没有光、水温和压力大约多少、带的物种靠什么适应这里。"></textarea>
+          <p class="pick-feedback" role="status" aria-live="polite">点一个图标，就会写进作品。</p>
         </div>
         <button class="btn btn-primary" type="submit">保存下潜日志</button>
       </div>
@@ -312,6 +721,13 @@
   </section>
   <section class="card parent-deep-dive" data-audience="parent" style="padding:20px">
     <h2>家长深读：离线海洋图鉴</h2>
+    <div class="online-gate">
+      <label class="online-gate-row">
+        <input type="checkbox" data-playful-preference="onlineData">
+        <span>允许联网加载照片与实时数据</span>
+      </label>
+      <p class="online-gate-note">默认关闭。关闭时本页只用内置 emoji 图鉴与文字，不向任何外部网站发出请求；开启后才会向 iNaturalist 取生物照片。开关随时可以关掉。</p>
+    </div>
     <div class="species-cards">
       <article><h3>🎣 鮟鱇鱼</h3><p><b>住哪？</b>常见于无光层。<br><b>怎么吃饭？</b>用发光诱饵吸引猎物；柔软身体没有大型气腔。</p></article>
       <article><h3>🐟 深海狮子鱼</h3><p><b>住哪？</b>可生活在 6000 米以下。<br><b>怎么扛压？</b>身体像凝胶，没有鱼鳔，体内外主要都是水。</p></article>
@@ -333,6 +749,420 @@
       1000 米以下连仪器都测不到阳光。
     </p>
     <div class="dive" id="dive"></div>
+
+    <!-- 下潜电梯：不识字也能玩——点一层或拖滑杆，画面变暗、生物变化，两条量表跟着动 -->
+    <section class="oc-lift-shell" aria-labelledby="ocLiftTitle">
+      <h3 class="oc-lift-title" id="ocLiftTitle"><span aria-hidden="true">🛗</span>下潜电梯</h3>
+      <p class="oc-lift-sub">点一层，或者拖动滑杆，看看那里还剩多少光、压得有多紧。</p>
+
+      <div class="kid-tiles oc-lift-tabs" id="ocLiftTabs" role="group" aria-labelledby="ocLiftTitle"></div>
+
+      <div class="oc-lift">
+        <div class="oc-lift-stage">
+          <span id="ocLiftArt" role="img" aria-label="海洋竖切面：潜水器停在透光层"></span>
+        </div>
+        <div class="oc-lift-side">
+          <p class="oc-lift-read">现在在 <b id="ocLiftDepth">10</b> 米 · <span id="ocLiftZone">透光层</span></p>
+
+          <div class="kid-slide-row">
+            <span class="kid-slide-end" aria-hidden="true">🌞</span>
+            <input type="range" id="ocLiftRange" min="0" max="4000" step="10" value="10" aria-label="下潜深度（米）">
+            <span class="kid-slide-end" aria-hidden="true">🌑</span>
+          </div>
+          <p class="oc-slide-label"><span aria-hidden="true">🎚️</span> 往右拖 = 往下潜</p>
+
+          <div class="oc-meters">
+            <div class="kid-meter" style="--tone:var(--warn)">
+              <div class="kid-meter-head">
+                <span class="kid-meter-icon" aria-hidden="true">🔆</span>
+                <span id="ocLightLabel">还剩多少光</span>
+                <span class="kid-meter-value" id="ocLightValue">约 76%</span>
+              </div>
+              <div class="kid-meter-track" id="ocLightMeter" role="img" aria-labelledby="ocLightLabel ocLightValue"><span class="kid-meter-fill"></span></div>
+            </div>
+            <div class="kid-meter" style="--tone:var(--phys)">
+              <div class="kid-meter-head">
+                <span class="kid-meter-icon" aria-hidden="true">🗜️</span>
+                <span id="ocPressLabel">压力有多大</span>
+                <span class="kid-meter-value" id="ocPressValue">2.0 个大气压</span>
+              </div>
+              <div class="kid-meter-track" id="ocPressMeter" role="img" aria-labelledby="ocPressLabel ocPressValue"><span class="kid-meter-fill"></span></div>
+            </div>
+          </div>
+
+          <p class="oc-say" id="ocLiftSay" role="status" aria-live="polite">阳光还很足，海藻可以自己做饭。</p>
+        </div>
+      </div>
+
+      <!-- 深度图鉴：五层各一张大图卡 -->
+      <div class="kid-figure-grid oc-zone-grid" id="ocZoneGrid" aria-label="五个深度带图鉴"></div>
+    </section>
+    <div class="age-tiers">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>大海像一栋很高的楼，越往下的房间越黑、越冷。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>分层用的是「还有多少光」。有光的那一层，海藻才能自己做饭；再往下只能吃从上面掉下来的东西。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>光照带的边界是渐变的，不是一道墙。同一个深度在清水和浑水里亮度差很多，所以分层描述的是「一般情况」，实际要靠仪器测。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>用一个可测量的量（光）给连续的空间分类，并理解分类边界是人为约定、可以有例外。</p>
+    <ul class="ask-list">
+      <li>如果海水变得很浑，「有光层」会变厚还是变薄？</li>
+      <li>住在最上层的动物，和住在最下层的动物，谁更容易找到吃的？为什么？</li>
+    </ul>
+  </section>
+
+  <!-- ================================================================
+       深海三件套：① 深度分层图鉴 ② 三条量表 ③ 小游戏「它住在哪一层」
+       ================================================================ -->
+  <section class="ocx-shell" aria-labelledby="ocxTitle">
+    <h2 id="ocxTitle">一层一层看下去：图鉴、量表、猜猜它住哪儿</h2>
+    <p class="ocx-lead">下面三件事都围着同一个问题：越往下潜，光、压力、水温各变成什么样，住在那里的动物又长成什么样。</p>
+
+    <article class="ocx-card" aria-labelledby="ocxAtlasTitle">
+      <h3 id="ocxAtlasTitle">① 深度分层图鉴：从阳光层到海沟层</h3>
+      <p class="ocx-lead">八张卡按「最深能到多少米」从浅排到深。卡片的底色越往后越黑，光就是这样一层层用完的。</p>
+      <div class="kid-figure-grid ocx-atlas" aria-label="深度分层图鉴：八张大图卡">
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 132 86" focusable="false">
+              <rect class="ocx-z1" x="0" y="0" width="132" height="86" rx="10"/>
+              <circle class="ocx-sun" cx="112" cy="13" r="9"/>
+              <path class="ocx-ray" d="M104 19 L120 19 L113 54 L107 54 Z"/>
+              <ellipse class="ocx-body" cx="52" cy="32" rx="22" ry="8"/>
+              <path class="ocx-body" d="M30 32 L15 28 L17 37 Z"/>
+              <path class="ocx-fin" d="M50 24 L58 11 L62 25 Z"/>
+              <path class="ocx-body" d="M72 32 L88 22 L84 32 L88 43 Z"/>
+              <circle class="ocx-eye" cx="33" cy="29" r="2.2"/>
+              <circle class="ocx-pupil" cx="33" cy="29" r="1.1"/>
+              <path class="ocx-limb" d="M32 58 L22 51 M32 73 L22 79 M56 58 L66 51 M56 73 L66 79"/>
+              <ellipse class="ocx-shell-green" cx="44" cy="66" rx="15" ry="10"/>
+              <path class="ocx-line" d="M30 66 H58 M44 57 V75"/>
+              <circle class="ocx-shell-green" cx="62" cy="62" r="5"/>
+              <circle class="ocx-pupil" cx="64" cy="61" r="1.4"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">阳光层</span>
+          <span class="kid-figure-sub">0–200 米 · 阳光够植物做饭</span>
+          <p class="kid-figure-fact">海面的光算 100%，到 200 米大约只剩 1%——「还剩 1% 的光」这条线，就是海洋学家画分层的界线。</p>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 132 86" focusable="false">
+              <rect class="ocx-z2" x="0" y="0" width="132" height="86" rx="10"/>
+              <path class="ocx-ray-dim" d="M58 0 L78 0 L72 32 L64 32 Z"/>
+              <path class="ocx-body" d="M34 38 C46 24 74 24 88 38 C74 52 46 52 34 38 Z"/>
+              <path class="ocx-fin" d="M88 38 L104 29 L100 38 L104 48 Z"/>
+              <path class="ocx-fin" d="M58 25 L62 15 L68 26 Z"/>
+              <circle class="ocx-eye" cx="45" cy="36" r="6.5"/>
+              <circle class="ocx-pupil" cx="45" cy="36" r="3.4"/>
+              <circle class="ocx-glow" cx="50" cy="47" r="2.2"/>
+              <circle class="ocx-glow" cx="60" cy="49" r="2.2"/>
+              <circle class="ocx-glow" cx="70" cy="49" r="2.2"/>
+              <circle class="ocx-glow" cx="80" cy="46" r="2.2"/>
+              <ellipse class="ocx-body" cx="24" cy="63" rx="9" ry="13"/>
+              <path class="ocx-tent" d="M19 74 L14 84 M24 76 L24 85 M29 74 L34 84"/>
+              <circle class="ocx-eye" cx="20" cy="59" r="2.6"/>
+              <circle class="ocx-pupil" cx="20" cy="59" r="1.3"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">微光层</span>
+          <span class="kid-figure-sub">200–1000 米 · 只剩一点蓝光</span>
+          <p class="kid-figure-fact">光已经不够植物做饭。灯笼鱼、乌贼靠特别大的眼睛在这里看东西；1000 米处水压约 101 个大气压。</p>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 132 86" focusable="false">
+              <rect class="ocx-z3" x="0" y="0" width="132" height="86" rx="10"/>
+              <path class="ocx-dive-path" d="M20 16 C34 34 28 54 40 72"/>
+              <text class="ocx-cap-dark" x="6" y="12">0 m</text>
+              <text class="ocx-cap-dark" x="6" y="82">2000 m</text>
+              <path class="ocx-whale" d="M50 34 L84 28 C104 28 118 36 118 44 C118 54 104 60 84 60 L54 54 C46 48 44 40 50 34 Z"/>
+              <path class="ocx-whale2" d="M56 52 L84 57 C102 57 114 52 117 46 C112 55 100 60 84 60 L54 54 Z"/>
+              <path class="ocx-fin" d="M86 58 L82 70 L98 60 Z"/>
+              <path class="ocx-whale" d="M118 40 L131 30 L127 44 L131 58 Z"/>
+              <circle class="ocx-eye" cx="60" cy="41" r="2.2"/>
+              <circle class="ocx-pupil" cx="60" cy="41" r="1.1"/>
+              <path class="ocx-line" d="M46 46 C52 50 58 51 64 51"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">抹香鲸的潜程</span>
+          <span class="kid-figure-sub">可下潜到 2000 米以上 · 一口气跨好几层</span>
+          <p class="kid-figure-fact">它用肺呼吸，却有记录下潜超过 2000 米，一口气能在水下待约 90 分钟，再慢慢回到海面换气。</p>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 132 86" focusable="false">
+              <rect class="ocx-z4" x="0" y="0" width="132" height="86" rx="10"/>
+              <path class="ocx-floor" d="M0 70 C30 64 60 74 92 68 C112 64 124 70 132 68 L132 86 L0 86 Z"/>
+              <path class="ocx-chimney" d="M56 70 L62 32 L74 32 L80 70 Z"/>
+              <path class="ocx-smoke" d="M62 30 C56 20 62 12 68 5 C75 12 80 20 74 30 Z"/>
+              <rect class="ocx-tube" x="26" y="48" width="7" height="24" rx="3.5"/>
+              <rect class="ocx-tube" x="38" y="54" width="7" height="18" rx="3.5"/>
+              <rect class="ocx-tube" x="92" y="50" width="7" height="22" rx="3.5"/>
+              <circle class="ocx-plume" cx="29.5" cy="46" r="4"/>
+              <circle class="ocx-plume" cx="41.5" cy="52" r="4"/>
+              <circle class="ocx-plume" cx="95.5" cy="48" r="4"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">热泉绿洲</span>
+          <span class="kid-figure-sub">约 2500 米 · 不靠阳光的绿洲</span>
+          <p class="kid-figure-fact">海底裂缝喷出的水可超过 300 ℃。这里食物网的起点不是阳光，而是化学能，管虫成片地住在喷口旁边。</p>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 132 86" focusable="false">
+              <rect class="ocx-z5" x="0" y="0" width="132" height="86" rx="10"/>
+              <circle class="ocx-halo" cx="34" cy="18" r="15"/>
+              <circle class="ocx-glow" cx="34" cy="18" r="5"/>
+              <path class="ocx-rod" d="M34 23 C36 33 44 38 52 42"/>
+              <path class="ocx-body" d="M46 46 C50 28 84 24 102 44 C86 68 52 66 46 46 Z"/>
+              <path class="ocx-fin" d="M102 44 L120 34 L115 45 L120 57 Z"/>
+              <path class="ocx-maw" d="M46 46 C54 40 66 40 74 44 C66 54 54 54 46 46 Z"/>
+              <g class="ocx-tooth">
+                <path d="M50 44 l3 5 l3 -5 Z"/>
+                <path d="M58 43 l3 5 l3 -5 Z"/>
+                <path d="M66 44 l3 5 l3 -5 Z"/>
+              </g>
+              <circle class="ocx-eye" cx="58" cy="36" r="3.2"/>
+              <circle class="ocx-pupil" cx="58" cy="36" r="1.6"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">无光层</span>
+          <span class="kid-figure-sub">1000–4000 米 · 只有生物自己的光</span>
+          <p class="kid-figure-fact">阳光一点也测不到，水温约 4 ℃。泰坦尼克号沉在这一层的 3800 米处，那里的压力约 381 个大气压。</p>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 132 86" focusable="false">
+              <rect class="ocx-z6" x="0" y="0" width="132" height="86" rx="10"/>
+              <g class="ocx-snow">
+                <circle cx="22" cy="16" r="1.8"/>
+                <circle cx="52" cy="10" r="1.5"/>
+                <circle cx="70" cy="20" r="1.6"/>
+                <circle cx="112" cy="13" r="1.5"/>
+              </g>
+              <path class="ocx-floor" d="M0 68 C24 62 46 72 70 66 C94 60 116 70 132 65 L132 86 L0 86 Z"/>
+              <path class="ocx-sponge" d="M82 64 C80 44 88 30 96 28 C104 30 112 44 110 64 Z"/>
+              <path class="ocx-mesh" d="M86 58 H106 M87 48 H105 M90 38 H102 M96 28 V64"/>
+              <ellipse class="ocx-sponge-lip" cx="96" cy="28" rx="8" ry="3.4"/>
+              <path class="ocx-cuke" d="M18 64 C26 52 50 52 58 62 C50 72 26 74 18 64 Z"/>
+              <g class="ocx-bump">
+                <path d="M26 54 l3 -6 l4 6 Z"/>
+                <path d="M36 51 l3 -6 l4 6 Z"/>
+                <path d="M46 53 l3 -6 l4 6 Z"/>
+              </g>
+              <path class="ocx-foot" d="M24 71 v6 M34 73 v6 M44 73 v6 M54 69 v6"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">深渊层</span>
+          <span class="kid-figure-sub">4000–6000 米 · 又黑又冷又安静</span>
+          <p class="kid-figure-fact">水温常年只有约 2 ℃，压力约 401–601 个大气压。海参和玻璃海绵靠上面沉下来的碎屑（海洋雪）过日子。</p>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 132 86" focusable="false">
+              <rect class="ocx-z7" x="0" y="0" width="132" height="86" rx="10"/>
+              <path class="ocx-wall" d="M0 86 L0 30 L26 46 L32 86 Z"/>
+              <path class="ocx-wall" d="M132 86 L132 26 L104 44 L100 86 Z"/>
+              <path class="ocx-jelly" d="M42 46 C50 32 74 32 84 44 C78 58 50 60 42 46 Z"/>
+              <path class="ocx-jelly" d="M84 44 C94 44 100 50 104 58 C94 58 88 52 84 48 Z"/>
+              <path class="ocx-jelly-line" d="M52 40 C60 46 70 48 80 46"/>
+              <circle class="ocx-eye" cx="52" cy="42" r="2.4"/>
+              <circle class="ocx-pupil" cx="52" cy="42" r="1.2"/>
+              <path class="ocx-line" d="M42 50 C46 54 50 55 54 55"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">海沟层</span>
+          <span class="kid-figure-sub">6000 米以下 · 只在海沟里才有</span>
+          <p class="kid-figure-fact">目前拍到最深的鱼在约 8300 米，是一条狮子鱼。那里的压力约 831 个大气压，它的身体软得像果冻。</p>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 132 86" focusable="false">
+              <rect class="ocx-z8" x="0" y="0" width="132" height="86" rx="10"/>
+              <path class="ocx-wall" d="M0 18 L50 72 L54 86 L0 86 Z"/>
+              <path class="ocx-wall" d="M132 18 L82 72 L78 86 L132 86 Z"/>
+              <path class="ocx-jelly-line" d="M5 58 H127"/>
+              <text class="ocx-cap-dark" x="6" y="54">珠峰高 8849 m</text>
+              <path class="ocx-dive-path" d="M66 10 V62"/>
+              <ellipse class="ocx-body" cx="66" cy="67" rx="9" ry="6"/>
+              <circle class="ocx-eye" cx="69" cy="66" r="2.4"/>
+              <circle class="ocx-glow" cx="57" cy="67" r="2.6"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">挑战者深渊</span>
+          <span class="kid-figure-sub">约 10935 米 · 目前测到的最深处</span>
+          <p class="kid-figure-fact">把 8849 米高的珠穆朗玛峰整座倒进来，峰顶离海面还差两千多米。这里的压力约 1095 个大气压。</p>
+        </div>
+
+      </div>
+      <ul class="kid-legend" aria-label="底色图例：越往下越黑">
+        <li style="--tone:#7fd0f2"><span class="kid-legend-mark" aria-hidden="true">1</span>有阳光</li>
+        <li style="--tone:#2f7fb8"><span class="kid-legend-mark" aria-hidden="true">2</span>只剩微光</li>
+        <li style="--tone:#142c56"><span class="kid-legend-mark" aria-hidden="true">3</span>全黑，只有生物的光</li>
+        <li style="--tone:#06101f"><span class="kid-legend-mark" aria-hidden="true">4</span>又黑又冷又挤</li>
+      </ul>
+      <div class="kid-speech-row ocx-say-row">
+        <span class="kid-mascot" aria-hidden="true">🐙</span>
+        <p class="kid-speech">从第一张看到最后一张，底色越来越黑——<b>会发光的动物也越来越多</b>。</p>
+      </div>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：这套图鉴在教什么</summary>
+        <p><b>学习目标：</b>把「深度」这一个变量，和跟着变的三件事（光、压力、水温）以及生物的样子对应起来。孩子不需要背层名，只要看出「底色越黑，动物身上的灯越多」，就已经抓住了因果方向。</p>
+        <p><b>要说清楚的一点：</b>层与层之间是渐变，不是墙。200 米、1000 米这些界线是按「还剩多少光」约定的，清水和浑水里同一个深度的亮度差很多。抹香鲸和热泉这两张卡放在中间，正是提醒分层是描述，不是规矩——会有跨层的住户。</p>
+      </details>
+    </article>
+
+    <article class="ocx-card" aria-labelledby="ocxMeterTitle">
+      <h3 id="ocxMeterTitle">② 三条量表：点一个深度，光、压力、水温一起变</h3>
+      <p class="ocx-lead">点一张深度卡，下面三条一起动。三条一起看，才明白深海的难处不是一件事，而是三件事同时发生。</p>
+      <div class="kid-tiles ocx-depth-picks" id="ocxDepthPicks" role="group" aria-labelledby="ocxMeterTitle"></div>
+      <div class="ocx-meters">
+        <div class="kid-meter" style="--tone:var(--warn)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">🔆</span>
+            <span id="ocxLightLabel">还剩多少光</span>
+            <span class="kid-meter-value" id="ocxLightValue">100%</span>
+          </div>
+          <div class="kid-meter-track" id="ocxLightMeter" role="img" aria-labelledby="ocxLightLabel ocxLightValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">满格＝海面的光。常用的分界是「200 米大约只剩 1%」，所以条子到 200 米就几乎看不见了。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--phys)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">🗜️</span>
+            <span id="ocxPressLabel">水压有多大</span>
+            <span class="kid-meter-value" id="ocxPressValue">1.0 个大气压</span>
+          </div>
+          <div class="kid-meter-track" id="ocxPressMeter" role="img" aria-labelledby="ocxPressLabel ocxPressValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">每往下 10 米加约 1 个大气压：10 米约 2 个，1000 米约 101 个。条子空着＝还在海面的 1 个大气压，满格＝8300 米的 831 个；中间用了压缩刻度，右边的数字才是准的。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--danger)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">🌡️</span>
+            <span id="ocxTempLabel">水温多少度</span>
+            <span class="kid-meter-value" id="ocxTempValue">约 25 ℃</span>
+          </div>
+          <div class="kid-meter-track" id="ocxTempMeter" role="img" aria-labelledby="ocxTempLabel ocxTempValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">满格＝30 ℃。表层随季节大约 25 ℃，1000 米以下常年只有 2–4 ℃，一年四季几乎不变。</p>
+        </div>
+      </div>
+      <p class="ocx-dots-row">
+        <span class="ocx-dots-cap" id="ocxLightDotsCap">用点点数光（十格＝海面的十成光）：</span>
+        <span class="kid-dots" id="ocxLightDots" role="img" aria-labelledby="ocxLightDotsCap"></span>
+      </p>
+      <div class="kid-speech-row ocx-say-row">
+        <span class="kid-mascot" aria-hidden="true">🤿</span>
+        <p class="kid-speech" id="ocxMeterSay" role="status" aria-live="polite">先点一张深度卡，三条量表就会动。</p>
+      </div>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：三条量表在教什么</summary>
+        <p><b>学习目标：</b>练「一个自变量、三个因变量」。深度只调一次，三条条子往不同方向走：光掉得飞快、压力稳稳地涨、温度先急降后几乎不动。孩子看出这三条节奏不一样，就已经在读函数了。</p>
+        <p><b>背后的数字：</b>压力用的是 1＋深度÷10（大气压）这个海水近似式，10 米约 2 个、1000 米约 101 个、8300 米约 831 个。光按「200 米约剩 1%」这个常用分界做指数衰减估算，不同水质会有出入。温度取的是开阔洋区的常见范围，热泉附近完全不适用。</p>
+        <p><b>怎么问：</b>先让孩子指着最长的那一条说话，再问「哪一条掉得最快」。三条摆在一起，「深海又黑又冷又挤」就不再是一句形容词，而是三条能比长短的证据。</p>
+      </details>
+    </article>
+
+    <article class="ocx-card" aria-labelledby="ocxGameTitle">
+      <h3 id="ocxGameTitle">③ 它住在哪一层</h3>
+      <p class="ocx-lead">标本盘里放着一只海洋动物。看它身上的线索，再点一张深度卡。选完会告诉你这条线索为什么指向那一层。一共六轮。</p>
+      <div class="ocx-game-stage">
+        <svg class="ocx-game-art" id="ocxGameArt" viewBox="0 0 320 200" role="img" aria-labelledby="ocxGameArtTitle ocxGameArtDesc">
+          <title id="ocxGameArtTitle">标本盘上的海洋动物</title>
+          <desc id="ocxGameArtDesc">标本盘里放着一只海洋动物，请看它的眼睛、颜色、身体软硬和会不会发光，再猜它住在哪一层。</desc>
+          <g id="ocxGameBody"></g>
+        </svg>
+      </div>
+      <p class="ocx-ask" id="ocxGameAsk">它住在哪一层？</p>
+      <div class="kid-tiles ocx-game-picks" id="ocxGamePicks" role="group" aria-labelledby="ocxGameTitle">
+        <button class="kid-tile" type="button" data-ocx-answer="sun" aria-pressed="false" aria-label="选阳光层，0 到 200 米">
+          <span class="kid-tile-art" aria-hidden="true">☀️</span>
+          <span class="kid-tile-label">阳光层</span>
+          <span class="kid-tile-sub">0–200 米</span>
+        </button>
+        <button class="kid-tile" type="button" data-ocx-answer="twi" aria-pressed="false" aria-label="选微光层，200 到 1000 米">
+          <span class="kid-tile-art" aria-hidden="true">🌫️</span>
+          <span class="kid-tile-label">微光层</span>
+          <span class="kid-tile-sub">200–1000 米</span>
+        </button>
+        <button class="kid-tile" type="button" data-ocx-answer="mid" aria-pressed="false" aria-label="选无光层，1000 到 4000 米">
+          <span class="kid-tile-art" aria-hidden="true">🌑</span>
+          <span class="kid-tile-label">无光层</span>
+          <span class="kid-tile-sub">1000–4000 米</span>
+        </button>
+        <button class="kid-tile" type="button" data-ocx-answer="deep" aria-pressed="false" aria-label="选深渊与海沟层，4000 米以下">
+          <span class="kid-tile-art" aria-hidden="true">🕳️</span>
+          <span class="kid-tile-label">深渊·海沟</span>
+          <span class="kid-tile-sub">4000 米以下</span>
+        </button>
+      </div>
+      <div class="ocx-game-actions">
+        <button class="btn btn-primary" type="button" id="ocxGameNext"><span aria-hidden="true">🔄</span> 换一只</button>
+        <button class="btn btn-ghost" type="button" id="ocxGameHint"><span aria-hidden="true">👀</span> 给点提示</button>
+      </div>
+      <p class="kid-speech" id="ocxGameSay" role="status" aria-live="polite">先看图上的线索，再点一张深度卡。</p>
+      <p class="ocx-dots-row">
+        <span class="ocx-dots-cap" id="ocxRoundDotsCap">六轮进度（实心＝这一轮已经答对）：</span>
+        <span class="kid-dots" id="ocxRoundDots" role="img" aria-labelledby="ocxRoundDotsCap"></span>
+      </p>
+      <p class="ocx-score">
+        <span class="ocx-stars" id="ocxGameStars" role="img" aria-label="已经答对 0 次"></span>
+        <span id="ocxGameTotal">答对 0 次</span>
+      </p>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：这个游戏在教什么</summary>
+        <p><b>学习目标：</b>从结构反推环境。会发光→那里没有阳光；眼睛特别大→那里只剩一点光要收集；身体软塌塌→那里压力极大，硬结构反而是负担；颜色鲜艳→只有照得到阳光的地方才用得上颜色。这是生物学里最基本的「结构—功能—环境」推理。</p>
+        <p><b>怎么用：</b>答错不清空、不计时，图还在，可以接着看。让孩子先说出他看到的那一条线索，再按卡；说不出来就按「给点提示」。重点是说清理由，不是点得快。</p>
+        <p><b>可以再追问：</b>「这个本领要付出什么代价？」——发光要花能量、大眼睛占地方、软身体游不快。让优点和代价成对出现，孩子才不会把适应理解成单纯变强。</p>
+      </details>
+    </article>
+  </section>
+
+  <!-- 光的颜色实验室 -->
+  <section>
+    <h2>为什么潜下去以后，周围越来越蓝</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      阳光看起来是白的，其实是很多颜色混在一起。海水会把不同颜色一层层吸掉，
+      <b>红色最先消失，蓝色走得最远</b>。点一个颜色，看它大概能走到哪一层。
+    </p>
+    <div class="lab-card light-lab" id="lightLab" data-light="blue">
+      <div class="quick-picks" id="lightPicks" role="group" aria-label="选择一种光的颜色">
+        <button class="kid-choice" type="button" data-color="red" aria-pressed="false">🔴 红光</button>
+        <button class="kid-choice" type="button" data-color="orange" aria-pressed="false">🟠 橙光</button>
+        <button class="kid-choice" type="button" data-color="yellow" aria-pressed="false">🟡 黄光</button>
+        <button class="kid-choice" type="button" data-color="green" aria-pressed="false">🟢 绿光</button>
+        <button class="kid-choice" type="button" data-color="blue" aria-pressed="true">🔵 蓝光</button>
+      </div>
+      <svg class="light-svg" viewBox="0 0 400 214" role="img" aria-labelledby="lightSvgTitle lightSvgDesc">
+        <title id="lightSvgTitle">不同颜色的光在海水里能走多深</title>
+        <desc id="lightSvgDesc">五道从海面向下的光柱。红光最短，橙、黄、绿依次变长，蓝光最长，能一直伸到画面最深处。</desc>
+        <g class="lbeam lbeam-red"><rect x="24" y="6" width="26" height="36" rx="9" fill="#f87171"></rect><text x="37" y="60" fill="#f1f5f9" font-size="11" text-anchor="middle">红</text></g>
+        <g class="lbeam lbeam-orange"><rect x="94" y="6" width="26" height="58" rx="9" fill="#fb923c"></rect><text x="107" y="82" fill="#f1f5f9" font-size="11" text-anchor="middle">橙</text></g>
+        <g class="lbeam lbeam-yellow"><rect x="164" y="6" width="26" height="84" rx="9" fill="#fde047"></rect><text x="177" y="108" fill="#f1f5f9" font-size="11" text-anchor="middle">黄</text></g>
+        <g class="lbeam lbeam-green"><rect x="234" y="6" width="26" height="122" rx="9" fill="#4ade80"></rect><text x="247" y="146" fill="#f1f5f9" font-size="11" text-anchor="middle">绿</text></g>
+        <g class="lbeam lbeam-blue"><rect x="304" y="6" width="26" height="184" rx="9" fill="#60a5fa"></rect><text x="317" y="206" fill="#f1f5f9" font-size="11" text-anchor="middle">蓝</text></g>
+        <text x="360" y="20" fill="#0f172a" font-size="10">海面</text>
+        <text x="360" y="106" fill="#e2e8f0" font-size="10">较深</text>
+        <text x="352" y="196" fill="#e2e8f0" font-size="10">最深处</text>
+      </svg>
+      <p class="info-result" id="lightResult" role="status" aria-live="polite">选一个颜色，看看它能走多深。</p>
+    </div>
+    <div class="age-tiers">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>海水会把红色的光「喝掉」，只让蓝色的光跑到很深的地方。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>所以水下的红色东西看起来发灰发黑——不是它变色了，是照到它身上的红光已经没有了。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>不同颜色的光被水吸收的快慢不一样，这叫选择性吸收。潜水摄影要带灯，就是为了把缺掉的那部分光补回去。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>观察到的颜色由「照进来的光」和「物体本身」共同决定，改变光源就会改变观察结果。</p>
+    <ul class="ask-list">
+      <li>如果深海里有一条红色的鱼，在没有灯的地方它看起来是什么颜色？这对它有什么好处？</li>
+      <li>为什么潜水员要带手电筒，才能看清珊瑚原本的颜色？</li>
+    </ul>
+    <p class="parent-note" data-audience="parent"><b>家里可以试：</b>在浴缸或大盆里放一张红色卡纸和一张蓝色卡纸，关掉大灯只留一盏小灯，从上往下看。水越深、光越暗，红卡纸越先「失去颜色」。这不是严格实验，但足以让孩子相信「颜色需要光」。</p>
   </section>
 
   <!-- 深度标尺 -->
@@ -356,6 +1186,13 @@
         下潜深度：<b id="depv" style="font-family:var(--mono);color:var(--video)">40 米</b>
       </label>
       <input id="dep" type="range" min="0" max="10935" step="5" value="40" style="width:100%">
+      <div class="depth-picks" id="depthPicks" role="group" aria-label="直接跳到一个深度">
+        <button type="button" data-depth="10" aria-pressed="false"><span aria-hidden="true">🏊</span> 游泳池</button>
+        <button type="button" data-depth="40" aria-pressed="true"><span aria-hidden="true">🤿</span> 潜水员</button>
+        <button type="button" data-depth="200" aria-pressed="false"><span aria-hidden="true">🐠</span> 有光到这</button>
+        <button type="button" data-depth="2250" aria-pressed="false"><span aria-hidden="true">🐋</span> 抹香鲸</button>
+        <button type="button" data-depth="10935" aria-pressed="false"><span aria-hidden="true">🕳</span> 最深处</button>
+      </div>
       <div class="press" style="margin-top:16px">
         <div class="press-vis">
           <div class="can" id="can"></div>
@@ -369,13 +1206,241 @@
         真实计算还要考虑海水密度随深度和盐度的细微变化。
       </p>
     </div>
+    <div class="age-tiers">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>你上面有多少水，就有多重的水压在你身上——越深，压得越紧。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>压力是从四面八方一起挤过来的，不只是从上面压。所以深海动物不会被「压扁」，而是被均匀地挤住。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>关键在于身体内外的压力是否平衡。装满水的身体几乎压不动，但身体里只要有一个封闭的气腔（气泡、肺、鱼鳔），气体就会被压小，麻烦就出现在这里。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>把「深度」这个自变量和「压力」这个因变量连成一条可预测的规律，并用它解释生物结构上的差别。</p>
+    <ul class="ask-list">
+      <li>为什么装满水的塑料袋很难捏动，装空气的袋子一捏就变形？</li>
+      <li>如果一条鱼身体里完全没有气泡，深度对它来说还那么危险吗？</li>
+    </ul>
+  </section>
+
+  <!-- 深海适应 -->
+  <section>
+    <h2>住在又黑又冷又高压的地方，身体要怎么改</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      深海动物不是「更强壮」，而是<b>换了一套解决方案</b>。同一个难题可以有好几种答案。
+    </p>
+    <div class="adapt-cards">
+      <div class="adapt-card"><h3>🫧 不带气腔</h3><p>难题是高压。办法是身体里主要都是水和凝胶，尽量不留可以被压缩的气泡，压力再大也不会被挤变形。</p></div>
+      <div class="adapt-card"><h3>💡 自己带灯</h3><p>难题是没有光。办法是生物发光——用来照明、引诱猎物、彼此认亲，或者忽然一闪把捕食者吓走。</p></div>
+      <div class="adapt-card"><h3>👁 放大眼睛</h3><p>难题是光太少。办法是把眼睛做得特别大，尽量接住每一点微光；也有动物干脆放弃视觉，改用触觉和水流感知。</p></div>
+      <div class="adapt-card"><h3>🐌 慢下来</h3><p>难题是食物少。办法是动得慢、吃得少、长得慢，能等很久再吃一顿，把能量省下来。</p></div>
+      <div class="adapt-card"><h3>👄 大嘴巴</h3><p>难题是机会稀少。办法是嘴和胃都能张得很大，遇到一次猎物就尽量一次吃够。</p></div>
+      <div class="adapt-card"><h3>🌡 不怕冷</h3><p>难题是水温低。办法是体温跟着环境走，不花能量去保持温暖，代谢整体放慢。</p></div>
+    </div>
+    <div class="age-tiers">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>深海很黑很冷，住在那里的动物都带着自己的「特别装备」。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>每一件装备都在解决一个具体问题：没有光、压力大、吃的少。看到一个器官很奇怪，就可以问「它在解决哪个问题」。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>不同种类的动物可能用完全不同的结构解决同一个问题，也可能同一种结构顺手解决了好几个问题。适应是一堆取舍，不是一条最优答案。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>把「结构」和「功能」对应起来——先描述环境的限制，再推测身体需要什么，这是生物学最基本的推理方式。</p>
+    <ul class="ask-list">
+      <li>如果你要设计一只住在 5000 米深处的动物，会先给它加什么？为什么？</li>
+      <li>「自己发光」有什么坏处吗？什么时候它反而危险？</li>
+    </ul>
+    <p class="parent-note" data-audience="parent"><b>怎么问得更深：</b>孩子说完一个特征后，追问「这样做要付出什么代价」。例如眼睛变大就占地方、发光要花能量、动得慢就跑不掉。让「优点—代价」成对出现，能避免把适应理解成单纯的变强。</p>
+  </section>
+
+  <!-- 洋流与温盐 -->
+  <section>
+    <h2>大海一直在流动：冷水会往下沉</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      海水不是静止的。<b>越冷、越咸的水越重，会往下沉；暖水和淡一点的水比较轻，会浮在上面。</b>
+      沉下去和浮上来的水互相接替，就形成了缓慢的循环。
+    </p>
+    <div class="lab-card">
+      <div class="quick-picks" id="currentPicks" role="group" aria-label="选择一杯水的情况">
+        <button class="kid-choice" type="button" data-water="warm" aria-pressed="true">🔥 温水 · 不咸</button>
+        <button class="kid-choice" type="button" data-water="cold" aria-pressed="false">❄️ 冷水 · 不咸</button>
+        <button class="kid-choice" type="button" data-water="salty" aria-pressed="false">🧂 温水 · 很咸</button>
+        <button class="kid-choice" type="button" data-water="coldsalty" aria-pressed="false">🧊 冷水 · 很咸</button>
+      </div>
+      <svg class="diagram" viewBox="0 0 400 150" role="img" aria-labelledby="curSvgTitle curSvgDesc">
+        <title id="curSvgTitle">冷水下沉、暖水上浮的循环示意</title>
+        <desc id="curSvgDesc">一个海洋剖面。右边冷而咸的水向下沉到底部，沿着海底向左流动，再在左边慢慢上升回到表面，形成一个环形。</desc>
+        <rect x="8" y="10" width="384" height="130" rx="10" fill="#0b2545"></rect>
+        <rect x="8" y="10" width="384" height="26" rx="10" fill="#2a6ea8"></rect>
+        <text x="20" y="28" fill="#e2e8f0" font-size="10">表层：较暖、较轻</text>
+        <text x="20" y="132" fill="#93c5fd" font-size="10">深层：较冷、较重</text>
+        <path d="M330 40 L330 108" stroke="#7dd3fc" stroke-width="4" fill="none"></path>
+        <path d="M322 100 L330 112 L338 100 Z" fill="#7dd3fc"></path>
+        <path d="M324 112 L80 112" stroke="#7dd3fc" stroke-width="4" fill="none"></path>
+        <path d="M88 104 L74 112 L88 120 Z" fill="#7dd3fc"></path>
+        <path d="M74 108 L74 44" stroke="#a7f3d0" stroke-width="4" fill="none"></path>
+        <path d="M66 52 L74 40 L82 52 Z" fill="#a7f3d0"></path>
+        <path d="M78 40 L320 40" stroke="#a7f3d0" stroke-width="4" fill="none"></path>
+        <path d="M312 32 L326 40 L312 48 Z" fill="#a7f3d0"></path>
+        <text x="238" y="62" fill="#7dd3fc" font-size="10">冷咸水下沉</text>
+        <text x="96" y="80" fill="#a7f3d0" font-size="10">深水缓慢上升</text>
+      </svg>
+      <p class="info-result" id="currentResult" role="status" aria-live="polite">选一种水，看它在海里会往上还是往下。</p>
+    </div>
+    <div class="age-tiers">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>凉的水比较重，会跑到下面去；暖的水比较轻，留在上面。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>温度和盐度一起决定水的轻重。又冷又咸最重，又暖又淡最轻，中间的情况就要比一比。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>这种由温度和盐度差异驱动的流动很缓慢，但规模极大，它把表层的氧气带向深处，也把深处的养分带回上层。海面的风驱动的是另一类更快的表层流。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>两个变量（温度、盐度）同时影响一个结果（密度），需要分别控制、逐一比较——这是控制变量思想的入门场景。</p>
+    <ul class="ask-list">
+      <li>如果只知道一杯水很咸，能确定它会下沉吗？还缺什么信息？</li>
+      <li>深海里的动物需要氧气，氧气是怎么从海面到那么深的地方去的？</li>
+    </ul>
+    <p class="parent-note" data-audience="parent"><b>家里可以试：</b>两杯常温水，一杯化开较多的盐，用食用色素给盐水染色，再用勺子背贴着杯壁把盐水慢慢倒进清水里。盐水会沉到底部形成分层，静置一会儿仍能看到界面。这就是密度分层最直观的样子。</p>
+  </section>
+
+  <!-- 食物网 -->
+  <section>
+    <h2>没有阳光的地方，饭从哪里来</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      海面上有阳光，微小的浮游植物可以自己制造食物，它们是<b>大部分海洋食物网的起点</b>。
+      深处没有光，食物主要靠从上面「掉下来」。
+    </p>
+    <svg class="diagram" viewBox="0 0 400 208" role="img" aria-labelledby="webSvgTitle webSvgDesc">
+      <title id="webSvgTitle">海洋食物网与沉降的食物</title>
+      <desc id="webSvgDesc">从上到下四层。最上层是阳光和浮游植物，第二层是浮游动物和小鱼，第三层是大鱼和鲸，最下层是海底的清理者。箭头从上层指向下层，表示食物碎屑不断向下沉降。</desc>
+      <rect x="6" y="6" width="388" height="196" rx="10" fill="#07182f"></rect>
+      <g font-size="11" fill="#e2e8f0">
+        <rect x="16" y="16" width="368" height="38" rx="8" fill="#1d4d7a"></rect>
+        <text x="28" y="33">☀️ 阳光 + 🦠 浮游植物</text>
+        <text x="28" y="48" font-size="9.5" fill="#bfdbfe">自己用光制造食物，是起点</text>
+
+        <rect x="16" y="62" width="368" height="38" rx="8" fill="#1b4066"></rect>
+        <text x="28" y="79">🦐 浮游动物 → 🐟 小鱼</text>
+        <text x="28" y="94" font-size="9.5" fill="#bfdbfe">吃浮游植物，也被别人吃</text>
+
+        <rect x="16" y="108" width="368" height="38" rx="8" fill="#173453"></rect>
+        <text x="28" y="125">🐬 大鱼 · 🐋 鲸</text>
+        <text x="28" y="140" font-size="9.5" fill="#bfdbfe">吃小鱼和成群的浮游动物</text>
+
+        <rect x="16" y="154" width="368" height="38" rx="8" fill="#122840"></rect>
+        <text x="28" y="171">🦀 海底清理者</text>
+        <text x="28" y="186" font-size="9.5" fill="#bfdbfe">吃沉下来的碎屑，把物质还回循环</text>
+      </g>
+      <g stroke="#7dd3fc" stroke-width="2" fill="none">
+        <path d="M352 54 L352 60"></path><path d="M352 100 L352 106"></path><path d="M352 146 L352 152"></path>
+      </g>
+      <g fill="#7dd3fc">
+        <path d="M347 58 L352 66 L357 58 Z"></path><path d="M347 104 L352 112 L357 104 Z"></path><path d="M347 150 L352 158 L357 150 Z"></path>
+      </g>
+      <text x="300" y="14" fill="#7dd3fc" font-size="9">碎屑向下沉</text>
+    </svg>
+    <div class="age-tiers">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>海面上有太阳，小小的植物在那里做饭；下面的动物吃从上面掉下来的东西。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>食物是一条一条串起来的：浮游植物 → 浮游动物 → 小鱼 → 大鱼。所以最上面那一层出问题，下面所有人都会受影响。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>它更像一张网而不是一条链，同一种动物可能出现在好几条路径上。深海生态系统很大程度上依赖上层沉降下来的有机碎屑；深海热泉附近则有另一套不依赖阳光的起点。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>系统里各部分互相依赖，能量有方向地流动；改动其中一环会沿着连接传播到别处。</p>
+    <ul class="ask-list">
+      <li>如果海面的浮游植物忽然变少，最深处的动物会不会受影响？中间要经过哪几步？</li>
+      <li>为什么食物网画成「网」比画成「链」更准确？</li>
+    </ul>
+  </section>
+
+  <!-- 潜水器 -->
+  <section>
+    <h2>潜水器怎么下去，又怎么上来</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      潜水器不靠「用力往下游」。它靠<b>改变自己的轻重</b>：想下去就变重，想上来就变轻。
+      点一个部件，看它负责什么。
+    </p>
+    <div class="lab-card sub-cut" id="subCut" data-part="sphere">
+      <div class="quick-picks" id="subPicks" role="group" aria-label="选择潜水器的一个部件">
+        <button class="kid-choice" type="button" data-part="ballast" aria-pressed="false">⚖️ 压载舱</button>
+        <button class="kid-choice" type="button" data-part="sphere" aria-pressed="true">🔵 载人耐压球</button>
+        <button class="kid-choice" type="button" data-part="foam" aria-pressed="false">🧱 浮力材料</button>
+      </div>
+      <svg class="diagram" viewBox="0 0 400 168" role="img" aria-labelledby="subSvgTitle subSvgDesc">
+        <title id="subSvgTitle">潜水器剖面：压载舱、耐压球和浮力材料</title>
+        <desc id="subSvgDesc">一台潜水器的侧视剖面。上方是大块浮力材料，中间是圆形的载人耐压球，下方两侧是可以放水或抛掉重物的压载舱，尾部有推进器。</desc>
+        <rect x="6" y="6" width="388" height="156" rx="10" fill="#0b2545"></rect>
+        <g class="dpart dpart-foam"><rect x="96" y="30" width="210" height="30" rx="14" fill="#94a3b8"></rect><text x="201" y="50" fill="#0f172a" font-size="11" text-anchor="middle">浮力材料</text></g>
+        <g class="dpart dpart-sphere"><circle cx="186" cy="98" r="30" fill="#38bdf8"></circle><text x="186" y="102" fill="#04283f" font-size="10" text-anchor="middle">耐压球</text></g>
+        <g class="dpart dpart-ballast">
+          <rect x="112" y="128" width="52" height="22" rx="8" fill="#fbbf24"></rect>
+          <rect x="212" y="128" width="52" height="22" rx="8" fill="#fbbf24"></rect>
+          <text x="188" y="144" fill="#fde68a" font-size="10" text-anchor="middle">压载</text>
+        </g>
+        <rect x="306" y="86" width="34" height="24" rx="8" fill="#64748b"></rect>
+        <text x="323" y="102" fill="#e2e8f0" font-size="9" text-anchor="middle">推进</text>
+        <text x="20" y="24" fill="#93c5fd" font-size="10">潜水器剖面</text>
+      </svg>
+      <p class="info-result" id="subResult" role="status" aria-live="polite">选一个部件，看它解决什么问题。</p>
+    </div>
+    <div class="age-tiers">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>潜水器想下去就让自己变重，想上来就把重的东西放掉。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>它同时带着两样相反的东西：让自己变重的压载，和永远想往上浮的浮力材料。要上浮时把压载丢掉，剩下的浮力就会把它带回海面。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>关键是浮力和重力的比较：整体比同体积的海水重就下沉，轻就上浮。载人舱做成球形，是因为球面能把四面八方的压力均匀分散，没有容易被压塌的角。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>工程是在约束下做设计——每个部件对应一个具体难题，形状和材料的选择都有理由。</p>
+    <ul class="ask-list">
+      <li>如果潜水器不带浮力材料，只靠推进器往上开，会有什么风险？</li>
+      <li>为什么载人舱不做成方盒子？你能想到别的抗压形状吗？</li>
+    </ul>
+    <p class="parent-note" data-audience="parent"><b>家里可以试：</b>一个带盖的空瓶子放进水盆，会浮着；慢慢灌水，到某个程度它开始下沉；把水倒掉一部分，它又浮起来。这就是压载舱的全部原理，孩子亲手做过一次，比任何解释都清楚。</p>
+  </section>
+
+  <!-- 鲸类呼吸与下潜 -->
+  <section>
+    <h2>鲸也要呼吸空气：它怎么带着一口气潜那么深</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      鲸不是鱼，它<b>用肺呼吸</b>，必须回到海面换气。潜下去的这段时间，它靠的是出发前那口气，
+      以及一整套省氧气的办法。点一个阶段看看。
+    </p>
+    <div class="lab-card whale-cut" id="whaleCut" data-phase="breathe">
+      <div class="quick-picks" id="whalePicks" role="group" aria-label="选择鲸下潜的一个阶段">
+        <button class="kid-choice" type="button" data-phase="breathe" aria-pressed="true">💨 海面换气</button>
+        <button class="kid-choice" type="button" data-phase="dive" aria-pressed="false">⬇️ 下潜途中</button>
+        <button class="kid-choice" type="button" data-phase="rise" aria-pressed="false">⬆️ 慢慢上浮</button>
+      </div>
+      <svg class="diagram" viewBox="0 0 400 170" role="img" aria-labelledby="whaleSvgTitle whaleSvgDesc">
+        <title id="whaleSvgTitle">鲸的三个下潜阶段</title>
+        <desc id="whaleSvgDesc">左边鲸在海面喷出水汽换气，中间鲸向斜下方下潜，右边鲸沿着较缓的路线慢慢上浮回到海面。</desc>
+        <rect x="6" y="6" width="388" height="158" rx="10" fill="#0b2545"></rect>
+        <rect x="6" y="6" width="388" height="24" rx="10" fill="#2a6ea8"></rect>
+        <g class="dpart dpart-breathe">
+          <ellipse cx="70" cy="40" rx="34" ry="13" fill="#475569"></ellipse>
+          <path d="M62 26 L58 8 M70 26 L72 6" stroke="#bae6fd" stroke-width="3" fill="none"></path>
+          <text x="70" y="70" fill="#e2e8f0" font-size="10" text-anchor="middle">换气</text>
+        </g>
+        <g class="dpart dpart-dive">
+          <ellipse cx="196" cy="96" rx="34" ry="13" fill="#475569" transform="rotate(24 196 96)"></ellipse>
+          <path d="M170 56 L206 122" stroke="#7dd3fc" stroke-width="3" stroke-dasharray="6 5" fill="none"></path>
+          <text x="196" y="140" fill="#e2e8f0" font-size="10" text-anchor="middle">下潜</text>
+        </g>
+        <g class="dpart dpart-rise">
+          <ellipse cx="330" cy="90" rx="34" ry="13" fill="#475569" transform="rotate(-20 330 90)"></ellipse>
+          <path d="M350 130 L316 40" stroke="#a7f3d0" stroke-width="3" stroke-dasharray="6 5" fill="none"></path>
+          <text x="330" y="140" fill="#e2e8f0" font-size="10" text-anchor="middle">上浮</text>
+        </g>
+      </svg>
+      <p class="info-result" id="whaleResult" role="status" aria-live="polite">选一个阶段，看鲸在做什么。</p>
+    </div>
+    <div class="age-tiers">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>鲸要先在海面吸一大口气，才能潜下去；气用完就得回来再吸。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>它下潜时会放慢心跳、少活动，让那口气用得更久；还会把身体里的空气腔挤小，减少压力带来的麻烦。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>深潜动物普遍把氧气储存在血液和肌肉里，而不是靠肺里的大量空气。上浮不能太快——这也是为什么它们通常沿着较缓的路线返回海面。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>同一个环境对不同呼吸方式的动物提出完全不同的挑战；「用鳃」和「用肺」会导出两套解决方案。</p>
+    <ul class="ask-list">
+      <li>鱼不用回海面换气，鲸却必须。这对它们各自的生活方式有什么影响？</li>
+      <li>屏住呼吸时安静不动，是不是比一直乱动能坚持得更久？为什么？</li>
+    </ul>
+    <p class="parent-note" data-audience="parent"><b>提醒：</b>不要把这个话题变成憋气比赛。可以换成安全的版本——安静坐着数呼吸次数，再原地跳二十下后再数一次，比较两次的差别，同样能说明「活动多就更耗氧」。</p>
   </section>
 
   <!-- 生物 -->
   <section>
     <h2>住在海里的邻居</h2>
     <p style="color:var(--ink-mid);max-width:66ch">
-      按住的深度排开。照片来自 iNaturalist 的公开观察记录，联网时自动加载。
+      按住的深度排开。每一张卡先用 emoji 认动物，离线也能看。
+    </p>
+    <p class="parent-note" data-audience="parent" style="max-width:66ch">
+      <b>关于照片：</b>真实照片来自 iNaturalist 的公开观察记录，默认<b>不联网</b>。
+      需要照片或实时数据时，请在下方家长区勾选「允许联网加载照片与实时数据」。
     </p>
     <div class="cgrid" id="crits" style="margin-top:14px"></div>
   </section>
@@ -447,7 +1512,11 @@
   ZONES.forEach(function (z) {
     var d = document.createElement("div");
     d.className = "zone";
-    d.style.background = z.bg;
+    /* 在深度渐变之上叠一层固定深色蒙版。阳光层的 #38bdf8 太亮、深渊层的 #05070f 太暗，
+       同一套浅色文字无法两边都达标；压过蒙版后所有分区的底色落在同一个可读区间，
+       深度的相对变化仍然看得出来。蒙版必须和渐变一起写进 background，
+       因为这里是内联样式，样式表里的 background-image 盖不过它。 */
+    d.style.background = "linear-gradient(rgba(3,10,24,.55),rgba(3,10,24,.55)), " + z.bg;
 
     var hd = document.createElement("div");
     hd.className = "zone-hd";
@@ -566,6 +1635,23 @@
   dep.addEventListener("input", press);
   press();
 
+  /* 深度快捷图卡：不会拖滑块的孩子也能换深度 */
+  [].forEach.call(document.querySelectorAll("#depthPicks [data-depth]"), function (button) {
+    button.addEventListener("click", function () {
+      [].forEach.call(button.parentNode.querySelectorAll("[data-depth]"), function (other) {
+        other.setAttribute("aria-pressed", other === button ? "true" : "false");
+      });
+      dep.value = button.getAttribute("data-depth");
+      press();
+    });
+  });
+  /* 拖动滑块后，快捷图卡不该继续显示为选中 */
+  dep.addEventListener("input", function () {
+    [].forEach.call(document.querySelectorAll("#depthPicks [data-depth]"), function (other) {
+      other.setAttribute("aria-pressed", other.getAttribute("data-depth") === dep.value ? "true" : "false");
+    });
+  });
+
   /* ---------- 生物 ---------- */
   var CRITS = [
     { n: "蓝鲸", sci: "Balaenoptera musculus", inat: "Balaenoptera musculus",
@@ -636,19 +1722,19 @@
 
   /* ---------- 动手实验 ---------- */
   var ACTS = [
-    { t: "自制潜水艇（浮沉子）",
+    { t: "自制潜水艇（浮沉子）", em: "🤿", short: "挤瓶子 → 它下沉",
       need: "塑料瓶、酱油包或笔帽、橡皮泥",
       how: "笔帽上粘一小块橡皮泥，让它在水里刚好悬浮。放进装满水的塑料瓶，盖紧。用力挤瓶子——它就往下沉；松手——它又浮起来。",
       why: "挤压让瓶内压力变大，把水压进笔帽、挤走里面的空气，浮力变小就下沉。真潜艇也是同一原理：往压载舱注水就下潜，排水就上浮。" },
-    { t: "为什么深海鱼不会被压扁",
+    { t: "为什么深海鱼不会被压扁", em: "💧", short: "水袋挤不动",
       need: "两个密封袋、水",
       how: "一个袋子装满水密封，另一个装满空气密封。都按进水盆里，用力挤。装水的几乎挤不动，装空气的很容易变形。",
       why: "水几乎<b>不可压缩</b>。深海鱼体内基本都是水，所以外面压力再大也压不瘪。真正怕压的是含气体的结构——这就是深海鱼大多没有鱼鳔的原因。" },
-    { t: "光在水里走多远",
+    { t: "光在水里走多远", em: "🔦", short: "加牛奶，光变短",
       need: "手电筒、深一点的容器、牛奶几滴",
       how: "在清水里照手电，光能穿到底。滴几滴牛奶搅匀再照，光就只能透进一小段。逐渐加牛奶，记录光每次能走多深。",
       why: "海水里的浮游生物和悬浮颗粒会散射、吸收光线，所以光越往下越少。红光最先消失（几米内），蓝光能走最远——这就是深海照片总是蓝色的原因。" },
-    { t: "海水为什么比淡水浮",
+    { t: "海水为什么比淡水浮", em: "🥚", short: "盐水里蛋会浮",
       need: "两个杯子、盐、鸡蛋或葡萄",
       how: "一杯清水，一杯加三大勺盐搅到化开。同一个鸡蛋分别放进去：清水里沉底，盐水里浮起来。试试能不能配出让它悬在中间的浓度。",
       why: "盐溶解后水的<b>密度</b>变大，浮力也变大。死海盐度极高，人躺上去就能漂着。海洋里不同盐度和温度的水层不会轻易混合，会形成分层。" }
@@ -656,37 +1742,68 @@
   var acts = document.getElementById("acts");
   ACTS.forEach(function (a) {
     var c = document.createElement("div");
-    c.className = "card";
+    c.className = "card act-card";
     c.style.padding = "17px 19px";
+
+    /* 先图后字：大 emoji + 一句短话，识字前也能挑实验 */
+    var head = document.createElement("div");
+    head.className = "act-head";
+    var art = document.createElement("span");
+    art.className = "act-art";
+    art.setAttribute("aria-hidden", "true");
+    art.textContent = a.em;
+    var titleWrap = document.createElement("div");
     var h = document.createElement("h3");
-    h.style.margin = "0 0 4px";
+    h.style.margin = "0 0 2px";
     h.style.fontSize = "1.04rem";
     h.textContent = a.t;
+    var sh = document.createElement("p");
+    sh.className = "act-short";
+    sh.textContent = a.short;
+    titleWrap.appendChild(h); titleWrap.appendChild(sh);
+    head.appendChild(art); head.appendChild(titleWrap);
+
     var n = document.createElement("p");
-    n.style.cssText = "margin:0 0 9px;font-size:.76rem;color:var(--ink-dim);font-family:var(--mono)";
+    n.style.cssText = "margin:9px 0 9px;font-size:.76rem;color:var(--ink-dim);font-family:var(--mono)";
     n.textContent = "需要：" + a.need;
     var hw = document.createElement("p");
     hw.style.cssText = "margin:0 0 9px;font-size:.88rem;color:var(--ink-mid)";
     hw.innerHTML = a.how;
+
+    /* 原理属于家长解释层，收进 data-audience="parent" 的折叠块 */
+    var det = document.createElement("details");
+    det.className = "parent-deep-dive";
+    det.setAttribute("data-audience", "parent");
+    var sum = document.createElement("summary");
+    sum.textContent = "家长层：背后的原理";
     var wy = document.createElement("p");
-    wy.style.cssText = "margin:0;font-size:.83rem;color:var(--ink-mid);border-left:2px solid var(--video);padding-left:10px";
-    wy.innerHTML = "<b style='color:var(--video)'>原理：</b>" + a.why;
-    c.appendChild(h); c.appendChild(n); c.appendChild(hw); c.appendChild(wy);
+    wy.style.cssText = "margin:6px 0 0;font-size:.83rem;color:var(--ink-mid);border-left:2px solid var(--video);padding-left:10px";
+    wy.innerHTML = a.why;
+    det.appendChild(sum); det.appendChild(wy);
+
+    c.appendChild(head); c.appendChild(n); c.appendChild(hw); c.appendChild(det);
     acts.appendChild(c);
   });
 
-  /* ---------- 联网增强：iNaturalist 照片 ---------- */
+  /* ---------- 联网增强：iNaturalist 照片 ----------
+     默认关闭。第三方请求只在家长于家长区开启 onlineData 后才发出；
+     未开启时完全不联网，页面继续使用内置图标与文字。 */
   var srcEl = document.getElementById("src");
   var netOk = null;
   function mark(ok) {
     if (netOk === false) return;
     netOk = ok;
     srcEl.textContent = ok
-      ? "照片来自 iNaturalist（加载中或已完成）。"
-      : "离线模式 · 显示内置数据（照片需要联网）";
+      ? "照片来自 iNaturalist 的公开观察记录（加载中或已完成）。"
+      : "离线模式 · 现在显示内置 emoji 图鉴。照片／实时数据需要家长在家长区开启联网。";
+  }
+
+  function onlineAllowed() {
+    return Boolean(window.Playful && Playful.onlineAllowed && Playful.onlineAllowed());
   }
 
   function jget(url, ms) {
+    if (!onlineAllowed()) return Promise.reject(new Error("online-disabled"));
     var ac = new AbortController();
     var t = setTimeout(function () { ac.abort(); }, ms || 8000);
     return fetch(url, { signal: ac.signal })
@@ -698,12 +1815,14 @@
       .catch(function (e) { clearTimeout(t); throw e; });
   }
 
-  [].slice.call(document.querySelectorAll("[data-inat]")).forEach(function (slot) {
+  function fillSlot(slot) {
     var q = slot.getAttribute("data-inat");
     var ck = "inat-ocean:" + q;
 
     function paint(rec) {
       if (!rec || !rec.url) return;
+      if (slot.getAttribute("data-filled") === "1") return;
+      slot.setAttribute("data-filled", "1");
       var img = document.createElement("img");
       img.className = "ph";
       img.alt = q;
@@ -749,13 +1868,47 @@
         }
       })
       .catch(function () { mark(false); });
+  }
+
+  /* 缓存命中不联网，任何时候都能先把照片放回来 */
+  function fillFromCacheOnly() {
+    [].slice.call(document.querySelectorAll("[data-inat]")).forEach(function (slot) {
+      var q = slot.getAttribute("data-inat");
+      try {
+        var c = localStorage.getItem("inat-ocean:" + q);
+        if (c) { fillSlot(slot); }
+      } catch (e) {}
+    });
+  }
+
+  function runPhotos() {
+    if (!onlineAllowed()) {
+      mark(false);
+      fillFromCacheOnly();
+      return;
+    }
+    netOk = null;
+    [].slice.call(document.querySelectorAll("[data-inat]")).forEach(fillSlot);
+  }
+
+  /* Script 1 比 playful.js 先执行，所以要等共享层就绪后再判断偏好 */
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", runPhotos);
+  } else {
+    runPhotos();
+  }
+
+  /* 家长在家长区打开联网后，补一次加载 */
+  document.addEventListener("playful:preference", function (event) {
+    var d = event && event.detail;
+    if (d && d.name === "onlineData" && d.value) runPhotos();
   });
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>
 (function () {
   "use strict";
@@ -800,9 +1953,585 @@
     var done = window.Progress && Progress.complete("nature/ocean.html", "完成一次下潜，关联了光、温度、压力与生物适应。");
     status.textContent = done ? "已完成任务：下潜证据已保存。" : "四步已完成；当前浏览器无法保存。";
   });
+  function selectOne(button, selector) {
+    [].forEach.call(button.parentNode.querySelectorAll(selector), function (other) {
+      other.setAttribute("aria-pressed", other === button ? "true" : "false");
+    });
+  }
+  [].forEach.call(document.querySelectorAll(".quick-picks[data-fill] .kid-choice"), function (button) {
+    button.addEventListener("click", function () {
+      var group = button.parentNode;
+      var field = document.getElementById(group.getAttribute("data-fill"));
+      if (!field) return;
+      selectOne(button, ".kid-choice");
+      field.value = button.getAttribute("data-value");
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+  });
+  /* ---------- 光的颜色实验室 ---------- */
+  var LIGHT = {
+    red: "红光最先被海水吸收，只能走到很浅的地方。所以水下的红色看起来发灰发黑。",
+    orange: "橙光比红光走得远一点，但也很快消失，在稍深处就看不到了。",
+    yellow: "黄光能到更深一些，不过在有光层的下部也基本没有了。",
+    green: "绿光走得比较远，浅海看起来偏绿，常常是因为水里的浮游植物多。",
+    blue: "蓝光走得最远，所以越往下潜，周围就越蓝——最后只剩蓝，然后连蓝也没有了。"
+  };
+  var lightLab = document.getElementById("lightLab"), lightResult = document.getElementById("lightResult");
+  [].forEach.call(document.querySelectorAll("#lightPicks .kid-choice"), function (button) {
+    button.addEventListener("click", function () {
+      var key = button.getAttribute("data-color");
+      selectOne(button, ".kid-choice");
+      lightLab.setAttribute("data-light", key);
+      lightResult.textContent = LIGHT[key];
+    });
+  });
+
+  /* ---------- 洋流：温度 + 盐度 ---------- */
+  var WATER = {
+    warm: "温水、不咸 → 最轻，会浮在最上面。表层海水常常就是这样。",
+    cold: "冷水、不咸 → 比温水重，会往下沉一些，但沉不到最深。",
+    salty: "温水、很咸 → 盐让它变重，也会下沉；不过温度还在把它往上托。",
+    coldsalty: "冷水、很咸 → 又冷又咸最重，下沉得最深，是深层水的主要来源。"
+  };
+  var currentResult = document.getElementById("currentResult");
+  [].forEach.call(document.querySelectorAll("#currentPicks .kid-choice"), function (button) {
+    button.addEventListener("click", function () {
+      selectOne(button, ".kid-choice");
+      currentResult.textContent = WATER[button.getAttribute("data-water")];
+    });
+  });
+
+  /* ---------- 潜水器部件 ---------- */
+  var SUB = {
+    ballast: "压载舱：想下潜就让自己变重（灌水或带上重物），想上浮就把这份重量放掉。潜水器主要靠它上下。",
+    sphere: "载人耐压球：人待的地方。做成球形，是因为球面能把四面八方的压力均匀分散，没有容易被压塌的角。",
+    foam: "浮力材料：一种被压也几乎不缩小的轻材料，永远想往上浮。它是抛掉压载后把潜水器带回海面的保障。"
+  };
+  var subCut = document.getElementById("subCut"), subResult = document.getElementById("subResult");
+  [].forEach.call(document.querySelectorAll("#subPicks .kid-choice"), function (button) {
+    button.addEventListener("click", function () {
+      var key = button.getAttribute("data-part");
+      selectOne(button, ".kid-choice");
+      subCut.setAttribute("data-part", key);
+      subResult.textContent = SUB[key];
+    });
+  });
+
+  /* ---------- 鲸的下潜阶段 ---------- */
+  var WHALE = {
+    breathe: "海面换气：从头顶的鼻孔喷出一股水汽，再吸满一口气。这段时间决定了它能潜多久。",
+    dive: "下潜途中：心跳放慢、动作变少，把氧气省着用；身体里的空气腔被压小，这是正常的。",
+    rise: "慢慢上浮：通常沿着比较缓的路线回到海面，不会一口气猛冲上来。到了海面第一件事就是换气。"
+  };
+  var whaleCut = document.getElementById("whaleCut"), whaleResult = document.getElementById("whaleResult");
+  [].forEach.call(document.querySelectorAll("#whalePicks .kid-choice"), function (button) {
+    button.addEventListener("click", function () {
+      var key = button.getAttribute("data-phase");
+      selectOne(button, ".kid-choice");
+      whaleCut.setAttribute("data-phase", key);
+      whaleResult.textContent = WHALE[key];
+    });
+  });
+
   if (window.Progress && Progress.getCompletion(id)) status.textContent = "此任务已完成；可换深度和物种更新证据。";
 })();
 </script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script>
+/* ==========================================================================
+   下潜电梯 + 深度图鉴：把「越深越黑、越深越挤」画出来，而不是写出来。
+   内联 SVG，取色全部走 CSS class（见 <style> 里 .oc-* 一节）。
+   ========================================================================== */
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function sv(name, attrs) {
+    var n = document.createElementNS(NS, name);
+    if (attrs) Object.keys(attrs).forEach(function (k) { n.setAttribute(k, String(attrs[k])); });
+    return n;
+  }
+  function el(id) { return document.getElementById(id); }
+  function node(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  }
+
+  /* 五个深度带：上界、下界、代表生物、给孩子的一句话 */
+  /* lightBand：这一层的色带够亮，压在上面的文字必须用深色（见 .oc-cap-dark / .oc-num-dark）。
+     oc-w1 #8ed8f8 和 oc-w2 #2f93cb 都属于此类：near-white 文字在它们上面只有 1.52 / 3.27。 */
+  var ZONES = [
+    { id: 'sun', name: '透光层', short: '有阳光', from: 0, to: 200, emoji: '🐠', band: 'oc-w1', lightBand: true,
+      say: '阳光还很足，海藻可以自己做饭。', fact: '只有这一层的植物能靠阳光自己造出食物。' },
+    { id: 'twi', name: '微光层', short: '光很弱', from: 200, to: 1000, emoji: '🦑', band: 'oc-w2', lightBand: true,
+      say: '光只剩一点点，眼睛要变大才看得见。', fact: '够看见东西，但不够植物做饭。' },
+    { id: 'mid', name: '无光层', short: '全黑了', from: 1000, to: 4000, emoji: '🎣', band: 'oc-w3',
+      say: '完全黑了，很多动物自己会发光。', fact: '阳光一点都到不了，仪器也测不到。' },
+    { id: 'abys', name: '深渊层', short: '又黑又冷', from: 4000, to: 6000, emoji: '🦐', band: 'oc-w4',
+      say: '又黑又冷，吃的只能等上面掉下来。', fact: '水温常年只有 2–4 ℃，几乎不变。' },
+    { id: 'hade', name: '海沟层', short: '最深的沟', from: 6000, to: 11000, emoji: '🪱', band: 'oc-w5',
+      say: '最深的海沟，压力大得能压扁铁罐。', fact: '最深处超过 10000 米，比珠峰还高。' }
+  ];
+  function zoneAt(depth) {
+    for (var i = 0; i < ZONES.length; i += 1) if (depth < ZONES[i].to) return ZONES[i];
+    return ZONES[ZONES.length - 1];
+  }
+  /* 光按指数衰减：每约 45 米减半，够孩子建立「掉得飞快」的直觉 */
+  function lightLeft(depth) { return Math.pow(0.5, depth / 45); }
+  function pressureAt(depth) { return 1 + depth / 10; }
+
+  /* ---- 竖切面：水色分层 + 潜水器 + 光束 + 气泡 ---- */
+  function liftSVG(depth) {
+    var W = 240, H = 320, top = 26, bottom = H - 12;
+    var svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, focusable: 'false', 'aria-hidden': 'true' });
+    svg.appendChild(sv('rect', { 'class': 'oc-sky', x: 0, y: 0, width: W, height: top }));
+    svg.appendChild(sv('circle', { 'class': 'oc-sun', cx: 200, cy: 13, r: 9 }));
+
+    /* 对数刻度铺五层，否则透光层只占一根线 */
+    function yFor(d) {
+      var t = Math.log10(1 + d) / Math.log10(1 + 11000);
+      return top + t * (bottom - top);
+    }
+    ZONES.forEach(function (z) {
+      var y0 = yFor(z.from), y1 = yFor(z.to);
+      svg.appendChild(sv('rect', { 'class': z.band, x: 0, y: y0.toFixed(1), width: W, height: Math.max(1, y1 - y0).toFixed(1) }));
+      svg.appendChild(sv('line', { 'class': 'oc-tick', x1: 0, y1: y1.toFixed(1), x2: W, y2: y1.toFixed(1) }));
+      var cap = sv('text', { 'class': z.lightBand ? 'oc-cap-dark' : 'oc-cap', x: 7, y: (y0 + 13).toFixed(1) });
+      cap.textContent = z.name;
+      svg.appendChild(cap);
+    });
+
+    /* 阳光光束：只到 200 米出头，视觉上直接说明光在哪一层用完 */
+    var beamEnd = yFor(220);
+    svg.appendChild(sv('path', {
+      'class': 'oc-beam', opacity: .3,
+      d: 'M186 ' + top + ' L214 ' + top + ' L206 ' + beamEnd.toFixed(1) + ' L194 ' + beamEnd.toFixed(1) + ' Z'
+    }));
+
+    /* 当前深度：虚线 + 潜水器 + 该层生物 */
+    var y = yFor(depth);
+    svg.appendChild(sv('line', { 'class': 'oc-dash', x1: 0, y1: y.toFixed(1), x2: W, y2: y.toFixed(1) }));
+    var sub = sv('g', { transform: 'translate(74 ' + y.toFixed(1) + ')' });
+    sub.appendChild(sv('ellipse', { cx: 0, cy: 0, rx: 21, ry: 12, fill: '#ffd166', stroke: '#5c3b12', 'stroke-width': 3 }));
+    sub.appendChild(sv('circle', { cx: 6, cy: -1, r: 6, fill: '#cdefff', stroke: '#5c3b12', 'stroke-width': 2 }));
+    sub.appendChild(sv('path', { d: 'M-21 0 l-11 -7 v14 z', fill: '#ff9f43', stroke: '#5c3b12', 'stroke-width': 2 }));
+    svg.appendChild(sub);
+    [[104, -14, 4], [112, -26, 3], [98, -34, 2.4]].forEach(function (b) {
+      svg.appendChild(sv('circle', { 'class': 'oc-bubble', cx: b[0], cy: (y + b[1]).toFixed(1), r: b[2] }));
+    });
+    var creature = sv('text', { x: 176, y: (y + 5).toFixed(1), 'font-size': 26, 'text-anchor': 'middle' });
+    creature.textContent = zoneAt(depth).emoji;
+    svg.appendChild(creature);
+    /* 深度标签压在当前所在层的色带上，浅色带要换深色字 */
+    var label = sv('text', {
+      'class': zoneAt(depth).lightBand ? 'oc-num-dark' : 'oc-num',
+      x: 7, y: (y - 5).toFixed(1)
+    });
+    label.textContent = Math.round(depth) + ' m';
+    svg.appendChild(label);
+    return svg;
+  }
+
+  /* ---- 图鉴小图：一格水色 + 该层生物 ---- */
+  function zoneChipSVG(zone) {
+    var svg = sv('svg', { viewBox: '0 0 132 84', focusable: 'false', 'aria-hidden': 'true' });
+    svg.appendChild(sv('rect', { 'class': zone.band, x: 0, y: 0, width: 132, height: 84, rx: 10 }));
+    var t = sv('text', { x: 66, y: 50, 'font-size': 34, 'text-anchor': 'middle' });
+    t.textContent = zone.emoji;
+    svg.appendChild(t);
+    return svg;
+  }
+
+  var range = el('ocLiftRange');
+  if (!range) return;
+
+  function apply(depth) {
+    depth = Math.max(0, Math.min(11000, Math.round(depth)));
+    var zone = zoneAt(depth);
+    var light = lightLeft(depth);
+    var press = pressureAt(depth);
+
+    var art = el('ocLiftArt');
+    art.textContent = '';
+    art.appendChild(liftSVG(depth));
+    art.setAttribute('aria-label', '海洋竖切面：潜水器停在' + zone.name + '，深度 ' + depth + ' 米');
+
+    el('ocLiftDepth').textContent = depth;
+    el('ocLiftZone').textContent = zone.name;
+    el('ocLiftSay').textContent = zone.say;
+
+    /* 光低于 1% 就改成文字描述，一串 0 对孩子没有意义 */
+    var pct = light * 100;
+    el('ocLightValue').textContent = pct >= 1 ? '约 ' + pct.toFixed(0) + '%' : (pct >= 0.01 ? '不到 1%' : '几乎没有');
+    el('ocPressValue').textContent = press.toFixed(press < 10 ? 1 : 0) + ' 个大气压';
+
+    if (window.Playful && Playful.setMeter) {
+      Playful.setMeter(el('ocLightMeter'), light, 1);
+      /* 压力用对数压缩，否则浅处的条几乎看不出变化 */
+      Playful.setMeter(el('ocPressMeter'), Math.log10(press), Math.log10(pressureAt(11000)));
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('#ocLiftTabs .kid-tile'), function (tile) {
+      tile.setAttribute('aria-pressed', tile.getAttribute('data-oc-zone') === zone.id ? 'true' : 'false');
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('#ocZoneGrid .kid-figure'), function (card) {
+      var on = card.getAttribute('data-oc-zone') === zone.id;
+      card.setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (on) card.setAttribute('data-selected', 'true'); else card.removeAttribute('data-selected');
+    });
+  }
+
+  function midOf(zone) { return zone.id === 'hade' ? 8000 : Math.round((zone.from + zone.to) / 2); }
+
+  /* 五个大图卡当楼层按钮 */
+  var tabs = el('ocLiftTabs');
+  ZONES.forEach(function (zone) {
+    var mid = midOf(zone);
+    var b = node('button', 'kid-tile');
+    b.type = 'button';
+    b.setAttribute('data-oc-zone', zone.id);
+    b.setAttribute('aria-pressed', 'false');
+    b.setAttribute('aria-label', '去' + zone.name + '，大约 ' + mid + ' 米深');
+    var art = node('span', 'kid-tile-art', zone.emoji);
+    art.setAttribute('aria-hidden', 'true');
+    b.appendChild(art);
+    b.appendChild(node('span', 'kid-tile-label', zone.name));
+    b.appendChild(node('span', 'kid-tile-sub', zone.short));
+    b.addEventListener('click', function () { range.value = String(mid); apply(mid); });
+    tabs.appendChild(b);
+  });
+
+  /* 深度图鉴：五层各一张大图卡，点一下电梯就过去 */
+  var grid = el('ocZoneGrid');
+  ZONES.forEach(function (zone) {
+    var mid = midOf(zone);
+    var card = node('button', 'kid-figure');
+    card.type = 'button';
+    card.setAttribute('data-oc-zone', zone.id);
+    card.setAttribute('aria-pressed', 'false');
+    card.setAttribute('aria-label', zone.name + '，' + zone.from + ' 到 ' + zone.to + ' 米，点一下让电梯去这一层');
+    var art = node('span', 'kid-figure-art');
+    art.setAttribute('aria-hidden', 'true');
+    art.appendChild(zoneChipSVG(zone));
+    card.appendChild(art);
+    card.appendChild(node('span', 'kid-figure-cap', zone.name));
+    card.appendChild(node('span', 'kid-figure-sub', zone.from + '–' + zone.to + ' 米'));
+    card.appendChild(node('p', 'kid-figure-fact', zone.fact));
+    card.addEventListener('click', function () { range.value = String(mid); apply(mid); });
+    grid.appendChild(card);
+  });
+
+  range.addEventListener('input', function () { apply(Number(range.value)); });
+  apply(Number(range.value) || 10);
+})();
+</script>
+<script>
+/* ==========================================================================
+   深海三件套的行为层：
+   ② 三条量表（还剩多少光 / 水压有多大 / 水温多少度）跟着深度图卡一起动；
+   ③ 小游戏「它住在哪一层」——六轮，每轮画一只动物，选完解释线索为什么指向那一层。
+   内联 SVG 取色全部走 CSS class（见 <style> 里 .ocx-* 一节），属性里不写颜色。
+   ========================================================================== */
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function sv(name, attrs, text) {
+    var n = document.createElementNS(NS, name);
+    if (attrs) Object.keys(attrs).forEach(function (k) { n.setAttribute(k, String(attrs[k])); });
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function el(id) { return document.getElementById(id); }
+  function put(parent, name, attrs, text) { var n = sv(name, attrs, text); parent.appendChild(n); return n; }
+  /* 一组同色形状：颜色挂在 <g class> 上，子元素只写几何 */
+  function shapes(parent, cls, tag, list) {
+    var g = sv('g', { 'class': cls });
+    list.forEach(function (item) { g.appendChild(sv(tag, item)); });
+    parent.appendChild(g);
+    return g;
+  }
+  function paths(parent, cls, list) {
+    return shapes(parent, cls, 'path', list.map(function (d) { return { d: d }; }));
+  }
+  function circles(parent, cls, list) {
+    return shapes(parent, cls, 'circle', list.map(function (c) { return { cx: c[0], cy: c[1], r: c[2] }; }));
+  }
+  /* 量表：优先用共享层的 setMeter，缺失时自己写 --fill，单页离线也不会僵住 */
+  function setBar(node, ratio) {
+    if (!node) return;
+    ratio = Math.max(0, Math.min(1, ratio));
+    if (window.Playful && Playful.setMeter) { Playful.setMeter(node, ratio, 1); return; }
+    var fill = node.querySelector('.kid-meter-fill');
+    if (fill) fill.style.setProperty('--fill', (ratio * 100).toFixed(1) + '%');
+  }
+  function paintDots(node, filled, total, label) {
+    if (!node) return;
+    node.textContent = '';
+    for (var i = 0; i < total; i += 1) {
+      var dot = document.createElement('i');
+      if (i >= filled) dot.setAttribute('data-empty', 'true');
+      node.appendChild(dot);
+    }
+    node.setAttribute('aria-label', label);
+  }
+
+  /* ================= ② 三条量表 ================= */
+  /* 光按「200 米约剩 1%」这个常用分界做指数估算：e^(-0.023 × 深度)。
+     压力用海水近似式 1 + 深度÷10（大气压）。温度取开阔洋区常见值。 */
+  var DEPTHS = [
+    { d: 0, emoji: '🌞', label: '海面', sub: '0 米', lightText: '100%', lightPct: 100, temp: 25,
+      say: '海面上又亮又暖，脚边就是浪花。压力就是我们平时呼吸的 1 个大气压。' },
+    { d: 10, emoji: '🏊', label: '游泳池底', sub: '10 米', lightText: '约 79%', lightPct: 79, temp: 24,
+      say: '像趴在游泳池最深处：还很亮，可耳朵已经有点闷了——压力刚好变成海面的 2 倍。' },
+    { d: 200, emoji: '🐠', label: '阳光层的底', sub: '200 米', lightText: '约 1%', lightPct: 1, temp: 15,
+      say: '光只剩百分之一，海藻再往下就没法做饭了。水也开始明显变凉。' },
+    { d: 1000, emoji: '🦑', label: '无光层顶', sub: '1000 米', lightText: '几乎没有', lightPct: 0, temp: 4,
+      say: '全黑。想看见东西只能靠动物自己发的光，压力已经是海面的一百倍。' },
+    { d: 4000, emoji: '🦐', label: '深渊层', sub: '4000 米', lightText: '完全没有', lightPct: 0, temp: 2,
+      say: '又黑又冷，水温只有约 2 ℃。吃的要等上面掉下来的「海洋雪」。' },
+    { d: 8300, emoji: '🐟', label: '最深的鱼', sub: '8300 米', lightText: '完全没有', lightPct: 0, temp: 2,
+      say: '目前拍到最深的鱼就住这儿，压力约八百三十倍，它的身体软得像果冻。' }
+  ];
+  var PRESS_MAX = 1 + 8300 / 10;
+  var depthPicks = el('ocxDepthPicks');
+  var meterSay = el('ocxMeterSay');
+
+  function applyDepth(item) {
+    var atm = 1 + item.d / 10;
+    el('ocxLightValue').textContent = item.lightText;
+    el('ocxPressValue').textContent = (atm < 10 ? atm.toFixed(1) : String(Math.round(atm))) + ' 个大气压';
+    el('ocxTempValue').textContent = '约 ' + item.temp + ' ℃';
+    setBar(el('ocxLightMeter'), item.lightPct / 100);
+    /* 压力跨 1–831 倍，线性刻度浅处几乎不动，所以条子用对数压缩；右边数字仍是真值 */
+    setBar(el('ocxPressMeter'), Math.log10(atm) / Math.log10(PRESS_MAX));
+    setBar(el('ocxTempMeter'), item.temp / 30);
+    var filled = Math.round(item.lightPct / 10);
+    paintDots(el('ocxLightDots'), filled, 10, '还剩多少光：十格里有 ' + filled + ' 格');
+    meterSay.textContent = item.label + '（' + item.sub + '）：' + item.say;
+    Array.prototype.forEach.call(depthPicks.querySelectorAll('[data-ocx-depth]'), function (tile) {
+      tile.setAttribute('aria-pressed', Number(tile.getAttribute('data-ocx-depth')) === item.d ? 'true' : 'false');
+    });
+  }
+
+  if (depthPicks) {
+    DEPTHS.forEach(function (item) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'kid-tile';
+      b.setAttribute('data-ocx-depth', String(item.d));
+      b.setAttribute('aria-pressed', 'false');
+      b.setAttribute('aria-label', '看 ' + item.sub + '（' + item.label + '）的光、水压和水温');
+      var art = document.createElement('span');
+      art.className = 'kid-tile-art';
+      art.setAttribute('aria-hidden', 'true');
+      art.textContent = item.emoji;
+      var lab = document.createElement('span');
+      lab.className = 'kid-tile-label';
+      lab.textContent = item.label;
+      var sub = document.createElement('span');
+      sub.className = 'kid-tile-sub';
+      sub.textContent = item.sub;
+      b.appendChild(art); b.appendChild(lab); b.appendChild(sub);
+      b.addEventListener('click', function () { applyDepth(item); });
+      depthPicks.appendChild(b);
+    });
+    applyDepth(DEPTHS[0]);
+  }
+
+  /* ================= ③ 小游戏：它住在哪一层 ================= */
+  var ZONE_NAME = {
+    sun: '阳光层（0–200 米）', twi: '微光层（200–1000 米）',
+    mid: '无光层（1000–4000 米）', deep: '深渊·海沟层（4000 米以下）'
+  };
+
+  /* 标本盘底色每轮都一样，免得底色本身把答案说出来 */
+  function tray(g) {
+    put(g, 'rect', { 'class': 'ocx-tray', x: 0, y: 0, width: 320, height: 200 });
+    put(g, 'rect', { 'class': 'ocx-tray-in', x: 14, y: 14, width: 292, height: 172, rx: 16 });
+    put(g, 'text', { 'class': 'ocx-label-soft', x: 26, y: 36 }, '标本盘');
+  }
+
+  /* 小丑鱼：鲜艳的橙白条纹 */
+  function drawClown(g) {
+    put(g, 'path', { 'class': 'ocx-fish-orange', d: 'M108 100 C124 62 210 58 232 96 C212 140 124 138 108 100 Z' });
+    paths(g, 'ocx-fish-white', [
+      'M142 74 C150 92 150 110 143 128 C152 130 160 130 167 128 C159 110 159 92 166 76 C158 73 149 72 142 74 Z',
+      'M188 70 C196 90 196 112 189 132 C197 132 205 130 211 126 C203 108 203 88 210 74 C203 71 195 70 188 70 Z'
+    ]);
+    put(g, 'path', { 'class': 'ocx-fish-orange', d: 'M232 96 L268 74 L260 98 L268 124 Z' });
+    paths(g, 'ocx-fin-orange', ['M170 72 L176 46 L192 74 Z', 'M158 124 L162 152 L180 128 Z']);
+    put(g, 'circle', { 'class': 'ocx-eye', cx: 126, cy: 92, r: 9 });
+    put(g, 'circle', { 'class': 'ocx-pupil', cx: 126, cy: 92, r: 4.5 });
+    put(g, 'path', { 'class': 'ocx-line', d: 'M108 104 C114 110 120 112 126 112' });
+  }
+
+  /* 灯笼鱼：眼睛特别大，腹侧一排发光小点 */
+  function drawLantern(g) {
+    put(g, 'path', { 'class': 'ocx-fish-dark', d: 'M96 100 C114 66 206 62 234 98 C206 138 114 136 96 100 Z' });
+    put(g, 'path', { 'class': 'ocx-fish-dark', d: 'M234 98 L272 76 L264 100 L272 126 Z' });
+    put(g, 'path', { 'class': 'ocx-fin-dark', d: 'M166 76 L172 50 L190 78 Z' });
+    put(g, 'circle', { 'class': 'ocx-eye', cx: 124, cy: 94, r: 18 });
+    put(g, 'circle', { 'class': 'ocx-pupil', cx: 124, cy: 94, r: 10 });
+    put(g, 'circle', { 'class': 'ocx-eye-shine', cx: 118, cy: 87, r: 4.4 });
+    /* 发光小点要贴在腹线里侧，落到体外就不像「身上的灯」了 */
+    circles(g, 'ocx-glow', [[134, 114, 5], [154, 120, 5], [174, 122, 5], [194, 120, 5], [214, 113, 5]]);
+    put(g, 'path', { 'class': 'ocx-line', d: 'M96 106 C104 114 112 116 120 116' });
+  }
+
+  /* 鮟鱇鱼：头顶一盏会发光的小灯 */
+  function drawAngler(g) {
+    put(g, 'circle', { 'class': 'ocx-halo', cx: 126, cy: 48, r: 30 });
+    put(g, 'circle', { 'class': 'ocx-glow', cx: 126, cy: 48, r: 11 });
+    put(g, 'path', { 'class': 'ocx-rod', d: 'M126 59 C130 78 140 90 154 98' });
+    put(g, 'path', { 'class': 'ocx-fish-dark', d: 'M140 108 C150 70 216 62 250 104 C218 152 154 148 140 108 Z' });
+    put(g, 'path', { 'class': 'ocx-fin-dark', d: 'M250 104 L286 82 L278 106 L286 132 Z' });
+    put(g, 'path', { 'class': 'ocx-maw', d: 'M140 108 C160 96 190 96 208 104 C190 122 160 124 140 108 Z' });
+    paths(g, 'ocx-tooth', [
+      'M150 104 l6 12 l6 -12 Z', 'M166 101 l6 12 l6 -12 Z',
+      'M182 101 l6 12 l6 -12 Z', 'M194 103 l6 12 l6 -12 Z'
+    ]);
+    put(g, 'circle', { 'class': 'ocx-eye', cx: 168, cy: 86, r: 8 });
+    put(g, 'circle', { 'class': 'ocx-pupil', cx: 168, cy: 86, r: 4 });
+  }
+
+  /* 深海海参：软塌塌的身体，在泥上慢慢爬 */
+  function drawCucumber(g) {
+    put(g, 'path', { 'class': 'ocx-mud', d: 'M14 150 C70 140 130 158 190 148 C240 140 280 152 306 146 L306 186 L14 186 Z' });
+    circles(g, 'ocx-snow', [[60, 44, 3], [120, 32, 2.6], [200, 48, 3], [262, 36, 2.6]]);
+    put(g, 'path', { 'class': 'ocx-cuke', d: 'M70 146 C88 106 214 100 244 138 C214 164 92 168 70 146 Z' });
+    /* 背上的小突起要压在背线里，抬太高就变成飘在水中的三角形 */
+    paths(g, 'ocx-bump', [
+      'M96 130 l8 -16 l10 16 Z', 'M128 122 l8 -16 l10 16 Z', 'M162 118 l8 -16 l10 16 Z',
+      'M196 121 l8 -16 l10 16 Z', 'M226 130 l8 -15 l10 15 Z'
+    ]);
+    paths(g, 'ocx-foot', ['M92 156 v14', 'M118 160 v14', 'M146 162 v14', 'M174 162 v14', 'M202 160 v14', 'M228 154 v14']);
+    paths(g, 'ocx-tent', ['M70 146 C58 138 52 130 50 122', 'M70 148 C56 148 48 144 42 138', 'M70 152 C58 158 50 160 44 158']);
+  }
+
+  /* 大王乌贼：动物界最大的眼睛 */
+  function drawSquid(g) {
+    put(g, 'path', { 'class': 'ocx-squid', d: 'M188 100 C196 60 268 56 292 98 C268 142 196 140 188 100 Z' });
+    put(g, 'path', { 'class': 'ocx-squid-fin', d: 'M288 82 L304 74 L299 100 L304 126 L288 118 Z' });
+    put(g, 'ellipse', { 'class': 'ocx-squid', cx: 160, cy: 100, rx: 34, ry: 30 });
+    paths(g, 'ocx-arm', [
+      'M130 112 C100 122 74 128 46 120', 'M132 120 C104 136 78 146 50 144',
+      'M134 104 C104 104 78 100 52 92', 'M132 96 C106 88 82 78 58 70',
+      'M136 126 C112 148 88 162 64 168'
+    ]);
+    put(g, 'circle', { 'class': 'ocx-eye', cx: 150, cy: 92, r: 22 });
+    put(g, 'circle', { 'class': 'ocx-pupil', cx: 150, cy: 92, r: 12 });
+    put(g, 'circle', { 'class': 'ocx-eye-shine', cx: 142, cy: 84, r: 5 });
+  }
+
+  /* 深海狮子鱼：果冻一样的身体，没有鱼鳞也没有鱼鳔 */
+  function drawSnailfish(g) {
+    put(g, 'path', { 'class': 'ocx-jelly', d: 'M96 104 C112 62 206 58 236 100 C206 148 112 146 96 104 Z' });
+    put(g, 'path', { 'class': 'ocx-jelly', d: 'M236 100 C262 96 282 112 296 140 C266 142 246 128 234 110 Z' });
+    put(g, 'path', { 'class': 'ocx-jelly-line', d: 'M118 92 C146 104 186 108 226 100' });
+    put(g, 'circle', { 'class': 'ocx-eye', cx: 122, cy: 94, r: 8 });
+    put(g, 'circle', { 'class': 'ocx-pupil', cx: 122, cy: 94, r: 4 });
+    put(g, 'path', { 'class': 'ocx-line', d: 'M96 110 C104 118 112 120 122 120' });
+  }
+
+  var ROUNDS = [
+    { name: '小丑鱼', answer: 'sun', draw: drawClown,
+      clue: '身上是很鲜艳的橙白条纹。',
+      desc: '一条橙白条纹的小鱼，颜色非常鲜艳，眼睛不大。',
+      hint: '先想一想：什么地方才看得见颜色？',
+      why: '颜色鲜艳只在有阳光的地方才用得上——没有光，再花的花纹也没人看得见。小丑鱼住在浅浅的珊瑚礁里。' },
+    { name: '灯笼鱼', answer: 'twi', draw: drawLantern,
+      clue: '眼睛特别大，肚子下面还有一排会发光的小点。',
+      desc: '一条小鱼，眼睛大得占了半个头，腹部有一排亮点。',
+      hint: '眼睛做这么大，是为了多收一点什么？',
+      why: '眼睛特别大，是为了把微弱的光尽量收进来——这一层还剩一点点光，值得收集。腹部的小灯用来在朦胧的背景光里把自己藏住。' },
+    { name: '鮟鱇鱼', answer: 'mid', draw: drawAngler,
+      clue: '头顶挂着一盏会发光的小灯，嘴特别大。',
+      desc: '一条大嘴鱼，头顶伸出一根杆子，杆头挂着一盏亮着的小灯。',
+      hint: '如果那里还有阳光，它需要自己带灯吗？',
+      why: '会自己发光，说明那里根本没有阳光——有光的地方不必带灯。鮟鱇鱼把这盏灯当钓饵，1000–4000 米的无光层就是它的家。' },
+    { name: '深海海参', answer: 'deep', draw: drawCucumber,
+      clue: '身体软塌塌的，在海底的泥上慢慢爬。',
+      desc: '一只软软的长条动物，背上有几个小突起，正贴着海底的泥慢慢爬，上方有碎屑往下落。',
+      hint: '压得很紧的地方，硬东西和软东西哪个更容易坏？',
+      why: '深处压力极大，太硬的结构反而容易被挤坏；软身体加上慢动作，又省力又安全。它吃的是沉到海底的碎屑，住在 4000 米以下。' },
+    { name: '大王乌贼', answer: 'twi', draw: drawSquid,
+      clue: '眼睛直径可达 27 厘米，是动物界最大的眼睛。',
+      desc: '一只乌贼，头上有一只大得夸张的眼睛，触手向左伸开。',
+      hint: '大眼睛在完全漆黑的地方还有用吗？',
+      why: '超大的眼睛是为了在微弱的光里看清东西。完全漆黑的地方大眼睛就派不上用场了，所以它主要在 300–1000 米的微光层活动。' },
+    { name: '深海狮子鱼', answer: 'deep', draw: drawSnailfish,
+      clue: '身体像果冻一样软，没有鱼鳞，也没有鱼鳔。',
+      desc: '一条半透明的软身子鱼，身体像果冻，看不到鳞片，尾巴薄薄的。',
+      hint: '身体里如果有一个气泡，往下潜会发生什么？',
+      why: '身体里没有可以被压缩的气腔，内外几乎都是水，压力再大也挤不坏。它是目前记录到最深的鱼，约 8300 米。' }
+  ];
+
+  var gameBody = el('ocxGameBody');
+  if (!gameBody) return;
+  var gameArt = el('ocxGameArt');
+  var gameDesc = el('ocxGameArtDesc');
+  var gameAsk = el('ocxGameAsk');
+  var gameSay = el('ocxGameSay');
+  var gameStars = el('ocxGameStars');
+  var gameTotal = el('ocxGameTotal');
+  var roundDots = el('ocxRoundDots');
+  var picks = [].slice.call(document.querySelectorAll('#ocxGamePicks [data-ocx-answer]'));
+  var index = 0, wins = 0;
+  var solved = ROUNDS.map(function () { return false; });
+
+  function paintRoundDots() {
+    roundDots.textContent = '';
+    solved.forEach(function (ok) {
+      var dot = document.createElement('i');
+      if (!ok) dot.setAttribute('data-empty', 'true');
+      roundDots.appendChild(dot);
+    });
+    roundDots.setAttribute('aria-label', '六轮里已经答对 ' + solved.filter(Boolean).length + ' 轮');
+  }
+
+  function showRound(next) {
+    index = ((next % ROUNDS.length) + ROUNDS.length) % ROUNDS.length;
+    var r = ROUNDS[index];
+    gameBody.textContent = '';
+    tray(gameBody);
+    r.draw(gameBody);
+    gameDesc.textContent = '第 ' + (index + 1) + ' 轮：' + r.desc + ' 请猜它住在哪一层。';
+    gameAsk.textContent = '第 ' + (index + 1) + ' / ' + ROUNDS.length + ' 轮：它住在哪一层？线索——' + r.clue;
+    picks.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+    gameSay.textContent = solved[index]
+      ? '这一轮之前答对过：' + r.name + '住在' + ZONE_NAME[r.answer] + '。想再看一遍也行。'
+      : '看看它的眼睛、颜色、软硬和会不会发光，再点一张深度卡。';
+    paintRoundDots();
+  }
+
+  picks.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var r = ROUNDS[index];
+      if (button.getAttribute('data-ocx-answer') === r.answer) {
+        picks.forEach(function (other) { other.setAttribute('aria-pressed', other === button ? 'true' : 'false'); });
+        if (!solved[index]) {
+          solved[index] = true;
+          wins += 1;
+          gameStars.textContent = new Array(Math.min(wins, 10) + 1).join('⭐');
+          gameStars.setAttribute('aria-label', '已经答对 ' + wins + ' 次');
+          gameTotal.textContent = '答对 ' + wins + ' 次';
+          if (window.Playful && Playful.confetti) Playful.confetti(gameArt.parentNode);
+        }
+        gameSay.textContent = '对了，' + r.name + '住在' + ZONE_NAME[r.answer] + '。' + r.why + ' 按「换一只」看下一轮。';
+        paintRoundDots();
+        return;
+      }
+      /* 答错不清空、不计时：图还在，只补一句线索，可以接着看接着想 */
+      button.setAttribute('aria-pressed', 'false');
+      gameSay.textContent = '○ 再看看图。' + r.hint;
+    });
+  });
+
+  el('ocxGameNext').addEventListener('click', function () { showRound(index + 1); });
+  el('ocxGameHint').addEventListener('click', function () { gameSay.textContent = ROUNDS[index].hint; });
+  showRound(0);
+})();
+</script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

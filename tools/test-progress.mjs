@@ -65,7 +65,7 @@ test('空数据返回稳定 v3 结构与默认偏好且不主动写库', () => {
   assert.deepEqual(plain(P.all()), {
     schemaVersion: 3, revision: 0, updatedAt: null,
     pages: {}, recent: [], notes: {}, completions: {}, works: {},
-    preferences: { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'kid' }
+    preferences: { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'kid', onlineData: false }
   });
   assert.equal(P.count(), 0);
   assert.equal(P.getPreference('soundEnabled'), false);
@@ -104,7 +104,7 @@ test('v2→v3 保留 pages/recent/notes/completions 并补齐新字段', () => {
   assert.equal(data.notes['nature/ocean.html'].t, '光会变少');
   assert.equal(data.completions['nature/ocean.html'].evidence, '解释了深度带');
   assert.deepEqual(plain(data.works), {});
-  assert.deepEqual(plain(data.preferences), { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'kid' });
+  assert.deepEqual(plain(data.preferences), { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'kid', onlineData: false });
   assert.equal(store.parsed(V2).schemaVersion, 2, '迁移不得删除或覆盖 v2');
 });
 
@@ -306,7 +306,7 @@ test('v3 JSON 完整往返 pages/notes/completions/works/preferences', () => {
 });
 
 test('已有 v3 家长模式偏好不会被新默认值覆盖', () => {
-  const saved = validV3({ preferences: { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'parent' } });
+  const saved = validV3({ preferences: { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'parent', onlineData: false } });
   const { P, store } = fresh({ seed: { [V3]: saved } });
   assert.equal(P.getPreference('mode'), 'parent');
   assert.equal(P.all().preferences.mode, 'parent');
@@ -323,14 +323,14 @@ test('导入严格清洗非法 works/preferences 且忽略外部 revision', () =
       badtype: { pageId: 'nature/ocean.html', type: 'script', title: '坏', content: '坏', createdAt: NOW, updatedAt: NOW },
       baddate: { pageId: 'nature/ocean.html', type: 'drawing', title: '坏日期', content: '', createdAt: 'today', updatedAt: NOW }
     },
-    preferences: { soundEnabled: 'yes', motion: 'wild', ageGroup: '99', mode: 'adult' }
+    preferences: { soundEnabled: 'yes', motion: 'wild', ageGroup: '99', mode: 'adult', onlineData: 'sure' }
   });
   assert.equal(P.importJSON(dirty), true);
   assert.equal(P.all().revision, 2);
   assert.deepEqual(plain(P.getWorks().map((work) => work.id)), ['ok']);
   assert.equal(P.getWorks()[0].title, '海水');
   assert.equal('evil' in P.getWorks()[0], false);
-  assert.deepEqual(plain(P.all().preferences), { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'kid' });
+  assert.deepEqual(plain(P.all().preferences), { soundEnabled: false, motion: 'system', ageGroup: 'all', mode: 'kid', onlineData: false });
   assert.equal(events.at(-1).detail.source, 'import');
   dirty.works.ok.title = '外部篡改';
   assert.equal(P.getWorks()[0].title, '海水');

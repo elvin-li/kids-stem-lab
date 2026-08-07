@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>虫子放大镜 · 小身体里的大物理 | 少儿数理启蒙</title>
 <meta name="description" content="蚂蚁为什么能扛起 50 倍体重？虫子为什么长不到猫那么大？用蟋蟀叫声算气温。真实照片来自 iNaturalist，附户外观察任务。">
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#0b0f1a">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .hero { padding: 28px 0 18px; }
@@ -110,6 +110,18 @@
     color: var(--warn); line-height: 1;
   }
   .cr-big small { font-size: .95rem; color: var(--ink-dim); font-weight: 400; }
+  /* 图形优先：温度计舞台 + 点一点的叫声按钮 */
+  .cr-stage { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 16px; align-items: center; margin-bottom: 14px; padding: 14px; border: 3px solid var(--line); border-radius: var(--r-lg); background: #fff8ec; }
+  .cr-stage > div { min-width: 0; }
+  .cr-thermo { display: block; width: 100%; max-width: 92px; height: auto; }
+  .cr-thermo .cr-fill { transition: y .25s var(--ease), height .25s var(--ease); }
+  .cr-face { font-size: clamp(2.6rem,9vw,3.6rem); line-height: 1.1; }
+  .cr-face-note { margin: 4px 0 0; color: var(--ink-mid); font-size: .86rem; line-height: 1.5; }
+  .cr-picks { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+  .cr-picks button { min-height: 48px; padding: 8px 15px; border: 2px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 800 .95rem/1.25 var(--font); cursor: pointer; }
+  .cr-picks button[aria-pressed="true"] { border-color: var(--warn); background: var(--bg-soft); box-shadow: 0 0 0 3px rgba(245,158,11,.2); }
+  @media (max-width: 560px) { .cr-stage { grid-template-columns: 1fr; justify-items: center; text-align: center; } }
+  @media (prefers-reduced-motion: reduce) { .cr-thermo .cr-fill { transition: none; } }
 
   /* ---------- 虫卡 ---------- */
   .bgrid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
@@ -189,19 +201,26 @@
   .bug-lab { position: relative; min-height: 420px; padding: 12px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r-lg); background: linear-gradient(165deg,#c9efff 0 54%,#b9efc7 54%); color: #14231b; }
   .bug-lab .stage-label { display: inline-flex; min-height: 32px; align-items: center; padding: 5px 9px; border-radius: 999px; background: rgba(255,255,255,.9); font-size: .72rem; font-weight: 800; }
   .bug-map { display: block; width: 100%; height: 208px; margin-top: 2px; }
-  .bug-zone { opacity: .72; transform-box: fill-box; transform-origin: center; transition: opacity .18s ease, transform .18s ease, filter .18s ease; }
+  /* 三段标记现在是图例色的外框，不是填满整段的色块：虫体保留真实甲壳色。
+     未选中时框子淡一点，选中时加粗＋白光晕＋轻微放大 —— 状态不只靠颜色。 */
+  .bug-zone { opacity: .5; transform-box: fill-box; transform-origin: center; transition: opacity .18s ease, transform .18s ease, filter .18s ease, stroke-width .18s ease; }
   .bug-lab[data-look="head"] .zone-head,
   .bug-lab[data-look="thorax"] .zone-thorax,
-  .bug-lab[data-look="abdomen"] .zone-abdomen { opacity: 1; transform: scale(1.06); filter: drop-shadow(0 0 6px #fff); }
+  .bug-lab[data-look="abdomen"] .zone-abdomen { opacity: 1; stroke-width: 9; transform: scale(1.04); filter: drop-shadow(0 0 7px #fff); }
   .look-spots { position: absolute; inset: 42px 12px auto 12px; height: 195px; pointer-events: none; }
   .look-spot { position: absolute; width: 50px; height: 50px; padding: 0; border: 3px solid #fff; border-radius: 50%; background: #14231b; color: #fff; font-weight: 900; cursor: pointer; pointer-events: auto; box-shadow: 0 4px 10px rgba(0,0,0,.24); }
-  .look-spot[data-look="head"] { left: 13%; top: 28%; }
-  .look-spot[data-look="thorax"] { left: 43%; top: 35%; }
-  .look-spot[data-look="abdomen"] { right: 11%; top: 24%; }
-  .look-spot[aria-pressed="true"] { background: #e04f8b; transform: scale(1.08); }
+  /* 热点按钮改放到各段的上缘而不是正中：插图有了复眼、盾片和气门这些细节之后，
+     压在正中的 50px 圆牌会正好盖住要看的东西，孩子点开也看不到自己该看什么。 */
+  .look-spot[data-look="head"] { left: 15%; top: 4%; }
+  .look-spot[data-look="thorax"] { left: 44%; top: 0; }
+  .look-spot[data-look="abdomen"] { right: 19%; top: 6%; }
+  /* 选中态原来是 #e04f8b，白色数字压在上面只有 3.71:1；换成随主题走的 --kit（5.5:1）。 */
+  .look-spot[aria-pressed="true"] { background: var(--kit); transform: scale(1.08); }
   .look-result { min-height: 58px; margin: -3px 0 8px; padding: 9px 11px; border-radius: 12px; background: rgba(255,255,255,.92); color: #14231b; font-size: .82rem; line-height: 1.4; }
-  .life-cycle-map { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); align-items: center; gap: 3px; margin-top: 5px; }
-  .life-node { min-width: 0; min-height: 54px; padding: 5px 2px; border: 2px solid rgba(20,35,27,.18); border-radius: 12px; background: rgba(255,255,255,.88); color: #14231b; font-weight: 800; font-size: .7rem; cursor: pointer; }
+  /* 7 等分时每个节点在 768px 视口下只有 36px 宽，低于契约的 44px 触控目标。
+     改成「节点至少 44px、箭头只占内容宽度」：4×44 + 3 个箭头 + 间距约 236px，375px 也放得下。 */
+  .life-cycle-map { display: grid; grid-template-columns: minmax(44px,1fr) auto minmax(44px,1fr) auto minmax(44px,1fr) auto minmax(44px,1fr); align-items: center; gap: 3px; margin-top: 5px; }
+  .life-node { min-width: 44px; min-height: 54px; padding: 5px 2px; border: 2px solid rgba(20,35,27,.18); border-radius: 12px; background: rgba(255,255,255,.88); color: #14231b; font-weight: 800; font-size: .7rem; cursor: pointer; }
   .life-node span { display: block; font-size: 1.35rem; }
   .life-node[aria-pressed="true"] { border-color: #e04f8b; background: #fff5fa; }
   .life-arrow { text-align: center; font-weight: 900; }
@@ -211,6 +230,100 @@
   .quick-picks .kid-choice[aria-pressed="true"] { border-color: var(--kit); box-shadow: 0 0 0 2px color-mix(in oklab,var(--kit) 26%,transparent); }
   .mission-step textarea[data-audience="parent"] { min-height: 58px; }
   .parent-deep-dive { margin-top: 18px; }
+  .online-opt { margin: 12px 0 0; padding: 12px 14px; border: 2px dashed var(--warn); border-radius: var(--r); background: var(--bg-soft); }
+  .online-opt label { display: flex; min-height: 48px; align-items: center; gap: 10px; color: var(--ink); font-weight: 800; cursor: pointer; }
+  .online-opt input { width: 22px; height: 22px; flex: none; }
+  .online-opt span { display: block; margin-top: 4px; color: var(--ink-mid); font-size: .84rem; line-height: 1.55; }
+
+  /* ---------- 分层解释 · 这在教什么 · 追问 ---------- */
+  .age-tiers { display: grid; grid-template-columns: repeat(auto-fit,minmax(205px,1fr)); gap: 10px; margin: 12px 0 0; }
+  .age-tier { min-width: 0; padding: 12px 14px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--bg-soft); }
+  .age-tier b { display: block; margin-bottom: 5px; font-size: .73rem; letter-spacing: .05em; }
+  .age-tier p { margin: 0; color: var(--ink-mid); font-size: .86rem; line-height: 1.52; }
+  .tier-kid { border-color: rgba(74,222,128,.42); } .tier-kid b { color: var(--sci); }
+  .tier-mid { border-color: rgba(110,168,254,.42); } .tier-mid b { color: var(--math); }
+  .tier-adv { border-color: rgba(167,139,250,.42); } .tier-adv b { color: var(--phys); }
+  .teach-note { margin: 10px 0 0; padding: 11px 13px; border-left: 3px solid var(--sci); background: var(--bg-soft); color: var(--ink-mid); font-size: .88rem; line-height: 1.55; }
+  .teach-note b { color: var(--sci); }
+  .ask-list { margin: 12px 0 0; padding-left: 19px; color: var(--ink-mid); font-size: .88rem; }
+  .ask-list li + li { margin-top: 6px; }
+  .parent-note { margin: 14px 0 0; padding: 12px 14px; border: 1px dashed rgba(167,139,250,.45); border-radius: var(--r); background: rgba(167,139,250,.07); color: var(--ink-mid); font-size: .87rem; line-height: 1.55; }
+  .parent-note b { color: var(--phys); }
+  .lab-card { padding: 18px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .info-result { min-height: 64px; margin-top: 10px; padding: 11px 13px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--bg-soft); color: var(--ink); font-size: .86rem; line-height: 1.5; }
+  .info-result b { color: var(--kit); }
+  .diagram { display: block; width: 100%; height: auto; margin-top: 12px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--surface-2); }
+
+  /* ---------- 昆虫 vs 蛛形纲对照 ---------- */
+  .vs-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 12px; margin-top: 12px; }
+  .vs-card { min-width: 0; padding: 14px; border: 2px solid var(--line-soft); border-radius: var(--r); background: var(--bg-soft); }
+  .vs-card h3 { margin: 0 0 7px; font-size: 1rem; }
+  .vs-card ul { margin: 0; padding-left: 18px; color: var(--ink-mid); font-size: .85rem; }
+  .vs-card li + li { margin-top: 4px; }
+  .vs-insect { border-color: rgba(74,222,128,.5); } .vs-insect h3 { color: var(--sci); }
+  /* #fb923c 是暗色主题的 --code，压在浅色卡片上只有 2.06:1；换成随主题走的 --code。 */
+  .vs-arach { border-color: color-mix(in srgb, var(--code) 50%, var(--line)); } .vs-arach h3 { color: var(--code); }
+  .id-key { margin-top: 12px; padding: 13px 15px; border-left: 3px solid var(--kit); background: var(--bg-soft); }
+  .id-key p { margin: 0 0 6px; font-weight: 800; font-size: .88rem; }
+  .id-key ol { margin: 0; padding-left: 19px; color: var(--ink-mid); font-size: .85rem; }
+  .id-key li + li { margin-top: 5px; }
+
+  /* ---------- 变态发育对照 ---------- */
+  .meta-lab .meta-svg { display: block; width: 100%; height: auto; }
+  .mstage { opacity: .32; transition: opacity .18s ease; }
+  .meta-lab[data-meta="complete"] .mstage-complete,
+  .meta-lab[data-meta="incomplete"] .mstage-incomplete { opacity: 1; }
+
+  /* ---------- 表面积与体积 ---------- */
+  .sv-svg { display: block; width: 100%; height: auto; }
+  .sv-note { margin-top: 10px; color: var(--ink-mid); font-size: .85rem; line-height: 1.5; }
+  .ratio-table { width: 100%; margin-top: 12px; border-collapse: collapse; font-size: .84rem; }
+  .ratio-table caption { margin-bottom: 7px; color: var(--ink-dim); font-size: .78rem; text-align: left; }
+  .ratio-table th, .ratio-table td { padding: 7px 9px; border-bottom: 1px solid var(--line-soft); text-align: left; }
+  .ratio-table th { color: var(--ink); font-size: .78rem; }
+  .ratio-table td { color: var(--ink-mid); font-family: var(--mono); }
+
+  /* ---------- 传粉 ---------- */
+  .role-cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 11px; margin-top: 12px; }
+  .role-card { min-width: 0; padding: 13px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--bg-soft); }
+  .role-card h3 { margin: 0 0 5px; font-size: .95rem; color: var(--kit); }
+  .role-card p { margin: 0; color: var(--ink-mid); font-size: .84rem; line-height: 1.5; }
+
+  /* ---------- 不打扰地观察 ---------- */
+  .etiquette { display: grid; grid-template-columns: repeat(auto-fit,minmax(215px,1fr)); gap: 11px; margin-top: 12px; }
+  .etq { min-width: 0; padding: 13px; border-radius: var(--r); background: var(--bg-soft); border: 1px solid var(--line-soft); }
+  .etq b { display: block; margin-bottom: 5px; font-size: .87rem; }
+  .etq p { margin: 0; color: var(--ink-mid); font-size: .83rem; line-height: 1.48; }
+  .etq-do { border-left: 4px solid var(--sci); } .etq-do b { color: var(--sci); }
+  /* #fb923c 是暗色主题的 --code，压在 --bg-soft 上只有 2.06:1；换成随主题走的 --code。 */
+  .etq-dont { border-left: 4px solid var(--code); } .etq-dont b { color: var(--code); }
+
+  /* 记录单：先前没有任何样式规则，补上图形优先的六步卡 */
+  .record-sheet { margin-top: 14px; padding: 16px 18px; border: 3px solid var(--line); border-radius: var(--r-lg); background: #fff8ec; box-shadow: 0 5px 0 rgba(180,130,60,.18); }
+  .record-sheet > h3 { margin: 0 0 12px; font-size: 1.02rem; color: var(--ink); }
+  .rs-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(215px,1fr)); gap: 11px; margin: 0; padding: 0; list-style: none; counter-reset: rs; }
+  .rs-list > li { position: relative; display: flex; gap: 11px; align-items: flex-start; min-width: 0; padding: 12px 13px; border: 2px solid var(--line-soft); border-radius: var(--r); background: var(--surface); counter-increment: rs; }
+  .rs-list > li::after { content: counter(rs); position: absolute; top: -9px; left: -9px; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 999px; background: var(--sci); color: #fff; font: 800 .8rem/1 var(--mono); }
+  .rs-art { flex: none; font-size: 1.9rem; line-height: 1; }
+  .rs-list b { display: block; margin-bottom: 3px; font-size: .9rem; color: var(--ink); }
+  .rs-list p { margin: 0; color: var(--ink-mid); font-size: .83rem; line-height: 1.48; }
+
+  /* ---------- 低龄图形舞台 ---------- */
+  .picture-stage { overflow: hidden; border: 3px solid #402d1c !important; border-radius: 30px !important; background: #fff8ec; box-shadow: 0 7px 0 rgba(120,82,42,.22); color: #402d1c; }
+  .picture-stage svg, svg.picture-stage { display: block; width: 100%; height: auto; }
+  .scene-strip { display: grid; grid-template-columns: repeat(auto-fit,minmax(108px,1fr)); gap: 9px; margin: 12px 0; }
+  .scene-chip { min-height: 82px; display: grid; place-items: center; gap: 3px; padding: 9px; border: 3px solid #402d1c; border-radius: 22px; background: #fff8ec; box-shadow: 0 5px 0 rgba(120,82,42,.2); color: #402d1c; text-align: center; font-weight: 900; }
+  .scene-chip span { font-size: 2rem; line-height: 1; }
+  .pick-feedback { min-height: 1.5em; margin: 5px 0 0; color: #0d6b4f; font-weight: 800; font-size: .82rem; }
+  .bug-card-stage, .hunt-stage { padding: 14px; }
+  .bee-friend { animation: bee-bob 2.2s ease-in-out infinite alternate; transform-origin: center; }
+  @keyframes bee-bob { to { transform: translateY(-6px) rotate(3deg); } }
+  details.parent-deep-dive > summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; font-weight: 850; }
+  button, input, select, textarea, [role="button"], a.btn, .nav-link, .brand { min-height: 48px; }
+
+  @media (max-width: 560px) {
+    .age-tiers, .vs-grid, .role-cards, .etiquette { grid-template-columns: 1fr; }
+  }
   @media (max-width: 720px) {
     .bug-lab { min-height: 405px; }
     .look-spots { top: 42px; }
@@ -219,9 +332,9 @@
     .bug-lab { min-height: 425px; padding: 9px; }
     .bug-map { height: 195px; }
     .look-spots { inset-inline: 9px; height: 185px; }
-    .look-spot[data-look="head"] { left: 8%; }
+    .look-spot[data-look="head"] { left: 10%; }
     .look-spot[data-look="thorax"] { left: 42%; }
-    .look-spot[data-look="abdomen"] { right: 6%; }
+    .look-spot[data-look="abdomen"] { right: 14%; }
     .life-node { min-height: 58px; font-size: .64rem; }
     .quick-picks { grid-template-columns: 1fr; }
   }
@@ -251,9 +364,9 @@
     html[data-mode="kid"] .bug-map { height: 132px; margin-top: 0; }
     html[data-mode="kid"] .look-spots { inset: 30px 7px auto; height: 128px; }
     html[data-mode="kid"] .look-spot { width: 44px; height: 44px; border-width: 2px; }
-    html[data-mode="kid"] .look-spot[data-look="head"] { left: 8%; top: 25%; }
-    html[data-mode="kid"] .look-spot[data-look="thorax"] { left: 42%; top: 32%; }
-    html[data-mode="kid"] .look-spot[data-look="abdomen"] { right: 6%; top: 21%; }
+    html[data-mode="kid"] .look-spot[data-look="head"] { left: 10%; top: 0; }
+    html[data-mode="kid"] .look-spot[data-look="thorax"] { left: 42%; top: 0; }
+    html[data-mode="kid"] .look-spot[data-look="abdomen"] { right: 12%; top: 2%; }
     html[data-mode="kid"] .look-result { min-height: 51px !important; margin: -1px 0 2px; padding: 6px 8px; font-size: .7rem; line-height: 1.28; }
     html[data-mode="kid"] .life-scroll-cue { display: block; margin: 0 0 2px; color: #14231b; font-size: .66rem; font-weight: 800; }
     html[data-mode="kid"] .life-cycle-map {
@@ -273,9 +386,467 @@
     html[data-mode="kid"] .hero-invite > .kid-action-strip .btn { min-height: 44px; padding-inline: 10px; font-size: .82rem; flex: 1 1 135px; justify-content: center; }
   }
 
+
+  /* 插画舞台（共享 SVG 场景铺底，内容都放在不透明卡片上保证对比度） */
+  .ic-scene-stage { margin:0 0 16px; padding:clamp(12px,2.6vw,20px); }
+  .ic-scene-copy { display:grid; gap:12px; min-width:0; }
+  .ic-scene-stage .kid-steps-visual { margin:0; }
+  @media (max-width:560px) {
+    .ic-scene-stage { padding:10px; }
+  }
+
+  /* ---------- 图像优先三件套（本页前缀 ib-）：图鉴 / 判定条 / 数腿分类 ---------- */
+  .ib-shell { display:grid; gap:16px; margin:26px 0; }
+  .ib-card { position:relative; padding:18px; border:3px solid var(--ink); border-radius:22px; background:var(--surface); box-shadow:0 6px 0 rgba(36,24,16,.18); }
+  .ib-card > h3 { margin:.1em 0 .3em; font-size:1.16rem; }
+  .ib-lead { margin:0 0 12px; color:var(--ink-mid); font-weight:750; font-size:.92rem; }
+  .ib-stage { display:block; width:100%; height:auto; max-height:320px; border:3px solid var(--ink); border-radius:18px; background:#eef8ee; }
+  .ib-shell .kid-figure-art { padding:6px; }
+  .ib-shell .kid-figure-art > svg { width:100%; max-width:142px; height:auto; }
+  .ib-shell .kid-figure-fact { display:block; }
+  .ib-say-row { margin:12px 0 0; }
+  .ib-card details { margin-top:12px; border:1px solid var(--line-soft); border-radius:var(--r); padding:0 13px; }
+  .ib-card details[open] { padding-bottom:10px; }
+  .ib-card details > p, .ib-card details > ol { color:var(--ink-mid); font-size:.88rem; line-height:1.58; }
+
+  .ib-meters { display:grid; gap:14px; margin:0 0 12px; }
+  .ib-dots-row { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin:0 0 10px; }
+  .ib-dots-cap { color:var(--ink-mid); font-weight:750; font-size:.9rem; }
+  .ib-power-picks { grid-template-columns:repeat(auto-fit,minmax(96px,1fr)); margin:0 0 14px; }
+  .ib-stage-picks { grid-template-columns:repeat(auto-fit,minmax(84px,1fr)); gap:9px; margin:8px 0 10px; }
+  .ib-stage-picks .kid-tile { min-height:92px; padding:9px 6px; }
+  .ib-stage-picks .kid-tile > .kid-tile-art { font-size:1.9rem; }
+  .ib-pick-cap { margin:10px 0 0; color:var(--ink-mid); font-weight:700; font-size:.84rem; }
+  .ib-quiz-stage { display:grid; place-items:center; margin:0 0 12px; }
+  .ib-quiz-art { display:block; width:100%; max-width:330px; height:auto; border:3px solid var(--ink); border-radius:18px; background:#eef8ee; }
+  .ib-quiz-picks { grid-template-columns:repeat(2,minmax(0,1fr)); margin:0 0 12px; }
+  .ib-quiz-actions { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 12px; }
+  .ib-quiz-actions .btn { min-height:48px; }
+  .ib-quiz-score { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0 0; color:var(--ink-mid); font-weight:750; }
+  .ib-quiz-stars { min-height:1.4em; font-size:1.3rem; line-height:1; letter-spacing:2px; }
+  .ib-tests { display:flex; flex-wrap:wrap; gap:9px; margin:0 0 12px; }
+  .ib-test { display:inline-flex; align-items:center; min-height:36px; padding:6px 12px; border:2px solid var(--line); border-radius:999px; color:var(--ink-mid); font-weight:800; font-size:.86rem; }
+  .ib-test[data-ok="true"] { border-color:#0f8a4d; background:#ddf8e8; color:#0b4a2a; }
+
+  /* 内联 SVG 取色：属性里不写 var()，统一在这里定义类 */
+  .ib-bg { fill:#eef8ee; }
+  .ib-head { fill:#f472b6; stroke:#22352c; stroke-width:3; }
+  .ib-thorax { fill:#ffd166; stroke:#22352c; stroke-width:3; }
+  .ib-abdo { fill:#45b9ad; stroke:#22352c; stroke-width:3; }
+  .ib-abdo-red { fill:#e0325c; stroke:#22352c; stroke-width:3; }
+  .ib-abdo-bee { fill:#f6c445; stroke:#22352c; stroke-width:3; }
+  .ib-ceph { fill:#c9803f; stroke:#22352c; stroke-width:3; }
+  .ib-abdo-spider { fill:#9a5a28; stroke:#22352c; stroke-width:3; }
+  .ib-leg { fill:none; stroke:#22352c; stroke-width:3.2; stroke-linecap:round; }
+  .ib-feeler { fill:none; stroke:#22352c; stroke-width:2.4; stroke-linecap:round; }
+  .ib-eye { fill:#22352c; }
+  .ib-wing { fill:#ffffff; fill-opacity:.82; stroke:#22352c; stroke-width:2; }
+  .ib-wing-pink { fill:#f9a8d4; stroke:#22352c; stroke-width:2; }
+  .ib-mark { fill:#22352c; }
+  .ib-line { fill:none; stroke:#22352c; stroke-width:2; }
+  .ib-badge { fill:#ffffff; stroke:#22352c; stroke-width:2.5; }
+  .ib-ink { fill:#1d2c22; font-weight:800; }
+  .ib-ink-soft { fill:#4a5a50; }
+  /* 图鉴卡上的体段编号。图鉴插图改成写实画法后，「三段身体」不再靠整段涂色传达，
+     而是靠这三个小圆牌 —— 颜色与下面的图例（1 头／2 胸／3 腹）一一对应，
+     孩子仍然数得清，画面又不再是「粉圆＋黄圆＋绿椭圆」。 */
+  .ib-seg { pointer-events:none; }
+  .ib-seg-dot { stroke:#22352c; stroke-width:2; }
+  .ib-seg-1 { fill:#f472b6; }
+  .ib-seg-2 { fill:#ffd166; }
+  .ib-seg-3 { fill:#45b9ad; }
+  .ib-seg-num { fill:#12251c; font:900 11px var(--font); text-anchor:middle; }
 </style>
 </head>
 <body data-playful-page="nature/insects.html">
+<!-- ART:START 插画图库由 tools/art-build.mjs 生成，请改 tools/art-library.mjs -->
+<svg class="art-sprite" aria-hidden="true" focusable="false" width="0" height="0" viewBox="0 0 0 0">
+  <symbol id="art-ant" viewBox="0 0 120 120">
+    <linearGradient id="ag-an-body" x1=".2" y1="0" x2=".8" y2="1">
+    <stop offset="0" stop-color="#a4532a"/><stop offset=".55" stop-color="#6d3116"/><stop offset="1" stop-color="#38180a"/>
+    </linearGradient>
+    <ellipse cx="60" cy="112" rx="26" ry="4" fill="#2a1c06" opacity="0.14"/>
+    <!-- 六条细长的腿，全部长在中间那一段（胸） -->
+    <g fill="none" stroke="#3d1d0c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M48 46 L26 30 L12 38"/><path d="M46 58 L20 58 L6 68"/><path d="M48 68 L24 82 L14 96"/>
+    <path d="M72 46 L94 30 L108 38"/><path d="M74 58 L100 58 L114 68"/><path d="M72 68 L96 82 L106 96"/>
+    </g>
+    <!-- 肘状触角：先斜向外，再折向前上方 -->
+    <g fill="none" stroke="#3d1d0c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M52 22 L36 14 L30 2"/><path d="M68 22 L84 14 L90 2"/>
+    </g>
+    <!-- 腹（后体）：饱满的水滴，最大的一段 -->
+    <path d="M60 70 C46 70 38 82 38 94 C38 106 48 114 60 114 C72 114 82 106 82 94 C82 82 74 70 60 70 Z"
+    fill="url(#ag-an-body)" stroke="#2b1207" stroke-width="2"/>
+    <g fill="none" stroke="#2b1207" stroke-width="1.4" opacity=".45">
+    <path d="M42 86 C52 90 68 90 78 86"/><path d="M40 96 C51 101 69 101 80 96"/><path d="M44 106 C52 109 68 109 76 106"/>
+    </g>
+    <!-- 细腰：蚂蚁与其他昆虫最好认的差别 -->
+    <path d="M55 62 L65 62 L64 72 L56 72 Z" fill="#4a2210" stroke="#2b1207" stroke-width="1.6"/>
+    <!-- 胸（中体）：腿都从这里出来 -->
+    <path d="M60 36 C50 36 45 44 46 54 C47 62 53 66 60 66 C67 66 73 62 74 54 C75 44 70 36 60 36 Z"
+    fill="url(#ag-an-body)" stroke="#2b1207" stroke-width="2"/>
+    <!-- 头：略呈心形，一对大颚 -->
+    <path d="M60 8 C48 8 41 16 41 26 C41 34 49 40 60 40 C71 40 79 34 79 26 C79 16 72 8 60 8 Z"
+    fill="#8a4522" stroke="#2b1207" stroke-width="2"/>
+    <ellipse cx="49" cy="22" rx="4" ry="5" fill="#1b0c04"/><ellipse cx="71" cy="22" rx="4" ry="5" fill="#1b0c04"/>
+    <ellipse cx="48" cy="20" rx="1.4" ry="1.8" fill="#e0c39a" opacity=".8"/>
+    <path d="M52 38 C48 44 44 47 40 48 M68 38 C72 44 76 47 80 48" fill="none" stroke="#2b1207" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M52 14 C56 18 64 18 68 14" fill="none" stroke="#c98352" stroke-width="2" opacity=".5"/>
+  </symbol>
+  <symbol id="art-bee" viewBox="0 0 120 120">
+    <linearGradient id="ag-be-abdo" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f7c948"/><stop offset="1" stop-color="#c98a12"/>
+    </linearGradient>
+    <linearGradient id="ag-be-wing" x1=".5" y1="0" x2=".2" y2="1">
+    <stop offset="0" stop-color="#fbfdff" stop-opacity=".92"/><stop offset="1" stop-color="#cfe2f0" stop-opacity=".72"/>
+    </linearGradient>
+    <ellipse cx="60" cy="114" rx="22" ry="3.5" fill="#2a1c06" opacity="0.1"/>
+    <!-- 两对膜翅：前翅大、后翅小，带细翅脉 -->
+    <path d="M54 48 C36 34 12 34 8 48 C4 62 28 68 52 62 Z" fill="url(#ag-be-wing)" stroke="#8fadc4" stroke-width="1.8"/>
+    <path d="M66 48 C84 34 108 34 112 48 C116 62 92 68 68 62 Z" fill="url(#ag-be-wing)" stroke="#8fadc4" stroke-width="1.8"/>
+    <path d="M54 60 C40 56 22 60 20 70 C18 80 38 80 54 70 Z" fill="url(#ag-be-wing)" stroke="#8fadc4" stroke-width="1.6"/>
+    <path d="M66 60 C80 56 98 60 100 70 C102 80 82 80 66 70 Z" fill="url(#ag-be-wing)" stroke="#8fadc4" stroke-width="1.6"/>
+    <g fill="none" stroke="#8fadc4" stroke-width="1.1" opacity=".8">
+    <path d="M50 56 C36 48 20 46 12 50"/><path d="M50 60 C38 56 22 56 14 58"/>
+    <path d="M70 56 C84 48 100 46 108 50"/><path d="M70 60 C82 56 98 56 106 58"/>
+    </g>
+    <!-- 六条足；后足上带一团花粉 -->
+    <g fill="none" stroke="#3d2a0a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M52 48 L38 40 L30 44"/><path d="M52 58 L36 60 L28 68"/><path d="M54 68 L40 82 L34 94"/>
+    <path d="M68 48 L82 40 L90 44"/><path d="M68 58 L84 60 L92 68"/><path d="M66 68 L80 82 L86 94"/>
+    </g>
+    <ellipse cx="37" cy="86" rx="7" ry="6" fill="#e8b428" stroke="#a37a10" stroke-width="1.6"/>
+    <ellipse cx="83" cy="86" rx="7" ry="6" fill="#e8b428" stroke="#a37a10" stroke-width="1.6"/>
+    <!-- 腹部：黑黄相间的环带 -->
+    <path d="M60 64 C50 64 44 74 44 88 C44 102 51 112 60 112 C69 112 76 102 76 88 C76 74 70 64 60 64 Z"
+    fill="url(#ag-be-abdo)" stroke="#2b1d04" stroke-width="2"/>
+    <path d="M45 76 C51 79 69 79 75 76 L74 84 C68 81 52 81 46 84 Z" fill="#241a06"/>
+    <path d="M45.5 90 C52 93 68 93 74.5 90 L73 98 C67 95 53 95 47 98 Z" fill="#241a06"/>
+    <path d="M50 104 C55 106 65 106 70 104 L66 110 C63 111 57 111 54 110 Z" fill="#241a06"/>
+    <!-- 尾端的螫针 -->
+    <path d="M60 112 L60 118" stroke="#241a06" stroke-width="2.4" stroke-linecap="round"/>
+    <!-- 胸部：毛绒质感用一圈短毛表现 -->
+    <ellipse cx="60" cy="52" rx="16" ry="15" fill="#a9701c" stroke="#2b1d04" stroke-width="2"/>
+    <g stroke="#e6b45a" stroke-width="2" stroke-linecap="round" opacity=".85">
+    <path d="M48 46 L43 42"/><path d="M50 58 L44 61"/><path d="M60 38 L60 33"/><path d="M70 46 L75 42"/>
+    <path d="M70 58 L76 61"/><path d="M54 41 L50 36"/><path d="M66 41 L70 36"/><path d="M60 66 L60 70"/>
+    </g>
+    <!-- 头：一对大复眼 -->
+    <path d="M60 20 C50 20 44 26 44 34 C44 42 51 47 60 47 C69 47 76 42 76 34 C76 26 70 20 60 20 Z"
+    fill="#2b1d04" stroke="#160f02" stroke-width="1.8"/>
+    <ellipse cx="49" cy="32" rx="5" ry="8" fill="#1a1206"/><ellipse cx="71" cy="32" rx="5" ry="8" fill="#1a1206"/>
+    <ellipse cx="47.6" cy="29" rx="1.6" ry="2.4" fill="#c9b183" opacity=".75"/>
+    <ellipse cx="69.6" cy="29" rx="1.6" ry="2.4" fill="#c9b183" opacity=".75"/>
+    <path d="M54 18 C48 12 42 8 37 7" fill="none" stroke="#241a06" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="M66 18 C72 12 78 8 83 7" fill="none" stroke="#241a06" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="M60 46 L60 52" stroke="#160f02" stroke-width="2.4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="art-beetle-ladybird" viewBox="0 0 120 120">
+    <radialGradient id="ag-lb-red" cx=".34" cy=".26" r=".85">
+    <stop offset="0" stop-color="#f4614a"/><stop offset=".55" stop-color="#d92d1e"/><stop offset="1" stop-color="#9c1409"/>
+    </radialGradient>
+    <!-- 叶面：给它一个停靠的地方，红壳在绿底上更像实物 -->
+    <path d="M6 96 C22 78 52 70 84 76 C102 79 114 88 116 100 C96 112 40 114 6 96 Z" fill="#5aa63a" opacity=".55"/>
+    <path d="M10 97 C34 88 66 84 100 92" fill="none" stroke="#3f7d26" stroke-width="1.6" opacity=".6"/>
+    <ellipse cx="60" cy="102" rx="30" ry="5" fill="#2a1c06" opacity="0.2"/>
+    <!-- 六条短步行足 -->
+    <g stroke="#191207" stroke-width="3.2" stroke-linecap="round" fill="none">
+    <path d="M40 44 C32 40 26 36 22 31"/><path d="M80 44 C88 40 94 36 98 31"/>
+    <path d="M32 68 C23 68 16 68 10 66"/><path d="M88 68 C97 68 104 68 110 66"/>
+    <path d="M38 88 C31 93 26 98 22 104"/><path d="M82 88 C89 93 94 98 98 104"/>
+    </g>
+    <!-- 头：黑色，两侧各一块白颊斑 -->
+    <path d="M50 26 C50 18 54 13 60 13 C66 13 70 18 70 26 Z" fill="#15100a"/>
+    <circle cx="54" cy="21" r="2.6" fill="#f3ead4"/><circle cx="66" cy="21" r="2.6" fill="#f3ead4"/>
+    <path d="M54 15 C50 10 46 8 42 8" fill="none" stroke="#15100a" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M66 15 C70 10 74 8 78 8" fill="none" stroke="#15100a" stroke-width="2.4" stroke-linecap="round"/>
+    <!-- 前胸背板：黑底 + 两块奶白方斑，这是瓢虫最容易被忽略的识别点 -->
+    <path d="M43 40 C43 29 50 23 60 23 C70 23 77 29 77 40 Z" fill="#15100a"/>
+    <path d="M47 33 C49 29 52 27 55 27 L55 39 L46 39 Z" fill="#f3ead4"/>
+    <path d="M73 33 C71 29 68 27 65 27 L65 39 L74 39 Z" fill="#f3ead4"/>
+    <!-- 两片鞘翅：分开画，中缝才是真的缝 -->
+    <path d="M60 38 C41 38 27 52 27 70 C27 88 42 100 60 100 Z" fill="url(#ag-lb-red)"/>
+    <path d="M60 38 C79 38 93 52 93 70 C93 88 78 100 60 100 Z" fill="url(#ag-lb-red)"/>
+    <path d="M60 38 L60 100" stroke="#7c0f06" stroke-width="1.8"/>
+    <path d="M60 38 C41 38 27 52 27 70 C27 88 42 100 60 100 C78 100 93 88 93 70 C93 52 79 38 60 38 Z"
+    fill="none" stroke="#6d0d05" stroke-width="2"/>
+    <!-- 七个黑斑：中缝上共用一个，左右各三 -->
+    <g fill="#15100a">
+    <circle cx="60" cy="46" r="5.2"/>
+    <circle cx="43" cy="58" r="5.6"/><circle cx="36" cy="76" r="5"/><circle cx="52" cy="87" r="4.4"/>
+    <circle cx="77" cy="58" r="5.6"/><circle cx="84" cy="76" r="5"/><circle cx="68" cy="87" r="4.4"/>
+    </g>
+    <!-- 圆顶硬壳的镜面高光 -->
+    <path d="M36 58 C40 48 48 42 56 41" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".38"/>
+    <ellipse cx="44" cy="52" rx="5" ry="3" fill="#fff" opacity=".3" transform="rotate(-38 44 52)"/>
+  </symbol>
+  <symbol id="art-beetle-plain" viewBox="0 0 120 120">
+    <ellipse cx="60" cy="110" rx="24" ry="4" fill="#2a1c06" opacity="0.14"/>
+    <g stroke="var(--art-b, #3a2109)" stroke-width="3.4" stroke-linecap="round" fill="none">
+    <path d="M44 44 C35 40 28 35 24 29"/><path d="M76 44 C85 40 92 35 96 29"/>
+    <path d="M41 66 C31 66 23 68 17 72"/><path d="M79 66 C89 66 97 68 103 72"/>
+    <path d="M44 86 C36 92 30 99 27 106"/><path d="M76 86 C84 92 90 99 93 106"/>
+    </g>
+    <path d="M54 18 C50 12 45 9 40 8" fill="none" stroke="var(--art-b, #3a2109)" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M66 18 C70 12 75 9 80 8" fill="none" stroke="var(--art-b, #3a2109)" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M52 20 C52 14 55 11 60 11 C65 11 68 14 68 20 L68 28 L52 28 Z" fill="var(--art-b, #3a2109)"/>
+    <path d="M45 30 C45 24 51 21 60 21 C69 21 75 24 75 30 L77 42 L43 42 Z" fill="var(--art-b, #3a2109)"/>
+    <path d="M60 40 C45 40 38 54 38 72 C38 92 47 104 60 104 Z" fill="var(--art-a, #7c4a12)"/>
+    <path d="M60 40 C75 40 82 54 82 72 C82 92 73 104 60 104 Z" fill="var(--art-a, #7c4a12)"/>
+    <path d="M60 40 L60 104" stroke="var(--art-b, #3a2109)" stroke-width="1.8"/>
+    <path d="M60 40 C45 40 38 54 38 72 C38 92 47 104 60 104 C73 104 82 92 82 72 C82 54 75 40 60 40 Z"
+    fill="none" stroke="var(--art-b, #3a2109)" stroke-width="2"/>
+    <g fill="none" stroke="var(--art-b, #3a2109)" stroke-width="1" opacity=".4">
+    <path d="M49 48 C45 62 46 84 51 97"/><path d="M71 48 C75 62 74 84 69 97"/>
+    </g>
+    <path d="M44 50 C41 64 41 82 45 95" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".26"/>
+  </symbol>
+  <symbol id="art-butterfly" viewBox="0 0 120 120">
+    <linearGradient id="ag-bf-wing" x1=".2" y1="0" x2=".8" y2="1">
+    <stop offset="0" stop-color="#ff9b3d"/><stop offset=".6" stop-color="#ef6c14"/><stop offset="1" stop-color="#c14e08"/>
+    </linearGradient>
+    <ellipse cx="60" cy="114" rx="22" ry="3.5" fill="#2a1c06" opacity="0.1"/>
+    <!-- 后翅（先画，被前翅压住一部分） -->
+    <path d="M56 62 C40 66 20 76 14 92 C10 104 22 110 36 106 C48 102 54 88 57 74 Z"
+    fill="url(#ag-bf-wing)" stroke="#241408" stroke-width="2.6"/>
+    <path d="M64 62 C80 66 100 76 106 92 C110 104 98 110 84 106 C72 102 66 88 63 74 Z"
+    fill="url(#ag-bf-wing)" stroke="#241408" stroke-width="2.6"/>
+    <!-- 前翅：三角形，外缘一条黑带 -->
+    <path d="M56 56 C44 30 26 12 14 12 C4 12 4 30 12 48 C20 64 40 66 56 64 Z"
+    fill="url(#ag-bf-wing)" stroke="#241408" stroke-width="2.6"/>
+    <path d="M64 56 C76 30 94 12 106 12 C116 12 116 30 108 48 C100 64 80 66 64 64 Z"
+    fill="url(#ag-bf-wing)" stroke="#241408" stroke-width="2.6"/>
+    <!-- 黑脉：翅上的脉络，蝶翅最显眼的图案 -->
+    <g fill="none" stroke="#241408" stroke-width="2.2" opacity=".9">
+    <path d="M54 58 C40 46 26 30 16 18"/><path d="M54 60 C40 52 24 42 10 34"/><path d="M55 62 C42 60 24 56 8 54"/>
+    <path d="M66 58 C80 46 94 30 104 18"/><path d="M66 60 C80 52 96 42 110 34"/><path d="M65 62 C78 60 96 56 112 54"/>
+    <path d="M57 70 C48 78 34 88 22 96"/><path d="M57 76 C50 86 40 96 32 102"/>
+    <path d="M63 70 C72 78 86 88 98 96"/><path d="M63 76 C70 86 80 96 88 102"/>
+    </g>
+    <!-- 黑色外缘 + 一排白点 -->
+    <path d="M14 12 C4 12 4 30 12 48 C7 44 2 30 4 20 C5 14 9 12 14 12 Z" fill="#241408"/>
+    <path d="M106 12 C116 12 116 30 108 48 C113 44 118 30 116 20 C115 14 111 12 106 12 Z" fill="#241408"/>
+    <path d="M14 92 C10 104 22 110 36 106 C24 108 16 104 16 96 Z" fill="#241408"/>
+    <path d="M106 92 C110 104 98 110 84 106 C96 108 104 104 104 96 Z" fill="#241408"/>
+    <g fill="#fff8ec">
+    <circle cx="8" cy="24" r="2"/><circle cx="9" cy="34" r="2"/><circle cx="12" cy="43" r="1.8"/>
+    <circle cx="112" cy="24" r="2"/><circle cx="111" cy="34" r="2"/><circle cx="108" cy="43" r="1.8"/>
+    <circle cx="20" cy="100" r="1.8"/><circle cx="29" cy="104" r="1.8"/>
+    <circle cx="100" cy="100" r="1.8"/><circle cx="91" cy="104" r="1.8"/>
+    </g>
+    <!-- 六条细足，都长在胸部 -->
+    <g fill="none" stroke="#241408" stroke-width="2.4" stroke-linecap="round">
+    <path d="M55 66 L46 78 L40 84"/><path d="M57 70 L52 84 L48 92"/>
+    <path d="M65 66 L74 78 L80 84"/><path d="M63 70 L68 84 L72 92"/>
+    </g>
+    <!-- 身体：胸部毛绒、腹部分节 -->
+    <path d="M60 66 C56 66 54 74 54 86 C54 98 57 106 60 106 C63 106 66 98 66 86 C66 74 64 66 60 66 Z"
+    fill="#2e1a0c" stroke="#150a04" stroke-width="1.6"/>
+    <g stroke="#6b4a2c" stroke-width="1.4" opacity=".8">
+    <path d="M55 76 L65 76"/><path d="M55 84 L65 84"/><path d="M56 92 L64 92"/><path d="M57 99 L63 99"/>
+    </g>
+    <ellipse cx="60" cy="58" rx="8" ry="11" fill="#3b2410" stroke="#150a04" stroke-width="1.6"/>
+    <ellipse cx="60" cy="45" rx="7" ry="6.5" fill="#2e1a0c" stroke="#150a04" stroke-width="1.6"/>
+    <circle cx="56" cy="44" r="2.4" fill="#0d0603"/><circle cx="64" cy="44" r="2.4" fill="#0d0603"/>
+    <!-- 棒状触角：末端有小球，这是「蝶」而不是「蛾」的判据 -->
+    <path d="M56 40 C50 30 44 22 40 18" fill="none" stroke="#241408" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M64 40 C70 30 76 22 80 18" fill="none" stroke="#241408" stroke-width="2.6" stroke-linecap="round"/>
+    <circle cx="39" cy="17" r="3.4" fill="#241408"/><circle cx="81" cy="17" r="3.4" fill="#241408"/>
+    <!-- 卷起来的虹吸式口器 -->
+    <path d="M60 51 C56 56 55 61 58 62 C61 63 62 59 60 57" fill="none" stroke="#241408" stroke-width="1.8" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="art-caterpillar" viewBox="0 0 120 120">
+    <linearGradient id="ag-ct-body" x1="0" y1="0" x2=".3" y2="1">
+    <stop offset="0" stop-color="#9ede54"/><stop offset=".55" stop-color="#6bb32e"/><stop offset="1" stop-color="#3f7a15"/>
+    </linearGradient>
+    <!-- 一片被啃过的叶子 -->
+    <path d="M4 92 C24 74 60 68 96 76 C112 80 118 88 116 98 C92 110 36 112 4 92 Z" fill="#4f9c2e" opacity=".55"/>
+    <path d="M10 94 C36 84 70 82 104 90" fill="none" stroke="#36701c" stroke-width="1.6" opacity=".6"/>
+    <path d="M74 74 C82 70 88 72 90 78 C84 80 78 79 74 74 Z" fill="#fffaf0" opacity=".5"/>
+    <ellipse cx="60" cy="96" rx="34" ry="4" fill="#2a1c06" opacity="0.14"/>
+    <!-- 腹足：一对一对的小吸盘脚 -->
+    <g fill="#4a8a1c">
+    <ellipse cx="30" cy="90" rx="4" ry="5"/><ellipse cx="44" cy="92" rx="4" ry="5"/>
+    <ellipse cx="58" cy="92" rx="4" ry="5"/><ellipse cx="72" cy="90" rx="4" ry="5"/><ellipse cx="86" cy="86" rx="4" ry="5"/>
+    </g>
+    <!-- 身体：一节一节的圆环，越往后越细 -->
+    <path d="M22 74 C22 62 30 56 40 56 L86 56 C96 56 102 63 102 72 C102 82 94 88 84 88 L40 88 C30 88 22 84 22 74 Z"
+    fill="url(#ag-ct-body)" stroke="#2f5c10" stroke-width="2"/>
+    <g fill="none" stroke="#2f5c10" stroke-width="1.8" opacity=".55">
+    <path d="M38 57 C34 66 34 78 38 87"/><path d="M52 56 C48 66 48 78 52 88"/>
+    <path d="M66 56 C62 66 62 78 66 88"/><path d="M80 56 C76 66 76 78 80 88"/>
+    </g>
+    <!-- 体侧的气门与背上的斑纹 -->
+    <g fill="#2f5c10" opacity=".7">
+    <circle cx="45" cy="80" r="2"/><circle cx="59" cy="80" r="2"/><circle cx="73" cy="80" r="2"/><circle cx="87" cy="78" r="2"/>
+    </g>
+    <g fill="#f4e06a" opacity=".85">
+    <ellipse cx="45" cy="63" rx="4.5" ry="3"/><ellipse cx="59" cy="62" rx="4.5" ry="3"/>
+    <ellipse cx="73" cy="62" rx="4.5" ry="3"/><ellipse cx="87" cy="64" rx="4" ry="2.6"/>
+    </g>
+    <!-- 背上的刚毛 -->
+    <g stroke="#2f5c10" stroke-width="1.6" stroke-linecap="round">
+    <path d="M40 56 L37 46"/><path d="M54 55 L52 45"/><path d="M68 55 L67 45"/><path d="M82 56 L83 46"/>
+    </g>
+    <!-- 头壳：褐色、比身体硬 -->
+    <circle cx="22" cy="72" r="16" fill="#8a5a22" stroke="#4f3110" stroke-width="2"/>
+    <circle cx="16" cy="67" r="3.2" fill="#201204"/><circle cx="15" cy="66" r="1.1" fill="#f0dcb4" opacity=".8"/>
+    <circle cx="24" cy="65" r="3.2" fill="#201204"/><circle cx="23" cy="64" r="1.1" fill="#f0dcb4" opacity=".8"/>
+    <path d="M12 80 C16 84 24 84 28 80" fill="none" stroke="#4f3110" stroke-width="2.2" stroke-linecap="round"/>
+    <!-- 三对真正的胸足 -->
+    <g fill="none" stroke="#2f5c10" stroke-width="2.6" stroke-linecap="round">
+    <path d="M34 86 L31 94"/><path d="M40 87 L38 95"/><path d="M27 84 L23 92"/>
+    </g>
+  </symbol>
+  <symbol id="art-dragonfly" viewBox="0 0 120 120">
+    <linearGradient id="ag-df-abdo" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#2fa8c8"/><stop offset=".6" stop-color="#1c6f8c"/><stop offset="1" stop-color="#123f52"/>
+    </linearGradient>
+    <linearGradient id="ag-df-wing" x1=".5" y1="0" x2=".1" y2="1">
+    <stop offset="0" stop-color="#fdffff" stop-opacity=".9"/><stop offset="1" stop-color="#cfe8f2" stop-opacity=".62"/>
+    </linearGradient>
+    <ellipse cx="60" cy="116" rx="18" ry="3" fill="#2a1c06" opacity="0.1"/>
+    <!-- 四片长翅：前后各一对，形状不同 -->
+    <path d="M54 40 C38 24 12 16 6 26 C0 38 26 50 52 52 Z" fill="url(#ag-df-wing)" stroke="#7fa9bd" stroke-width="1.7"/>
+    <path d="M54 52 C38 48 12 52 8 64 C4 76 30 70 54 60 Z" fill="url(#ag-df-wing)" stroke="#7fa9bd" stroke-width="1.7"/>
+    <path d="M66 40 C82 24 108 16 114 26 C120 38 94 50 68 52 Z" fill="url(#ag-df-wing)" stroke="#7fa9bd" stroke-width="1.7"/>
+    <path d="M66 52 C82 48 108 52 112 64 C116 76 90 70 66 60 Z" fill="url(#ag-df-wing)" stroke="#7fa9bd" stroke-width="1.7"/>
+    <!-- 翅脉：蜻蜓的翅是网格状的，密而规则 -->
+    <g fill="none" stroke="#7fa9bd" stroke-width=".9" opacity=".85">
+    <path d="M50 44 C34 34 16 26 8 26"/><path d="M50 48 C34 42 16 36 7 32"/><path d="M28 30 C30 38 32 44 34 50"/><path d="M16 28 C18 34 20 40 22 46"/>
+    <path d="M50 56 C34 52 16 54 9 62"/><path d="M28 52 C28 58 29 63 30 67"/><path d="M16 55 C16 60 17 64 18 68"/>
+    <path d="M70 44 C86 34 104 26 112 26"/><path d="M70 48 C86 42 104 36 113 32"/><path d="M92 30 C90 38 88 44 86 50"/><path d="M104 28 C102 34 100 40 98 46"/>
+    <path d="M70 56 C86 52 104 54 111 62"/><path d="M92 52 C92 58 91 63 90 67"/><path d="M104 55 C104 60 103 64 102 68"/>
+    </g>
+    <!-- 六条短足，抓握式，全部朝前 -->
+    <g fill="none" stroke="#123f52" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M54 50 L44 58 L38 60"/><path d="M55 56 L47 66 L42 70"/><path d="M57 60 L52 72 L49 78"/>
+    <path d="M66 50 L76 58 L82 60"/><path d="M65 56 L73 66 L78 70"/><path d="M63 60 L68 72 L71 78"/>
+    </g>
+    <!-- 腹部：细长分节，一直伸到画面下缘 -->
+    <path d="M55 58 L65 58 L63 112 C63 116 57 116 57 112 Z" fill="url(#ag-df-abdo)" stroke="#0e3040" stroke-width="1.8"/>
+    <g stroke="#0e3040" stroke-width="1.4" opacity=".75">
+    <path d="M55.6 66 L64.4 66"/><path d="M56 74 L64 74"/><path d="M56.2 82 L63.8 82"/>
+    <path d="M56.5 90 L63.5 90"/><path d="M56.8 98 L63.2 98"/><path d="M57 106 L63 106"/>
+    </g>
+    <path d="M58 62 L58 108" stroke="#7fd6ea" stroke-width="1.6" opacity=".45"/>
+    <!-- 胸部：短而结实 -->
+    <path d="M60 34 C52 34 48 42 48 50 C48 58 53 62 60 62 C67 62 72 58 72 50 C72 42 68 34 60 34 Z"
+    fill="#1f7a95" stroke="#0e3040" stroke-width="2"/>
+    <path d="M53 40 C52 48 53 56 56 60" fill="none" stroke="#8ee0f2" stroke-width="2" opacity=".5"/>
+    <!-- 头：几乎全被两只巨大的复眼占满，这是蜻蜓最好认的地方 -->
+    <path d="M42 22 C42 12 50 6 60 6 C70 6 78 12 78 22 C78 32 70 38 60 38 C50 38 42 32 42 22 Z"
+    fill="#1c5e75" stroke="#0e3040" stroke-width="2"/>
+    <ellipse cx="50" cy="20" rx="10" ry="12" fill="#2ea6c6"/><ellipse cx="70" cy="20" rx="10" ry="12" fill="#2ea6c6"/>
+    <g fill="#8fe3f5" opacity=".55"><ellipse cx="46" cy="15" rx="3.4" ry="4.4"/><ellipse cx="66" cy="15" rx="3.4" ry="4.4"/></g>
+    <g fill="#0e3040" opacity=".3">
+    <path d="M42 20 L78 20 M44 26 L76 26 M46 13 L74 13" stroke="#0e3040" stroke-width=".8" fill="none"/>
+    </g>
+    <path d="M54 36 C54 40 66 40 66 36" fill="#0e3040"/>
+  </symbol>
+  <symbol id="art-insect-eggs" viewBox="0 0 120 120">
+    <radialGradient id="ag-eg-egg" cx=".35" cy=".28" r=".8">
+    <stop offset="0" stop-color="#fffdf5"/><stop offset=".6" stop-color="#f3e6c8"/><stop offset="1" stop-color="#cdb98d"/>
+    </radialGradient>
+    <!-- 叶背：主脉在中间 -->
+    <path d="M8 96 C14 52 44 20 96 14 C104 46 88 88 34 104 C22 106 12 102 8 96 Z" fill="#5aa63a"/>
+    <path d="M10 95 C28 70 58 40 95 15" fill="none" stroke="#3d7d26" stroke-width="3" stroke-linecap="round"/>
+    <g fill="none" stroke="#3d7d26" stroke-width="1.6" opacity=".7">
+    <path d="M26 84 C34 76 40 64 42 52"/><path d="M42 66 C52 58 60 46 64 34"/><path d="M58 50 C68 42 76 32 80 24"/>
+    </g>
+    <ellipse cx="62" cy="82" rx="22" ry="4" fill="#2a1c06" opacity="0.12"/>
+    <!-- 一丛卵：椭球、顶端有小尖，表面带纵棱 -->
+    <g stroke="#a89468" stroke-width="1.4">
+    <ellipse cx="46" cy="70" rx="7" ry="9" fill="url(#ag-eg-egg)"/>
+    <ellipse cx="60" cy="66" rx="7.5" ry="9.5" fill="url(#ag-eg-egg)"/>
+    <ellipse cx="74" cy="68" rx="7" ry="9" fill="url(#ag-eg-egg)"/>
+    <ellipse cx="53" cy="82" rx="6.5" ry="8.5" fill="url(#ag-eg-egg)"/>
+    <ellipse cx="67" cy="81" rx="6.5" ry="8.5" fill="url(#ag-eg-egg)"/>
+    <ellipse cx="60" cy="52" rx="6" ry="7.5" fill="url(#ag-eg-egg)"/>
+    </g>
+    <g fill="none" stroke="#bda878" stroke-width=".9" opacity=".9">
+    <path d="M46 62 L46 79 M42 64 L42 76 M50 64 L50 76"/>
+    <path d="M60 57 L60 75 M56 59 L56 73 M64 59 L64 73"/>
+    <path d="M74 60 L74 77 M70 62 L70 74 M78 62 L78 74"/>
+    </g>
+    <g fill="#fffef8" opacity=".8">
+    <ellipse cx="43" cy="65" rx="1.8" ry="2.6"/><ellipse cx="57" cy="61" rx="2" ry="2.8"/>
+    <ellipse cx="71" cy="63" rx="1.8" ry="2.6"/><ellipse cx="58" cy="48" rx="1.6" ry="2.2"/>
+    </g>
+  </symbol>
+  <symbol id="art-pupa" viewBox="0 0 120 120">
+    <linearGradient id="ag-pp-body" x1=".2" y1="0" x2=".8" y2="1">
+    <stop offset="0" stop-color="#a8d86b"/><stop offset=".55" stop-color="#6fae38"/><stop offset="1" stop-color="#3f7318"/>
+    </linearGradient>
+    <!-- 枝条 -->
+    <path d="M2 18 C30 12 70 14 118 22" fill="none" stroke="#7a5527" stroke-width="9" stroke-linecap="round"/>
+    <path d="M2 18 C30 12 70 14 118 22" fill="none" stroke="#a4762f" stroke-width="3.4" stroke-linecap="round" opacity=".6"/>
+    <!-- 丝垫与悬挂点 -->
+    <path d="M60 22 L60 32" stroke="#e8dcbf" stroke-width="3" stroke-linecap="round"/>
+    <path d="M52 26 C56 30 64 30 68 26" fill="none" stroke="#e8dcbf" stroke-width="2" stroke-linecap="round"/>
+    <!-- 蛹体：上宽下尖，中间一道折角 -->
+    <path d="M60 30 C46 32 38 44 38 60 C38 78 48 96 60 106 C72 96 82 78 82 60 C82 44 74 32 60 30 Z"
+    fill="url(#ag-pp-body)" stroke="#2f5c10" stroke-width="2"/>
+    <path d="M39 56 C48 62 72 62 81 56" fill="none" stroke="#2f5c10" stroke-width="2" opacity=".5"/>
+    <!-- 里面已经成形的翅与腹节的轮廓 -->
+    <g fill="none" stroke="#2f5c10" stroke-width="1.6" opacity=".45">
+    <path d="M52 38 C46 48 45 60 48 70"/><path d="M68 38 C74 48 75 60 72 70"/>
+    <path d="M46 76 C54 80 66 80 74 76"/><path d="M50 86 C56 89 64 89 70 86"/><path d="M54 95 C58 97 62 97 66 95"/>
+    </g>
+    <!-- 金色缘线：真实蝶蛹上那圈会反光的小金点 -->
+    <g fill="#f3cf52">
+    <circle cx="42" cy="55" r="2"/><circle cx="49" cy="58" r="1.8"/><circle cx="60" cy="59" r="2"/>
+    <circle cx="71" cy="58" r="1.8"/><circle cx="78" cy="55" r="2"/>
+    </g>
+    <path d="M45 40 C42 50 41 60 43 70" fill="none" stroke="#e9f7c6" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+  </symbol>
+  <symbol id="art-spider" viewBox="0 0 120 120">
+    <radialGradient id="ag-sp-abdo" cx=".36" cy=".3" r=".8">
+    <stop offset="0" stop-color="#c9a06a"/><stop offset=".55" stop-color="#8a5f33"/><stop offset="1" stop-color="#4a2f16"/>
+    </radialGradient>
+    <!-- 一角蛛网，说明这是蜘蛛而不是别的八足虫 -->
+    <g fill="none" stroke="#a9b6c2" stroke-width="1.2" opacity=".55">
+    <path d="M2 4 L58 56 M60 2 L60 40 M118 4 L64 56 M2 60 L44 60 M118 60 L78 60"/>
+    <path d="M20 4 C34 18 40 34 40 52"/><path d="M100 4 C86 18 80 34 80 52"/>
+    <path d="M8 14 C26 20 44 30 56 44"/><path d="M112 14 C94 20 76 30 64 44"/>
+    </g>
+    <ellipse cx="60" cy="114" rx="24" ry="4" fill="#2a1c06" opacity="0.12"/>
+    <!-- 八条腿：四对，每条分三段并带刺毛。数得清是关键。 -->
+    <g fill="none" stroke="#3b2513" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M50 52 L26 30 L8 36"/><path d="M50 60 L20 50 L2 60"/>
+    <path d="M52 68 L24 74 L8 88"/><path d="M56 76 L36 92 L28 108"/>
+    <path d="M70 52 L94 30 L112 36"/><path d="M70 60 L100 50 L118 60"/>
+    <path d="M68 68 L96 74 L112 88"/><path d="M64 76 L84 92 L92 108"/>
+    </g>
+    <g stroke="#3b2513" stroke-width="1.6" stroke-linecap="round">
+    <path d="M38 42 L34 38 M32 47 L27 44 M36 72 L32 76 M46 86 L42 90"/>
+    <path d="M82 42 L86 38 M88 47 L93 44 M84 72 L88 76 M74 86 L78 90"/>
+    </g>
+    <!-- 腹部：又大又圆，带叶状花纹 -->
+    <path d="M60 62 C44 62 34 76 34 92 C34 106 46 116 60 116 C74 116 86 106 86 92 C86 76 76 62 60 62 Z"
+    fill="url(#ag-sp-abdo)" stroke="#301d0c" stroke-width="2"/>
+    <path d="M60 68 C54 76 52 86 54 96 C56 106 60 110 60 110 C60 110 64 106 66 96 C68 86 66 76 60 68 Z"
+    fill="#f2e2c2" opacity=".75"/>
+    <g fill="#3b2513" opacity=".7">
+    <circle cx="48" cy="84" r="2"/><circle cx="72" cy="84" r="2"/><circle cx="46" cy="98" r="1.8"/>
+    <circle cx="74" cy="98" r="1.8"/><circle cx="60" cy="80" r="1.8"/>
+    </g>
+    <!-- 头胸部：8 条腿全长在这一段 -->
+    <path d="M60 34 C49 34 42 42 42 52 C42 62 50 68 60 68 C70 68 78 62 78 52 C78 42 71 34 60 34 Z"
+    fill="#7a5228" stroke="#301d0c" stroke-width="2"/>
+    <!-- 八只小眼：两排 -->
+    <g fill="#150c04">
+    <circle cx="52" cy="42" r="2.2"/><circle cx="57" cy="40" r="2.4"/><circle cx="63" cy="40" r="2.4"/><circle cx="68" cy="42" r="2.2"/>
+    <circle cx="54" cy="47" r="1.6"/><circle cx="59" cy="46" r="1.6"/><circle cx="61" cy="46" r="1.6"/><circle cx="66" cy="47" r="1.6"/>
+    </g>
+    <!-- 螯肢与触肢 -->
+    <path d="M54 54 C52 60 52 64 54 66 M66 54 C68 60 68 64 66 66" fill="none" stroke="#301d0c" stroke-width="3" stroke-linecap="round"/>
+    <path d="M46 50 C40 54 36 58 34 62" fill="none" stroke="#3b2513" stroke-width="3.4" stroke-linecap="round"/>
+    <path d="M74 50 C80 54 84 58 86 62" fill="none" stroke="#3b2513" stroke-width="3.4" stroke-linecap="round"/>
+  </symbol>
+</svg>
+<!-- ART:END -->
 <a class="skip-link" href="#main">跳到主要内容</a>
 
 <nav class="nav"><div class="nav-in wrap">
@@ -301,7 +872,9 @@
         <div><b id="insectBigQuestion">一个大问题</b><p>头、胸、腹各自藏着什么线索？长大时又会换几次模样？</p></div>
       </div>
       <p class="look-now"><span aria-hidden="true">👀</span><span><b>主操作：</b>点舞台上的 1、2、3，再点一个成长阶段。</span></p>
-      <div class="kid-action-strip" data-audience="parent">
+      <!-- 孩子主操作区不加 data-audience="parent"：那会让 kid.css 在孩子模式下
+           display:none，孩子首屏就没有任何快捷入口了。 -->
+      <div class="kid-action-strip" aria-label="虫子放大镜主操作">
         <a class="btn btn-primary" href="#insectMissionTitle">开始小虫任务</a>
         <a class="btn btn-ghost" href="#bugs">打开离线虫卡</a>
       </div>
@@ -310,16 +883,108 @@
       <span class="stage-label">看哪里？点数字热点</span>
       <svg class="bug-map" viewBox="0 0 420 220" role="img" aria-labelledby="bugMapTitle bugMapDesc">
         <title id="bugMapTitle">昆虫身体分成头、胸、腹三部分</title>
-        <desc id="bugMapDesc">左侧粉色圆形是头部，中间黄色圆形是胸部，右侧蓝绿色椭圆是腹部。六条腿和两片翅连接在胸部。</desc>
-        <g fill="none" stroke="#22352c" stroke-width="7" stroke-linecap="round">
-          <path d="M180 119 L130 178 M191 128 L174 199 M219 128 L245 199 M232 118 L291 176"/>
-          <path d="M185 82 Q143 28 127 63 M226 80 Q278 24 298 62" stroke-width="5"/>
-          <path d="M88 83 Q52 35 34 63 M102 77 Q89 27 73 22" stroke-width="4"/>
+        <desc id="bugMapDesc">一只昆虫的侧俯视图，身体从左到右分成三段并用三种颜色区分：左边粉色的是头，上面有一对带高光的大复眼、一对折成肘形的触角和一对大颚；中间黄色的是胸，背上有一块盾片，六条腿全部从这一段的两侧接出去，每条腿分成粗的股节、细的胫节和末端带爪的跗节；右边蓝绿色的是腹，一节一节向后收窄，体侧排着一列小气门。</desc>
+        <defs>
+          <linearGradient id="bmChitin" x1=".2" y1="0" x2=".6" y2="1">
+            <stop offset="0" stop-color="#9c6a34"/><stop offset=".5" stop-color="#6d4519"/><stop offset="1" stop-color="#3a2209"/>
+          </linearGradient>
+          <linearGradient id="bmHead" x1=".2" y1="0" x2=".7" y2="1">
+            <stop offset="0" stop-color="#7c5228"/><stop offset="1" stop-color="#2e1b06"/>
+          </linearGradient>
+          <linearGradient id="bmWing" x1=".3" y1="0" x2=".7" y2="1">
+            <stop offset="0" stop-color="#fdfcf6" stop-opacity=".62"/><stop offset="1" stop-color="#cfe3f0" stop-opacity=".42"/>
+          </linearGradient>
+        </defs>
+        <!-- 虫体本身用真实的甲壳色画（暗琥珀＋高光），三段身体的颜色信息
+             改由图例色的「描边框」承担，而不是把整段涂成一个粉圆／黄圆／绿椭圆。
+             这样孩子既看得出这是一只虫，也仍然能一眼分出头、胸、腹三段。 -->
+        <!-- 六条腿：全部长在胸部，这是本页要孩子亲手数的东西 -->
+        <g fill="none" stroke="#22352c" stroke-linecap="round" stroke-linejoin="round">
+          <g stroke-width="9">
+            <path d="M182 78 L150 46"/><path d="M176 108 L136 104"/><path d="M182 138 L152 172"/>
+          </g>
+          <g stroke-width="7">
+            <path d="M150 46 L124 30"/><path d="M136 104 L106 112"/><path d="M152 172 L128 194"/>
+          </g>
+          <g stroke-width="4.5">
+            <path d="M124 30 L108 26 M108 26 L100 20 M108 26 L101 31"/>
+            <path d="M106 112 L88 118 M88 118 L78 116 M88 118 L80 124"/>
+            <path d="M128 194 L112 206 M112 206 L102 206 M112 206 L107 213"/>
+          </g>
+          <g stroke-width="9">
+            <path d="M228 78 L262 44"/><path d="M234 108 L276 102"/><path d="M228 138 L258 174"/>
+          </g>
+          <g stroke-width="7">
+            <path d="M262 44 L292 30"/><path d="M276 102 L308 110"/><path d="M258 174 L284 196"/>
+          </g>
+          <g stroke-width="4.5">
+            <path d="M292 30 L310 26 M310 26 L318 20 M310 26 L317 31"/>
+            <path d="M308 110 L326 116 M326 116 L336 114 M326 116 L334 122"/>
+            <path d="M284 196 L302 208 M302 208 L312 208 M302 208 L307 215"/>
+          </g>
         </g>
-        <ellipse class="bug-zone zone-abdomen" cx="314" cy="105" rx="82" ry="61" fill="#45b9ad" stroke="#22352c" stroke-width="6"/>
-        <circle class="bug-zone zone-thorax" cx="205" cy="108" r="56" fill="#ffd166" stroke="#22352c" stroke-width="6"/>
-        <circle class="bug-zone zone-head" cx="95" cy="101" r="48" fill="#f472b6" stroke="#22352c" stroke-width="6"/>
-        <circle cx="78" cy="91" r="6" fill="#22352c"/><circle cx="109" cy="91" r="6" fill="#22352c"/>
+        <!-- 腹部：末端收窄，背上一节一节，体侧一列气门 -->
+        <path d="M250 64 C294 64 386 76 386 108 C386 140 294 150 250 150 C236 150 232 130 232 107 C232 84 236 64 250 64 Z"
+              fill="url(#bmChitin)" stroke="#241503" stroke-width="4"/>
+        <g fill="none" stroke="#241503" stroke-width="3" opacity=".6">
+          <path d="M272 68 C264 84 264 130 272 147"/><path d="M302 71 C294 86 294 128 302 144"/>
+          <path d="M332 75 C325 88 325 126 332 140"/><path d="M360 81 C354 92 354 122 360 134"/>
+        </g>
+        <g fill="#180d02"><circle cx="274" cy="138" r="4"/><circle cx="304" cy="136" r="4"/><circle cx="334" cy="131" r="4"/></g>
+        <path d="M252 74 C296 74 372 84 380 104" fill="none" stroke="#e3b371" stroke-width="5" stroke-linecap="round" opacity=".45"/>
+        <!-- 折在背上的一对膜翅：半透明，所以下面的腹节仍然看得见。
+             它和腿一样是长在胸部的，正好印证图例那句「腿长这里」。 -->
+        <path d="M232 78 C282 74 352 82 372 100 C348 108 280 106 234 98 Z" fill="url(#bmWing)" stroke="#8fb2cc" stroke-width="2.5"/>
+        <path d="M232 108 C282 112 348 118 366 130 C338 136 276 130 234 122 Z" fill="url(#bmWing)" stroke="#8fb2cc" stroke-width="2.5"/>
+        <g fill="none" stroke="#8fb2cc" stroke-width="1.6" opacity=".8">
+          <path d="M244 84 C286 82 340 88 362 98"/><path d="M262 80 C266 86 268 92 268 96"/><path d="M300 83 C302 89 303 95 303 99"/>
+          <path d="M246 112 C288 116 340 122 360 130"/><path d="M266 113 C268 118 269 122 269 126"/><path d="M304 117 C306 122 307 125 307 128"/>
+        </g>
+        <!-- 胸部：背上一块盾片，六条腿全部从这里接出去 -->
+        <path d="M205 50 C232 50 258 74 258 107 C258 140 232 165 205 165 C178 165 152 140 152 107 C152 74 178 50 205 50 Z"
+              fill="url(#bmChitin)" stroke="#241503" stroke-width="4"/>
+        <path d="M205 62 C224 62 238 82 238 107 C238 132 224 152 205 152" fill="none" stroke="#241503" stroke-width="3.5" opacity=".55"/>
+        <path d="M186 70 C176 86 174 128 186 146" fill="none" stroke="#f0c68a" stroke-width="6" stroke-linecap="round" opacity=".4"/>
+        <path d="M232 96 L246 107 L232 118 Z" fill="#241503" opacity=".8"/>
+        <!-- 头：一对肘状触角（先斜出、再折向前） -->
+        <g fill="none" stroke="#241503" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M86 58 L64 30 L40 26"/><path d="M112 56 L104 26 L86 10"/>
+        </g>
+        <!-- 头比胸略小：真实昆虫就是这个比例，等大会看成一根棒棒糖 -->
+        <path d="M97 62 C121 62 139 78 139 103 C139 128 121 144 97 144 C73 144 55 128 55 103 C55 78 73 62 97 62 Z"
+              fill="url(#bmHead)" stroke="#1c1002" stroke-width="4"/>
+        <!-- 复眼：长在头的两侧而不是正前方，中间留出额区。
+             真实昆虫就是这样，眼睛挨在一起会看成一张卡通脸而不是一只虫。 -->
+        <path d="M72 78 C81 78 86 87 86 99 C86 112 80 120 72 120 C64 120 59 112 59 99 C59 87 64 78 72 78 Z" fill="#150c02"/>
+        <path d="M122 78 C130 78 135 87 135 99 C135 112 130 120 122 120 C114 120 108 112 108 99 C108 87 113 78 122 78 Z" fill="#150c02"/>
+        <g fill="none" stroke="#54401f" stroke-width="1" opacity=".5">
+          <path d="M60 92 L85 92 M60 100 L86 100 M61 108 L84 108 M67 79 L67 119 M74 78 L74 120 M80 80 L80 118"/>
+          <path d="M109 92 L134 92 M108 100 L134 100 M110 108 L133 108 M115 79 L115 119 M122 78 L122 120 M128 80 L128 118"/>
+        </g>
+        <ellipse cx="68" cy="86" rx="3.6" ry="5" fill="#d9c49a" opacity=".5"/>
+        <ellipse cx="118" cy="86" rx="3.6" ry="5" fill="#d9c49a" opacity=".5"/>
+        <!-- 额区上的三只单眼：真实的构造，也把两只复眼分开 -->
+        <g fill="#c9a874" opacity=".75">
+          <circle cx="97" cy="78" r="3"/><circle cx="90" cy="88" r="2.6"/><circle cx="104" cy="88" r="2.6"/>
+        </g>
+        <!-- 口器：一对能左右开合的大颚 -->
+        <path d="M86 138 C78 148 68 154 58 156" fill="none" stroke="#1c1002" stroke-width="7" stroke-linecap="round"/>
+        <path d="M108 138 C116 148 126 154 136 156" fill="none" stroke="#1c1002" stroke-width="7" stroke-linecap="round"/>
+        <path d="M89 132 C94 126 100 126 105 132 L104 142 L90 142 Z" fill="#3d2409" stroke="#1c1002" stroke-width="2.5"/>
+        <path d="M74 70 C84 64 110 64 120 70" fill="none" stroke="#e3b371" stroke-width="4" stroke-linecap="round" opacity=".4"/>
+
+        <!-- 三段身体的颜色标记：只画图例色的外框（不涂满），
+             真实体色因此保留，而「哪一段是哪一段」仍然一眼可辨。
+             选中态由 .bug-zone 的 CSS 加粗光晕，不依赖颜色单独传达。 -->
+        <path class="bug-zone zone-head"
+              d="M97 58 C123 58 143 77 143 103 C143 129 123 148 97 148 C71 148 51 129 51 103 C51 77 71 58 97 58 Z"
+              fill="#f472b6" fill-opacity=".1" stroke="#e0357f" stroke-width="5"/>
+        <path class="bug-zone zone-thorax"
+              d="M205 46 C234 46 262 73 262 107 C262 141 234 169 205 169 C176 169 148 141 148 107 C148 73 176 46 205 46 Z"
+              fill="#ffd166" fill-opacity=".1" stroke="#b8860b" stroke-width="5"/>
+        <path class="bug-zone zone-abdomen"
+              d="M250 60 C296 60 390 73 390 108 C390 143 296 154 250 154 C234 154 228 131 228 107 C228 83 234 60 250 60 Z"
+              fill="#45b9ad" fill-opacity=".1" stroke="#0f7f75" stroke-width="5"/>
       </svg>
       <div class="look-spots" aria-label="昆虫身体热点">
         <button class="look-spot" type="button" data-look="head" aria-pressed="true" aria-label="看头部">1</button>
@@ -328,14 +993,34 @@
       </div>
       <div class="kid-result-card look-result" id="insectLookResult" role="status" aria-live="polite"><b>1 头部：</b>找复眼、口器和一对触角；它们帮助感知和取食。</div>
       <div class="life-cycle-map" aria-label="完全变态昆虫生命周期">
-        <button class="life-node" type="button" data-stage="卵" aria-pressed="true"><span aria-hidden="true">🥚</span>卵</button><span class="life-arrow" aria-hidden="true">→</span>
-        <button class="life-node" type="button" data-stage="幼虫／若虫" aria-pressed="false"><span aria-hidden="true">🐛</span>幼虫</button><span class="life-arrow" aria-hidden="true">→</span>
-        <button class="life-node" type="button" data-stage="蛹" aria-pressed="false"><span aria-hidden="true">🟤</span>蛹</button><span class="life-arrow" aria-hidden="true">→</span>
-        <button class="life-node" type="button" data-stage="成虫" aria-pressed="false"><span aria-hidden="true">🦋</span>成虫</button>
+        <button class="life-node" type="button" data-stage="卵" aria-pressed="true"><span aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-insect-eggs"/></svg></span>卵</button><span class="life-arrow" aria-hidden="true">→</span>
+        <button class="life-node" type="button" data-stage="幼虫／若虫" aria-pressed="false"><span aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-caterpillar"/></svg></span>幼虫</button><span class="life-arrow" aria-hidden="true">→</span>
+        <button class="life-node" type="button" data-stage="蛹" aria-pressed="false"><span aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-pupa"/></svg></span>蛹</button><span class="life-arrow" aria-hidden="true">→</span>
+        <button class="life-node" type="button" data-stage="成虫" aria-pressed="false"><span aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-butterfly"/></svg></span>成虫</button>
       </div>
     </div>
   </div>
 </header>
+<div class="wrap scene-wrap">
+  <!-- 插画舞台：不识字也能看懂这一页在玩什么 -->
+  <div class="kid-visual-stage ic-scene-stage" data-scene-layer="back"
+       data-playful-scene="jungle"
+       data-playful-scene-title="虫子丛林"
+       data-playful-scene-desc="树林里有大树和草丛，阳光洒下来，虫子藏在叶子中间">
+    <div class="ic-scene-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-beetle-ladybird"/></svg></span>
+        <p class="kid-speech">趴下来看，<b>草丛里全是小居民</b>。</p>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步玩法">
+        <li><span class="kid-tile-art" aria-hidden="true">🔍</span>放大看</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🦵</span>数腿</li>
+        <li><span class="kid-tile-art" aria-hidden="true">📓</span>记一笔</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
 
 <main class="wrap stack" id="main">
 
@@ -345,16 +1030,16 @@
     <p class="plain-note"><b>侦察规则：</b>只看不抓；不知道名字也能记录身体结构和行为。</p>
     <div class="work-card" aria-labelledby="insectStoryTitle">
       <div data-playful-companion>提问伙伴正在擦亮放大镜……</div>
-      <div class="row spread"><div><p class="pill pill-kit">昆虫观察册</p><h3 id="insectStoryTitle" class="work-card-title">不打扰的小小观察员</h3></div><span data-playful-sticker>○ 完成任务可获得贴纸</span></div>
+      <div class="row spread"><div><p class="pill pill-kit">昆虫观察册</p><h3 id="insectStoryTitle" class="work-card-title">不打扰的小小观察员</h3></div><span data-playful-sticker>○ 完成任务解锁收藏卡</span></div>
       <p class="work-card-content">完成四步：猜一猜、拖滑杆、选一条看到的证据、决定怎样复查。</p>
       <div class="row"><button class="btn btn-ghost" type="button" data-playful-random-task="#insectSurprise">抽取观察册加页</button><span id="insectSurprise" data-playful-task-output role="status" aria-live="polite">加页任务会在这里出现。</span></div>
       <p data-playful-feedback role="status" aria-live="polite">观察册等待盖章。</p>
     </div>
     <div class="mission-grid kid-story-steps">
-      <div class="mission-step"><h3>1 先猜一猜</h3><p>虫子放大 5 倍，谁长得更快？</p><div class="quick-picks" data-fill="insectPredict"><button class="kid-choice" type="button" data-value="我猜体积增长更快，因为身体里面增加得比表面快。" aria-pressed="false">📦 体积更快</button><button class="kid-choice" type="button" data-value="我猜表面积增长更快，算完以后再检查。" aria-pressed="false">🎁 表面积更快</button></div><label class="visually-hidden" for="insectPredict">预测记录</label><textarea class="input" id="insectPredict" data-audience="parent" placeholder="也可以补充自己的理由"></textarea></div>
-      <div class="mission-step"><h3>2 动手算一算</h3><label for="insectScale">边长放大倍数：<b id="insectScaleText">5</b></label><input id="insectScale" type="range" min="1" max="10" value="5"><label for="lifeStage">舞台上选中的阶段</label><select class="input" id="lifeStage"><option>卵</option><option>幼虫／若虫</option><option>蛹</option><option>成虫</option><option>无法判断</option></select><button class="btn btn-primary" id="insectRun" type="button">计算并记录阶段</button></div>
-      <div class="mission-step"><h3>3 看见了什么</h3><output class="text-result kid-result-card" id="insectOutput" aria-live="polite">等待计算。</output><p>选一条可以直接观察的证据。</p><div class="quick-picks" data-fill="insectResult"><button class="kid-choice" type="button" data-value="我看到昆虫有头、胸、腹三部分，六条腿都连接在胸部。" aria-pressed="false">🦵 腿连在胸部</button><button class="kid-choice" type="button" data-value="我看到头部有一对触角，触角会转向周围。" aria-pressed="false">📡 一对触角</button><button class="kid-choice" type="button" data-value="我看到它正在移动或取食；这是行为记录，不需要先知道名字。" aria-pressed="false">👀 一种行为</button></div><label class="visually-hidden" for="insectResult">观察结果</label><textarea class="input" id="insectResult" data-audience="parent" placeholder="也可以补充自己看到的结构或行为"></textarea></div>
-      <div class="mission-step"><h3>4 怎样复查</h3><p>怎样把观察和猜测分开？</p><div class="quick-picks" data-fill="insectReflect"><button class="kid-choice" type="button" data-value="这是直接看到的结构；我会换一个角度再数一次腿和身体分区。" aria-pressed="false">🔁 换角度再数</button><button class="kid-choice" type="button" data-value="生命周期阶段是根据外形作出的推断；我会过一段时间再观察它是否改变。" aria-pressed="false">🕒 过一会再看</button></div><label class="visually-hidden" for="insectReflect">反思记录</label><textarea class="input" id="insectReflect" data-audience="parent" placeholder="也可以写下另一种复查方法"></textarea></div>
+      <div class="mission-step"><h3>1 先猜一猜</h3><p>虫子放大 5 倍，谁长得更快？</p><div class="quick-picks" data-fill="insectPredict"><button class="kid-choice" type="button" data-value="我猜体积增长更快，因为身体里面增加得比表面快。" aria-pressed="false">📦 体积更快</button><button class="kid-choice" type="button" data-value="我猜表面积增长更快，算完以后再检查。" aria-pressed="false">🎁 表面积更快</button><button class="kid-choice" type="button" data-value="我猜两个一样快，因为都被放大了同样的倍数。" aria-pressed="false">⚖️ 两个一样快</button><button class="kid-choice" type="button" data-value="我还不确定，先算出数字再决定相信哪一个。" aria-pressed="false">🤔 先算再说</button></div><label class="sr-only" for="insectPredict">预测记录</label><textarea class="input" id="insectPredict" data-audience="parent" placeholder="也可以补充自己的理由"></textarea></div>
+      <div class="mission-step"><h3>2 动手算一算</h3><label for="insectScale">边长放大倍数：<b id="insectScaleText">5</b></label><input id="insectScale" type="range" min="1" max="10" value="5"><p class="ib-pick-cap">你看到的是哪个成长阶段？点一张图卡。</p><div class="kid-tiles ib-stage-picks" id="ibStagePicks" role="group" aria-label="选一个成长阶段"><button class="kid-tile" type="button" data-ib-stage="卵" aria-pressed="false" aria-label="选阶段：卵"><span class="kid-tile-art" aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-insect-eggs"/></svg></span><span class="kid-tile-label">卵</span></button><button class="kid-tile" type="button" data-ib-stage="幼虫／若虫" aria-pressed="false" aria-label="选阶段：幼虫或若虫"><span class="kid-tile-art" aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-caterpillar"/></svg></span><span class="kid-tile-label">幼虫</span></button><button class="kid-tile" type="button" data-ib-stage="蛹" aria-pressed="false" aria-label="选阶段：蛹"><span class="kid-tile-art" aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-pupa"/></svg></span><span class="kid-tile-label">蛹</span></button><button class="kid-tile" type="button" data-ib-stage="成虫" aria-pressed="false" aria-label="选阶段：成虫"><span class="kid-tile-art" aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-butterfly"/></svg></span><span class="kid-tile-label">成虫</span></button><button class="kid-tile" type="button" data-ib-stage="无法判断" aria-pressed="false" aria-label="选阶段：说不准"><span class="kid-tile-art" aria-hidden="true">❓</span><span class="kid-tile-label">说不准</span></button></div><div data-audience="parent"><label for="lifeStage">舞台上选中的阶段</label><select class="input" id="lifeStage"><option>卵</option><option>幼虫／若虫</option><option>蛹</option><option>成虫</option><option>无法判断</option></select></div><button class="btn btn-primary" id="insectRun" type="button">计算并记录阶段</button></div>
+      <div class="mission-step"><h3>3 看见了什么</h3><output class="text-result kid-result-card" id="insectOutput" aria-live="polite">等待计算。</output><p>选一条可以直接观察的证据。</p><div class="quick-picks" data-fill="insectResult"><button class="kid-choice" type="button" data-value="我看到昆虫有头、胸、腹三部分，六条腿都连接在胸部。" aria-pressed="false">🦵 腿连在胸部</button><button class="kid-choice" type="button" data-value="我看到头部有一对触角，触角会转向周围。" aria-pressed="false">📡 一对触角</button><button class="kid-choice" type="button" data-value="我看到它正在移动或取食；这是行为记录，不需要先知道名字。" aria-pressed="false">👀 一种行为</button><button class="kid-choice" type="button" data-value="我数了腿的数量：有六条腿，说明它是昆虫，不是蜘蛛那一类。" aria-pressed="false">6️⃣ 数出六条腿</button><button class="kid-choice" type="button" data-value="我看到身体侧面有一排很小的点，那可能是让空气进出的气孔。" aria-pressed="false">🫧 侧面的小孔</button></div><label class="sr-only" for="insectResult">观察结果</label><textarea class="input" id="insectResult" data-audience="parent" placeholder="也可以补充自己看到的结构或行为"></textarea></div>
+      <div class="mission-step"><h3>4 怎样复查</h3><p>怎样把观察和猜测分开？</p><div class="quick-picks" data-fill="insectReflect"><button class="kid-choice" type="button" data-value="这是直接看到的结构；我会换一个角度再数一次腿和身体分区。" aria-pressed="false">🔁 换角度再数</button><button class="kid-choice" type="button" data-value="生命周期阶段是根据外形作出的推断；我会过一段时间再观察它是否改变。" aria-pressed="false">🕒 过一会再看</button><button class="kid-choice" type="button" data-value="我会画下来再对照一次，看图和实物有没有对不上的地方。" aria-pressed="false">✏️ 画下来对照</button><button class="kid-choice" type="button" data-value="我会先分开写：确定看到的写在一栏，猜的写在另一栏，后面再验证。" aria-pressed="false">🗂 分开两栏写</button></div><label class="sr-only" for="insectReflect">反思记录</label><textarea class="input" id="insectReflect" data-audience="parent" placeholder="也可以写下另一种复查方法"></textarea></div>
     </div><div class="task-actions"><button class="btn btn-primary" id="insectComplete" type="button">完成任务</button><span class="task-status" id="insectStatus" role="status" aria-live="polite">尚未完成：不需要上传照片或提供定位。</span></div>
     <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="insectWorkTitle">
       <h3 class="work-card-title" id="insectWorkTitle">给观察册加一页作品</h3>
@@ -362,12 +1047,219 @@
       <div class="work-card-fields">
         <div><label for="insectWorkType">作品类型</label><select class="input" id="insectWorkType" name="type"><option value="observation">观察记录</option><option value="drawing">发现画</option><option value="photo-note">照片说明</option></select></div>
         <div><label for="insectWorkName">这一页叫什么</label><input class="input" id="insectWorkName" name="title" required maxlength="80" placeholder="例如：六条腿都连在胸部"></div>
-        <div><label for="insectWorkContent">看见了什么、怎样复查</label><textarea class="input" id="insectWorkContent" name="content" required maxlength="4000" placeholder="哪部分是直接看到的，哪部分是推断，准备怎样再看一次。"></textarea></div>
+        <div><label for="insectWorkContent">看见了什么、怎样复查</label><div class="quick-picks" data-fill="insectWorkContent" role="group" aria-label="观察作品快捷选项"><button class="kid-choice" type="button" data-value="🐞 我看到三段身体和六条腿；我会换个角度再数一次。" aria-pressed="false">🐞 三段六腿</button><button class="kid-choice" type="button" data-value="🐛 我看到它正在吃东西；我会过一会儿再来看。" aria-pressed="false">🐛 吃东西</button><button class="kid-choice" type="button" data-value="🦋 我猜它在成长；这是猜测，我会画下来再对照。" aria-pressed="false">🦋 成长猜想</button></div><textarea class="input" id="insectWorkContent" name="content" required maxlength="4000" placeholder="哪部分是直接看到的，哪部分是推断，准备怎样再看一次。"></textarea><p class="pick-feedback" role="status" aria-live="polite">点一个图标，就会写进观察页。</p></div>
         <button class="btn btn-primary" type="submit">保存观察页</button>
       </div>
       <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和观察后就能存档。</p>
     </form>
   </section>
+  <section class="ib-shell" aria-labelledby="ibShellTitle">
+    <h2 id="ibShellTitle">看图就懂：虫子图鉴 · 判定条 · 数腿分类</h2>
+    <p class="ib-lead">这一段全是大图，点一点就能玩，不用先读句子。</p>
+
+    <article class="ib-card" aria-labelledby="ibAtlasTitle">
+      <h3 id="ibAtlasTitle">① 虫子图鉴：谁有六条腿</h3>
+      <p class="ib-lead">点一张卡，放大镜舞台就把那只放大，帮你数腿、数身体分成几段。</p>
+      <svg class="ib-stage" id="ibStage" viewBox="0 0 300 200" role="img" aria-labelledby="ibStageTitle ibStageDesc">
+        <title id="ibStageTitle">放大镜舞台</title>
+        <desc id="ibStageDesc">按你点的图鉴卡变化的大图：把那只小动物放大画出来，标出身体分成几段、每段叫什么，以及一共有几条腿。</desc>
+        <g id="ibStageArt"></g>
+      </svg>
+      <p class="kid-scene-caption">舞台上的 1、2、3 就是昆虫身体的三段；蜘蛛只有 1、2 两段。</p>
+      <ul class="kid-legend" aria-label="身体分段图例">
+        <li style="--tone:#f472b6"><span class="kid-legend-mark" aria-hidden="true">1</span>头</li>
+        <li style="--tone:#ffd166"><span class="kid-legend-mark" aria-hidden="true">2</span>胸（腿长这里）</li>
+        <li style="--tone:#45b9ad"><span class="kid-legend-mark" aria-hidden="true">3</span>腹</li>
+      </ul>
+      <div class="kid-figure-grid" id="ibAtlasGrid" aria-label="虫子图鉴：六张大图卡">
+        <button class="kid-figure" type="button" data-ib-bug="ant" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="ib-bg" x="0" y="0" width="120" height="120" rx="10"/>
+              <use href="#art-ant"/>
+              <g class="ib-seg">
+                <circle class="ib-seg-dot ib-seg-1" cx="90" cy="24" r="9"/><text class="ib-seg-num" x="90" y="28">1</text>
+                <circle class="ib-seg-dot ib-seg-2" cx="92" cy="51" r="9"/><text class="ib-seg-num" x="92" y="55">2</text>
+                <circle class="ib-seg-dot ib-seg-3" cx="94" cy="92" r="9"/><text class="ib-seg-num" x="94" y="96">3</text>
+              </g>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">蚂蚁</span>
+          <span class="kid-figure-sub">会搬家</span>
+          <span class="kid-figure-fact">6 条腿 · 3 段身体</span>
+        </button>
+        <button class="kid-figure" type="button" data-ib-bug="ladybug" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="ib-bg" x="0" y="0" width="120" height="120" rx="10"/>
+              <use href="#art-beetle-ladybird"/>
+              <g class="ib-seg">
+                <circle class="ib-seg-dot ib-seg-1" cx="86" cy="18" r="9"/><text class="ib-seg-num" x="86" y="22">1</text>
+                <circle class="ib-seg-dot ib-seg-2" cx="94" cy="34" r="9"/><text class="ib-seg-num" x="94" y="38">2</text>
+                <circle class="ib-seg-dot ib-seg-3" cx="101" cy="72" r="9"/><text class="ib-seg-num" x="101" y="76">3</text>
+              </g>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">瓢虫</span>
+          <span class="kid-figure-sub">吃蚜虫</span>
+          <span class="kid-figure-fact">6 条腿 · 3 段身体</span>
+        </button>
+        <button class="kid-figure" type="button" data-ib-bug="butterfly" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="ib-bg" x="0" y="0" width="120" height="120" rx="10"/>
+              <use href="#art-butterfly"/>
+              <g class="ib-seg">
+                <circle class="ib-seg-dot ib-seg-1" cx="76" cy="44" r="9"/><text class="ib-seg-num" x="76" y="48">1</text>
+                <circle class="ib-seg-dot ib-seg-2" cx="76" cy="60" r="9"/><text class="ib-seg-num" x="76" y="64">2</text>
+                <circle class="ib-seg-dot ib-seg-3" cx="76" cy="92" r="9"/><text class="ib-seg-num" x="76" y="96">3</text>
+              </g>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">蝴蝶</span>
+          <span class="kid-figure-sub">会变身</span>
+          <span class="kid-figure-fact">6 条腿 · 3 段身体</span>
+        </button>
+        <button class="kid-figure" type="button" data-ib-bug="bee" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="ib-bg" x="0" y="0" width="120" height="120" rx="10"/>
+              <use href="#art-bee"/>
+              <g class="ib-seg">
+                <circle class="ib-seg-dot ib-seg-1" cx="88" cy="30" r="9"/><text class="ib-seg-num" x="88" y="34">1</text>
+                <circle class="ib-seg-dot ib-seg-2" cx="80" cy="52" r="9"/><text class="ib-seg-num" x="80" y="56">2</text>
+                <circle class="ib-seg-dot ib-seg-3" cx="90" cy="94" r="9"/><text class="ib-seg-num" x="90" y="98">3</text>
+              </g>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">蜜蜂</span>
+          <span class="kid-figure-sub">会传粉</span>
+          <span class="kid-figure-fact">6 条腿 · 3 段身体</span>
+        </button>
+        <button class="kid-figure" type="button" data-ib-bug="spider" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="ib-bg" x="0" y="0" width="120" height="120" rx="10"/>
+              <use href="#art-spider"/>
+              <!-- 只有两个编号：这正是「蜘蛛不是昆虫」的可数证据 -->
+              <g class="ib-seg">
+                <circle class="ib-seg-dot ib-seg-1" cx="86" cy="44" r="9"/><text class="ib-seg-num" x="86" y="48">1</text>
+                <circle class="ib-seg-dot ib-seg-2" cx="92" cy="94" r="9"/><text class="ib-seg-num" x="92" y="98">2</text>
+              </g>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">蜘蛛</span>
+          <span class="kid-figure-sub">八条腿</span>
+          <span class="kid-figure-fact">8 条腿 · 2 段身体（不是昆虫）</span>
+        </button>
+        <button class="kid-figure" type="button" data-ib-bug="dragonfly" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 120" focusable="false">
+              <rect class="ib-bg" x="0" y="0" width="120" height="120" rx="10"/>
+              <use href="#art-dragonfly"/>
+              <g class="ib-seg">
+                <circle class="ib-seg-dot ib-seg-1" cx="88" cy="16" r="9"/><text class="ib-seg-num" x="88" y="20">1</text>
+                <circle class="ib-seg-dot ib-seg-2" cx="82" cy="48" r="9"/><text class="ib-seg-num" x="82" y="52">2</text>
+                <circle class="ib-seg-dot ib-seg-3" cx="78" cy="92" r="9"/><text class="ib-seg-num" x="78" y="96">3</text>
+              </g>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">蜻蜓</span>
+          <span class="kid-figure-sub">飞得快</span>
+          <span class="kid-figure-fact">6 条腿 · 3 段身体</span>
+        </button>
+      </div>
+      <div class="kid-speech-row ib-say-row">
+        <span class="kid-mascot" aria-hidden="true">🔍</span>
+        <p class="kid-speech" id="ibAtlasSay" role="status" aria-live="polite">点一张卡，舞台就把那只放大给你看。</p>
+      </div>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：图鉴在教什么</summary>
+        <p><b>学习目标：</b>用两个能直接数出来的特征做分类——<b>腿的条数</b>和<b>身体的段数</b>。孩子不需要认识名字，只要会数 6 和 3，就已经在用昆虫纲的定义特征做判断。</p>
+        <p><b>怎么用：</b>先让孩子指着舞台上的图数腿，数完再说结论。把蜘蛛卡放在最后点，让「不符合」的那一张成为对照，比讲道理更有效。</p>
+      </details>
+    </article>
+
+    <article class="ib-card" aria-labelledby="ibMeterTitle">
+      <h3 id="ibMeterTitle">② 判定条：它是不是昆虫</h3>
+      <p class="ib-lead">上面点了哪一张卡，这两条就跟着变长变短。第一条满格＝6 条腿加 3 段身体。</p>
+      <div class="ib-meters">
+        <div class="kid-meter" style="--tone:var(--sci)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-beetle-ladybird"/></svg></span>
+            <span id="ibFitLabel">昆虫符合度</span>
+            <span class="kid-meter-value" id="ibFitValue">—</span>
+          </div>
+          <div class="kid-meter-track" id="ibFitMeter" role="img" aria-labelledby="ibFitLabel ibFitValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">6 条腿给一半，3 段身体给另一半；两个都满足才满格。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--phys)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-butterfly"/></svg></span>
+            <span id="ibMetaLabel">变态发育完成度</span>
+            <span class="kid-meter-value" id="ibMetaValue">—</span>
+          </div>
+          <div class="kid-meter-track" id="ibMetaMeter" role="img" aria-labelledby="ibMetaLabel ibMetaValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">卵 → 幼虫 → 蛹 → 成虫走满 4 步是完全变态；少了蛹只走 3 步，是不完全变态。</p>
+        </div>
+      </div>
+      <p class="ib-tests" aria-label="两个判定条件">
+        <span class="ib-test" id="ibTestLegs" data-ok="false">○ 6 条腿</span>
+        <span class="ib-test" id="ibTestSeg" data-ok="false">○ 3 段身体</span>
+      </p>
+      <p class="ib-dots-row">
+        <span class="ib-dots-cap" id="ibLegDotsCap">用点点数腿（八格）：</span>
+        <span class="kid-dots" id="ibLegDots" role="img" aria-labelledby="ibLegDotsCap"></span>
+      </p>
+      <p class="kid-speech" id="ibMeterSay" role="status" aria-live="polite">先在上面点一张图鉴卡。</p>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：两条判定条在教什么</summary>
+        <p><b>学习目标：</b>把「像不像」换成「符合几条标准」。判定条把定义拆成两个可数的条件（6 条腿、3 段身体），孩子于是明白：分类不是凭感觉，而是逐条核对。</p>
+        <p><b>背后的原理：</b>昆虫纲的成虫特征是三段体躯、三对足、一对触角，多数有两对翅。蜘蛛属蛛形纲：头胸部与腹部两段、四对足、无触角。第二条的「变态发育完成度」对应的是内翅类（完全变态，有蛹）与外翅类（不完全变态，无蛹）的分化——多走一步蛹期，换来幼期与成虫吃不同食物、住不同地方。</p>
+        <p><b>要说清楚的一点：</b>百分数是这一页为了看长短做的示意刻度，不是生物学上的标准指标。真正要记住的只有 6 和 3。</p>
+      </details>
+    </article>
+
+    <article class="ib-card" aria-labelledby="ibQuizTitle">
+      <h3 id="ibQuizTitle">③ 数腿分类：它算不算昆虫</h3>
+      <p class="ib-lead">这一只没写名字。先用手指点着数腿，再点一张大图卡。数错了不要紧，可以再数一次。</p>
+      <div class="ib-quiz-stage">
+        <svg class="ib-quiz-art" id="ibQuizArt" viewBox="0 0 300 200" role="img" aria-labelledby="ibQuizArtTitle ibQuizArtDesc">
+          <title id="ibQuizArtTitle">要数腿的那一只</title>
+          <desc id="ibQuizArtDesc">一只没有标名字的小动物，请数一数它有几条腿、身体分成几段，再选答案。</desc>
+          <g id="ibQuizArtBody"></g>
+        </svg>
+      </div>
+      <div class="kid-tiles ib-quiz-picks" id="ibQuizPicks" role="group" aria-labelledby="ibQuizTitle">
+        <button class="kid-tile" type="button" data-ib-answer="insect" aria-pressed="false" aria-label="我数到 6 条腿，它是昆虫">
+          <span class="kid-tile-art" aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-beetle-ladybird"/></svg></span>
+          <span class="kid-tile-label">6 条腿</span>
+          <span class="kid-tile-sub">是昆虫</span>
+        </button>
+        <button class="kid-tile" type="button" data-ib-answer="other" aria-pressed="false" aria-label="我数到 8 条腿，它不是昆虫">
+          <span class="kid-tile-art" aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-spider"/></svg></span>
+          <span class="kid-tile-label">8 条腿</span>
+          <span class="kid-tile-sub">不是昆虫</span>
+        </button>
+      </div>
+      <div class="ib-quiz-actions">
+        <button class="btn btn-primary" type="button" id="ibQuizNext"><span aria-hidden="true">🔄</span> 换一只</button>
+        <button class="btn btn-ghost" type="button" id="ibQuizHint"><span aria-hidden="true">👀</span> 给点提示</button>
+      </div>
+      <p class="kid-speech" id="ibQuizSay" role="status" aria-live="polite">数一数腿，再点一张大图卡。</p>
+      <p class="ib-quiz-score">
+        <span class="ib-quiz-stars" id="ibQuizStars" role="img" aria-label="已经数对 0 次"></span>
+        <span id="ibQuizTotal">数对 0 次</span>
+      </p>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：数腿分类在教什么</summary>
+        <p><b>学习目标：</b>用一个可数的特征做二分判断，并接受「数错就再数一次」。这里答错只给提示，不清零、不计时——因为要练的是数清楚，而不是抢答。</p>
+        <p><b>一起做：</b>让孩子先用手指点着屏幕一条一条数出声，数完再按卡。出门看到真虫子时用同一套动作，孩子就会自己迁移。</p>
+        <p><b>注意：</b>真实的虫子腿可能断掉、被身体挡住，或者正处在幼虫阶段还看不清分段。这时正确答案是「先说不确定，换个角度再看」，不是硬猜。</p>
+      </details>
+    </article>
+  </section>
+
   <section class="card field-guide parent-deep-dive" data-audience="parent" style="padding:20px">
     <h2>图鉴页：虫会换“成长装”</h2>
     <p><b>生命周期</b>，就是一个生命从出生、长大到繁殖会经过哪些阶段。</p>
@@ -380,19 +1272,168 @@
     <div class="question-chips" aria-label="一起想一想"><span>幼虫和成虫吃一样的食物，会怎样？</span><span>不碰它，怎样判断它只是在休息？</span><span>不知道名字，还能记录什么？</span></div>
   </section>
 
+  <!-- 昆虫 vs 蛛形纲 -->
+  <section>
+    <p class="section-kicker">先分清楚</p>
+    <h2>不是所有小虫都叫昆虫</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      蜘蛛不是昆虫。要分清楚，<b>数身体分成几段、数腿有几条</b>就够了，不需要知道名字。
+    </p>
+    <div class="vs-grid">
+      <div class="vs-card vs-insect">
+        <h3>🐞 昆虫</h3>
+        <ul>
+          <li>身体分<b>三段</b>：头、胸、腹</li>
+          <li><b>六条腿</b>，全部长在胸部</li>
+          <li>头上有<b>一对触角</b></li>
+          <li>许多种类有翅膀（也有没有的）</li>
+          <li>例子：蚂蚁、蜜蜂、蝴蝶、甲虫、蟋蟀</li>
+        </ul>
+      </div>
+      <div class="vs-card vs-arach">
+        <h3>🕷 蛛形纲</h3>
+        <ul>
+          <li>身体分<b>两段</b>：头胸部、腹部</li>
+          <li><b>八条腿</b></li>
+          <li><b>没有触角</b></li>
+          <li>没有翅膀</li>
+          <li>例子：蜘蛛、蝎子、螨、盲蛛</li>
+        </ul>
+      </div>
+    </div>
+    <svg class="diagram" viewBox="0 0 400 132" role="img" aria-labelledby="vsSvgTitle vsSvgDesc">
+      <title id="vsSvgTitle">昆虫与蜘蛛的身体对照图</title>
+      <desc id="vsSvgDesc">左边是昆虫：身体分成头、胸、腹三段，六条腿都从中间的胸部伸出，头上有两根触角。右边是蜘蛛：身体分成两段，八条腿从前面那一段伸出，头上没有触角。</desc>
+      <rect x="4" y="4" width="392" height="124" rx="10" fill="var(--surface-2)"></rect>
+      <g stroke="#4ade80" stroke-width="3" fill="none">
+        <path d="M74 58 L44 40 M74 66 L42 66 M74 74 L44 92"></path>
+        <path d="M96 58 L126 40 M96 66 L128 66 M96 74 L126 92"></path>
+        <path d="M62 44 L50 26 M70 42 L66 22"></path>
+      </g>
+      <g>
+        <circle cx="60" cy="52" r="12" fill="#22c55e"></circle>
+        <rect x="72" y="54" width="26" height="24" rx="8" fill="#16a34a"></rect>
+        <ellipse cx="114" cy="72" rx="20" ry="13" fill="#15803d"></ellipse>
+      </g>
+      <text x="86" y="118" fill="var(--ink-mid)" font-size="11" text-anchor="middle">昆虫：3 段 · 6 腿 · 有触角</text>
+      <line x1="200" y1="18" x2="200" y2="112" stroke="var(--line)" stroke-width="2"></line>
+      <g stroke="#fb923c" stroke-width="3" fill="none">
+        <path d="M278 52 L248 34 M278 60 L246 56 M278 68 L248 80 M278 74 L250 96"></path>
+        <path d="M300 52 L330 34 M300 60 L332 56 M300 68 L330 80 M300 74 L328 96"></path>
+      </g>
+      <g>
+        <circle cx="289" cy="60" r="15" fill="#f97316"></circle>
+        <ellipse cx="322" cy="66" rx="19" ry="15" fill="#ea580c"></ellipse>
+      </g>
+      <text x="300" y="118" fill="var(--ink-mid)" font-size="11" text-anchor="middle">蜘蛛：2 段 · 8 腿 · 无触角</text>
+    </svg>
+    <div class="id-key">
+      <p>三步判断法（不用碰它）：</p>
+      <ol>
+        <li>数腿。六条 → 很可能是昆虫；八条 → 很可能是蛛形纲。</li>
+        <li>看身体分几段。三段是昆虫的样子，两段是蜘蛛那一类的样子。</li>
+        <li>找触角。有一对触角是昆虫的特征，蜘蛛头上没有。</li>
+      </ol>
+    </div>
+    <div class="age-tiers">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>六条腿的是昆虫，八条腿的是蜘蛛那一家。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>不用记名字，用三个可以直接看到的特征就能分类：几段身体、几条腿、有没有触角。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>这就是检索表的思路——用一连串可观察的是非问题把范围缩小。要注意「腿断掉了」「幼虫阶段」这些情况会让特征不明显，这时该写「无法判断」，而不是硬猜。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>用可直接观察的特征做分类，而不是靠记住名字；同时学会在证据不足时说「还不能确定」。</p>
+    <ul class="ask-list">
+      <li>如果你只看到一条虫的一半，能确定它是不是昆虫吗？还需要看到什么？</li>
+      <li>为什么「会爬」「很小」「有点可怕」不能用来分类？</li>
+    </ul>
+    <p class="parent-note" data-audience="parent"><b>常见的误会：</b>日常中文里「虫子」范围很宽，蜘蛛、蜈蚣、蜗牛都算。不必纠正日常说法，但可以加一句「它是虫子，不过不是昆虫」，让孩子知道生活用词和分类用词可以并存。</p>
+  </section>
+
+  <!-- 变态发育 -->
+  <section>
+    <p class="section-kicker">成长实验室</p>
+    <h2>长大有两种走法</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      昆虫的身体外面是一层硬壳，不能像我们一样慢慢撑大，只能<b>脱掉旧壳换新的</b>。
+      换壳的方式分两种，点一个看看。
+    </p>
+    <div class="lab-card meta-lab" id="metaLab" data-meta="complete">
+      <div class="quick-picks" id="metaPicks" role="group" aria-label="选择一种变态发育方式">
+        <button class="kid-choice" type="button" data-meta="complete" aria-pressed="true">🦋 完全变态</button>
+        <button class="kid-choice" type="button" data-meta="incomplete" aria-pressed="false">🦗 不完全变态</button>
+      </div>
+      <svg class="meta-svg" viewBox="0 0 400 158" role="img" aria-labelledby="metaSvgTitle metaSvgDesc">
+        <title id="metaSvgTitle">两种变态发育路线图</title>
+        <desc id="metaSvgDesc">上面一行是完全变态：卵、幼虫、蛹、成虫四个阶段，幼虫和成虫外形完全不同。下面一行是不完全变态：卵、若虫、成虫三个阶段，若虫看起来像小一号的成虫。</desc>
+        <rect x="4" y="4" width="392" height="150" rx="10" fill="var(--surface-2)"></rect>
+        <g class="mstage mstage-complete" font-size="11" fill="var(--ink-mid)">
+          <text x="18" y="24" font-size="10" fill="var(--kit)">完全变态：外形大改</text>
+          <circle cx="46" cy="52" r="13" fill="#fbbf24"></circle><text x="46" y="78" text-anchor="middle">卵</text>
+          <rect x="106" y="42" width="46" height="20" rx="10" fill="#a3e635"></rect><text x="129" y="78" text-anchor="middle">幼虫</text>
+          <ellipse cx="222" cy="52" rx="16" ry="21" fill="#a16207"></ellipse><text x="222" y="78" text-anchor="middle">蛹</text>
+          <g><path d="M300 52 q-22 -22 -30 4 q16 12 30 -4" fill="#f472b6"></path><path d="M300 52 q22 -22 30 4 q-16 12 -30 -4" fill="#f472b6"></path><rect x="297" y="46" width="6" height="22" rx="3" fill="#3f3f46"></rect></g>
+          <text x="300" y="78" text-anchor="middle">成虫</text>
+          <g stroke="var(--ink-dim)" stroke-width="2" fill="none"><path d="M64 52 L100 52"></path><path d="M156 52 L200 52"></path><path d="M242 52 L268 52"></path></g>
+        </g>
+        <g class="mstage mstage-incomplete" font-size="11" fill="var(--ink-mid)">
+          <text x="18" y="106" font-size="10" fill="var(--kit)">不完全变态：越换越大，样子差不多</text>
+          <circle cx="52" cy="130" r="10" fill="#fbbf24"></circle><text x="52" y="150" text-anchor="middle">卵</text>
+          <g><ellipse cx="164" cy="130" rx="17" ry="9" fill="#65a30d"></ellipse><path d="M150 130 L140 122 M150 134 L140 140 M178 130 L188 122" stroke="#3f6212" stroke-width="2" fill="none"></path></g>
+          <text x="164" y="150" text-anchor="middle">若虫</text>
+          <g><ellipse cx="300" cy="128" rx="26" ry="13" fill="#4d7c0f"></ellipse><path d="M278 128 L262 116 M278 132 L262 142 M322 128 L340 116" stroke="#3f6212" stroke-width="2" fill="none"></path></g>
+          <text x="300" y="150" text-anchor="middle">成虫</text>
+          <g stroke="var(--ink-dim)" stroke-width="2" fill="none"><path d="M68 130 L140 130"></path><path d="M188 130 L268 130"></path></g>
+        </g>
+      </svg>
+      <p class="info-result" id="metaResult" role="status" aria-live="polite">选一种方式，看它经过哪几个阶段。</p>
+    </div>
+    <div class="age-tiers">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>有的虫小时候完全不像长大以后，有的从小就长得像爸爸妈妈，只是小一点。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>毛毛虫和蝴蝶其实是同一只虫的两个阶段。它中间要进蛹里把身体大改一次，所以外形完全不同。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>幼虫和成虫外形分开，好处是它们吃的东西、住的地方都不一样，同一种昆虫的两个阶段就不用互相抢食物。代价是蛹期不能动、风险高。不完全变态没有这段风险，但幼期和成虫会争夺同样的资源。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>同一个个体在不同时间可以有完全不同的形态——把「看起来不一样」和「不是同一种」区分开来。</p>
+    <ul class="ask-list">
+      <li>如果幼虫和成虫吃的东西完全一样，会发生什么问题？</li>
+      <li>为什么昆虫必须脱壳才能长大？如果壳能一直变大，它还需要脱壳吗？</li>
+    </ul>
+    <p class="parent-note" data-audience="parent"><b>可以一起找：</b>树干、墙角、叶子背面常能捡到蝉或其他昆虫留下的空壳。空壳是最好的教具——它已经不是活体，可以放心拿在手里看清腿的数量和身体分段，观察完放回原处即可。</p>
+  </section>
 
   <!-- 力量对比 -->
   <section>
     <p class="section-kicker">力量实验室</p>
     <h2>如果你有蚂蚁的力量</h2>
     <div class="tiny-qa"><b>先猜：</b><span>小虫是肌肉特别神奇，还是小身体占了便宜？改一改数字找答案。</span></div>
-    <div class="strong">
+    <div class="strong kid-visual-stage picture-stage">
+      <div class="scene-strip" aria-label="小身体力量图"><div class="scene-chip"><span aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-ant"/></svg></span>小身体</div><div class="scene-chip"><span aria-hidden="true">📦</span>举很重</div><div class="scene-chip"><span aria-hidden="true">💪</span>比倍数</div></div>
+      <div class="kid-tiles ib-power-picks" id="ibPowerPicks" role="group" aria-label="选一个来比力量">
+        <button class="kid-tile" type="button" data-ib-power="50" aria-pressed="true" aria-label="和蚂蚁比：约 50 倍体重">
+          <span class="kid-tile-art" aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-ant"/></svg></span>
+          <span class="kid-tile-label">蚂蚁</span>
+          <span class="kid-tile-sub">约 50 倍</span>
+        </button>
+        <button class="kid-tile" type="button" data-ib-power="850" aria-pressed="false" aria-label="和角蜣螂比：约 850 倍体重">
+          <span class="kid-tile-art" aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-beetle-plain"/></svg></span>
+          <span class="kid-tile-label">蜣螂</span>
+          <span class="kid-tile-sub">约 850 倍</span>
+        </button>
+        <button class="kid-tile" type="button" data-ib-power="20" aria-pressed="false" aria-label="和蜜蜂比：约 20 倍体重">
+          <span class="kid-tile-art" aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-bee"/></svg></span>
+          <span class="kid-tile-label">蜜蜂</span>
+          <span class="kid-tile-sub">约 20 倍</span>
+        </button>
+        <button class="kid-tile" type="button" data-ib-power="1" aria-pressed="false" aria-label="就是你自己：1 倍体重">
+          <span class="kid-tile-art" aria-hidden="true">🧍</span>
+          <span class="kid-tile-label">你自己</span>
+          <span class="kid-tile-sub">1 倍</span>
+        </button>
+      </div>
       <div class="st-ctl">
         <label class="st-f">
           <span>你的体重（公斤）</span>
           <input id="kg" type="number" min="10" max="120" step="0.5" value="26">
         </label>
-        <label class="st-f">
+        <label class="st-f" data-audience="parent">
           <span>比谁</span>
           <select class="input" id="who" style="width:auto">
             <option value="50">蚂蚁（约 50 倍）</option>
@@ -422,19 +1463,176 @@
     </p>
   </section>
 
+  <!-- 表面积与体积：孩子可见版 -->
+  <section>
+    <p class="section-kicker">放大实验室</p>
+    <h2>放大一点，「皮」和「肉」不是一起变多的</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      上面任务里的放大滑杆，算的就是这件事。把一只虫想成一个小方块：
+      边长放大几倍，<b>表面（皮）变成倍数的平方，里面（肉）变成倍数的立方</b>。
+      立方长得比平方快，所以越大的身体，「皮」相对越不够用。
+    </p>
+    <svg class="sv-svg" viewBox="0 0 400 150" role="img" aria-labelledby="svSvgTitle svSvgDesc">
+      <title id="svSvgTitle">边长放大后表面积与体积的对比</title>
+      <desc id="svSvgDesc">三个由小到大的立方体。第一个边长一格，第二个边长两格，第三个边长三格。每个下方标出表面积和体积各是最小那个的多少倍，体积的倍数增长得比表面积快得多。</desc>
+      <rect x="4" y="4" width="392" height="142" rx="10" fill="var(--surface-2)"></rect>
+      <g stroke="#16a34a" stroke-width="2">
+        <rect x="34" y="76" width="20" height="20" fill="#4ade80"></rect>
+        <path d="M34 76 L42 66 L62 66 L54 76 M54 76 L62 66 L62 86 L54 96" fill="#22c55e"></path>
+      </g>
+      <text x="48" y="118" fill="var(--ink-mid)" font-size="10.5" text-anchor="middle">边长 1</text>
+      <text x="48" y="132" fill="var(--ink-dim)" font-size="9.5" text-anchor="middle">皮 1 · 肉 1</text>
+      <g stroke="#16a34a" stroke-width="2">
+        <rect x="150" y="56" width="40" height="40" fill="#4ade80"></rect>
+        <path d="M150 56 L166 40 L206 40 L190 56 M190 56 L206 40 L206 80 L190 96" fill="#22c55e"></path>
+      </g>
+      <text x="178" y="118" fill="var(--ink-mid)" font-size="10.5" text-anchor="middle">边长 2</text>
+      <text x="178" y="132" fill="var(--ink-dim)" font-size="9.5" text-anchor="middle">皮 4 倍 · 肉 8 倍</text>
+      <g stroke="#16a34a" stroke-width="2">
+        <rect x="286" y="36" width="60" height="60" fill="#4ade80"></rect>
+        <path d="M286 36 L306 16 L366 16 L346 36 M346 36 L366 16 L366 76 L346 96" fill="#22c55e"></path>
+      </g>
+      <text x="326" y="118" fill="var(--ink-mid)" font-size="10.5" text-anchor="middle">边长 3</text>
+      <text x="326" y="132" fill="var(--ink-dim)" font-size="9.5" text-anchor="middle">皮 9 倍 · 肉 27 倍</text>
+    </svg>
+    <table class="ratio-table">
+      <caption>方块模型：边长放大后的倍数（用来建立直觉，真实身体不是方块）</caption>
+      <thead><tr><th scope="col">边长放大</th><th scope="col">表面积</th><th scope="col">体积</th><th scope="col">每份肉分到的皮</th></tr></thead>
+      <tbody>
+        <tr><td>1 倍</td><td>1 倍</td><td>1 倍</td><td>1</td></tr>
+        <tr><td>2 倍</td><td>4 倍</td><td>8 倍</td><td>1/2</td></tr>
+        <tr><td>3 倍</td><td>9 倍</td><td>27 倍</td><td>1/3</td></tr>
+        <tr><td>5 倍</td><td>25 倍</td><td>125 倍</td><td>1/5</td></tr>
+        <tr><td>10 倍</td><td>100 倍</td><td>1000 倍</td><td>1/10</td></tr>
+      </tbody>
+    </table>
+    <p class="sv-note">最后一列就是关键：<b>放大几倍，每一份肉能分到的表面就少到几分之一。</b>昆虫靠身体表面的气孔进气，所以身体一大，进气就跟不上。</p>
+    <div class="age-tiers">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>东西变大的时候，里面的肉长得比外面的皮快得多。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>放大 2 倍，皮变 4 倍，肉变 8 倍。肉总是跑在前面，所以大虫子的「进气口」相对不够用。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>表面积按长度的平方增长，体积按立方增长，二者的比值随尺寸变大而下降。这条规律不只限制昆虫，也决定了为什么小动物散热快、要不停进食，而大动物散热慢、更耐饿。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>平方与立方两种增长速度的比较，以及用简化模型（方块）为真实现象建立可计算的直觉。</p>
+    <ul class="ask-list">
+      <li>一大块冰和碎成小块的同样多的冰，哪个化得快？和这里的道理有什么关系？</li>
+      <li>如果一只虫的身体是又细又长的形状，它的「皮」相对会更多还是更少？</li>
+    </ul>
+    <p class="parent-note" data-audience="parent"><b>可以一起算：</b>用积木搭 1×1×1、2×2×2、3×3×3 三个方块，让孩子亲手数用了几块（体积）和外面露出几个面（表面积）。数出来的 1/8/27 和 6/24/54 比任何公式都有说服力，也顺便复习了乘法。</p>
+  </section>
+
+  <!-- 传粉与生态角色 -->
+  <section>
+    <p class="section-kicker">它们在做什么工作</p>
+    <h2>很多水果，是虫子帮忙才长出来的</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      花要结成果实，得先让花粉从一朵花到另一朵花。<b>虫子来花上找吃的，身上顺便带走花粉</b>，
+      飞到下一朵就把花粉带过去了——这叫传粉。虫子不是故意帮忙，它只是在吃饭。
+    </p>
+    <svg class="diagram" viewBox="0 0 400 128" role="img" aria-labelledby="polSvgTitle polSvgDesc">
+      <title id="polSvgTitle">传粉过程三步图</title>
+      <desc id="polSvgDesc">左边一只蜜蜂停在一朵花上，身上沾了花粉。中间箭头表示它飞往另一朵花。右边它停在第二朵花上，花粉被留下，花下方结出一颗果实。</desc>
+      <rect x="4" y="4" width="392" height="120" rx="10" fill="var(--surface-2)"></rect>
+      <g><circle cx="62" cy="52" r="14" fill="#fbbf24"></circle><circle cx="62" cy="52" r="6" fill="#f59e0b"></circle><path d="M62 66 L62 100" stroke="#4d7c0f" stroke-width="3"></path><text x="62" y="118" fill="var(--ink-mid)" font-size="10" text-anchor="middle">带走花粉</text></g>
+      <text x="88" y="40" font-size="15">🐝</text>
+      <path d="M112 56 L188 56" stroke="var(--kit)" stroke-width="3" stroke-dasharray="7 5" fill="none"></path>
+      <path d="M182 48 L196 56 L182 64 Z" fill="var(--kit)"></path>
+      <text x="150" y="42" fill="var(--kit)" font-size="10" text-anchor="middle">飞到下一朵</text>
+      <g><circle cx="238" cy="52" r="14" fill="#f472b6"></circle><circle cx="238" cy="52" r="6" fill="#ec4899"></circle><path d="M238 66 L238 100" stroke="#4d7c0f" stroke-width="3"></path><text x="238" y="118" fill="var(--ink-mid)" font-size="10" text-anchor="middle">留下花粉</text></g>
+      <path d="M266 56 L322 56" stroke="var(--ink-dim)" stroke-width="2" stroke-dasharray="5 4" fill="none"></path>
+      <path d="M316 50 L328 56 L316 62 Z" fill="var(--ink-dim)"></path>
+      <g><circle cx="352" cy="56" r="17" fill="#ef4444"></circle><path d="M352 39 L352 30" stroke="#4d7c0f" stroke-width="3"></path><text x="352" y="118" fill="var(--ink-mid)" font-size="10" text-anchor="middle">长成果实</text></g>
+    </svg>
+    <div class="role-cards">
+      <div class="role-card"><h3>🐝 传粉</h3><p>蜜蜂、熊蜂、蝴蝶、食蚜蝇、某些甲虫都会传粉。我们吃的许多水果、瓜类和豆类，都要靠它们把花粉送到位。</p></div>
+      <div class="role-card"><h3>♻️ 分解</h3><p>蚂蚁、甲虫、蝇的幼虫会处理落叶、粪便和动物遗体，把它们拆成土壤能重新利用的东西。</p></div>
+      <div class="role-card"><h3>🍽 被吃掉</h3><p>虫子是鸟、蛙、蜥蜴、蝙蝠和鱼的主要食物。虫子变少，吃虫子的动物也会跟着变少。</p></div>
+      <div class="role-card"><h3>🛡 帮忙控制</h3><p>瓢虫、螳螂、蜘蛛会捕食大量小型植食昆虫。它们在，作物被啃的压力就小一些。</p></div>
+      <div class="role-card"><h3>🌱 松土搬运</h3><p>蚂蚁挖洞会翻动土壤、搬运种子，让空气和水更容易进入地下。</p></div>
+      <div class="role-card"><h3>🧵 提供材料</h3><p>蜂蜡、蜂蜜、蚕丝都来自昆虫；人类很早就在用它们了。</p></div>
+    </div>
+    <div class="age-tiers">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>小虫飞到花上找吃的，顺便帮花搬花粉，花才能变成果子。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>虫子在自然里有好几份「工作」：传粉、清理垃圾、当别人的食物。这些工作没人安排，是它们过日子的副产品。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>传粉是一种互利关系：虫子得到花蜜和花粉当食物，植物得到繁殖机会。双方都不是为对方服务，而是各取所需——这类关系在自然界里非常普遍。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>生态系统中的角色与相互依赖，以及「一个行为可以同时对双方有利」这种非零和关系。</p>
+    <ul class="ask-list">
+      <li>如果一片果园里一只传粉的虫子都没有，会发生什么？人可以怎么补救？</li>
+      <li>花为什么要长得鲜艳、还准备甜的花蜜？它「图」什么？</li>
+    </ul>
+    <p class="parent-note" data-audience="parent"><b>五分钟观察：</b>找一株开花的植物，计时五分钟，数一数有几只虫子来过、分别停了多久。同一株植物换个时间（清早／中午／傍晚）再数一次，比较结果。这是一次真正的定量观察，不需要任何设备，也不需要认识虫子的名字。</p>
+  </section>
+
+  <!-- 不打扰地观察 -->
+  <section>
+    <p class="section-kicker">观察员守则</p>
+    <h2>怎样看清楚，又不打扰它</h2>
+    <p style="color:var(--ink-mid);max-width:66ch">
+      好的观察员留下的是<b>记录</b>，不是被弄乱的现场。虫子很小，我们的一只手对它来说非常大。
+    </p>
+    <div class="etiquette">
+      <div class="etq etq-do"><b>✅ 蹲下来，先不动</b><p>先安静看一会儿再靠近。很多虫子会因为影子和震动跑掉，站着俯视比蹲着更容易惊动它。</p></div>
+      <div class="etq etq-dont"><b>🚫 别用手抓不认识的虫</b><p>不认识就不碰。想让它换位置，用一张纸或叶子引它自己走上去。</p></div>
+      <div class="etq etq-do"><b>✅ 用放大镜靠近它</b><p>不是把虫拿到眼前，而是把放大镜移到虫旁边。看不清就换角度，不要挪动它。</p></div>
+      <div class="etq etq-dont"><b>🚫 不带回家养</b><p>它需要的食物和湿度，家里很难提供。看完就地放回，是最负责的做法。</p></div>
+      <div class="etq etq-do"><b>✅ 原样盖回去</b><p>翻开的石头、木头、花盆，看完照原样放回原位——那是别人的房子和遮阳棚。</p></div>
+      <div class="etq etq-dont"><b>🚫 蜂类附近不要挥手</b><p>挥动手臂反而更容易触发攻击。停下来，慢慢走开就好。</p></div>
+    </div>
+    <div class="record-sheet">
+      <h3>📋 不用认识名字也能写满的记录单</h3>
+      <ol class="rs-list">
+        <li><span class="rs-art" aria-hidden="true">📍</span><div><b>在哪里</b><p>叶子上／墙上／土里／花上（不用写具体地址）。</p></div></li>
+        <li><span class="rs-art" aria-hidden="true">🌤️</span><div><b>几点、什么天气</b><p>晴、阴、刚下过雨。</p></div></li>
+        <li><span class="rs-art" aria-hidden="true">🔢</span><div><b>数出来的</b><p>几条腿、身体几段、有没有翅膀、有没有触角。</p></div></li>
+        <li><span class="rs-art" aria-hidden="true"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-caterpillar"/></svg></span><div><b>它在做什么</b><p>爬、停着不动、吃东西、搬东西、晒太阳。</p></div></li>
+        <li><span class="rs-art" aria-hidden="true">✏️</span><div><b>画一张</b><p>画不像也没关系，重点是标出你数到的部分。</p></div></li>
+        <li><span class="rs-art" aria-hidden="true">❓</span><div><b>还不确定的</b><p>单独写一行，注明「这是我猜的」。</p></div></li>
+      </ol>
+    </div>
+    <div class="age-tiers">
+      <div class="age-tier tier-kid"><b>4–6 岁 · 一句话</b><p>用眼睛看，不用手抓；看完把它的家照原样放好。</p></div>
+      <div class="age-tier tier-mid"><b>7–9 岁</b><p>记录时把「我看到的」和「我猜的」分开写。这样过几天回头看，才知道哪部分还需要再确认。</p></div>
+      <div class="age-tier tier-adv"><b>10–12 岁 · 进阶</b><p>观察本身会干扰被观察的对象——影子、震动、气味都会改变它的行为。所以要尽量减少干扰，并在记录里写下自己做了什么，这样别人才能判断结果可不可信。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>观察伦理与记录规范：区分观察与推断、减少对研究对象的干扰、如实写下自己的操作。</p>
+    <ul class="ask-list">
+      <li>为什么把虫子带回家，可能反而看不到它平常的样子？</li>
+      <li>你的记录里有哪一句其实是猜的？要怎样才能确认它？</li>
+    </ul>
+    <p class="parent-note" data-audience="parent"><b>为什么值得坚持：</b>「看完放回、原样盖回」这两条最容易被跳过，但它们传达的是同一件事——研究对象不是玩具。孩子对小虫的态度，往后会延伸到对所有生命的态度。如果孩子怕虫，不要强迫触碰；隔着放大镜观察、只画不碰，同样是完整的观察。</p>
+  </section>
+
   <!-- 蟋蟀温度计 -->
   <section>
     <h2>用蟋蟀叫声当温度计</h2>
     <div class="cricket">
+      <div class="cr-stage">
+        <svg class="cr-thermo" viewBox="0 0 60 150" role="img" aria-labelledby="crThermoTitle crThermoDesc">
+          <title id="crThermoTitle">会跟着叫声升降的温度计</title>
+          <desc id="crThermoDesc">一支温度计。蟋蟀叫得越急，里面的红色液柱升得越高，表示天气越暖。</desc>
+          <rect x="20" y="10" width="20" height="112" rx="10" fill="#fff" stroke="#402d1c" stroke-width="4"/>
+          <circle cx="30" cy="128" r="15" fill="#e0325c" stroke="#402d1c" stroke-width="4"/>
+          <rect class="cr-fill" id="crFill" x="25" y="60" width="10" height="62" fill="#e0325c"/>
+          <path d="M44 30 H52 M44 52 H52 M44 74 H52 M44 96 H52" stroke="#402d1c" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div class="cr-face" id="crFace" aria-hidden="true">🦗</div>
+          <div class="cr-big" id="ctemp">—</div>
+          <span style="font-size:.8rem;color:var(--ink-dim)">估算气温</span>
+          <p class="cr-face-note" id="crFaceNote" role="status" aria-live="polite">点下面的按钮，听听蟋蟀叫得急不急。</p>
+        </div>
+      </div>
+      <div class="cr-picks" id="crPicks" role="group" aria-label="选择蟋蟀叫得有多急">
+        <button type="button" data-chirp="12" aria-pressed="false"><span aria-hidden="true">🥶</span> 很慢</button>
+        <button type="button" data-chirp="24" aria-pressed="false"><span aria-hidden="true">🙂</span> 慢慢叫</button>
+        <button type="button" data-chirp="35" aria-pressed="true"><span aria-hidden="true">😀</span> 挺急</button>
+        <button type="button" data-chirp="48" aria-pressed="false"><span aria-hidden="true">🥵</span> 很急</button>
+      </div>
       <div class="cr-row">
         <label class="st-f">
           <span>14 秒内数到几声</span>
           <input id="chirp" type="number" min="5" max="60" step="1" value="35">
         </label>
-        <div>
-          <div class="cr-big" id="ctemp">—</div>
-          <span style="font-size:.8rem;color:var(--ink-dim)">估算气温</span>
-        </div>
       </div>
       <p class="st-note parent-deep-dive" data-audience="parent" style="border-color:var(--warn)">
         方法叫<b>多尔贝定律</b>：数 14 秒的叫声次数，加上 40，就约等于华氏温度。
@@ -447,7 +1645,8 @@
   <!-- 虫卡 -->
   <section>
     <h2>十种常见的虫（和它们的绝技）</h2>
-    <p class="parent-deep-dive" id="src" data-audience="parent">照片加载中…</p>
+    <p class="online-opt parent-deep-dive" data-audience="parent"><label><input type="checkbox" data-playful-preference="onlineData"> 允许联网加载照片与实时数据</label><span>默认关闭。关闭时本页只用内置图标与文字，不向任何外部网站发出请求；开启后会向 iNaturalist 取昆虫照片。开关随时可以关掉。</span></p>
+    <p class="parent-deep-dive" id="src" data-audience="parent">离线模式 · 显示内置图标与文字（照片需要联网）。</p>
     <div class="bgrid" id="bugs"></div>
   </section>
 
@@ -460,6 +1659,38 @@
       蜜蜂胡蜂周围不要挥手驱赶（挥动反而触发攻击，静静走开就行）。
       翻开石头或木头看完，请把它<b>照原样盖回去</b>——那是别人的房子。
     </div>
+  </section>
+
+  <!-- 家长层总览 -->
+  <section class="card parent-deep-dive" data-audience="parent" style="padding:20px" aria-labelledby="ibParentTitle">
+    <p class="pill pill-kit">家长层 · 昆虫世界 · 5–12 岁</p>
+    <h2 id="ibParentTitle">家长深读：这一页在教什么</h2>
+
+    <h3>学习目标</h3>
+    <ul class="ask-list">
+      <li><b>数得出来的分类标准：</b>用「几条腿、身体几段、有没有触角」判断是不是昆虫，而不是靠名字或印象。</li>
+      <li><b>身体结构与功能对应：</b>头管感觉和取食、胸管运动（腿和翅都长在胸部）、腹管消化与呼吸（侧面的气孔）。</li>
+      <li><b>同一个体的不同形态：</b>毛毛虫和蝴蝶是同一只虫的两个阶段，学会把「长得不一样」和「不是同一种」分开。</li>
+      <li><b>用数量关系解释现象：</b>蟋蟀叫声频率随气温上升，可以量化并当场用温度计验证；力量与体重的比例差异来自平方与立方的增长速度不同。</li>
+      <li><b>证据与推断分开：</b>数出来的算观察，阶段判断算推断，看不清就写「无法判断」。</li>
+    </ul>
+
+    <h3>背后的原理</h3>
+    <p class="principle"><b>昆虫纲的定义特征：</b>成虫身体分头、胸、腹三段；胸部有三对足（共六条腿）；头部有一对触角；多数有两对翅（也有蚂蚁工蚁、跳蚤这类无翅的）。判断时最可靠的是<b>三对足长在胸部</b>这一条，因为翅膀会缺、体色会变，足的数量和着生位置几乎不变。</p>
+    <p class="principle"><b>为什么蜘蛛不是昆虫：</b>蜘蛛属于蛛形纲。它的身体只分两段（头胸部与腹部），有四对足共八条腿，没有触角也没有翅膀，取而代之的是一对触肢和吐丝器。昆虫与蛛形纲在节肢动物门里是并列的两支，分开的时间比人和鱼分开还要早得多，所以差别不是「长得不太一样」，而是两条完全不同的谱系。</p>
+    <p class="principle"><b>变态发育的意义：</b>昆虫的外骨骼不能持续变大，只能靠脱壳长大。完全变态多出蛹这一步，让幼虫和成虫可以有完全不同的身体、食物和栖息地——毛毛虫啃叶子，蝴蝶吸花蜜，同一物种的两个阶段因此不必互相抢资源；代价是蛹期不能动、风险高。不完全变态（蟋蟀、蜻蜓、蝗虫）没有蛹，若虫像小一号的成虫，风险低，但幼期与成虫的食物常常重叠。</p>
+    <p class="principle"><b>叫声当温度计：</b>蟋蟀是变温动物，肌肉收缩速率随体温上升而加快，而它的体温基本跟着气温走，所以鸣叫频率与气温近似线性相关。数 14 秒的叫声次数再加 40，约等于华氏温度（多尔贝定律）。约 13–35 °C 之外它几乎不鸣叫，公式也随之失效——这正好是个好例子：<b>经验公式都有适用范围</b>。</p>
+    <p class="parent-note"><b>常见误区一：「所有小虫子都是昆虫」。</b>日常中文里的「虫子」范围很宽，蜘蛛、蜈蚣、马陆、蜗牛、鼠妇都被叫作虫子，但它们都不是昆虫。不必纠正孩子的日常说法，加一句「它是虫子，不过不是昆虫」就够了，让生活用词和分类用词并存。</p>
+    <p class="parent-note"><b>常见误区二：「蚂蚁力气特别大」。</b>相对体重能举得多，靠的是几何：肌肉力量约随截面积（长度的平方）增长，体重随体积（长度的立方）增长，个子越小越占相对优势。同理，放大的巨型昆虫不会保留同样的相对力量，也会因为气孔进气跟不上体积而缺氧。</p>
+    <p class="parent-note"><b>常见误区三：「毛毛虫和蝴蝶是两种虫」。</b>可以拿一只蝉蜕或空壳做对照，让孩子看到「同一只虫留下的旧身体」，比讲解更直接。</p>
+
+    <h3>给家长的三条一起追问</h3>
+    <ol class="parent-q">
+      <li>你是用哪一个特征判断它是不是昆虫的？如果它有一条腿断了，你还能判断吗？还需要看什么？</li>
+      <li>为什么六条腿全都长在中间那一段，而不是分散在整个身体上？这样走路会有什么好处？</li>
+      <li>如果毛毛虫和蝴蝶吃的东西完全一样，会发生什么？多出「蛹」这一步，对这只虫子到底划不划算？</li>
+    </ol>
+    <p class="teach-note"><b>离屏延伸：</b>找一小块地面或一株开花的植物，五分钟内数一数来了几只虫、各有几条腿，把「6 条腿」和「不是 6 条腿」分成两栏记下来。回家再拿这一页的图鉴核对。全程只看不碰，看完把翻开的石头、叶子照原样放回去。</p>
   </section>
 
   <footer class="foot parent-deep-dive" data-audience="parent" style="margin-top:34px">
@@ -559,6 +1790,38 @@
   /* ---------- 蟋蟀温度计 ---------- */
   var chirp = document.getElementById("chirp");
   var ctemp = document.getElementById("ctemp");
+  var crFill = document.getElementById("crFill");
+  var crFace = document.getElementById("crFace");
+  var crFaceNote = document.getElementById("crFaceNote");
+
+  /* 温度计柱：13 °C 见底，35 °C 到顶（对应蟋蟀正常鸣叫的区间） */
+  function paintThermo(c) {
+    var lo = 10, hi = 38, top = 26, bottom = 122;
+    var k = (c - lo) / (hi - lo);
+    if (k < 0) k = 0;
+    if (k > 1) k = 1;
+    var h = Math.round((bottom - top) * k);
+    crFill.setAttribute("y", bottom - h);
+    crFill.setAttribute("height", h);
+
+    if (c < 13) {
+      crFace.textContent = "🥶";
+      crFaceNote.textContent = "太凉了，蟋蟀几乎不叫。这时候公式也算不准。";
+    } else if (c < 20) {
+      crFace.textContent = "🙂";
+      crFaceNote.textContent = "有点凉，它叫得慢慢的。";
+    } else if (c <= 28) {
+      crFace.textContent = "😀";
+      crFaceNote.textContent = "刚好暖和，叫声不快也不慢。";
+    } else if (c <= 35) {
+      crFace.textContent = "🥵";
+      crFaceNote.textContent = "很热！它叫得又快又急。";
+    } else {
+      crFace.textContent = "🔥";
+      crFaceNote.textContent = "比蟋蟀能正常鸣叫的温度还高，公式不适用了。";
+    }
+  }
+
   function cricket() {
     var n = +chirp.value;
     if (isNaN(n) || n < 0) { ctemp.textContent = "—"; return; }
@@ -569,8 +1832,26 @@
     if (c < 13) html += '<br><small style="color:var(--warn)">这么凉，蟋蟀基本不叫了——公式在低温下会失准。</small>';
     else if (c > 35) html += '<br><small style="color:var(--warn)">这个温度已超出蟋蟀正常鸣叫范围，公式不再适用。</small>';
     ctemp.innerHTML = html;
+    paintThermo(c);
   }
-  chirp.addEventListener("input", cricket);
+  chirp.addEventListener("input", function () {
+    // 手动改数字后，取消叫声按钮的选中态，避免图文不一致
+    [].forEach.call(document.querySelectorAll("#crPicks [data-chirp]"), function (b) {
+      b.setAttribute("aria-pressed", "false");
+    });
+    cricket();
+  });
+
+  /* 不打字也能玩：四个叫声快慢按钮直接填数字 */
+  [].forEach.call(document.querySelectorAll("#crPicks [data-chirp]"), function (button) {
+    button.addEventListener("click", function () {
+      [].forEach.call(button.parentNode.querySelectorAll("[data-chirp]"), function (other) {
+        other.setAttribute("aria-pressed", other === button ? "true" : "false");
+      });
+      chirp.value = button.getAttribute("data-chirp");
+      cricket();
+    });
+  });
 
   /* ---------- 虫子数据（内置，联网后补照片）---------- */
   var BUGS = [
@@ -656,12 +1937,23 @@
   var srcEl = document.getElementById("src");
   var got = 0, tried = 0;
   function report() {
-    srcEl.textContent = got > 0
-      ? "已加载 " + got + " 张照片（iNaturalist，版权归拍摄者）。"
-      : "离线模式 · 显示内置图标与文字（照片需要联网）。";
+    if (got > 0) {
+      srcEl.textContent = "已加载 " + got + " 张照片（iNaturalist，版权归拍摄者）。";
+    } else if (!onlineAllowed()) {
+      // 区分「家长没开开关」和「开了但网络不通」，否则家长会以为是网络故障。
+      srcEl.textContent = "内置图标与文字模式 · 如需真实照片，请在上方勾选“允许联网加载照片”。";
+    } else {
+      srcEl.textContent = "离线模式 · 显示内置图标与文字（联网开关已开，但照片没能取到）。";
+    }
+  }
+
+  function onlineAllowed() {
+    return Boolean(window.Playful && Playful.onlineAllowed && Playful.onlineAllowed());
   }
 
   function jget(url, ms) {
+    // 默认关闭：第三方请求只在家长于家长区开启 onlineData 后才发出。
+    if (!onlineAllowed()) return Promise.reject(new Error("online-disabled"));
     var ac = new AbortController();
     var t = setTimeout(function () { ac.abort(); }, ms || 8000);
     return fetch(url, { signal: ac.signal })
@@ -676,9 +1968,11 @@
   var slots = [].slice.call(document.querySelectorAll("[data-inat]"));
   var total = slots.length;
 
-  slots.forEach(function (slot) {
+  function fillSlot(slot) {
     var q = slot.getAttribute("data-inat");
     var ck = "inat-bug:" + q;
+    if (slot.getAttribute("data-filled") === "1") return;   // 补加载时不要重复插图
+    slot.setAttribute("data-filled", "1");
 
     // 先插入文档再设 src；游离节点不会加载。lazy 只推迟加载，onload 照样会来。
     function paint(rec) {
@@ -728,6 +2022,38 @@
         } else { tried++; if (tried === total) report(); }
       })
       .catch(function () { tried++; if (tried === total) report(); });
+  }
+
+  /* 缓存命中不联网，任何时候都能先把已存的照片放回来 */
+  function fillFromCacheOnly() {
+    slots.forEach(function (slot) {
+      try {
+        if (localStorage.getItem("inat-bug:" + slot.getAttribute("data-inat"))) fillSlot(slot);
+      } catch (e) {}
+    });
+  }
+
+  function runPhotos() {
+    got = 0; tried = 0;
+    if (!onlineAllowed()) {
+      report();
+      fillFromCacheOnly();
+      return;
+    }
+    slots.forEach(fillSlot);
+  }
+
+  /* 本段脚本比 playful.js 先执行，要等共享层就绪后才能读偏好 */
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", runPhotos);
+  } else {
+    runPhotos();
+  }
+
+  /* 家长在家长区打开联网后，补一次加载 */
+  document.addEventListener("playful:preference", function (event) {
+    var d = event && event.detail;
+    if (d && d.name === "onlineData" && d.value) runPhotos();
   });
 
   strength();
@@ -735,9 +2061,9 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>
 (function () {
   "use strict";
@@ -793,6 +2119,21 @@
     });
   });
 
+  var metaLab = document.getElementById("metaLab");
+  var metaResult = document.getElementById("metaResult");
+  var metaNotes = {
+    complete: "🦋 完全变态：卵 → 幼虫 → 蛹 → 成虫。中间要进蛹里把身体大改一次，所以毛毛虫和蝴蝶看起来完全不一样。蝴蝶、甲虫、蜜蜂、蚂蚁都走这条路。",
+    incomplete: "🦗 不完全变态：卵 → 若虫 → 成虫，没有蛹。若虫就像小一号的成虫，每换一次壳就变大一点，翅膀慢慢长出来。蟋蟀、蝗虫、蜻蜓走这条路。"
+  };
+  [].forEach.call(document.querySelectorAll("#metaPicks [data-meta]"), function (button) {
+    button.addEventListener("click", function () {
+      var value = button.getAttribute("data-meta");
+      selectOne(button, ".kid-choice");
+      metaLab.setAttribute("data-meta", value);
+      metaResult.textContent = metaNotes[value];
+    });
+  });
+
   if (window.Progress) Progress.visit("nature/insects.html", "虫子放大镜");
   slider.addEventListener("input", function () { scaleText.textContent = slider.value; });
   document.getElementById("insectRun").addEventListener("click", function () {
@@ -810,6 +2151,365 @@
   if (window.Progress && Progress.getCompletion(id)) status.textContent = "此任务已完成；可观察另一阶段更新证据。";
 })();
 </script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script>
+/* 图像优先三件套：① 虫子图鉴 ② 判定条 ③ 数腿分类 */
+(function () {
+  "use strict";
+
+  var NS = "http://www.w3.org/2000/svg";
+  function sv(name, attrs) {
+    var node = document.createElementNS(NS, name);
+    Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    return node;
+  }
+  function svText(x, y, str, cls, size, anchor) {
+    var t = sv("text", { x: x, y: y, "class": cls, "font-size": size, "text-anchor": anchor || "middle" });
+    t.textContent = str;
+    return t;
+  }
+
+  /* 六种小动物：腿数、身体段数、成长路线。蜘蛛作为反例保留在同一张表里。 */
+  var IB = {
+    ant: { cap: "蚂蚁", legs: 6, seg: 3, insect: true, layout: "updown",
+      metaStages: 4, metaWord: "完全变态（卵→幼虫→蛹→成虫）",
+      say: "6 条腿都长在中间那一段（胸），头、胸、腹一共 3 段。它是昆虫。" },
+    ladybug: { cap: "瓢虫", legs: 6, seg: 3, insect: true, layout: "updown",
+      metaStages: 4, metaWord: "完全变态（卵→幼虫→蛹→成虫）",
+      say: "红色的硬壳盖着腹部，掀开下面还有翅膀。6 条腿、3 段身体，它是昆虫。" },
+    butterfly: { cap: "蝴蝶", legs: 6, seg: 3, insect: true, layout: "fan",
+      metaStages: 4, metaWord: "完全变态（卵→毛毛虫→蛹→蝴蝶）",
+      say: "翅膀很大，腿藏在下面——还是 6 条。3 段身体，它是昆虫。" },
+    bee: { cap: "蜜蜂", legs: 6, seg: 3, insect: true, layout: "fan",
+      metaStages: 4, metaWord: "完全变态（卵→幼虫→蛹→成虫）",
+      say: "黄黑条纹长在腹部。6 条腿、3 段身体，它是昆虫。" },
+    spider: { cap: "蜘蛛", legs: 8, seg: 2, insect: false, layout: "spider",
+      metaStages: 0, metaWord: "不变态（只脱壳长大，没有幼虫和蛹）",
+      say: "数一数：8 条腿，身体只有 2 段，头上也没有触角。它不是昆虫，是蛛形纲。" },
+    dragonfly: { cap: "蜻蜓", legs: 6, seg: 3, insect: true, layout: "fan",
+      metaStages: 3, metaWord: "不完全变态（卵→水里的稚虫→成虫，没有蛹）",
+      say: "腹部又细又长，眼睛特别大。6 条腿、3 段身体，它是昆虫。" },
+    /* 下面两种只出现在③数腿分类里，用来把「8 条腿」的例子变多一点 */
+    beetle: { cap: "甲虫", legs: 6, seg: 3, insect: true, layout: "updown",
+      metaStages: 4, metaWord: "完全变态（卵→幼虫→蛹→成虫）",
+      say: "背上一条缝，是两片合起来的硬翅。6 条腿、3 段身体，它是昆虫。" },
+    harvestman: { cap: "盲蛛", legs: 8, seg: 2, insect: false, layout: "spiderLong",
+      metaStages: 0, metaWord: "不变态（只脱壳长大）",
+      say: "腿特别长，身体像一颗小豆子。8 条腿、2 段身体，它和蜘蛛是一家，不是昆虫。" }
+  };
+
+  /* ---------- ① 虫子图鉴 ---------- */
+  var stageArt = document.getElementById("ibStageArt");
+  var stageSvg = document.getElementById("ibStage");
+  var atlasSay = document.getElementById("ibAtlasSay");
+  var atlasButtons = [].slice.call(document.querySelectorAll("#ibAtlasGrid [data-ib-bug]"));
+
+  function clearGroup(g) { while (g.firstChild) g.removeChild(g.firstChild); }
+
+  function badge(x, y, n) {
+    var g = sv("g", {});
+    g.appendChild(sv("circle", { cx: x, cy: y, r: 14, "class": "ib-badge" }));
+    g.appendChild(svText(x, y + 6, String(n), "ib-ink", 17));
+    return g;
+  }
+
+  /* 舞台与小游戏共用同一套 300×200 画法；坐标全部写死，不做运算，避免出现 NaN */
+  function drawWings(target, key) {
+    var paths = [];
+    if (key === "butterfly") {
+      paths = ["M144 92 C122 34 30 34 38 76 C44 106 98 100 144 98 Z",
+               "M156 92 C178 34 270 34 262 76 C256 106 202 100 156 98 Z"];
+      paths.forEach(function (d) { target.appendChild(sv("path", { d: d, "class": "ib-wing-pink" })); });
+      return;
+    }
+    if (key === "bee") {
+      paths = ["M146 88 C140 44 84 32 74 56 C66 76 114 90 146 96 Z",
+               "M154 88 C160 44 216 32 226 56 C234 76 186 90 154 96 Z"];
+    } else if (key === "dragonfly") {
+      paths = ["M144 92 C128 48 74 34 60 52 C48 68 108 84 144 98 Z",
+               "M144 98 C132 58 88 44 74 66 C64 84 110 96 144 104 Z",
+               "M156 92 C172 48 226 34 240 52 C252 68 192 84 156 98 Z",
+               "M156 98 C168 58 212 44 226 66 C236 84 190 96 156 104 Z"];
+    }
+    paths.forEach(function (d) { target.appendChild(sv("path", { d: d, "class": "ib-wing" })); });
+  }
+
+  function drawLegs(target, layout) {
+    var d;
+    if (layout === "spider") {
+      d = "M100 60 L58 20 M116 52 L106 14 M144 52 L154 14 M160 60 L204 24" +
+          " M100 124 L58 164 M116 132 L106 170 M144 132 L154 170 M160 124 L204 160";
+    } else if (layout === "spiderLong") {
+      d = "M118 72 L64 22 M130 64 L112 12 M150 64 L172 12 M162 72 L216 26" +
+          " M118 112 L64 162 M130 120 L112 172 M150 120 L172 172 M162 112 L216 158";
+    } else if (layout === "fan") {
+      d = "M127 121 L92 158 M138 127 L118 164 M147 130 L144 168" +
+          " M155 130 L162 168 M164 126 L188 162 M172 119 L206 154";
+    } else {
+      d = "M126 72 L96 40 M150 62 L150 38 M174 72 L204 40" +
+          " M126 120 L96 158 M150 130 L150 166 M174 120 L204 158";
+    }
+    target.appendChild(sv("path", { "class": "ib-leg", "stroke-width": 5, d: d }));
+  }
+
+  function drawBody(target, key, labels) {
+    if (key === "spider" || key === "harvestman") {
+      var long = key === "harvestman";
+      var cx1 = long ? 140 : 130, r1 = long ? 30 : 44;
+      var cx2 = long ? 198 : 222, rx2 = long ? 34 : 58, ry2 = long ? 28 : 46;
+      target.appendChild(sv("ellipse", { cx: cx2, cy: 92, rx: rx2, ry: ry2, "class": "ib-abdo-spider" }));
+      target.appendChild(sv("circle", { cx: cx1, cy: 92, r: r1, "class": "ib-ceph" }));
+      (long ? [[134, 80], [146, 80]] : [[112, 78], [124, 72], [136, 73], [148, 80]]).forEach(function (p) {
+        target.appendChild(sv("circle", { cx: p[0], cy: p[1], r: 4.5, "class": "ib-eye" }));
+      });
+      if (!labels) return;
+      target.appendChild(badge(cx1, 92, 1));
+      target.appendChild(badge(cx2, 92, 2));
+      target.appendChild(svText(cx1, 192, "① 头胸部（8 条腿都在这里）", "ib-ink-soft", 13));
+      target.appendChild(svText(cx2 + 22, 176, "② 腹部", "ib-ink-soft", 13));
+      return;
+    }
+    /* 腹部：瓢虫是圆壳，蜜蜂带条纹，蜻蜓是细长条，甲虫是带中缝的硬翅，其他是椭圆 */
+    if (key === "ladybug") {
+      target.appendChild(sv("circle", { cx: 226, cy: 96, r: 46, "class": "ib-abdo-red" }));
+      target.appendChild(sv("path", { d: "M226 50 L226 142", "class": "ib-line", "stroke-width": 3 }));
+      [[204, 72, 8], [250, 76, 8], [200, 118, 9], [250, 120, 8]].forEach(function (p) {
+        target.appendChild(sv("circle", { cx: p[0], cy: p[1], r: p[2], "class": "ib-mark" }));
+      });
+    } else if (key === "bee") {
+      target.appendChild(sv("ellipse", { cx: 226, cy: 96, rx: 50, ry: 34, "class": "ib-abdo-bee" }));
+      [[200, 68, 56], [224, 64, 64], [248, 70, 52]].forEach(function (p) {
+        target.appendChild(sv("rect", { x: p[0], y: p[1], width: 10, height: p[2], rx: 5, "class": "ib-mark" }));
+      });
+    } else if (key === "dragonfly") {
+      target.appendChild(sv("rect", { x: 196, y: 84, width: 100, height: 26, rx: 13, "class": "ib-abdo" }));
+      target.appendChild(sv("path", { d: "M222 86 L222 108 M248 86 L248 108 M274 86 L274 108", "class": "ib-line" }));
+    } else if (key === "beetle") {
+      target.appendChild(sv("ellipse", { cx: 226, cy: 96, rx: 52, ry: 38, "class": "ib-abdo" }));
+      target.appendChild(sv("path", { d: "M226 58 L226 134 M182 96 L270 96", "class": "ib-line", "stroke-width": 3 }));
+    } else {
+      target.appendChild(sv("ellipse", { cx: 226, cy: 96, rx: 50, ry: 34, "class": "ib-abdo" }));
+    }
+    target.appendChild(sv("circle", { cx: 150, cy: 96, r: 34, "class": "ib-thorax" }));
+    target.appendChild(sv("circle", { cx: 78, cy: 96, r: 28, "class": "ib-head" }));
+    target.appendChild(sv("path", { d: "M60 78 L36 48 M78 68 L70 38", "class": "ib-feeler", "stroke-width": 4 }));
+    if (key === "dragonfly") {
+      target.appendChild(sv("circle", { cx: 66, cy: 86, r: 9, "class": "ib-eye" }));
+      target.appendChild(sv("circle", { cx: 92, cy: 86, r: 9, "class": "ib-eye" }));
+    }
+    if (!labels) return;
+    target.appendChild(badge(78, 96, 1));
+    target.appendChild(badge(150, 96, 2));
+    target.appendChild(badge(key === "dragonfly" ? 246 : 226, 97, 3));
+    target.appendChild(svText(78, 176, "① 头", "ib-ink-soft", 13));
+    target.appendChild(svText(150, 192, "② 胸 · 6 条腿都在这里", "ib-ink-soft", 13));
+    target.appendChild(svText(key === "dragonfly" ? 250 : 236, 176, "③ 腹", "ib-ink-soft", 13));
+  }
+
+  function drawTopBar(target, key) {
+    var b = IB[key];
+    target.appendChild(sv("rect", { x: 8, y: 6, width: 284, height: 26, rx: 13, "class": "ib-badge" }));
+    target.appendChild(svText(16, 25, b.cap, "ib-ink", 16, "start"));
+    target.appendChild(svText(284, 25, b.legs + " 条腿 · " + b.seg + " 段身体 · " + (b.insect ? "是昆虫" : "不是昆虫"),
+      "ib-ink-soft", 13, "end"));
+  }
+
+  /* labels/topBar 关掉时就是一只「没写答案」的虫，用于③数腿分类 */
+  function drawCreature(target, key, labels, topBar) {
+    clearGroup(target);
+    var b = IB[key];
+    drawWings(target, key);
+    drawLegs(target, b.layout);
+    drawBody(target, key, labels);
+    if (topBar) drawTopBar(target, key);
+  }
+
+  function drawStage(key) {
+    if (!key || !IB[key]) {
+      clearGroup(stageArt);
+      stageArt.appendChild(svText(150, 100, "点下面的一张卡", "ib-ink", 18));
+      stageSvg.setAttribute("aria-label", "放大镜舞台：还没有选小动物");
+      return;
+    }
+    var b = IB[key];
+    drawCreature(stageArt, key, true, true);
+    stageSvg.setAttribute("aria-label",
+      "放大镜舞台：放大的" + b.cap + "，" + b.legs + " 条腿，身体分成 " + b.seg + " 段，" + (b.insect ? "是昆虫" : "不是昆虫"));
+  }
+
+  /* ---------- ② 判定条：跟着所选的那张卡变化 ---------- */
+  var fitMeter = document.getElementById("ibFitMeter");
+  var metaMeter = document.getElementById("ibMetaMeter");
+  var fitValue = document.getElementById("ibFitValue");
+  var metaValue = document.getElementById("ibMetaValue");
+  var testLegs = document.getElementById("ibTestLegs");
+  var testSeg = document.getElementById("ibTestSeg");
+  var legDots = document.getElementById("ibLegDots");
+  var meterSay = document.getElementById("ibMeterSay");
+  var META_STEPS = 4;
+
+  function setMeter(track, value, max) {
+    if (!track) return;
+    if (window.Playful && Playful.setMeter) { Playful.setMeter(track, value, max); return; }
+    var fill = track.querySelector(".kid-meter-fill");
+    var ratio = Math.max(0, Math.min(1, Number(value) / Number(max)));
+    if (fill) fill.style.setProperty("--fill", (ratio * 100).toFixed(1) + "%");
+  }
+
+  function paintDots(legs) {
+    legDots.textContent = "";
+    for (var i = 0; i < 8; i++) {
+      var dot = document.createElement("i");
+      if (i >= legs) dot.setAttribute("data-empty", "true");
+      legDots.appendChild(dot);
+    }
+    legDots.setAttribute("aria-label", "八格里点亮了 " + legs + " 格，就是 " + legs + " 条腿");
+  }
+
+  function drawMeters(key) {
+    var b = IB[key];
+    var legsOk = b.legs === 6;
+    var segOk = b.seg === 3;
+    var score = (legsOk ? 50 : 0) + (segOk ? 50 : 0);
+    fitValue.textContent = score + "%";
+    setMeter(fitMeter, score, 100);
+    metaValue.textContent = b.metaStages + " / " + META_STEPS + " 步";
+    setMeter(metaMeter, b.metaStages, META_STEPS);
+    testLegs.setAttribute("data-ok", legsOk ? "true" : "false");
+    testLegs.textContent = (legsOk ? "✓" : "○") + " 6 条腿（这只有 " + b.legs + " 条）";
+    testSeg.setAttribute("data-ok", segOk ? "true" : "false");
+    testSeg.textContent = (segOk ? "✓" : "○") + " 3 段身体（这只有 " + b.seg + " 段）";
+    paintDots(b.legs);
+    meterSay.textContent = b.cap + "：符合度 " + score + "%（" +
+      (legsOk ? "腿数对" : "腿数不对") + "、" + (segOk ? "段数对" : "段数不对") + "），" +
+      (score === 100 ? "满格，所以它是昆虫。" : "没满格，所以它不是昆虫。") +
+      "成长走 " + b.metaStages + " 步：" + b.metaWord + "。";
+  }
+
+  var ibCurrent = null;
+  function selectBug(key) {
+    ibCurrent = key;
+    var b = IB[key];
+    atlasButtons.forEach(function (btn) {
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-ib-bug") === key ? "true" : "false");
+    });
+    drawStage(key);
+    drawMeters(key);
+    atlasSay.textContent = (b.insect ? "✓ " : "○ ") + "你选了" + b.cap + "：" + b.say;
+  }
+
+  atlasButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () { selectBug(btn.getAttribute("data-ib-bug")); });
+  });
+
+  /* ---------- ③ 数腿分类 ---------- */
+  var quizArt = document.getElementById("ibQuizArt");
+  var quizBody = document.getElementById("ibQuizArtBody");
+  var quizSay = document.getElementById("ibQuizSay");
+  var quizStars = document.getElementById("ibQuizStars");
+  var quizTotal = document.getElementById("ibQuizTotal");
+  var quizPicks = [].slice.call(document.querySelectorAll("#ibQuizPicks [data-ib-answer]"));
+  var SIX_LEGS = ["ant", "ladybug", "butterfly", "bee", "dragonfly", "beetle"];
+  var EIGHT_LEGS = ["spider", "harvestman"];
+  var quizNow = null, quizSolved = false, quizWins = 0, quizWantInsect = true;
+
+  function quizPick(list) { return list[Math.floor(Math.random() * list.length)]; }
+
+  function quizNext() {
+    var list = quizWantInsect ? SIX_LEGS : EIGHT_LEGS;
+    var pick = quizPick(list);
+    if (pick === quizNow && list.length > 1) pick = list[(list.indexOf(pick) + 1) % list.length];
+    quizWantInsect = !quizWantInsect;
+    quizNow = pick;
+    quizSolved = false;
+    drawCreature(quizBody, pick, false, false);
+    quizArt.setAttribute("aria-label", "要数腿的那一只：一只有 " + IB[pick].legs + " 条腿、" + IB[pick].seg + " 段身体的小动物");
+    quizPicks.forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+    quizSay.textContent = "换好了。数一数腿，再点一张大图卡。";
+  }
+
+  function quizHintText(key) {
+    var b = IB[key];
+    return b.legs === 6
+      ? "提示：腿都从中间那一段伸出来，左边 3 条、右边 3 条。"
+      : "提示：身体只有 2 段，腿一边 4 条，头上也找不到触角。";
+  }
+
+  quizPicks.forEach(function (button) {
+    button.addEventListener("click", function () {
+      if (!quizNow || quizSolved) return;
+      var b = IB[quizNow];
+      var want = b.insect ? "insect" : "other";
+      var ok = button.getAttribute("data-ib-answer") === want;
+      if (ok) {
+        quizSolved = true;
+        quizPicks.forEach(function (other) {
+          other.setAttribute("aria-pressed", other === button ? "true" : "false");
+        });
+        quizWins += 1;
+        quizStars.textContent = new Array(Math.min(quizWins, 10) + 1).join("⭐");
+        quizStars.setAttribute("aria-label", "已经数对 " + quizWins + " 次");
+        quizTotal.textContent = "数对 " + quizWins + " 次";
+        quizSay.textContent = "✓ 数对了！这是" + b.cap + "：" + b.legs + " 条腿、" + b.seg + " 段身体，" +
+          (b.insect ? "是昆虫。" : "不是昆虫，它属于蛛形纲。") + "按「换一只」再来一个。";
+        if (window.Playful && Playful.confetti) Playful.confetti(quizArt.parentNode);
+        return;
+      }
+      /* 答错：只给提示，不清零、不换题，可以接着再数 */
+      button.setAttribute("aria-pressed", "false");
+      quizSay.textContent = "○ 再数一数腿：用手指一条一条点过去。" + quizHintText(quizNow);
+    });
+  });
+
+  document.getElementById("ibQuizNext").addEventListener("click", quizNext);
+  document.getElementById("ibQuizHint").addEventListener("click", function () {
+    if (!quizNow) return;
+    quizSay.textContent = quizHintText(quizNow);
+  });
+
+  /* ---------- 大图卡代替下拉：力量对比对象 ---------- */
+  var powerPicks = [].slice.call(document.querySelectorAll("#ibPowerPicks [data-ib-power]"));
+  var whoSelect = document.getElementById("who");
+  powerPicks.forEach(function (button) {
+    button.addEventListener("click", function () {
+      powerPicks.forEach(function (other) {
+        other.setAttribute("aria-pressed", other === button ? "true" : "false");
+      });
+      if (!whoSelect) return;
+      whoSelect.value = button.getAttribute("data-ib-power");
+      whoSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  });
+  if (whoSelect) {
+    whoSelect.addEventListener("change", function () {
+      powerPicks.forEach(function (other) {
+        other.setAttribute("aria-pressed", other.getAttribute("data-ib-power") === whoSelect.value ? "true" : "false");
+      });
+    });
+  }
+
+  /* ---------- 大图卡代替下拉：成长阶段 ---------- */
+  var stagePicks = [].slice.call(document.querySelectorAll("#ibStagePicks [data-ib-stage]"));
+  var lifeStageSelect = document.getElementById("lifeStage");
+  var lookResult = document.getElementById("insectLookResult");
+  var lifeNodes = [].slice.call(document.querySelectorAll(".life-node[data-stage]"));
+  stagePicks.forEach(function (button) {
+    button.addEventListener("click", function () {
+      var value = button.getAttribute("data-ib-stage");
+      stagePicks.forEach(function (other) {
+        other.setAttribute("aria-pressed", other === button ? "true" : "false");
+      });
+      var matched = null;
+      lifeNodes.forEach(function (node) { if (node.getAttribute("data-stage") === value) matched = node; });
+      if (matched) { matched.click(); return; }   /* 顶部生命周期图已有同样的处理 */
+      if (lifeStageSelect) lifeStageSelect.value = value;
+      if (lookResult) lookResult.textContent = "说不准：看不清腿或身体分段时，写「无法判断」比硬猜更可靠，换个角度再看一次。";
+    });
+  });
+
+  selectBug("ant");
+  quizNext();
+})();
+</script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

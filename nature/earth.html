@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>地球与地震 · 脚下的地面在动 | 少儿数理启蒙</title>
 <meta name="description" content="钻到地心要穿过几层？震级差一级到底差多少？看最近真实发生的地震，学会用 P 波和 S 波的时间差算出震中有多远。数据来自 USGS。">
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#0b0f1a">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .hero { padding: 32px 0 18px; }
@@ -44,6 +44,9 @@
     grid-template-columns: minmax(240px, 320px) 1fr;
   }
   .core-svg { width: 100%; height: auto; display: block; }
+  /* 比例说明落在圆盘下方的空白处，压的是舞台底色，所以用随主题走的墨色。
+     CSS 的 fill 支持 var()，SVG 的 fill 属性不支持，因此写在样式里。 */
+  .core-svg .core-scale-cap { fill: var(--ink-mid); font: 700 9px var(--mono); }
   .core-svg .seg { cursor: pointer; transition: opacity .18s var(--ease); }
   .core-svg .seg:hover { opacity: .82; }
   .core-svg .seg.on { stroke: #fff; stroke-width: 2.5; }
@@ -56,7 +59,7 @@
     color: var(--ink); font: inherit; transition: all .16s var(--ease);
   }
   .layer-btn:hover { border-color: var(--line); background: var(--surface-2); }
-  .layer-btn[aria-pressed="true"] { border-color: currentColor; background: var(--surface-2); }
+  .layer-btn[aria-pressed="true"] { border-color: var(--layer-tone, var(--ink)); border-width: 2px; background: var(--surface-2); }
   .layer-swatch { width: 14px; height: 14px; border-radius: 4px; flex: none; }
   .layer-btn b { font-size: .94rem; }
   .layer-btn small { display: block; color: var(--ink-dim); font-size: .78rem; font-family: var(--mono); }
@@ -109,9 +112,11 @@
     font-family: var(--mono); font-weight: 700; font-size: 1.05rem;
     text-align: center; padding: 4px 0; border-radius: var(--r-sm);
   }
-  .qm-s { background: rgba(74,222,128,.16); color: #86efac; }
-  .qm-m { background: rgba(251,191,36,.18); color: #fcd34d; }
-  .qm-l { background: rgba(248,113,113,.18); color: #fca5a5; }
+  /* 震级标签：原先用的是暗色主题的浅色文字（#86efac 等），压在浅色底纹上几乎看不见。
+     改成「语义色文字 + 8% 同色底纹」，三套主题下都 ≥ 4.5:1。 */
+  .qm-s { background: color-mix(in srgb, var(--sci) 8%, var(--surface));    color: var(--sci); }
+  .qm-m { background: color-mix(in srgb, var(--warn) 8%, var(--surface));   color: var(--warn); }
+  .qm-l { background: color-mix(in srgb, var(--danger) 8%, var(--surface)); color: var(--danger); }
   .qplace { font-size: .88rem; color: var(--ink); }
   .qmeta { font-size: .74rem; color: var(--ink-dim); font-family: var(--mono); }
   .qdepth { font-size: .76rem; color: var(--ink-mid); font-family: var(--mono); text-align: right; }
@@ -126,7 +131,10 @@
   .stratum:last-child { border-bottom: 0; }
   .stratum b { font-size: .9rem; }
   .stratum small { display: block; font-size: .76rem; opacity: .82; font-family: var(--mono); }
-  .stratum p { margin: 0; font-size: .84rem; }
+  /* 每个地层的底色和文字色是成对的（JS 写 style.background / style.color），
+     但 base.css 的 `p { color: var(--ink-mid) }` 有选择器权重，会盖掉继承来的文字色，
+     结果说明文字在深色地层上只有 1.4–2.67:1。必须显式继承。 */
+  .stratum p { margin: 0; font-size: .84rem; color: inherit; }
 
   .acts { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
   .act { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 15px 16px; }
@@ -140,6 +148,10 @@
     font-size: .86rem; color: var(--ink-mid);
   }
   .srcline { font-size: .8rem; color: var(--ink-dim); margin-top: 10px; }
+  .online-opt { margin: 12px 0 0; padding: 12px 14px; border: 2px dashed var(--warn); border-radius: var(--r); background: var(--bg-soft); }
+  .online-opt label { display: flex; min-height: 48px; align-items: center; gap: 10px; color: var(--ink); font-weight: 800; cursor: pointer; }
+  .online-opt input { width: 22px; height: 22px; flex: none; }
+  .online-opt span { display: block; margin-top: 4px; color: var(--ink-mid); font-size: .84rem; line-height: 1.55; }
 
   @media (max-width: 780px) {
     .hero-story, .earth-wrap, .mag-grid { grid-template-columns: 1fr; }
@@ -197,7 +209,9 @@
   .earth-panel[hidden] { display: none; }
   .earth-panel h2 { margin: 0 0 10px; font-size: clamp(1.15rem,3vw,1.45rem); }
   .earth-panel .earth-wrap { grid-template-columns: minmax(220px,300px) minmax(0,1fr); }
-  .core-svg .seg:focus { outline: none; stroke: var(--sci); stroke-width: 4; }
+  /* 只在鼠标/触摸点击时去掉轮廓；键盘 focus 仍要保留共享层的高可见焦点圈。 */
+  .core-svg .seg:focus { stroke: var(--sci); stroke-width: 4; }
+  .core-svg .seg:focus:not(:focus-visible) { outline: none; }
   .plate-layout, .wave-layout { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(210px,.8fr); gap: 12px; align-items: stretch; }
   .plate-viz, .wave-viz, #triMap { width: 100%; min-height: 190px; border: 2px solid var(--line); border-radius: var(--r); background: #0b1630; }
   .visual-buttons { display: grid; align-content: start; gap: 8px; }
@@ -219,9 +233,6 @@
   .locate-result { display: grid; grid-template-columns: minmax(150px,.8fr) minmax(0,1.2fr); gap: 10px; align-items: center; }
   .locate-result #triMap { min-height: 160px; max-height: 190px; }
   .locate-result .text-result { margin: 0; }
-  .kid-answer-group { display: flex; flex-wrap: wrap; gap: 8px; }
-  .kid-answer-group button { min-height: 48px; flex: 1 1 160px; padding: 9px 12px; border: 2px solid var(--line); border-radius: var(--r); background: var(--surface); color: var(--ink); font: 750 .9rem/1.35 var(--font); cursor: pointer; }
-  .kid-answer-group button[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 14%,var(--surface)); }
   .parent-deep-dive .mission-grid { margin-top: 10px; }
   @media (max-width: 780px) {
     .earth-panel .earth-wrap, .plate-layout, .wave-layout, .locate-strip, .locate-result { grid-template-columns: 1fr; }
@@ -236,6 +247,150 @@
     .locate-strip { padding: 10px; }
   }
 
+  /* ---------- 深化教学板块 ---------- */
+  .lesson { padding: 20px; }
+  .lesson h2 { margin-top: 0; }
+  .teach-note { margin: 0 0 12px; padding: 10px 13px; border-left: 4px solid var(--sci); border-radius: 0 var(--r-sm) var(--r-sm) 0; background: var(--bg-soft); color: var(--ink-mid); font-size: .9rem; line-height: 1.6; }
+  .teach-note b { color: var(--ink); }
+  .sim-tag { display: inline-block; margin: 0 0 10px; padding: 5px 11px; border-radius: 999px; border: 1px solid color-mix(in srgb,var(--warn) 45%,var(--line)); background: color-mix(in srgb,var(--warn) 8%,var(--surface)); color: var(--warn); font-size: .74rem; font-weight: 800; }
+  .viz-row { display: grid; grid-template-columns: minmax(0,1.12fr) minmax(215px,.88fr); gap: 14px; align-items: start; }
+  .viz-row > * { min-width: 0; }
+  .viz-svg { display: block; width: 100%; height: auto; border: 2px solid var(--line); border-radius: var(--r); background: #0b1630; }
+  .pickers { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pickers button { min-height: 48px; flex: 1 1 132px; padding: 9px 12px; border: 2px solid var(--line); border-radius: var(--r); background: var(--surface); color: var(--ink); font: 750 .88rem/1.3 var(--font); cursor: pointer; }
+  .pickers button[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 14%,var(--surface)); }
+  .age-stack { display: grid; grid-template-columns: repeat(auto-fit,minmax(210px,1fr)); gap: 10px; margin: 14px 0 0; }
+  .age-card { min-width: 0; margin: 0; padding: 12px 13px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--surface-2); color: var(--ink-mid); font-size: .86rem; line-height: 1.6; }
+  .age-card b { display: block; margin-bottom: 4px; color: var(--ink); font-size: .76rem; letter-spacing: .07em; }
+  .age-4 { border-left: 4px solid var(--sci); }
+  .age-7 { border-left: 4px solid var(--math); }
+  .age-10 { border-left: 4px solid var(--phys); }
+  .quiz-block { margin-top: 14px; padding: 13px 14px; border: 1px solid color-mix(in srgb,var(--math) 32%,var(--line)); border-radius: var(--r); background: color-mix(in srgb,var(--math) 6%,var(--surface)); }
+  .quiz-q { margin: 0 0 9px; color: var(--ink); font-weight: 750; font-size: .92rem; }
+  .quiz-note { min-height: 3em; margin: 9px 0 0; padding: 9px 11px; border-left: 3px solid var(--math); border-radius: 0 var(--r-sm) var(--r-sm) 0; background: var(--bg-soft); color: var(--ink-mid); font-size: .86rem; line-height: 1.55; }
+  .lesson-ask { margin: 10px 0 0; padding-left: 1.15em; color: var(--ink-mid); font-size: .87rem; line-height: 1.6; }
+  .lesson-ask li + li { margin-top: 6px; }
+  .lesson details { margin-top: 14px; }
+  .lesson details > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 750; color: var(--ink); font-size: .92rem; }
+  .lesson details p { color: var(--ink-mid); font-size: .88rem; line-height: 1.65; }
+  .log-ladder { display: grid; gap: 7px; margin: 14px 0 0; }
+  .log-step { display: grid; grid-template-columns: 44px minmax(0,1fr) 96px; gap: 10px; align-items: center; }
+  .log-step b { font-family: var(--mono); color: var(--ink); font-size: .84rem; }
+  .log-step i { display: block; height: 15px; border-radius: 999px; background: linear-gradient(90deg,var(--sci),var(--warn),var(--danger)); }
+  .log-step span { font-family: var(--mono); color: var(--ink-dim); text-align: right; font-size: .72rem; }
+  .strata-mini { display: block; width: 100%; max-width: 430px; height: auto; margin-top: 12px; border: 2px solid var(--line); border-radius: var(--r); background: #0b1630; }
+
+  /* 三边定位示意：用 data-state 逐步揭示，几何位置是预先算好的 */
+  #stationSvg .ring, #stationSvg .stn, #stationSvg .maybe, #stationSvg .cand, #stationSvg .epi { opacity: 0; transition: opacity .2s var(--ease); }
+  #stationSvg .ring-a, #stationSvg .stn-a { opacity: 1; }
+  #stationSvg[data-state="one"] .maybe { opacity: 1; }
+  #stationSvg[data-state="two"] .ring-b, #stationSvg[data-state="two"] .stn-b, #stationSvg[data-state="two"] .cand { opacity: 1; }
+  #stationSvg[data-state="three"] .ring-b, #stationSvg[data-state="three"] .stn-b,
+  #stationSvg[data-state="three"] .ring-c, #stationSvg[data-state="three"] .stn-c,
+  #stationSvg[data-state="three"] .epi { opacity: 1; }
+
+  /* S-P 时差示意：三种距离各画一套，只显示当前那套 */
+  #spSvg .sp-case { opacity: 0; transition: opacity .2s var(--ease); }
+  #spSvg[data-state="near"] .sp-near,
+  #spSvg[data-state="mid"] .sp-mid,
+  #spSvg[data-state="far"] .sp-far { opacity: 1; }
+
+  /* 地震带示意：板块面与地震点分别开关 */
+  #beltSvg .belt-plates, #beltSvg .belt-dots { transition: opacity .2s var(--ease); }
+  #beltSvg[data-state="plates"] .belt-dots { opacity: 0; }
+  #beltSvg[data-state="dots"] .belt-plates { opacity: .12; }
+
+  /* 岩石循环：高亮当前节点与它的来路 */
+  #rockSvg .rock-node, #rockSvg .rock-arrow { opacity: .42; transition: opacity .2s var(--ease); }
+  #rockSvg[data-state="igneous"] .node-igneous, #rockSvg[data-state="igneous"] .arrow-igneous,
+  #rockSvg[data-state="sediment"] .node-sediment, #rockSvg[data-state="sediment"] .arrow-sediment,
+  #rockSvg[data-state="meta"] .node-meta, #rockSvg[data-state="meta"] .arrow-meta { opacity: 1; }
+
+  @media (max-width: 780px) {
+    .viz-row { grid-template-columns: 1fr; }
+    .log-step { grid-template-columns: 40px minmax(0,1fr) 84px; }
+  }
+  @media (max-width: 480px) {
+    .lesson { padding: 14px; }
+    .age-stack { grid-template-columns: 1fr; }
+    .pickers button { flex: 1 1 100%; }
+  }
+
+
+  /* 插画舞台（共享 SVG 场景铺底，内容都放在不透明卡片上保证对比度） */
+  .er-scene-stage { margin:0 0 16px; padding:clamp(12px,2.6vw,20px); }
+  .er-scene-copy { display:grid; gap:12px; min-width:0; }
+  .er-scene-stage .kid-steps-visual { margin:0; }
+  @media (max-width:560px) {
+    .er-scene-stage { padding:10px; }
+  }
+
+  /* ---------- 图像优先三件套（本页前缀 eq-）：分层图鉴 / 厚度与温度条 / 台站定位 ---------- */
+  .eq-shell { display:grid; gap:16px; margin:26px 0; }
+  .eq-card { position:relative; padding:18px; border:3px solid var(--ink); border-radius:22px; background:var(--surface); box-shadow:0 6px 0 rgba(36,24,16,.18); }
+  .eq-card > h3 { margin:.1em 0 .3em; font-size:1.16rem; }
+  .eq-lead { margin:0 0 12px; color:var(--ink-mid); font-weight:750; font-size:.92rem; }
+  .eq-stage { display:block; width:100%; max-width:440px; height:auto; margin:0 auto; border:3px solid var(--ink); border-radius:18px; background:#0b1630; }
+  .eq-shell .kid-figure-art { padding:6px; }
+  .eq-shell .kid-figure-art > svg { width:100%; max-width:138px; height:auto; }
+  .eq-shell .kid-figure-fact { display:block; }
+  .eq-say-row { margin:12px 0 0; }
+  .eq-card details { margin-top:12px; border:1px solid var(--line-soft); border-radius:var(--r); padding:0 13px; }
+  .eq-card details[open] { padding-bottom:10px; }
+  .eq-card details > p, .eq-card details > ol { color:var(--ink-mid); font-size:.88rem; line-height:1.58; }
+  .eq-card details > ol { padding-left:1.3em; }
+  .eq-card details > ol li + li { margin-top:6px; }
+
+  /* 内联 SVG 取色：属性里不写 var()，统一在这里挂 class */
+  .eq-sky { fill:#0b1630; }
+  .eq-crust { fill:#8b6f47; }
+  .eq-upper { fill:#c2703d; }
+  .eq-lower { fill:#e0762f; }
+  .eq-outer { fill:#f2a33c; }
+  .eq-inner { fill:#fde68a; }
+  .eq-hi { fill:none; stroke:#ffffff; stroke-opacity:.48; }
+  .eq-hi-line { fill:none; stroke:#ffffff; stroke-width:2.4; }
+  .eq-lead-line { fill:none; stroke:#dbe6ff; stroke-width:2; stroke-dasharray:4 3; }
+  .eq-panel { fill:#16233f; stroke:#3d5480; stroke-width:2; }
+  .eq-ink { fill:#f1f5ff; font-weight:800; }
+  .eq-ink-soft { fill:#a9c2e4; }
+
+  .eq-meters { display:grid; gap:14px; margin:0 0 12px; }
+  .eq-tests { display:flex; flex-wrap:wrap; gap:9px; margin:0 0 12px; }
+  .eq-test { display:inline-flex; align-items:center; min-height:36px; padding:6px 12px; border:2px solid var(--line); border-radius:999px; color:var(--ink-mid); font-weight:800; font-size:.86rem; }
+  .eq-test[data-ok="true"] { border-color:#0f8a4d; background:#ddf8e8; color:#0b4a2a; }
+  .eq-dots-row { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin:0 0 10px; }
+  .eq-dots-cap { color:var(--ink-mid); font-weight:750; font-size:.9rem; }
+
+  .eq-quiz-stage { position:relative; display:grid; place-items:center; margin:0 0 12px; }
+  .eq-quiz-art { display:block; width:100%; max-width:380px; height:auto; border:3px solid var(--ink); border-radius:18px; background:#0b1630; }
+  .eq-quiz-q { margin:0 0 10px; padding:10px 13px; border-left:4px solid var(--warn); border-radius:0 var(--r-sm) var(--r-sm) 0; background:var(--bg-soft); color:var(--ink); font-weight:800; font-size:1rem; line-height:1.5; }
+  .eq-quiz-picks { grid-template-columns:repeat(3,minmax(0,1fr)); margin:0 0 12px; }
+  .eq-quiz-actions { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 12px; }
+  .eq-quiz-actions .btn { min-height:48px; }
+  .eq-quiz-score { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0 0; color:var(--ink-mid); font-weight:750; }
+  .eq-quiz-stars { min-height:1.4em; font-size:1.3rem; line-height:1; letter-spacing:2px; }
+  .eq-mini-picks { grid-template-columns:repeat(auto-fit,minmax(96px,1fr)); margin:8px 0 0; }
+  .eq-mini-picks .kid-tile { min-height:96px; padding:9px 6px; }
+  .eq-mini-picks .kid-tile > .kid-tile-art { font-size:2rem; }
+  .eq-pick-cap { margin:10px 0 4px; color:var(--ink-mid); font-weight:750; font-size:.86rem; }
+
+  /* 台站地图 SVG 取色 */
+  .eq-map-land { fill:#1c3350; }
+  .eq-map-grid { fill:none; stroke:#22345c; stroke-width:1; }
+  .eq-ring-a { fill:none; stroke:#6ea8fe; stroke-width:2.6; stroke-dasharray:5 4; }
+  .eq-ring-b { fill:none; stroke:#fbbf24; stroke-width:2.6; stroke-dasharray:5 4; }
+  .eq-ring-c { fill:none; stroke:#7ee6a8; stroke-width:2.6; stroke-dasharray:5 4; }
+  .eq-stn-a { fill:#6ea8fe; stroke:#0b1630; stroke-width:1.6; }
+  .eq-stn-b { fill:#fbbf24; stroke:#0b1630; stroke-width:1.6; }
+  .eq-stn-c { fill:#7ee6a8; stroke:#0b1630; stroke-width:1.6; }
+  .eq-maybe { fill:#9fc0ee; }
+  .eq-cand { fill:#fde68a; stroke:#0b1630; stroke-width:1.5; }
+  .eq-epi { fill:#f87171; stroke:#ffffff; stroke-width:2.5; }
+  @media (max-width:560px) {
+    .eq-quiz-picks { grid-template-columns:repeat(auto-fit,minmax(94px,1fr)); }
+    .eq-card { padding:12px; }
+  }
 </style>
 </head>
 <body data-playful-page="nature/earth.html">
@@ -271,14 +426,17 @@
       <section class="earth-panel" id="earthPanelLayer" role="tabpanel" aria-labelledby="earthTabLayer">
         <h2>点一层：它是硬的、软的，还是液体？</h2>
         <div class="earth-stage kid-visual-stage">
-          <svg class="core-svg" id="coreSvg" viewBox="0 0 260 260" role="img" aria-label="可点选的地球内部分层剖面图">
+          <!-- viewBox 比圆盘高出 16，给底部的比例说明留出位置：
+               原先说明压在地壳/上地幔的中间色上（#8b6f47 / #c2703d），
+               那两块亮度居中，连纯黑都只有 4.46:1，9px 小字无论什么颜色都读不出来。 -->
+          <svg class="core-svg" id="coreSvg" viewBox="0 0 260 276" role="img" aria-label="可点选的地球内部分层剖面图">
             <circle class="seg" data-l="crust" tabindex="0" role="button" aria-label="地壳" cx="130" cy="130" r="126" fill="#8b6f47"></circle>
             <circle class="seg" data-l="upper" tabindex="0" role="button" aria-label="上地幔" cx="130" cy="130" r="122" fill="#c2703d"></circle>
             <circle class="seg" data-l="lower" tabindex="0" role="button" aria-label="下地幔" cx="130" cy="130" r="100" fill="#e0762f"></circle>
             <circle class="seg" data-l="outer" tabindex="0" role="button" aria-label="外核" cx="130" cy="130" r="58" fill="#f2a33c"></circle>
             <circle class="seg" data-l="inner" tabindex="0" role="button" aria-label="内核" cx="130" cy="130" r="26" fill="#fde68a"></circle>
             <path d="M130 4v252M4 130h252" stroke="#fff" stroke-opacity=".16" stroke-dasharray="3 5" pointer-events="none"/>
-            <text x="130" y="252" text-anchor="middle" font-size="9" fill="#dbe6ff" font-family="monospace" pointer-events="none">半径 6,371 km（按比例）</text>
+            <text class="core-scale-cap" x="130" y="272" text-anchor="middle" pointer-events="none">半径 6,371 km（按比例）</text>
           </svg>
         </div>
         <div class="earth-layer-info"><div class="layer-list" id="layerList" aria-label="地球层按钮"></div><div class="layer-detail kid-result-card" id="layerDetail" aria-live="polite"></div></div>
@@ -326,7 +484,29 @@
       </section>
 
       <div class="locate-strip kid-action-strip" aria-labelledby="locateTitle">
-        <div class="locate-controls"><h2 id="locateTitle" style="margin:0">主操作：画三个距离圆</h2><label for="plateType">你看到的板块移动</label><select class="input" id="plateType"><option value="convergent">汇聚边界</option><option value="divergent">离散边界</option><option value="transform">转换边界</option></select><label for="earthMag">震级 M <output id="earthMagValue">7</output></label><input id="earthMag" type="range" min="4" max="9" step="1" value="7"><button class="btn btn-primary" id="earthLocate" type="button">画圆，找红点</button></div>
+        <div class="locate-controls">
+          <h2 id="locateTitle" style="margin:0">主操作：画三个距离圆</h2>
+          <p class="eq-pick-cap" id="eqPlatePickCap">板块是怎么动的？点一张大图卡。</p>
+          <div class="kid-tiles eq-mini-picks" id="eqPlatePicks" role="group" aria-labelledby="eqPlatePickCap">
+            <button class="kid-tile" type="button" data-eq-plate="convergent" aria-pressed="false" aria-label="选板块移动：相向挤压，汇聚边界"><span class="kid-tile-art" aria-hidden="true">🏔️</span><span class="kid-tile-label">相撞</span><span class="kid-tile-sub">挤出高山</span></button>
+            <button class="kid-tile" type="button" data-eq-plate="divergent" aria-pressed="false" aria-label="选板块移动：向外分开，离散边界"><span class="kid-tile-art" aria-hidden="true">🌋</span><span class="kid-tile-label">分开</span><span class="kid-tile-sub">岩浆冒出</span></button>
+            <button class="kid-tile" type="button" data-eq-plate="transform" aria-pressed="false" aria-label="选板块移动：擦肩错动，转换边界"><span class="kid-tile-art" aria-hidden="true">🔀</span><span class="kid-tile-label">擦肩</span><span class="kid-tile-sub">卡住再滑</span></button>
+          </div>
+          <p class="eq-pick-cap" id="eqMagPickCap">这次地震有多大？点一张大图卡。</p>
+          <div class="kid-tiles eq-mini-picks" id="eqMagPicks" role="group" aria-labelledby="eqMagPickCap">
+            <button class="kid-tile" type="button" data-eq-mag="5" aria-pressed="false" aria-label="选震级 M5，摆件会摇晃"><span class="kid-tile-art" aria-hidden="true">🙂</span><span class="kid-tile-label">M5</span><span class="kid-tile-sub">摆件会晃</span></button>
+            <button class="kid-tile" type="button" data-eq-mag="6" aria-pressed="false" aria-label="选震级 M6，站着不太稳"><span class="kid-tile-art" aria-hidden="true">😮</span><span class="kid-tile-label">M6</span><span class="kid-tile-sub">站不太稳</span></button>
+            <button class="kid-tile" type="button" data-eq-mag="7" aria-pressed="false" aria-label="选震级 M7，房子可能受损"><span class="kid-tile-art" aria-hidden="true">😧</span><span class="kid-tile-label">M7</span><span class="kid-tile-sub">房子会坏</span></button>
+            <button class="kid-tile" type="button" data-eq-mag="8" aria-pressed="false" aria-label="选震级 M8，大范围严重破坏"><span class="kid-tile-art" aria-hidden="true">😱</span><span class="kid-tile-label">M8</span><span class="kid-tile-sub">大范围破坏</span></button>
+          </div>
+          <div data-audience="parent">
+            <label for="plateType">你看到的板块移动</label>
+            <select class="input" id="plateType"><option value="convergent">汇聚边界</option><option value="divergent">离散边界</option><option value="transform">转换边界</option></select>
+            <label for="earthMag">震级 M <output id="earthMagValue">7</output></label>
+            <input id="earthMag" type="range" min="4" max="9" step="1" value="7">
+          </div>
+          <button class="btn btn-primary" id="earthLocate" type="button">画圆，找红点</button>
+        </div>
         <div class="locate-result"><svg id="triMap" viewBox="0 0 120 100" role="img" aria-label="等待画出三个地震台距离圆"></svg><output class="text-result" id="earthOutput" aria-live="polite">先选板块和震级，再画三个圆。</output></div>
       </div>
     </div>
@@ -334,6 +514,26 @@
     <details class="parent-deep-dive" data-audience="parent"><summary>家长层：词语卡与桌面观察</summary><div class="quick-look"><b>10 秒观察</b><p>把手掌贴在桌面，请伙伴在另一端轻敲一下，比较听见与感觉到震动的先后。</p></div><div class="term-atlas" aria-label="探险词图鉴"><div class="term-card"><dfn>地壳</dfn>地球最外面的薄硬壳。</div><div class="term-card"><dfn>地震波</dfn><b>P 波</b>较快，<b>S 波</b>较慢。</div><div class="term-card"><dfn>震中</dfn>地面上正对地下震源的位置。</div><div class="term-card"><dfn>板块</dfn>拼在地表、缓慢移动的巨大岩石块。</div></div></details>
   </section>
 </header>
+<div class="wrap scene-wrap">
+  <!-- 插画舞台：不识字也能看懂这一页在玩什么 -->
+  <div class="kid-visual-stage er-scene-stage" data-scene-layer="back"
+       data-playful-scene="strata"
+       data-playful-scene-title="地球剖面"
+       data-playful-scene-desc="地面切开后能看到一层一层的岩层，越往下越老">
+    <div class="er-scene-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🌍</span>
+        <p class="kid-speech">地面在动，<b>只是慢得看不见</b>。</p>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步玩法">
+        <li><span class="kid-tile-art" aria-hidden="true">🧱</span>看地层</li>
+        <li><span class="kid-tile-art" aria-hidden="true">📈</span>读地震</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🌋</span>找原因</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
 
 <main class="wrap stack" id="main">
 
@@ -342,16 +542,16 @@
     <p>这在教什么：每个台站只给出一个距离圆；三个圆共同最接近的位置才是震中。震级是对数尺度，板块运动解释地震为何集中成带。</p>
     <div class="work-card" aria-labelledby="earthStoryTitle">
       <div data-playful-companion>记录伙伴正在铺开台站地图……</div>
-      <div class="row spread"><div><p class="pill pill-phys">剧情 · 地震案卷</p><h3 id="earthStoryTitle" class="work-card-title">三个圆的交点</h3></div><span data-playful-sticker>○ 完成任务可获得贴纸</span></div>
+      <div class="row spread"><div><p class="pill pill-phys">剧情 · 地震案卷</p><h3 id="earthStoryTitle" class="work-card-title">三个圆的交点</h3></div><span data-playful-sticker>○ 完成任务解锁收藏卡</span></div>
       <p class="work-card-content">果果拿到 A、B、C 三个台站的读数。把教学模拟和 USGS 记录分开标明，再用交点、震级和板块证据写出案卷结论。</p>
       <div class="row"><button class="btn btn-ghost" type="button" data-playful-random-task="#earthSurprise">抽取案卷复核任务</button><span id="earthSurprise" data-playful-task-output role="status" aria-live="polite">复核任务会在这里出现。</span></div>
-      <p data-playful-feedback role="status" aria-live="polite">案卷等待复核：完成核心任务后会收到贴纸反馈。</p>
+      <p data-playful-feedback role="status" aria-live="polite">案卷等待复核：完成核心任务后会解锁这一站的收藏卡。</p>
     </div>
     <div class="mission-grid">
-      <div class="mission-step"><h3>1 先猜一猜</h3><p>一个台站只知道“多远”，能直接知道方向吗？</p><div class="kid-answer-group" data-fill-target="earthPredict"><button type="button" data-answer="不能，一个距离会画成一整个圆，圆上的方向都有可能。">不能，只知道一个圆</button><button type="button" data-answer="能，一个台站就能直接指出震中的方向。">能，直接知道方向</button></div></div>
+      <div class="mission-step"><h3>1 先猜一猜</h3><p>一个台站只知道“多远”，能直接知道方向吗？</p><div class="kid-tiles eq-mini-picks" data-fill-target="earthPredict" role="group" aria-label="先猜一猜：一个台站够不够"><button class="kid-tile" type="button" data-answer="不能，一个距离会画成一整个圆，圆上的方向都有可能。" aria-pressed="false" aria-label="选：不能，一个距离只能画出一整个圆"><span class="kid-tile-art" aria-hidden="true">⭕</span><span class="kid-tile-label">只有一圈</span><span class="kid-tile-sub">看不出方向</span></button><button class="kid-tile" type="button" data-answer="能，一个台站就能直接指出震中的方向。" aria-pressed="false" aria-label="选：能，一个台站就能指出方向"><span class="kid-tile-art" aria-hidden="true">🧭</span><span class="kid-tile-label">能指方向</span><span class="kid-tile-sub">一个就够</span></button></div></div>
       <div class="mission-step"><h3>2 真的操作</h3><p>回到上方舞台：点地球层、选板块或波，再按“画圆，找红点”。</p><a class="btn btn-ghost" href="#earthQuestion">回到地心舞台</a></div>
-      <div class="mission-step"><h3>3 选出证据</h3><div class="kid-answer-group" data-fill-target="earthResult"><button type="button" data-answer="三个距离圆最接近红点；P 波先到；板块边界会集中发生震动。">三个圆找到红点</button><button type="button" data-answer="P 波比 S 波先到，时间差能帮助估计震中距离。">P 波先到</button><button type="button" data-answer="板块相撞、分开或错动时，边界都可能发生震动。">板块边界会震动</button></div></div>
-      <div class="mission-step"><h3>4 想一想</h3><p>三个圆没有正好交在一点，最可能是什么原因？</p><div class="kid-answer-group" data-fill-target="earthReflect"><button type="button" data-answer="读数和画圆都会有一点误差，所以三个圆可能只在一小块区域内最接近。">测量会有小误差</button><button type="button" data-answer="真实地下结构不同，波速不完全一样，所以距离估算会有偏差。">地下波速不一样</button></div></div>
+      <div class="mission-step"><h3>3 选出证据</h3><p>你在舞台上看到了哪条线索？点一张大图卡。</p><div class="kid-tiles eq-mini-picks" data-fill-target="earthResult" role="group" aria-label="选出一条证据"><button class="kid-tile" type="button" data-answer="三个距离圆最接近红点；P 波先到；板块边界会集中发生震动。" aria-pressed="false" aria-label="选证据：三个圆最接近红点"><span class="kid-tile-art" aria-hidden="true">🎯</span><span class="kid-tile-label">三圆一点</span><span class="kid-tile-sub">找到红点</span></button><button class="kid-tile" type="button" data-answer="P 波比 S 波先到，时间差能帮助估计震中距离。" aria-pressed="false" aria-label="选证据：P 波比 S 波先到"><span class="kid-tile-art" aria-hidden="true">⚡</span><span class="kid-tile-label">P 波先到</span><span class="kid-tile-sub">时间差测距</span></button><button class="kid-tile" type="button" data-answer="板块相撞、分开或错动时，边界都可能发生震动。" aria-pressed="false" aria-label="选证据：板块边界会震动"><span class="kid-tile-art" aria-hidden="true">🧩</span><span class="kid-tile-label">边界会震</span><span class="kid-tile-sub">震在拼缝上</span></button></div></div>
+      <div class="mission-step"><h3>4 想一想</h3><p>三个圆没有正好交在一点，最可能是什么原因？</p><div class="kid-tiles eq-mini-picks" data-fill-target="earthReflect" role="group" aria-label="想一想：为什么没交在一点"><button class="kid-tile" type="button" data-answer="读数和画圆都会有一点误差，所以三个圆可能只在一小块区域内最接近。" aria-pressed="false" aria-label="选原因：测量会有小误差"><span class="kid-tile-art" aria-hidden="true">📐</span><span class="kid-tile-label">有小误差</span><span class="kid-tile-sub">读数不完美</span></button><button class="kid-tile" type="button" data-answer="真实地下结构不同，波速不完全一样，所以距离估算会有偏差。" aria-pressed="false" aria-label="选原因：地下波速不一样"><span class="kid-tile-art" aria-hidden="true">🪨</span><span class="kid-tile-label">波速不同</span><span class="kid-tile-sub">地下不均匀</span></button></div></div>
     </div>
     <details class="parent-deep-dive" data-audience="parent"><summary>家长层：查看或改写孩子的案卷文字</summary><div class="mission-grid"><div class="mission-step"><label for="earthPredict">预测</label><textarea class="input" id="earthPredict"></textarea></div><div class="mission-step"><label for="earthResult">结果</label><textarea class="input" id="earthResult"></textarea></div><div class="mission-step"><label for="earthReflect">反思</label><textarea class="input" id="earthReflect"></textarea></div></div></details>
     <div class="task-actions kid-done-row"><button class="btn btn-primary kid-done-btn" id="earthComplete" type="button">完成任务</button><span class="task-status" id="earthStatus" role="status" aria-live="polite">尚未完成：先完成三角定位。</span></div>
@@ -380,11 +580,524 @@
       <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和判断后就能存档。</p>
     </form>
   </section>
+
+  <section class="eq-shell" aria-labelledby="eqShellTitle">
+    <h2 id="eqShellTitle">看图就懂：分层图鉴 · 厚度温度条 · 找震中</h2>
+    <p class="eq-lead">这一段全是大图，点一点就能玩，不用先读句子。</p>
+
+    <article class="eq-card" aria-labelledby="eqAtlasTitle">
+      <h3 id="eqAtlasTitle">① 地球分层图鉴：钻下去会穿过哪几层</h3>
+      <p class="eq-lead">点一张卡，剖面舞台就把那一层圈亮，告诉你它多厚、是硬的还是液体、有多热。</p>
+      <svg class="eq-stage" id="eqStage" viewBox="0 0 330 236" role="img" aria-labelledby="eqStageTitle eqStageDesc">
+        <title id="eqStageTitle">地球剖面舞台</title>
+        <desc id="eqStageDesc">切开一半的地球，从外到内画出地壳、上地幔、下地幔、外核、内核五层同心环；你点的那一层会被白圈高亮，右边写出它的深度、厚度、状态和温度。</desc>
+        <g id="eqStageArt"></g>
+      </svg>
+      <p class="kid-scene-caption">五个同心环从外到内就是五层。地壳那一环画得比真实比例厚一点，否则细得看不见。</p>
+      <ul class="kid-legend" aria-label="五层图例">
+        <li style="--tone:#8b6f47"><span class="kid-legend-mark" aria-hidden="true">🧱</span>地壳</li>
+        <li style="--tone:#c2703d"><span class="kid-legend-mark" aria-hidden="true">🫓</span>上地幔</li>
+        <li style="--tone:#e0762f"><span class="kid-legend-mark" aria-hidden="true">🍲</span>下地幔</li>
+        <li style="--tone:#f2a33c"><span class="kid-legend-mark" aria-hidden="true">🌊</span>外核（液体）</li>
+        <li style="--tone:#fde68a"><span class="kid-legend-mark" aria-hidden="true">⚙️</span>内核（铁球）</li>
+      </ul>
+      <div class="kid-figure-grid" id="eqAtlasGrid" aria-label="地球分层图鉴：五张大图卡">
+        <button class="kid-figure" type="button" data-eq-layer="crust" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 96" focusable="false">
+              <rect class="eq-sky" x="0" y="0" width="120" height="96"/>
+              <circle class="eq-crust" cx="60" cy="48" r="44"/>
+              <circle class="eq-upper" cx="60" cy="48" r="41.6"/>
+              <circle class="eq-lower" cx="60" cy="48" r="39.4"/>
+              <circle class="eq-outer" cx="60" cy="48" r="24"/>
+              <circle class="eq-inner" cx="60" cy="48" r="8.4"/>
+              <circle class="eq-hi" cx="60" cy="48" r="42.8" stroke-width="2.4"/>
+              <circle class="eq-hi-line" cx="60" cy="48" r="44"/>
+              <circle class="eq-hi-line" cx="60" cy="48" r="41.6"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">地壳</span>
+          <span class="kid-figure-sub">🧱 我们站这儿</span>
+          <span class="kid-figure-fact">厚约 35 km · 又硬又脆的石头 · 0–600 ℃</span>
+        </button>
+        <button class="kid-figure" type="button" data-eq-layer="upper" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 96" focusable="false">
+              <rect class="eq-sky" x="0" y="0" width="120" height="96"/>
+              <circle class="eq-crust" cx="60" cy="48" r="44"/>
+              <circle class="eq-upper" cx="60" cy="48" r="41.6"/>
+              <circle class="eq-lower" cx="60" cy="48" r="39.4"/>
+              <circle class="eq-outer" cx="60" cy="48" r="24"/>
+              <circle class="eq-inner" cx="60" cy="48" r="8.4"/>
+              <circle class="eq-hi" cx="60" cy="48" r="40.5" stroke-width="2.2"/>
+              <circle class="eq-hi-line" cx="60" cy="48" r="41.6"/>
+              <circle class="eq-hi-line" cx="60" cy="48" r="39.4"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">上地幔</span>
+          <span class="kid-figure-sub">🫓 会慢慢流</span>
+          <span class="kid-figure-fact">厚约 625 km · 固体却像沥青一样爬 · 600–1900 ℃</span>
+        </button>
+        <button class="kid-figure" type="button" data-eq-layer="lower" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 96" focusable="false">
+              <rect class="eq-sky" x="0" y="0" width="120" height="96"/>
+              <circle class="eq-crust" cx="60" cy="48" r="44"/>
+              <circle class="eq-upper" cx="60" cy="48" r="41.6"/>
+              <circle class="eq-lower" cx="60" cy="48" r="39.4"/>
+              <circle class="eq-outer" cx="60" cy="48" r="24"/>
+              <circle class="eq-inner" cx="60" cy="48" r="8.4"/>
+              <circle class="eq-hi" cx="60" cy="48" r="31.7" stroke-width="15.4"/>
+              <circle class="eq-hi-line" cx="60" cy="48" r="39.4"/>
+              <circle class="eq-hi-line" cx="60" cy="48" r="24"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">下地幔</span>
+          <span class="kid-figure-sub">🍲 最大一层</span>
+          <span class="kid-figure-fact">厚约 2230 km · 被压得极致密的固体 · 1900–3700 ℃</span>
+        </button>
+        <button class="kid-figure" type="button" data-eq-layer="outer" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 96" focusable="false">
+              <rect class="eq-sky" x="0" y="0" width="120" height="96"/>
+              <circle class="eq-crust" cx="60" cy="48" r="44"/>
+              <circle class="eq-upper" cx="60" cy="48" r="41.6"/>
+              <circle class="eq-lower" cx="60" cy="48" r="39.4"/>
+              <circle class="eq-outer" cx="60" cy="48" r="24"/>
+              <circle class="eq-inner" cx="60" cy="48" r="8.4"/>
+              <circle class="eq-hi" cx="60" cy="48" r="16.2" stroke-width="15.6"/>
+              <circle class="eq-hi-line" cx="60" cy="48" r="24"/>
+              <circle class="eq-hi-line" cx="60" cy="48" r="8.4"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">外核</span>
+          <span class="kid-figure-sub">🌊 液体铁</span>
+          <span class="kid-figure-fact">厚约 2260 km · 流动的液态铁镍，造出地球磁场 · 3700–4500 ℃</span>
+        </button>
+        <button class="kid-figure" type="button" data-eq-layer="inner" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 96" focusable="false">
+              <rect class="eq-sky" x="0" y="0" width="120" height="96"/>
+              <circle class="eq-crust" cx="60" cy="48" r="44"/>
+              <circle class="eq-upper" cx="60" cy="48" r="41.6"/>
+              <circle class="eq-lower" cx="60" cy="48" r="39.4"/>
+              <circle class="eq-outer" cx="60" cy="48" r="24"/>
+              <circle class="eq-inner" cx="60" cy="48" r="8.4"/>
+              <circle class="eq-hi" cx="60" cy="48" r="4.2" stroke-width="8.4"/>
+              <circle class="eq-hi-line" cx="60" cy="48" r="8.4"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">内核</span>
+          <span class="kid-figure-sub">⚙️ 铁做的球</span>
+          <span class="kid-figure-fact">厚约 1221 km · 挤得动不了的固态铁球 · 约 5200 ℃</span>
+        </button>
+      </div>
+      <div class="kid-speech-row eq-say-row">
+        <span class="kid-mascot" aria-hidden="true">🌍</span>
+        <p class="kid-speech" id="eqAtlasSay" role="status" aria-live="polite">点一张卡，剖面舞台就把那一层圈亮给你看。</p>
+      </div>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：分层图鉴在教什么</summary>
+        <p><b>学习目标：</b>把「地球内部」从一个抽象词变成五个可以指着数的圈，并让孩子注意到两件事——<b>越往里越热</b>，以及<b>我们住的那一层薄得离谱</b>。孩子不需要背深度数字，能指出「地壳是最外面最薄的一圈、内核在正中间」就已经达到目标。</p>
+        <p><b>怎么用：</b>先让孩子只看图猜哪一层最厚，再点卡对答案。故意最后点地壳，让「最薄的一圈」成为对照：鸡蛋壳占鸡蛋半径的比例，和地壳占地球半径的比例差不多。</p>
+        <p><b>要说清楚的一点：</b>舞台和卡片上地壳那一环画得比真实比例厚，否则在屏幕上只有不到一个像素。真实数值写在卡片文字和下面的厚度条里，图形只负责「谁在里谁在外」。</p>
+      </details>
+    </article>
+
+    <article class="eq-card" aria-labelledby="eqMeterTitle">
+      <h3 id="eqMeterTitle">② 厚度条与温度条：这一层多厚、有多热</h3>
+      <p class="eq-lead">上面点了哪一张卡，这两条就跟着变长变短。第一条是这一层占地球半径的比例，第二条是它最热能到几度。</p>
+      <div class="eq-meters">
+        <div class="kid-meter" style="--tone:var(--kit)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">📏</span>
+            <span id="eqThickLabel">这一层有多厚</span>
+            <span class="kid-meter-value" id="eqThickValue">—</span>
+          </div>
+          <div class="kid-meter-track" id="eqThickMeter" role="img" aria-labelledby="eqThickLabel eqThickValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">满格是地球半径 6,371 km。地壳只占 0.5%，条短到差点看不见——这正是「地壳薄得不成比例」的证据。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--danger)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">🌡️</span>
+            <span id="eqHeatLabel">有多热</span>
+            <span class="kid-meter-value" id="eqHeatValue">—</span>
+          </div>
+          <div class="kid-meter-track" id="eqHeatMeter" role="img" aria-labelledby="eqHeatLabel eqHeatValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">满格是内核的约 5,200 ℃，和太阳表面差不多热。越往里越热，条就越长。</p>
+        </div>
+      </div>
+      <p class="eq-tests" aria-label="这一层的两个判定">
+        <span class="eq-test" id="eqTestLiquid" data-ok="false">○ 是液体</span>
+        <span class="eq-test" id="eqTestHot" data-ok="false">○ 比 3000 ℃ 还热</span>
+      </p>
+      <p class="eq-dots-row">
+        <span class="eq-dots-cap" id="eqDepthDotsCap">这一层的底走到第几颗点（每颗点 ＝ 往下 1000 km，一共 7 颗就到地心）：</span>
+        <span class="kid-dots" id="eqDepthDots" role="img" aria-labelledby="eqDepthDotsCap"></span>
+      </p>
+      <div class="kid-speech-row eq-say-row">
+        <span class="kid-mascot" aria-hidden="true">🔬</span>
+        <p class="kid-speech" id="eqMeterSay" role="status" aria-live="polite">先在上面点一张图鉴卡，两条就会动。</p>
+      </div>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：两条量表在教什么</summary>
+        <p><b>学习目标：</b>练「比长短」而不是「读数字」。厚度条把 35 km 和 2,260 km 放在同一根尺子上，孩子立刻看出差了几十倍；温度条让「越往里越热」变成一个单调变长的图形。两条都同时写出数字，图形负责直觉，数字负责准确。</p>
+        <p><b>背后的原理：</b>地球内部的温度来自两处——形成时吸积与分异留下的原始热，以及地幔中铀、钍、钾等放射性同位素的持续衰变。热往外传，于是形成从约 5,200 ℃ 的内核到常温地表的温度梯度。厚度差异则来自分异：重的铁镍下沉成核，轻的硅酸盐上浮成幔与壳，所以最外那层最薄也最轻。</p>
+        <p><b>要说清楚的一点：</b>温度都是估算范围，不是测出来的读数——没有任何探针到过地幔。它由高压实验、地震波速度和地球热流反推得出，所以不同资料给的数字会有出入。</p>
+      </details>
+    </article>
+
+    <article class="eq-card" aria-labelledby="eqQuizTitle">
+      <h3 id="eqQuizTitle">③ 几个台站才能找到震中</h3>
+      <p class="eq-lead">看地图上画了几个圆，再点一张大图卡。点错了不要紧，图还在，可以接着看、接着数。</p>
+      <div class="eq-quiz-stage">
+        <svg class="eq-quiz-art" id="eqQuizArt" viewBox="0 0 320 220" role="img" aria-labelledby="eqQuizArtTitle eqQuizArtDesc">
+          <title id="eqQuizArtTitle">台站距离圆地图</title>
+          <desc id="eqQuizArtDesc">一张示意地图，上面有 A、B、C 三个地震台。每个台站按「震中离我多远」画出一个圆；圆的个数会随题目变化，你要判断这么多圆能把震中定到几个位置。</desc>
+          <g id="eqQuizMap"></g>
+        </svg>
+      </div>
+      <ul class="kid-legend" aria-label="地图图例">
+        <li style="--tone:#6ea8fe"><span class="kid-legend-mark" aria-hidden="true">🟦</span>台站 A 的圆</li>
+        <li style="--tone:#fbbf24"><span class="kid-legend-mark" aria-hidden="true">🟨</span>台站 B 的圆</li>
+        <li style="--tone:#7ee6a8"><span class="kid-legend-mark" aria-hidden="true">🟩</span>台站 C 的圆</li>
+        <li style="--tone:#f87171"><span class="kid-legend-mark" aria-hidden="true">🔴</span>震中</li>
+      </ul>
+      <p class="eq-quiz-q" id="eqQuizQ" aria-live="polite">地图上只有 1 个台站的圆。震中可能在哪儿？</p>
+      <div class="kid-tiles eq-quiz-picks" id="eqQuizPicks" role="group" aria-labelledby="eqQuizTitle">
+        <button class="kid-tile" type="button" data-eq-answer="one" aria-pressed="false" aria-label="选：只有 1 个圆，圆上处处都可能">
+          <span class="kid-tile-art" aria-hidden="true">🔵</span>
+          <span class="kid-tile-label">1 个圆</span>
+          <span class="kid-tile-sub">整圈都可能</span>
+        </button>
+        <button class="kid-tile" type="button" data-eq-answer="two" aria-pressed="false" aria-label="选：两个圆交出 2 个交点，还要再挑">
+          <span class="kid-tile-art" aria-hidden="true">✌️</span>
+          <span class="kid-tile-label">2 个交点</span>
+          <span class="kid-tile-sub">还要再挑</span>
+        </button>
+        <button class="kid-tile" type="button" data-eq-answer="three" aria-pressed="false" aria-label="选：要 3 个圆才能定出唯一的震中">
+          <span class="kid-tile-art" aria-hidden="true">🎯</span>
+          <span class="kid-tile-label">3 个才唯一</span>
+          <span class="kid-tile-sub">就是震中</span>
+        </button>
+      </div>
+      <div class="eq-quiz-actions">
+        <button class="btn btn-primary" type="button" id="eqQuizNext"><span aria-hidden="true">🔄</span> 换一题</button>
+        <button class="btn btn-ghost" type="button" id="eqQuizHint"><span aria-hidden="true">👀</span> 给点提示</button>
+      </div>
+      <div class="kid-speech-row eq-say-row">
+        <span class="kid-mascot" aria-hidden="true">🧭</span>
+        <p class="kid-speech" id="eqQuizSay" role="status" aria-live="polite">看看图上有几个圆，再点一张大图卡。</p>
+      </div>
+      <p class="eq-quiz-score">
+        <span class="eq-quiz-stars" id="eqQuizStars" role="img" aria-label="已经答对 0 次"></span>
+        <span id="eqQuizTotal">答对 0 次</span>
+      </p>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：找震中在教什么</summary>
+        <p><b>学习目标：</b>理解「一个距离＝一整个圆」，以及为什么要三个圆才能唯一确定一个点。这是几何交会的直觉，也是孩子第一次体会「多一个独立测量，可能性就少一层」。答错只给提示、不清零、不计时——要练的是看图数清楚，不是抢答。</p>
+        <p><b>一起做：</b>让孩子先用手指沿着圆描一圈，把「哪里都有可能」摸出来；再指出两圆相交的两个点；最后看第三个圆穿过哪一个。真实台站读数有误差，三个圆常常围出一小块区域而不是精确一点，专家会再加更多台站把它收窄。</p>
+        <p><b>背后的原理：</b>台站测的是 P 波和 S 波的到达时间差。两种波同时从震源出发，P 波（压缩波，约 6 km/s）比 S 波（剪切波，约 3.5 km/s）快，跑得越远时间差越大，于是距离 ≈ 时间差 ÷（1/v<sub>S</sub> − 1/v<sub>P</sub>）。台站只知距离不知方向，所以画出的是圆；两圆相交剩两点，第三个圆排除其一，这就是三边定位。手机卫星定位是同一思路，只是圆换成了球面。</p>
+      </details>
+    </article>
+  </section>
+
+  <!-- ============ 深化 1：三个台站为什么必须是三个 ============ -->
+  <section class="card lesson" aria-labelledby="lessonStationTitle">
+    <p class="pill pill-phys">原理拆解 · 三边定位</p>
+    <h2 id="lessonStationTitle">一个圆、两个交点、三个圆才收口</h2>
+    <p class="sim-tag">教学模拟示意图（几何位置是预先画好的，不是 USGS 实时事件）</p>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>一个地震台只能测出“震中离我多远”，测不出“在哪个方向”。所以每个台站给出的不是一个点，而是一整个圆。一个圆有无数可能，两个圆通常剩两个交点，第三个圆才能挑出唯一答案。</p>
+    <div class="viz-row">
+      <svg class="viz-svg" id="stationSvg" data-state="one" viewBox="0 0 320 220" role="img" aria-labelledby="stationSvgTitle">
+        <title id="stationSvgTitle">三个地震台的距离圆逐步收窄到唯一震中的示意图</title>
+        <rect width="320" height="220" fill="#0b1630"/>
+        <circle class="ring ring-a" cx="96" cy="74" r="76.6" fill="none" stroke="#6ea8fe" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <circle class="ring ring-b" cx="232" cy="76" r="82.4" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <circle class="ring ring-c" cx="152" cy="176" r="60.5" fill="none" stroke="#7ee6a8" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <g class="maybe">
+          <text x="150" y="22" fill="#9fc0ee" font-size="12">蓝圆上处处都有可能</text>
+          <g fill="#9fc0ee"><circle cx="96" cy="150.6" r="4"/><circle cx="24" cy="100" r="4"/><circle cx="141" cy="12" r="4"/><circle cx="169" cy="97" r="4"/></g>
+        </g>
+        <g class="cand">
+          <circle cx="161" cy="34" r="6" fill="#fde68a" stroke="#0b1630" stroke-width="1.5"/>
+          <circle cx="160" cy="116" r="6" fill="#fde68a" stroke="#0b1630" stroke-width="1.5"/>
+          <text x="172" y="52" fill="#fde68a" font-size="12">还剩两个可能</text>
+        </g>
+        <g class="epi">
+          <circle cx="160" cy="116" r="8" fill="#f87171" stroke="#fff" stroke-width="2.5"/>
+          <text x="174" y="134" fill="#fca5a5" font-size="12">唯一震中</text>
+        </g>
+        <g font-size="12" fill="#e6eefc">
+          <g class="stn stn-a"><rect x="90" y="68" width="12" height="12" fill="#6ea8fe" stroke="#0b1630" stroke-width="1.5"/><text x="44" y="78">台站 A</text></g>
+          <g class="stn stn-b"><rect x="226" y="70" width="12" height="12" fill="#fbbf24" stroke="#0b1630" stroke-width="1.5"/><text x="244" y="80">台站 B</text></g>
+          <g class="stn stn-c"><rect x="146" y="170" width="12" height="12" fill="#7ee6a8" stroke="#0b1630" stroke-width="1.5"/><text x="164" y="196">台站 C</text></g>
+        </g>
+      </svg>
+      <div>
+        <div class="pickers" aria-label="加入几个台站">
+          <button type="button" data-station="one" aria-pressed="true">① 只有 1 个台站</button>
+          <button type="button" data-station="two" aria-pressed="false">② 加到 2 个</button>
+          <button type="button" data-station="three" aria-pressed="false">③ 加到 3 个</button>
+        </div>
+        <p class="quiz-note" id="stationNote" role="status" aria-live="polite"><b>1 个台站：</b>只知道距离，画出来是一整个圆。震中可能在这个圆上的任何一点。</p>
+      </div>
+    </div>
+    <div class="age-stack">
+      <p class="age-card age-4"><b>4–6 岁一句话</b>一个人只能说“它离我这么远”，要三个人一起说，才知道它到底在哪里。</p>
+      <p class="age-card age-7"><b>7–9 岁</b>每个台站画一个圆，圆心是台站，半径是距离。两个圆交在两个点，还分不清；第三个圆一压，就只剩一个点。</p>
+      <p class="age-card age-10"><b>10–12 岁进阶</b>这叫三边定位：用三段距离而不是角度来求位置。真实情况下读数有误差，三个圆往往围出一小块区域，专家会取最接近的位置，并用更多台站缩小它。</p>
+    </div>
+    <ul class="lesson-ask">
+      <li>如果第三个台站正好站在前两个台站的连线上，还能顺利挑出唯一答案吗？</li>
+      <li>要是四个、十个台站都参与，结果会更准还是更乱？为什么？</li>
+    </ul>
+    <details class="parent-deep-dive" data-audience="parent">
+      <summary>家长延伸：在客厅里做一次三边定位</summary>
+      <p>在纸上点三个“台站”，给孩子三段毛线当半径，让他以每个点为圆心把毛线绕一圈。先只给一段，再给两段、三段，让孩子自己说出“可能的位置”是怎样一步步变少的。接着故意把一段毛线剪短一点，看三个圆不再交于一点——这正是真实测量误差的样子。</p>
+      <p>可以追问：为什么手机定位也需要好几颗卫星？原理相同，只是圆变成了球面。</p>
+    </details>
+  </section>
+
+  <!-- ============ 深化 2：震级是对数尺度 ============ -->
+  <section class="card lesson" aria-labelledby="lessonLogTitle">
+    <p class="pill pill-math">原理拆解 · 对数尺度</p>
+    <h2 id="lessonLogTitle">震级加 1，不是多一点，是翻很多倍</h2>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>震级不是普通的“数一数”尺度。数字每加 1，地震仪上记录到的晃动幅度大约变成 10 倍，释放的能量大约变成 31.6 倍。所以 M7 和 M6 的差距，比“7 比 6 多一点”大得多。</p>
+    <div class="log-ladder" aria-label="震级与晃动幅度的倍数阶梯">
+      <div class="log-step"><b>M4</b><i style="width:6%"></i><span>幅度 ×1</span></div>
+      <div class="log-step"><b>M5</b><i style="width:14%"></i><span>×10</span></div>
+      <div class="log-step"><b>M6</b><i style="width:32%"></i><span>×100</span></div>
+      <div class="log-step"><b>M7</b><i style="width:60%"></i><span>×1000</span></div>
+      <div class="log-step"><b>M8</b><i style="width:100%"></i><span>×10000</span></div>
+    </div>
+    <div class="quiz-block">
+      <p class="quiz-q">猜一猜：M8 的晃动幅度，大约是 M6 的多少倍？</p>
+      <div class="pickers" aria-label="选择倍数答案">
+        <button type="button" data-log="2" aria-pressed="false">大约 2 倍</button>
+        <button type="button" data-log="20" aria-pressed="false">大约 20 倍</button>
+        <button type="button" data-log="100" aria-pressed="false">大约 100 倍</button>
+      </div>
+      <p class="quiz-note" id="logNote" role="status" aria-live="polite">选一个看看。</p>
+    </div>
+    <div class="age-stack">
+      <p class="age-card age-4"><b>4–6 岁一句话</b>数字往上跳一格，摇晃就大得多得多，不是只大一点点。</p>
+      <p class="age-card age-7"><b>7–9 岁</b>每加 1 级，笔在纸上画出的抖动高度大约乘 10。加 2 级就是乘 10 再乘 10，也就是 100 倍。</p>
+      <p class="age-card age-10"><b>10–12 岁进阶</b>这是对数尺度：震级是幅度取对数后的结果。幅度按 10 倍走，能量按约 31.6 倍走，因为能量与幅度的关系不是简单的正比。所以 M8 与 M6 的能量差约是 31.6×31.6，接近 1000 倍。</p>
+    </div>
+    <ul class="lesson-ask">
+      <li>为什么要用这种“跳格子”的尺度，而不是直接写晃动幅度的数字？</li>
+      <li>你还能想到别的“加 1 就翻很多倍”的尺度吗？</li>
+    </ul>
+    <details class="parent-deep-dive" data-audience="parent">
+      <summary>家长延伸：把对数尺度画成看得见的长度</summary>
+      <p>拿一条纸带，让 M4 占 1 格。按 10 倍规则，M5 要 10 格、M6 要 100 格、M7 要 1000 格——纸带很快就长得没法放进房间。这正是为什么科学家改用震级这种压缩过的数字：否则一张纸根本画不下。</p>
+      <p>上面的彩条为了能同屏显示，宽度做过压缩，只表达“越往上差得越多”的趋势，不是等比例长度。请把这一点讲给孩子，它本身就是一堂“图表会骗人”的课。</p>
+    </details>
+  </section>
+
+  <!-- ============ 深化 3：P 波与 S 波的时间差 ============ -->
+  <section class="card lesson" aria-labelledby="lessonSpTitle">
+    <p class="pill pill-phys">原理拆解 · 到达时差</p>
+    <h2 id="lessonSpTitle">时间差越大，说明地震越远</h2>
+    <p class="sim-tag">教学模拟波形（示意用，不是真实台站记录）</p>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>P 波和 S 波从同一处同时出发，但 P 波跑得快。跑的路越长，两者拉开的时间差就越大。所以只要量出“P 到了多久之后 S 才到”，就能反推距离——这正是每个台站画出那个圆的半径怎么来的。</p>
+    <div class="viz-row">
+      <svg class="viz-svg" id="spSvg" viewBox="0 0 340 200" role="img" aria-labelledby="spSvgTitle">
+        <title id="spSvgTitle">近处与远处地震的模拟波形，显示 P 波与 S 波之间的时间差</title>
+        <rect width="340" height="200" fill="#0b1630"/>
+        <g stroke="#22345c" stroke-width="1">
+          <path d="M40 0v200M110 0v200M180 0v200M250 0v200M320 0v200"/>
+        </g>
+        <path id="spTrace" d="M12 108h60l3-9 4 18 4-14 3 5h22l4-26 5 46 5-38 4 22 4-12 3 4h201" fill="none" stroke="#7ee6a8" stroke-width="2.2" stroke-linejoin="round"/>
+        <g id="spMarkP"><path d="M75 34v148" stroke="#6ea8fe" stroke-width="2.5" stroke-dasharray="4 3"/><text x="78" y="30" fill="#6ea8fe" font-size="12">P 到</text></g>
+        <g id="spMarkS"><path d="M118 34v148" stroke="#fbbf24" stroke-width="2.5" stroke-dasharray="4 3"/><text x="121" y="30" fill="#fbbf24" font-size="12">S 到</text></g>
+        <path id="spSpan" d="M75 190h43" stroke="#f472b6" stroke-width="3"/>
+        <text id="spSpanLabel" x="96" y="184" text-anchor="middle" fill="#f9a8d4" font-size="12">时间差小</text>
+        <text x="12" y="18" fill="#8aa2c8" font-size="11">时间 →</text>
+      </svg>
+      <div>
+        <div class="pickers" aria-label="选择地震远近">
+          <button type="button" data-sp="near" aria-pressed="true">🏠 很近的地震</button>
+          <button type="button" data-sp="mid" aria-pressed="false">🚗 中等距离</button>
+          <button type="button" data-sp="far" aria-pressed="false">✈️ 很远的地震</button>
+        </div>
+        <p class="quiz-note" id="spNote" role="status" aria-live="polite"><b>很近：</b>P 波和 S 波几乎前后脚就到了，两条虚线挨得很紧。</p>
+      </div>
+    </div>
+    <div class="age-stack">
+      <p class="age-card age-4"><b>4–6 岁一句话</b>快的先到，慢的后到。跑得越远，它们分开得越久。</p>
+      <p class="age-card age-7"><b>7–9 岁</b>就像跑得快和跑得慢的两个人一起出发：刚跑几步差距很小，跑了很久，差距就拉得很大。测出差多久，就知道跑了多远。</p>
+      <p class="age-card age-10"><b>10–12 岁进阶</b>P 波是压缩波（推挤前进），S 波是剪切波（左右摇动），因此速度不同。距离等于时间差乘上一个由两者速度共同决定的系数。S 波不能穿过液体，这也是科学家推断地球外核是液态的重要线索。</p>
+    </div>
+    <ul class="lesson-ask">
+      <li>如果某个台站根本没记录到 S 波，中间可能经过了什么？</li>
+      <li>为什么地震预警系统能在强烈摇晃前抢到几秒钟？它先抓到的是哪种波？</li>
+    </ul>
+    <details class="parent-deep-dive" data-audience="parent">
+      <summary>家长延伸：用走廊做“快慢两人”实验</summary>
+      <p>让两个孩子在走廊一端同时出发，一个快走一个慢走。先在 2 米处喊停，量两人间隔；再到 10 米处喊停，再量一次。间隔随距离拉大，这就是 S-P 时间差的直觉来源。</p>
+      <p>页面下方“S-P 测距”卡片用的是固定的教学波速常数，方便算术演示。真实地球内部波速随深度变化，专业定位会使用更复杂的速度模型。</p>
+    </details>
+  </section>
+
+  <!-- ============ 深化 4：为什么地震集中成带 ============ -->
+  <section class="card lesson" aria-labelledby="lessonBeltTitle">
+    <p class="pill pill-sci">原理拆解 · 地震带</p>
+    <h2 id="lessonBeltTitle">地震不是撒在各处，而是排成一条条线</h2>
+    <p class="sim-tag">教学模拟示意（拼图式板块，不是真实地图，也不是 USGS 实时事件）</p>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>把很多地震的位置点在图上，它们会连成细长的线，而不是均匀铺满。因为地表由若干巨大板块拼成，板块内部相对完整，只有互相挤压、分开或错动的<b>边界</b>才会不断积累并释放应力。地震带，就是板块的拼缝。</p>
+    <div class="viz-row">
+      <svg class="viz-svg" id="beltSvg" data-state="both" viewBox="0 0 340 200" role="img" aria-labelledby="beltSvgTitle">
+        <title id="beltSvgTitle">示意图：地震点沿着板块拼缝排列成带</title>
+        <rect width="340" height="200" fill="#0b1630"/>
+        <g class="belt-plates">
+          <path d="M0 0h150l-18 78 24 62-30 60H0z" fill="#2f4a6d" stroke="#4d6f9c" stroke-width="2"/>
+          <path d="M150 0h190v70l-92 12-80-4z" fill="#3a5b45" stroke="#5d8a6c" stroke-width="2"/>
+          <path d="M132 78l16-8 80 4 92-12v138H126l30-60z" fill="#4a3f63" stroke="#71618f" stroke-width="2"/>
+          <text x="52" y="104" fill="#a9c2e4" font-size="12">板块一</text>
+          <text x="248" y="40" fill="#a8d4b6" font-size="12">板块二</text>
+          <text x="238" y="150" fill="#c3b2e0" font-size="12">板块三</text>
+        </g>
+        <g class="belt-dots" fill="#f87171">
+          <circle cx="150" cy="4" r="3.4"/><circle cx="146" cy="22" r="3"/><circle cx="141" cy="41" r="3.6"/>
+          <circle cx="136" cy="60" r="3"/><circle cx="133" cy="76" r="3.4"/><circle cx="140" cy="88" r="3"/>
+          <circle cx="152" cy="72" r="3.2"/><circle cx="171" cy="74" r="3"/><circle cx="190" cy="76" r="3.5"/>
+          <circle cx="210" cy="79" r="3"/><circle cx="229" cy="81" r="3.3"/><circle cx="252" cy="78" r="3"/>
+          <circle cx="275" cy="75" r="3.4"/><circle cx="298" cy="72" r="3"/><circle cx="320" cy="70" r="3.5"/>
+          <circle cx="144" cy="104" r="3"/><circle cx="149" cy="122" r="3.4"/><circle cx="154" cy="140" r="3"/>
+          <circle cx="146" cy="158" r="3.3"/><circle cx="138" cy="176" r="3"/><circle cx="130" cy="192" r="3.4"/>
+        </g>
+      </svg>
+      <div>
+        <div class="pickers" aria-label="切换板块面与地震点">
+          <button type="button" data-belt="dots" aria-pressed="false">只看地震点</button>
+          <button type="button" data-belt="plates" aria-pressed="false">只看板块</button>
+          <button type="button" data-belt="both" aria-pressed="true">两个叠起来</button>
+        </div>
+        <p class="quiz-note" id="beltNote" role="status" aria-live="polite"><b>叠起来看：</b>红点几乎全落在板块的拼缝上。板块中间大片区域安静得多。</p>
+      </div>
+    </div>
+    <div class="age-stack">
+      <p class="age-card age-4"><b>4–6 岁一句话</b>地球表面像拼图，地震大多发生在拼图的缝上。</p>
+      <p class="age-card age-7"><b>7–9 岁</b>板块自己很结实，不容易碎；两块板挨着的地方会互相顶、互相磨，力气攒够了就突然一滑，那就是地震。所以缝在哪，地震就排在哪。</p>
+      <p class="age-card age-10"><b>10–12 岁进阶</b>板块沿边界持续缓慢运动，岩石先弹性变形储存应力，超过强度时沿断层突然错动并释放能量。汇聚边界常伴随俯冲、深源地震与火山；离散边界多为浅源、规模较小；转换边界以水平错动为主。</p>
+    </div>
+    <ul class="lesson-ask">
+      <li>如果一个地方几十年都没地震，是说明它一定安全，还是可能正在攒力气？</li>
+      <li>为什么有些地震带同时还排着一串火山？</li>
+    </ul>
+    <details class="parent-deep-dive" data-audience="parent">
+      <summary>家长延伸：两块饼干和一条毛巾</summary>
+      <p>把两块饼干在桌上相向推：中间会拱起、边缘会碎，而饼干中央完好——这就是“形变集中在边界”。再把一条毛巾从两端慢慢推，看褶皱怎样堆成山脉。</p>
+      <p>本页“最近地震”列表联网时取自 USGS，是真实记录；上面这张拼图是<b>教学示意</b>，形状经过简化，不对应任何真实板块的轮廓。请帮孩子把这两类信息分清。</p>
+    </details>
+  </section>
+
+  <!-- ============ 深化 5：地层与岩石循环 ============ -->
+  <section class="card lesson" aria-labelledby="lessonRockTitle">
+    <p class="pill pill-sci">原理拆解 · 地层与岩石循环</p>
+    <h2 id="lessonRockTitle">石头会换身份，地层会记事</h2>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>沉积物一层层落下、压实，形成地层，通常下面的更老、上面的更新，所以地层像一本按顺序装订的册子。而石头本身并不是永久不变的：熔融、冷却、风化、搬运、压实、受热受压，会让它在岩浆岩、沉积岩、变质岩之间反复转换。</p>
+    <div class="viz-row">
+      <svg class="viz-svg" id="rockSvg" data-state="igneous" viewBox="0 0 340 200" role="img" aria-labelledby="rockSvgTitle">
+        <title id="rockSvgTitle">岩石循环示意图：岩浆岩、沉积岩与变质岩之间的相互转换</title>
+        <rect width="340" height="200" fill="#0b1630"/>
+        <g class="rock-arrow arrow-igneous" fill="none" stroke="#7ee6a8" stroke-width="3" stroke-linecap="round">
+          <path d="M112 52q58-20 116 0m0 0-15-6m15 6-13 8"/>
+          <text x="170" y="30" text-anchor="middle" fill="#7ee6a8" font-size="11" stroke="none">风化搬运堆积</text>
+        </g>
+        <g class="rock-arrow arrow-sediment" fill="none" stroke="#c4b5fd" stroke-width="3" stroke-linecap="round">
+          <path d="M252 92q-22 44-72 58m0 0 16-2m-16 2 8-14"/>
+          <text x="248" y="140" fill="#c4b5fd" font-size="11" stroke="none">受热受压</text>
+        </g>
+        <g class="rock-arrow arrow-meta" fill="none" stroke="#fca5a5" stroke-width="3" stroke-linecap="round">
+          <path d="M138 148q-52-24-52-72m0 0-7 14m7-14 8 13"/>
+          <text x="34" y="120" fill="#fca5a5" font-size="11" stroke="none">熔融冷却</text>
+        </g>
+        <g class="rock-node node-igneous"><circle cx="86" cy="62" r="34" fill="#7f3d3d" stroke="#fca5a5" stroke-width="3"/><text x="86" y="60" text-anchor="middle" fill="#ffe4e4" font-size="12">岩浆岩</text><text x="86" y="76" text-anchor="middle" fill="#f5b8b8" font-size="10">冷却凝固</text></g>
+        <g class="rock-node node-sediment"><circle cx="262" cy="66" r="34" fill="#2f6247" stroke="#7ee6a8" stroke-width="3"/><text x="262" y="64" text-anchor="middle" fill="#dcfce7" font-size="12">沉积岩</text><text x="262" y="80" text-anchor="middle" fill="#a7e3bf" font-size="10">层层压实</text></g>
+        <g class="rock-node node-meta"><circle cx="164" cy="152" r="34" fill="#493a70" stroke="#c4b5fd" stroke-width="3"/><text x="164" y="150" text-anchor="middle" fill="#ede9fe" font-size="12">变质岩</text><text x="164" y="166" text-anchor="middle" fill="#c9bdf2" font-size="10">又热又挤</text></g>
+      </svg>
+      <div>
+        <div class="pickers" aria-label="选择一种岩石">
+          <button type="button" data-rock="igneous" aria-pressed="true">🔥 岩浆岩</button>
+          <button type="button" data-rock="sediment" aria-pressed="false">🏖️ 沉积岩</button>
+          <button type="button" data-rock="meta" aria-pressed="false">💎 变质岩</button>
+        </div>
+        <p class="quiz-note" id="rockNote" role="status" aria-live="polite"><b>岩浆岩：</b>又热又软的岩浆冷下来变硬形成的。它被风吹雨打碎掉后，碎屑会被带走，去当沉积岩的材料。</p>
+      </div>
+    </div>
+    <svg class="strata-mini" viewBox="0 0 300 150" role="img" aria-labelledby="strataMiniTitle">
+      <title id="strataMiniTitle">地层顺序示意：越靠下的层通常越老</title>
+      <rect width="300" height="150" fill="#0b1630"/>
+      <g stroke="#0b1630" stroke-width="1.5">
+        <rect x="14" y="16" width="272" height="26" fill="#8b6f47"/>
+        <rect x="14" y="42" width="272" height="26" fill="#a3854f"/>
+        <rect x="14" y="68" width="272" height="26" fill="#6f7a4a"/>
+        <rect x="14" y="94" width="272" height="26" fill="#55606f"/>
+        <rect x="14" y="120" width="272" height="20" fill="#3d4756"/>
+      </g>
+      <g fill="#f1f5ff" font-size="11">
+        <text x="24" y="33">最新的一层（最后才盖上去）</text>
+        <text x="24" y="59">较新</text>
+        <text x="24" y="85">中间</text>
+        <text x="24" y="111">较老</text>
+        <text x="24" y="135">最老的一层（最先沉下来）</text>
+      </g>
+      <g fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round">
+        <path d="M292 24v112m0 0-6-9m6 9 6-9"/>
+      </g>
+      <text x="278" y="20" text-anchor="end" fill="#fbbf24" font-size="10">时间越往下越久远</text>
+    </svg>
+    <div class="age-stack">
+      <p class="age-card age-4"><b>4–6 岁一句话</b>石头一层层堆起来，下面那层是最早放的。</p>
+      <p class="age-card age-7"><b>7–9 岁</b>像慢慢叠盘子：先叠的在最底下。所以看到一堆地层，可以从下往上读出先后顺序。石头也会变身：碎了被水带走、堆起来压实，就成了新的石头。</p>
+      <p class="age-card age-10"><b>10–12 岁进阶</b>这是地层叠覆原理，它给地质记录提供了相对年代顺序。但地层可能被后来的断层错开、被褶皱翻转，或因侵蚀缺失一段，所以判断顺序时必须先看岩层有没有被扰动过。</p>
+    </div>
+    <ul class="lesson-ask">
+      <li>如果在一堆地层中间发现少了一大段，中间那段时间可能发生了什么？</li>
+      <li>同一块石头有可能在很久很久之后又变回岩浆岩吗？路径会是怎样的？</li>
+    </ul>
+    <details class="parent-deep-dive" data-audience="parent">
+      <summary>家长延伸：一个罐子里的地层</summary>
+      <p>透明罐里依次倒入小石子、粗砂、细砂，每倒一层就让孩子说“现在最上面是谁”。装满后从侧面看，请孩子只凭层的位置排出倒入顺序。然后轻轻斜着摇一下罐子——层歪了、混了，这就是断层与扰动带来的判读困难。</p>
+      <p>可以追问：如果有人偷偷从中间挖走一层，你还能看出来吗？靠什么线索？</p>
+    </details>
+  </section>
+
   <details class="card parent-deep-dive" data-audience="parent" style="padding:20px">
-    <summary>家长层：原理、来源与追问</summary>
-    <p class="principle"><b>背后的原理：</b>P 波先到、S 波后到，时间差可估距离；三个距离圆用于三边定位。矩震级每加 1，振幅约 10 倍、能量约 31.6 倍。汇聚、离散与转换边界会产生不同组合的地震、火山和地形。</p>
+    <summary>家长层：学习目标、陪伴追问、原理与常见误区</summary>
+
+    <h3 style="margin:14px 0 6px;font-size:1.02rem">这在教什么（学习目标）</h3>
+    <ul class="lesson-ask">
+      <li><b>地球分层：</b>能指出地壳、地幔、外核、内核的里外顺序，并说出「越往里越热」「我们住的那层最薄」。不要求背深度数字。</li>
+      <li><b>板块运动：</b>知道地表由若干巨大板块拼成，地震集中在拼缝上；能说出相撞、分开、擦肩三种动法各会发生什么。</li>
+      <li><b>震中定位：</b>理解「一个距离 ＝ 一整个圆」，以及为什么两个圆还剩两个可能、三个圆才唯一。这是几何交会的第一课。</li>
+      <li><b>震级与烈度：</b>知道震级是这次地震本身的大小，只有一个数；烈度是某个地点摇得多厉害，同一次地震各地不同。</li>
+    </ul>
+
+    <h3 style="margin:16px 0 6px;font-size:1.02rem">一起追问：3 条给家长的问题</h3>
+    <ol class="parent-q">
+      <li><b>为什么至少要三个台站，而不是两个？</b>让孩子先说，再让他在纸上自己画两个圆试试。他会发现两个圆边碰边总是交在两处，除非正好相切。</li>
+      <li><b>M8 比 M6 多出的两级，能量是 64 倍还是约 1000 倍？</b>正确答案是约 1000 倍（每级约 31.6 倍，两级 31.6×31.6）。这是全页最容易被新闻误导的一处。</li>
+      <li><b>同一次地震，为什么有的城市家具倒了、有的城市只是吊灯轻晃？</b>引出震级与烈度的区别：震级只有一个数，烈度随距离、深度、地基软硬和建筑结构变化。</li>
+    </ol>
+
+    <h3 style="margin:16px 0 6px;font-size:1.02rem">背后的原理</h3>
+    <p class="principle"><b>1 · P 波与 S 波的速度差怎么给出距离。</b>两种波在震源同时产生：P 波是压缩波，靠推挤前进，约 6 km/s；S 波是剪切波，靠左右摇动前进，约 3.5 km/s。同一段路程 d，P 波用 d/v<sub>P</sub>，S 波用 d/v<sub>S</sub>，到达时间差 Δt ＝ d/v<sub>S</sub> − d/v<sub>P</sub>。反解得 d ＝ Δt ÷ (1/v<sub>S</sub> − 1/v<sub>P</sub>)，代入上面两个速度约等于 Δt × 8.4 km。所以一台仪器量一个时间差，就得到一个距离——这正是那个圆的半径。附带一条重要线索：S 波不能穿过液体，地球另一侧存在 S 波「影区」，这是判断外核为液态的关键证据。</p>
+    <p class="principle"><b>2 · 为什么三个圆才能唯一确定震中。</b>台站测的是距离，不是方向，所以每个台站给出的解集是一整个圆（三维里是球面）。两个圆一般相交于两点，剩两个候选；第三个圆只穿过其中一个，答案才唯一。这叫三边定位（trilateration），与卫星定位同一原理，只是把圆换成球面、还要多解一个钟差。真实读数有误差，三个圆通常围出一小块区域而非精确一点，专业做法是用更多台站做最小二乘反演，同时还要解出震源深度。</p>
+    <p class="principle"><b>3 · 震级（magnitude）与烈度（intensity）不是一回事。</b>震级描述地震<b>本身</b>释放的能量，一次地震只有一个值；矩震级 M<sub>w</sub> 由断层面积、错动量和岩石刚度决定。数字每加 1，地震仪记录的振幅约 ×10，释放能量约 ×31.6。烈度描述<b>某个地点</b>实际摇得多厉害（如改良麦加利烈度、中国地震烈度表），同一次地震在不同城市烈度不同，取决于距离、震源深度、地基是硬岩还是软土（软土会放大摇晃）、以及建筑本身的抗震能力。一句话：震级是「这次地震多大」，烈度是「你家摇得多厉害」。</p>
+
+    <h3 style="margin:16px 0 6px;font-size:1.02rem">两个常见误区</h3>
+    <p class="principle"><b>误区一：「地震就是地面裂开一条缝，人会掉下去。」</b>地震是地下岩石沿已有断层突然错动、释放积累的弹性应变能，能量以波的形式传到地表，我们感到的是<b>摇晃</b>。地表偶尔会出现断层出露或地裂缝，但那是错动的痕迹或土体失稳，不是会张开又合上的大口子。绝大多数伤亡来自建筑物和物品的破坏，而不是掉进地缝——这也是为什么演练重点是「趴下、遮挡、手抓牢」和远离会倒的家具。</p>
+    <p class="principle"><b>误区二：「震级越大，破坏一定越大。」</b>震级只是三个因素之一。一次 M6 的浅源地震发生在人口密集、房屋抗震差的城市正下方，破坏可能远大于 M8 的深源海底地震。深度、距离、地基条件、建筑质量都在起作用：2010 年海地 M7.0 伤亡极重，主因是建筑抗震不足；而更强的一些地震发生在人烟稀少处，几乎无损失。所以看新闻时，除了震级，还要看震源深度和震中位置。</p>
+
+    <h3 style="margin:16px 0 6px;font-size:1.02rem">来源与联网开关</h3>
     <p><b>来源标签：</b>“最近地震”列表联网成功时才是 <a href="https://earthquake.usgs.gov/earthquakes/search/" target="_blank" rel="noopener">USGS</a> 近 30 天数据；断网时明确显示历史内置记录。上面的三个台站与板块选择是<b>教学模拟</b>，不是 USGS 实时事件。</p>
-    <ol class="parent-q"><li>为什么至少要三个台站，而不是两个？</li><li>M8 比 M6 多出的两级，能量是 64 倍还是约 1000 倍？</li><li>一条海沟附近同时有地震和火山，可能是哪类边界？</li></ol>
+    <p class="online-opt"><label><input type="checkbox" data-playful-preference="onlineData"> 允许联网加载 USGS 近期地震记录</label><span>默认关闭。关闭时本页不向任何外部网站发出请求，完全使用内置数据：分层、板块、地震波、三边定位与震级计算都不受影响，“最近地震”显示内置的历史著名地震。开启后才会向 USGS 查询最近 30 天的真实记录。开关随时可以关掉。</span></p>
+    <h3 style="margin:16px 0 6px;font-size:1.02rem">还可以再聊的</h3>
+    <ol class="parent-q"><li>一条海沟附近同时有地震和火山，可能是哪类边界？</li><li>如果某个台站完全没记录到 S 波，这条波可能经过了哪里？</li><li>一个地方几十年没地震，是更安全，还是可能正在攒力气？</li></ol>
   </details>
 
   <div class="parent-deep-dive" data-audience="parent">
@@ -549,7 +1262,10 @@
 
     [].slice.call(listEl.children).forEach(function (b) {
       b.setAttribute("aria-pressed", b.dataset.l === cur ? "true" : "false");
-      b.style.color = b.dataset.l === cur ? L.c : "";
+      /* 选中态只把地层色给描边（border-color: var(--layer-tone)），文字保持 --ink。
+         原先直接把 color 设成地层色，而地层色跨度很大（地壳 #8b6f47 到内核 #fde68a），
+         当文字色时最好的一档也只有 4.08:1，浅的几档更低。颜色对应关系由色块和描边承担。 */
+      b.style.setProperty("--layer-tone", b.dataset.l === cur ? L.c : "");
     });
     [].slice.call(svg.querySelectorAll(".seg")).forEach(function (s) {
       s.classList.toggle("on", s.dataset.l === cur);
@@ -682,7 +1398,7 @@
       d: "有机质、树根、虫子。一厘米表土要几百年才能形成。" },
     { n: "砂", en: "Sand", age: "数千年", c: "#b08d57", t: "#2a1d0d",
       d: "颗粒粗，水能直接渗过去。海滩和河床下面常见。" },
-    { n: "黏土", en: "Clay", age: "上万年", c: "#7d6b52", t: "#f0e8da",
+    { n: "黏土", en: "Clay", age: "上万年", c: "#7d6b52", t: "#f8f3ea",
       d: "颗粒极细，几乎不透水——所以地下水会停在黏土层上面。" },
     { n: "砾石", en: "Gravel", age: "上万年", c: "#8f8f8f", t: "#1a1a1a",
       d: "被河流冲刷磨圆的石头。找到砾石层，说明这里以前有河。" },
@@ -768,12 +1484,18 @@
     });
     qsrc.textContent = live
       ? "以上为 USGS 记录的近 30 天 M4.5 以上地震。"
-      : "离线模式 · 显示内置的历史著名地震（联网后会换成最近 30 天的真实记录）。";
+      : "当前显示内置的历史著名地震。最近 30 天的真实记录需要家长在家长区开启联网。";
   }
 
   paintQuakes(FALLBACK, false);   // 先渲染，保证断网也完整
 
-  (function fetchQuakes() {
+  function onlineAllowed() {
+    return Boolean(window.Playful && Playful.onlineAllowed && Playful.onlineAllowed());
+  }
+
+  function fetchQuakes() {
+    // 默认关闭：USGS 请求只在家长于家长区开启 onlineData 后才发出。
+    if (!onlineAllowed()) return;
     var ac = new AbortController();
     var t = setTimeout(function () { ac.abort(); }, 8000);
     var end = new Date();
@@ -800,13 +1522,30 @@
         if (out.length) paintQuakes(out, true);
       })
       .catch(function () { clearTimeout(t); /* 保留内置数据 */ });
-  })();
+  }
+
+  /* 本块脚本在 playful.js 之前执行，直接读 Playful 会拿不到。
+     等 DOMContentLoaded 后再判断偏好，那时共享层一定已就绪。 */
+  function startQuakes() {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fetchQuakes, { once: true });
+      return;
+    }
+    fetchQuakes();
+  }
+  startQuakes();
+
+  /* 家长在家长区打开开关后，立刻补一次加载，不需要刷新页面。 */
+  document.addEventListener("playful:preference", function (event) {
+    var detail = event && event.detail;
+    if (detail && detail.name === "onlineData" && detail.value) fetchQuakes();
+  });
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>
 (function () {
   "use strict";
@@ -888,6 +1627,74 @@
     });
   });
 
+  function bindPicker(attribute, render) {
+    var selector = "[" + attribute + "]";
+    document.querySelectorAll(selector).forEach(function (button) {
+      button.addEventListener("click", function () {
+        var value = button.getAttribute(attribute);
+        document.querySelectorAll(selector).forEach(function (item) {
+          item.setAttribute("aria-pressed", item === button ? "true" : "false");
+        });
+        render(value);
+      });
+    });
+  }
+
+  var stationCopy = {
+    one: "<b>1 个台站：</b>只知道距离，画出来是一整个圆。震中可能在这个圆上的任何一点。",
+    two: "<b>2 个台站：</b>两个圆通常交在两处，震中仍有两个可能位置。",
+    three: "<b>3 个台站：</b>第三个圆排除错误位置，三个圆共同指向唯一震中。"
+  };
+  bindPicker("data-station", function (value) {
+    document.getElementById("stationSvg").dataset.state = value;
+    document.getElementById("stationNote").innerHTML = stationCopy[value];
+  });
+
+  bindPicker("data-log", function (value) {
+    var correct = value === "100";
+    document.getElementById("logNote").innerHTML = correct
+      ? "<b>答对了：</b>M8 比 M6 高 2 级，晃动幅度是 10 × 10，也就是约 100 倍。"
+      : "<b>再数一数：</b>每高 1 级乘 10；从 M6 到 M8 一共跨了 2 级。";
+  });
+
+  var spCopy = {
+    near: { x: 118, label: "时间差小", note: "<b>很近：</b>P 波和 S 波几乎前后脚就到了，两条虚线挨得很紧。" },
+    mid: { x: 176, label: "时间差变大", note: "<b>中等距离：</b>P 波先到一会儿，S 波才追来，时间差已经拉开。" },
+    far: { x: 254, label: "时间差很大", note: "<b>很远：</b>两种波跑了很长的路，快慢差异累积成很大的到达时差。" }
+  };
+  bindPicker("data-sp", function (value) {
+    var state = spCopy[value], pX = 75;
+    var svg = document.getElementById("spSvg");
+    svg.dataset.state = value;
+    document.getElementById("spMarkS").setAttribute("transform", "translate(" + (state.x - 118) + " 0)");
+    document.getElementById("spSpan").setAttribute("d", "M" + pX + " 190H" + state.x);
+    var label = document.getElementById("spSpanLabel");
+    label.setAttribute("x", (pX + state.x) / 2);
+    label.textContent = state.label;
+    document.getElementById("spNote").innerHTML = state.note;
+    svg.setAttribute("aria-label", state.note.replace(/<[^>]+>/g, ""));
+  });
+
+  var beltCopy = {
+    dots: "<b>只看红点：</b>它们没有均匀散开，而是排成弯弯曲曲的细长带。",
+    plates: "<b>只看板块：</b>地球表面像几块大拼图，板块之间有清楚的拼缝。",
+    both: "<b>叠起来看：</b>红点几乎全落在板块的拼缝上。板块中间大片区域安静得多。"
+  };
+  bindPicker("data-belt", function (value) {
+    document.getElementById("beltSvg").dataset.state = value;
+    document.getElementById("beltNote").innerHTML = beltCopy[value];
+  });
+
+  var rockCopy = {
+    igneous: "<b>岩浆岩：</b>岩浆冷下来变硬形成。它风化成碎屑后，可以成为沉积岩的材料。",
+    sediment: "<b>沉积岩：</b>沙、泥和碎石一层层堆积、压实。继续受热受压，可能变成变质岩。",
+    meta: "<b>变质岩：</b>旧岩石在地下被加热、挤压后改变模样。熔化再冷却，又能成为岩浆岩。"
+  };
+  bindPicker("data-rock", function (value) {
+    document.getElementById("rockSvg").dataset.state = value;
+    document.getElementById("rockNote").innerHTML = rockCopy[value];
+  });
+
   magInput.addEventListener("input", function () { document.getElementById("earthMagValue").textContent = magInput.value; });
   if (window.Progress) Progress.visit("nature/earth.html", "地球与地震");
   document.getElementById("earthLocate").addEventListener("click", function () {
@@ -917,6 +1724,335 @@
   if (window.Progress && Progress.getCompletion(id)) status.textContent = "此任务已完成；可换震级更新证据。";
 })();
 </script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script>
+/* 图像优先三件套：① 地球分层图鉴 ② 厚度与温度条 ③ 几个台站才能找到震中 */
+(function () {
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  function sv(name, attrs) {
+    var node = document.createElementNS(NS, name);
+    Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    return node;
+  }
+  function svText(x, y, str, cls, size, anchor) {
+    var t = sv("text", { x: x, y: y, "class": cls, "font-size": size, "text-anchor": anchor || "middle" });
+    t.textContent = str;
+    return t;
+  }
+  function clearGroup(g) { while (g && g.firstChild) g.removeChild(g.firstChild); }
+
+  /* 五层：深度按 PREM 常用取值。r 是舞台上的两个半径（外、内），
+     地壳那一环刻意画厚一点，否则屏幕上细得看不见；真实厚度写在文字与量表里。 */
+  var EARTH_R = 6371;
+  var LAYER_KEYS = ["crust", "upper", "lower", "outer", "inner"];
+  var EQ = {
+    crust: { cap: "地壳", emoji: "🧱", from: 0, to: 35, thick: 35, tempMax: 600,
+      temp: "0–600 ℃", state: "固体硬壳", r: [100, 94.5],
+      say: "地壳是最外面那一圈，平均只有 35 km 厚——海底 5–10 km，大陆 30–50 km。又硬又脆，所以它会断、会震。" },
+    upper: { cap: "上地幔", emoji: "🫓", from: 35, to: 660, thick: 625, tempMax: 1900,
+      temp: "600–1900 ℃", state: "固体，会极慢地流", r: [94.5, 89.6],
+      say: "上地幔是固体，却能像沥青一样每年爬几厘米。就是这层的流动推着上面的板块走。" },
+    lower: { cap: "下地幔", emoji: "🍲", from: 660, to: 2890, thick: 2230, tempMax: 3700,
+      temp: "1900–3700 ℃", state: "固体，高压致密", r: [89.6, 54.6],
+      say: "下地幔最厚，一层就占了地球一大半。压力大到把矿物挤成另一种结构，热量像浓汤一样极慢地翻上来。" },
+    outer: { cap: "外核", emoji: "🌊", from: 2890, to: 5150, thick: 2260, tempMax: 4500,
+      temp: "3700–4500 ℃", state: "液态铁和镍", r: [54.6, 19.2],
+      say: "外核是液体！流动的铁产生电流，电流造出地球磁场，指南针才会指北。S 波穿不过液体，这就是我们知道它是液态的线索。" },
+    inner: { cap: "内核", emoji: "⚙️", from: 5150, to: 6371, thick: 1221, tempMax: 5200,
+      temp: "约 5200 ℃", state: "固态铁球", r: [19.2, 0],
+      say: "内核和太阳表面差不多热，却是固体——因为压力太大，铁原子挤得动不了。它每年还长大约 1 毫米。" }
+  };
+
+  /* ---------- ① 地球分层图鉴 ---------- */
+  var stageSvg = document.getElementById("eqStage");
+  var stageArt = document.getElementById("eqStageArt");
+  var atlasSay = document.getElementById("eqAtlasSay");
+  var atlasButtons = [].slice.call(document.querySelectorAll("#eqAtlasGrid [data-eq-layer]"));
+  var CX = 112, CY = 118;
+
+  function drawStage(key) {
+    clearGroup(stageArt);
+    stageArt.appendChild(sv("rect", { x: 0, y: 0, width: 330, height: 236, "class": "eq-sky" }));
+    stageArt.appendChild(sv("circle", { cx: CX, cy: CY, r: 100, "class": "eq-crust" }));
+    stageArt.appendChild(sv("circle", { cx: CX, cy: CY, r: 94.5, "class": "eq-upper" }));
+    stageArt.appendChild(sv("circle", { cx: CX, cy: CY, r: 89.6, "class": "eq-lower" }));
+    stageArt.appendChild(sv("circle", { cx: CX, cy: CY, r: 54.6, "class": "eq-outer" }));
+    stageArt.appendChild(sv("circle", { cx: CX, cy: CY, r: 19.2, "class": "eq-inner" }));
+
+    var L = EQ[key];
+    var outer = L.r[0], inner = L.r[1];
+    var mid = (outer + inner) / 2;
+    var band = outer - inner;
+    stageArt.appendChild(sv("circle", { cx: CX, cy: CY, r: mid.toFixed(2), "class": "eq-hi", "stroke-width": band.toFixed(2) }));
+    stageArt.appendChild(sv("circle", { cx: CX, cy: CY, r: outer.toFixed(2), "class": "eq-hi-line" }));
+    if (inner > 0) stageArt.appendChild(sv("circle", { cx: CX, cy: CY, r: inner.toFixed(2), "class": "eq-hi-line" }));
+
+    /* 引线：从高亮环上一点拉到右边的说明牌，角度写死，只有加减乘除，不会出现 NaN */
+    var ang = -0.5;
+    var px = CX + mid * Math.cos(ang);
+    var py = CY + mid * Math.sin(ang);
+    var elbowX = Math.min(px + 26, 200);
+    stageArt.appendChild(sv("path", { "class": "eq-lead-line",
+      d: "M" + px.toFixed(1) + " " + py.toFixed(1) + " L" + elbowX.toFixed(1) + " " + (py - 22).toFixed(1) + " L206 56" }));
+    stageArt.appendChild(sv("rect", { x: 210, y: 30, width: 114, height: 116, rx: 14, "class": "eq-panel" }));
+    stageArt.appendChild(svText(267, 56, L.emoji + " " + L.cap, "eq-ink", 17));
+    stageArt.appendChild(svText(267, 80, "深 " + L.from.toLocaleString() + "–" + L.to.toLocaleString() + " km", "eq-ink-soft", 12));
+    stageArt.appendChild(svText(267, 100, "厚 " + L.thick.toLocaleString() + " km", "eq-ink-soft", 12));
+    stageArt.appendChild(svText(267, 120, L.state, "eq-ink-soft", 12));
+    stageArt.appendChild(svText(267, 140, L.temp, "eq-ink-soft", 12));
+    stageArt.appendChild(svText(112, 228, "半径 6,371 km · 外面一圈是地壳", "eq-ink-soft", 11));
+    stageSvg.setAttribute("aria-label",
+      "地球剖面舞台：高亮的是" + L.cap + "，深 " + L.from + " 到 " + L.to + " 公里，厚 " + L.thick +
+      " 公里，" + L.state + "，" + L.temp);
+  }
+
+  /* 顶部那个可点的剖面图也跟着换，两处状态不打架 */
+  function syncTopSection(key) {
+    var seg = document.querySelector('#coreSvg .seg[data-l="' + key + '"]');
+    if (!seg) return;
+    try { seg.dispatchEvent(new MouseEvent("click", { bubbles: true })); } catch (err) { /* 老浏览器忽略同步 */ }
+  }
+
+  /* ---------- ② 厚度条与温度条：跟着所选的那张卡变化 ---------- */
+  var thickMeter = document.getElementById("eqThickMeter");
+  var heatMeter = document.getElementById("eqHeatMeter");
+  var thickValue = document.getElementById("eqThickValue");
+  var heatValue = document.getElementById("eqHeatValue");
+  var testLiquid = document.getElementById("eqTestLiquid");
+  var testHot = document.getElementById("eqTestHot");
+  var depthDots = document.getElementById("eqDepthDots");
+  var meterSay = document.getElementById("eqMeterSay");
+  var HEAT_TOP = 5200, DOT_KM = 1000, DOT_COUNT = 7;
+
+  function setMeter(track, value, max) {
+    if (!track) return;
+    if (window.Playful && Playful.setMeter) { Playful.setMeter(track, value, max); return; }
+    var fill = track.querySelector(".kid-meter-fill");
+    var ratio = Math.max(0, Math.min(1, Number(value) / Number(max)));
+    if (fill) fill.style.setProperty("--fill", (ratio * 100).toFixed(1) + "%");
+  }
+
+  /* 点亮到第几颗＝这一层的底落在第几个千公里区间里，所以用向上取整 */
+  function paintDepthDots(bottomKm) {
+    depthDots.textContent = "";
+    var lit = Math.ceil(bottomKm / DOT_KM);
+    if (lit < 1) lit = 1;
+    if (lit > DOT_COUNT) lit = DOT_COUNT;
+    for (var i = 0; i < DOT_COUNT; i++) {
+      var dot = document.createElement("i");
+      if (i >= lit) dot.setAttribute("data-empty", "true");
+      depthDots.appendChild(dot);
+    }
+    depthDots.setAttribute("aria-label", "这一层的底在地下约 " + bottomKm.toLocaleString() +
+      " 公里，落在第 " + lit + " 颗点上；七颗点里点亮了 " + lit + " 颗");
+  }
+
+  function drawMeters(key) {
+    var L = EQ[key];
+    var share = L.thick / EARTH_R * 100;
+    thickValue.textContent = L.thick.toLocaleString() + " km（占半径 " + share.toFixed(1) + "%）";
+    setMeter(thickMeter, L.thick, EARTH_R);
+    heatValue.textContent = "最热约 " + L.tempMax.toLocaleString() + " ℃";
+    setMeter(heatMeter, L.tempMax, HEAT_TOP);
+
+    var isLiquid = key === "outer";
+    testLiquid.setAttribute("data-ok", isLiquid ? "true" : "false");
+    testLiquid.textContent = (isLiquid ? "✓ 是液体" : "○ 不是液体") + "（" + L.state + "）";
+    var veryHot = L.tempMax >= 3000;
+    testHot.setAttribute("data-ok", veryHot ? "true" : "false");
+    testHot.textContent = (veryHot ? "✓" : "○") + " 比 3000 ℃ 还热（这层 " + L.tempMax.toLocaleString() + " ℃）";
+
+    paintDepthDots(L.to);
+    meterSay.textContent = L.cap + "：厚 " + L.thick.toLocaleString() + " km，占地球半径 " + share.toFixed(1) +
+      "%；最热约 " + L.tempMax.toLocaleString() + " ℃；" + L.state + "。" +
+      (share < 1 ? "条几乎看不见，就是因为它太薄了。" : share > 30 ? "这一条特别长，它是最厚的几层之一。" : "");
+  }
+
+  var eqCurrent = null;
+  function selectLayer(key) {
+    if (!EQ[key] || key === eqCurrent) return;
+    eqCurrent = key;
+    atlasButtons.forEach(function (btn) {
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-eq-layer") === key ? "true" : "false");
+    });
+    drawStage(key);
+    drawMeters(key);
+    syncTopSection(key);
+    atlasSay.textContent = "✓ 你选了" + EQ[key].cap + "：" + EQ[key].say;
+  }
+
+  atlasButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () { selectLayer(btn.getAttribute("data-eq-layer")); });
+  });
+
+  /* 反向同步：直接点顶部剖面图上的一环，图鉴卡和两条量表也跟着走。
+     selectLayer 里的「同一层就返回」保证两边不会来回互相触发。 */
+  [].slice.call(document.querySelectorAll("#coreSvg .seg")).forEach(function (seg) {
+    function follow() { selectLayer(seg.getAttribute("data-l")); }
+    seg.addEventListener("click", follow);
+    seg.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " ") follow();
+    });
+  });
+
+  /* ---------- ③ 几个台站才能找到震中 ---------- */
+  /* 几何位置全部预先算好：三个圆都精确穿过 (160,116)，A、B 两圆的另一个交点是 (161,34)。 */
+  var quizArt = document.getElementById("eqQuizArt");
+  var quizMap = document.getElementById("eqQuizMap");
+  var quizQ = document.getElementById("eqQuizQ");
+  var quizSay = document.getElementById("eqQuizSay");
+  var quizStars = document.getElementById("eqQuizStars");
+  var quizTotal = document.getElementById("eqQuizTotal");
+  var quizPicks = [].slice.call(document.querySelectorAll("#eqQuizPicks [data-eq-answer]"));
+
+  var STN = {
+    a: { x: 96, y: 74, r: 76.6, box: "eq-stn-a", ring: "eq-ring-a", cap: "台站 A", tx: 84, ty: 70, anchor: "end" },
+    b: { x: 232, y: 76, r: 82.4, box: "eq-stn-b", ring: "eq-ring-b", cap: "台站 B", tx: 244, ty: 72, anchor: "start" },
+    c: { x: 152, y: 176, r: 60.5, box: "eq-stn-c", ring: "eq-ring-c", cap: "台站 C", tx: 152, ty: 202, anchor: "middle" }
+  };
+  var MAYBE_DOTS = [[96, 150.6], [24, 100], [141, 12], [169, 97]];
+  var ROUND_ORDER = ["one", "two", "three"];
+  var ROUNDS = {
+    one: {
+      keys: ["a"], extra: "maybe", answer: "one",
+      ask: "地图上只有 1 个台站的圆。震中可能在哪儿？",
+      ok: "✓ 答对了！1 个台站只知道「离我多远」，不知道方向，所以画出来是一整个圆——圆上每一点都可能是震中。",
+      hint: "提示：数一数图上画了几个圆。只有 1 个圆的时候，蓝圈上那几个小点都同样有可能。"
+    },
+    two: {
+      keys: ["a", "b"], extra: "cand", answer: "two",
+      ask: "又加了 1 个台站，现在有 2 个圆。震中还剩几个可能的地方？",
+      ok: "✓ 答对了！两个圆边碰边，会交在 2 个地方。图上两个黄点都符合这两段距离，还得再加一个台站才能挑出来。",
+      hint: "提示：看蓝圈和黄圈交叉的地方，数一数有几个亮黄点。"
+    },
+    three: {
+      keys: ["a", "b", "c"], extra: "epi", answer: "three",
+      ask: "第 3 个台站也来了，3 个圆都画好了。这回能把震中定下来吗？",
+      ok: "✓ 答对了！第 3 个圆只穿过其中一个交点，震中就唯一定下来了——那个红点。这个方法叫三边定位，手机卫星定位也是同一个思路，只是圆变成了球面。",
+      hint: "提示：绿圈只经过刚才两个黄点里的一个。剩下的那一个点，就是三个圆共同指向的位置。"
+    }
+  };
+
+  function drawMap(roundKey) {
+    var R = ROUNDS[roundKey];
+    clearGroup(quizMap);
+    quizMap.appendChild(sv("rect", { x: 0, y: 0, width: 320, height: 220, "class": "eq-sky" }));
+    quizMap.appendChild(sv("path", { "class": "eq-map-land", d: "M0 138 Q54 112 112 132 Q170 152 226 128 Q276 108 320 132 L320 220 L0 220 Z" }));
+    quizMap.appendChild(sv("path", { "class": "eq-map-grid", d: "M80 0v220M160 0v220M240 0v220M0 55h320M0 110h320M0 165h320" }));
+
+    R.keys.forEach(function (k) {
+      var s = STN[k];
+      quizMap.appendChild(sv("circle", { cx: s.x, cy: s.y, r: s.r, "class": s.ring }));
+    });
+
+    if (R.extra === "maybe") {
+      MAYBE_DOTS.forEach(function (p) {
+        quizMap.appendChild(sv("circle", { cx: p[0], cy: p[1], r: 4.5, "class": "eq-maybe" }));
+      });
+      quizMap.appendChild(svText(186, 22, "圆上处处都有可能", "eq-ink-soft", 12, "start"));
+    } else if (R.extra === "cand") {
+      quizMap.appendChild(sv("circle", { cx: 161, cy: 34, r: 6.5, "class": "eq-cand" }));
+      quizMap.appendChild(sv("circle", { cx: 160, cy: 116, r: 6.5, "class": "eq-cand" }));
+      quizMap.appendChild(svText(174, 54, "还剩 2 个", "eq-ink-soft", 12, "start"));
+    } else {
+      quizMap.appendChild(sv("circle", { cx: 160, cy: 116, r: 8.5, "class": "eq-epi" }));
+      quizMap.appendChild(svText(176, 136, "只剩这 1 个", "eq-ink-soft", 12, "start"));
+    }
+
+    R.keys.forEach(function (k) {
+      var s = STN[k];
+      quizMap.appendChild(sv("rect", { x: s.x - 7, y: s.y - 7, width: 14, height: 14, "class": s.box }));
+      quizMap.appendChild(svText(s.tx, s.ty, s.cap, "eq-ink", 12, s.anchor));
+    });
+    quizMap.appendChild(svText(8, 16, "圆的个数：" + R.keys.length, "eq-ink", 13, "start"));
+
+    quizArt.setAttribute("aria-label", "台站距离圆地图：现在画了 " + R.keys.length + " 个圆，" +
+      (R.extra === "maybe" ? "整个圆上都可能是震中" : R.extra === "cand" ? "两个圆交出 2 个可能位置" : "三个圆共同指向 1 个唯一震中"));
+  }
+
+  var quizRound = 0, quizSolved = false, quizWins = 0;
+
+  function showRound(index) {
+    quizRound = ((index % ROUND_ORDER.length) + ROUND_ORDER.length) % ROUND_ORDER.length;
+    var key = ROUND_ORDER[quizRound];
+    quizSolved = false;
+    drawMap(key);
+    quizQ.textContent = ROUNDS[key].ask;
+    quizPicks.forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+    quizSay.textContent = "换好了。先数一数图上有几个圆、几个亮点，再点一张大图卡。";
+  }
+
+  quizPicks.forEach(function (button) {
+    button.addEventListener("click", function () {
+      var key = ROUND_ORDER[quizRound], R = ROUNDS[key];
+      if (quizSolved) { quizSay.textContent = "这题已经答对了。按「换一题」看下一张地图。"; return; }
+      if (button.getAttribute("data-eq-answer") === R.answer) {
+        quizSolved = true;
+        quizPicks.forEach(function (other) {
+          other.setAttribute("aria-pressed", other === button ? "true" : "false");
+        });
+        quizWins += 1;
+        quizStars.textContent = new Array(Math.min(quizWins, 10) + 1).join("⭐");
+        quizStars.setAttribute("aria-label", "已经答对 " + quizWins + " 次");
+        quizTotal.textContent = "答对 " + quizWins + " 次";
+        quizSay.textContent = R.ok + " 按「换一题」再来一张地图。";
+        if (window.Playful && Playful.confetti) Playful.confetti(quizArt.parentNode);
+        return;
+      }
+      /* 答错：地图不变、次数不变，只补一句提示，可以接着再看 */
+      button.setAttribute("aria-pressed", "false");
+      quizSay.textContent = "○ 再看看图。" + R.hint;
+    });
+  });
+
+  document.getElementById("eqQuizNext").addEventListener("click", function () { showRound(quizRound + 1); });
+  document.getElementById("eqQuizHint").addEventListener("click", function () {
+    quizSay.textContent = ROUNDS[ROUND_ORDER[quizRound]].hint;
+  });
+
+  /* ---------- 大图卡代替下拉与滑杆：板块边界 / 震级 ---------- */
+  var plateSelect = document.getElementById("plateType");
+  var magInput = document.getElementById("earthMag");
+  var platePicks = [].slice.call(document.querySelectorAll("#eqPlatePicks [data-eq-plate]"));
+  var magPicks = [].slice.call(document.querySelectorAll("#eqMagPicks [data-eq-mag]"));
+
+  function syncPlatePicks() {
+    if (!plateSelect) return;
+    platePicks.forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-eq-plate") === plateSelect.value ? "true" : "false");
+    });
+  }
+  function syncMagPicks() {
+    if (!magInput) return;
+    magPicks.forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-eq-mag") === String(magInput.value) ? "true" : "false");
+    });
+  }
+  platePicks.forEach(function (button) {
+    button.addEventListener("click", function () {
+      if (!plateSelect) return;
+      plateSelect.value = button.getAttribute("data-eq-plate");
+      plateSelect.dispatchEvent(new Event("change", { bubbles: true }));
+      syncPlatePicks();
+    });
+  });
+  magPicks.forEach(function (button) {
+    button.addEventListener("click", function () {
+      if (!magInput) return;
+      magInput.value = button.getAttribute("data-eq-mag");
+      magInput.dispatchEvent(new Event("input", { bubbles: true }));
+      syncMagPicks();
+    });
+  });
+  if (plateSelect) plateSelect.addEventListener("change", syncPlatePicks);
+  if (magInput) magInput.addEventListener("input", syncMagPicks);
+  syncPlatePicks();
+  syncMagPicks();
+
+  selectLayer("crust");
+  showRound(0);
+})();
+</script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

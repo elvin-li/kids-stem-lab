@@ -1,34 +1,58 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>数感积木 · 十格阵与凑十 — 少儿数理启蒙</title>
 <meta name="description" content="拖动单位积木，满十成行。同一个数量同时用积木、数字、数轴三种方式呈现，帮 4–8 岁孩子建立位值与瞬识（subitizing）直觉。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=13" />
-<link rel="stylesheet" href="../assets/css/kid.css?v=13" />
+<link rel="stylesheet" href="../assets/css/base.css?v=17" />
+<link rel="stylesheet" href="../assets/css/kid.css?v=17" />
 <link rel="stylesheet" href="../assets/css/print.css" media="print" />
 <link rel="manifest" href="../manifest.webmanifest" />
-<meta name="theme-color" content="#0b0f1a" />
+<meta name="theme-color" content="#fff8ec" />
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml" />
 <style>
+  /* 页面局部间距节奏：4 的倍数，卡片内边距与区块留白都取自这里 */
+  body {
+    --s-1: 6px; --s-2: 10px; --s-3: 14px; --s-4: 20px; --s-5: 28px; --s-6: 40px;
+    --pad-card: clamp(16px, 2.2vw, 22px);
+  }
+
   .lab-head { padding: 26px 0 18px; }
-  .lab-head .row { margin-bottom: 10px; }
+  .lab-head .row { margin-bottom: var(--s-2); }
   .lead { font-size: 1.02rem; color: var(--ink-mid); max-width: 62ch; margin: 0; }
 
+  /* 舞台小标题：左侧色条 + 主副信息分层 */
   .stage-caption {
     display: flex; justify-content: space-between; align-items: baseline;
-    gap: 10px; margin: 2px 2px 10px; font-size: .8rem; color: var(--ink-dim);
+    gap: var(--s-2); margin: 0 0 var(--s-3); padding-left: 11px;
+    border-left: 4px solid color-mix(in srgb, var(--warn) 62%, var(--line));
+    font-size: .82rem; line-height: 1.5; color: var(--ink-dim);
   }
-  .stage-caption b { color: var(--ink-mid); font-weight: 700; }
+  .stage-caption b {
+    color: var(--ink); font-weight: 800; font-size: 1rem;
+    letter-spacing: -.005em;
+  }
+  .stage-caption > span { flex: 1 1 15ch; min-width: 0; text-align: right; }
 
   /* 三种表征：数字卡 */
-  .three-ways { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin-top: 12px; }
+  .three-ways { display: grid; gap: var(--s-3); grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin-top: var(--s-4); }
   .way {
-    background: var(--surface); border: 1px solid var(--line);
-    border-radius: var(--r); padding: 12px 14px;
+    position: relative; min-width: 0; overflow: hidden;
+    background: linear-gradient(168deg, var(--surface), color-mix(in srgb, var(--surface-2) 45%, var(--surface)));
+    border: 1px solid var(--line);
+    border-radius: var(--r); padding: var(--s-3) var(--s-3) var(--s-3);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent);
   }
-  .way-tag { font-size: .7rem; font-weight: 700; letter-spacing: .04em; color: var(--ink-dim); text-transform: uppercase; }
+  .way::before {
+    content: ""; position: absolute; inset: 0 0 auto; height: 3px;
+    background: linear-gradient(90deg, var(--math), color-mix(in srgb, var(--math) 30%, transparent));
+  }
+  .way-tag {
+    display: block; margin-bottom: var(--s-1);
+    font-size: .7rem; font-weight: 800; letter-spacing: .07em;
+    color: var(--ink-dim); text-transform: uppercase;
+  }
   .numeral {
     font-family: var(--mono); font-weight: 700; line-height: 1;
     font-size: clamp(2.6rem, 9vw, 3.4rem); color: var(--math);
@@ -53,30 +77,75 @@
   }
   .eq .slot {
     min-width: 46px; text-align: center; border-radius: var(--r-sm);
-    border: 1px dashed var(--math); color: var(--math); background: rgba(110,168,254,.1);
+    /* 纯色 token 压在自己的浅色 12% 底上只有 3.67，往墨色调一档才够 4.5 */
+    border: 1px dashed var(--math); color: color-mix(in srgb, var(--math) 78%, var(--ink));
+    background: color-mix(in srgb, var(--math) 12%, transparent);
   }
-  .eq.ok .slot { border-style: solid; border-color: var(--sci); color: var(--sci); background: rgba(74,222,128,.14); }
+  .eq.ok .slot {
+    border-style: solid; border-color: var(--sci); color: color-mix(in srgb, var(--sci) 72%, var(--ink));
+    background: color-mix(in srgb, var(--sci) 16%, transparent);
+  }
 
   .mode-group { display: flex; flex-wrap: wrap; gap: 8px; }
   .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .btn-grid .btn { width: 100%; }
 
-  .qa { counter-reset: q; list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  /* 家长提问脚本：编号做成圆形徽章，问题与解读明显分层 */
+  .qa { counter-reset: q; list-style: none; padding: 0; margin: 0; display: grid; gap: var(--s-3); }
   .qa li {
-    counter-increment: q; position: relative;
-    background: var(--surface); border: 1px solid var(--line);
-    border-radius: var(--r); padding: 14px 16px 14px 52px;
+    counter-increment: q; position: relative; min-width: 0;
+    background: linear-gradient(168deg, var(--surface), color-mix(in srgb, var(--surface-2) 38%, var(--surface)));
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: var(--pad-card) var(--pad-card) var(--pad-card) 62px;
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent);
   }
   .qa li::before {
-    content: "Q" counter(q); position: absolute; left: 14px; top: 13px;
-    font-family: var(--mono); font-size: .8rem; font-weight: 700; color: var(--math);
+    content: "Q" counter(q); position: absolute; left: var(--s-3); top: var(--s-4);
+    display: grid; place-items: center; width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid color-mix(in srgb, var(--math) 40%, transparent);
+    background: color-mix(in srgb, var(--math) 12%, var(--surface));
+    font-family: var(--mono); font-size: .78rem; font-weight: 800; color: var(--math);
   }
-  .qa b { display: block; color: var(--ink); margin-bottom: 2px; }
-  .qa small { color: var(--ink-dim); font-size: .82rem; }
+  .qa b {
+    display: block; margin-bottom: var(--s-1);
+    color: var(--ink); font-size: 1.04rem; font-weight: 800; line-height: 1.45;
+  }
+  .qa small { display: block; color: var(--ink-dim); font-size: .86rem; line-height: 1.7; }
 
-  .why { margin-top: 34px; }
-  .why h2 { margin-bottom: 14px; }
-  section.block { margin-top: 40px; }
+  /* 区块节奏：标题带装饰图形，段落宽度受控 */
+  .why { margin-top: var(--s-6); }
+  .why h2 { margin-bottom: var(--s-3); }
+  section.block { margin-top: var(--s-6); }
+  section.block > h2 {
+    display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap;
+    margin-bottom: var(--s-2);
+  }
+  section.block > h2 .h2-mark { flex: none; display: block; }
+  section.block > p { max-width: 62ch; line-height: 1.75; }
+
+  /* 原理卡：顶部学科色条 + 图标，缓解纯文字墙 */
+  .why .grid-2 { gap: var(--s-4); }
+  .why .card {
+    position: relative; overflow: hidden; min-width: 0;
+    padding: var(--pad-card);
+    border-radius: var(--r-lg);
+  }
+  .why .card::before {
+    content: ""; position: absolute; inset: 0 0 auto; height: 4px;
+    background: linear-gradient(90deg, var(--why-accent, var(--math)), color-mix(in srgb, var(--why-accent, var(--math)) 22%, transparent));
+  }
+  .why .card h3 {
+    display: flex; align-items: center; gap: var(--s-2);
+    margin: var(--s-1) 0 var(--s-2);
+    font-size: 1.06rem; font-weight: 800; line-height: 1.4;
+  }
+  .why .card h3 .why-icon {
+    flex: none; display: block;
+    color: var(--why-accent, var(--math));
+  }
+  .why .card p { font-size: .93rem; line-height: 1.78; }
   .challenge-log { display: flex; gap: 5px; flex-wrap: wrap; min-height: 22px; }
   .star-dot { color: var(--warn); font-size: 1.05rem; line-height: 1; }
   .mission { margin: 0 0 22px; }
@@ -105,17 +174,41 @@
 
   /* 积木城：角色先开口，舞台紧跟目标 */
   html, body { max-width:100%; overflow-x:clip; }
-  .story-hero { position:relative; display:grid; grid-template-columns:auto minmax(0,1fr); gap:16px; align-items:center; padding:24px clamp(16px,4vw,30px); margin:22px 0 14px; overflow:hidden; border:1px solid rgba(251,191,36,.38); border-radius:var(--r-lg); background:linear-gradient(135deg,rgba(251,191,36,.13),rgba(110,168,254,.08) 58%,var(--surface)); }
-  .story-hero::after { content:"▦  10  ▦"; position:absolute; right:18px; top:10px; color:rgba(251,191,36,.18); font:800 clamp(2rem,8vw,4.8rem)/1 var(--mono); letter-spacing:.08em; pointer-events:none; }
+  .story-hero {
+    position:relative; display:grid; grid-template-columns:auto minmax(0,1fr);
+    gap:clamp(14px,2.6vw,22px); align-items:center;
+    padding:clamp(20px,3.4vw,30px) clamp(16px,4vw,32px);
+    margin:var(--s-4) 0 var(--s-3); overflow:hidden;
+    border:1px solid color-mix(in srgb, var(--warn) 38%, var(--line));
+    border-radius:var(--r-xl);
+    background:
+      radial-gradient(circle at 12% 118%, color-mix(in srgb, var(--math) 12%, transparent), transparent 46%),
+      linear-gradient(135deg, color-mix(in srgb, var(--warn) 14%, var(--surface)), color-mix(in srgb, var(--math) 7%, var(--surface)) 58%, var(--surface));
+    box-shadow: var(--shadow);
+  }
+  .story-hero::after {
+    content:"▦  10  ▦"; position:absolute; right:18px; top:10px;
+    color:color-mix(in srgb, var(--warn) 22%, transparent);
+    font:800 clamp(2rem,8vw,4.8rem)/1 var(--mono); letter-spacing:.08em; pointer-events:none;
+  }
   .story-guide { position:relative; z-index:1; width:88px; height:88px; display:grid; place-items:center; flex:none; border-radius:28px 28px 34px 34px; background:linear-gradient(145deg,#ffd86b,#fb923c); color:#442200; font-size:2.7rem; box-shadow:0 10px 28px rgba(251,146,60,.25); transform:rotate(-3deg); }
   .story-copy { position:relative; z-index:1; min-width:0; }
-  .story-kicker { margin:0 0 5px; color:var(--warn); font-weight:800; font-size:.82rem; letter-spacing:.04em; }
-  .story-hero h1 { margin:0; }
-  .story-goal { margin:7px 0 0; max-width:52ch; color:var(--ink-mid); font-size:1.02rem; }
-  .story-goal b { color:var(--ink); }
+  .story-kicker { margin:0 0 var(--s-1); color:var(--warn); font-weight:800; font-size:.82rem; letter-spacing:.06em; }
+  .story-hero h1 { margin:var(--s-1) 0 0; line-height:1.15; letter-spacing:-.02em; }
+  .story-goal { margin:var(--s-2) 0 0; max-width:52ch; color:var(--ink-mid); font-size:1.04rem; line-height:1.7; }
+  .story-goal b { color:var(--ink); font-weight:800; }
   .stage-shell { position:relative; margin-top:0; }
-  .stage-ribbon { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:0 0 10px; padding:10px 14px; border-radius:var(--r); background:rgba(110,168,254,.09); color:var(--ink-mid); }
-  .stage-ribbon strong { color:var(--ink); }
+  /* 「现在就试」提示条：与舞台同宽，形成入口感 */
+  .stage-ribbon {
+    display:flex; gap:var(--s-2); align-items:center; flex-wrap:wrap;
+    margin:0 0 var(--s-3); padding:var(--s-3) var(--s-4);
+    border:1px solid color-mix(in srgb, var(--math) 26%, var(--line));
+    border-radius:var(--r-lg);
+    background:linear-gradient(100deg, color-mix(in srgb, var(--math) 12%, var(--surface)), var(--surface));
+    color:var(--ink-mid); font-size:.95rem; line-height:1.6;
+  }
+  .stage-ribbon strong { color:var(--ink); font-weight:800; }
+  .stage-ribbon > span[aria-hidden="true"] { font-size:1.3rem; line-height:1; }
   .learning-layers { display:grid; gap:12px; margin-top:28px; }
   .learning-layers details { border:1px solid var(--line); border-radius:var(--r); background:var(--surface); padding:0 16px; }
   .learning-layers summary { min-height:48px; display:flex; align-items:center; cursor:pointer; color:var(--ink); font-weight:800; }
@@ -126,16 +219,132 @@
   .sw, .quick button { min-width:44px; min-height:44px; }
   canvas { max-width:100%; }
   .mission-grid, .mission-actions, .work-card-fields { min-width:0; }
-  .ten-result { display:grid; gap:14px; grid-template-columns:minmax(180px,260px) minmax(0,1fr); align-items:center; margin-top:14px; }
-  .ten-mini { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; padding:10px; border:2px solid var(--warn); border-radius:var(--r); background:var(--surface-2); }
-  .ten-mini span { aspect-ratio:1; border:2px dashed var(--line); border-radius:8px; background:transparent; }
-  .ten-mini span.on { border-style:solid; border-color:var(--math); background:linear-gradient(145deg,var(--math),color-mix(in srgb,var(--math) 65%,#08101f)); }
-  .ten-result-copy { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+
+  /* 舞台内 canvas 留出呼吸空间，不与文字贴边 */
+  #blocksWrap { padding:clamp(10px,2vw,16px); }
+
+  /* 按钮状态：hover / active 明确，focus 交给共享 :focus-visible */
+  .lab-stage .btn, .mission .btn, aside .btn {
+    transition: transform .14s var(--ease), box-shadow .14s var(--ease), border-color .14s var(--ease);
+  }
+  .lab-stage .btn:hover:not(:disabled),
+  .mission .btn:hover:not(:disabled),
+  aside .btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    box-shadow: 0 3px 10px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+  .lab-stage .btn:active:not(:disabled),
+  .mission .btn:active:not(:disabled),
+  aside .btn:active:not(:disabled) { transform: translateY(1px); box-shadow: none; }
+
+  .ten-result { position:relative; display:grid; gap:var(--s-3); grid-template-columns:minmax(180px,260px) minmax(0,1fr); align-items:center; margin-top:var(--s-3); }
+  .ten-mini { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; padding:var(--s-2); border:2px solid var(--warn); border-radius:var(--r); background:var(--surface-2); }
+  .ten-mini span { aspect-ratio:1; border:2px dashed var(--line); border-radius:8px; background:transparent; transition:background .18s var(--ease), border-color .18s var(--ease); }
+  .ten-mini span.on { border-style:solid; border-color:var(--math); background:linear-gradient(145deg,var(--math),color-mix(in srgb,var(--math) 68%,var(--ink))); }
+  .ten-result-copy { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s-2); }
+  .ten-result-copy small { color:var(--ink-dim); font-size:.8rem; font-weight:700; }
   .ten-result-copy b { display:block; margin-top:3px; color:var(--ink); font:800 clamp(1.5rem,6vw,2.4rem)/1 var(--mono); }
   .ten-bundle { grid-column:1/-1; margin:0; color:var(--ink-mid); font-weight:700; }
-  .kid-picks { display:flex; flex-wrap:wrap; gap:8px; }
+  .kid-picks { display:flex; flex-wrap:wrap; gap:var(--s-2); }
   .kid-picks .kid-choice { min-height:44px; }
-  .kid-picks .kid-choice[aria-pressed="true"] { border-color:var(--sci); background:rgba(74,222,128,.14); }
+  .kid-picks .kid-choice[aria-pressed="true"] { border-color:var(--sci); background:color-mix(in srgb, var(--sci) 15%, var(--surface)); }
+
+  /* ===== 四关小游戏：大图形优先，全部点选作答 ===== */
+  .kg { margin-top: var(--s-6); }
+  .kg > h2 { margin-bottom: var(--s-2); }
+  .kg-tabs { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:var(--s-3) 0; }
+  .kg-tab {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    min-height:56px; padding:10px 14px; cursor:pointer;
+    border:3px solid var(--line); border-radius:999px;
+    background:var(--surface); color:var(--ink);
+    font:800 1.02rem/1.2 inherit;
+    box-shadow:0 4px 0 color-mix(in srgb, var(--ink) 13%, transparent);
+  }
+  .kg-tab > span[aria-hidden="true"] { font-size:1.5rem; line-height:1; }
+  .kg-tab[aria-pressed="true"] {
+    border-color:var(--math); color:var(--ink);
+    background:color-mix(in srgb, var(--math) 16%, var(--surface));
+    box-shadow:0 4px 0 color-mix(in srgb, var(--math) 45%, transparent);
+  }
+  .kg-panel {
+    position:relative;
+    padding:clamp(14px,2.6vw,24px);
+    border:3px solid color-mix(in srgb, var(--warn) 34%, var(--line));
+    border-radius:var(--r-xl);
+    background:linear-gradient(160deg, var(--surface), color-mix(in srgb, var(--surface-2) 55%, var(--surface)));
+    box-shadow:0 6px 0 color-mix(in srgb, var(--ink) 12%, transparent);
+  }
+  .kg-panel[hidden] { display:none !important; }
+  .kg-ask { margin:0 0 var(--s-3); font-size:clamp(1.15rem,3.6vw,1.5rem); font-weight:800; color:var(--ink); }
+  .kg-scene {
+    display:flex; flex-wrap:wrap; gap:10px; justify-content:center; align-items:center;
+    min-height:150px; padding:14px;
+    border:3px dashed color-mix(in srgb, var(--math) 34%, var(--line));
+    border-radius:var(--r-lg); background:var(--surface);
+  }
+  .kg-critter {
+    position:relative; display:grid; place-items:center;
+    width:76px; min-height:76px; padding:6px; cursor:pointer;
+    border:3px solid var(--line); border-radius:24px; background:var(--surface);
+  }
+  .kg-critter .kg-face { font-size:2.4rem; line-height:1; }
+  .kg-critter[aria-pressed="true"] { border-color:var(--sci); background:color-mix(in srgb, var(--sci) 16%, var(--surface)); }
+  .kg-critter .kg-num {
+    position:absolute; top:-11px; right:-9px; display:grid; place-items:center;
+    width:32px; height:32px; border-radius:50%;
+    border:3px solid var(--sci); background:var(--surface);
+    color:var(--sci); font:800 1rem/1 var(--mono);
+  }
+  .kg-critter[aria-pressed="false"] .kg-num { display:none; }
+  .kg-hidden-note { display:grid; place-items:center; gap:6px; font-weight:800; color:var(--ink-mid); }
+  .kg-hidden-note span[aria-hidden="true"] { font-size:3.4rem; line-height:1; }
+  .kg-dots { width:min(300px,86%); height:auto; color:var(--math); }
+  .kg-answers { display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr)); gap:10px; margin-top:var(--s-3); }
+  .kg-answer {
+    display:grid; gap:5px; place-items:center;
+    min-height:92px; padding:10px 8px; cursor:pointer;
+    border:3px solid var(--line); border-radius:26px;
+    background:var(--surface); color:var(--ink);
+    box-shadow:0 4px 0 color-mix(in srgb, var(--ink) 13%, transparent);
+  }
+  .kg-answer big { font:800 clamp(1.6rem,6vw,2.3rem)/1 var(--mono); }
+  .kg-answer small { color:var(--ink-mid); font-size:.86rem; font-weight:800; }
+  .kg-answer svg { width:78px; height:auto; color:var(--math); }
+  .kg-answer[data-state="right"] { border-color:var(--sci); background:color-mix(in srgb, var(--sci) 18%, var(--surface)); box-shadow:0 4px 0 color-mix(in srgb, var(--sci) 45%, transparent); }
+  .kg-answer[data-state="wrong"] { border-color:var(--danger); background:color-mix(in srgb, var(--danger) 12%, var(--surface)); }
+  .kg-answer:disabled { cursor:default; opacity:.9; }
+  .kg-tools { display:flex; flex-wrap:wrap; gap:10px; margin-top:var(--s-3); }
+  .kg-trays { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .kg-tray { min-width:0; padding:12px; border:3px solid var(--line); border-radius:26px; background:var(--surface); text-align:center; }
+  .kg-tray-title { display:block; margin-bottom:6px; font-weight:800; color:var(--ink-mid); }
+  .kg-tray-items { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; min-height:96px; align-content:center; font-size:clamp(1.7rem,5.4vw,2.2rem); line-height:1.1; }
+  .kg-tray-items[data-view="pair"] { flex-direction:column; flex-wrap:nowrap; align-items:center; }
+  .kg-tray-items i { font-style:normal; }
+  .kg-tray-items i.kg-extra { border:3px dashed var(--warn); border-radius:14px; padding:0 4px; }
+  .kg-bundles { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; align-items:center; min-height:150px; padding:14px; border:3px dashed color-mix(in srgb, var(--warn) 40%, var(--line)); border-radius:var(--r-lg); background:var(--surface); }
+  .kg-bundle { display:grid; gap:4px; justify-items:center; }
+  .kg-bundle svg { width:150px; height:auto; color:var(--warn); }
+  .kg-bundle b { color:var(--warn); font-size:.92rem; }
+  .kg-ones { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; max-width:170px; }
+  .kg-ones i { width:26px; height:26px; border-radius:9px; background:var(--math); border:2px solid color-mix(in srgb, var(--math) 60%, var(--ink)); }
+  .kg-say { margin:var(--s-3) 0 0; min-height:1.7em; font-size:1.06rem; font-weight:800; color:var(--ink); }
+  .kg-foot { display:flex; flex-wrap:wrap; gap:var(--s-2); align-items:center; margin-top:var(--s-3); }
+  .kg-stars { display:flex; flex-wrap:wrap; gap:4px; min-height:28px; font-size:1.3rem; line-height:1; }
+
+  /* 分龄说明与离屏活动 */
+  .learning-layers .layer-age {
+    display:inline-block; margin-right:8px; padding:2px 10px; border-radius:999px;
+    background:color-mix(in srgb, var(--phys) 18%, transparent);
+    color:var(--phys); font-size:.74rem; font-weight:900;
+  }
+  .learning-layers p { margin:0 0 .6em; line-height:1.75; }
+  .learning-layers p:last-child { margin-bottom:0; }
+  .home-list { display:grid; gap:var(--s-3); margin:var(--s-3) 0 0; padding:0; list-style:none; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); }
+  .home-list li { min-width:0; padding:var(--pad-card); border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
+  .home-list b { display:flex; align-items:center; gap:8px; margin-bottom:6px; color:var(--ink); font-size:1.02rem; }
+  .home-list b span[aria-hidden="true"] { font-size:1.5rem; line-height:1; }
+  .home-list small { display:block; color:var(--ink-dim); font-size:.88rem; line-height:1.7; }
   @media (max-width:620px) {
     .story-hero { grid-template-columns:1fr; padding:18px 16px; }
     .story-guide { width:68px; height:68px; font-size:2.1rem; }
@@ -144,6 +353,7 @@
     .btn-grid { grid-template-columns:1fr; }
     .three-ways { grid-template-columns:minmax(0,1fr); }
     .ten-result { grid-template-columns:1fr; }
+    .kg-trays { grid-template-columns:1fr; }
   }
   html[data-mode="kid"] .story-hero { margin-bottom:8px; padding-block:14px; }
   html[data-mode="kid"] .stage-ribbon { margin-bottom:8px; }
@@ -154,7 +364,236 @@
   html[data-mode="kid"] .three-ways { display:none; }
   html[data-mode="kid"] .kid-primary-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
   html[data-mode="kid"] .kid-primary-actions .btn { width:100%; min-height:52px; font-size:1rem; }
+  html[data-mode="kid"] .kg-tab { min-height:64px; font-size:1.06rem; }
+  html[data-mode="kid"] .kg-ask { font-size:clamp(1.25rem,4.4vw,1.7rem); }
+  html[data-mode="kid"] .kg-answer { min-height:104px; }
+  html[data-mode="kid"] .kg-critter { width:84px; min-height:84px; }
   @media (max-width:420px) { html[data-mode="kid"] .kid-primary-actions { grid-template-columns:1fr; } }
+
+  /* ======================================================================
+     图像优先补强（本页专属前缀 nb-）
+     顶部插画舞台 / 图例 / 凑十配对 / 闪现瞬识 / 位值塔 / 数量图鉴
+     ====================================================================== */
+
+  /* 小游戏区外壳：原来只有 .kg 有边距，补上实际用到的类名 */
+  .kg-wrap { margin-top: var(--s-6); }
+  .kg-title { display:flex; align-items:center; gap:10px; margin:0 0 var(--s-1); }
+  .kg-title > span[aria-hidden="true"] { font-size:1.7rem; line-height:1; }
+  .kg-sub { margin:0 0 var(--s-2); max-width:62ch; color:var(--ink-mid); }
+
+  /* 顶部插画舞台：workshop 插画铺底，角色先开口，再给三步图 */
+  .nb-hero-stage { margin:var(--s-3) 0 var(--s-4); }
+  .nb-hero-copy { display:grid; gap:var(--s-3); }
+  .nb-hero-copy .kid-steps-visual { margin:0; }
+  .nb-hero-brick { font-size:clamp(2.4rem,8vw,3.6rem); line-height:1; }
+
+  /* 图例：空槽 / 积木 / 十条 三种形状差异，不只靠颜色 */
+  .nb-legend { margin:var(--s-2) 0 var(--s-3); }
+
+  /* 通用：横排十格阵（HTML 版，用于配对与图鉴提示） */
+  .nb-frame { display:grid; grid-template-columns:repeat(5,1fr); gap:5px; width:min(250px,100%); padding:9px; border:3px solid var(--warn); border-radius:18px; background:color-mix(in srgb, var(--warn) 10%, var(--surface)); }
+  .nb-frame i { aspect-ratio:1; border:2px dashed var(--line); border-radius:8px; }
+  .nb-frame i[data-fill="a"] { border-style:solid; border-color:color-mix(in srgb, var(--math) 68%, var(--ink)); background:linear-gradient(150deg, var(--math), color-mix(in srgb, var(--math) 62%, var(--ink))); }
+  .nb-frame i[data-fill="b"] { border-style:solid; border-color:color-mix(in srgb, var(--sci) 68%, var(--ink)); background:linear-gradient(150deg, var(--sci), color-mix(in srgb, var(--sci) 62%, var(--ink))); box-shadow:inset 0 0 0 3px color-mix(in srgb, var(--surface) 55%, transparent); }
+
+  /* 凑十配对 */
+  .nb-pair-stage { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:center; min-height:150px; padding:14px; border:3px dashed color-mix(in srgb, var(--math) 34%, var(--line)); border-radius:var(--r-lg); background:var(--surface); }
+  .nb-pair-plus { font:800 2.1rem/1 var(--mono); color:var(--ink-mid); }
+  .nb-pair-slot { display:grid; place-items:center; gap:4px; min-width:96px; min-height:96px; padding:8px; border:3px dashed var(--math); border-radius:22px; background:color-mix(in srgb, var(--math) 7%, var(--surface)); color:var(--math); font-weight:800; }
+  .nb-pair-slot[data-filled="true"] { border-style:solid; border-color:var(--sci); background:color-mix(in srgb, var(--sci) 12%, var(--surface)); color:color-mix(in srgb, var(--sci) 72%, var(--ink)); }
+  .nb-pair-slot span[aria-hidden="true"] { font-size:2.2rem; line-height:1; }
+
+  /* 一眼看出：闪现窗 + 盖子 */
+  .nb-flash-window { position:relative; display:grid; place-items:center; min-height:186px; padding:14px; border:3px solid color-mix(in srgb, var(--phys) 36%, var(--line)); border-radius:var(--r-lg); background:var(--surface); }
+  .nb-flash-window > svg { width:min(300px,92%); height:auto; color:var(--math); }
+  .nb-lid { position:absolute; inset:0; display:grid; place-items:center; align-content:center; gap:4px; border-radius:calc(var(--r-lg) - 4px); font-weight:800; color:var(--ink-mid);
+    background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--phys) 14%, var(--surface)) 0 13px, color-mix(in srgb, var(--phys) 26%, var(--surface)) 13px 26px); }
+  .nb-lid > span[aria-hidden="true"] { font-size:3rem; line-height:1; }
+  .nb-lid[hidden] { display:none !important; }
+
+  /* 位值塔 */
+  .nb-tower { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .nb-col { min-width:0; padding:12px; border:3px solid var(--line); border-radius:26px; background:var(--surface); text-align:center; }
+  .nb-col[data-place="tens"] { border-color:color-mix(in srgb, var(--warn) 46%, var(--line)); background:color-mix(in srgb, var(--warn) 7%, var(--surface)); }
+  .nb-col[data-place="ones"] { border-color:color-mix(in srgb, var(--math) 40%, var(--line)); background:color-mix(in srgb, var(--math) 6%, var(--surface)); }
+  .nb-col-head { display:flex; align-items:center; justify-content:center; gap:7px; margin-bottom:8px; font-weight:800; color:var(--ink-mid); }
+  .nb-col-head > span[aria-hidden="true"] { font-size:1.4rem; line-height:1; }
+  .nb-col-body { display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end; justify-content:center; min-height:146px; }
+  .nb-rod { width:24px; height:132px; border-radius:9px; border:2px solid color-mix(in srgb, var(--warn) 60%, var(--ink));
+    background:repeating-linear-gradient(180deg, var(--warn) 0 11px, color-mix(in srgb, var(--warn) 58%, var(--ink)) 11px 13px); }
+  .nb-one { width:26px; height:26px; border-radius:9px; border:2px solid color-mix(in srgb, var(--math) 60%, var(--ink));
+    background:linear-gradient(150deg, color-mix(in srgb, var(--math) 78%, #fff), var(--math)); box-shadow:inset 0 -3px 0 color-mix(in srgb, var(--math) 55%, var(--ink)); }
+  .nb-slot-empty { width:26px; height:26px; border-radius:9px; border:2px dashed var(--line); }
+  .nb-tower-read { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; align-items:baseline; margin:var(--s-3) 0 0; font:800 clamp(1.5rem,5.6vw,2.2rem)/1 var(--mono); color:var(--ink); }
+  .nb-tower-read small { font:800 .8rem/1 inherit; color:var(--ink-dim); }
+
+  /* 数量图鉴 */
+  .nb-gallery { margin-top:var(--s-6); }
+  .nb-gallery .kid-figure-art > svg { color:var(--math); }
+  .nb-gal-foot { display:flex; flex-wrap:wrap; gap:var(--s-2); align-items:center; margin-top:var(--s-2); }
+  .nb-gal-count { display:inline-flex; align-items:center; gap:6px; font-weight:800; color:var(--ink); }
+  .nb-gal-say { margin:0; min-height:1.7em; font-weight:800; color:var(--ink); }
+
+  @media (max-width:620px) {
+    .nb-tower { grid-template-columns:1fr; }
+    .nb-col-body { min-height:120px; }
+    .nb-rod { height:104px; }
+  }
+  html[data-mode="kid"] .nb-hero-copy .kid-speech { font-size:1.08rem; }
+  html[data-mode="kid"] .nb-pair-slot { min-width:110px; min-height:110px; }
+  html[data-mode="kid"] .nb-flash-window { min-height:220px; }
+
+  /* ======================================================================
+     位值三件套（本页专属前缀 nbx-）
+     ① 数字长什么样图鉴  ② 百 / 十 / 个 三条量表  ③ 「这堆有多少」小游戏
+     SVG 一律不写 fill / stroke 字面量，颜色全部由下面的 nbx-* class 决定。
+     ====================================================================== */
+  .nbx-shell { display:grid; gap:var(--s-4); margin-top:var(--s-6); }
+  .nbx-shell > h2 { display:flex; align-items:center; gap:10px; margin:0 0 var(--s-1); }
+  .nbx-shell > h2 > span[aria-hidden="true"] { font-size:1.7rem; line-height:1; }
+  .nbx-intro { margin:0; max-width:62ch; color:var(--ink-mid); }
+  .nbx-card {
+    position:relative; min-width:0; padding:clamp(14px,2.6vw,24px);
+    border:3px solid color-mix(in srgb, var(--math) 26%, var(--line));
+    border-radius:var(--r-xl);
+    background:linear-gradient(160deg, var(--surface), color-mix(in srgb, var(--surface-2) 55%, var(--surface)));
+    box-shadow:0 6px 0 color-mix(in srgb, var(--ink) 12%, transparent);
+  }
+  .nbx-card > h3 { display:flex; align-items:center; gap:9px; margin:0 0 var(--s-1); font-size:1.14rem; line-height:1.4; }
+  .nbx-card > h3 > span[aria-hidden="true"] { flex:none; font-size:1.6rem; line-height:1; }
+  .nbx-lead { margin:0 0 var(--s-3); max-width:62ch; color:var(--ink-mid); font-weight:700; font-size:.93rem; line-height:1.7; }
+  .nbx-card details { margin-top:var(--s-3); border:1px solid var(--line-soft); border-radius:var(--r); background:var(--surface); padding:0 13px; }
+  .nbx-card details[open] { padding-bottom:10px; }
+  .nbx-card details > summary { min-height:44px; display:flex; align-items:center; cursor:pointer; font-weight:800; color:var(--ink); }
+  .nbx-card details > p { margin:0 0 .6em; color:var(--ink-mid); font-size:.88rem; line-height:1.7; }
+  .nbx-card details > p:last-child { margin-bottom:0; }
+
+  /* ---- ① 图鉴 ---- */
+  .nbx-atlas .kid-figure { --tone:var(--math); }
+  .nbx-atlas .kid-figure-art { min-height:126px; padding:7px; }
+  .nbx-atlas .kid-figure-art > svg { max-width:100%; }
+  .nbx-atlas .nbx-art-tall { max-width:136px; }
+  .nbx-atlas .kid-figure-cap { font:800 1.5rem/1 var(--mono); color:var(--math); }
+  .nbx-atlas .kid-figure-fact {
+    margin-top:auto; padding-top:6px;
+    border-top:1px dashed var(--line-soft);
+    color:var(--ink-mid); font-weight:700;
+  }
+  .nbx-atlas .kid-figure[data-nbx-tone="ten"] { --tone:var(--warn); }
+  .nbx-atlas .kid-figure[data-nbx-tone="ten"] .kid-figure-cap { color:var(--warn); }
+  .nbx-atlas .kid-figure[data-nbx-tone="hundred"] { --tone:var(--sci); }
+  .nbx-atlas .kid-figure[data-nbx-tone="hundred"] .kid-figure-cap { color:var(--sci); }
+  .nbx-atlas .kid-figure[data-nbx-tone="thousand"] { --tone:var(--phys); }
+  .nbx-atlas .kid-figure[data-nbx-tone="thousand"] .kid-figure-cap { color:var(--phys); }
+
+  /* SVG 取色：单块 / 十条 / 百板 / 千块 各一个学科色，形状也不同 */
+  .nbx-art { display:block; }
+  .nbx-art-wide { max-width:100%; }
+  .nbx-row-field { fill:url(#nbxRodCells); }
+  .nbx-flat-field { fill:url(#nbxFlatCells); }
+  .nbx-dot-field { fill:url(#nbxDotCells); }
+  .nbx-plate { fill:color-mix(in srgb, var(--surface) 78%, var(--surface-2)); }
+  .nbx-cell-one { fill:var(--math); }
+  .nbx-cell-hundred { fill:var(--sci); }
+  .nbx-unit { fill:var(--math); }
+  .nbx-unit-lip { fill:color-mix(in srgb, #ffffff 62%, var(--math)); }
+  .nbx-rod { fill:var(--warn); }
+  .nbx-flat { fill:color-mix(in srgb, var(--sci) 88%, #ffffff); }
+  .nbx-cube-front { fill:var(--phys); }
+  .nbx-cube-top { fill:color-mix(in srgb, #ffffff 34%, var(--phys)); }
+  .nbx-cube-side { fill:color-mix(in srgb, var(--ink) 24%, var(--phys)); }
+  .nbx-cube-grid { fill:none; stroke:color-mix(in srgb, #ffffff 58%, var(--phys)); stroke-width:1; }
+  .nbx-grid { fill:none; stroke:color-mix(in srgb, var(--surface) 62%, var(--sci)); stroke-width:1; }
+  .nbx-edge { fill:none; stroke:color-mix(in srgb, var(--ink) 58%, var(--line)); stroke-width:2; }
+  .nbx-edge-thin { fill:none; stroke:color-mix(in srgb, var(--ink) 46%, var(--line)); stroke-width:1; }
+  .nbx-grid-warn { fill:none; stroke:color-mix(in srgb, var(--surface) 52%, var(--warn)); stroke-width:1; }
+  .nbx-split { fill:none; stroke:var(--danger); stroke-width:1.6; stroke-dasharray:6 4; }
+  .nbx-brace { fill:none; stroke:var(--warn); stroke-width:2; stroke-linejoin:round; }
+  .nbx-hand { fill:color-mix(in srgb, var(--code) 26%, #ffe2c4); stroke:color-mix(in srgb, var(--ink) 54%, var(--line)); stroke-width:2; }
+  .nbx-carton { fill:color-mix(in srgb, var(--code) 22%, var(--surface-2)); stroke:color-mix(in srgb, var(--ink) 50%, var(--line)); stroke-width:2; }
+  .nbx-carton-line { fill:none; stroke:color-mix(in srgb, var(--ink) 30%, var(--line)); stroke-width:1.6; }
+  .nbx-egg { fill:color-mix(in srgb, #ffffff 80%, var(--warn)); stroke:color-mix(in srgb, var(--ink) 42%, var(--line)); stroke-width:1.6; }
+  .nbx-dot { fill:var(--math); }
+  .nbx-quin { fill:none; stroke:var(--warn); stroke-width:2; stroke-dasharray:5 3; }
+  .nbx-badge { fill:var(--surface); stroke:var(--math); stroke-width:2; }
+  .nbx-badge-num { fill:var(--math); font:800 9px var(--mono); }
+  .nbx-art-tag { fill:var(--ink-mid); font:800 12px var(--font); }
+  .nbx-art-label { fill:var(--ink); font:800 12px var(--font); }
+  .nbx-art-ring { fill:none; stroke:color-mix(in srgb, var(--ink) 26%, var(--line)); stroke-width:2; stroke-dasharray:7 5; }
+
+  /* ---- ② 位值量表 ---- */
+  .nbx-dial { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0 0 var(--s-3); }
+  .nbx-digit {
+    display:grid; justify-items:center; gap:5px; min-width:0; padding:10px 6px;
+    border:3px solid var(--line); border-radius:22px; background:var(--surface); text-align:center;
+  }
+  .nbx-digit[data-place="hundreds"] { border-color:color-mix(in srgb, var(--sci) 46%, var(--line)); background:color-mix(in srgb, var(--sci) 7%, var(--surface)); }
+  .nbx-digit[data-place="tens"] { border-color:color-mix(in srgb, var(--warn) 48%, var(--line)); background:color-mix(in srgb, var(--warn) 8%, var(--surface)); }
+  .nbx-digit[data-place="ones"] { border-color:color-mix(in srgb, var(--math) 40%, var(--line)); background:color-mix(in srgb, var(--math) 6%, var(--surface)); }
+  .nbx-digit-head { display:inline-flex; align-items:center; gap:6px; font-weight:800; font-size:.88rem; color:var(--ink-mid); }
+  .nbx-digit-head > span[aria-hidden="true"] { font-size:1.2rem; line-height:1; }
+  .nbx-digit-value { font:800 clamp(2rem,7vw,2.8rem)/1 var(--mono); color:var(--ink); }
+  .nbx-digit-unit { color:var(--ink-dim); font-size:.8rem; font-weight:700; }
+  .nbx-digit-btns { display:flex; gap:7px; }
+  .nbx-meters { display:grid; gap:14px; margin:0 0 var(--s-3); }
+  .nbx-total {
+    display:flex; flex-wrap:wrap; gap:8px; align-items:baseline; justify-content:center;
+    margin:0 0 var(--s-3); font:800 clamp(1.4rem,5.4vw,2.1rem)/1.2 var(--mono); color:var(--ink);
+  }
+  .nbx-total small { color:var(--ink-dim); font:800 .78rem/1 var(--font); }
+  .nbx-dial-art, .nbx-quiz-art {
+    display:block; width:100%; height:auto; max-height:300px; margin:0 auto var(--s-2);
+    border:3px solid color-mix(in srgb, var(--math) 22%, var(--line));
+    border-radius:var(--r-lg); background:var(--surface);
+  }
+
+  /* ---- ③ 这堆有多少 ---- */
+  .nbx-quiz-picks { grid-template-columns:repeat(auto-fit,minmax(122px,1fr)); margin:var(--s-3) 0; }
+  .nbx-quiz-picks .kid-tile { position:relative; }
+  .nbx-quiz-picks .kid-tile-art { font:800 clamp(1.5rem,5.4vw,2.2rem)/1 var(--mono); }
+  .nbx-quiz-picks .kid-tile[data-nbx-state="right"] {
+    border-color:var(--sci); color:var(--ink); background:color-mix(in srgb, var(--sci) 15%, var(--surface));
+  }
+  .nbx-quiz-picks .kid-tile[data-nbx-state="right"]::after { content:"✓"; position:absolute; top:6px; right:9px; color:var(--sci); font-weight:900; }
+  .nbx-quiz-picks .kid-tile[data-nbx-state="wrong"] {
+    border-color:var(--danger); color:var(--ink); background:color-mix(in srgb, var(--danger) 10%, var(--surface));
+  }
+  .nbx-quiz-picks .kid-tile[data-nbx-state="wrong"]::after { content:"✗"; position:absolute; top:6px; right:9px; color:var(--danger); font-weight:900; }
+  .nbx-quiz-picks .kid-tile:disabled { cursor:default; opacity:.95; }
+  .nbx-quiz-foot { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:var(--s-3) 0 0; }
+  .nbx-quiz-progress { color:var(--ink-mid); font-weight:800; font-size:.9rem; }
+  .nbx-dots { --tone:var(--math); }
+  .nbx-dots > i[data-nbx-dot="right"] { border-color:var(--sci); background:color-mix(in srgb, var(--sci) 40%, var(--surface)); }
+  .nbx-dots > i[data-nbx-dot="wrong"] { border-color:var(--danger); background:color-mix(in srgb, var(--danger) 26%, var(--surface)); }
+  .nbx-dots > i[data-nbx-dot="now"] { border-style:solid; border-color:var(--math); box-shadow:0 0 0 3px color-mix(in srgb, var(--math) 22%, transparent); }
+  .nbx-quiz-tools { display:flex; flex-wrap:wrap; gap:10px; margin-top:var(--s-3); }
+  .nbx-say-row { margin:var(--s-3) 0 0; }
+
+  @media (max-width:620px) {
+    .nbx-dial { grid-template-columns:1fr; }
+    .nbx-digit { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; }
+    .nbx-atlas .nbx-art-tall { max-width:118px; }
+    /* 手机上整张 SVG 被缩小，堆下面的说明字要按比例放大才读得清 */
+    .nbx-art-label { font-size:14px; }
+    .nbx-art-tag { font-size:13px; }
+  }
+  html[data-mode="kid"] .nbx-card > h3 { font-size:1.2rem; }
+  html[data-mode="kid"] .nbx-digit-value { font-size:clamp(2.2rem,8vw,3.2rem); }
+  html[data-mode="kid"] .nbx-quiz-picks .kid-tile { min-height:112px; }
+  /* 手机孩子模式：页头故事与说明条收紧，把「➕1 颗 / 补满这行」这组主操作
+     留在首屏。玩法已由上方插画舞台的三步图卡讲清楚。 */
+  @media (max-width:480px) {
+    html[data-mode="kid"] .stage-ribbon { display:none; }
+    html[data-mode="kid"] .story-hero { padding-block:8px; }
+    html[data-mode="kid"] .story-goal { display:none; }
+    html[data-mode="kid"] .nb-hero-stage { margin-bottom:8px; }
+    html[data-mode="kid"] .nb-legend { margin:4px 0; }
+    html[data-mode="kid"] #blocksWrap { min-height:0; }
+    /* 故事引子由上方插画舞台承担，手机上收起这行文字 */
+    html[data-mode="kid"] .story-kicker { display:none; }
+    html[data-mode="kid"] .story-hero h1 { font-size:1.4rem; }
+    html[data-mode="kid"] .nb-hero-stage { min-height:224px; max-height:224px; }
+  }
 </style>
 </head>
 <body data-playful-page="games/number-blocks.html">
@@ -188,6 +627,25 @@
     </div>
   </header>
 
+  <!-- ============ 顶部图形舞台：不识字也看得懂这页在玩什么 ============ -->
+  <div class="kid-visual-stage nb-hero-stage" data-scene-layer="back"
+       data-playful-scene="workshop"
+       data-playful-scene-title="积木工坊"
+       data-playful-scene-desc="工作台后面挂着一块打孔板，台面上摆着工具，等着把散块拼成一条十">
+    <div class="nb-hero-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🐱</span>
+        <p class="kid-speech">十个「一」抱在一起，就变成一个「十」。</p>
+        <span class="nb-hero-brick" aria-hidden="true">🧱🧱🧱</span>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步玩法">
+        <li><span class="kid-tile-art" aria-hidden="true">👆</span>点散块</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🧱</span>放进格子</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🔟</span>满十成一条</li>
+      </ol>
+    </div>
+  </div>
+
   <div class="stage-ribbon" role="note"><span aria-hidden="true">👆</span><strong>现在就试：</strong><span>点一颗散块，或用方向键增减积木。</span></div>
 
   <div class="lab">
@@ -195,8 +653,14 @@
     <section class="lab-stage" id="stage-area" aria-label="积木互动区">
       <div class="stage-caption">
         <b id="taskText">自由搭：想放多少就放多少</b>
-        <span>拖动 / 点击散块 → 放进十格阵；点已放的积木可拿走</span>
+        <span data-audience="parent">拖动 / 点击散块 → 放进十格阵；点已放的积木可拿走</span>
       </div>
+
+      <ul class="nb-legend kid-legend" aria-label="画面图例">
+        <li style="--tone:var(--ink-dim)"><span class="kid-legend-mark" aria-hidden="true">▢</span>虚线空槽 = 还差</li>
+        <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">🧱</span>实心积木 = 一</li>
+        <li style="--tone:var(--warn)"><span class="kid-legend-mark" aria-hidden="true">▬</span>满十 = 一条十</li>
+      </ul>
 
       <div class="kid-hero-scene" id="blocksWrap">
         <canvas id="blocks" tabindex="0" role="application"
@@ -204,8 +668,10 @@
       </div>
 
       <div class="kid-action-strip kid-primary-actions" aria-label="积木主要操作">
-        <button class="btn btn-primary" id="plus" aria-label="增加一颗积木">+ 1 颗</button>
-        <button class="btn" id="fillTen">补满这行</button>
+        <button class="btn btn-primary" id="plus" aria-label="增加一颗积木"><span aria-hidden="true">➕</span> 1 颗</button>
+        <button class="btn" id="kidMinus" aria-label="拿走一颗积木"><span aria-hidden="true">➖</span> 1 颗</button>
+        <button class="btn" id="fillTen"><span aria-hidden="true">🔟</span> 补满这行</button>
+        <button class="btn" id="kidNewTask" aria-label="换一道题"><span aria-hidden="true">🔄</span> 换一题</button>
       </div>
 
       <div class="kid-result-card ten-result" aria-live="polite">
@@ -217,6 +683,14 @@
           <div><small>已有</small><b><span id="kidCount">0</span> 颗</b></div>
           <div><small>到 10 还差</small><b><span id="kidNeed">10</span> 颗</b></div>
           <p class="ten-bundle" id="kidBundle">装满这一行：10 个一 = 1 个十</p>
+        </div>
+        <div class="kid-meter ten-bundle" style="--tone:var(--math)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">🧱</span>
+            <span id="kidMeterLabel">这一行装到哪儿了</span>
+            <span class="kid-meter-value" id="kidMeterValue">0 / 10</span>
+          </div>
+          <div class="kid-meter-track" id="kidTenMeter" role="img" aria-labelledby="kidMeterLabel kidMeterValue"><span class="kid-meter-fill"></span></div>
         </div>
       </div>
 
@@ -252,7 +726,8 @@
     </section>
 
     <!-- ================= 控制面板 ================= -->
-    <aside data-audience="parent">
+    <aside data-audience="parent" aria-labelledby="nbPanelTitle">
+      <h2 class="sr-only" id="nbPanelTitle">控制面板与读数</h2>
       <div class="panel">
         <h3>玩法</h3>
         <div class="ctrl">
@@ -309,6 +784,532 @@
     </aside>
   </div>
 
+  <!-- ================= 数感四个小游戏（孩子路径，全图形） ================= -->
+  <section class="kg-wrap" id="kidGames" aria-labelledby="kidGamesTitle">
+    <h2 id="kidGamesTitle" class="kg-title"><span aria-hidden="true">🎲</span>再玩七个小游戏</h2>
+    <p class="kg-sub">点上面的图，选一个玩。答对了积木星星会变多。</p>
+
+    <div class="kg-tabs" role="group" aria-label="选择小游戏">
+      <button class="kg-tab" type="button" data-kg-tab="pair" aria-pressed="true"><span aria-hidden="true">🤝</span>凑十好朋友</button>
+      <button class="kg-tab" type="button" data-kg-tab="flash" aria-pressed="false"><span aria-hidden="true">👀</span>一眼看出</button>
+      <button class="kg-tab" type="button" data-kg-tab="tower" aria-pressed="false"><span aria-hidden="true">🏗️</span>位值塔</button>
+      <button class="kg-tab" type="button" data-kg-tab="peek" aria-pressed="false"><span aria-hidden="true">🐣</span>数一数</button>
+      <button class="kg-tab" type="button" data-kg-tab="same" aria-pressed="false"><span aria-hidden="true">⚖️</span>一样多吗</button>
+      <button class="kg-tab" type="button" data-kg-tab="bundle" aria-pressed="false"><span aria-hidden="true">📦</span>十条和散块</button>
+      <button class="kg-tab" type="button" data-kg-tab="order" aria-pressed="false"><span aria-hidden="true">🚂</span>第几个</button>
+    </div>
+
+    <!-- 小游戏 A：凑十好朋友 -->
+    <div class="kg-panel" id="kgPanelPair" role="group" aria-labelledby="kgAskPair">
+      <p class="kg-ask" id="kgAskPair"><span aria-hidden="true">🤝</span> 再放几颗就满十？</p>
+      <div class="nb-pair-stage">
+        <div class="nb-frame" id="kgPairFrame" role="img" aria-label="十格阵里已经放了几颗积木"></div>
+        <span class="nb-pair-plus" aria-hidden="true">+</span>
+        <div class="nb-pair-slot" id="kgPairSlot" data-filled="false" role="img" aria-label="空位：等着放进配对的积木">
+          <span aria-hidden="true">❓</span>还差
+        </div>
+      </div>
+      <div class="kg-answers" id="kgPairAnswers" aria-label="选一块能凑十的积木"></div>
+      <div class="kg-tools">
+        <button class="btn btn-primary" type="button" id="kgPairNext"><span aria-hidden="true">🔄</span> 换一个数</button>
+        <button class="btn" type="button" id="kgPairHelp"><span aria-hidden="true">👆</span> 数空格</button>
+      </div>
+      <p class="kg-say" id="kgPairSay" role="status" aria-live="polite">看看还剩几个空格。</p>
+    </div>
+
+    <!-- 小游戏 B：一眼看出（subitizing 闪现） -->
+    <div class="kg-panel" id="kgPanelFlash" role="group" aria-labelledby="kgAskFlash" hidden>
+      <p class="kg-ask" id="kgAskFlash"><span aria-hidden="true">👀</span> 刚刚有几个点？</p>
+      <div class="nb-flash-window" id="kgFlashWindow">
+        <div class="nb-lid" id="kgFlashLid" hidden><span aria-hidden="true">🙈</span>盖住啦，点一个数</div>
+      </div>
+      <div class="kg-answers" id="kgFlashAnswers" aria-label="选一个数量"></div>
+      <div class="kg-tools">
+        <button class="btn btn-primary" type="button" id="kgFlashNext"><span aria-hidden="true">🔄</span> 换一组点</button>
+        <button class="btn" type="button" id="kgFlashPeek"><span aria-hidden="true">👁️</span> 再闪一次</button>
+        <button class="btn" type="button" id="kgFlashHold" aria-pressed="false"><span aria-hidden="true">📌</span> 一直显示</button>
+      </div>
+      <p class="kg-say" id="kgFlashSay" role="status" aria-live="polite">点「换一组点」开始，点会闪一下再盖住。</p>
+    </div>
+
+    <!-- 小游戏 C：位值塔 -->
+    <div class="kg-panel" id="kgPanelTower" role="group" aria-labelledby="kgAskTower" hidden>
+      <p class="kg-ask" id="kgAskTower"><span aria-hidden="true">🏗️</span> 搭出 <b id="kgTowerTarget">23</b></p>
+      <div class="nb-tower">
+        <div class="nb-col" data-place="tens">
+          <span class="nb-col-head"><span aria-hidden="true">▬</span>十位 · 一条十</span>
+          <div class="nb-col-body" id="kgTowerTens" role="img" aria-label="十位上有 0 条十"></div>
+        </div>
+        <div class="nb-col" data-place="ones">
+          <span class="nb-col-head"><span aria-hidden="true">🧱</span>个位 · 散块</span>
+          <div class="nb-col-body" id="kgTowerOnes" role="img" aria-label="个位上有 0 个散块"></div>
+        </div>
+      </div>
+      <p class="nb-tower-read" id="kgTowerRead"><small>现在是</small> <span id="kgTowerNow">0</span></p>
+      <div class="kg-tools">
+        <button class="btn btn-primary" type="button" id="kgTowerAdd" aria-label="放一个散块"><span aria-hidden="true">➕</span> 放 1 块</button>
+        <button class="btn" type="button" id="kgTowerSub" aria-label="拿走一个散块"><span aria-hidden="true">➖</span> 拿 1 块</button>
+        <button class="btn" type="button" id="kgTowerNext"><span aria-hidden="true">🔄</span> 换一个目标</button>
+      </div>
+      <p class="kg-say" id="kgTowerSay" role="status" aria-live="polite">个位满 10 块，会自动捆成一条十。</p>
+    </div>
+
+    <!-- 小游戏 1：数一数 -->
+    <div class="kg-panel" id="kgPanelPeek" role="group" aria-labelledby="kgAskPeek" hidden>
+      <p class="kg-ask" id="kgAskPeek"><span aria-hidden="true">🐣</span> 有几只？</p>
+      <div class="kg-scene" id="kgPeekScene" aria-label="小鸡在草地上"></div>
+      <div class="kg-answers" id="kgPeekAnswers" aria-label="选一个数量"></div>
+      <div class="kg-tools">
+        <button class="btn btn-primary" type="button" id="kgPeekNext"><span aria-hidden="true">🔄</span> 换一群</button>
+        <button class="btn" type="button" id="kgPeekHelp"><span aria-hidden="true">👆</span> 帮我数</button>
+      </div>
+      <p class="kg-say" id="kgPeekSay" role="status" aria-live="polite">点一个数字。</p>
+    </div>
+
+    <!-- 小游戏 2：一样多吗 -->
+    <div class="kg-panel" id="kgPanelSame" role="group" aria-labelledby="kgAskSame" hidden>
+      <p class="kg-ask" id="kgAskSame"><span aria-hidden="true">⚖️</span> 哪边多？</p>
+      <div class="kg-trays">
+        <div class="kg-tray">
+          <span class="kg-tray-title">左边</span>
+          <div class="kg-tray-items" id="kgSameLeft" role="img" aria-label="左边的东西"></div>
+        </div>
+        <div class="kg-tray">
+          <span class="kg-tray-title">右边</span>
+          <div class="kg-tray-items" id="kgSameRight" role="img" aria-label="右边的东西"></div>
+        </div>
+      </div>
+      <div class="kg-answers" aria-label="选一个答案">
+        <button class="kg-answer" type="button" data-kg-same="left"><span aria-hidden="true" style="font-size:2rem">👈</span><small>左边多</small></button>
+        <button class="kg-answer" type="button" data-kg-same="equal"><span aria-hidden="true" style="font-size:2rem">🟰</span><small>一样多</small></button>
+        <button class="kg-answer" type="button" data-kg-same="right"><span aria-hidden="true" style="font-size:2rem">👉</span><small>右边多</small></button>
+      </div>
+      <div class="kg-tools">
+        <button class="btn btn-primary" type="button" id="kgSameNext"><span aria-hidden="true">🔄</span> 换一组</button>
+        <button class="btn" type="button" id="kgSamePair"><span aria-hidden="true">🔗</span> 一对一排好</button>
+      </div>
+      <p class="kg-say" id="kgSameSay" role="status" aria-live="polite">先看看，再点一个。</p>
+    </div>
+
+    <!-- 小游戏 3：十条和散块 -->
+    <div class="kg-panel" id="kgPanelBundle" role="group" aria-labelledby="kgAskBundle" hidden>
+      <p class="kg-ask" id="kgAskBundle"><span aria-hidden="true">📦</span> 一共几个？</p>
+      <div class="kg-bundles" id="kgBundleScene" aria-label="十条和散块"></div>
+      <div class="kg-answers" id="kgBundleAnswers" aria-label="选一个数量"></div>
+      <div class="kg-tools">
+        <button class="btn btn-primary" type="button" id="kgBundleNext"><span aria-hidden="true">🔄</span> 换一堆</button>
+        <button class="btn" type="button" id="kgBundleHelp"><span aria-hidden="true">👆</span> 帮我数</button>
+      </div>
+      <p class="kg-say" id="kgBundleSay" role="status" aria-live="polite">一条是十个，散块一个一个数。</p>
+    </div>
+
+    <!-- 小游戏 4：第几个 -->
+    <div class="kg-panel" id="kgPanelOrder" role="group" aria-labelledby="kgAskOrder" hidden>
+      <p class="kg-ask" id="kgAskOrder"><span aria-hidden="true">🚂</span> 点第 3 个</p>
+      <div class="kg-scene" id="kgOrderScene" aria-label="排队的小动物"></div>
+      <div class="kg-tools">
+        <button class="btn btn-primary" type="button" id="kgOrderNext"><span aria-hidden="true">🔄</span> 换一队</button>
+        <button class="btn" type="button" id="kgOrderHelp"><span aria-hidden="true">👆</span> 从头数</button>
+      </div>
+      <p class="kg-say" id="kgOrderSay" role="status" aria-live="polite">从左边第一个开始数。</p>
+    </div>
+
+    <div class="kg-foot">
+      <span class="kg-stars" id="kgStars" role="img" aria-label="小游戏已答对 0 次"></span>
+      <span class="kg-say" id="kgTotal" style="margin:0">答对 0 次</span>
+    </div>
+
+    <div class="card parent-deep-dive" data-audience="parent" style="margin-top:16px">
+      <h3 style="margin-top:0">七个小游戏各练什么</h3>
+      <ul style="margin:0;padding-left:1.2rem;color:var(--ink-mid);line-height:1.8">
+        <li><b>凑十好朋友</b>：十格阵里的空格数就是补数。孩子先<b>看空位</b>再选积木，等于把 7 + 3 = 10 变成一个可看见的动作。</li>
+        <li><b>一眼看出</b>：subitizing 闪现。点阵只出现一瞬间，逼孩子放弃逐个数、改用结构（骰子形、5 + 几、成对）。有序摆法通常比乱摆更快被认出。</li>
+        <li><b>位值塔</b>：个位满 10 自动捆成一条十，把「进位」从规则变成动作。请孩子读出「几条十 + 几个一」，再读整数。</li>
+        <li><b>数一数</b>：先瞬识（subitizing），再逐个点数。「帮我数」会把小鸡编号，演示<b>基数原则</b>——最后一个数字就是总数。</li>
+        <li><b>一样多吗</b>：练<b>一对一对应</b>。「一对一排好」把两边竖排配对，让孩子发现「多」不取决于占地大小，这正是皮亚杰守恒实验的核心。</li>
+        <li><b>十条和散块</b>：位值的实物起点。先读几条十，再数散块，说成「三十四」。</li>
+        <li><b>第几个</b>：区分<b>基数</b>（有几个）与<b>序数</b>（第几个）。孩子常把「第 3 个」听成「3 个」。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= 数量图鉴：每个数收两种摆法 ================= -->
+  <section class="nb-gallery" id="numberGallery" aria-labelledby="numberGalleryTitle">
+    <h2 id="numberGalleryTitle" class="kg-title"><span aria-hidden="true">🖼️</span>数量图鉴 · 1 到 10</h2>
+    <p class="kg-sub">点一张卡，它会换一种摆法。同一个数收到 <b>两种不同的摆法</b>，卡片就会打上 ✓。</p>
+    <div class="kid-figure-grid" id="nbGalleryGrid" aria-label="1 到 10 的数量图鉴"></div>
+    <div class="nb-gal-foot">
+      <span class="nb-gal-count"><span aria-hidden="true">✓</span><span id="nbGalleryCount">已收 0 / 10 个数</span></span>
+      <span class="kid-badge" id="nbTenBadge" data-earned="false"><span aria-hidden="true">🔟</span><span id="nbTenBadgeText">两种不同的 10：还差 2 种</span></span>
+    </div>
+    <p class="nb-gal-say" id="nbGallerySay" role="status" aria-live="polite">先点一下「10」，看看 10 有几种摆法。</p>
+    <div class="card parent-deep-dive" data-audience="parent" style="margin-top:16px">
+      <h3 style="margin-top:0">图鉴在教什么</h3>
+      <p style="margin:0">每张卡在<b>十格阵、成对、五和几、骰子形</b>之间轮换。目录任务要求「摆出两种不同的 10」，孩子在这里做的就是这件事：同一个数量可以有完全不同的外形，数量却不变（数量守恒）。请孩子说说哪种摆法最容易一眼看出来，通常是<b>成对</b>和<b>五和几</b>。</p>
+    </div>
+  </section>
+
+  <!-- ================= 位值三件套：图鉴 / 三条量表 / 这堆有多少 ================= -->
+  <section class="nbx-shell" id="nbxShell" aria-labelledby="nbxShellTitle">
+    <h2 id="nbxShellTitle"><span aria-hidden="true">🔢</span>看图就懂：数字长什么样 · 位值量表 · 这堆有多少</h2>
+    <p class="nbx-intro">这一段全是大图。同一个数量换个样子还是那么多；数字里的每一位，对应的是一堆看得见的积木。</p>
+
+    <!-- ① 图鉴 -->
+    <article class="nbx-card nbx-atlas" aria-labelledby="nbxAtlasTitle">
+      <h3 id="nbxAtlasTitle"><span aria-hidden="true">🖼️</span>① 数字长什么样图鉴</h3>
+      <p class="nbx-lead">一个数有很多长相。点一张卡，下面的三条量表就换成这个数。</p>
+      <ul class="kid-legend" aria-label="四种积木图例">
+        <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">▪</span>单块 = 1</li>
+        <li style="--tone:var(--warn)"><span class="kid-legend-mark" aria-hidden="true">▬</span>十条 = 10</li>
+        <li style="--tone:var(--sci)"><span class="kid-legend-mark" aria-hidden="true">▦</span>百板 = 100</li>
+        <li style="--tone:var(--phys)"><span class="kid-legend-mark" aria-hidden="true">◼</span>千块 = 1000</li>
+      </ul>
+
+      <div class="kid-figure-grid" id="nbxAtlasGrid" aria-label="数字长什么样：八张大图卡">
+        <button class="kid-figure" type="button" data-nbx-set="1" aria-pressed="false" aria-label="把量表设成 1：一个小方块">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg class="nbx-art nbx-art-tall" viewBox="0 0 120 100" focusable="false">
+              <rect class="nbx-plate" x="0" y="0" width="120" height="100" rx="10"/>
+              <rect class="nbx-unit" x="41" y="30" width="38" height="38" rx="7"/>
+              <rect class="nbx-unit-lip" x="46" y="35" width="28" height="8" rx="4"/>
+              <rect class="nbx-edge" x="41" y="30" width="38" height="38" rx="7"/>
+              <text class="nbx-art-tag" x="60" y="88" text-anchor="middle">1 个一</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">1</span>
+          <span class="kid-figure-sub">1 个单块，最小的一块</span>
+          <span class="kid-figure-fact">数什么都从 1 个一开始，它是所有位值的原料。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-nbx-set="10" data-nbx-tone="ten" aria-pressed="false" aria-label="把量表设成 10：十个单块排成一条十">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg class="nbx-art nbx-art-wide" viewBox="0 0 260 84" focusable="false">
+              <defs>
+                <pattern id="nbxRodCells" width="25" height="22" patternUnits="userSpaceOnUse" patternTransform="translate(5,16)">
+                  <rect class="nbx-cell-one" x="0" y="0" width="22" height="22" rx="4"/>
+                </pattern>
+              </defs>
+              <rect class="nbx-plate" x="0" y="0" width="260" height="84" rx="10"/>
+              <rect class="nbx-row-field" x="5" y="16" width="247" height="22"/>
+              <rect class="nbx-edge" x="2" y="13" width="253" height="28" rx="7"/>
+              <path class="nbx-brace" d="M5 48 V54 H252 V48"/>
+              <text class="nbx-art-tag" x="128" y="74" text-anchor="middle">10 个一 = 1 个十</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">10</span>
+          <span class="kid-figure-sub">10 个单块排成一条（十条）</span>
+          <span class="kid-figure-fact">10 个一是 1 个十。抱成一条以后，只数「一条」就行。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-nbx-set="100" data-nbx-tone="hundred" aria-pressed="false" aria-label="把量表设成 100：一百个方块排成一个百板">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg class="nbx-art nbx-art-tall" viewBox="0 0 150 154" focusable="false">
+              <defs>
+                <pattern id="nbxFlatCells" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="translate(15,10)">
+                  <rect class="nbx-cell-hundred" x="0" y="0" width="10" height="10" rx="2"/>
+                </pattern>
+              </defs>
+              <rect class="nbx-plate" x="0" y="0" width="150" height="154" rx="10"/>
+              <rect class="nbx-flat-field" x="15" y="10" width="118" height="118"/>
+              <rect class="nbx-edge" x="12" y="7" width="124" height="124" rx="7"/>
+              <text class="nbx-art-tag" x="75" y="146" text-anchor="middle">10 条十 = 1 个百</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">100</span>
+          <span class="kid-figure-sub">100 个方块排成一个正方形（百板）</span>
+          <span class="kid-figure-fact">排成方块比排成一条好数：只要数 10 排，每排 10 个。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-nbx-set="1000" data-nbx-tone="thousand" aria-pressed="false" aria-label="看 1000 长什么样：一千个方块堆成一个立方体">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg class="nbx-art nbx-art-tall" viewBox="0 0 150 164" focusable="false">
+              <rect class="nbx-plate" x="0" y="0" width="150" height="164" rx="10"/>
+              <path class="nbx-cube-top" d="M20 48 L50 16 L140 16 L110 48 Z"/>
+              <path class="nbx-cube-side" d="M110 48 L140 16 L140 106 L110 138 Z"/>
+              <rect class="nbx-cube-front" x="20" y="48" width="90" height="90" rx="3"/>
+              <path class="nbx-cube-grid" d="M29 48V138M38 48V138M47 48V138M56 48V138M65 48V138M74 48V138M83 48V138M92 48V138M101 48V138M20 57H110M20 66H110M20 75H110M20 84H110M20 93H110M20 102H110M20 111H110M20 120H110M20 129H110"/>
+              <path class="nbx-edge" d="M20 48 L50 16 L140 16 L110 48 Z M110 48 L110 138 M20 48 L20 138 L110 138 M140 16 L140 106 L110 138"/>
+              <text class="nbx-art-tag" x="75" y="156" text-anchor="middle">10 个百 = 1 个千</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">1000</span>
+          <span class="kid-figure-sub">1000 个方块堆成一个立方体（千块）</span>
+          <span class="kid-figure-fact">10 个百是 1 个千。位数往左又多一格，百位十位个位就都归零。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-nbx-set="5" aria-pressed="false" aria-label="把量表设成 5：一只手就是五">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg class="nbx-art nbx-art-tall" viewBox="0 0 130 112" focusable="false">
+              <rect class="nbx-plate" x="0" y="0" width="130" height="112" rx="10"/>
+              <rect class="nbx-hand" x="44" y="20" width="13" height="46" rx="6.5"/>
+              <rect class="nbx-hand" x="61" y="14" width="13" height="52" rx="6.5"/>
+              <rect class="nbx-hand" x="78" y="18" width="13" height="48" rx="6.5"/>
+              <rect class="nbx-hand" x="95" y="26" width="13" height="40" rx="6.5"/>
+              <rect class="nbx-hand" x="20" y="48" width="32" height="13" rx="6.5" transform="rotate(30 36 54)"/>
+              <rect class="nbx-hand" x="40" y="56" width="72" height="42" rx="15"/>
+              <circle class="nbx-badge" cx="26" cy="47" r="8"/>
+              <text class="nbx-badge-num" x="26" y="50" text-anchor="middle">1</text>
+              <circle class="nbx-badge" cx="50" cy="26" r="8"/>
+              <text class="nbx-badge-num" x="50" y="29" text-anchor="middle">2</text>
+              <circle class="nbx-badge" cx="67" cy="20" r="8"/>
+              <text class="nbx-badge-num" x="67" y="23" text-anchor="middle">3</text>
+              <circle class="nbx-badge" cx="84" cy="24" r="8"/>
+              <text class="nbx-badge-num" x="84" y="27" text-anchor="middle">4</text>
+              <circle class="nbx-badge" cx="101" cy="32" r="8"/>
+              <text class="nbx-badge-num" x="101" y="35" text-anchor="middle">5</text>
+              <text class="nbx-art-tag" x="65" y="108" text-anchor="middle">一只手 = 5</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">5</span>
+          <span class="kid-figure-sub">一只手，5 根手指</span>
+          <span class="kid-figure-fact">一只手就是 5，不用一个一个数；两只手正好是 10。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-nbx-set="12" aria-pressed="false" aria-label="把量表设成 12：一打鸡蛋，两排六个">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg class="nbx-art nbx-art-wide" viewBox="0 0 210 100" focusable="false">
+              <rect class="nbx-plate" x="0" y="0" width="210" height="100" rx="10"/>
+              <rect class="nbx-carton" x="6" y="10" width="198" height="68" rx="12"/>
+              <path class="nbx-carton-line" d="M6 44 H204"/>
+              <ellipse class="nbx-egg" cx="24" cy="28" rx="12" ry="13"/>
+              <ellipse class="nbx-egg" cx="55" cy="28" rx="12" ry="13"/>
+              <ellipse class="nbx-egg" cx="86" cy="28" rx="12" ry="13"/>
+              <ellipse class="nbx-egg" cx="117" cy="28" rx="12" ry="13"/>
+              <ellipse class="nbx-egg" cx="148" cy="28" rx="12" ry="13"/>
+              <ellipse class="nbx-egg" cx="179" cy="28" rx="12" ry="13"/>
+              <ellipse class="nbx-egg" cx="24" cy="60" rx="12" ry="13"/>
+              <ellipse class="nbx-egg" cx="55" cy="60" rx="12" ry="13"/>
+              <ellipse class="nbx-egg" cx="86" cy="60" rx="12" ry="13"/>
+              <ellipse class="nbx-egg" cx="117" cy="60" rx="12" ry="13"/>
+              <ellipse class="nbx-egg" cx="148" cy="60" rx="12" ry="13"/>
+              <ellipse class="nbx-egg" cx="179" cy="60" rx="12" ry="13"/>
+              <text class="nbx-art-tag" x="105" y="92" text-anchor="middle">2 排 × 6 个 = 12（一打）</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">12</span>
+          <span class="kid-figure-sub">一打鸡蛋，盒子 2 排 6 个</span>
+          <span class="kid-figure-fact">2 排 6 个就是 12。一打 = 12，超市里的鸡蛋盒就是这么装的。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-nbx-set="25" aria-pressed="false" aria-label="把量表设成 25：五个五">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg class="nbx-art nbx-art-wide" viewBox="0 0 230 100" focusable="false">
+              <rect class="nbx-plate" x="0" y="0" width="230" height="100" rx="10"/>
+              <g transform="translate(8,0)">
+                <rect class="nbx-quin" x="0" y="12" width="34" height="34" rx="8"/>
+                <circle class="nbx-dot" cx="9" cy="21" r="4.6"/>
+                <circle class="nbx-dot" cx="25" cy="21" r="4.6"/>
+                <circle class="nbx-dot" cx="17" cy="29" r="4.6"/>
+                <circle class="nbx-dot" cx="9" cy="37" r="4.6"/>
+                <circle class="nbx-dot" cx="25" cy="37" r="4.6"/>
+                <text class="nbx-art-label" x="17" y="62" text-anchor="middle">5</text>
+              </g>
+              <g transform="translate(52,0)">
+                <rect class="nbx-quin" x="0" y="12" width="34" height="34" rx="8"/>
+                <circle class="nbx-dot" cx="9" cy="21" r="4.6"/>
+                <circle class="nbx-dot" cx="25" cy="21" r="4.6"/>
+                <circle class="nbx-dot" cx="17" cy="29" r="4.6"/>
+                <circle class="nbx-dot" cx="9" cy="37" r="4.6"/>
+                <circle class="nbx-dot" cx="25" cy="37" r="4.6"/>
+                <text class="nbx-art-label" x="17" y="62" text-anchor="middle">10</text>
+              </g>
+              <g transform="translate(96,0)">
+                <rect class="nbx-quin" x="0" y="12" width="34" height="34" rx="8"/>
+                <circle class="nbx-dot" cx="9" cy="21" r="4.6"/>
+                <circle class="nbx-dot" cx="25" cy="21" r="4.6"/>
+                <circle class="nbx-dot" cx="17" cy="29" r="4.6"/>
+                <circle class="nbx-dot" cx="9" cy="37" r="4.6"/>
+                <circle class="nbx-dot" cx="25" cy="37" r="4.6"/>
+                <text class="nbx-art-label" x="17" y="62" text-anchor="middle">15</text>
+              </g>
+              <g transform="translate(140,0)">
+                <rect class="nbx-quin" x="0" y="12" width="34" height="34" rx="8"/>
+                <circle class="nbx-dot" cx="9" cy="21" r="4.6"/>
+                <circle class="nbx-dot" cx="25" cy="21" r="4.6"/>
+                <circle class="nbx-dot" cx="17" cy="29" r="4.6"/>
+                <circle class="nbx-dot" cx="9" cy="37" r="4.6"/>
+                <circle class="nbx-dot" cx="25" cy="37" r="4.6"/>
+                <text class="nbx-art-label" x="17" y="62" text-anchor="middle">20</text>
+              </g>
+              <g transform="translate(184,0)">
+                <rect class="nbx-quin" x="0" y="12" width="34" height="34" rx="8"/>
+                <circle class="nbx-dot" cx="9" cy="21" r="4.6"/>
+                <circle class="nbx-dot" cx="25" cy="21" r="4.6"/>
+                <circle class="nbx-dot" cx="17" cy="29" r="4.6"/>
+                <circle class="nbx-dot" cx="9" cy="37" r="4.6"/>
+                <circle class="nbx-dot" cx="25" cy="37" r="4.6"/>
+                <text class="nbx-art-label" x="17" y="62" text-anchor="middle">25</text>
+              </g>
+              <text class="nbx-art-tag" x="115" y="90" text-anchor="middle">5 个 5 = 25（5、10、15、20、25）</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">25</span>
+          <span class="kid-figure-sub">5 堆，每堆 5 个</span>
+          <span class="kid-figure-fact">五个五就是 25。按 5 跳着数比一个一个数快得多。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-nbx-set="100" data-nbx-tone="hundred" aria-pressed="false" aria-label="把量表设成 100：十乘十的点阵">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg class="nbx-art nbx-art-tall" viewBox="0 0 150 154" focusable="false">
+              <defs>
+                <pattern id="nbxDotCells" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="translate(15,10)">
+                  <circle class="nbx-dot" cx="6" cy="6" r="4.6"/>
+                </pattern>
+              </defs>
+              <rect class="nbx-plate" x="0" y="0" width="150" height="154" rx="10"/>
+              <rect class="nbx-dot-field" x="15" y="10" width="120" height="120"/>
+              <path class="nbx-split" d="M75 10 V130 M15 70 H135"/>
+              <text class="nbx-art-tag" x="75" y="146" text-anchor="middle">10 排 × 10 = 100</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">100</span>
+          <span class="kid-figure-sub">10 排点，每排 10 个</span>
+          <span class="kid-figure-fact">换成点还是 100：虚线把它切成 4 个 25，数量一点没变。</span>
+        </button>
+      </div>
+
+      <div class="kid-speech-row nbx-say-row">
+        <span class="kid-mascot" aria-hidden="true">🐱</span>
+        <p class="kid-speech" id="nbxAtlasSay" role="status" aria-live="polite">点一张卡，下面三条量表就变成这个数。</p>
+      </div>
+
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：图鉴在教什么</summary>
+        <p><b>学习目标：</b>同一个数量可以有完全不同的外形（数量守恒），而十进制的四种积木——单块、十条、百板、千块——把「每满十就换一种形状」这件事做成了看得见的东西。</p>
+        <p><b>和孩子聊：</b>先问「哪一种最好数？」多数孩子会选百板和点阵，因为方阵能按排数。再问「1000 那块要用几个百板？」答案是 10 个，这就是位数往左多一格的原因。</p>
+        <p><b>背后的原理：</b>手（5）、鸡蛋盒（12）、五个五（25）用的是生活里现成的分组结构。研究一致显示，能把数量看成「几组几」的孩子，后面学乘法和位值都更顺，因为他们已经在做单位换算，而不是逐个计数。</p>
+      </details>
+    </article>
+
+    <!-- ② 位值量表 -->
+    <article class="nbx-card" aria-labelledby="nbxDialTitle">
+      <h3 id="nbxDialTitle"><span aria-hidden="true">📊</span>② 位值量表：一个数拆成三条</h3>
+      <p class="nbx-lead">按 ➕ ➖ 改数字，或者点上面的图鉴卡。百位、十位、个位三条会一起变长变短。</p>
+
+      <div class="nbx-dial" role="group" aria-label="调整百位、十位、个位上各有几个">
+        <div class="nbx-digit" data-place="hundreds">
+          <span class="nbx-digit-head"><span aria-hidden="true">▦</span>百位</span>
+          <b class="nbx-digit-value" id="nbxDigitH">3</b>
+          <span class="nbx-digit-unit">个百板</span>
+          <span class="nbx-digit-btns">
+            <button class="kid-icon-btn" type="button" data-nbx-step="h:1" aria-label="百位加 1 个百板"><span class="kid-tile-art" aria-hidden="true">➕</span></button>
+            <button class="kid-icon-btn" type="button" data-nbx-step="h:-1" aria-label="百位减 1 个百板"><span class="kid-tile-art" aria-hidden="true">➖</span></button>
+          </span>
+        </div>
+        <div class="nbx-digit" data-place="tens">
+          <span class="nbx-digit-head"><span aria-hidden="true">▬</span>十位</span>
+          <b class="nbx-digit-value" id="nbxDigitT">4</b>
+          <span class="nbx-digit-unit">条十</span>
+          <span class="nbx-digit-btns">
+            <button class="kid-icon-btn" type="button" data-nbx-step="t:1" aria-label="十位加 1 条十"><span class="kid-tile-art" aria-hidden="true">➕</span></button>
+            <button class="kid-icon-btn" type="button" data-nbx-step="t:-1" aria-label="十位减 1 条十"><span class="kid-tile-art" aria-hidden="true">➖</span></button>
+          </span>
+        </div>
+        <div class="nbx-digit" data-place="ones">
+          <span class="nbx-digit-head"><span aria-hidden="true">▪</span>个位</span>
+          <b class="nbx-digit-value" id="nbxDigitO">7</b>
+          <span class="nbx-digit-unit">个单块</span>
+          <span class="nbx-digit-btns">
+            <button class="kid-icon-btn" type="button" data-nbx-step="o:1" aria-label="个位加 1 个单块"><span class="kid-tile-art" aria-hidden="true">➕</span></button>
+            <button class="kid-icon-btn" type="button" data-nbx-step="o:-1" aria-label="个位减 1 个单块"><span class="kid-tile-art" aria-hidden="true">➖</span></button>
+          </span>
+        </div>
+      </div>
+
+      <p class="nbx-total"><small>现在是</small> <span id="nbxTotalValue">347</span> <small id="nbxTotalRead">读作三百四十七</small></p>
+
+      <svg class="nbx-dial-art" id="nbxDialArt" viewBox="0 0 400 110" role="img" aria-labelledby="nbxDialArtTitle nbxDialArtDesc">
+        <title id="nbxDialArtTitle">当前数字的积木堆</title>
+        <desc id="nbxDialArtDesc">按你调的数字变化：左边一堆是几个百板，中间一堆是几条十，右边一堆是几个单块，每堆下面写着它值多少。</desc>
+        <g id="nbxDialArtBody"></g>
+      </svg>
+
+      <div class="nbx-meters">
+        <div class="kid-meter" style="--tone:var(--sci)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">▦</span>
+            <span id="nbxMeterHLabel">百位有几个</span>
+            <span class="kid-meter-value" id="nbxMeterHValue">3 个百 = 300</span>
+          </div>
+          <div class="kid-meter-track" id="nbxMeterH" role="img" aria-labelledby="nbxMeterHLabel nbxMeterHValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">满格是 9 个百板。再放第 10 个，就要往左换成 1 个千。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--warn)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">▬</span>
+            <span id="nbxMeterTLabel">十位有几个</span>
+            <span class="kid-meter-value" id="nbxMeterTValue">4 个十 = 40</span>
+          </div>
+          <div class="kid-meter-track" id="nbxMeterT" role="img" aria-labelledby="nbxMeterTLabel nbxMeterTValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">满格是 9 条十。10 条十并起来正好是 1 个百板。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--math)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">▪</span>
+            <span id="nbxMeterOLabel">个位有几个</span>
+            <span class="kid-meter-value" id="nbxMeterOValue">7 个一 = 7</span>
+          </div>
+          <div class="kid-meter-track" id="nbxMeterO" role="img" aria-labelledby="nbxMeterOLabel nbxMeterOValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">满格是 9 个单块。第 10 个一到，就抱成一条十。</p>
+        </div>
+      </div>
+
+      <div class="kid-speech-row nbx-say-row">
+        <span class="kid-mascot" aria-hidden="true">🐱</span>
+        <p class="kid-speech" id="nbxDialSay" role="status" aria-live="polite">3 个百 + 4 个十 + 7 个一 = 347</p>
+      </div>
+
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：三条量表在教什么</summary>
+        <p><b>学习目标：</b>把「347」读成「3 个百 + 4 个十 + 7 个一」。三条量表的满格都是 9，孩子会自己发现：每一位都只能装到 9，第 10 个必须往左搬家。</p>
+        <p><b>一起追问：</b>「哪一条最长？」再问「哪一条代表的数量最大？」百位那条只有 3 格却值 300，这个反差正是位值的核心——同一个数字放在不同位置，值完全不同。</p>
+        <p><b>背后的原理：</b>十进制是位置计数法：每往左一位，单位乘 10。0 在这里不是「什么都没有」，而是占位符，说明那一位是空的。这也是 106 容易被写成 16 的原因。</p>
+      </details>
+    </article>
+
+    <!-- ③ 这堆有多少 -->
+    <article class="nbx-card" aria-labelledby="nbxQuizTitle">
+      <h3 id="nbxQuizTitle"><span aria-hidden="true">🔍</span>③ 小游戏：这堆有多少</h3>
+      <p class="nbx-lead">先分开看三堆：几个百板、几条十、几个单块。再点一张大卡。一共六轮。</p>
+      <ul class="kid-legend" aria-label="三种积木图例">
+        <li style="--tone:var(--sci)"><span class="kid-legend-mark" aria-hidden="true">▦</span>百板 = 100</li>
+        <li style="--tone:var(--warn)"><span class="kid-legend-mark" aria-hidden="true">▬</span>十条 = 10</li>
+        <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">▪</span>单块 = 1</li>
+      </ul>
+
+      <svg class="nbx-quiz-art" id="nbxQuizArt" viewBox="0 0 400 110" role="img" aria-labelledby="nbxQuizArtTitle nbxQuizArtDesc">
+        <title id="nbxQuizArtTitle">要数的这一堆积木</title>
+        <desc id="nbxQuizArtDesc">每轮换一次：左边虚线框里是几个百板，中间是几条十，右边是几个单块，请数出一共多少。</desc>
+        <g id="nbxQuizArtBody"></g>
+      </svg>
+      <p class="kid-scene-caption" id="nbxQuizCaption">三个虚线框就是三位数的三格：左边百位、中间十位、右边个位。</p>
+
+      <div class="kid-tiles nbx-quiz-picks" id="nbxQuizPicks" role="group" aria-labelledby="nbxQuizTitle"></div>
+
+      <div class="kid-speech-row nbx-say-row">
+        <span class="kid-mascot" aria-hidden="true">🔍</span>
+        <p class="kid-speech" id="nbxQuizSay" role="status" aria-live="polite">先数左边有几个百板，再点一张卡。</p>
+      </div>
+
+      <div class="nbx-quiz-foot">
+        <span class="kid-dots nbx-dots" id="nbxQuizDots" role="img" aria-labelledby="nbxQuizProgress"></span>
+        <span class="nbx-quiz-progress" id="nbxQuizProgress">第 1 / 6 轮 · 答对 0 次</span>
+      </div>
+
+      <div class="nbx-quiz-tools">
+        <button class="btn btn-primary" type="button" id="nbxQuizNext"><span aria-hidden="true">🔄</span> 下一堆</button>
+        <button class="btn" type="button" id="nbxQuizHelp"><span aria-hidden="true">👆</span> 帮我分堆数</button>
+      </div>
+
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：这堆有多少在教什么</summary>
+        <p><b>学习目标：</b>从实物堆读出三位数，并说出每一位来自哪一堆。答错不清零、不计时，四个选项里的三个错答都是真实常见的读写错误。</p>
+        <p><b>三种典型错答：</b>①「2035」——把「2 个百」当成 20 再接上后两位，说明还没建立三格结构；②「253」——十条和单块的位置颠倒；③「208」——把十条当成单块数，忽略了一条里有 10 个。</p>
+        <p><b>陪伴追问：</b>孩子选完后先别评价，问「你说的这个数里，哪一位对应中间那一堆？」让他自己指。指不出来时点「帮我分堆数」，图上每堆下面会写出它值多少。</p>
+      </details>
+    </article>
+  </section>
+
   <section class="task mission" aria-labelledby="numberMissionTitle">
     <div class="card parent-deep-dive" data-audience="parent" style="margin-bottom:14px">
       <h2 style="font-size:1.1rem">这在教什么</h2>
@@ -316,33 +1317,55 @@
     </div>
     <h2 class="task-title" id="numberMissionTitle">正式任务 · 修好十号桥</h2>
     <ol class="kid-story-steps">
-      <li><b>选一关</b>，先猜还要几颗。</li>
-      <li><b>动手搭</b>，让积木到达目标。</li>
-      <li><b>三关都亮起</b>，点一句发现。</li>
+      <li data-step="1"><span class="kid-tile-art" aria-hidden="true">🎯</span><b>选一关</b>，先猜还要几颗。</li>
+      <li data-step="2"><span class="kid-tile-art" aria-hidden="true">🧱</span><b>动手搭</b>，让积木到达目标。</li>
+      <li data-step="3"><span class="kid-tile-art" aria-hidden="true">🖼️</span><b>或者</b>在图鉴里收两种不同的 10。</li>
     </ol>
-    <div class="kid-picks" data-audience="kid-only" aria-label="选择任务关卡">
-      <button class="kid-choice" type="button" data-number-level="ten">第 1 关 · 凑十</button>
-      <button class="kid-choice" type="button" data-number-level="split">第 2 关 · 拆分</button>
-      <button class="kid-choice" type="button" data-number-level="carry">第 3 关 · 进位</button>
+    <div class="kid-tiles" data-audience="kid-only" aria-label="选择任务关卡">
+      <button class="kid-tile" type="button" data-number-level="ten" data-say="第 1 关 凑十">
+        <span class="kid-tile-art" aria-hidden="true">🔟</span><span class="kid-tile-label">第 1 关</span><span class="kid-tile-sub">凑十</span>
+      </button>
+      <button class="kid-tile" type="button" data-number-level="split" data-say="第 2 关 拆分">
+        <span class="kid-tile-art" aria-hidden="true">✂️</span><span class="kid-tile-label">第 2 关</span><span class="kid-tile-sub">拆分</span>
+      </button>
+      <button class="kid-tile" type="button" data-number-level="carry" data-say="第 3 关 进位">
+        <span class="kid-tile-art" aria-hidden="true">🌉</span><span class="kid-tile-label">第 3 关</span><span class="kid-tile-sub">进位</span>
+      </button>
     </div>
     <div data-audience="kid-only" style="margin-top:12px">
-      <p style="margin:0 0 6px;font-weight:700">我猜还要放几颗？</p>
-      <div class="kid-picks" id="numPredictChoices" aria-label="预测还要放几颗"></div>
+      <p style="margin:0 0 6px;font-weight:700"><span aria-hidden="true">💭</span> 我猜还要放几颗？</p>
+      <div class="kid-tiles" id="numPredictChoices" aria-label="预测还要放几颗"></div>
     </div>
     <div class="mission-actions">
       <div data-audience="parent"><label for="numPredict">我猜还要放（颗）</label><input class="input" id="numPredict" type="number" min="0" max="100" step="1" inputmode="numeric"><button class="btn btn-sm" id="lockPredict" type="button" style="margin-top:6px">就猜这个数</button></div>
       <div data-audience="parent"><label for="numReflect">我的发现</label><textarea class="input" id="numReflect" placeholder="例如：先看满的一行，再看散块。"></textarea></div>
-      <div data-audience="kid-only"><p style="margin:0 0 6px;font-weight:700">我发现……</p><div class="kid-picks" id="numReflectChoices"><button class="kid-choice" type="button" data-number-reflect="空格有几格，就还差几颗。">空格告诉我还差几颗</button><button class="kid-choice" type="button" data-number-reflect="先凑满十，再看多出来的散块。">我会先凑十再继续</button><button class="kid-choice" type="button" data-number-reflect="10 个一合起来就是 1 个十。">10 个一就是 1 个十</button></div></div>
-      <button class="btn btn-primary" id="numComplete" type="button" disabled>把发现记进足迹</button>
+      <div data-audience="kid-only"><p style="margin:0 0 6px;font-weight:700"><span aria-hidden="true">💡</span> 我发现……</p><div class="kid-tiles" id="numReflectChoices" aria-label="选一句我的发现">
+        <button class="kid-tile" type="button" data-number-reflect="空格有几格，就还差几颗。"><span class="kid-tile-art" aria-hidden="true">▢</span><span class="kid-tile-label">看空格</span><span class="kid-tile-sub">空格 = 还差</span></button>
+        <button class="kid-tile" type="button" data-number-reflect="先凑满十，再看多出来的散块。"><span class="kid-tile-art" aria-hidden="true">🔟</span><span class="kid-tile-label">先凑十</span><span class="kid-tile-sub">再看散块</span></button>
+        <button class="kid-tile" type="button" data-number-reflect="10 个一合起来就是 1 个十。"><span class="kid-tile-art" aria-hidden="true">🧱</span><span class="kid-tile-label">合成十</span><span class="kid-tile-sub">10 个一 = 1 个十</span></button>
+        <button class="kid-tile" type="button" data-number-reflect="不用一个一个数，看 5 加几就知道有几颗。"><span class="kid-tile-art" aria-hidden="true">👀</span><span class="kid-tile-label">一眼看出</span><span class="kid-tile-sub">5 和几</span></button>
+      </div></div>
+      <button class="btn btn-primary kid-done-btn" id="numComplete" type="button" disabled><span aria-hidden="true">🏅</span> 把发现记进足迹</button>
     </div>
     <p class="task-status status" id="numMissionStatus" role="status" aria-live="polite">尚未完成：先选择“凑十”任务。</p>
-    <div class="playful-quest parent-deep-dive" data-audience="parent" style="--quest-accent:var(--warn)" aria-labelledby="numberStoryTitle">
+
+    <!-- 伙伴、收藏卡与神秘任务砖：孩子模式下也要看得见 -->
+    <div class="playful-quest" style="--quest-accent:var(--warn)" aria-labelledby="numberBuddyTitle">
       <div class="playful-quest-head">
-        <div><h3 id="numberStoryTitle">桥梁设计卡</h3><p class="playful-story">完成三关后，把你看见的凑十结构留给下一位小工程师。</p></div>
+        <div>
+          <h3 id="numberBuddyTitle"><span aria-hidden="true">🧱</span> 积木工坊小伙伴</h3>
+          <p class="playful-story" data-audience="parent">完成任务后，收藏卡会亮起来；神秘任务砖是一句开放式挑战。</p>
+        </div>
         <div data-playful-companion role="note" aria-label="妙妙伙伴提示"></div>
       </div>
-      <div class="playful-tools"><button class="btn btn-sm" type="button" data-playful-random-task="#numberSurprise">翻开神秘任务砖</button><p class="playful-task-output" id="numberSurprise" data-playful-task-output role="status" aria-live="polite">神秘任务砖正等你来翻。</p></div>
-      <div class="playful-evidence"><span data-playful-sticker aria-label="数感积木贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
+      <div class="playful-tools"><button class="btn btn-sm" type="button" data-playful-random-task="#numberSurprise"><span aria-hidden="true">🎁</span> 翻开神秘任务砖</button><p class="playful-task-output" id="numberSurprise" data-playful-task-output role="status" aria-live="polite">神秘任务砖正等你来翻。</p></div>
+      <div class="playful-evidence"><span data-playful-sticker aria-label="数感积木收藏卡位"></span><span data-playful-feedback aria-live="polite"></span></div>
+    </div>
+
+    <div class="playful-quest parent-deep-dive" data-audience="parent" style="--quest-accent:var(--math)" aria-labelledby="numberStoryTitle">
+      <div class="playful-quest-head">
+        <div><h3 id="numberStoryTitle">桥梁设计卡</h3><p class="playful-story">完成三关或收满两种 10 之后，把你看见的凑十结构留给下一位小工程师。</p></div>
+      </div>
       <form class="work-card work-card-form" data-playful-work-form aria-labelledby="numberWorkTitle">
         <h4 id="numberWorkTitle">作品表单 · 保存十格阵作品</h4>
         <div class="work-card-fields">
@@ -411,13 +1434,22 @@
           这是从数数（counting）走向运算（operating）的分水岭。
         </p>
       </div>
+      <div class="card" style="--why-accent:var(--danger)">
+        <h3>常见误区（怎么看出来、怎么接住）</h3>
+        <p style="margin:0">
+          <b>① 会背不会看。</b>能顺口念到 20，却要逐个点数才知道有几颗 —— 缺的是结构，不是记忆。多玩「一眼看出」，别急着纠正数量。<br>
+          <b>② 把「第 3 个」听成「3 个」。</b>序数和基数混淆，用「第几个」小游戏区分。<br>
+          <b>③ 认为 34 里的 3 就是 3。</b>位值要靠捆绑动作建立，用「位值塔」让孩子亲手把 10 块捆成一条。<br>
+          <b>④ 摆得散就以为更多。</b>把同样的积木摊开再挤紧，问「现在变多了吗」，这是数量守恒的经典测法。
+        </p>
+      </div>
     </div>
   </section>
 
+  <p class="lab-exit"><a class="btn btn-ghost" href="index.html"><span aria-hidden="true">←</span> 回到实验室目录</a></p>
   <footer class="foot">
     <div class="row spread">
       <span>少儿数理启蒙 · 互动实验</span>
-      <span><a href="../games/index.html">← 返回全部实验</a></span>
     </div>
   </footer>
 </main>
@@ -494,10 +1526,10 @@
     wins: 0,
     rowFlash: [],          // {row, t}
     parts: [],             // 彩屑
-    splitBase: 0, carryAdd: 0, prediction: null,
+    splitBase: 0, carryAdd: 0, prediction: null, tenWays: 0,
     levelSolved: { ten: false, split: false, carry: false }, lastResult: ''
   };
-  var G = { W: 320, H: 400, cell: 30, gap: 5, gGap: 12, pad: 14, frameTop: 34, rowGap: 6, rows: 10, trayTop: 300, trayH: 92, labelW: 30 };
+  var G = { W: 320, H: 400, cell: 30, gap: 5, gGap: 12, pad: 14, frameTop: 48, rowGap: 6, rows: 10, trayTop: 300, trayH: 92, labelW: 30, trayReserve: 70, frameW: 280, frameH: 60 };
   var uid = 0;
 
   function layout() {
@@ -511,7 +1543,9 @@
     G.frameW = G.cell * 10 + 9 * G.gap + G.gGap;
     G.frameH = G.rows * G.cell + (G.rows - 1) * G.rowGap;
     G.trayTop = G.frameTop + G.frameH + 20;
-    G.trayH = Math.max(74, G.cell * 2 + 34);
+    G.trayH = Math.max(80, G.cell * 2 + 38);
+    /* 托盘右侧留出成品架宽度，散块不会压到十条上 */
+    G.trayReserve = clamp(Math.round(w * 0.26), 58, 104);
     G.H = G.trayTop + G.trayH + 6;
     fit(blocks, bctx, w, G.H);
     fit(lineC, lctx, w, w < 420 ? 92 : 104);
@@ -527,12 +1561,13 @@
   }
   function looseHome(i, n) {
     var size = Math.max(14, G.cell * 0.86);
-    var per = Math.min(n, Math.max(4, Math.floor((G.W - G.pad * 2) / (size + 8))));
+    var span = Math.max(size + 10, G.W - G.pad * 2 - (G.trayReserve || 70) - 8);
+    var per = Math.min(n, Math.max(3, Math.floor(span / (size + 6))));
     var col = i % per, row = Math.floor(i / per);
-    var step = (G.W - G.pad * 2 - size) / Math.max(1, per - 1);
+    var step = (span - size) / Math.max(1, per - 1);
     return {
       x: G.pad + col * step,
-      y: G.trayTop + 26 + row * (size * 0.55),
+      y: G.trayTop + 26 + row * (size * 0.58),
       s: size
     };
   }
@@ -602,6 +1637,8 @@
     var p = slotPos(row * 10);
     burst(p.x + G.frameW / 2, p.y + G.cell / 2, 26);
     toast('满十啦！10 个「一」= 1 个「十」');
+    var card = document.querySelector('.ten-result');
+    if (card && window.Playful && typeof Playful.confetti === 'function') Playful.confetti(card);
   }
 
   function burst(x, y, n) {
@@ -670,9 +1707,20 @@
       }).sort(function () { return Math.random() - .5; });
       values.forEach(function (value) {
         var choice = document.createElement('button');
-        choice.className = 'kid-choice'; choice.type = 'button';
+        choice.className = 'kid-tile'; choice.type = 'button';
         choice.setAttribute('data-number-predict', String(value));
-        choice.textContent = value + ' 颗';
+        choice.setAttribute('aria-pressed', 'false');
+        choice.setAttribute('aria-label', '我猜还要放 ' + value + ' 颗');
+        var art = document.createElement('span');
+        art.className = 'kid-tile-art'; art.setAttribute('aria-hidden', 'true');
+        art.textContent = value === 0 ? '✋' : '🧱';
+        var label = document.createElement('span');
+        label.className = 'kid-tile-label';
+        label.textContent = value + ' 颗';
+        var dots = document.createElement('span');
+        dots.className = 'kid-tile-sub'; dots.setAttribute('aria-hidden', 'true');
+        dots.textContent = value <= 10 ? new Array(value + 1).join('●') || '—' : String(value);
+        choice.appendChild(art); choice.appendChild(label); choice.appendChild(dots);
         choice.addEventListener('click', chooseKidPrediction);
         choices.appendChild(choice);
       });
@@ -701,6 +1749,8 @@
     toast(msg);
     say(msg);
     burst(G.W / 2, G.frameTop + Math.min(G.frameH, 120), 46);
+    var card = document.querySelector('.ten-result');
+    if (card && window.Playful && typeof Playful.confetti === 'function') Playful.confetti(card);
     var expected = S.target - (S.mode === 'split' ? S.splitBase : S.tenBase);
     if ((S.mode === 'ten' || S.mode === 'split' || S.mode === 'carry') && S.prediction === expected) {
       S.levelSolved[S.mode] = true; S.lastResult = msg + ' 预测正确：还要 ' + expected + ' 颗。';
@@ -775,6 +1825,10 @@
     Array.prototype.forEach.call(kidFrame.children, function (cell, index) {
       cell.classList.toggle('on', index < kidShown);
     });
+    document.getElementById('kidMeterValue').textContent = kidShown + ' / 10';
+    if (window.Playful && typeof Playful.setMeter === 'function') {
+      Playful.setMeter(document.getElementById('kidTenMeter'), kidShown, 10);
+    }
 
     if (S.mode === 'ten') {
       var added = n - S.tenBase;
@@ -811,32 +1865,104 @@
     drawLine();
   }
 
-  /* ---------- 绘制：积木区 ---------- */
+  /* ---------- 绘制：积木区 ----------
+     积木要像积木：圆角本体 + 顶部两颗凸点 + 高光 + 投影。
+     形状差异（凸点 / 虚线空槽）承担「满 vs 空」，颜色只是加成。 */
   function drawBlock(ctx, b, kind, idx, now) {
     var s = b.s, x = b.x, y = b.y;
-    var main = kind === 'placed' ? C.math : C.inkMid;
+    var main = kind === 'placed' ? C.math : shade(C.math, .34);
     var full = kind === 'placed' && Math.floor(idx / 10) < Math.floor(count() / 10);
     if (full) main = C.warn;
 
     var pop = clamp((now - b.born) / 240, 0, 1);
-    var sc = kind === 'placed' ? 1 : 1;
+    var sc = 1;
     if (pop < 1) sc = 0.7 + 0.3 * (1 - Math.pow(1 - pop, 3)) + Math.sin(pop * Math.PI) * .06;
     var w = s * sc, off = (s - w) / 2;
+    var bx = x + off, by = y + off, r = Math.max(3, s * .2);
 
+    // 投影：贴在积木下方，让它「坐」在纸面上
     ctx.save();
-    if (b.drag) { ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 5; }
-    var g = ctx.createLinearGradient(x, y, x, y + s);
-    g.addColorStop(0, main);
-    g.addColorStop(1, shade(main, -.32));
-    rr(ctx, x + off, y + off, w, w, Math.max(3, s * .22));
+    ctx.globalAlpha = b.drag ? .38 : .2;
+    ctx.fillStyle = '#3a2a12';
+    rr(ctx, bx + 1.5, by + w * .1 + 3, w - 3, w * .9, r);
+    ctx.fill();
+    ctx.restore();
+
+    // 顶部两颗凸点（studs）：形状识别的关键
+    var studR = Math.max(1.6, w * .12);
+    var studY = by + w * .1;
+    ctx.save();
+    ctx.fillStyle = shade(main, -.14);
+    ctx.beginPath(); ctx.arc(bx + w * .32, studY, studR, 0, 6.2832); ctx.fill();
+    ctx.beginPath(); ctx.arc(bx + w * .68, studY, studR, 0, 6.2832); ctx.fill();
+    ctx.restore();
+
+    // 本体
+    ctx.save();
+    if (b.drag) { ctx.shadowColor = 'rgba(60,40,10,.45)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 5; }
+    var g = ctx.createLinearGradient(bx, by, bx, by + w);
+    g.addColorStop(0, shade(main, .22));
+    g.addColorStop(.55, main);
+    g.addColorStop(1, shade(main, -.3));
+    rr(ctx, bx, by + w * .1, w, w * .9, r);
     ctx.fillStyle = g; ctx.fill();
     ctx.restore();
 
-    rr(ctx, x + off + 1.5, y + off + 1.5, w - 3, w * .34, Math.max(2, s * .16));
-    ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.fill();
+    // 顶面高光 + 左侧亮边
+    rr(ctx, bx + 2, by + w * .16, w - 4, w * .26, Math.max(2, s * .14));
+    ctx.fillStyle = 'rgba(255,255,255,.34)'; ctx.fill();
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(bx + 2, by + w * .84); ctx.lineTo(bx + 2, by + w * .24); ctx.stroke();
+    ctx.restore();
 
-    rr(ctx, x + off + .5, y + off + .5, w - 1, w - 1, Math.max(3, s * .22));
-    ctx.strokeStyle = 'rgba(8,16,31,.55)'; ctx.lineWidth = 1; ctx.stroke();
+    // 描边
+    rr(ctx, bx + .5, by + w * .1 + .5, w - 1, w * .9 - 1, r);
+    ctx.strokeStyle = shade(main, -.55); ctx.lineWidth = 1.2; ctx.stroke();
+  }
+
+  /* 一条「十条」：满行合并后的整齐感 —— 画在满行下方作为标记 */
+  function drawTenRod(ctx, x, y, w, h) {
+    rr(ctx, x, y, w, h, Math.max(3, h * .34));
+    var g = ctx.createLinearGradient(x, y, x, y + h);
+    g.addColorStop(0, shade(C.warn, .24));
+    g.addColorStop(1, shade(C.warn, -.26));
+    ctx.fillStyle = g; ctx.fill();
+    ctx.save();
+    ctx.strokeStyle = shade(C.warn, -.5); ctx.lineWidth = 1;
+    for (var i = 1; i < 10; i++) {
+      var gx = x + (w / 10) * i;
+      ctx.beginPath(); ctx.moveTo(gx, y + 1.5); ctx.lineTo(gx, y + h - 1.5); ctx.stroke();
+    }
+    rr(ctx, x + .5, y + .5, w - 1, h - 1, Math.max(3, h * .34));
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* 工坊小助手：一块有表情的积木，站在散块区旁边 */
+  function drawHelper(ctx, x, y, size, happy) {
+    var r = Math.max(4, size * .26);
+    ctx.save();
+    ctx.globalAlpha = .25; ctx.fillStyle = '#3a2a12';
+    rr(ctx, x + 2, y + 4, size, size * .9, r); ctx.fill();
+    ctx.restore();
+    var g = ctx.createLinearGradient(x, y, x, y + size);
+    g.addColorStop(0, shade(C.kit, .3)); g.addColorStop(1, shade(C.kit, -.18));
+    rr(ctx, x, y, size, size * .9, r);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = shade(C.kit, -.5); ctx.lineWidth = 1.2;
+    rr(ctx, x + .5, y + .5, size - 1, size * .9 - 1, r); ctx.stroke();
+    // 眼睛
+    ctx.fillStyle = '#2b1c07';
+    var ey = y + size * .36, er = Math.max(1.4, size * .075);
+    ctx.beginPath(); ctx.arc(x + size * .34, ey, er, 0, 6.2832); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + size * .66, ey, er, 0, 6.2832); ctx.fill();
+    // 嘴：满十时张成大笑
+    ctx.strokeStyle = '#2b1c07'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(x + size * .5, y + size * (happy ? .52 : .56), size * (happy ? .2 : .14), .25, Math.PI - .25);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
   }
 
   function shade(hex, amt) {
@@ -852,36 +1978,133 @@
     return 'rgba(' + parseInt(m[1], 16) + ',' + parseInt(m[2], 16) + ',' + parseInt(m[3], 16) + ',' + a + ')';
   }
 
+  /* 背景：纸面 + 打孔板 + 工作台，避免纯白画布 */
+  function drawBackdrop(ctx) {
+    var g = ctx.createLinearGradient(0, 0, 0, G.H);
+    g.addColorStop(0, alpha(C.warn, .1));
+    g.addColorStop(.5, alpha(C.surf2, .0));
+    g.addColorStop(1, alpha(C.kit, .07));
+    ctx.fillStyle = shade(C.surf, .02);
+    ctx.fillRect(0, 0, G.W, G.H);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, G.W, G.H);
+
+    // 纸面方格
+    ctx.save();
+    ctx.strokeStyle = alpha(C.line, .35);
+    ctx.lineWidth = 1;
+    for (var x = 16; x < G.W; x += 16) { ctx.beginPath(); ctx.moveTo(x + .5, 0); ctx.lineTo(x + .5, G.H); ctx.stroke(); }
+    for (var y = 16; y < G.H; y += 16) { ctx.beginPath(); ctx.moveTo(0, y + .5); ctx.lineTo(G.W, y + .5); ctx.stroke(); }
+    ctx.restore();
+
+    // 顶部打孔板小孔
+    ctx.save();
+    ctx.fillStyle = alpha(C.inkDim, .3);
+    for (var c = 0; c < Math.floor(G.W / 22); c++) {
+      for (var pr = 0; pr < 2; pr++) {
+        ctx.beginPath();
+        ctx.arc(14 + c * 22, 7 + pr * 10, 1.5, 0, 6.2832);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+
+    // 底部工作台
+    var benchTop = G.trayTop + G.trayH - 10;
+    var bg = ctx.createLinearGradient(0, benchTop, 0, G.H);
+    bg.addColorStop(0, alpha(C.kit, .22));
+    bg.addColorStop(1, alpha(C.kit, .34));
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, benchTop, G.W, G.H - benchTop);
+    ctx.save();
+    ctx.strokeStyle = alpha(C.kit, .5); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, benchTop + .5); ctx.lineTo(G.W, benchTop + .5); ctx.stroke();
+    ctx.restore();
+  }
+
   function drawStage(now) {
     var ctx = bctx;
     ctx.clearRect(0, 0, G.W, G.H);
-
-    // 标题
-    ctx.font = '700 12px ' + FONT;
-    ctx.fillStyle = C.inkDim;
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText('十格阵 ten-frame（每行 10 格，5 + 5）', G.pad, 20);
+    drawBackdrop(ctx);
 
     var n = count(), fullRows = Math.floor(n / 10);
 
-    // 空格子
+    // 标题
+    ctx.font = '800 12px ' + FONT;
+    ctx.fillStyle = C.inkMid;
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'left';
+    ctx.fillText('十格阵 ten-frame · 每行 10 格（5 + 5）', G.pad, 38);
+
+    // 十格阵托盘：把 10 个槽包在一个圆角盘里，看起来像真的积木盘
+    var tray0 = slotPos(0);
+    ctx.save();
+    rr(ctx, tray0.x - 7, tray0.y - 7, G.frameW + 14, G.frameH + 14, Math.max(8, G.cell * .34));
+    ctx.fillStyle = alpha(C.warn, .1); ctx.fill();
+    ctx.strokeStyle = alpha(C.warn, .55); ctx.lineWidth = 2; ctx.stroke();
+    ctx.restore();
+
+    // 5 + 5 中缝
+    var seamX = tray0.x + 5 * (G.cell + G.gap) - G.gap / 2 + G.gGap / 2 - 1;
+    ctx.save();
+    ctx.setLineDash([4, 5]);
+    ctx.strokeStyle = alpha(C.warn, .6); ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(seamX, tray0.y - 5); ctx.lineTo(seamX, tray0.y + G.frameH + 5); ctx.stroke();
+    ctx.restore();
+
+    // 空槽：虚线轮廓 + 中心小圆点（形状差异，不只靠颜色）
     for (var i = 0; i < S.max; i++) {
       var row = Math.floor(i / 10);
       if (i >= n) {
         var p = slotPos(i);
         var inCurrent = row === fullRows;
+        var isNext = i === n;
         ctx.save();
-        ctx.setLineDash([3, 3]);
+        ctx.setLineDash(isNext ? [5, 3] : [3, 3]);
         rr(ctx, p.x + .5, p.y + .5, G.cell - 1, G.cell - 1, Math.max(3, G.cell * .22));
-        ctx.strokeStyle = inCurrent ? alpha(C.math, .55) : C.soft;
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = isNext ? alpha(C.sci, .95) : (inCurrent ? alpha(C.math, .6) : alpha(C.inkDim, .45));
+        ctx.lineWidth = isNext ? 2.4 : 1.2;
+        if (inCurrent) { ctx.fillStyle = alpha(C.math, .07); ctx.fill(); }
         ctx.stroke();
-        if (inCurrent) { ctx.fillStyle = alpha(C.math, .06); ctx.fill(); }
+        ctx.restore();
+        // 槽位中心的插销点
+        ctx.save();
+        ctx.fillStyle = alpha(isNext ? C.sci : C.inkDim, isNext ? .55 : .3);
+        ctx.beginPath();
+        ctx.arc(p.x + G.cell / 2, p.y + G.cell / 2, Math.max(1.4, G.cell * .1), 0, 6.2832);
+        ctx.fill();
         ctx.restore();
       }
     }
 
-    // 行标签 + 满十高亮
+    // 下一个空槽上方的落点箭头 + 从散块区来的虚线轨迹
+    if (n < S.max) {
+      var np = slotPos(n);
+      var ax = np.x + G.cell / 2, ay = np.y - 6;
+      var bob = motionOff() ? 0 : Math.sin(now / 320) * 2.5;
+      ctx.save();
+      ctx.fillStyle = C.sci;
+      ctx.beginPath();
+      ctx.moveTo(ax, ay + bob);
+      ctx.lineTo(ax - 5, ay - 7 + bob);
+      ctx.lineTo(ax + 5, ay - 7 + bob);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      if (S.loose.length) {
+        var src = S.loose[S.loose.length - 1];
+        ctx.save();
+        ctx.setLineDash([3, 5]);
+        ctx.strokeStyle = alpha(C.sci, .5); ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(src.x + src.s / 2, src.y);
+        ctx.quadraticCurveTo((src.x + ax) / 2, np.y - 34, ax, ay - 9);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // 行标签 + 满十高亮 + 十条标记
     for (var r = 0; r < G.rows; r++) {
       var q = slotPos(r * 10);
       var done = r < fullRows;
@@ -890,16 +2113,15 @@
         if (S.rowFlash[k].row === r) flash = Math.max(flash, 1 - clamp((now - S.rowFlash[k].t) / 900, 0, 1));
       }
       if (done) {
-        rr(ctx, q.x - 4, q.y - 4, G.frameW + 8, G.cell + 8, Math.max(5, G.cell * .3));
-        ctx.strokeStyle = alpha(C.warn, .45 + flash * .55);
-        ctx.lineWidth = 1 + flash * 2;
+        rr(ctx, q.x - 5, q.y - 5, G.frameW + 10, G.cell + 10, Math.max(5, G.cell * .3));
+        ctx.strokeStyle = alpha(C.warn, .55 + flash * .45);
+        ctx.lineWidth = 2 + flash * 2.5;
         ctx.stroke();
       }
-      ctx.font = '700 ' + Math.max(9, Math.min(12, G.cell * .38)) + 'px ' + MONO;
-      ctx.fillStyle = done ? C.warn : C.soft;
+      ctx.font = '800 ' + Math.max(9, Math.min(12, G.cell * .4)) + 'px ' + MONO;
+      ctx.fillStyle = done ? shade(C.warn, -.2) : alpha(C.inkDim, .5);
       ctx.textAlign = 'left';
-      ctx.fillText(done ? '=10' : '·', q.x + G.frameW + 7, q.y + G.cell * .68);
-      ctx.textAlign = 'left';
+      ctx.fillText(done ? '=10' : '·', q.x + G.frameW + 8, q.y + G.cell * .7);
     }
 
     // 已放积木
@@ -908,15 +2130,35 @@
     // 散块区
     var ty = G.trayTop;
     ctx.save();
-    ctx.setLineDash([4, 4]);
-    rr(ctx, G.pad - 6, ty - 6, G.W - (G.pad - 6) * 2, G.trayH, 12);
-    ctx.strokeStyle = C.soft; ctx.lineWidth = 1; ctx.stroke();
+    ctx.setLineDash([5, 4]);
+    rr(ctx, G.pad - 6, ty - 6, G.W - (G.pad - 6) * 2, G.trayH, 14);
+    ctx.strokeStyle = alpha(C.kit, .65); ctx.lineWidth = 1.6;
+    ctx.fillStyle = alpha(C.kit, .07); ctx.fill();
+    ctx.stroke();
     ctx.restore();
-    ctx.font = '600 11px ' + FONT;
-    ctx.fillStyle = C.inkDim;
-    ctx.fillText('散块区 · 拖到上面的格子里（点一下也会飞进去）', G.pad, ty + 12);
+    ctx.font = '700 11px ' + FONT;
+    ctx.fillStyle = C.inkMid;
+    ctx.textAlign = 'left';
+    ctx.fillText('散块区 · 点一下或拖上去', G.pad, ty + 12);
 
     for (var l = 0; l < S.loose.length; l++) if (!S.loose[l].drag) drawBlock(ctx, S.loose[l], 'loose', -1, now);
+
+    // 已完成的十条：收进工作台右侧的成品架
+    var rodW = Math.max(46, G.trayReserve - 14), rodH = Math.max(8, Math.min(13, G.cell * .3));
+    var rodX = G.W - G.pad - rodW;
+    if (fullRows > 0) {
+      ctx.font = '700 10px ' + FONT;
+      ctx.fillStyle = C.inkMid;
+      ctx.textAlign = 'right';
+      ctx.fillText('成品 ' + fullRows + ' 条十', G.W - G.pad, ty + 12);
+      ctx.textAlign = 'left';
+    }
+    for (var rod = 0; rod < Math.min(fullRows, 4); rod++) {
+      drawTenRod(ctx, rodX, ty + 20 + rod * (rodH + 5), rodW, rodH);
+    }
+
+    // 工坊小助手：挂在打孔板上的一块有表情的积木
+    drawHelper(ctx, G.W - G.pad - 26, 4, 24, n > 0 && n % 10 === 0);
 
     // 正在拖的放最上层
     var all = S.placed.concat(S.loose);
@@ -1002,26 +2244,50 @@
   }
 
   /* ---------- 动画 ---------- */
+  /* 逐帧循环会自己睡下：积木都停稳、彩屑也清完之后就不再排帧，由 requestDraw()
+     在交互时唤醒。否则平板上即使画面完全静止也会一直空转 60fps，白耗电。 */
+  var rafId = 0, settle = 0;
+  var SETTLE_FRAMES = 20;   // 交互后多画约 0.3 秒，等拖拽、补间等状态落定
+
   function tick(now) {
+    var still = motionOff();
     var moving = false;
     var all = S.placed.concat(S.loose);
     for (var i = 0; i < all.length; i++) {
       var b = all[i];
       if (b.drag) continue;
+      if (still) { b.x = b.tx; b.y = b.ty; b.s = b.ts; continue; }
       b.x = lerp(b.x, b.tx, .22); b.y = lerp(b.y, b.ty, .22); b.s = lerp(b.s, b.ts, .22);
       if (Math.abs(b.x - b.tx) > .3 || Math.abs(b.y - b.ty) > .3 || Math.abs(b.s - b.ts) > .3) moving = true;
       else { b.x = b.tx; b.y = b.ty; b.s = b.ts; }
     }
-    for (var p = S.parts.length - 1; p >= 0; p--) {
-      var pt = S.parts[p];
-      pt.x += pt.vx; pt.y += pt.vy; pt.vy += pt.g; pt.rot += pt.vr; pt.life -= .014;
-      if (pt.life <= 0 || pt.y > G.H + 20) S.parts.splice(p, 1);
+    if (still) {
+      // 减少动效：不做补间、不留彩屑，直接呈现最终画面
+      if (S.parts.length) S.parts.length = 0;
+      if (S.rowFlash.length) S.rowFlash.length = 0;
+    } else {
+      for (var p = S.parts.length - 1; p >= 0; p--) {
+        var pt = S.parts[p];
+        pt.x += pt.vx; pt.y += pt.vy; pt.vy += pt.g; pt.rot += pt.vr; pt.life -= .014;
+        if (pt.life <= 0 || pt.y > G.H + 20) S.parts.splice(p, 1);
+      }
+      S.rowFlash = S.rowFlash.filter(function (f) { return now - f.t < 900; });
     }
-    S.rowFlash = S.rowFlash.filter(function (f) { return now - f.t < 900; });
     drawStage(now);
-    requestAnimationFrame(tick);
+    var busy = moving || S.parts.length > 0 || S.rowFlash.length > 0 || Boolean(drag);
+    if (settle > 0) settle--;
+    if (busy || settle > 0) rafId = requestAnimationFrame(tick);
+    else rafId = 0;
     return moving;
   }
+  function requestDraw() {
+    settle = SETTLE_FRAMES;
+    if (!rafId) rafId = requestAnimationFrame(tick);
+  }
+  /* 捕获阶段统一唤醒：不必逐个改控件处理器，绘制发生在下一帧、状态已更新完。 */
+  ['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'input', 'change', 'click', 'keydown']
+    .forEach(function (type) { document.addEventListener(type, requestDraw, true); });
+  window.addEventListener('resize', requestDraw);
 
   /* ---------- 指针交互 ---------- */
   var drag = null;
@@ -1099,6 +2365,14 @@
 
   document.getElementById('plus').addEventListener('click', function () { addOne(); });
   document.getElementById('minus').addEventListener('click', function () { removeOne(); });
+  document.getElementById('kidMinus').addEventListener('click', function () {
+    removeOne();
+    say('拿走一颗，现在 ' + count() + ' 颗');
+  });
+  document.getElementById('kidNewTask').addEventListener('click', function () {
+    newTask();
+    say('换了一题：' + document.getElementById('taskText').textContent);
+  });
   document.getElementById('fillTen').addEventListener('click', fillTen);
   document.getElementById('clear').addEventListener('click', function () {
     S.placed.length = 0; S.rowFlash.length = 0;
@@ -1141,7 +2415,7 @@
         choice.setAttribute('aria-pressed', String(choice === btn));
       });
       newTask();
-      say('开始' + btn.textContent);
+      say('开始' + (btn.getAttribute('data-say') || btn.textContent));
     });
   });
   Array.prototype.forEach.call(document.querySelectorAll('[data-number-predict]'), function (btn) {
@@ -1159,7 +2433,7 @@
       document.querySelectorAll('[data-number-reflect]').forEach(function (choice) {
         choice.setAttribute('aria-pressed', String(choice === btn));
       });
-      say('已选发现：' + btn.textContent);
+      say('已选发现：' + btn.getAttribute('data-number-reflect'));
     });
   });
   document.getElementById('lockPredict').addEventListener('click', function () {
@@ -1171,20 +2445,46 @@
   function updateMission() {
     var done = ['ten','split','carry'].filter(function (k) { return S.levelSolved[k]; });
     var names = {ten:'凑十',split:'拆分',carry:'进位'};
+    var levelsOk = done.length >= 3;
+    var galleryOk = S.tenWays >= 2;
     var status = done.length ? '已计入：' + done.map(function(k){return names[k];}).join('、') + '。' : '尚无计入结果。';
+    status += galleryOk
+      ? ' ✓ 图鉴里已收到 ' + S.tenWays + ' 种不同的 10。'
+      : ' ○ 图鉴里的 10 还差 ' + (2 - S.tenWays) + ' 种摆法。';
     if (S.prediction !== null && !S.solved) status += ' 已锁定预测 ' + S.prediction + '，现在请操作积木。';
     if (S.lastResult) status += ' 最近结果：' + S.lastResult;
+    if (!levelsOk && !galleryOk) status += ' 完成条件：三关都计入，或在图鉴里收到两种不同的 10。';
     document.getElementById('numMissionStatus').textContent = status;
-    document.getElementById('numComplete').disabled = done.length < 3;
+    document.getElementById('numComplete').disabled = !(levelsOk || galleryOk);
   }
+  /* 数量图鉴（另一段脚本）收到两种 10 时通知任务区 */
+  document.addEventListener('nb:tenways', function (event) {
+    var n = event && event.detail ? Number(event.detail.count) : 0;
+    S.tenWays = isFinite(n) && n > 0 ? n : 0;
+    updateMission();
+  });
   document.getElementById('numComplete').addEventListener('click', function () {
-    var reflection = document.getElementById('numReflect').value.trim();
-    if (!reflection) { say('请先写一句反思'); document.getElementById('numReflect').focus(); return; }
-    var evidence = '完成凑十、拆分、跨十进位三关。最近结果：' + S.lastResult + ' 反思：' + reflection;
+    // 反思一律可选：孩子模式下 textarea 被隐藏，不能用它卡住完成条件。
+    var reflectEl = document.getElementById('numReflect');
+    var picked = document.querySelector('[data-number-reflect][aria-pressed="true"]');
+    var reflection = (reflectEl.value || '').trim();
+    if (!reflection && picked) reflection = picked.getAttribute('data-number-reflect');
+    if (!reflection) reflection = '（未留下文字，用积木和图鉴完成了任务）';
+    var levels = ['ten','split','carry'].filter(function (k) { return S.levelSolved[k]; }).length;
+    var paths = [];
+    if (levels >= 3) paths.push('完成凑十、拆分、跨十进位三关');
+    if (S.tenWays >= 2) paths.push('在数量图鉴里摆出 ' + S.tenWays + ' 种不同的 10');
+    var evidence = (paths.join('；') || '完成十格阵任务') + '。最近结果：' + S.lastResult + ' 反思：' + reflection;
     var saved = window.Progress && Progress.complete('games/number-blocks.html', evidence);
     document.getElementById('numMissionStatus').textContent = saved ? '✓ 任务已完成并记录：' + evidence : '✓ 任务已完成；本机存储不可用，未能保存足迹。';
     say(document.getElementById('numMissionStatus').textContent);
   });
+
+  /* ---------- 动效偏好：优先站内设置 ---------- */
+  function motionOff() {
+    if (window.Playful && typeof Playful.motionReduced === 'function') return Playful.motionReduced();
+    try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+  }
 
   /* ---------- 启动 ---------- */
   var lastW = 0;
@@ -1192,6 +2492,8 @@
     var w = wrap.clientWidth;
     if (Math.abs(w - lastW) < 1) return;
     lastW = w; layout(); update();
+    /* ResizeObserver 不是 DOM 事件，走不到上面那圈捕获阶段的唤醒，得自己叫醒循环 */
+    requestDraw();
   }
   if (window.ResizeObserver) new ResizeObserver(onResize).observe(wrap);
   window.addEventListener('resize', onResize);
@@ -1200,14 +2502,1182 @@
   refillLoose();
   update();
   renderChallengeLog();
-  requestAnimationFrame(tick);
+  requestDraw();   // 走 requestDraw 而不是裸 rAF：否则首帧待执行时 rafId 仍为 0，交互唤醒会重复排帧
+})();
+
+/* ==========================================================================
+   数感四个小游戏：数一数 / 一样多吗 / 十条和散块 / 第几个
+   全图形作答，孩子只需点大按钮；不依赖打字。
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  function id(x) { return document.getElementById(x); }
+  function ri(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+  function shuffle(list) {
+    for (var i = list.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1)), t = list[i];
+      list[i] = list[j]; list[j] = t;
+    }
+    return list;
+  }
+  function motionOff() {
+    if (window.Playful && typeof Playful.motionReduced === 'function') return Playful.motionReduced();
+    try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+  }
+
+  var CRITTERS = ['🐣', '🐝', '🐟', '🐞', '🦋', '🐸', '🐧', '🐰'];
+  var wins = 0;
+
+  function addWin() {
+    wins++;
+    var stars = id('kgStars');
+    stars.textContent = '';
+    var show = Math.min(wins, 10);
+    for (var i = 0; i < show; i++) {
+      var s = document.createElement('span');
+      s.textContent = '⭐';
+      stars.appendChild(s);
+    }
+    if (wins > 10) {
+      var more = document.createElement('span');
+      more.style.fontSize = '.9rem'; more.style.fontWeight = '800';
+      more.textContent = '+' + (wins - 10);
+      stars.appendChild(more);
+    }
+    stars.setAttribute('aria-label', '小游戏已答对 ' + wins + ' 次');
+    id('kgTotal').textContent = '答对 ' + wins + ' 次';
+    var panel = id(PANELS[activePanel]);
+    if (panel && window.Playful && typeof Playful.confetti === 'function') Playful.confetti(panel);
+  }
+
+  /* ---------- 面板切换 ---------- */
+  var PANELS = {
+    pair: 'kgPanelPair', flash: 'kgPanelFlash', tower: 'kgPanelTower',
+    peek: 'kgPanelPeek', same: 'kgPanelSame', bundle: 'kgPanelBundle', order: 'kgPanelOrder'
+  };
+  var STARTERS = {
+    pair: function () { newPair(); }, flash: function () { newFlash(); }, tower: function () { newTower(); },
+    peek: function () { newPeek(); }, same: function () { newSame(); },
+    bundle: function () { newBundle(); }, order: function () { newOrder(); }
+  };
+  var activePanel = 'pair';
+  var tabs = [].slice.call(document.querySelectorAll('[data-kg-tab]'));
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      var key = tab.getAttribute('data-kg-tab');
+      tabs.forEach(function (t) { t.setAttribute('aria-pressed', String(t === tab)); });
+      Object.keys(PANELS).forEach(function (k) { id(PANELS[k]).hidden = k !== key; });
+      activePanel = key;
+      stopFlashTimer();
+      (STARTERS[key] || STARTERS.pair)();
+    });
+  });
+
+  /* ---------- 通用：生成图形答案按钮（点阵 + 数字） ---------- */
+  function dotsSvg(n) {
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var per = 5, rows = Math.ceil(n / per);
+    var svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + (per * 18) + ' ' + Math.max(18, rows * 18));
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', n + ' 个点');
+    for (var i = 0; i < n; i++) {
+      var c = document.createElementNS(svgNS, 'circle');
+      c.setAttribute('cx', String((i % per) * 18 + 9));
+      c.setAttribute('cy', String(Math.floor(i / per) * 18 + 9));
+      c.setAttribute('r', '7');
+      c.setAttribute('fill', 'currentColor');
+      svg.appendChild(c);
+    }
+    return svg;
+  }
+
+  function buildNumberAnswers(host, correct, options, onRight, withDots) {
+    host.textContent = '';
+    options.forEach(function (value) {
+      var btn = document.createElement('button');
+      btn.className = 'kg-answer';
+      btn.type = 'button';
+      btn.setAttribute('aria-label', String(value) + ' 个');
+      if (withDots && value <= 20) btn.appendChild(dotsSvg(value));
+      var big = document.createElement('big');
+      big.textContent = String(value);
+      btn.appendChild(big);
+      btn.addEventListener('click', function () {
+        var right = value === correct;
+        btn.setAttribute('data-state', right ? 'right' : 'wrong');
+        if (right) {
+          [].forEach.call(host.children, function (b) { b.disabled = true; });
+          onRight();
+        } else {
+          onWrongHint(value, correct);
+        }
+      });
+      host.appendChild(btn);
+    });
+  }
+
+  var wrongSay = null;
+  function onWrongHint(picked, correct) {
+    if (!wrongSay) return;
+    wrongSay.textContent = picked > correct ? '有点多啦，再看看 🙂' : '有点少啦，再看看 🙂';
+  }
+
+  function numberOptions(correct, max) {
+    var set = {}, list = [correct];
+    set[correct] = true;
+    var guard = 0;
+    while (list.length < 3 && guard++ < 60) {
+      var delta = ri(1, 3) * (Math.random() < .5 ? -1 : 1);
+      var v = correct + delta;
+      if (v < 1 || v > max || set[v]) continue;
+      set[v] = true; list.push(v);
+    }
+    return shuffle(list);
+  }
+
+  /* ---------- 图形素材：一竖排积木（凑十配对的答案卡） ---------- */
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function brickSvg(n, tone) {
+    var cols = Math.min(n, 5), rows = Math.ceil(n / 5);
+    var svg = document.createElementNS(SVGNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + (5 * 15) + ' ' + Math.max(15, rows * 15));
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', n + ' 块积木');
+    for (var i = 0; i < n; i++) {
+      var g = document.createElementNS(SVGNS, 'g');
+      var x = (i % 5) * 15 + 1, y = Math.floor(i / 5) * 15 + 2;
+      var body = document.createElementNS(SVGNS, 'rect');
+      body.setAttribute('x', String(x)); body.setAttribute('y', String(y + 2));
+      body.setAttribute('width', '13'); body.setAttribute('height', '11');
+      body.setAttribute('rx', '3');
+      body.setAttribute('fill', tone || 'currentColor');
+      g.appendChild(body);
+      [4.5, 9.5].forEach(function (dx) {
+        var stud = document.createElementNS(SVGNS, 'circle');
+        stud.setAttribute('cx', String(x + dx)); stud.setAttribute('cy', String(y + 2));
+        stud.setAttribute('r', '1.8');
+        stud.setAttribute('fill', tone || 'currentColor');
+        g.appendChild(stud);
+      });
+      svg.appendChild(g);
+    }
+    if (!n) {
+      var zero = document.createElementNS(SVGNS, 'rect');
+      zero.setAttribute('x', '1'); zero.setAttribute('y', '3');
+      zero.setAttribute('width', '13'); zero.setAttribute('height', '11');
+      zero.setAttribute('rx', '3');
+      zero.setAttribute('fill', 'none');
+      zero.setAttribute('stroke', 'currentColor');
+      zero.setAttribute('stroke-width', '1.6');
+      zero.setAttribute('stroke-dasharray', '3 2');
+      svg.appendChild(zero);
+    }
+    if (cols < 1) svg.setAttribute('viewBox', '0 0 75 15');
+    return svg;
+  }
+
+  /* 通用：十格阵格子（HTML 版），a = 已给的数，b = 补上的数 */
+  function fillFrame(host, a, b) {
+    host.textContent = '';
+    for (var i = 0; i < 10; i++) {
+      var cell = document.createElement('i');
+      cell.setAttribute('aria-hidden', 'true');
+      if (i < a) cell.setAttribute('data-fill', 'a');
+      else if (i < a + b) cell.setAttribute('data-fill', 'b');
+      host.appendChild(cell);
+    }
+    host.setAttribute('aria-label', b
+      ? '十格阵里有 ' + a + ' 颗蓝积木和 ' + b + ' 颗绿积木，一共 ' + (a + b) + ' 颗'
+      : '十格阵里有 ' + a + ' 颗积木，还有 ' + (10 - a) + ' 个空格');
+  }
+
+  /* ---------- 小游戏 A：凑十好朋友 ---------- */
+  var pairBase = 0;
+  function newPair() {
+    wrongSay = id('kgPairSay');
+    var next = ri(1, 9);
+    while (next === pairBase) next = ri(1, 9);
+    pairBase = next;
+    fillFrame(id('kgPairFrame'), pairBase, 0);
+    var slot = id('kgPairSlot');
+    slot.setAttribute('data-filled', 'false');
+    slot.textContent = '';
+    var q = document.createElement('span');
+    q.setAttribute('aria-hidden', 'true'); q.textContent = '❓';
+    slot.appendChild(q);
+    slot.appendChild(document.createTextNode('还差'));
+    slot.setAttribute('aria-label', '空位：等着放进配对的积木');
+    id('kgPairSay').textContent = '数一数还有几个空格。';
+    var correct = 10 - pairBase;
+    var host = id('kgPairAnswers');
+    host.textContent = '';
+    numberOptions(correct, 9).forEach(function (value) {
+      var btn = document.createElement('button');
+      btn.className = 'kg-answer';
+      btn.type = 'button';
+      btn.setAttribute('aria-label', '放 ' + value + ' 块');
+      btn.appendChild(brickSvg(value));
+      var big = document.createElement('big');
+      big.textContent = String(value);
+      btn.appendChild(big);
+      btn.addEventListener('click', function () {
+        var right = value === correct;
+        btn.setAttribute('data-state', right ? 'right' : 'wrong');
+        if (!right) { onWrongHint(value, correct); return; }
+        [].forEach.call(host.children, function (x) { x.disabled = true; });
+        fillFrame(id('kgPairFrame'), pairBase, correct);
+        slot.setAttribute('data-filled', 'true');
+        slot.textContent = '';
+        var ok = document.createElement('span');
+        ok.setAttribute('aria-hidden', 'true'); ok.textContent = '🧱';
+        slot.appendChild(ok);
+        slot.appendChild(document.createTextNode('✓ ' + correct));
+        slot.setAttribute('aria-label', '已放进 ' + correct + ' 块，拼合完成');
+        id('kgPairSay').textContent = '拼上了！' + pairBase + ' + ' + correct + ' = 10 🎉';
+        addWin();
+      });
+      host.appendChild(btn);
+    });
+  }
+  id('kgPairNext').addEventListener('click', newPair);
+  id('kgPairHelp').addEventListener('click', function () {
+    id('kgPairSay').textContent = '空格是：' + (10 - pairBase) + ' 个（' + pairBase + ' 个满 + ' +
+      (10 - pairBase) + ' 个空 = 10 个格子）。';
+  });
+
+  /* ---------- 小游戏 B：一眼看出（subitizing 闪现） ---------- */
+  var flashCount = 0, flashTimer = 0, flashHold = false;
+  function stopFlashTimer() { if (flashTimer) { clearTimeout(flashTimer); flashTimer = 0; } }
+  /* 三种摆法：十格阵、成对、骰子形 —— 有结构的摆法更容易一眼看出 */
+  function patternPoints(n, kind) {
+    var pts = [], i;
+    if (kind === 0) {
+      for (i = 0; i < n; i++) pts.push([(i % 5) * 22 + 13, Math.floor(i / 5) * 24 + 14]);
+    } else if (kind === 1) {
+      for (i = 0; i < n; i++) pts.push([Math.floor(i / 2) * 22 + 13, (i % 2) * 24 + 14]);
+    } else {
+      var dice = {
+        1: [[2, 2]], 2: [[1, 1], [3, 3]], 3: [[1, 1], [2, 2], [3, 3]],
+        4: [[1, 1], [3, 1], [1, 3], [3, 3]], 5: [[1, 1], [3, 1], [2, 2], [1, 3], [3, 3]],
+        6: [[1, 1], [3, 1], [1, 2], [3, 2], [1, 3], [3, 3]]
+      };
+      if (dice[n]) {
+        dice[n].forEach(function (p) { pts.push([p[0] * 24 + 8, p[1] * 22 + 4]); });
+      } else {
+        for (i = 0; i < 5; i++) pts.push([i * 22 + 13, 14]);
+        for (i = 5; i < n; i++) pts.push([(i - 5) * 22 + 13, 44]);
+      }
+    }
+    return pts;
+  }
+  function dotPatternSvg(n, kind) {
+    var pts = patternPoints(n, kind);
+    var svg = document.createElementNS(SVGNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 120 80');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', n + ' 个点');
+    var plate = document.createElementNS(SVGNS, 'rect');
+    plate.setAttribute('x', '1'); plate.setAttribute('y', '1');
+    plate.setAttribute('width', '118'); plate.setAttribute('height', '78');
+    plate.setAttribute('rx', '10');
+    plate.setAttribute('fill', 'currentColor');
+    plate.setAttribute('fill-opacity', '.08');
+    svg.appendChild(plate);
+    pts.forEach(function (p) {
+      var c = document.createElementNS(SVGNS, 'circle');
+      c.setAttribute('cx', String(p[0])); c.setAttribute('cy', String(p[1] + 6));
+      c.setAttribute('r', '8');
+      c.setAttribute('fill', 'currentColor');
+      svg.appendChild(c);
+    });
+    return svg;
+  }
+  function showFlash(ms) {
+    var win = id('kgFlashWindow'), lid = id('kgFlashLid');
+    lid.hidden = true;
+    stopFlashTimer();
+    if (flashHold || motionOff()) {
+      id('kgFlashSay').textContent = '点阵一直显示着，慢慢看也可以。';
+      return;
+    }
+    flashTimer = setTimeout(function () {
+      lid.hidden = false;
+      flashTimer = 0;
+      id('kgFlashSay').textContent = '盖住啦，刚刚有几个点？';
+    }, ms);
+    if (win) win.setAttribute('data-flash', 'on');
+  }
+  function newFlash() {
+    wrongSay = id('kgFlashSay');
+    flashCount = ri(3, 10);
+    var kind = ri(0, 2);
+    var win = id('kgFlashWindow'), lid = id('kgFlashLid');
+    [].slice.call(win.querySelectorAll('svg')).forEach(function (old) { win.removeChild(old); });
+    win.insertBefore(dotPatternSvg(flashCount, kind), lid);
+    var host = id('kgFlashAnswers');
+    buildNumberAnswers(host, flashCount, numberOptions(flashCount, 10), function () {
+      lid.hidden = true;
+      id('kgFlashSay').textContent = '对了！' + flashCount + ' 个点 🎉 你是怎么看出来的？';
+      addWin();
+    }, true);
+    id('kgFlashSay').textContent = '快看！';
+    showFlash(1100);
+  }
+  id('kgFlashNext').addEventListener('click', newFlash);
+  id('kgFlashPeek').addEventListener('click', function () {
+    id('kgFlashSay').textContent = '再闪一次，看好了！';
+    showFlash(900);
+  });
+  id('kgFlashHold').addEventListener('click', function () {
+    flashHold = !flashHold;
+    this.setAttribute('aria-pressed', String(flashHold));
+    if (flashHold) {
+      stopFlashTimer();
+      id('kgFlashLid').hidden = true;
+      id('kgFlashSay').textContent = '已改成一直显示，可以慢慢数。';
+    } else {
+      id('kgFlashSay').textContent = '恢复闪现，点「再闪一次」试试。';
+    }
+  });
+
+  /* ---------- 小游戏 C：位值塔 ---------- */
+  var towerOnes = 0, towerTens = 0, towerTarget = 23;
+  function renderTower() {
+    var tens = id('kgTowerTens'), ones = id('kgTowerOnes'), i;
+    tens.textContent = '';
+    for (i = 0; i < towerTens; i++) {
+      var rod = document.createElement('span');
+      rod.className = 'nb-rod';
+      rod.setAttribute('aria-hidden', 'true');
+      tens.appendChild(rod);
+    }
+    tens.setAttribute('aria-label', '十位上有 ' + towerTens + ' 条十');
+    ones.textContent = '';
+    for (i = 0; i < 10; i++) {
+      var cell = document.createElement('span');
+      cell.className = i < towerOnes ? 'nb-one' : 'nb-slot-empty';
+      cell.setAttribute('aria-hidden', 'true');
+      ones.appendChild(cell);
+    }
+    ones.setAttribute('aria-label', '个位上有 ' + towerOnes + ' 个散块，还有 ' + (10 - towerOnes) + ' 个空位');
+    var total = towerTens * 10 + towerOnes;
+    id('kgTowerNow').textContent = total + '（' + towerTens + ' 条十 + ' + towerOnes + ' 个一）';
+  }
+  function towerCheck() {
+    var total = towerTens * 10 + towerOnes;
+    if (total !== towerTarget) return;
+    id('kgTowerSay').textContent = '搭好了！' + towerTarget + ' = ' + Math.floor(towerTarget / 10) +
+      ' 条十 + ' + (towerTarget % 10) + ' 个一 🎉';
+    addWin();
+  }
+  function towerAdd() {
+    if (towerTens * 10 + towerOnes >= 99) { id('kgTowerSay').textContent = '到 99 啦，换一个目标吧。'; return; }
+    towerOnes++;
+    if (towerOnes === 10) {
+      towerOnes = 0; towerTens++;
+      id('kgTowerSay').textContent = '满 10 块！自动捆成一条十 → 现在 ' + towerTens + ' 条十。';
+    } else {
+      id('kgTowerSay').textContent = '个位 ' + towerOnes + ' 块，再放 ' + (10 - towerOnes) + ' 块就能捆成一条。';
+    }
+    renderTower();
+    towerCheck();
+  }
+  function towerSub() {
+    if (towerOnes === 0 && towerTens === 0) { id('kgTowerSay').textContent = '空的，先放几块吧。'; return; }
+    if (towerOnes === 0) {
+      towerTens--; towerOnes = 9;
+      id('kgTowerSay').textContent = '拆开一条十，换成 10 块散块，再拿走 1 块。';
+    } else {
+      towerOnes--;
+      id('kgTowerSay').textContent = '个位剩 ' + towerOnes + ' 块。';
+    }
+    renderTower();
+    towerCheck();
+  }
+  function newTower() {
+    wrongSay = id('kgTowerSay');
+    var next = ri(11, 45);
+    while (next === towerTarget) next = ri(11, 45);
+    towerTarget = next;
+    towerOnes = 0; towerTens = 0;
+    id('kgTowerTarget').textContent = String(towerTarget);
+    id('kgAskTower').setAttribute('aria-label', '搭出 ' + towerTarget);
+    id('kgTowerSay').textContent = '目标 ' + towerTarget + '。个位满 10 块会自动捆成一条十。';
+    renderTower();
+  }
+  id('kgTowerAdd').addEventListener('click', towerAdd);
+  id('kgTowerSub').addEventListener('click', towerSub);
+  id('kgTowerNext').addEventListener('click', newTower);
+
+  /* ---------- 小游戏 1：数一数 ---------- */
+  var peekCount = 0, peekFace = '🐣';
+  function newPeek() {
+    wrongSay = id('kgPeekSay');
+    peekCount = ri(3, 10);
+    peekFace = CRITTERS[ri(0, CRITTERS.length - 1)];
+    var scene = id('kgPeekScene');
+    scene.textContent = '';
+    for (var i = 0; i < peekCount; i++) {
+      var b = document.createElement('button');
+      b.className = 'kg-critter';
+      b.type = 'button';
+      b.setAttribute('aria-pressed', 'false');
+      b.setAttribute('aria-label', '第 ' + (i + 1) + ' 只，点一下数它');
+      var face = document.createElement('span');
+      face.className = 'kg-face';
+      face.setAttribute('aria-hidden', 'true');
+      face.textContent = peekFace;
+      var num = document.createElement('span');
+      num.className = 'kg-num';
+      num.setAttribute('aria-hidden', 'true');
+      num.textContent = String(i + 1);
+      b.appendChild(face); b.appendChild(num);
+      b.addEventListener('click', function () {
+        var on = this.getAttribute('aria-pressed') === 'true';
+        this.setAttribute('aria-pressed', on ? 'false' : 'true');
+        var lit = scene.querySelectorAll('.kg-critter[aria-pressed="true"]').length;
+        id('kgPeekSay').textContent = lit ? '数到 ' + lit + ' 只' : '点一个数字。';
+      });
+      scene.appendChild(b);
+    }
+    scene.setAttribute('aria-label', '草地上有一些小动物，一共 ' + peekCount + ' 只，可以逐个点数');
+    id('kgPeekSay').textContent = '点一个数字。';
+    buildNumberAnswers(id('kgPeekAnswers'), peekCount, numberOptions(peekCount, 10), function () {
+      id('kgPeekSay').textContent = '对了！一共 ' + peekCount + ' 只 🎉';
+      addWin();
+    }, true);
+  }
+  id('kgPeekNext').addEventListener('click', newPeek);
+  id('kgPeekHelp').addEventListener('click', function () {
+    var kids = id('kgPeekScene').querySelectorAll('.kg-critter');
+    [].forEach.call(kids, function (b) { b.setAttribute('aria-pressed', 'true'); });
+    id('kgPeekSay').textContent = '一个一个数：最后说到 ' + peekCount + '，就是 ' + peekCount + ' 只。';
+  });
+
+  /* ---------- 小游戏 2：一样多吗 ---------- */
+  var sameL = 0, sameR = 0;
+  function renderTray(host, n, glyph, view) {
+    host.textContent = '';
+    host.setAttribute('data-view', view || 'free');
+    for (var i = 0; i < n; i++) {
+      var it = document.createElement('i');
+      it.setAttribute('aria-hidden', 'true');
+      it.textContent = glyph;
+      host.appendChild(it);
+    }
+    host.setAttribute('aria-label', n + ' 个');
+  }
+  function newSame() {
+    wrongSay = id('kgSameSay');
+    sameL = ri(3, 9);
+    sameR = Math.random() < .34 ? sameL : Math.max(2, Math.min(10, sameL + ri(1, 3) * (Math.random() < .5 ? -1 : 1)));
+    renderTray(id('kgSameLeft'), sameL, '🍎');
+    renderTray(id('kgSameRight'), sameR, '🍐');
+    id('kgSameSay').textContent = '先看看，再点一个。';
+    [].forEach.call(document.querySelectorAll('[data-kg-same]'), function (b) {
+      b.disabled = false; b.removeAttribute('data-state');
+    });
+  }
+  [].forEach.call(document.querySelectorAll('[data-kg-same]'), function (btn) {
+    btn.addEventListener('click', function () {
+      var pick = btn.getAttribute('data-kg-same');
+      var truth = sameL > sameR ? 'left' : (sameL < sameR ? 'right' : 'equal');
+      var right = pick === truth;
+      btn.setAttribute('data-state', right ? 'right' : 'wrong');
+      if (right) {
+        [].forEach.call(document.querySelectorAll('[data-kg-same]'), function (b) { b.disabled = true; });
+        id('kgSameSay').textContent = truth === 'equal'
+          ? '对了！两边都是 ' + sameL + ' 个，一样多 🎉'
+          : '对了！' + (truth === 'left' ? '左边' : '右边') + '多，' + sameL + ' 和 ' + sameR + ' 🎉';
+        addWin();
+      } else {
+        id('kgSameSay').textContent = '再想想，试试「一对一排好」👇';
+      }
+    });
+  });
+  id('kgSameNext').addEventListener('click', newSame);
+  id('kgSamePair').addEventListener('click', function () {
+    renderTray(id('kgSameLeft'), sameL, '🍎', 'pair');
+    renderTray(id('kgSameRight'), sameR, '🍐', 'pair');
+    var extra = Math.abs(sameL - sameR);
+    var host = sameL > sameR ? id('kgSameLeft') : id('kgSameRight');
+    for (var i = 0; i < extra; i++) {
+      var node = host.children[host.children.length - 1 - i];
+      if (node) node.className = 'kg-extra';
+    }
+    id('kgSameSay').textContent = extra
+      ? '一个配一个，多出来 ' + extra + ' 个（虚线框住的）。'
+      : '一个配一个，刚好配完，所以一样多。';
+  });
+
+  /* ---------- 小游戏 3：十条和散块 ---------- */
+  var bundleTens = 0, bundleOnes = 0;
+  function newBundle() {
+    wrongSay = id('kgBundleSay');
+    bundleTens = ri(1, 3);
+    bundleOnes = ri(0, 9);
+    var total = bundleTens * 10 + bundleOnes;
+    var scene = id('kgBundleScene');
+    scene.textContent = '';
+    var svgNS = 'http://www.w3.org/2000/svg';
+    for (var t = 0; t < bundleTens; t++) {
+      var wrapEl = document.createElement('div');
+      wrapEl.className = 'kg-bundle';
+      var svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('viewBox', '0 0 150 20');
+      svg.setAttribute('role', 'img');
+      svg.setAttribute('aria-label', '一条十，里面有 10 个小格');
+      var bg = document.createElementNS(svgNS, 'rect');
+      bg.setAttribute('x', '1'); bg.setAttribute('y', '1');
+      bg.setAttribute('width', '148'); bg.setAttribute('height', '18');
+      bg.setAttribute('rx', '6');
+      bg.setAttribute('fill', 'currentColor'); bg.setAttribute('fill-opacity', '.2');
+      bg.setAttribute('stroke', 'currentColor'); bg.setAttribute('stroke-width', '2');
+      svg.appendChild(bg);
+      for (var c = 0; c < 10; c++) {
+        var cell = document.createElementNS(svgNS, 'rect');
+        cell.setAttribute('x', String(4 + c * 14.4)); cell.setAttribute('y', '4');
+        cell.setAttribute('width', '11.4'); cell.setAttribute('height', '12');
+        cell.setAttribute('rx', '3');
+        cell.setAttribute('fill', 'currentColor');
+        svg.appendChild(cell);
+      }
+      var tag = document.createElement('b');
+      tag.textContent = '10';
+      wrapEl.appendChild(svg); wrapEl.appendChild(tag);
+      scene.appendChild(wrapEl);
+    }
+    if (bundleOnes) {
+      var ones = document.createElement('div');
+      ones.className = 'kg-ones';
+      ones.setAttribute('role', 'img');
+      ones.setAttribute('aria-label', bundleOnes + ' 个散块');
+      for (var o = 0; o < bundleOnes; o++) {
+        var box = document.createElement('i');
+        box.setAttribute('aria-hidden', 'true');
+        ones.appendChild(box);
+      }
+      scene.appendChild(ones);
+    }
+    scene.setAttribute('aria-label', bundleTens + ' 条十和 ' + bundleOnes + ' 个散块');
+    id('kgBundleSay').textContent = '一条是十个，散块一个一个数。';
+    var opts = [total], guard = 0, seen = {};
+    seen[total] = true;
+    while (opts.length < 3 && guard++ < 60) {
+      var cand = Math.random() < .5
+        ? bundleOnes * 10 + bundleTens          // 位值混淆项
+        : total + ri(1, 2) * 10 * (Math.random() < .5 ? -1 : 1);
+      if (cand < 1 || cand > 99 || seen[cand]) continue;
+      seen[cand] = true; opts.push(cand);
+    }
+    buildNumberAnswers(id('kgBundleAnswers'), total, shuffle(opts), function () {
+      id('kgBundleSay').textContent = '对了！' + bundleTens + ' 个十加 ' + bundleOnes + ' 个一，就是 ' + total + ' 🎉';
+      addWin();
+    }, false);
+  }
+  id('kgBundleNext').addEventListener('click', newBundle);
+  id('kgBundleHelp').addEventListener('click', function () {
+    var total = bundleTens * 10 + bundleOnes;
+    var tenWords = [];
+    for (var i = 1; i <= bundleTens; i++) tenWords.push(String(i * 10));
+    id('kgBundleSay').textContent = '先数十条：' + tenWords.join('、') + '；再数散块，一直数到 ' + total + '。';
+  });
+
+  /* ---------- 小游戏 4：第几个 ---------- */
+  var orderTarget = 0, orderLen = 0;
+  function newOrder() {
+    wrongSay = id('kgOrderSay');
+    orderLen = ri(4, 7);
+    orderTarget = ri(1, orderLen);
+    var face = CRITTERS[ri(0, CRITTERS.length - 1)];
+    var scene = id('kgOrderScene');
+    scene.textContent = '';
+    for (var i = 1; i <= orderLen; i++) {
+      var b = document.createElement('button');
+      b.className = 'kg-critter';
+      b.type = 'button';
+      b.setAttribute('aria-pressed', 'false');
+      b.setAttribute('aria-label', '从左数第 ' + i + ' 个');
+      b.setAttribute('data-kg-pos', String(i));
+      var f = document.createElement('span');
+      f.className = 'kg-face'; f.setAttribute('aria-hidden', 'true'); f.textContent = face;
+      var n = document.createElement('span');
+      n.className = 'kg-num'; n.setAttribute('aria-hidden', 'true'); n.textContent = String(i);
+      b.appendChild(f); b.appendChild(n);
+      b.addEventListener('click', function () {
+        var pos = parseInt(this.getAttribute('data-kg-pos'), 10);
+        var right = pos === orderTarget;
+        this.setAttribute('aria-pressed', 'true');
+        this.setAttribute('data-state', right ? 'right' : 'wrong');
+        if (right) {
+          [].forEach.call(scene.children, function (x) { x.disabled = true; });
+          id('kgOrderSay').textContent = '对了！这就是第 ' + orderTarget + ' 个 🎉';
+          addWin();
+        } else {
+          id('kgOrderSay').textContent = '这是第 ' + pos + ' 个，要找第 ' + orderTarget + ' 个。';
+        }
+      });
+      scene.appendChild(b);
+    }
+    scene.setAttribute('aria-label', orderLen + ' 只小动物从左到右排队');
+    id('kgAskOrder').textContent = '';
+    var emoji = document.createElement('span');
+    emoji.setAttribute('aria-hidden', 'true'); emoji.textContent = '🚂';
+    id('kgAskOrder').appendChild(emoji);
+    id('kgAskOrder').appendChild(document.createTextNode(' 点第 ' + orderTarget + ' 个'));
+    id('kgOrderSay').textContent = '从左边第一个开始数。';
+  }
+  id('kgOrderNext').addEventListener('click', newOrder);
+  id('kgOrderHelp').addEventListener('click', function () {
+    var kids = id('kgOrderScene').querySelectorAll('.kg-critter');
+    [].forEach.call(kids, function (b, i) {
+      b.setAttribute('aria-pressed', i < orderTarget ? 'true' : 'false');
+    });
+    id('kgOrderSay').textContent = '从左往右数：1、2……第 ' + orderTarget + ' 个就是亮起来的最后一只。';
+  });
+
+  /* ---------- 启动：默认第一个小游戏 ---------- */
+  newPair();
+  newTower();
+  wins = 0;
+  id('kgStars').textContent = '';
+  id('kgStars').setAttribute('aria-label', '小游戏已答对 0 次');
+  id('kgTotal').textContent = '答对 0 次';
+  if (motionOff()) {
+    // 减少动效：直接呈现，不做入场过渡
+    id('kidGames').setAttribute('data-motion', 'reduced');
+  }
 })();
 </script>
+
+<script>
+/* ==========================================================================
+   数量图鉴 1–10：每个数四种摆法（十格阵 / 两个一排 / 成组 / 阶梯）
+   同一个数收到两种不同摆法就算收集成功；收满两种 10 会通知正式任务区。
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var BW = 18, BH = 14, GX = 22, GY = 17;
+  var LAYOUTS = ['frame', 'pairs', 'cluster', 'stair'];
+  var QUIN = [[0, 0], [1, 0], [0.5, 0.5], [0, 1], [1, 1]];
+  var seen = {};   // { n: { layout: true } }
+  var shown = {};  // { n: 当前 layout 序号 }
+
+  function el(tag, cls) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    return node;
+  }
+  function svgEl(name, attrs) {
+    var node = document.createElementNS(SVGNS, name);
+    Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k, String(attrs[k])); });
+    return node;
+  }
+  function brick(x, y, dashed) {
+    var g = svgEl('g', {});
+    if (dashed) {
+      g.appendChild(svgEl('rect', {
+        x: x, y: y, width: BW, height: BH, rx: 4,
+        fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6,
+        'stroke-dasharray': '3 2', 'stroke-opacity': .55
+      }));
+      g.appendChild(svgEl('circle', { cx: x + BW / 2, cy: y + BH / 2, r: 1.6, fill: 'currentColor', 'fill-opacity': .35 }));
+      return g;
+    }
+    g.appendChild(svgEl('rect', { x: x, y: y + 2, width: BW, height: BH - 2, rx: 4, fill: 'currentColor' }));
+    g.appendChild(svgEl('rect', { x: x + 1.5, y: y + 3, width: BW - 3, height: 3.4, rx: 1.7, fill: '#ffffff', 'fill-opacity': .38 }));
+    g.appendChild(svgEl('circle', { cx: x + BW * 0.32, cy: y + 2, r: 2, fill: 'currentColor' }));
+    g.appendChild(svgEl('circle', { cx: x + BW * 0.68, cy: y + 2, r: 2, fill: 'currentColor' }));
+    return g;
+  }
+  function stairColumns(n) {
+    var cols = [], left = n, h = 1;
+    while (left > 0) { var take = Math.min(h, left); cols.push(take); left -= take; h++; }
+    return cols;
+  }
+  /* 返回 { spots: [[x,y]], empties: [[x,y]], w, h } */
+  function layoutSpots(n, kind) {
+    var spots = [], empties = [], i;
+    if (kind === 'frame') {
+      for (i = 0; i < 10; i++) {
+        var p = [2 + (i % 5) * GX, 2 + Math.floor(i / 5) * GY];
+        if (i < n) spots.push(p); else empties.push(p);
+      }
+      return { spots: spots, empties: empties, w: 2 + 5 * GX, h: 4 + 2 * GY };
+    }
+    if (kind === 'pairs') {
+      for (i = 0; i < n; i++) spots.push([2 + (i % 2) * GX, 2 + Math.floor(i / 2) * GY]);
+      return { spots: spots, empties: empties, w: 2 + 2 * GX, h: 4 + Math.ceil(n / 2) * GY };
+    }
+    if (kind === 'cluster') {
+      var groups = [], left = n;
+      while (left >= 5) { groups.push(5); left -= 5; }
+      if (left > 0) groups.push(left);
+      var x0 = 2;
+      groups.forEach(function (size) {
+        for (var k = 0; k < size; k++) {
+          spots.push([x0 + QUIN[k][0] * GX, 2 + QUIN[k][1] * GY * 1.1]);
+        }
+        x0 += GX + BW + 12;
+      });
+      return { spots: spots, empties: empties, w: x0 - 12 + 2, h: 4 + GY * 1.1 + BH };
+    }
+    var cols = stairColumns(n);
+    var maxH = 0;
+    cols.forEach(function (c) { if (c > maxH) maxH = c; });
+    var base = 2 + (maxH - 1) * GY;
+    cols.forEach(function (c, ci) {
+      for (var j = 0; j < c; j++) spots.push([2 + ci * GX, base - j * GY]);
+    });
+    return { spots: spots, empties: empties, w: 2 + cols.length * GX, h: 4 + maxH * GY };
+  }
+  function layoutName(n, kind) {
+    if (kind === 'frame') return '十格阵';
+    if (kind === 'pairs') return '两个一排';
+    if (kind === 'cluster') return n > 5 ? '5 和 ' + (n - 5) : '一小堆';
+    return '阶梯';
+  }
+  function artFor(n, kind) {
+    var plan = layoutSpots(n, kind);
+    var svg = svgEl('svg', {
+      viewBox: '0 0 ' + Math.round(plan.w) + ' ' + Math.round(plan.h),
+      role: 'img',
+      focusable: 'false'
+    });
+    var title = svgEl('title', {});
+    title.textContent = n + ' 块积木的' + layoutName(n, kind) + '摆法';
+    svg.appendChild(title);
+    plan.empties.forEach(function (p) { svg.appendChild(brick(p[0], p[1], true)); });
+    plan.spots.forEach(function (p) { svg.appendChild(brick(p[0], p[1], false)); });
+    return svg;
+  }
+
+  var grid = document.getElementById('nbGalleryGrid');
+  var sayEl = document.getElementById('nbGallerySay');
+  if (!grid) return;
+
+  function collectedCount() {
+    var total = 0;
+    for (var n = 1; n <= 10; n++) if (seen[n] && Object.keys(seen[n]).length >= 2) total++;
+    return total;
+  }
+  function tenWays() { return seen[10] ? Object.keys(seen[10]).length : 0; }
+
+  function refreshFoot() {
+    document.getElementById('nbGalleryCount').textContent = '已收 ' + collectedCount() + ' / 10 个数';
+    var ways = tenWays();
+    var badge = document.getElementById('nbTenBadge');
+    badge.setAttribute('data-earned', ways >= 2 ? 'true' : 'false');
+    document.getElementById('nbTenBadgeText').textContent = ways >= 2
+      ? '两种不同的 10：已收 ' + ways + ' 种 ✓'
+      : '两种不同的 10：还差 ' + (2 - ways) + ' 种';
+    try {
+      document.dispatchEvent(new CustomEvent('nb:tenways', { detail: { count: ways } }));
+    } catch (e) { /* 老浏览器没有 CustomEvent 构造器时静默跳过 */ }
+  }
+
+  function paint(card, n, record) {
+    var kind = LAYOUTS[shown[n] % LAYOUTS.length];
+    var art = card.querySelector('.kid-figure-art');
+    art.textContent = '';
+    art.appendChild(artFor(n, kind));
+    card.querySelector('.kid-figure-sub').textContent = layoutName(n, kind);
+    if (!seen[n]) seen[n] = {};
+    /* 只把孩子亲手换出来的摆法计入收集，初始画面不算 */
+    if (record) seen[n][kind] = true;
+    var got = Object.keys(seen[n]).length;
+    card.setAttribute('data-selected', got >= 2 ? 'true' : 'false');
+    card.setAttribute('aria-label', n + ' · ' + layoutName(n, kind) + '摆法 · 已收 ' + got +
+      ' 种，点一下换一种摆法');
+    return { kind: kind, got: got };
+  }
+
+  for (var n = 1; n <= 10; n++) {
+    (function (num) {
+      shown[num] = 0;
+      var card = el('button', 'kid-figure');
+      card.type = 'button';
+      card.style.setProperty('--tone', num === 10 ? 'var(--warn)' : 'var(--math)');
+      var art = el('span', 'kid-figure-art');
+      var cap = el('span', 'kid-figure-cap');
+      cap.textContent = String(num);
+      var sub = el('span', 'kid-figure-sub');
+      card.appendChild(art); card.appendChild(cap); card.appendChild(sub);
+      card.addEventListener('click', function () {
+        shown[num] = (shown[num] + 1) % LAYOUTS.length;
+        var info = paint(card, num, true);
+        refreshFoot();
+        sayEl.textContent = num + ' 换成了「' + layoutName(num, info.kind) + '」摆法：' +
+          (info.got >= 2 ? '✓ 已收 ' + info.got + ' 种不同摆法' : '○ 已收 ' + info.got + ' 种，再换一次就集齐两种');
+        if (info.got === 2 && window.Playful && typeof Playful.confetti === 'function') Playful.confetti(card);
+      });
+      grid.appendChild(card);
+      paint(card, num, false);
+    })(n);
+  }
+  refreshFoot();
+})();
+</script>
+
+<script>
+/* ==========================================================================
+   位值三件套：数字长什么样图鉴 → 百 / 十 / 个三条量表 → 「这堆有多少」六轮
+   三块共用同一个「积木堆」绘制函数：h 个百板 + t 条十 + o 个单块。
+   三个虚线框对应三位数的三格，孩子因此能指出哪一堆读到哪一位。
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var DIG = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  var UNITS = ['', '十', '百', '千'];
+
+  function id(x) { return document.getElementById(x); }
+  function svgEl(name, attrs) {
+    var node = document.createElementNS(SVGNS, name);
+    Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k, String(attrs[k])); });
+    return node;
+  }
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+
+  /* 中文读法（0–9999）：中间的 0 要读「零」，10 读「十」不读「一十」 */
+  function cnRead(n) {
+    if (n < 10) return DIG[n];
+    var str = String(n), L = str.length, out = '', zero = false, i, d, u;
+    for (i = 0; i < L; i++) {
+      d = +str.charAt(i);
+      u = UNITS[L - 1 - i] || '';
+      if (!d) { zero = true; continue; }
+      if (zero && out) out += '零';
+      zero = false;
+      if (!(d === 1 && u === '十' && i === 0 && L === 2)) out += DIG[d];
+      out += u;
+    }
+    return out || '零';
+  }
+
+  /* ---------- 积木堆绘制：左=百板堆，中=十条堆，右=单块堆 ---------- */
+  var GEO = {
+    width: 400, top: 10, cell: 6,
+    flat: 60, flatStep: 68, flatCols: 3, flatsX: 12,
+    rodW: 6, rodH: 60, rodStep: 13, rodsX: 230,
+    unit: 6, unitStep: 10, oneCols: 3, onesX: 356
+  };
+  var RINGS = [[4, 212], [222, 120], [348, 48]];
+
+  function flatAt(x, y) {
+    var g = svgEl('g', {}), d = '', i;
+    g.appendChild(svgEl('rect', { 'class': 'nbx-flat', x: x, y: y, width: GEO.flat, height: GEO.flat, rx: 2 }));
+    for (i = 1; i < 10; i++) {
+      d += 'M' + (x + i * GEO.cell) + ' ' + y + 'V' + (y + GEO.flat);
+      d += 'M' + x + ' ' + (y + i * GEO.cell) + 'H' + (x + GEO.flat);
+    }
+    g.appendChild(svgEl('path', { 'class': 'nbx-grid', d: d }));
+    g.appendChild(svgEl('rect', { 'class': 'nbx-edge-thin', x: x, y: y, width: GEO.flat, height: GEO.flat, rx: 2 }));
+    return g;
+  }
+  function rodAt(x, y) {
+    var g = svgEl('g', {}), d = '', i;
+    g.appendChild(svgEl('rect', { 'class': 'nbx-rod', x: x, y: y, width: GEO.rodW, height: GEO.rodH, rx: 1.6 }));
+    for (i = 1; i < 10; i++) d += 'M' + x + ' ' + (y + i * GEO.cell) + 'H' + (x + GEO.rodW);
+    g.appendChild(svgEl('path', { 'class': 'nbx-grid-warn', d: d }));
+    g.appendChild(svgEl('rect', { 'class': 'nbx-edge-thin', x: x, y: y, width: GEO.rodW, height: GEO.rodH, rx: 1.6 }));
+    return g;
+  }
+  function unitAt(x, y) {
+    var g = svgEl('g', {});
+    g.appendChild(svgEl('rect', { 'class': 'nbx-unit', x: x, y: y, width: GEO.unit, height: GEO.unit, rx: 1.4 }));
+    g.appendChild(svgEl('rect', { 'class': 'nbx-edge-thin', x: x, y: y, width: GEO.unit, height: GEO.unit, rx: 1.4 }));
+    return g;
+  }
+  function pileTag(x, y, text, anchor) {
+    var node = svgEl('text', { 'class': 'nbx-art-label', x: x, y: y, 'text-anchor': anchor || 'middle' });
+    node.textContent = text;
+    return node;
+  }
+
+  /* h 个百板 + t 条十 + o 个单块；showValues=true 时每堆下面写出它值多少 */
+  function drawPile(svg, body, h, t, o, showValues) {
+    while (body.firstChild) body.removeChild(body.firstChild);
+    var flatRows = Math.ceil(h / GEO.flatCols);
+    var flatsH = flatRows > 0 ? flatRows * GEO.flatStep - (GEO.flatStep - GEO.flat) : 0;
+    var oneRows = Math.ceil(o / GEO.oneCols);
+    var onesH = oneRows > 0 ? oneRows * GEO.unitStep - (GEO.unitStep - GEO.unit) : 0;
+    var bodyH = Math.max(GEO.flat, flatsH, onesH);
+    var ringH = bodyH + 14;
+    var floor = GEO.top + 7 + bodyH;
+    var labelY = GEO.top + ringH + 18;
+    svg.setAttribute('viewBox', '0 0 ' + GEO.width + ' ' + (labelY + 10));
+
+    RINGS.forEach(function (r) {
+      body.appendChild(svgEl('rect', { 'class': 'nbx-art-ring', x: r[0], y: GEO.top, width: r[1], height: ringH, rx: 10 }));
+    });
+
+    var i, col, row, base;
+    base = floor - flatsH;
+    for (i = 0; i < h; i++) {
+      col = i % GEO.flatCols; row = Math.floor(i / GEO.flatCols);
+      body.appendChild(flatAt(GEO.flatsX + col * GEO.flatStep, base + row * GEO.flatStep));
+    }
+    for (i = 0; i < t; i++) body.appendChild(rodAt(GEO.rodsX + i * GEO.rodStep, floor - GEO.rodH));
+    base = floor - onesH;
+    for (i = 0; i < o; i++) {
+      col = i % GEO.oneCols; row = Math.floor(i / GEO.oneCols);
+      body.appendChild(unitAt(GEO.onesX + col * GEO.unitStep, base + row * GEO.unitStep));
+    }
+
+    /* 三条说明各锁一个边（中 / 左 / 右），字号在手机上放大也不会互相压住 */
+    body.appendChild(pileTag(110, labelY, showValues ? h + ' 个百板 = ' + (h * 100) : '百板堆'));
+    body.appendChild(pileTag(226, labelY, showValues ? t + ' 条十 = ' + (t * 10) : '十条堆', 'start'));
+    body.appendChild(pileTag(394, labelY, showValues ? o + ' 个单块 = ' + o : '单块堆', 'end'));
+  }
+
+  /* ---------- ② 位值量表：百位 / 十位 / 个位 三条 ---------- */
+  var D = { h: 3, t: 4, o: 7, big: 0 };
+  var dialArt = id('nbxDialArt'), dialBody = id('nbxDialArtBody');
+  var dialSay = id('nbxDialSay'), atlasSay = id('nbxAtlasSay');
+  var PLACE_NAMES = { h: '百位', t: '十位', o: '个位' };
+
+  function setFill(trackId, value, max) {
+    var track = id(trackId);
+    var fill = track && track.querySelector('.kid-meter-fill');
+    if (fill) fill.style.setProperty('--fill', (clamp(value / max, 0, 1) * 100).toFixed(1) + '%');
+  }
+  function sentenceFor(h, t, o) {
+    return h + ' 个百 + ' + t + ' 个十 + ' + o + ' 个一 = ' + (h * 100 + t * 10 + o);
+  }
+  function renderDial(msg) {
+    id('nbxDigitH').textContent = D.h;
+    id('nbxDigitT').textContent = D.t;
+    id('nbxDigitO').textContent = D.o;
+    var shown = D.big || (D.h * 100 + D.t * 10 + D.o);
+    id('nbxTotalValue').textContent = shown;
+    id('nbxTotalRead').textContent = '读作' + cnRead(shown);
+    id('nbxMeterHValue').textContent = D.h + ' 个百 = ' + (D.h * 100);
+    id('nbxMeterTValue').textContent = D.t + ' 个十 = ' + (D.t * 10);
+    id('nbxMeterOValue').textContent = D.o + ' 个一 = ' + D.o;
+    setFill('nbxMeterH', D.h, 9);
+    setFill('nbxMeterT', D.t, 9);
+    setFill('nbxMeterO', D.o, 9);
+    drawPile(dialArt, dialBody, D.h, D.t, D.o, true);
+    dialSay.textContent = msg || sentenceFor(D.h, D.t, D.o);
+  }
+  function applyNumber(n, msg) {
+    if (n >= 1000) {
+      D.h = 0; D.t = 0; D.o = 0; D.big = n;
+    } else {
+      D.h = Math.floor(n / 100) % 10; D.t = Math.floor(n / 10) % 10; D.o = n % 10; D.big = 0;
+    }
+    renderDial(msg);
+  }
+  function clearCardMarks() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-nbx-set]'), function (card) {
+      card.setAttribute('aria-pressed', 'false');
+    });
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-nbx-step]'), function (btn) {
+    btn.addEventListener('click', function () {
+      var parts = btn.getAttribute('data-nbx-step').split(':');
+      var key = parts[0], step = +parts[1];
+      var next = clamp(D[key] + step, 0, 9);
+      var capped = next === D[key] && step > 0;
+      D[key] = next;
+      D.big = 0;
+      clearCardMarks();
+      renderDial(capped
+        ? PLACE_NAMES[key] + '已经装到 9 了。再多一个就要往左进一位，这一位会归零。'
+        : sentenceFor(D.h, D.t, D.o));
+    });
+  });
+
+  /* ---------- ① 图鉴卡 → 三条量表 ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-nbx-set]'), function (card) {
+    card.addEventListener('click', function () {
+      var n = +card.getAttribute('data-nbx-set');
+      Array.prototype.forEach.call(document.querySelectorAll('[data-nbx-set]'), function (other) {
+        other.setAttribute('aria-pressed', String(other === card));
+      });
+      var cap = card.querySelector('.kid-figure-cap').textContent;
+      var sub = card.querySelector('.kid-figure-sub').textContent;
+      if (n >= 1000) {
+        atlasSay.textContent = '这张卡是 ' + cap + '：' + sub + '。它比三位数还多一位。';
+        applyNumber(n, '1000 = 10 个百。百位最多只能放 9 个，第 10 个要往左搬进新的千位，所以这三条量表全空了。');
+      } else {
+        atlasSay.textContent = '这张卡是 ' + cap + '：' + sub + '。三条量表已经换成 ' + n + '。';
+        applyNumber(n, sentenceFor(Math.floor(n / 100) % 10, Math.floor(n / 10) % 10, n % 10));
+      }
+    });
+  });
+
+  /* ---------- ③ 这堆有多少：六轮，三个错答都是真实常见的位值错误 ---------- */
+  var ROUNDS = [
+    { h: 2, t: 3, o: 5, wrong: [
+      { v: 2035, why: '2035 是把「2 个百」写成 20 再接上 35，凭空多出一位。2 个百是 200。' },
+      { v: 253, why: '253 把中间和右边调了个位置：中间 3 条十要读到十位，右边 5 个单块才读个位。' },
+      { v: 208, why: '208 把 3 条十当成 3 个单块数了。一条十里有 10 个小方块，3 条是 30。' }
+    ] },
+    { h: 1, t: 0, o: 6, wrong: [
+      { v: 1006, why: '1006 多了一位。1 个百板是 100，不是 1000，千位上一块都没有。' },
+      { v: 160, why: '160 把 6 个单块搬到了十位。中间那个框是空的，十位要写 0。' },
+      { v: 16, why: '16 把中间的 0 丢了。0 不是「不用写」，它在说十位这一堆是空的。' }
+    ] },
+    { h: 3, t: 4, o: 0, wrong: [
+      { v: 3040, why: '3040 是把「3 个百」写成 30 再接上 40，多出了一位。' },
+      { v: 304, why: '304 把 4 条十挪去了个位。中间那堆是十条，值 40。' },
+      { v: 34, why: '34 只把「3」和「4」抄了下来，忘了它们是 3 个百和 4 条十。' }
+    ] },
+    { h: 1, t: 2, o: 7, wrong: [
+      { v: 1027, why: '1027 是把「1 个百」写成 10 再接上 27，多出了一位。' },
+      { v: 172, why: '172 把十位和个位调了个位置：2 条十是 20，7 个单块是 7。' },
+      { v: 109, why: '109 把 2 条十当成 2 个单块加进了个位。2 条十是 20，不是 2。' }
+    ] },
+    { h: 4, t: 0, o: 3, wrong: [
+      { v: 4003, why: '4003 把「4 个百」写成 40 再接上 03，多出了一位。' },
+      { v: 430, why: '430 把 3 个单块搬到了十位。十位那个框是空的，要写 0 占位。' },
+      { v: 43, why: '43 把中间的 0 丢了，4 个百也就被读成了 4 个十。' }
+    ] },
+    { h: 2, t: 6, o: 1, wrong: [
+      { v: 2061, why: '2061 是把「2 个百」写成 20 再接上 61，多出了一位。' },
+      { v: 216, why: '216 把 6 条十和 1 个单块调了个位置：6 条十是 60。' },
+      { v: 207, why: '207 把 6 条十当成 6 个单块，和 1 个单块凑成了 7。' }
+    ] }
+  ];
+  var TOTAL = ROUNDS.length;
+  var quizArt = id('nbxQuizArt'), quizBody = id('nbxQuizArtBody');
+  var picks = id('nbxQuizPicks'), quizSay = id('nbxQuizSay');
+  var dotsHost = id('nbxQuizDots'), progressEl = id('nbxQuizProgress');
+  var nextBtn = id('nbxQuizNext'), nextLabel = nextBtn.lastChild;
+  var qi = 0, rights = 0, answered = false, marks = [];
+
+  function shuffle(list) {
+    var out = list.slice(), i, j, tmp;
+    for (i = out.length - 1; i > 0; i--) {
+      j = Math.floor(Math.random() * (i + 1));
+      tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+    }
+    return out;
+  }
+  function doneCount() {
+    var n = 0;
+    for (var i = 0; i < TOTAL; i++) if (marks[i]) n++;
+    return n;
+  }
+  function roundValue(r) { return r.h * 100 + r.t * 10 + r.o; }
+  function pileWords(r) {
+    return '左边 ' + r.h + ' 个百板 = ' + (r.h * 100) + '，中间 ' + r.t + ' 条十 = ' + (r.t * 10) +
+      '，右边 ' + r.o + ' 个单块 = ' + r.o;
+  }
+  function renderDots() {
+    dotsHost.textContent = '';
+    for (var i = 0; i < TOTAL; i++) {
+      var dot = document.createElement('i');
+      if (marks[i]) {
+        dot.setAttribute('data-nbx-dot', marks[i]);
+      } else {
+        dot.setAttribute('data-empty', 'true');
+        if (i === qi) dot.setAttribute('data-nbx-dot', 'now');
+      }
+      dotsHost.appendChild(dot);
+    }
+    dotsHost.setAttribute('aria-label', '六轮进度：正在第 ' + (qi + 1) + ' 轮，已答对 ' + rights + ' 次');
+  }
+  function renderProgress() {
+    var done = doneCount();
+    progressEl.textContent = done >= TOTAL
+      ? '六轮做完 · 答对 ' + rights + ' / ' + TOTAL + ' 次'
+      : '第 ' + (qi + 1) + ' / ' + TOTAL + ' 轮 · 答对 ' + rights + ' 次';
+    if (nextLabel) nextLabel.textContent = done >= TOTAL ? ' 再来六轮' : ' 下一堆';
+  }
+  function buildPicks(r) {
+    var correct = roundValue(r);
+    picks.textContent = '';
+    shuffle([{ v: correct, ok: true }].concat(r.wrong)).forEach(function (opt) {
+      var btn = document.createElement('button');
+      btn.className = 'kid-tile';
+      btn.type = 'button';
+      btn.setAttribute('aria-pressed', 'false');
+      btn.setAttribute('data-nbx-value', String(opt.v));
+      btn.setAttribute('aria-label', '选 ' + opt.v + '，读作' + cnRead(opt.v));
+      var art = document.createElement('span');
+      art.className = 'kid-tile-art';
+      art.setAttribute('aria-hidden', 'true');
+      art.textContent = String(opt.v);
+      var label = document.createElement('span');
+      label.className = 'kid-tile-label';
+      label.textContent = cnRead(opt.v);
+      btn.appendChild(art);
+      btn.appendChild(label);
+      btn.addEventListener('click', function () { answer(btn, opt, r); });
+      picks.appendChild(btn);
+    });
+  }
+  function answer(btn, opt, r) {
+    if (answered) return;
+    answered = true;
+    var correct = roundValue(r);
+    btn.setAttribute('aria-pressed', 'true');
+    Array.prototype.forEach.call(picks.children, function (b) {
+      b.disabled = true;
+      if (+b.getAttribute('data-nbx-value') === correct) b.setAttribute('data-nbx-state', 'right');
+      else if (b === btn) b.setAttribute('data-nbx-state', 'wrong');
+    });
+    drawPile(quizArt, quizBody, r.h, r.t, r.o, true);
+    if (opt.ok) {
+      marks[qi] = 'right';
+      quizSay.textContent = '对了！' + pileWords(r) + '。' +
+        (r.h * 100) + ' + ' + (r.t * 10) + ' + ' + r.o + ' = ' + correct + '。';
+    } else {
+      marks[qi] = 'wrong';
+      quizSay.textContent = opt.why + ' 正确的是 ' + correct + '：' + pileWords(r) + '。';
+    }
+    /* 答对数从 marks 重算：同一轮被翻回来重做时不会重复计数 */
+    rights = marks.filter(function (m) { return m === 'right'; }).length;
+    renderDots();
+    renderProgress();
+    if (doneCount() >= TOTAL && window.Playful && typeof Playful.confetti === 'function') Playful.confetti(picks);
+  }
+  function showRound(intro) {
+    var r = ROUNDS[qi];
+    answered = false;
+    drawPile(quizArt, quizBody, r.h, r.t, r.o, false);
+    buildPicks(r);
+    quizSay.textContent = intro || '先数左边有几个百板，再数中间几条十、右边几个单块。';
+    renderDots();
+    renderProgress();
+  }
+
+  nextBtn.addEventListener('click', function () {
+    if (doneCount() >= TOTAL) {
+      marks = [];
+      rights = 0;
+      qi = 0;
+      showRound('又是新的六轮，先把三堆分开数。');
+      return;
+    }
+    qi = (qi + 1) % TOTAL;
+    showRound();
+  });
+  id('nbxQuizHelp').addEventListener('click', function () {
+    var r = ROUNDS[qi];
+    drawPile(quizArt, quizBody, r.h, r.t, r.o, true);
+    quizSay.textContent = '分开数：' + pileWords(r) + '。三个数加起来就是答案。';
+  });
+
+  renderDial();
+  showRound();
+})();
+</script>
+
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>if (window.Progress) Progress.visit("games/number-blocks.html", "数感积木");</script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

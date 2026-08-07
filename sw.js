@@ -1,5 +1,5 @@
 /* 少儿数理启蒙离线缓存。外部科学 API 不在此缓存，页面自行超时并降级。 */
-const CACHE = "kids-stem-shell-v13";
+const CACHE = "kids-stem-shell-v17";
 const CORE = [
   "./", "./index.html", "./manifest.webmanifest",
   "./assets/css/base.css", "./assets/css/kid.css", "./assets/css/print.css",
@@ -10,7 +10,7 @@ const CORE = [
   "./games/turtle-geometry.html", "./games/gravity-drop.html", "./games/ramp-and-roll.html",
   "./games/light-and-shadow.html", "./games/wave-maker.html", "./games/doodle-pad.html",
   "./nature/index.html", "./nature/dinosaurs.html", "./nature/space.html",
-  "./nature/ocean.html", "./nature/insects.html", "./nature/earth.html",
+  "./nature/ocean.html", "./nature/insects.html", "./nature/beetles.html", "./nature/earth.html",
   "./nature/weather.html", "./nature/human-body.html",
   "./pages/paths.html", "./pages/parents.html", "./pages/why.html",
   "./pages/kitchen-science.html", "./pages/progress.html"

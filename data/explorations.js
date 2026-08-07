@@ -92,6 +92,12 @@ window.EXPLORATIONS = [
     task: "在不伤害昆虫的前提下观察一种虫，记录它的身体结构或一种行为。"
   },
   {
+    id: "nature/beetles.html", file: "beetles.html", title: "甲虫图鉴馆",
+    type: "nature", subject: "biology", age: "4–12", icon: "🪲", ready: true,
+    description: "鞘翅、大颚、力量与伪装：把甲虫当成一整套可以拆开看的工程方案。",
+    task: "挑一只甲虫，说出它的鞘翅、腿和口器各自解决了什么问题。"
+  },
+  {
     id: "nature/earth.html", file: "earth.html", title: "地球与地震",
     type: "nature", subject: "earth", age: "6–12", icon: "🌍", ready: true,
     description: "用地层和真实地震数据理解不断变化的地球。",

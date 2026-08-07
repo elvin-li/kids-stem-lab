@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>恐龙与化石 · 我们怎么知道它长什么样 | 少儿数理启蒙</title>
 <meta name="description" content="10 种恐龙的真实体型、年代与食性对比。用身高做比例尺，把「一亿年」变成能看懂的长度，并解释化石证据是怎么被推理出来的。">
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#0b0f1a">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   html, body { max-width: 100%; overflow-x: hidden; }
@@ -69,7 +69,9 @@
   /* ---------- 控件 ---------- */
   .ctl {
     position: sticky; top: 51px; z-index: 40;
-    background: rgba(11,15,26,.87);
+    /* 用共享层的粘性条底色：随主题走，浅色主题下是半透明浅底，
+       孩子模式下是奶油色。写死深色会让条里的 --ink 文字变成深底深字。 */
+    background: var(--nav-bg);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
     padding: 11px 0; margin: 22px 0;
@@ -219,7 +221,10 @@
   .evidence-card p { margin: 0; color: var(--ink-mid); font-size: .84rem; }
 
   /* ---------- 离线化石证据板 ---------- */
-  .fossil-board { min-height: 390px; display: flex; flex-direction: column; padding: 14px; background: linear-gradient(180deg,#f7d8a8 0 22%,#bf8157 22% 49%,#8b5d43 49% 73%,#594238 73%); color: #21160f; }
+  /* 地层从沙色渐到深棕，任何单一继承色都会在其中一段读不出来；
+     板内每个文字节点（.board-top span / .board-prompt / .kid-choice / .kid-result-card）
+     都自带底色和文字色，所以这里不设 color。 */
+  .fossil-board { min-height: 390px; display: flex; flex-direction: column; padding: 14px; background: linear-gradient(180deg,#f7d8a8 0 22%,#bf8157 22% 49%,#8b5d43 49% 73%,#594238 73%); }
   .fossil-board .board-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; font-size: .75rem; font-weight: 800; }
   .fossil-board .board-top span { padding: 6px 9px; border-radius: 999px; background: rgba(255,250,235,.88); }
   .fossil-board svg { position: static; inset: auto; width: 100%; height: auto; min-height: 178px; flex: 1 1 auto; margin: 4px 0; }
@@ -228,13 +233,11 @@
   .fossil-board[data-clue="tooth"] .fossil-tooth,
   .fossil-board[data-clue="bone"] .fossil-bone { opacity: 1; transform: scale(1.05); filter: drop-shadow(0 0 7px rgba(255,247,214,.9)); }
   .board-prompt { margin: 0 0 6px; text-align: center; color: #fff7e8; font-weight: 800; }
-  .clue-buttons, .quick-picks { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
-  .clue-buttons .kid-choice, .quick-picks .kid-choice { min-width: 0; min-height: 48px; padding: 8px; border: 2px solid transparent; border-radius: 13px; background: rgba(255,255,255,.92); color: #241810; font-weight: 800; cursor: pointer; }
-  .clue-buttons .kid-choice[aria-pressed="true"], .quick-picks .kid-choice[aria-pressed="true"] { border-color: var(--warn); box-shadow: 0 0 0 2px rgba(255,255,255,.72); }
+  .clue-buttons { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+  .clue-buttons .kid-choice { min-width: 0; min-height: 48px; padding: 8px; border: 2px solid transparent; border-radius: 13px; background: rgba(255,255,255,.92); color: #241810; font-weight: 800; cursor: pointer; }
+  .clue-buttons .kid-choice[aria-pressed="true"] { border-color: var(--warn); box-shadow: 0 0 0 2px rgba(255,255,255,.72); }
   .fossil-result { min-height: 68px; margin-top: 9px; padding: 10px 12px; border-radius: 13px; background: rgba(20,17,16,.88); color: #fff7e8; font-size: .84rem; line-height: 1.45; }
   .fossil-result b { color: #ffd166; }
-  .mission-step .quick-picks { margin: 9px 0; }
-  .mission-step .quick-picks .kid-choice { background: var(--bg-soft); color: var(--ink); border-color: var(--line); }
   .mission-step textarea { min-height: 58px; }
   .child-hint { margin: 6px 0 0; color: var(--ink-dim); font-size: .76rem; }
   .parent-deep-dive { margin-top: 18px; }
@@ -244,8 +247,50 @@
     .story-hero { gap: 12px; }
     .fossil-board { min-height: 350px; padding: 10px; }
     .fossil-board svg { min-height: 150px; }
-    .quick-picks { grid-template-columns: 1fr; }
-    .clue-buttons .kid-choice, .quick-picks .kid-choice { width: 100%; }
+    .clue-buttons .kid-choice { width: 100%; }
+  }
+  /* ---------- 儿童图形游乐场 ---------- */
+  .play-wrap { display: grid; gap: 16px; margin: 26px 0; }
+  .play-card { padding: 18px; border: 3px solid var(--line); border-radius: var(--r-lg); background: var(--surface); box-shadow: 0 6px 0 color-mix(in srgb,var(--line) 55%,transparent); }
+  .play-card > h3 { margin: 0 0 4px; font-size: 1.16rem; }
+  .play-lead { margin: 0 0 12px; color: var(--ink-mid); font-size: .9rem; }
+  .play-stage { display: block; width: 100%; height: auto; border: 3px solid var(--line-soft); border-radius: var(--r); background: var(--bg-soft); }
+  .big-picks { display: grid; grid-template-columns: repeat(auto-fit,minmax(112px,1fr)); gap: 10px; margin: 12px 0 0; }
+  .big-picks button { display: grid; gap: 3px; place-items: center; min-height: 78px; padding: 9px 6px; border: 3px solid var(--line); border-radius: var(--r); background: var(--surface); color: var(--ink); font: 800 .84rem/1.2 var(--font); cursor: pointer; }
+  .big-picks button .glyph { font-size: 2.1rem; line-height: 1; }
+  .big-picks button[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 13%,var(--surface)); box-shadow: 0 0 0 4px color-mix(in srgb,var(--sci) 18%,transparent); }
+  .big-picks svg { display: block; width: 100%; height: 60px; }
+
+  /* 比例尺舞台 */
+  .scale-stage { display: block; width: 100%; height: auto; border: 3px solid var(--line-soft); border-radius: var(--r); background: linear-gradient(180deg,color-mix(in srgb,var(--math) 8%,var(--bg-soft)),var(--bg-soft)); }
+  .scale-line { stroke: color-mix(in srgb,var(--ink-dim) 40%,transparent); stroke-width: 1.5; stroke-dasharray: 5 5; }
+  .scale-tag { font: 700 9px var(--mono); fill: var(--ink-dim); }
+  .scale-name { font: 800 11px var(--font); fill: var(--ink-mid); }
+
+  /* 图鉴卡里的剪影 */
+  .silo-svg { display: block; width: 100%; height: 150px; background: linear-gradient(180deg,transparent,color-mix(in srgb,var(--ink) 6%,transparent)); border-bottom: 1px solid var(--line-soft); }
+
+  .verdict { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 12px; align-items: center; min-height: 82px; margin-top: 12px; padding: 12px 14px; border: 3px solid color-mix(in srgb,var(--sci) 28%,var(--line)); border-radius: var(--r); background: color-mix(in srgb,var(--sci) 8%,var(--surface)); }
+  .verdict .face { font-size: clamp(2rem,7vw,3rem); line-height: 1; }
+  .verdict b { display: block; color: var(--ink); font-size: 1rem; }
+  .verdict p { margin: 3px 0 0; color: var(--ink-mid); font-size: .87rem; }
+  .verdict[data-tone="try"] { border-color: color-mix(in srgb,var(--warn) 45%,var(--line)); background: color-mix(in srgb,var(--warn) 10%,var(--surface)); }
+
+  /* 蛋 */
+  .egg-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+  .egg-btn { display: grid; place-items: center; width: 96px; min-height: 108px; padding: 6px; border: 3px solid var(--line); border-radius: var(--r); background: var(--surface); cursor: pointer; }
+  .egg-btn svg { width: 68px; height: 84px; }
+  .egg-btn span { font: 800 .78rem/1.2 var(--font); color: var(--ink-mid); }
+  .egg-btn[data-open="1"] { border-color: var(--kit); background: color-mix(in srgb,var(--kit) 10%,var(--surface)); }
+
+  /* 羽毛 */
+  .feather-toggle { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .plume { opacity: 0; transition: opacity .25s var(--ease); }
+  .feather-on .plume { opacity: 1; }
+
+  @media (max-width: 560px) {
+    .play-card { padding: 13px; }
+    .big-picks { grid-template-columns: repeat(2,minmax(0,1fr)); }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
 
@@ -281,6 +326,89 @@
     html[data-mode="kid"] .story-hero > .kid-action-strip .btn-primary { min-height: 44px; padding-inline: 14px; font-size: .9rem; }
   }
 
+
+  /* 插画舞台（共享 SVG 场景铺底，内容都放在不透明卡片上保证对比度） */
+  .dn-scene-stage { margin:0 0 16px; padding:clamp(12px,2.6vw,20px); }
+  .dn-scene-copy { display:grid; gap:12px; min-width:0; }
+  .dn-scene-stage .kid-steps-visual { margin:0; }
+  @media (max-width:560px) {
+    .dn-scene-stage { padding:10px; }
+  }
+
+  /* ---------- 图像优先三件套（本页前缀 dn-）：恐龙图鉴 / 体长与食性条 / 看牙齿猜吃什么 ---------- */
+  .dn-shell { display:grid; gap:16px; margin:26px 0; }
+  .dn-card { position:relative; padding:18px; border:3px solid var(--ink); border-radius:22px; background:var(--surface); box-shadow:0 6px 0 rgba(36,24,16,.18); }
+  .dn-card > h3 { margin:.1em 0 .3em; font-size:1.16rem; }
+  .dn-lead { margin:0 0 12px; color:var(--ink-mid); font-weight:750; font-size:.92rem; }
+  .dn-stage { display:block; width:100%; max-width:460px; height:auto; margin:0 auto; border:3px solid var(--ink); border-radius:18px; background:#f3e6cd; }
+  .dn-shell .kid-figure-art { padding:6px; }
+  .dn-shell .kid-figure-art > svg { width:100%; max-width:152px; height:auto; }
+  .dn-shell .kid-figure-fact { display:block; }
+  .dn-say-row { margin:12px 0 0; }
+  .dn-card details { margin-top:12px; border:1px solid var(--line-soft); border-radius:var(--r); padding:0 13px; }
+  .dn-card details[open] { padding-bottom:10px; }
+  .dn-card details > p, .dn-card details > ol { color:var(--ink-mid); font-size:.88rem; line-height:1.58; }
+  .dn-card details > ol { padding-left:1.3em; }
+  .dn-card details > ol li + li { margin-top:6px; }
+
+  /* 剪影取色：SVG 元素只挂 class，属性里不写 var() */
+  .dn-sky { fill:#f3e6cd; }
+  .dn-ground { fill:#c08b52; }
+  .dn-grid { fill:none; stroke:#dcc094; stroke-width:1.6; stroke-dasharray:5 5; }
+  .dn-meat { fill:#b8402c; }
+  .dn-plant { fill:#2f7d4f; }
+  .dn-fish { fill:#2b6f8c; }
+  .dn-meat-s { fill:none; stroke:#b8402c; stroke-linecap:round; stroke-linejoin:round; }
+  .dn-plant-s { fill:none; stroke:#2f7d4f; stroke-linecap:round; stroke-linejoin:round; }
+  .dn-fish-s { fill:none; stroke:#2b6f8c; stroke-linecap:round; stroke-linejoin:round; }
+  .dn-kid { fill:#3d4a5c; }
+  .dn-eye { fill:#fffaf0; }
+  .dn-ink { fill:#3a2a17; font-weight:800; }
+  .dn-ink-soft { fill:#6d5230; }
+  .dn-panel { fill:#fffaf0; stroke:#3a2a17; stroke-width:2; }
+
+  /* ② 两条量表 */
+  .dn-meters { display:grid; gap:14px; margin:0 0 12px; }
+  .dn-meter-row { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:9px; align-items:center; }
+  .dn-meter-row > .dn-meter-end { font-size:1.6rem; line-height:1; }
+  .dn-tests { display:flex; flex-wrap:wrap; gap:9px; margin:0 0 12px; }
+  .dn-test { display:inline-flex; align-items:center; min-height:36px; padding:6px 12px; border:2px solid var(--line); border-radius:999px; color:var(--ink-mid); font-weight:800; font-size:.86rem; }
+  .dn-test[data-ok="true"] { border-color:#0f8a4d; background:#ddf8e8; color:#0b4a2a; }
+  .dn-dots-row { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin:0 0 10px; }
+  .dn-dots-cap { color:var(--ink-mid); font-weight:750; font-size:.9rem; }
+
+  /* ③ 看牙齿猜吃什么 */
+  .dn-quiz-stage { display:grid; place-items:center; margin:0 0 12px; }
+  .dn-quiz-art { display:block; width:100%; max-width:360px; height:auto; border:3px solid var(--ink); border-radius:18px; background:#fff6e6; }
+  .dn-quiz-picks { grid-template-columns:repeat(2,minmax(0,1fr)); margin:0 0 12px; }
+  .dn-quiz-actions { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 12px; }
+  .dn-quiz-actions .btn { min-height:48px; }
+  .dn-quiz-score { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0 0; color:var(--ink-mid); font-weight:750; }
+  .dn-quiz-stars { min-height:1.4em; font-size:1.3rem; line-height:1; letter-spacing:2px; }
+  .dn-tooth-bg { fill:#fff6e6; }
+  .dn-gum { fill:#d3838d; }
+  .dn-tooth { fill:#fffaf0; stroke:#6d5230; stroke-width:5; stroke-linejoin:round; }
+  .dn-tooth-line { fill:none; stroke:#c9ab7f; stroke-width:3; stroke-linecap:round; }
+  .dn-serr { fill:none; stroke:#b8402c; stroke-width:6; stroke-linecap:round; stroke-linejoin:round; }
+  .dn-lens { fill:none; stroke:#6d5230; stroke-width:4; stroke-dasharray:9 7; }
+
+  /* 任务四步：把「读句子再选」换成大图卡，原下拉与输入保留在家长层 */
+  .dn-fill-picks { grid-template-columns:repeat(auto-fit,minmax(96px,1fr)); gap:9px; margin:9px 0; }
+  .dn-fill-picks .kid-tile { min-height:96px; padding:9px 6px; }
+  .dn-fill-picks .kid-tile > .kid-tile-art { font-size:2rem; }
+  .dn-fill-picks .kid-tile-label { font-size:.9rem; }
+  .dn-pick-cap { margin:10px 0 4px; color:var(--ink-mid); font-weight:750; font-size:.86rem; }
+
+  /* 家长深读区 */
+  .dn-deep h3 { margin:16px 0 6px; font-size:1rem; }
+  .dn-deep-list { margin:6px 0; padding-left:1.3em; color:var(--ink-mid); font-size:.88rem; line-height:1.6; }
+  .dn-deep-list li + li { margin-top:7px; }
+  .dn-deep .principle { margin:9px 0; font-size:.88rem; line-height:1.62; }
+  .dn-deep .parent-q { color:var(--ink-mid); font-size:.88rem; line-height:1.6; }
+  @media (max-width:560px) {
+    .dn-card { padding:12px; }
+    .dn-fill-picks { grid-template-columns:repeat(auto-fit,minmax(88px,1fr)); }
+  }
 </style>
 </head>
 <body data-playful-page="nature/dinosaurs.html">
@@ -335,6 +463,26 @@
     <div class="kid-action-strip" data-audience="kid-only" aria-label="化石侦探主操作"><span>三类证据都能切换查看；选好后继续量脚印。</span><a class="btn btn-primary" href="#missionTitle">开始脚印推理</a></div>
   </div>
 </header>
+<div class="wrap scene-wrap">
+  <!-- 插画舞台：不识字也能看懂这一页在玩什么 -->
+  <div class="kid-visual-stage dn-scene-stage" data-scene-layer="back"
+       data-playful-scene="strata"
+       data-playful-scene-title="化石地层"
+       data-playful-scene-desc="地面切开后能看到一层一层不同颜色的岩层，化石就埋在里面">
+    <div class="dn-scene-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🦴</span>
+        <p class="kid-speech">骨头还在，<b>我们靠它猜出恐龙的样子</b>。</p>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步玩法">
+        <li><span class="kid-tile-art" aria-hidden="true">⛏️</span>挖一层</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🦴</span>找骨头</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🦖</span>拼出它</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
 
 <main class="wrap" id="main">
 
@@ -344,16 +492,124 @@
     <p><strong>侦探规则：</strong>先选一个想法，量脚印，再给结论配上第二件证据。</p>
     <div class="work-card" aria-labelledby="dinoStoryTitle">
       <div data-playful-companion>记录伙伴正在整理线索……</div>
-      <div class="row spread"><div><p class="pill pill-sci">剧情 · 化石案卷</p><h3 id="dinoStoryTitle" class="work-card-title">失落脚印案</h3></div><span data-playful-sticker>○ 完成任务可获得贴纸</span></div>
+      <div class="row spread"><div><p class="pill pill-sci">剧情 · 化石案卷</p><h3 id="dinoStoryTitle" class="work-card-title">失落脚印案</h3></div><span data-playful-sticker>○ 完成任务解锁收藏卡</span></div>
       <p class="work-card-content">案卷里只有脚印，没有骨头。点选就能把“看到的”和“推出来的”分开放。</p>
       <div class="row"><button class="btn btn-ghost" type="button" data-playful-random-task="#dinoSurprise">抽一张案卷支线</button><span id="dinoSurprise" data-playful-task-output role="status" aria-live="polite">支线任务会在这里出现。</span></div>
-      <p data-playful-feedback role="status" aria-live="polite">案卷尚未结案：完成核心任务后会收到贴纸反馈。</p>
+      <p data-playful-feedback role="status" aria-live="polite">案卷尚未结案：完成核心任务后会解锁这一站的收藏卡。</p>
     </div>
     <div class="mission-grid kid-story-steps">
-      <div class="mission-step"><h3>1 先猜一猜</h3><p>脚印之间隔得很远，更像哪一种？</p><div class="quick-picks" data-fill="dinoPredict"><button class="kid-choice" type="button" data-value="我猜它可能走得快，因为相邻脚印隔得很远。" aria-pressed="false">🏃 可能较快</button><button class="kid-choice" type="button" data-value="我猜还不能确定，要先把脚印和步幅量出来。" aria-pressed="false">📏 先量再说</button></div><label class="visually-hidden" for="dinoPredict">预测记录</label><textarea class="input" id="dinoPredict" data-audience="parent" placeholder="也可以补充自己的理由"></textarea></div>
-      <div class="mission-step"><h3>2 量一量</h3><label for="footLen">脚印长度（厘米）</label><input class="input" id="footLen" type="number" min="5" max="150" value="30"><label for="strideLen">相邻同脚步幅（厘米）</label><input class="input" id="strideLen" type="number" min="10" max="800" value="150"><label for="dinoClaim">要检验的说法</label><select class="input" id="dinoClaim"><option value="run">“它一定在高速奔跑”</option><option value="size">“脚印能精确告诉我们体重”</option><option value="group">“多条平行足迹可能表示成群行动”</option></select><button class="btn btn-primary" type="button" id="dinoTest">测量并推理</button></div>
-      <div class="mission-step"><h3>3 分清两件事</h3><output id="dinoOutput" class="text-result kid-result-card" aria-live="polite">等待测量。结果会同时给出数字和文字。</output><p>哪句话最像科学记录？</p><div class="quick-picks" data-fill="dinoResult"><button class="kid-choice" type="button" data-value="我直接量到脚印和步幅；走路快慢与身体大小是根据数字作出的推断。" aria-pressed="false">🔎 量到 + 推断</button><button class="kid-choice" type="button" data-value="我看到的是脚印；恐龙当时做什么仍有不确定，需要更多证据。" aria-pressed="false">❓ 保留问号</button></div><label class="visually-hidden" for="dinoResult">结果记录</label><textarea class="input" id="dinoResult" data-audience="parent" placeholder="也可以用自己的话补充"></textarea></div>
-      <div class="mission-step"><h3>4 再找一件证据</h3><p>哪一种能让结论更可靠？</p><div class="quick-picks" data-fill="dinoReflect"><button class="kid-choice" type="button" data-value="我还想找骨骼，比较腿骨大小和脚印估算是否接近。" aria-pressed="false">🦴 腿骨</button><button class="kid-choice" type="button" data-value="我还想找更多连续脚印，看看方向和步幅是否一直相同。" aria-pressed="false">🐾 更多脚印</button><button class="kid-choice" type="button" data-value="我还想看牙齿，但牙齿更适合帮助判断食物，不直接证明跑多快。" aria-pressed="false">🦷 牙齿</button></div><label class="visually-hidden" for="dinoReflect">反思记录</label><textarea class="input" id="dinoReflect" data-audience="parent" placeholder="也可以写下另一种证据"></textarea></div>
+      <div class="mission-step">
+        <h3>1 先猜一猜</h3>
+        <p class="dn-pick-cap" id="dinoPredictCap">脚印之间隔得很远，更像哪一种？点一张大图卡。</p>
+        <div class="kid-tiles dn-fill-picks" data-fill="dinoPredict" role="group" aria-labelledby="dinoPredictCap">
+          <button class="kid-tile" type="button" data-value="我猜它可能走得快，因为相邻脚印隔得很远。" aria-pressed="false" aria-label="我猜它可能走得快">
+            <span class="kid-tile-art" aria-hidden="true">🏃</span>
+            <span class="kid-tile-label">走得快</span>
+            <span class="kid-tile-sub">脚印隔得远</span>
+          </button>
+          <button class="kid-tile" type="button" data-value="我猜还不能确定，要先把脚印和步幅量出来。" aria-pressed="false" aria-label="我猜还不能确定，要先量一量">
+            <span class="kid-tile-art" aria-hidden="true">📏</span>
+            <span class="kid-tile-label">先量再说</span>
+            <span class="kid-tile-sub">量了才知道</span>
+          </button>
+        </div>
+        <label class="sr-only" for="dinoPredict">预测记录</label>
+        <textarea class="input" id="dinoPredict" data-audience="parent" placeholder="也可以补充自己的理由"></textarea>
+      </div>
+      <div class="mission-step">
+        <h3>2 量一量</h3>
+        <p class="dn-pick-cap" id="dinoSizeCap">这枚脚印有多大？点一张大图卡，数字会自动填好。</p>
+        <div class="kid-tiles dn-fill-picks" id="dinoSizePicks" role="group" aria-labelledby="dinoSizeCap">
+          <button class="kid-tile" type="button" data-foot="12" data-stride="60" aria-pressed="false" aria-label="小脚印：脚印 12 厘米，步幅 60 厘米">
+            <span class="kid-tile-art" aria-hidden="true">🐣</span>
+            <span class="kid-tile-label">小脚印</span>
+            <span class="kid-tile-sub">12 厘米</span>
+          </button>
+          <button class="kid-tile" type="button" data-foot="30" data-stride="150" aria-pressed="true" aria-label="中脚印：脚印 30 厘米，步幅 150 厘米">
+            <span class="kid-tile-art" aria-hidden="true">🦶</span>
+            <span class="kid-tile-label">中脚印</span>
+            <span class="kid-tile-sub">30 厘米</span>
+          </button>
+          <button class="kid-tile" type="button" data-foot="70" data-stride="330" aria-pressed="false" aria-label="大脚印：脚印 70 厘米，步幅 330 厘米">
+            <span class="kid-tile-art" aria-hidden="true">🦕</span>
+            <span class="kid-tile-label">大脚印</span>
+            <span class="kid-tile-sub">70 厘米</span>
+          </button>
+        </div>
+        <p class="dn-pick-cap" id="dinoClaimCap">要检验哪一句话？点一张大图卡。</p>
+        <div class="kid-tiles dn-fill-picks" data-fill="dinoClaim" role="group" aria-labelledby="dinoClaimCap">
+          <button class="kid-tile" type="button" data-value="run" aria-pressed="true" aria-label="检验：它一定在高速奔跑">
+            <span class="kid-tile-art" aria-hidden="true">🏃</span>
+            <span class="kid-tile-label">跑得快</span>
+            <span class="kid-tile-sub">一定在飞奔？</span>
+          </button>
+          <button class="kid-tile" type="button" data-value="size" aria-pressed="false" aria-label="检验：脚印能精确告诉我们体重">
+            <span class="kid-tile-art" aria-hidden="true">⚖️</span>
+            <span class="kid-tile-label">知体重</span>
+            <span class="kid-tile-sub">能算准吗？</span>
+          </button>
+          <button class="kid-tile" type="button" data-value="group" aria-pressed="false" aria-label="检验：多条平行足迹可能表示成群行动">
+            <span class="kid-tile-art" aria-hidden="true">👣</span>
+            <span class="kid-tile-label">一起走</span>
+            <span class="kid-tile-sub">是一群吗？</span>
+          </button>
+        </div>
+        <div data-audience="parent">
+          <label for="footLen">脚印长度（厘米）</label>
+          <input class="input" id="footLen" type="number" min="5" max="150" value="30">
+          <label for="strideLen">相邻同脚步幅（厘米）</label>
+          <input class="input" id="strideLen" type="number" min="10" max="800" value="150">
+          <label for="dinoClaim">要检验的说法</label>
+          <select class="input" id="dinoClaim">
+            <option value="run">“它一定在高速奔跑”</option>
+            <option value="size">“脚印能精确告诉我们体重”</option>
+            <option value="group">“多条平行足迹可能表示成群行动”</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" type="button" id="dinoTest">测量并推理</button>
+      </div>
+      <div class="mission-step">
+        <h3>3 分清两件事</h3>
+        <output id="dinoOutput" class="text-result kid-result-card" aria-live="polite">等待测量。结果会同时给出数字和文字。</output>
+        <p class="dn-pick-cap" id="dinoResultCap">哪句话最像科学记录？点一张大图卡。</p>
+        <div class="kid-tiles dn-fill-picks" data-fill="dinoResult" role="group" aria-labelledby="dinoResultCap">
+          <button class="kid-tile" type="button" data-value="我直接量到脚印和步幅；走路快慢与身体大小是根据数字作出的推断。" aria-pressed="false" aria-label="我量到的是脚印和步幅，快慢是推断出来的">
+            <span class="kid-tile-art" aria-hidden="true">🔎</span>
+            <span class="kid-tile-label">量到＋推断</span>
+            <span class="kid-tile-sub">分开写</span>
+          </button>
+          <button class="kid-tile" type="button" data-value="我看到的是脚印；恐龙当时做什么仍有不确定，需要更多证据。" aria-pressed="false" aria-label="我看到的是脚印，它当时做什么还不确定">
+            <span class="kid-tile-art" aria-hidden="true">❓</span>
+            <span class="kid-tile-label">保留问号</span>
+            <span class="kid-tile-sub">还要更多证据</span>
+          </button>
+        </div>
+        <label class="sr-only" for="dinoResult">结果记录</label>
+        <textarea class="input" id="dinoResult" data-audience="parent" placeholder="也可以用自己的话补充"></textarea>
+      </div>
+      <div class="mission-step">
+        <h3>4 再找一件证据</h3>
+        <p class="dn-pick-cap" id="dinoReflectCap">哪一种能让结论更可靠？点一张大图卡。</p>
+        <div class="kid-tiles dn-fill-picks" data-fill="dinoReflect" role="group" aria-labelledby="dinoReflectCap">
+          <button class="kid-tile" type="button" data-value="我还想找骨骼，比较腿骨大小和脚印估算是否接近。" aria-pressed="false" aria-label="我还想找腿骨，和脚印的估算比一比">
+            <span class="kid-tile-art" aria-hidden="true">🦴</span>
+            <span class="kid-tile-label">腿骨</span>
+            <span class="kid-tile-sub">比一比大小</span>
+          </button>
+          <button class="kid-tile" type="button" data-value="我还想找更多连续脚印，看看方向和步幅是否一直相同。" aria-pressed="false" aria-label="我还想找更多连续脚印，看方向和步幅">
+            <span class="kid-tile-art" aria-hidden="true">🐾</span>
+            <span class="kid-tile-label">更多脚印</span>
+            <span class="kid-tile-sub">看方向步幅</span>
+          </button>
+          <button class="kid-tile" type="button" data-value="我还想看牙齿，但牙齿更适合帮助判断食物，不直接证明跑多快。" aria-pressed="false" aria-label="我还想看牙齿，但牙齿只说明吃什么">
+            <span class="kid-tile-art" aria-hidden="true">🦷</span>
+            <span class="kid-tile-label">牙齿</span>
+            <span class="kid-tile-sub">只说明吃什么</span>
+          </button>
+        </div>
+        <label class="sr-only" for="dinoReflect">反思记录</label>
+        <textarea class="input" id="dinoReflect" data-audience="parent" placeholder="也可以写下另一种证据"></textarea>
+      </div>
     </div>
     <div class="task-actions"><button class="btn btn-primary" type="button" id="dinoComplete">完成任务</button><span class="task-status" id="dinoStatus" role="status" aria-live="polite">尚未完成：请依次做完四步。</span></div>
     <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="dinoWorkTitle">
@@ -383,6 +639,428 @@
   </section>
   <section class="card" style="padding:20px" aria-labelledby="evidenceTitle"><p class="pill pill-sci">线索分拣台</p><h2 id="evidenceTitle">哪些能量？哪些要估？</h2><div class="evidence-cards"><article class="evidence-card"><h3>直接测量</h3><p>骨头和脚印有多长，可以拿尺子量。</p></article><article class="evidence-card"><h3>需要估算</h3><p>完整体长和体重常根据残缺骨架、近亲比例与肌肉模型计算，所以会有区间。</p></article><article class="evidence-card"><h3>保留问号</h3><p>足迹约可粗估臀高，步幅也能提示步态；软泥变形、物种差异和计算方法都会带来误差。</p></article></div><p class="principle parent-deep-dive" data-audience="parent"><b>一句提醒：</b>“这枚足迹支持它可能跑得快”比“它一定在高速奔跑”更接近科学表达。</p><ol class="parent-q parent-deep-dive" data-audience="parent"><li>只找到一颗牙，能确定它吃什么吗？还想找什么？</li><li>体重为什么写近似值，不精确到 1 千克？</li><li>两个估算不同，是否一定有一个不科学？</li></ol></section>
 
+
+  <!-- ================= 图像优先三件套（dn-）：图鉴 / 量表 / 猜食性 ================= -->
+  <section class="dn-shell" aria-labelledby="dnShellTitle">
+    <h2 id="dnShellTitle">看图就懂：恐龙图鉴 · 体长食性条 · 看牙齿猜吃什么</h2>
+    <p class="dn-lead">这一段全是大图，点一点就能玩，不用先读句子。</p>
+
+    <article class="dn-card" aria-labelledby="dnAtlasTitle">
+      <h3 id="dnAtlasTitle">① 恐龙图鉴：点一张，和你比一比</h3>
+      <p class="dn-lead">点一张卡，舞台就把它和一个小孩用<b>同一把米尺</b>画出来。地上的数字是米。</p>
+      <svg class="dn-stage" id="dnStage" viewBox="0 0 460 240" role="img" aria-labelledby="dnStageTitle dnStageDesc">
+        <title id="dnStageTitle">同一把米尺上的恐龙与小孩</title>
+        <desc id="dnStageDesc">按你点的图鉴卡变化的大图：左边站着一个 1.2 米高的小孩剪影，右边是选中的那一只，两个用同一把米尺画出来，地面上标出米数。</desc>
+        <g id="dnStageArt"></g>
+      </svg>
+      <p class="kid-scene-caption">小孩一直是 1.2 米高。小孩看起来越小，就说明旁边那只越大。</p>
+      <ul class="kid-legend" aria-label="颜色图例">
+        <li style="--tone:#b8402c"><span class="kid-legend-mark" aria-hidden="true">🥩</span>红色＝吃肉</li>
+        <li style="--tone:#2f7d4f"><span class="kid-legend-mark" aria-hidden="true">🌿</span>绿色＝吃草</li>
+        <li style="--tone:#2b6f8c"><span class="kid-legend-mark" aria-hidden="true">🐟</span>蓝色＝翼龙（不是恐龙）</li>
+      </ul>
+      <div class="kid-figure-grid" id="dnAtlasGrid" aria-label="恐龙图鉴：六张大图卡">
+        <button class="kid-figure" type="button" data-dn-pick="rex" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 150 96" focusable="false">
+              <rect class="dn-sky" x="0" y="0" width="150" height="96"/>
+              <rect class="dn-ground" x="0" y="88" width="150" height="8"/>
+              <g class="dn-kid" transform="translate(16.36 77.1) scale(0.109)"><circle cx="15" cy="12" r="12"/><rect x="5" y="26" width="20" height="40" rx="7"/><rect x="7" y="64" width="6" height="36" rx="3"/><rect x="17" y="64" width="6" height="36" rx="3"/><rect x="0" y="30" width="5" height="28" rx="2.5"/><rect x="25" y="30" width="5" height="28" rx="2.5"/></g>
+              <g transform="translate(34 40.96) scale(1.12)">
+                <path class="dn-meat" d="M2 21 C14 22 24 22 32 24 C40 20 52 14 62 12 C66 4 78 1 88 2 C97 3 99 7 95 10 C89 11 84 11 79 13 C72 16 68 21 62 25 C52 31 40 32 32 31 C24 30 12 27 2 26 Z"/>
+                <path class="dn-meat" d="M28 27 C24 31 22 36 24 42 L34 42 C31 36 32 31 35 28 Z"/>
+                <path class="dn-meat" d="M43 29 C41 33 41 38 43 42 L52 42 C50 38 50 33 51 29 Z"/>
+                <path class="dn-meat" d="M58 24 C61 27 64 29 68 30 L66 32 C61 32 57 29 55 26 Z"/>
+                <circle class="dn-eye" cx="87" cy="6" r="1.6"/>
+              </g>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">霸王龙</span>
+          <span class="kid-figure-sub">大牙齿</span>
+          <span class="kid-figure-fact">长 12.3 米 · 吃肉</span>
+        </button>
+        <button class="kid-figure" type="button" data-dn-pick="tri" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 150 96" focusable="false">
+              <rect class="dn-sky" x="0" y="0" width="150" height="96"/>
+              <rect class="dn-ground" x="0" y="88" width="150" height="8"/>
+              <g class="dn-kid" transform="translate(15.76 73.1) scale(0.149)"><circle cx="15" cy="12" r="12"/><rect x="5" y="26" width="20" height="40" rx="7"/><rect x="7" y="64" width="6" height="36" rx="3"/><rect x="17" y="64" width="6" height="36" rx="3"/><rect x="0" y="30" width="5" height="28" rx="2.5"/><rect x="25" y="30" width="5" height="28" rx="2.5"/></g>
+              <g transform="translate(34 52.16) scale(1.12)">
+                <path class="dn-plant" d="M2 13 C8 11 14 11 21 12 L21 21 C14 22 8 22 2 20 Z"/>
+                <ellipse class="dn-plant" cx="42" cy="17" rx="26" ry="11"/>
+                <path class="dn-plant" d="M60 8 C70 2 84 2 90 8 C94 12 94 20 90 25 C84 30 70 29 61 24 Z"/>
+                <path class="dn-plant" d="M89 13 C97 15 99 17 96 21 C93 23 89 22 88 20 Z"/>
+                <path class="dn-plant" d="M92 13 L99 7 L96 15 Z"/>
+                <path class="dn-plant" d="M82 7 L91 1 L87 9 Z"/>
+                <rect class="dn-plant" x="20" y="25" width="7" height="7" rx="2"/>
+                <rect class="dn-plant" x="31" y="26" width="6" height="6" rx="2"/>
+                <rect class="dn-plant" x="49" y="26" width="6" height="6" rx="2"/>
+                <rect class="dn-plant" x="57" y="25" width="7" height="7" rx="2"/>
+                <circle class="dn-eye" cx="84" cy="14" r="1.6"/>
+              </g>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">三角龙</span>
+          <span class="kid-figure-sub">三只角</span>
+          <span class="kid-figure-fact">长 9 米 · 吃草</span>
+        </button>
+        <button class="kid-figure" type="button" data-dn-pick="bra" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 150 96" focusable="false">
+              <rect class="dn-sky" x="0" y="0" width="150" height="96"/>
+              <rect class="dn-ground" x="0" y="88" width="150" height="8"/>
+              <g class="dn-kid" transform="translate(17.04 81.6) scale(0.064)"><circle cx="15" cy="12" r="12"/><rect x="5" y="26" width="20" height="40" rx="7"/><rect x="7" y="64" width="6" height="36" rx="3"/><rect x="17" y="64" width="6" height="36" rx="3"/><rect x="0" y="30" width="5" height="28" rx="2.5"/><rect x="25" y="30" width="5" height="28" rx="2.5"/></g>
+              <g transform="translate(34 38.72) scale(1.12)">
+                <path class="dn-plant" d="M2 17 C10 16 18 17 27 20 L27 28 C18 29 10 28 2 25 Z"/>
+                <path class="dn-plant-s" stroke-width="9" d="M63 18 C76 15 84 10 88 6"/>
+                <ellipse class="dn-plant" cx="46" cy="24" rx="24" ry="12"/>
+                <ellipse class="dn-plant" cx="91" cy="5" rx="7" ry="4"/>
+                <rect class="dn-plant" x="55" y="32" width="8" height="12" rx="2"/>
+                <rect class="dn-plant" x="47" y="33" width="7" height="11" rx="2"/>
+                <rect class="dn-plant" x="31" y="34" width="8" height="10" rx="2"/>
+                <rect class="dn-plant" x="23" y="35" width="7" height="9" rx="2"/>
+                <circle class="dn-eye" cx="93" cy="4" r="1.5"/>
+              </g>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">腕龙</span>
+          <span class="kid-figure-sub">长脖子</span>
+          <span class="kid-figure-fact">长 21 米 · 吃树叶</span>
+        </button>
+        <button class="kid-figure" type="button" data-dn-pick="velo" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 150 96" focusable="false">
+              <rect class="dn-sky" x="0" y="0" width="150" height="96"/>
+              <rect class="dn-ground" x="0" y="88" width="150" height="8"/>
+              <g class="dn-kid" transform="translate(7.92 20.8) scale(0.672)"><circle cx="15" cy="12" r="12"/><rect x="5" y="26" width="20" height="40" rx="7"/><rect x="7" y="64" width="6" height="36" rx="3"/><rect x="17" y="64" width="6" height="36" rx="3"/><rect x="0" y="30" width="5" height="28" rx="2.5"/><rect x="25" y="30" width="5" height="28" rx="2.5"/></g>
+              <g transform="translate(34 48.8) scale(1.12)">
+                <path class="dn-meat-s" stroke-width="4.5" d="M2 11 C14 12 24 14 33 17"/>
+                <path class="dn-meat-s" stroke-width="2.4" d="M52 15 C46 9 40 7 33 8 M53 17 C47 12 41 11 34 12 M54 19 C49 15 43 15 37 16"/>
+                <ellipse class="dn-meat" cx="46" cy="18" rx="16" ry="8"/>
+                <path class="dn-meat-s" stroke-width="6.5" d="M57 14 C65 10 70 7 74 5"/>
+                <path class="dn-meat" d="M73 1 C82 0 91 3 93 6 C88 9 79 10 73 9 Z"/>
+                <path class="dn-meat" d="M42 24 C38 28 37 32 39 35 L47 35 C45 31 45 27 48 25 Z"/>
+                <path class="dn-meat" d="M52 24 C50 28 50 32 52 35 L59 35 C57 31 57 27 58 24 Z"/>
+                <circle class="dn-eye" cx="82" cy="4" r="1.6"/>
+              </g>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">迅猛龙</span>
+          <span class="kid-figure-sub">有羽毛</span>
+          <span class="kid-figure-fact">长 2 米 · 吃肉</span>
+        </button>
+        <button class="kid-figure" type="button" data-dn-pick="steg" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 150 96" focusable="false">
+              <rect class="dn-sky" x="0" y="0" width="150" height="96"/>
+              <rect class="dn-ground" x="0" y="88" width="150" height="8"/>
+              <g class="dn-kid" transform="translate(15.12 68.8) scale(0.192)"><circle cx="15" cy="12" r="12"/><rect x="5" y="26" width="20" height="40" rx="7"/><rect x="7" y="64" width="6" height="36" rx="3"/><rect x="17" y="64" width="6" height="36" rx="3"/><rect x="0" y="30" width="5" height="28" rx="2.5"/><rect x="25" y="30" width="5" height="28" rx="2.5"/></g>
+              <g transform="translate(34 45.44) scale(1.12)">
+                <path class="dn-plant-s" stroke-width="5" d="M2 13 C10 14 18 17 27 21"/>
+                <path class="dn-plant" d="M5 12 L3 4 L10 11 Z"/>
+                <path class="dn-plant" d="M12 14 L11 5 L17 12 Z"/>
+                <path class="dn-plant-s" stroke-width="6.5" d="M69 21 C78 21 84 22 88 24"/>
+                <path class="dn-plant" d="M27 18 L31 7 L37 17 Z"/>
+                <path class="dn-plant" d="M38 15 L45 3 L51 14 Z"/>
+                <path class="dn-plant" d="M52 14 L59 3 L65 15 Z"/>
+                <path class="dn-plant" d="M66 16 L71 7 L76 18 Z"/>
+                <ellipse class="dn-plant" cx="48" cy="22" rx="24" ry="10"/>
+                <ellipse class="dn-plant" cx="92" cy="25" rx="7" ry="4"/>
+                <rect class="dn-plant" x="30" y="29" width="7" height="9" rx="2"/>
+                <rect class="dn-plant" x="40" y="30" width="6" height="8" rx="2"/>
+                <rect class="dn-plant" x="55" y="30" width="6" height="8" rx="2"/>
+                <rect class="dn-plant" x="63" y="29" width="7" height="9" rx="2"/>
+                <circle class="dn-eye" cx="94" cy="24" r="1.5"/>
+              </g>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">剑龙</span>
+          <span class="kid-figure-sub">背骨板</span>
+          <span class="kid-figure-fact">长 7 米 · 吃草</span>
+        </button>
+        <button class="kid-figure" type="button" data-dn-pick="ptero" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 150 96" focusable="false">
+              <rect class="dn-sky" x="0" y="0" width="150" height="96"/>
+              <rect class="dn-ground" x="0" y="88" width="150" height="8"/>
+              <g class="dn-kid" transform="translate(15.12 68.8) scale(0.192)"><circle cx="15" cy="12" r="12"/><rect x="5" y="26" width="20" height="40" rx="7"/><rect x="7" y="64" width="6" height="36" rx="3"/><rect x="17" y="64" width="6" height="36" rx="3"/><rect x="0" y="30" width="5" height="28" rx="2.5"/><rect x="25" y="30" width="5" height="28" rx="2.5"/></g>
+              <g transform="translate(34 41.36) scale(1.12)">
+                <path class="dn-fish" d="M50 8 C36 2 18 1 2 7 C16 12 34 15 50 14 Z"/>
+                <path class="dn-fish" d="M50 8 C64 2 82 1 98 7 C84 12 66 15 50 14 Z"/>
+                <ellipse class="dn-fish" cx="50" cy="12" rx="5" ry="7"/>
+                <circle class="dn-fish" cx="50" cy="4" r="4"/>
+                <path class="dn-fish" d="M50 1 C57 0 61 2 61 4 C56 5 52 4 50 3 Z"/>
+                <path class="dn-fish" d="M49 6 C43 6 39 7 38 9 C42 9 46 9 49 8 Z"/>
+                <path class="dn-fish-s" stroke-width="2.4" d="M47 18 L44 22 M53 18 L56 22"/>
+                <circle class="dn-eye" cx="48" cy="3" r="1.4"/>
+              </g>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">翼龙</span>
+          <span class="kid-figure-sub">不是恐龙</span>
+          <span class="kid-figure-fact">翼展 7 米 · 吃鱼</span>
+        </button>
+      </div>
+      <div class="kid-speech-row dn-say-row">
+        <span class="kid-mascot" aria-hidden="true">🦴</span>
+        <p class="kid-speech" id="dnAtlasSay" role="status" aria-live="polite">点一张卡，舞台就把它和小孩摆在一起给你看。</p>
+      </div>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：图鉴在教什么</summary>
+        <p><b>学习目标：</b>用同一把尺子做<b>等比比较</b>。六张卡里的恐龙都被画成一样长，真正在变的是旁边那个小孩——小孩越小，说明那只越大。这比直接给数字更早建立“倍数”的直觉。</p>
+        <p><b>怎么用：</b>先让孩子按“谁最大”给六张卡排个序，再点开验证。把<b>翼龙</b>留到最后点：它是本页唯一的反例，翼龙是会飞的爬行动物，和恐龙是近亲但不是恐龙，靠它孩子才会明白“不是所有史前大动物都叫恐龙”。</p>
+        <p><b>数据说明：</b>体长是各属公开研究常用区间的中值，属于<b>估算</b>；翼龙一栏给的是<b>翼展</b>而不是体长，两者不能直接互比。</p>
+      </details>
+    </article>
+
+    <article class="dn-card" aria-labelledby="dnMeterTitle">
+      <h3 id="dnMeterTitle">② 两条量表：有多长 · 牙齿说明吃什么</h3>
+      <p class="dn-lead">上面点了哪一张卡，这两条就跟着变长变短。第一条满格是 30 米，差不多是最大的腕龙一类。</p>
+      <div class="dn-meters">
+        <div class="kid-meter" style="--tone:var(--kit)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">📏</span>
+            <span id="dnLenLabel">有多长</span>
+            <span class="kid-meter-value" id="dnLenValue">—</span>
+          </div>
+          <div class="kid-meter-track" id="dnLenMeter" role="img" aria-labelledby="dnLenLabel dnLenValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">满格 30 米。腕龙 21 米就占了大半条；迅猛龙只有 2 米，条短得几乎看不见。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--sci)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">🦷</span>
+            <span id="dnDietLabel">牙齿说明吃什么</span>
+            <span class="kid-meter-value" id="dnDietValue">—</span>
+          </div>
+          <div class="dn-meter-row">
+            <span class="dn-meter-end" aria-hidden="true">🥩</span>
+            <div class="kid-meter-track" id="dnDietMeter" role="img" aria-labelledby="dnDietLabel dnDietValue"><span class="kid-meter-fill"></span></div>
+            <span class="dn-meter-end" aria-hidden="true">🌿</span>
+          </div>
+          <p class="kid-meter-note">条从 🥩 那头长向 🌿 那头：条越长越吃草；条几乎不长，就是几乎全吃肉。</p>
+        </div>
+      </div>
+      <p class="dn-tests" aria-label="这一只的两个判定">
+        <span class="dn-test" id="dnTestBig" data-ok="false">○ 比公交车长（12 米）</span>
+        <span class="dn-test" id="dnTestDino" data-ok="false">○ 是恐龙</span>
+      </p>
+      <p class="dn-dots-row">
+        <span class="dn-dots-cap" id="dnLenDotsCap">用点点数体长（每颗点 ＝ 3 米，十颗就是 30 米）：</span>
+        <span class="kid-dots" id="dnLenDots" role="img" aria-labelledby="dnLenDotsCap"></span>
+      </p>
+      <div class="kid-speech-row dn-say-row">
+        <span class="kid-mascot" aria-hidden="true">📏</span>
+        <p class="kid-speech" id="dnMeterSay" role="status" aria-live="polite">先在上面点一张图鉴卡，两条就会动。</p>
+      </div>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：两条量表在教什么</summary>
+        <p><b>学习目标：</b>练「比长短」，而不是「读数字」。体长条把 2 米和 21 米放在同一根 30 米的尺子上，孩子一眼看出差了十倍；食性条把「吃肉↔吃草」画成一条能滑动的轴，图形负责直觉，旁边的数字负责准确。</p>
+        <p><b>背后的原理：</b>牙齿形状与食物的<b>物理性质</b>匹配——切肉需要带锯齿的刃，磨碎粗硬植物需要宽而平的咬合面，夹住滑溜的鱼需要圆锥形不易脱钩的齿。这叫形态—功能推断。牙形只说明「适合吃什么」，真正的食谱还要靠胃容物化石、粪化石与牙齿同位素来补齐。</p>
+        <p><b>要说清楚的一点：</b>百分数是这一页为了看长短做的示意刻度，不是生物学指标。翼龙那一栏给的是<b>翼展</b>而不是体长，放在同一根尺子上只是为了有个直观参照。</p>
+      </details>
+    </article>
+
+    <article class="dn-card" aria-labelledby="dnToothTitle">
+      <h3 id="dnToothTitle">③ 看牙齿猜吃什么</h3>
+      <p class="dn-lead">放大镜里是一颗真牙的形状。先看它<b>尖不尖</b>，再点一张大图卡。猜错了不要紧，图还在，可以接着看、接着猜。</p>
+      <div class="dn-quiz-stage">
+        <svg class="dn-quiz-art" id="dnToothArt" viewBox="0 0 320 220" role="img" aria-labelledby="dnToothArtTitle dnToothArtDesc">
+          <title id="dnToothArtTitle">放大镜下的牙齿</title>
+          <desc id="dnToothArtDesc">放大镜里有一颗牙齿的形状，请看它是又尖又带锯齿，还是又宽又平。</desc>
+          <g id="dnToothBody"></g>
+        </svg>
+      </div>
+      <ul class="kid-legend" aria-label="看牙齿的两条线索">
+        <li style="--tone:#b8402c"><span class="kid-legend-mark" aria-hidden="true">🔪</span>又尖又带锯齿 ＝ 切</li>
+        <li style="--tone:#2f7d4f"><span class="kid-legend-mark" aria-hidden="true">🪨</span>又宽又平 ＝ 磨</li>
+      </ul>
+      <div class="kid-tiles dn-quiz-picks" id="dnToothPicks" role="group" aria-labelledby="dnToothTitle">
+        <button class="kid-tile" type="button" data-dn-answer="meat" aria-pressed="false" aria-label="我猜它吃肉">
+          <span class="kid-tile-art" aria-hidden="true">🥩</span>
+          <span class="kid-tile-label">吃肉</span>
+          <span class="kid-tile-sub">牙像刀</span>
+        </button>
+        <button class="kid-tile" type="button" data-dn-answer="plant" aria-pressed="false" aria-label="我猜它吃草">
+          <span class="kid-tile-art" aria-hidden="true">🌿</span>
+          <span class="kid-tile-label">吃草</span>
+          <span class="kid-tile-sub">牙像磨盘</span>
+        </button>
+      </div>
+      <div class="dn-quiz-actions">
+        <button class="btn btn-primary" type="button" id="dnToothNext"><span aria-hidden="true">🔄</span> 换一颗牙</button>
+        <button class="btn btn-ghost" type="button" id="dnToothHint"><span aria-hidden="true">👀</span> 给点提示</button>
+      </div>
+      <div class="kid-speech-row dn-say-row">
+        <span class="kid-mascot" aria-hidden="true">🦷</span>
+        <p class="kid-speech" id="dnToothSay" role="status" aria-live="polite">先看牙尖不尖，再点一张大图卡。</p>
+      </div>
+      <p class="dn-quiz-score">
+        <span class="dn-quiz-stars" id="dnToothStars" role="img" aria-label="已经猜对 0 次"></span>
+        <span id="dnToothTotal">猜对 0 次</span>
+      </p>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：看牙齿猜吃什么在教什么</summary>
+        <p><b>学习目标：</b>从<b>形状</b>推出<b>用途</b>，这是古生物学最常用的一条推理路径。孩子不需要认名字，只要判断「尖不尖、平不平」，就已经在做形态—功能推断。猜错只给提示，不清零、不计时——要练的是看清形状，不是抢答。</p>
+        <p><b>一起做：</b>让孩子摸摸自己的门牙（切）和后面的大牙（磨），说出两种牙「干的活」不一样。再拿一根胡萝卜和一块面包，分别用门牙切、用后牙磨，感受两种形状的分工。</p>
+        <p><b>背后的原理：</b>牙形只说明「适合处理什么食物」，不等于「一定吃过什么」。更强的证据是胃容物化石、粪化石（coprolite）和牙齿的碳同位素。熊猫有锋利的犬齿却主要吃竹子，这提醒我们单看牙齿会漏掉信息。棘龙的圆锥齿与鱼类残骸同层出现，才让「吃鱼」成为较强推断。</p>
+      </details>
+    </article>
+  </section>
+
+  <section class="card dn-deep parent-deep-dive" data-audience="parent" style="padding:20px" aria-labelledby="dnDeepTitle">
+    <p class="pill pill-sci">家长深读 · 恐龙与化石</p>
+    <h2 id="dnDeepTitle">这一页在教什么，以及怎么陪着玩</h2>
+    <h3>学习目标</h3>
+    <ul class="dn-deep-list">
+      <li><b>化石怎么形成与埋藏：</b>不是「变成石头」这么简单，而是「死亡 → 快速被泥沙盖住 → 长期不被侵蚀 → 矿物渗入替换 → 最后被抬升露头并被人发现」这一整串低概率事件都得走通。</li>
+      <li><b>地层年代：越深越老。</b>沉积一层一层往上盖，所以在没有被扰动的地层里，下面那层一定比上面那层老。这条<b>叠覆律</b>是孩子能亲手验证的第一条地质规律（用不同颜色的沙倒进玻璃瓶就能看到）。</li>
+      <li><b>从骨头推断体型与食性：</b>骨头长度可以直接量；体长、体重、步态、食谱都要靠推算。教孩子把「量到的」和「推出来的」分成两栏写。</li>
+      <li><b>中生代三个纪：</b>三叠纪（约 252–201 Ma）→ 侏罗纪（约 201–145 Ma）→ 白垩纪（约 145–66 Ma）。本页时间轴上剑龙、腕龙在侏罗纪，霸王龙、三角龙在白垩纪末，两者之间隔了近 8000 万年，比霸王龙到今天还远。</li>
+      <li><b>鸟是恐龙的后代：</b>鸟类是兽脚类恐龙的一支，一直延续到今天。所以严格说，窗外的麻雀就是活着的恐龙。</li>
+    </ul>
+    <h3>3 条陪伴追问</h3>
+    <ol class="parent-q">
+      <li>只找到一颗牙，你能确定它吃过什么吗？还想再找什么证据？</li>
+      <li>下面那层的化石为什么比上面那层老？如果有人把土翻过了，这条规律还成立吗？</li>
+      <li>为什么博物馆的复原图会换颜色，骨头的形状却很少改？哪一部分是量出来的，哪一部分是画上去的？</li>
+    </ol>
+    <h3>背后的原理</h3>
+    <p class="principle"><b>化石形成需要快速埋藏。</b>遗体暴露在空气里会很快被食腐动物、细菌和风化拆散。只有洪水淤泥、火山灰、湖底或海底沉积这类<b>快速覆盖</b>的场景，才可能保住形状。这就是为什么化石点常常集中在古河道与古湖盆——不是那里的恐龙多，而是那里的保存条件好。这条偏差叫<b>保存偏差</b>，会让化石记录天然偏向某些环境与体型。</p>
+    <p class="principle"><b>为什么软组织很少保存。</b>皮肤、肌肉、内脏主要由蛋白质和脂肪构成，几天到几周内就会被分解；骨骼、牙齿和蛋壳含大量磷酸钙或碳酸钙，能在矿物替换中保留结构。所以我们对恐龙的骨架很有把握，对肌肉分布只能靠附着痕迹推算，对颜色则只有少数保存了<b>黑色素体</b>的化石能给出线索。</p>
+    <p class="principle"><b>怎么从骨骼推断体重与步态。</b>体重常用两条路：一是量四肢骨的周长，代入现生动物中「骨骼粗细 ↔ 体重」的经验关系；二是做三维体积模型，再乘一个假定密度。两种方法给出的往往是区间而非单一数字。步态则来自足迹：先用「臀高 ≈ 脚印长 × 4」粗估，再看<b>步幅 ÷ 臀高</b>——比值小于 1 更像慢走，大于 2 才可能是奔跑。地面软硬、泥的含水量都会改变脚印形状，所以结论要留余地。</p>
+    <h3>三个常见误区</h3>
+    <ul class="dn-deep-list">
+      <li><b>「恐龙都很大」：</b>不是。本页的迅猛龙只有 2 米长、约 15 公斤，和一只大火鸡差不多；中生代还有更小的种类。体型大的更容易被发现和保存，也更容易被搬进博物馆和电影，于是造成了错觉。</li>
+      <li><b>「翼龙是恐龙」：</b>不是。翼龙是会飞的<b>翼龙目</b>爬行动物，和恐龙是近亲，但在演化树上分属不同支系。同理，鱼龙、蛇颈龙、沧龙也都不是恐龙。判断标准不是「大不大、古不古」，而是骨骼特征（例如髋部与后肢的构造）。</li>
+      <li><b>「恐龙全灭绝了」：</b>只有<b>非鸟恐龙</b>在约 6600 万年前灭绝。鸟类作为恐龙的一支存活至今，全球约有一万种。所以更准确的说法是：恐龙没有全部灭绝，它们中的一支正在你家窗外唱歌。</li>
+    </ul>
+  </section>
+
+  <!-- ================= 儿童图形游乐场 ================= -->
+  <section class="play-wrap" aria-labelledby="playTitle">
+    <h2 id="playTitle">用眼睛玩：五个大图形</h2>
+    <p style="margin:.2em 0 0;color:var(--ink-mid);font-size:.88rem">全部只用手指点，不用打字。点一下，图就会变。</p>
+
+    <article class="play-card" aria-labelledby="scaleTitle">
+      <h3 id="scaleTitle">① 谁更大：站在一起比一比</h3>
+      <p class="play-lead">点一只恐龙，它就会站到小朋友、公交车和房子旁边。</p>
+      <svg class="scale-stage" id="scaleStage" viewBox="0 0 400 200" role="img" aria-labelledby="scaleStageTitle scaleStageDesc">
+        <title id="scaleStageTitle">等比例身高对比尺</title>
+        <desc id="scaleStageDesc">同一把尺子上并排画出小朋友、选中的恐龙、公交车和房子，可以直接比较高矮。</desc>
+      </svg>
+      <div class="big-picks" id="scalePicks" role="group" aria-label="选择一只恐龙来比大小">
+        <p style="margin:0;color:var(--ink-dim);font-size:.82rem">恐龙按钮正在准备……</p>
+      </div>
+      <p class="verdict" id="scaleVerdict" role="status" aria-live="polite"><span class="face" aria-hidden="true">👆</span><span><b>点一只恐龙</b><p>它会和你并排站好，谁高一眼就看出来。</p></span></p>
+      <details class="qa parent-deep-dive" data-audience="parent">
+        <summary>家长延伸：比例尺在教什么</summary>
+        <p><b>原理：</b>这不是“谁厉害”，而是<b>等比缩放</b>。同一张图里所有东西用同一把尺子换算，比较才成立——这正是地图比例尺、模型比例的雏形。</p>
+        <p><b>4–6 岁：</b>只问“谁更高、谁更矮”。让孩子用手比一比自己和屏幕上的小朋友。</p>
+        <p><b>7–9 岁：</b>问“它是你的几倍高”。页面已经算好倍数，让孩子先猜再看。</p>
+        <p><b>10–12 岁：</b>讨论为什么用<b>臀高</b>而不是抬头高度做基准：抬头姿势在化石里是推测的，臀高由后肢与髋部骨骼决定，更可靠。体长也不适合当高度基准，因为梁龙很长但并不高。</p>
+        <p><b>追问：</b>如果把恐龙画在纸上，你要怎么标注“这张图缩小了多少倍”？</p>
+        <p><b>离屏延伸：</b>用卷尺在墙上贴出 3.7 米（霸王龙臀高）的高度线，再让孩子站过去比。走廊不够高时，改成在地面用粉笔量出 12.3 米全长，孩子走一遍就有体感。</p>
+        <p><b>数据说明：</b>臀高与全长是<b>人工核定的常用区间中值</b>，属于研究估算而非精确测量；公交车（约 3.2 米高）和两层房屋（约 6 米）是本页设定的参照物，用于建立直觉。</p>
+      </details>
+    </article>
+
+    <article class="play-card" aria-labelledby="toothTitle">
+      <h3 id="toothTitle">② 看牙齿：它吃肉还是吃草</h3>
+      <p class="play-lead">点一颗牙，看看这种牙适合吃什么。</p>
+      <svg class="play-stage" id="toothStage" viewBox="0 0 300 170" role="img" aria-labelledby="toothStageTitle toothStageDesc">
+        <title id="toothStageTitle">牙齿形状与食物对照图</title>
+        <desc id="toothStageDesc">左边放大显示选中的牙齿形状，右边画出它适合处理的食物。</desc>
+      </svg>
+      <div class="big-picks" id="toothPicks" role="group" aria-label="选择一种牙齿">
+        <button type="button" data-tooth="blade" aria-pressed="false"><span class="glyph" aria-hidden="true">🔪</span>尖尖带锯齿</button>
+        <button type="button" data-tooth="leaf" aria-pressed="false"><span class="glyph" aria-hidden="true">🍃</span>叶子形小牙</button>
+        <button type="button" data-tooth="grind" aria-pressed="false"><span class="glyph" aria-hidden="true">🪨</span>成排磨盘牙</button>
+        <button type="button" data-tooth="cone" aria-pressed="false"><span class="glyph" aria-hidden="true">🐟</span>圆锥光滑牙</button>
+      </div>
+      <p class="verdict" id="toothVerdict" role="status" aria-live="polite"><span class="face" aria-hidden="true">🦷</span><span><b>点一颗牙试试</b><p>牙的形状会告诉我们它常吃什么。</p></span></p>
+      <details class="qa parent-deep-dive" data-audience="parent">
+        <summary>家长延伸：牙齿能证明什么、不能证明什么</summary>
+        <p><b>原理：</b>牙齿形态与食物的<b>物理性质</b>相匹配：切割需要刃与锯齿，磨碎需要宽而平的咬合面，抓滑溜的鱼需要圆锥形不易脱钩的齿。这叫<b>形态—功能推断</b>。</p>
+        <p><b>4–6 岁：</b>只分两类——“像刀的”和“像磨盘的”。让孩子摸摸自己的门牙和后面的大牙，感受两种形状。</p>
+        <p><b>7–9 岁：</b>加入“磨损痕迹”这条证据：牙面上被磨出的方向能显示它怎么咀嚼。</p>
+        <p><b>10–12 岁：</b>更强的证据来自<b>胃容物化石、粪化石（coprolite）和牙齿的碳同位素</b>。牙形只给出“适合吃什么”，实际食谱要靠这些直接证据补充。棘龙的圆锥齿与鱼类残骸同层出现，才让“吃鱼”成为较强推断。</p>
+        <p><b>追问：</b>熊猫有锋利的犬齿，却主要吃竹子。这说明只看牙齿会漏掉什么？</p>
+        <p><b>离屏延伸：</b>准备一根胡萝卜和一块面包，让孩子分别用门牙切、用后牙磨，说出两种牙“干的活”不一样。再用叉子当“锯齿刀”划一下橡皮泥，看留下的痕迹。</p>
+        <p><b>数据说明：</b>本模块是<b>教学化简化模型</b>，把连续多样的真实齿形归成四类；真实分类远比这细，且同一动物口中常有多种齿形。</p>
+      </details>
+    </article>
+
+    <article class="play-card" aria-labelledby="eggTitle">
+      <h3 id="eggTitle">③ 敲敲蛋：里面是谁的宝宝</h3>
+      <p class="play-lead">点一个蛋，它会打开。再点一次可以合上。</p>
+      <div class="egg-row" id="eggRow" role="group" aria-label="点开恐龙蛋">
+        <button class="egg-btn" type="button" data-egg="rex" data-open="0" aria-pressed="false" aria-label="打开第一个蛋：霸王龙宝宝"><svg viewBox="0 0 68 84" role="img" aria-label="一枚完整的恐龙蛋"><ellipse cx="34" cy="48" rx="26" ry="33" fill="#e8cfa4" stroke="#8b5d43" stroke-width="4"/><path d="M20 34c5-4 9 3 14-1s9 2 14-2" stroke="#b98a5e" stroke-width="3" fill="none"/></svg><span>蛋 1</span></button>
+        <button class="egg-btn" type="button" data-egg="tri" data-open="0" aria-pressed="false" aria-label="打开第二个蛋：三角龙宝宝"><svg viewBox="0 0 68 84" role="img" aria-label="一枚完整的恐龙蛋"><ellipse cx="34" cy="48" rx="26" ry="33" fill="#dbe6c4" stroke="#5f7343" stroke-width="4"/><path d="M20 40c5-4 9 3 14-1s9 2 14-2" stroke="#8aa063" stroke-width="3" fill="none"/></svg><span>蛋 2</span></button>
+        <button class="egg-btn" type="button" data-egg="para" data-open="0" aria-pressed="false" aria-label="打开第三个蛋：副栉龙宝宝"><svg viewBox="0 0 68 84" role="img" aria-label="一枚完整的恐龙蛋"><ellipse cx="34" cy="48" rx="26" ry="33" fill="#e6cddd" stroke="#7d4f66" stroke-width="4"/><path d="M20 36c5-4 9 3 14-1s9 2 14-2" stroke="#a87590" stroke-width="3" fill="none"/></svg><span>蛋 3</span></button>
+      </div>
+      <p class="verdict" id="eggVerdict" role="status" aria-live="polite"><span class="face" aria-hidden="true">🥚</span><span><b>点一个蛋</b><p>蛋壳会裂开，宝宝探出头来。</p></span></p>
+      <details class="qa parent-deep-dive" data-audience="parent">
+        <summary>家长延伸：蛋化石告诉我们什么</summary>
+        <p><b>原理：</b>恐龙蛋、巢穴和胚胎化石是研究<b>生长与育幼行为</b>的关键证据。成排、成窝且朝向一致的蛋，支持“亲代照料巢穴”的推断；蛋壳的显微结构还能反映孵化环境的湿度与气体交换。</p>
+        <p><b>4–6 岁：</b>“恐龙宝宝从蛋里出来，和小鸡一样。”这一句就够。</p>
+        <p><b>7–9 岁：</b>比较尺寸：最大的恐龙蛋直径约 30 厘米上下，但成年腕龙有 20 多米长——说明恐龙一生要长大成千倍，生长速度极快。</p>
+        <p><b>10–12 岁：</b>骨骼横切面里有类似树木年轮的<b>生长线</b>，据此可估算个体年龄与生长曲线。研究提出霸王龙在青少年期有一段快速增重阶段。这类结论依赖样本量，仍在修正中。</p>
+        <p><b>追问：</b>找到一窝蛋，能证明恐龙会照顾宝宝吗？还需要什么线索？</p>
+        <p><b>离屏延伸：</b>煮一个鸡蛋，让孩子观察蛋壳的厚度和内膜，讨论“这么薄的壳怎么保护里面”。再用橡皮泥捏一窝蛋摆成圈，模拟巢穴的排列。</p>
+        <p><b>数据说明：</b>本模块的宝宝形象是<b>示意插画，不是化石复原图</b>；具体属的胚胎化石多数并未发现，图中形态由成年体型按比例想象绘制，用于建立“蛋里会孵出宝宝”这一概念。</p>
+      </details>
+    </article>
+
+    <article class="play-card" aria-labelledby="featherTitle">
+      <h3 id="featherTitle">④ 加羽毛：伶盗龙不是光溜溜的</h3>
+      <p class="play-lead">点按钮给它穿上羽毛，再点一下脱下来。</p>
+      <svg class="play-stage" id="featherStage" viewBox="0 0 300 180" role="img" aria-labelledby="featherStageTitle featherStageDesc">
+        <title id="featherStageTitle">伶盗龙有羽毛与无羽毛的对比</title>
+        <desc id="featherStageDesc">同一只伶盗龙的剪影，可以切换显示或隐藏覆盖全身的羽毛与手臂上的长羽。</desc>
+      </svg>
+      <div class="feather-toggle" role="group" aria-label="切换羽毛">
+        <button class="kid-choice" type="button" id="featherOn" aria-pressed="false">🪶 穿上羽毛</button>
+        <button class="kid-choice" type="button" id="featherOff" aria-pressed="true">🦎 只看身体</button>
+      </div>
+      <p class="verdict" id="featherVerdict" role="status" aria-live="polite"><span class="face" aria-hidden="true">🪶</span><span><b>先看光身体</b><p>点“穿上羽毛”，看看真身更接近哪一种。</p></span></p>
+      <details class="qa parent-deep-dive" data-audience="parent">
+        <summary>家长延伸：羽毛的证据从哪来</summary>
+        <p><b>原理：</b>伶盗龙前臂骨上发现了与现代鸟类同源的<b>羽茎瘤（quill knobs）</b>——飞羽羽根附着留下的小突起。同时，中国辽西等地保存极好的化石直接留下了羽毛印痕。两类证据结合，使“许多兽脚类有羽毛”成为主流结论。</p>
+        <p><b>4–6 岁：</b>“它身上有毛毛，像小鸟。”配合窗外的麻雀指一指就够。</p>
+        <p><b>7–9 岁：</b>羽毛最初不是为了飞：先用于<b>保温和展示</b>，后来才在一支演化出飞行能力。</p>
+        <p><b>10–12 岁：</b>讨论<b>系统发生学推断</b>：如果某特征在一个类群的两侧分支都存在，通常推断它们的共同祖先也有。这让研究者对尚未发现羽毛印痕的近亲也作出“很可能有羽毛”的判断——这是有依据的推断，而非直接观察。</p>
+        <p><b>追问：</b>电影里的伶盗龙又大又光滑。你会怎么向朋友解释“电影和证据不一样”？</p>
+        <p><b>离屏延伸：</b>找一根羽毛（或图片）观察羽轴与羽枝，再摸一摸自己的头发做对比。把火鸡的照片和伶盗龙放在一起看，讨论 15 公斤大概是多重——差不多是一袋大米。</p>
+        <p><b>数据说明：</b>羽毛的<b>颜色和分布是艺术复原</b>，属于推测；有证据支持的是“存在较大的羽毛”这一事实本身。</p>
+      </details>
+    </article>
+
+    <article class="play-card" aria-labelledby="bigdayTitle">
+      <h3 id="bigdayTitle">⑤ 那一天：恐龙为什么不见了</h3>
+      <p class="play-lead">按顺序点四个圆点，看故事一步步发生。</p>
+      <svg class="play-stage" id="bigdayStage" viewBox="0 0 320 180" role="img" aria-labelledby="bigdayStageTitle bigdayStageDesc">
+        <title id="bigdayStageTitle">白垩纪末大灭绝的四个阶段</title>
+        <desc id="bigdayStageDesc">依次显示小行星飞来、撞击地面、灰尘遮住太阳、以及鸟类存活下来四个画面。</desc>
+      </svg>
+      <div class="big-picks" id="bigdayPicks" role="group" aria-label="选择故事的第几步">
+        <button type="button" data-day="1" aria-pressed="false"><span class="glyph" aria-hidden="true">☄️</span>1 飞来</button>
+        <button type="button" data-day="2" aria-pressed="false"><span class="glyph" aria-hidden="true">💥</span>2 撞上</button>
+        <button type="button" data-day="3" aria-pressed="false"><span class="glyph" aria-hidden="true">🌫️</span>3 变暗</button>
+        <button type="button" data-day="4" aria-pressed="false"><span class="glyph" aria-hidden="true">🐦</span>4 鸟活着</button>
+      </div>
+      <p class="verdict" id="bigdayVerdict" role="status" aria-live="polite"><span class="face" aria-hidden="true">☄️</span><span><b>从第 1 步开始</b><p>点上面的数字，一步一步看。</p></span></p>
+      <details class="qa parent-deep-dive" data-audience="parent">
+        <summary>家长延伸：灭绝事件的证据链</summary>
+        <p><b>原理：</b>白垩纪—古近纪界线上全球都能找到一层富含<b>铱</b>的黏土；铱在地壳中罕见而在小行星中常见。加上墨西哥尤卡坦半岛的<b>希克苏鲁伯撞击坑</b>年代吻合、界线层里的冲击石英与玻璃微珠，共同支持撞击假说。</p>
+        <p><b>4–6 岁：</b>“天上掉下一块大石头，天变黑了，植物长不好，大恐龙没吃的了。小鸟活了下来。”</p>
+        <p><b>7–9 岁：</b>关键不是撞击本身，而是之后的<b>食物链崩塌</b>：遮光 → 植物光合作用受阻 → 植食动物减少 → 肉食动物减少。体型小、食性杂、能吃种子和昆虫的动物更容易活下来。</p>
+        <p><b>10–12 岁：</b>科学界仍在讨论<b>德干高原大规模火山活动</b>的叠加作用，以及生态系统在撞击前是否已经承压。主流观点认为撞击是决定性触发因素，但“单一原因 vs 多因叠加”的权重仍有争论——这是一个活跃的研究问题，不是已经关闭的答案。</p>
+        <p><b>追问：</b>为什么“天变黑”比“撞击的那一下”杀死了更多生物？</p>
+        <p><b>离屏延伸：</b>把一颗小球扔进装满面粉的浅盘，观察溅出的环形坑与四散的粉末，讨论“撞击会把东西抛到多远”。再关灯用手电当太阳，用薄纸遮住，让孩子体会“光被挡住”的感觉。</p>
+        <p><b>数据说明：</b>画面是<b>示意动画式插画</b>，不按真实比例；小行星直径约 10 公里、撞击约在 6600 万年前，这两个数字来自地质与年代学测定。本页所有画面均为<b>本地绘制的模拟示意</b>，不使用实时数据。</p>
+      </details>
+    </article>
+  </section>
 
   <!-- 地质时间轴 -->
   <section class="tl-wrap" aria-label="地质时间轴">
@@ -419,6 +1097,13 @@
   <h2 id="dinoGuide">恐龙线索图鉴</h2>
   <p style="margin:.2em 0 14px;color:var(--ink-mid);font-size:.88rem">先比大小，再读“怎么知道的”。带有“可能”“估算”的句子，表示证据还留着问号。</p>
   <div class="dgrid" id="out"></div>
+  <div class="online-gate parent-deep-dive" data-audience="parent">
+    <label class="online-gate-row">
+      <input type="checkbox" data-playful-preference="onlineData">
+      <span>允许联网加载照片与实时数据</span>
+    </label>
+    <p class="online-gate-note">默认关闭。关闭时本页只用内置数据，不向任何外部网站发出请求；开启后会向 PaleoBioDB 查询化石点数量、向 iNaturalist 取近亲动物照片。开关随时可以关掉。</p>
+  </div>
   <p class="src parent-deep-dive" id="src" data-audience="parent"></p>
 
   <!-- 深时 -->
@@ -852,9 +1537,15 @@
     render();
   });
 
-  /* ---------- 联网增强（失败静默降级） ---------- */
+  /* ---------- 联网增强（默认关闭；失败静默降级） ----------
+     第三方请求（PBDB / iNaturalist）只在家长于家长区开启 onlineData 后才发出。
+     未开启时不发起任何请求，直接用内置数据，行为与离线时一致。 */
   var srcEl = document.getElementById("src");
   var netOk = null;
+
+  function onlineAllowed() {
+    return Boolean(window.Playful && Playful.onlineAllowed && Playful.onlineAllowed());
+  }
 
   function mark(ok) {
     if (netOk === false) return;
@@ -867,6 +1558,17 @@
     t.textContent = ok
       ? "化石点计数来自 Paleobiology Database，可能因网络不可用"
       : "网络不可用 · 显示内置数据，功能不受影响";
+    srcEl.appendChild(t);
+  }
+
+  function markOffPreference() {
+    netOk = null;
+    srcEl.textContent = "";
+    var d = document.createElement("span");
+    d.className = "dot2";
+    srcEl.appendChild(d);
+    var t = document.createElement("span");
+    t.textContent = "当前显示内置数据。照片与化石点数量需要家长在家长区开启联网。";
     srcEl.appendChild(t);
   }
 
@@ -883,7 +1585,18 @@
   }
 
   var siteCache = {};
+  /* 本块脚本在 playful.js 之前执行，直接读 Playful 会拿不到。
+     等 DOMContentLoaded 后再判断偏好，那时共享层一定已就绪。 */
   function enrich() {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", enrichRun, { once: true });
+      return;
+    }
+    enrichRun();
+  }
+
+  function enrichRun() {
+    var allowed = onlineAllowed();
     var nodes = [].slice.call(document.querySelectorAll("[data-sites]"));
     nodes.forEach(function (el) {
       var g = el.getAttribute("data-sites");
@@ -891,6 +1604,7 @@
         el.textContent = "已知化石点：" + siteCache[g] + " 处（PBDB 记录）";
         return;
       }
+      /* 缓存是上次已获授权时写入的，读缓存不产生新请求，可以照用。 */
       var ck = "pbdb:" + g;
       try {
         var c = localStorage.getItem(ck);
@@ -901,6 +1615,11 @@
           return;
         }
       } catch (e) {}
+
+      if (!allowed) {
+        el.textContent = "已知化石点：需要家长开启联网后查询";
+        return;
+      }
 
       jget("https://paleobiodb.org/data1.2/occs/list.json?base_name=" +
            encodeURIComponent(g) + "&vocab=pbdb&limit=500")
@@ -918,12 +1637,30 @@
         });
     });
 
-    photos();
+    photos(allowed);
+    if (!allowed && netOk === null) markOffPreference();
   }
+
+  /* 本段脚本先于 progress.js / playful.js 执行，首次 render() 时 window.Playful
+     还不存在，onlineAllowed() 必然为 false，因此首屏一定走内置数据（安全默认）。
+     等共享层就绪后再重新判断一次，避免家长已开启开关却要手动刷新。 */
+  function enrichNow() {
+    netOk = null;
+    enrich();
+  }
+  window.addEventListener("load", function () {
+    if (onlineAllowed()) enrichNow();
+  });
+
+  /* 家长在家长区打开开关后，立刻补一次加载，不需要刷新页面。 */
+  document.addEventListener("playful:preference", function (event) {
+    var detail = event && event.detail;
+    if (detail && detail.name === "onlineData" && detail.value) enrichNow();
+  });
 
   /* 照片：iNaturalist。必须过滤 extinct=true 且名字前缀匹配，
      否则「Triceratops」会搜到一种叫 Phileurus truncatus 的甲虫。 */
-  function photos() {
+  function photos(allowed) {
     [].slice.call(document.querySelectorAll("[data-inat]")).forEach(function (slot) {
       var q = slot.getAttribute("data-inat");
       if (slot.getAttribute("data-done") === "1") return;
@@ -954,6 +1691,8 @@
         if (c) { paint(JSON.parse(c)); return; }
       } catch (e) {}
 
+      if (!allowed) return;
+
       jget("https://api.inaturalist.org/v1/taxa?q=" + encodeURIComponent(q) + "&per_page=8")
         .then(function (d) {
           var rs = (d && d.results) || [];
@@ -982,9 +1721,9 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>
 (function () {
   "use strict";
@@ -1014,13 +1753,33 @@
     });
   });
 
-  [].forEach.call(document.querySelectorAll(".quick-picks[data-fill] .kid-choice"), function (button) {
+  /* 大图卡代替读句子选项：点一张卡就把值写进对应的输入框或下拉（两者都保留在家长层） */
+  [].forEach.call(document.querySelectorAll("[data-fill] button[data-value]"), function (button) {
     button.addEventListener("click", function () {
       var group = button.parentNode;
       var field = document.getElementById(group.getAttribute("data-fill"));
-      selectOne(button, ".kid-choice");
+      selectOne(button, "button[data-value]");
+      if (!field) return;
       field.value = button.getAttribute("data-value");
       field.dispatchEvent(new Event("input", { bubbles: true }));
+      field.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  });
+
+  /* 脚印大小的大图卡：一次填好两个数字输入 */
+  var footField = document.getElementById("footLen");
+  var strideField = document.getElementById("strideLen");
+  [].forEach.call(document.querySelectorAll("#dinoSizePicks button[data-foot]"), function (button) {
+    button.addEventListener("click", function () {
+      selectOne(button, "button[data-foot]");
+      if (footField) {
+        footField.value = button.getAttribute("data-foot");
+        footField.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      if (strideField) {
+        strideField.value = button.getAttribute("data-stride");
+        strideField.dispatchEvent(new Event("input", { bubbles: true }));
+      }
     });
   });
 
@@ -1047,8 +1806,768 @@
     status.textContent = done ? "已完成任务：证据链已保存到我的足迹。" : "四步已完成；当前浏览器无法保存，结果仍保留在本页。";
   });
   if (window.Progress && Progress.getCompletion(id)) status.textContent = "此任务已完成；可以重新实验并更新证据。";
+
+  /* ==========================================================
+     儿童图形游乐场：五个只靠点击的图形模块
+     ========================================================== */
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function el(name, attrs, text) {
+    var node = document.createElementNS(SVGNS, name);
+    if (attrs) Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    if (text != null) node.textContent = text;
+    return node;
+  }
+  /* 清空舞台但保留 title / desc，否则每次重绘都会丢掉无障碍描述。 */
+  function clearStage(stage) {
+    var keep = [];
+    [].forEach.call(stage.childNodes, function (n) {
+      var nm = n.nodeName ? n.nodeName.toLowerCase() : "";
+      if (nm === "title" || nm === "desc") keep.push(n);
+    });
+    stage.textContent = "";
+    keep.forEach(function (n) { stage.appendChild(n); });
+  }
+  function verdict(node, emoji, title, body) {
+    node.textContent = "";
+    var face = document.createElement("span");
+    face.className = "face";
+    face.setAttribute("aria-hidden", "true");
+    face.textContent = emoji;
+    var wrap = document.createElement("span");
+    var b = document.createElement("b");
+    b.textContent = title;
+    var p = document.createElement("p");
+    p.textContent = body;
+    wrap.appendChild(b); wrap.appendChild(p);
+    node.appendChild(face); node.appendChild(wrap);
+  }
+  function pressOnly(button, group) {
+    [].forEach.call(group.querySelectorAll("button"), function (other) {
+      other.setAttribute("aria-pressed", other === button ? "true" : "false");
+    });
+  }
+
+  /* ---------- ① 等比身高对比尺 ---------- */
+  var SCALE_PICKS = [
+    { key: "rex",  n: "霸王龙",  emoji: "🦖", hip: 3.7, len: 12.3, diet: "carn" },
+    { key: "tri",  n: "三角龙",  emoji: "🦏", hip: 2.9, len: 9,    diet: "herb" },
+    { key: "bra",  n: "腕龙",    emoji: "🦕", hip: 4.4, len: 21,   diet: "herb" },
+    { key: "velo", n: "伶盗龙",  emoji: "🦃", hip: 0.5, len: 2,    diet: "carn" },
+    { key: "anky", n: "甲龙",    emoji: "🐢", hip: 1.7, len: 8,    diet: "herb" }
+  ];
+  var scaleStage = document.getElementById("scaleStage");
+  var scalePicks = document.getElementById("scalePicks");
+  var scaleVerdict = document.getElementById("scaleVerdict");
+  var KID_M = 1.1, BUS_M = 3.2, HOUSE_M = 6;
+
+  function drawScale(pick) {
+    clearStage(scaleStage);
+    var W = 400, H = 200, ground = 176;
+    var tallest = Math.max(HOUSE_M, pick ? pick.hip : 0);
+    var pxPerM = (ground - 20) / tallest;
+    scaleStage.appendChild(el("rect", { x: 0, y: 0, width: W, height: H, fill: "#eaf4fb" }));
+    scaleStage.appendChild(el("rect", { x: 0, y: ground, width: W, height: H - ground, fill: "#8cc47a" }));
+    /* 每米一条淡横线，眼睛能直接数格子 */
+    for (var m = 1; m <= Math.ceil(tallest); m++) {
+      var y = ground - m * pxPerM;
+      if (y < 8) break;
+      scaleStage.appendChild(el("line", { x1: 0, y1: y, x2: W, y2: y, stroke: "#c4dced", "stroke-width": 1.5 }));
+      /* 刻度压在浅蓝底 #eaf4fb 上，原来的 #5b83a0 只有 3.62:1，加深到 6.0:1。 */
+      scaleStage.appendChild(el("text", { x: 4, y: y - 3, "font-size": 8, fill: "#3d5f78" }, m + "m"));
+    }
+    function label(x, txt, color) {
+      scaleStage.appendChild(el("text", {
+        x: x, y: ground + 16, "font-size": 11, "font-weight": 800,
+        fill: color || "#25445c", "text-anchor": "middle"
+      }, txt));
+    }
+    /* 小朋友 */
+    var kidH = KID_M * pxPerM;
+    scaleStage.appendChild(el("rect", { x: 40, y: ground - kidH * 0.78, width: Math.max(7, kidH * 0.2), height: kidH * 0.78, rx: 3, fill: "#4a6fa5" }));
+    scaleStage.appendChild(el("circle", { cx: 40 + Math.max(7, kidH * 0.2) / 2, cy: ground - kidH * 0.86, r: Math.max(5, kidH * 0.12), fill: "#4a6fa5" }));
+    label(48, "你");
+    /* 公交车 */
+    var busH = BUS_M * pxPerM;
+    scaleStage.appendChild(el("rect", { x: 250, y: ground - busH, width: 74, height: busH, rx: 6, fill: "#e0a33c", stroke: "#a9741d", "stroke-width": 2 }));
+    scaleStage.appendChild(el("rect", { x: 258, y: ground - busH + 6, width: 58, height: busH * 0.34, rx: 3, fill: "#cbe6f5" }));
+    label(287, "公交车");
+    /* 房子 */
+    var hH = HOUSE_M * pxPerM;
+    scaleStage.appendChild(el("rect", { x: 342, y: ground - hH * 0.72, width: 52, height: hH * 0.72, fill: "#d9cbb8", stroke: "#8d7860", "stroke-width": 2 }));
+    scaleStage.appendChild(el("path", { d: "M338 " + (ground - hH * 0.72) + " L368 " + (ground - hH) + " L398 " + (ground - hH * 0.72) + " Z", fill: "#b4593f" }));
+    label(368, "两层房");
+    /* 恐龙 */
+    if (pick) {
+      var col = pick.diet === "carn" ? "#c0432f" : "#227a4b";
+      var bh = pick.hip * pxPerM;
+      var bodyH = Math.max(10, bh * 0.6), bodyW = Math.min(150, Math.max(46, bh * 1.5));
+      var bx = 112, by = ground - bodyH;
+      scaleStage.appendChild(el("ellipse", { cx: bx + bodyW / 2, cy: by + bodyH / 2, rx: bodyW / 2, ry: bodyH / 2, fill: col, opacity: ".9" }));
+      /* 腿 */
+      scaleStage.appendChild(el("rect", { x: bx + bodyW * 0.3, y: by + bodyH * 0.6, width: Math.max(5, bh * 0.11), height: bodyH * 0.62, fill: col }));
+      scaleStage.appendChild(el("rect", { x: bx + bodyW * 0.6, y: by + bodyH * 0.6, width: Math.max(5, bh * 0.11), height: bodyH * 0.62, fill: col }));
+      /* 长颈或大头 */
+      if (pick.hip > 4 || pick.len > 18) {
+        scaleStage.appendChild(el("path", {
+          d: "M" + (bx + bodyW * 0.86) + " " + by + " Q" + (bx + bodyW + 26) + " " + (by - bh * 0.62) + " " + (bx + bodyW + 6) + " " + (by - bh * 0.72),
+          stroke: col, "stroke-width": Math.max(7, bh * 0.15), fill: "none", "stroke-linecap": "round"
+        }));
+        scaleStage.appendChild(el("circle", { cx: bx + bodyW + 6, cy: by - bh * 0.72, r: Math.max(6, bh * 0.1), fill: col }));
+      } else {
+        scaleStage.appendChild(el("circle", { cx: bx + bodyW * 0.94, cy: by - bodyH * 0.22, r: Math.max(7, bodyH * 0.32), fill: col }));
+      }
+      /* 尾巴 */
+      scaleStage.appendChild(el("path", {
+        d: "M" + bx + " " + (by + bodyH * 0.42) + " Q" + (bx - 48) + " " + (by + bodyH * 0.2) + " " + (bx - 66) + " " + (by + bodyH * 0.72),
+        stroke: col, "stroke-width": Math.max(5, bh * 0.12), fill: "none", "stroke-linecap": "round"
+      }));
+      label(bx + bodyW / 2, pick.n, col);
+      scaleStage.appendChild(el("text", {
+        x: bx + bodyW / 2, y: by - bh * 0.86, "font-size": 11, "font-weight": 800,
+        fill: col, "text-anchor": "middle"
+      }, "臀高 " + pick.hip + " 米"));
+    }
+  }
+
+  SCALE_PICKS.forEach(function (pick, index) {
+    if (index === 0) scalePicks.textContent = "";
+    var button = document.createElement("button");
+    button.type = "button";
+    button.setAttribute("data-scale", pick.key);
+    button.setAttribute("aria-pressed", "false");
+    var glyph = document.createElement("span");
+    glyph.className = "glyph";
+    glyph.setAttribute("aria-hidden", "true");
+    glyph.textContent = pick.emoji;
+    button.appendChild(glyph);
+    button.appendChild(document.createTextNode(pick.n));
+    button.addEventListener("click", function () {
+      pressOnly(button, scalePicks);
+      drawScale(pick);
+      var times = pick.hip / KID_M;
+      var body = times >= 1
+        ? "它的屁股就有你的 " + times.toFixed(1) + " 倍高。"
+        : "它比你还矮，只有你的 " + times.toFixed(1) + " 倍高。";
+      var extra = pick.hip >= HOUSE_M ? "比两层房子还高！" : pick.hip >= BUS_M ? "比公交车高！" : pick.hip >= KID_M ? "比你高。" : "像一只大火鸡。";
+      verdict(scaleVerdict, pick.emoji, pick.n + "：全长 " + pick.len + " 米", body + extra);
+    });
+    scalePicks.appendChild(button);
+  });
+  drawScale(null);
+
+  /* ---------- ② 牙齿与食物 ---------- */
+  var TOOTH = {
+    blade: { emoji: "🔪", name: "尖尖带锯齿", food: "🍖", foodName: "肉",
+      text: "这种牙像带小锯齿的刀，能切开肉。霸王龙和异特龙就是这种牙。" },
+    leaf:  { emoji: "🍃", name: "叶子形小牙", food: "🌿", foodName: "嫩叶",
+      text: "小小的叶片形牙，用来夹断柔软的叶子。梁龙用它把树叶捋下来。" },
+    grind: { emoji: "🪨", name: "成排磨盘牙", food: "🌾", foodName: "粗硬植物",
+      text: "很多牙挤成一大片，像磨盘一样把硬硬的植物磨碎。三角龙和副栉龙有这种牙。" },
+    cone:  { emoji: "🐟", name: "圆锥光滑牙", food: "🐟", foodName: "鱼",
+      text: "又圆又滑又尖，像小钉子，专门夹住滑溜溜的鱼。棘龙有这种牙。" }
+  };
+  var toothStage = document.getElementById("toothStage");
+  var toothVerdict = document.getElementById("toothVerdict");
+  var toothPicks = document.getElementById("toothPicks");
+
+  function drawTooth(key) {
+    clearStage(toothStage);
+    toothStage.appendChild(el("rect", { x: 0, y: 0, width: 300, height: 170, fill: "#fff6e6" }));
+    toothStage.appendChild(el("line", { x1: 150, y1: 16, x2: 150, y2: 154, stroke: "#e3c393", "stroke-width": 3, "stroke-dasharray": "8 7" }));
+    if (!key) {
+      toothStage.appendChild(el("text", { x: 150, y: 90, "font-size": 15, fill: "#6b5231", "text-anchor": "middle", "font-weight": 800 }, "点下面的牙齿"));
+      return;
+    }
+    var t = TOOTH[key];
+    toothStage.appendChild(el("text", { x: 74, y: 26, "font-size": 11, fill: "#6b4f36", "text-anchor": "middle", "font-weight": 800 }, "牙齿形状"));
+    toothStage.appendChild(el("text", { x: 226, y: 26, "font-size": 11, fill: "#6b4f36", "text-anchor": "middle", "font-weight": 800 }, "适合吃"));
+    if (key === "blade") {
+      toothStage.appendChild(el("path", { d: "M74 44 C104 62 116 104 92 142 L58 142 C40 104 48 62 74 44 Z", fill: "#fff5d8", stroke: "#8b5d43", "stroke-width": 5 }));
+      toothStage.appendChild(el("path", { d: "M88 62 l8 7-9 7 9 7-9 7 9 7-8 7", fill: "none", stroke: "#c0432f", "stroke-width": 4 }));
+    } else if (key === "leaf") {
+      [-30, 0, 30].forEach(function (dx) {
+        toothStage.appendChild(el("path", { d: "M" + (74 + dx) + " 60 C" + (88 + dx) + " 82 " + (86 + dx) + " 116 " + (74 + dx) + " 136 C" + (62 + dx) + " 116 " + (60 + dx) + " 82 " + (74 + dx) + " 60 Z", fill: "#fff5d8", stroke: "#227a4b", "stroke-width": 4 }));
+      });
+    } else if (key === "grind") {
+      [0, 1, 2].forEach(function (r) {
+        [0, 1, 2, 3].forEach(function (c) {
+          toothStage.appendChild(el("rect", { x: 34 + c * 22, y: 58 + r * 28, width: 18, height: 22, rx: 4, fill: "#fff5d8", stroke: "#8b5d43", "stroke-width": 3 }));
+        });
+      });
+    } else {
+      [-28, 0, 28].forEach(function (dx) {
+        toothStage.appendChild(el("path", { d: "M" + (74 + dx) + " 56 L" + (84 + dx) + " 134 L" + (64 + dx) + " 134 Z", fill: "#fff5d8", stroke: "#0e7f97", "stroke-width": 4 }));
+      });
+    }
+    toothStage.appendChild(el("text", { x: 226, y: 108, "font-size": 54, "text-anchor": "middle" }, t.food));
+    toothStage.appendChild(el("text", { x: 226, y: 140, "font-size": 14, fill: "#402d1c", "text-anchor": "middle", "font-weight": 800 }, t.foodName));
+  }
+
+  [].forEach.call(toothPicks.querySelectorAll("button[data-tooth]"), function (button) {
+    button.addEventListener("click", function () {
+      var key = button.getAttribute("data-tooth"), t = TOOTH[key];
+      pressOnly(button, toothPicks);
+      drawTooth(key);
+      verdict(toothVerdict, t.emoji, t.name + " → 吃" + t.foodName, t.text);
+    });
+  });
+  drawTooth(null);
+
+  /* ---------- ③ 恐龙蛋 ---------- */
+  var EGG = {
+    rex:  { emoji: "🦖", name: "霸王龙宝宝", text: "刚出生只有火鸡那么大，要长很多年才会变成大块头。" },
+    tri:  { emoji: "🦏", name: "三角龙宝宝", text: "小时候头上的角是小小的圆包，长大以后才变成长角。" },
+    para: { emoji: "🦆", name: "副栉龙宝宝", text: "头上的管子要慢慢长长，长大了才吹得出低低的声音。" }
+  };
+  var eggRow = document.getElementById("eggRow");
+  var eggVerdict = document.getElementById("eggVerdict");
+  [].forEach.call(eggRow.querySelectorAll("button[data-egg]"), function (button) {
+    var svg = button.querySelector("svg");
+    var closedMarkup = svg.innerHTML;
+    button.addEventListener("click", function () {
+      var key = button.getAttribute("data-egg"), info = EGG[key];
+      var open = button.getAttribute("data-open") === "1";
+      if (open) {
+        svg.innerHTML = closedMarkup;
+        button.setAttribute("data-open", "0");
+        button.setAttribute("aria-pressed", "false");
+        verdict(eggVerdict, "🥚", info.name + "回到蛋里了", "蛋又合上了。再点一次可以让它出来。");
+        return;
+      }
+      /* 裂开的蛋 + 探头的宝宝 */
+      svg.innerHTML = "";
+      svg.appendChild(el("path", { d: "M9 56 C9 74 20 81 34 81 C48 81 59 74 59 56 L50 52 L44 58 L37 50 L30 58 L23 51 Z", fill: "#e8cfa4", stroke: "#8b5d43", "stroke-width": 4 }));
+      svg.appendChild(el("text", { x: 34, y: 44, "font-size": 30, "text-anchor": "middle" }, info.emoji));
+      button.setAttribute("data-open", "1");
+      button.setAttribute("aria-pressed", "true");
+      verdict(eggVerdict, info.emoji, "是" + info.name + "！", info.text);
+    });
+  });
+
+  /* ---------- ④ 羽毛开关 ---------- */
+  var featherStage = document.getElementById("featherStage");
+  var featherVerdict = document.getElementById("featherVerdict");
+  var featherOn = document.getElementById("featherOn"), featherOff = document.getElementById("featherOff");
+
+  function drawFeather(on) {
+    clearStage(featherStage);
+    featherStage.appendChild(el("rect", { x: 0, y: 0, width: 300, height: 180, fill: "#f3f8ea" }));
+    featherStage.appendChild(el("rect", { x: 0, y: 150, width: 300, height: 30, fill: "#8cc47a" }));
+    var body = on ? "#7a4a24" : "#8a9098";
+    /* 身体 */
+    featherStage.appendChild(el("ellipse", { cx: 150, cy: 96, rx: 54, ry: 26, fill: body }));
+    /* 脖子与头 */
+    featherStage.appendChild(el("path", { d: "M196 86 Q222 72 226 50", stroke: body, "stroke-width": 15, fill: "none", "stroke-linecap": "round" }));
+    featherStage.appendChild(el("ellipse", { cx: 234, cy: 44, rx: 20, ry: 13, fill: body }));
+    featherStage.appendChild(el("circle", { cx: 240, cy: 40, r: 2.6, fill: "#fff" }));
+    /* 尾 */
+    featherStage.appendChild(el("path", { d: "M96 92 Q52 86 30 106", stroke: body, "stroke-width": 12, fill: "none", "stroke-linecap": "round" }));
+    /* 腿 */
+    featherStage.appendChild(el("path", { d: "M140 118 L132 150 M168 118 L176 150", stroke: body, "stroke-width": 9, "stroke-linecap": "round" }));
+    if (on) {
+      /* 身体绒羽 */
+      for (var i = 0; i < 16; i++) {
+        var ang = -0.2 + i * 0.24;
+        var px = 150 + Math.cos(ang) * 50, py = 96 + Math.sin(ang) * 24;
+        featherStage.appendChild(el("path", {
+          d: "M" + px + " " + py + " l" + (Math.cos(ang) * 15) + " " + (Math.sin(ang) * 15 - 6),
+          stroke: "#c8842f", "stroke-width": 5, "stroke-linecap": "round"
+        }));
+      }
+      /* 手臂长羽 */
+      [0, 1, 2, 3, 4].forEach(function (k) {
+        featherStage.appendChild(el("path", {
+          d: "M132 92 Q" + (108 - k * 7) + " " + (66 - k * 5) + " " + (86 - k * 12) + " " + (78 - k * 2),
+          stroke: "#a5651f", "stroke-width": 6, fill: "none", "stroke-linecap": "round"
+        }));
+      });
+      /* 尾羽 */
+      [0, 1, 2].forEach(function (k) {
+        featherStage.appendChild(el("path", {
+          d: "M34 104 Q" + (18 - k * 4) + " " + (96 + k * 10) + " " + (8 - k * 2) + " " + (112 + k * 12),
+          stroke: "#c8842f", "stroke-width": 5, fill: "none", "stroke-linecap": "round"
+        }));
+      });
+      featherStage.appendChild(el("text", { x: 150, y: 168, "font-size": 12, fill: "#5b4227", "text-anchor": "middle", "font-weight": 800 }, "有羽毛：证据支持这一种"));
+    } else {
+      /* 这行字压在绿色地面 #8cc47a 上（相对亮度 .465），原来的 #5b6068 只有 3.10:1。 */
+      featherStage.appendChild(el("text", { x: 150, y: 168, "font-size": 12, fill: "#1e2a1c", "text-anchor": "middle", "font-weight": 800 }, "光溜溜：电影里常见，但不符合证据"));
+    }
+  }
+  featherOn.addEventListener("click", function () {
+    featherOn.setAttribute("aria-pressed", "true");
+    featherOff.setAttribute("aria-pressed", "false");
+    drawFeather(true);
+    verdict(featherVerdict, "🪶", "穿上羽毛了！", "手臂骨头上有小突起，是大羽毛长过的地方。所以真的伶盗龙有羽毛，像一只大火鸡。");
+  });
+  featherOff.addEventListener("click", function () {
+    featherOff.setAttribute("aria-pressed", "true");
+    featherOn.setAttribute("aria-pressed", "false");
+    drawFeather(false);
+    verdict(featherVerdict, "🦎", "这是光溜溜的样子", "电影里常这样画，但化石证据不支持。点“穿上羽毛”看看真身。");
+  });
+  drawFeather(false);
+
+  /* ---------- ⑤ 那一天 ---------- */
+  var bigdayStage = document.getElementById("bigdayStage");
+  var bigdayVerdict = document.getElementById("bigdayVerdict");
+  var bigdayPicks = document.getElementById("bigdayPicks");
+  var BIGDAY = {
+    "1": { emoji: "☄️", title: "第 1 步：一块大石头飞来", text: "一颗差不多 10 公里宽的小行星朝地球飞过来。那时候恐龙还在好好地生活。" },
+    "2": { emoji: "💥", title: "第 2 步：撞在海边", text: "它撞在今天墨西哥的海边，撞出一个巨大的坑。我们现在还能找到那个坑。" },
+    "3": { emoji: "🌫️", title: "第 3 步：天变暗了", text: "灰尘飞满天空，太阳照不进来。植物长不好，吃植物的大恐龙就没有饭吃了。" },
+    "4": { emoji: "🐦", title: "第 4 步：小鸟活下来了", text: "身体小、能吃种子和虫子的动物活了下来。鸟类就是活着的恐龙——窗外的麻雀也是！" }
+  };
+  function drawBigday(step) {
+    clearStage(bigdayStage);
+    var sky = step === "3" ? "#5a5348" : step === "4" ? "#bfe4f7" : "#123a5c";
+    bigdayStage.appendChild(el("rect", { x: 0, y: 0, width: 320, height: 180, fill: sky }));
+    bigdayStage.appendChild(el("rect", { x: 0, y: 148, width: 320, height: 32, fill: step === "3" ? "#4a4034" : "#79a45f" }));
+    if (!step) {
+      /* 舞台底色是 var(--bg-soft)（浅色），原先用近白 #dceaf5，对比度只有 1.12，等于看不见。 */
+      bigdayStage.appendChild(el("text", { x: 160, y: 92, "font-size": 15, fill: "#3a2a18", "text-anchor": "middle", "font-weight": 800 }, "点上面的 1"));
+      return;
+    }
+    if (step === "1") {
+      bigdayStage.appendChild(el("circle", { cx: 150, cy: 120, r: 44, fill: "#3f7f4e", stroke: "#2b5c39", "stroke-width": 3 }));
+      bigdayStage.appendChild(el("circle", { cx: 262, cy: 42, r: 15, fill: "#b0763f", stroke: "#7d4f26", "stroke-width": 3 }));
+      bigdayStage.appendChild(el("path", { d: "M276 30 L308 12 M272 52 L306 44", stroke: "#f3c98a", "stroke-width": 4, "stroke-linecap": "round" }));
+      bigdayStage.appendChild(el("text", { x: 60, y: 40, "font-size": 32, "text-anchor": "middle" }, "🦕"));
+    } else if (step === "2") {
+      bigdayStage.appendChild(el("circle", { cx: 160, cy: 150, r: 56, fill: "#f6d365" }));
+      bigdayStage.appendChild(el("circle", { cx: 160, cy: 150, r: 34, fill: "#ee9b3a" }));
+      bigdayStage.appendChild(el("path", { d: "M104 148 L74 96 M216 148 L248 96 M160 96 L160 52 M126 128 L96 62 M194 128 L226 62", stroke: "#ffe9a8", "stroke-width": 5, "stroke-linecap": "round" }));
+      bigdayStage.appendChild(el("text", { x: 160, y: 40, "font-size": 30, "text-anchor": "middle" }, "💥"));
+    } else if (step === "3") {
+      for (var i = 0; i < 7; i++) {
+        bigdayStage.appendChild(el("ellipse", { cx: 30 + i * 45, cy: 40 + (i % 3) * 22, rx: 40, ry: 17, fill: "#8b8172", opacity: ".85" }));
+      }
+      bigdayStage.appendChild(el("circle", { cx: 270, cy: 34, r: 16, fill: "#c9bfa4", opacity: ".45" }));
+      bigdayStage.appendChild(el("text", { x: 70, y: 142, "font-size": 30, "text-anchor": "middle", opacity: ".65" }, "🦖"));
+      bigdayStage.appendChild(el("text", { x: 160, y: 172, "font-size": 12, fill: "#f0e7d6", "text-anchor": "middle", "font-weight": 800 }, "太阳被挡住了"));
+    } else {
+      bigdayStage.appendChild(el("circle", { cx: 274, cy: 36, r: 18, fill: "#fbbf24" }));
+      bigdayStage.appendChild(el("path", { d: "M60 148 Q70 110 96 104 Q80 96 88 84", stroke: "#4f7a35", "stroke-width": 7, fill: "none", "stroke-linecap": "round" }));
+      bigdayStage.appendChild(el("text", { x: 170, y: 80, "font-size": 40, "text-anchor": "middle" }, "🐦"));
+      bigdayStage.appendChild(el("text", { x: 160, y: 172, "font-size": 12, fill: "#204a2a", "text-anchor": "middle", "font-weight": 800 }, "鸟类是活着的恐龙"));
+    }
+  }
+  [].forEach.call(bigdayPicks.querySelectorAll("button[data-day]"), function (button) {
+    button.addEventListener("click", function () {
+      var step = button.getAttribute("data-day"), info = BIGDAY[step];
+      pressOnly(button, bigdayPicks);
+      drawBigday(step);
+      verdict(bigdayVerdict, info.emoji, info.title, info.text);
+    });
+  });
+  drawBigday(null);
 })();
 </script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script>
+/* ==========================================================================
+   图像优先三件套（本页前缀 dn-）
+   ① 恐龙图鉴：点一张卡 → 主舞台按同一比例尺画出它与 1.2 米小孩
+   ② 体长条与食性条：Playful.setMeter 驱动，数字写进 .kid-meter-value
+   ③ 看牙齿猜吃什么：点大图卡作答，答对纸屑，答错只给提示
+   ========================================================================== */
+(function () {
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  function n2(value) {
+    var num = Number(value);
+    if (!isFinite(num)) return 0;
+    return Math.round(num * 100) / 100;
+  }
+  function make(tag, attrs) {
+    var node = document.createElementNS(NS, tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    return node;
+  }
+  function svgText(x, y, str, cls, size, anchor) {
+    var node = make("text", {
+      x: n2(x), y: n2(y), "font-size": size || 13,
+      "class": cls || "dn-ink", "text-anchor": anchor || "middle"
+    });
+    node.textContent = str;
+    return node;
+  }
+  function clearNode(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
+
+  /* ---------- 剪影几何 ----------
+     每个形状画在「长 100 × 高 h」的本地方格里，底线在 y = h。
+     100 本地单位 ＝ 这一只的真实体长（翼龙用翼展），
+     所以只要按同一个 px/米 换算出缩放系数，长度就自动等比。
+     part = [标签, 属性, 用色]，用色 f=实心、s=描线、e=眼睛高光。 */
+  var KID_PARTS = [
+    ["circle", { cx: 15, cy: 12, r: 12 }, "f"],
+    ["rect", { x: 5, y: 26, width: 20, height: 40, rx: 7 }, "f"],
+    ["rect", { x: 7, y: 64, width: 6, height: 36, rx: 3 }, "f"],
+    ["rect", { x: 17, y: 64, width: 6, height: 36, rx: 3 }, "f"],
+    ["rect", { x: 0, y: 30, width: 5, height: 28, rx: 2.5 }, "f"],
+    ["rect", { x: 25, y: 30, width: 5, height: 28, rx: 2.5 }, "f"]
+  ];
+  var SHAPES = {
+    rex: { h: 42, parts: [
+      ["path", { d: "M2 21 C14 22 24 22 32 24 C40 20 52 14 62 12 C66 4 78 1 88 2 C97 3 99 7 95 10 C89 11 84 11 79 13 C72 16 68 21 62 25 C52 31 40 32 32 31 C24 30 12 27 2 26 Z" }, "f"],
+      ["path", { d: "M28 27 C24 31 22 36 24 42 L34 42 C31 36 32 31 35 28 Z" }, "f"],
+      ["path", { d: "M43 29 C41 33 41 38 43 42 L52 42 C50 38 50 33 51 29 Z" }, "f"],
+      ["path", { d: "M58 24 C61 27 64 29 68 30 L66 32 C61 32 57 29 55 26 Z" }, "f"],
+      ["circle", { cx: 87, cy: 6, r: 1.6 }, "e"]
+    ] },
+    tri: { h: 32, parts: [
+      ["path", { d: "M2 13 C8 11 14 11 21 12 L21 21 C14 22 8 22 2 20 Z" }, "f"],
+      ["ellipse", { cx: 42, cy: 17, rx: 26, ry: 11 }, "f"],
+      ["path", { d: "M60 8 C70 2 84 2 90 8 C94 12 94 20 90 25 C84 30 70 29 61 24 Z" }, "f"],
+      ["path", { d: "M89 13 C97 15 99 17 96 21 C93 23 89 22 88 20 Z" }, "f"],
+      ["path", { d: "M92 13 L99 7 L96 15 Z" }, "f"],
+      ["path", { d: "M82 7 L91 1 L87 9 Z" }, "f"],
+      ["rect", { x: 20, y: 25, width: 7, height: 7, rx: 2 }, "f"],
+      ["rect", { x: 31, y: 26, width: 6, height: 6, rx: 2 }, "f"],
+      ["rect", { x: 49, y: 26, width: 6, height: 6, rx: 2 }, "f"],
+      ["rect", { x: 57, y: 25, width: 7, height: 7, rx: 2 }, "f"],
+      ["circle", { cx: 84, cy: 14, r: 1.6 }, "e"]
+    ] },
+    bra: { h: 44, parts: [
+      ["path", { d: "M2 17 C10 16 18 17 27 20 L27 28 C18 29 10 28 2 25 Z" }, "f"],
+      ["path", { d: "M63 18 C76 15 84 10 88 6", "stroke-width": 9 }, "s"],
+      ["ellipse", { cx: 46, cy: 24, rx: 24, ry: 12 }, "f"],
+      ["ellipse", { cx: 91, cy: 5, rx: 7, ry: 4 }, "f"],
+      ["rect", { x: 55, y: 32, width: 8, height: 12, rx: 2 }, "f"],
+      ["rect", { x: 47, y: 33, width: 7, height: 11, rx: 2 }, "f"],
+      ["rect", { x: 31, y: 34, width: 8, height: 10, rx: 2 }, "f"],
+      ["rect", { x: 23, y: 35, width: 7, height: 9, rx: 2 }, "f"],
+      ["circle", { cx: 93, cy: 4, r: 1.5 }, "e"]
+    ] },
+    velo: { h: 35, parts: [
+      ["path", { d: "M2 11 C14 12 24 14 33 17", "stroke-width": 4.5 }, "s"],
+      ["path", { d: "M52 15 C46 9 40 7 33 8 M53 17 C47 12 41 11 34 12 M54 19 C49 15 43 15 37 16", "stroke-width": 2.4 }, "s"],
+      ["ellipse", { cx: 46, cy: 18, rx: 16, ry: 8 }, "f"],
+      ["path", { d: "M57 14 C65 10 70 7 74 5", "stroke-width": 6.5 }, "s"],
+      ["path", { d: "M73 1 C82 0 91 3 93 6 C88 9 79 10 73 9 Z" }, "f"],
+      ["path", { d: "M42 24 C38 28 37 32 39 35 L47 35 C45 31 45 27 48 25 Z" }, "f"],
+      ["path", { d: "M52 24 C50 28 50 32 52 35 L59 35 C57 31 57 27 58 24 Z" }, "f"],
+      ["circle", { cx: 82, cy: 4, r: 1.6 }, "e"]
+    ] },
+    steg: { h: 38, parts: [
+      ["path", { d: "M2 13 C10 14 18 17 27 21", "stroke-width": 5 }, "s"],
+      ["path", { d: "M5 12 L3 4 L10 11 Z" }, "f"],
+      ["path", { d: "M12 14 L11 5 L17 12 Z" }, "f"],
+      ["path", { d: "M69 21 C78 21 84 22 88 24", "stroke-width": 6.5 }, "s"],
+      ["path", { d: "M27 18 L31 7 L37 17 Z" }, "f"],
+      ["path", { d: "M38 15 L45 3 L51 14 Z" }, "f"],
+      ["path", { d: "M52 14 L59 3 L65 15 Z" }, "f"],
+      ["path", { d: "M66 16 L71 7 L76 18 Z" }, "f"],
+      ["ellipse", { cx: 48, cy: 22, rx: 24, ry: 10 }, "f"],
+      ["ellipse", { cx: 92, cy: 25, rx: 7, ry: 4 }, "f"],
+      ["rect", { x: 30, y: 29, width: 7, height: 9, rx: 2 }, "f"],
+      ["rect", { x: 40, y: 30, width: 6, height: 8, rx: 2 }, "f"],
+      ["rect", { x: 55, y: 30, width: 6, height: 8, rx: 2 }, "f"],
+      ["rect", { x: 63, y: 29, width: 7, height: 9, rx: 2 }, "f"],
+      ["circle", { cx: 94, cy: 24, r: 1.5 }, "e"]
+    ] },
+    ptero: { h: 22, lift: 0.62, parts: [
+      ["path", { d: "M50 8 C36 2 18 1 2 7 C16 12 34 15 50 14 Z" }, "f"],
+      ["path", { d: "M50 8 C64 2 82 1 98 7 C84 12 66 15 50 14 Z" }, "f"],
+      ["ellipse", { cx: 50, cy: 12, rx: 5, ry: 7 }, "f"],
+      ["circle", { cx: 50, cy: 4, r: 4 }, "f"],
+      ["path", { d: "M50 1 C57 0 61 2 61 4 C56 5 52 4 50 3 Z" }, "f"],
+      ["path", { d: "M49 6 C43 6 39 7 38 9 C42 9 46 9 49 8 Z" }, "f"],
+      ["path", { d: "M47 18 L44 22 M53 18 L56 22", "stroke-width": 2.4 }, "s"],
+      ["circle", { cx: 48, cy: 3, r: 1.4 }, "e"]
+    ] }
+  };
+
+  /* ---------- 六张图鉴卡的数据 ----------
+     len：体长（翼龙给翼展，已在 lenWord 里写清楚）。tone 决定剪影用色。
+     veg：0＝几乎全吃肉，100＝几乎全吃草，用来驱动食性条。 */
+  var DN = {
+    rex: { cap: "霸王龙", len: 12.3, lenWord: "长 12.3 米", tone: "meat", veg: 0, isDino: true,
+      food: "吃肉", tooth: "又尖又带锯齿的大牙",
+      say: "牙齿又尖又带锯齿，像一排小刀，用来切肉。" },
+    tri: { cap: "三角龙", len: 9, lenWord: "长 9 米", tone: "plant", veg: 100, isDino: true,
+      food: "吃草", tooth: "扁扁的磨盘牙",
+      say: "嘴巴前面像鸟喙，后面是一排排磨盘牙，把硬硬的植物磨碎。" },
+    bra: { cap: "腕龙", len: 21, lenWord: "长 21 米", tone: "plant", veg: 100, isDino: true,
+      food: "吃树叶", tooth: "叶子形的小牙",
+      say: "脖子长长伸到树顶，小牙像叶片，把树叶捋下来直接咽。" },
+    velo: { cap: "迅猛龙", len: 2, lenWord: "长 2 米", tone: "meat", veg: 0, isDino: true,
+      food: "吃肉", tooth: "小小的尖牙",
+      say: "真身只有一只大火鸡那么大，而且身上有羽毛，不是光溜溜的。" },
+    steg: { cap: "剑龙", len: 7, lenWord: "长 7 米", tone: "plant", veg: 100, isDino: true,
+      food: "吃草", tooth: "小小的叶形牙",
+      say: "背上两排骨板最高超过 60 厘米，嘴里的牙却又小又扁。" },
+    ptero: { cap: "翼龙", len: 7, lenWord: "翼展 7 米", tone: "fish", veg: 0, isDino: false,
+      food: "吃鱼", tooth: "又圆又滑的圆锥牙",
+      say: "它会飞，牙像小钉子，专门夹住滑溜溜的鱼。它是恐龙的近亲，但不是恐龙。" }
+  };
+
+  var KID_M = 1.2;
+  var STAGE_W = 460, STAGE_H = 240, GROUND = 196;
+  var DINO_X = 120, DINO_PX = 300;
+
+  var stageArt = document.getElementById("dnStageArt");
+  var atlasSay = document.getElementById("dnAtlasSay");
+  var atlasButtons = [].slice.call(document.querySelectorAll("#dnAtlasGrid [data-dn-pick]"));
+  var pickHandlers = [];
+
+  function drawShape(parent, key, tone, tx, ty, scale) {
+    var shape = SHAPES[key];
+    if (!shape) return;
+    var g = make("g", { transform: "translate(" + n2(tx) + " " + n2(ty) + ") scale(" + n2(scale) + ")" });
+    shape.parts.forEach(function (part) {
+      var node = make(part[0], part[1]);
+      node.setAttribute("class", part[2] === "s" ? "dn-" + tone + "-s" : part[2] === "e" ? "dn-eye" : "dn-" + tone);
+      g.appendChild(node);
+    });
+    parent.appendChild(g);
+  }
+  function drawKid(parent, pxPerM, centerX) {
+    var high = KID_M * pxPerM;
+    var scale = high / 100;
+    var g = make("g", {
+      "class": "dn-kid",
+      transform: "translate(" + n2(centerX - 15 * scale) + " " + n2(GROUND - high) + ") scale(" + n2(scale) + ")"
+    });
+    KID_PARTS.forEach(function (part) { g.appendChild(make(part[0], part[1])); });
+    parent.appendChild(g);
+    return high;
+  }
+  function tickStep(meters) {
+    if (meters <= 3) return 0.5;
+    if (meters <= 10) return 1;
+    return 5;
+  }
+  function drawRuler(meters, pxPerM) {
+    var step = tickStep(meters);
+    var m;
+    for (m = 0; m <= meters + 0.001; m += step) {
+      var x = DINO_X + m * pxPerM;
+      stageArt.appendChild(make("line", { x1: n2(x), y1: 44, x2: n2(x), y2: GROUND, "class": "dn-grid" }));
+      stageArt.appendChild(svgText(x, GROUND + 16, String(Math.round(m * 10) / 10), "dn-ink-soft", 11));
+    }
+    /* 末端再补一条线，让「这一只到这里为止」看得见；刻度刚好落在整数上时不重复写数字 */
+    var endX = DINO_X + meters * pxPerM;
+    stageArt.appendChild(make("line", { x1: n2(endX), y1: 44, x2: n2(endX), y2: GROUND, "class": "dn-grid" }));
+    if (Math.abs(meters / step - Math.round(meters / step)) > 0.001) {
+      stageArt.appendChild(svgText(endX, GROUND + 16, String(meters), "dn-ink-soft", 11));
+    }
+    stageArt.appendChild(svgText(DINO_X + meters * pxPerM / 2, GROUND + 32, "地上的数字是米", "dn-ink-soft", 12));
+  }
+  function drawTopBar(title, right) {
+    stageArt.appendChild(make("rect", { x: 8, y: 6, width: 444, height: 28, rx: 14, "class": "dn-panel" }));
+    stageArt.appendChild(svgText(20, 26, title, "dn-ink", 16, "start"));
+    stageArt.appendChild(svgText(440, 26, right, "dn-ink-soft", 13, "end"));
+  }
+  function drawStage(key) {
+    clearNode(stageArt);
+    stageArt.appendChild(make("rect", { x: 0, y: 0, width: STAGE_W, height: STAGE_H, "class": "dn-sky" }));
+    stageArt.appendChild(make("rect", { x: 0, y: GROUND, width: STAGE_W, height: STAGE_H - GROUND, "class": "dn-ground" }));
+    if (!key || !DN[key]) {
+      drawKid(stageArt, 60, 60);
+      drawTopBar("同一把米尺", "点一张图鉴卡");
+      stageArt.appendChild(svgText(270, 110, "点下面的一张卡", "dn-ink", 20));
+      stageArt.appendChild(svgText(60, GROUND + 16, "你 1.2 米", "dn-ink", 12));
+      return;
+    }
+    var info = DN[key];
+    var pxPerM = DINO_PX / info.len;
+    drawRuler(info.len, pxPerM);
+    drawKid(stageArt, pxPerM, 60);
+    var shape = SHAPES[key];
+    var scale = DINO_PX / 100;
+    var bodyPx = shape.h * scale;
+    var lift = shape.lift ? bodyPx * shape.lift : 0;
+    var dinoTop = GROUND - bodyPx - lift;
+    drawShape(stageArt, key, info.tone, DINO_X, dinoTop, scale);
+    drawTopBar(info.cap, info.lenWord + " · " + info.food + " · " + (info.isDino ? "是恐龙" : "不是恐龙"));
+    stageArt.appendChild(svgText(60, GROUND + 16, "你 1.2 米", "dn-ink", 12));
+    stageArt.appendChild(svgText(270, Math.max(50, dinoTop - 10), info.cap + " · " + info.lenWord, "dn-ink", 14));
+  }
+  function lengthCompare(info) {
+    var times = Math.round(info.len / KID_M);
+    if (info.lenWord.indexOf("翼展") === 0) {
+      return "它张开翅膀，要 " + times + " 个你躺着排成一排才够宽。";
+    }
+    return "把你躺下来排一排，要 " + times + " 个你才有它那么长。";
+  }
+  function selectPick(key) {
+    var info = DN[key];
+    if (!info) return;
+    atlasButtons.forEach(function (button) {
+      button.setAttribute("aria-pressed", button.getAttribute("data-dn-pick") === key ? "true" : "false");
+    });
+    drawStage(key);
+    atlasSay.textContent = (info.isDino ? "✓ " : "○ ") + "你选了" + info.cap + "：" + info.lenWord +
+      "，" + info.food + "。" + lengthCompare(info) + info.say;
+    pickHandlers.forEach(function (fn) { fn(key, info); });
+  }
+  atlasButtons.forEach(function (button) {
+    button.addEventListener("click", function () { selectPick(button.getAttribute("data-dn-pick")); });
+  });
+  /* ---------- ② 体长条与食性条：跟着所选的那张卡变化 ---------- */
+  var LEN_MAX = 30, DOT_M = 3, BUS_M = 12;
+  var lenMeter = document.getElementById("dnLenMeter");
+  var lenValue = document.getElementById("dnLenValue");
+  var dietMeter = document.getElementById("dnDietMeter");
+  var dietValue = document.getElementById("dnDietValue");
+  var testBig = document.getElementById("dnTestBig");
+  var testDino = document.getElementById("dnTestDino");
+  var lenDots = document.getElementById("dnLenDots");
+  var meterSay = document.getElementById("dnMeterSay");
+
+  function setMeter(track, value, max) {
+    if (!track) return;
+    if (window.Playful && Playful.setMeter) { Playful.setMeter(track, value, max); return; }
+    var fill = track.querySelector(".kid-meter-fill");
+    var ratio = Number(value) / Number(max);
+    if (!isFinite(ratio)) ratio = 0;
+    ratio = Math.max(0, Math.min(1, ratio));
+    if (fill) fill.style.setProperty("--fill", (ratio * 100).toFixed(1) + "%");
+  }
+  function paintLenDots(meters) {
+    if (!lenDots) return;
+    lenDots.textContent = "";
+    var lit = meters > 0 ? Math.max(1, Math.round(meters / DOT_M)) : 0;
+    for (var i = 0; i < 10; i++) {
+      var dot = document.createElement("i");
+      if (i >= lit) dot.setAttribute("data-empty", "true");
+      lenDots.appendChild(dot);
+    }
+    lenDots.setAttribute("aria-label", meters > 0
+      ? "十格里点亮了 " + lit + " 格，每格 3 米，大约 " + meters + " 米"
+      : "十格都还是空的，还没有选图鉴卡");
+  }
+  function lenKindOf(info) { return info.lenWord.indexOf("翼展") === 0 ? "翼展" : "体长"; }
+  function drawMeters(key, info) {
+    var kind = lenKindOf(info);
+    var pct = Math.round(info.len / LEN_MAX * 100);
+    setMeter(lenMeter, info.len, LEN_MAX);
+    lenValue.textContent = info.len + " 米";
+    setMeter(dietMeter, info.veg, 100);
+    dietValue.textContent = "肉 " + (100 - info.veg) + "% · 草 " + info.veg + "%";
+    var bigOk = info.len >= BUS_M;
+    testBig.setAttribute("data-ok", bigOk ? "true" : "false");
+    testBig.textContent = (bigOk ? "✓" : "○") + " 比公交车长（12 米）：这只 " + info.len + " 米";
+    testDino.setAttribute("data-ok", info.isDino ? "true" : "false");
+    testDino.textContent = (info.isDino ? "✓ 是恐龙" : "○ 不是恐龙：翼龙是恐龙的近亲");
+    paintLenDots(info.len);
+    meterSay.textContent = info.cap + "：" + kind + " " + info.len + " 米，在 30 米的尺子上走到 " +
+      pct + "%（大约 " + Math.max(1, Math.round(info.len / DOT_M)) + " 颗点）。牙齿是" + info.tooth +
+      "，所以" + info.food + "：条走到吃草 " + info.veg + "%。";
+  }
+  pickHandlers.push(drawMeters);
+  paintLenDots(0);
+
+  /* ---------- ③ 看牙齿猜吃什么 ---------- */
+  var TEETH = {
+    blade: { answer: "meat",
+      shape: "一颗又高又尖的大牙，两边各有一排小锯齿",
+      hint: "再看看牙尖不尖：它很尖，边上还有一排小锯齿，这是切东西用的。",
+      why: "尖 ＋ 锯齿 ＝ 一把切肉的小刀。霸王龙、异特龙就是这种牙。" },
+    cone: { answer: "meat",
+      shape: "三根又圆又滑的尖钉子形牙，表面很光",
+      hint: "再看看牙尖不尖：又圆又滑还很尖，像小钉子，夹住滑溜溜的东西不容易掉。",
+      why: "圆锥形光滑尖牙 ＝ 夹鱼的钉子。棘龙就是这种牙，吃鱼也算吃肉。" },
+    grind: { answer: "plant",
+      shape: "上下两排又宽又平的方牙，正好对着咬在一起",
+      hint: "再看看牙尖不尖：它一点都不尖，平平的一大片，这是磨东西用的。",
+      why: "又宽又平 ＝ 一台磨盘。三角龙、副栉龙就是这种牙，把粗硬的植物磨碎。" },
+    leaf: { answer: "plant",
+      shape: "五片小小的叶子形牙，边缘钝钝的",
+      hint: "再看看牙尖不尖：小小一片一片的，钝钝的，只够夹断软软的叶子。",
+      why: "叶子形小牙 ＝ 把嫩叶捋下来。腕龙、剑龙就是这种牙。" }
+  };
+  var ANSWER_WORD = { meat: "吃肉", plant: "吃草" };
+  var MEAT_TEETH = ["blade", "cone"], PLANT_TEETH = ["grind", "leaf"];
+
+  var toothArt = document.getElementById("dnToothArt");
+  var toothBody = document.getElementById("dnToothBody");
+  var toothDesc = document.getElementById("dnToothArtDesc");
+  var toothSay = document.getElementById("dnToothSay");
+  var toothStars = document.getElementById("dnToothStars");
+  var toothTotal = document.getElementById("dnToothTotal");
+  var toothPicks = [].slice.call(document.querySelectorAll("#dnToothPicks [data-dn-answer]"));
+  var toothNow = null, toothSolved = false, toothWins = 0, wantMeat = true;
+
+  function drawTooth(kind) {
+    clearNode(toothBody);
+    toothBody.appendChild(make("rect", { x: 0, y: 0, width: 320, height: 220, "class": "dn-tooth-bg" }));
+    toothBody.appendChild(make("rect", { x: 0, y: 186, width: 320, height: 34, "class": "dn-gum" }));
+    if (kind === "blade") {
+      toothBody.appendChild(make("path", { d: "M160 30 C212 60 234 128 196 186 L124 186 C86 128 108 60 160 30 Z", "class": "dn-tooth" }));
+      toothBody.appendChild(make("path", { d: "M196 66 L212 74 L200 84 L214 92 L202 102 L216 110 L204 120 L218 128 L206 138 L219 146", "class": "dn-serr" }));
+      toothBody.appendChild(make("path", { d: "M124 66 L108 74 L120 84 L106 92 L118 102 L104 110 L116 120 L102 128 L114 138 L101 146", "class": "dn-serr" }));
+      toothBody.appendChild(make("path", { d: "M160 52 L160 170", "class": "dn-tooth-line" }));
+    } else if (kind === "cone") {
+      toothBody.appendChild(make("path", { d: "M104 186 L126 62 L148 186 Z", "class": "dn-tooth" }));
+      toothBody.appendChild(make("path", { d: "M148 186 L160 40 L174 186 Z", "class": "dn-tooth" }));
+      toothBody.appendChild(make("path", { d: "M176 186 L198 64 L220 186 Z", "class": "dn-tooth" }));
+      toothBody.appendChild(make("path", { d: "M158 62 C154 98 154 146 156 180", "class": "dn-tooth-line" }));
+    } else if (kind === "grind") {
+      toothBody.appendChild(make("rect", { x: 40, y: 20, width: 240, height: 26, rx: 10, "class": "dn-gum" }));
+      [48, 106, 164, 222].forEach(function (x) {
+        toothBody.appendChild(make("rect", { x: x, y: 46, width: 50, height: 54, rx: 8, "class": "dn-tooth" }));
+        toothBody.appendChild(make("rect", { x: x, y: 132, width: 50, height: 54, rx: 8, "class": "dn-tooth" }));
+        toothBody.appendChild(make("path", { d: "M" + (x + 6) + " 92 H" + (x + 44), "class": "dn-tooth-line" }));
+        toothBody.appendChild(make("path", { d: "M" + (x + 6) + " 140 H" + (x + 44), "class": "dn-tooth-line" }));
+      });
+    } else {
+      [76, 118, 160, 202, 244].forEach(function (c) {
+        toothBody.appendChild(make("path", {
+          d: "M" + c + " 186 C" + (c - 18) + " 148 " + (c - 16) + " 104 " + c + " 78 C" +
+             (c + 16) + " 104 " + (c + 18) + " 148 " + c + " 186 Z",
+          "class": "dn-tooth"
+        }));
+        toothBody.appendChild(make("path", { d: "M" + c + " 92 L" + c + " 176", "class": "dn-tooth-line" }));
+      });
+    }
+    toothBody.appendChild(make("circle", { cx: 160, cy: 108, r: 104, "class": "dn-lens" }));
+  }
+  function nextTooth() {
+    var list = wantMeat ? MEAT_TEETH : PLANT_TEETH;
+    var kind = list[Math.floor(Math.random() * list.length)];
+    if (kind === toothNow && list.length > 1) kind = list[(list.indexOf(kind) + 1) % list.length];
+    wantMeat = !wantMeat;
+    toothNow = kind;
+    toothSolved = false;
+    drawTooth(kind);
+    if (toothDesc) toothDesc.textContent = "放大镜里是" + TEETH[kind].shape + "。请判断这种牙适合吃肉还是吃草。";
+    toothPicks.forEach(function (button) { button.setAttribute("aria-pressed", "false"); });
+    toothSay.textContent = "换好了。先看牙尖不尖，再点一张大图卡。";
+  }
+  toothPicks.forEach(function (button) {
+    button.addEventListener("click", function () {
+      if (!toothNow || toothSolved) return;
+      var info = TEETH[toothNow];
+      var ok = button.getAttribute("data-dn-answer") === info.answer;
+      if (!ok) {
+        /* 猜错：只给提示，不清零、不换牙，可以接着看接着猜 */
+        button.setAttribute("aria-pressed", "false");
+        toothSay.textContent = "○ " + info.hint;
+        return;
+      }
+      toothSolved = true;
+      toothPicks.forEach(function (other) {
+        other.setAttribute("aria-pressed", other === button ? "true" : "false");
+      });
+      toothWins += 1;
+      toothStars.textContent = new Array(Math.min(toothWins, 10) + 1).join("⭐");
+      toothStars.setAttribute("aria-label", "已经猜对 " + toothWins + " 次");
+      toothTotal.textContent = "猜对 " + toothWins + " 次";
+      toothSay.textContent = "✓ 猜对了！这种牙" + ANSWER_WORD[info.answer] + "。" + info.why + "按「换一颗牙」再来一个。";
+      if (window.Playful && Playful.confetti) Playful.confetti(toothArt.parentNode);
+    });
+  });
+  document.getElementById("dnToothNext").addEventListener("click", nextTooth);
+  document.getElementById("dnToothHint").addEventListener("click", function () {
+    if (!toothNow) return;
+    toothSay.textContent = TEETH[toothNow].hint;
+  });
+  nextTooth();
+
+  drawStage(null);
+})();
+</script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

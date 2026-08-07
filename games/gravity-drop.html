@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>重力落体实验 · 羽毛与锤子 | 少儿数理启蒙</title>
 <meta name="description" content="切换有空气与真空，改变重力大小，看羽毛、皮球和锤子谁先落地。重现 Apollo 15 号在月球上的经典实验。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#0b0f1a">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   html, body { overflow-x:hidden; }
@@ -26,9 +26,11 @@
   .mission-copy { min-width:0; }
   .mission-copy h1 { margin:.28em 0 .18em; font-size:clamp(1.55rem,5vw,2.35rem); line-height:1.1; }
   .mission-copy p { max-width:58ch; margin:.25em 0 0; color:var(--ink-mid); }
-  .mission-character { width:82px; min-height:82px; display:grid; place-items:center; border:2px solid rgba(238,242,255,.18); border-radius:50%; background:radial-gradient(circle at 38% 32%,rgba(255,255,255,.17),rgba(167,139,250,.16) 48%,rgba(11,15,26,.3) 49%); font-size:2.25rem; }
+  /* 头像圆盘：原先是暗底上的发光球（近白描边 + 深色外圈），浅底上描边看不见、
+     外圈变成灰蒙版。改成浅色主题下的同心紫色调，层次和原设计一致。 */
+  .mission-character { width:82px; min-height:82px; display:grid; place-items:center; border:2px solid color-mix(in srgb,var(--phys) 32%,var(--line)); border-radius:50%; background:radial-gradient(circle at 38% 32%,var(--surface),color-mix(in srgb,var(--phys) 14%,var(--surface)) 48%,color-mix(in srgb,var(--phys) 26%,var(--surface)) 49%); font-size:2.25rem; }
 
-  .kid-visual-stage { position:relative; margin-bottom:18px; padding:clamp(12px,2.5vw,20px); overflow:hidden; border:2px solid rgba(167,139,250,.48); border-radius:24px; background:radial-gradient(circle at 88% 5%,rgba(167,139,250,.15),transparent 28%),var(--surface-1); box-shadow:0 14px 38px rgba(0,0,0,.2); }
+  .kid-visual-stage { position:relative; margin-bottom:18px; padding:clamp(12px,2.5vw,20px); overflow:hidden; border:2px solid rgba(167,139,250,.48); border-radius:24px; background:radial-gradient(circle at 88% 5%,rgba(167,139,250,.15),transparent 28%),var(--surface); box-shadow:0 14px 38px rgba(0,0,0,.2); }
   .stage-head { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:10px; }
   .stage-head h2 { margin:0; font-size:clamp(1.15rem,4vw,1.55rem); }
   .stage-head p { margin:3px 0 0; color:var(--ink-mid); font-size:.88rem; }
@@ -40,13 +42,17 @@
   #go { width:100%; font-size:1rem; font-weight:900; }
   #reset { align-self:center; min-width:76px; }
   .canvas-shell { position:relative; overflow:hidden; border:2px solid rgba(110,168,254,.45); border-radius:18px; background:#0b0f1a; box-shadow:inset 0 0 24px rgba(110,168,254,.08); }
-  .canvas-label { position:absolute; z-index:1; top:9px; right:10px; padding:4px 8px; border-radius:99px; background:rgba(11,15,26,.78); color:var(--ink-mid); font-size:.72rem; font-weight:800; pointer-events:none; }
+  /* 这枚角标压在夜空画布（.canvas-shell 是有意的深色）上，所以文字必须写死浅色。
+     原先用 --ink-mid，浅色主题下是深灰 → 深底深字，对比度只有 1.23。 */
+  .canvas-label { position:absolute; z-index:1; top:9px; right:10px; padding:4px 8px; border-radius:99px; background:rgba(11,15,26,.78); color:#dbe6ff; font-size:.72rem; font-weight:800; pointer-events:none; }
   #scene { display:block; width:100%; max-width:100%; height:auto; }
 
   .stage-results { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px; }
-  .kid-result-card { min-width:0; display:grid; grid-template-columns:72px minmax(0,1fr); gap:10px; align-items:center; padding:12px; border:2px solid var(--line-soft); border-radius:17px; background:rgba(29,37,64,.72); }
-  .kid-result-card[data-state="done"] { border-color:rgba(74,222,128,.62); background:linear-gradient(135deg,rgba(74,222,128,.1),rgba(29,37,64,.82)); }
-  .kid-result-card[data-state="mismatch"] { border-color:rgba(251,191,36,.68); background:linear-gradient(135deg,rgba(251,191,36,.1),rgba(29,37,64,.82)); }
+  /* 只覆盖本页需要的栅格；底色交给共享层的 .kid-result-card（浅色）。
+     原先写死 rgba(29,37,64,.72) 是暗色主题遗留：卡里的 --ink/--ink-mid 文字会变成深底深字。 */
+  .kid-result-card { min-width:0; grid-template-columns:72px minmax(0,1fr); padding:12px; border-radius:17px; }
+  .kid-result-card[data-state="done"] { border-color:color-mix(in srgb,var(--sci) 55%,var(--line)); background:linear-gradient(135deg,color-mix(in srgb,var(--sci) 16%,var(--surface)),var(--surface)); }
+  .kid-result-card[data-state="mismatch"] { border-color:color-mix(in srgb,var(--warn) 58%,var(--line)); background:linear-gradient(135deg,color-mix(in srgb,var(--warn) 16%,var(--surface)),var(--surface)); }
   .result-trajectory { width:72px; height:58px; color:var(--ink-dim); }
   .kid-result-card[data-state="done"] .result-trajectory { color:var(--sci); }
   .kid-result-card[data-state="mismatch"] .result-trajectory { color:var(--warn); }
@@ -55,16 +61,18 @@
   .result-copy span { color:var(--ink-mid); font-size:.78rem; font-weight:800; }
   .result-copy b { margin-top:3px; overflow-wrap:anywhere; color:var(--ink); font-size:clamp(.92rem,3vw,1.08rem); line-height:1.25; }
   .result-copy small { display:block; margin-top:3px; color:var(--ink-dim); }
-  .stage-complete { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:12px; padding:10px 12px; border-radius:15px; background:rgba(251,191,36,.08); border:1px solid rgba(251,191,36,.24); }
+  /* 原先用的是暗色主题的 --warn 字面量 #fbbf24，在浅底上描边几乎看不见；
+     换成随主题走的 color-mix，浅色主题下是可见的琥珀色边。 */
+  .stage-complete { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:12px; padding:10px 12px; border-radius:15px; background:color-mix(in srgb,var(--warn) 8%,var(--surface)); border:1px solid color-mix(in srgb,var(--warn) 42%,var(--line)); }
   .stage-complete p { margin:0; color:var(--ink-mid); font-size:.88rem; }
   .stage-complete .btn { flex:none; }
 
   .kid-story-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0 0 20px; padding:0; list-style:none; }
-  .kid-story-steps li { min-width:0; padding:14px; border:1px solid var(--line-soft); border-radius:16px; background:var(--surface-1,var(--surface-2)); color:var(--ink-mid); }
+  .kid-story-steps li { min-width:0; padding:14px; border:1px solid var(--line-soft); border-radius:16px; background:var(--surface-2); color:var(--ink-mid); }
   .kid-story-steps b { display:block; margin-bottom:4px; color:var(--ink); }
 
   .parent-deep-dive { margin-top:18px; }
-  details.parent-deep-dive { border:1px solid var(--line-soft); border-radius:18px; background:var(--surface-1,var(--surface-2)); }
+  details.parent-deep-dive { border:1px solid var(--line-soft); border-radius:18px; background:var(--surface-2); }
   details.parent-deep-dive > summary { min-height:44px; display:flex; align-items:center; padding:12px 16px; cursor:pointer; color:var(--ink); font-weight:900; }
   .parent-controls { padding:0 16px 16px; }
   .parent-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
@@ -81,12 +89,102 @@
   .compare-list { display:grid; gap:7px; margin-top:8px; }
   .task-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr); gap:10px; align-items:end; }
   .formal-task form[data-playful-work-form] { margin-top:18px; }
+  /* 只给正式任务里的家长版趣味卡加框；页头那个 .playful-story 由 .kid-hero-scene 负责，不能再套一层内边距。 */
+  .formal-task .playful-story { margin:14px 0 0; padding:10px 12px; border:1px solid var(--line-soft); border-radius:16px; }
   .qlist { margin:0; padding-left:1.15em; color:var(--ink-mid); font-size:.94rem; }
   .qlist li { margin-bottom:.5em; }
   .qlist b { color:var(--ink); }
   .why { font-size:.95rem; }
   .why h3 { margin-top:1.1em; }
-  main :where(.kid-visual-stage,.stage-results,.kid-story-steps,.parent-grid,.grid-2,.task-fields) > * { min-width:0; }
+
+  .science-note { border-color:rgba(74,222,128,.42); background:linear-gradient(135deg,rgba(74,222,128,.09),var(--surface-2)); }
+  .teach-lead { margin:.2em 0 .9em; color:var(--ink-mid); font-size:1rem; }
+  .teach-lead b { color:var(--ink); }
+  .teach-points { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0; padding:0; list-style:none; }
+  .teach-points li { min-width:0; padding:12px; border:1px solid var(--line-soft); border-radius:14px; background:var(--surface-2); color:var(--ink-mid); font-size:.9rem; }
+  .teach-points b { display:block; margin-bottom:3px; color:var(--ink); }
+
+  .learning-layers { display:grid; gap:12px; margin-top:14px; }
+  .learning-layers details { border:1px solid var(--line); border-radius:var(--r,16px); background:var(--surface-2); padding:0 16px; }
+  .learning-layers summary { min-height:48px; display:flex; align-items:center; flex-wrap:wrap; gap:8px; cursor:pointer; color:var(--ink); font-weight:800; }
+  .learning-layers details > div { padding:0 0 16px; color:var(--ink-mid); }
+  .learning-layers .layer-age { display:inline-block; padding:2px 9px; border-radius:999px; background:color-mix(in srgb,var(--phys) 12%,var(--surface)); color:var(--phys); font-size:.74rem; font-weight:850; }
+  .learning-layers p { margin:0 0 .6em; }
+  .learning-layers p:last-child { margin-bottom:0; }
+
+  .fig-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; }
+  .fig-card { min-width:0; padding:12px; border:1px solid var(--line-soft); border-radius:16px; background:var(--surface-2); }
+  .fig-card h3 { margin:0 0 8px; font-size:.98rem; line-height:1.3; }
+  .fig-card svg { display:block; width:100%; height:auto; color:var(--ink-dim); }
+  .fig-card p { margin:8px 0 0; color:var(--ink-mid); font-size:.88rem; }
+
+  .var-cards { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 0; padding:0; list-style:none; }
+  .var-cards li { padding:9px 12px; border:1px dashed var(--line); border-radius:12px; background:var(--surface-2); color:var(--ink-mid); font-size:.85rem; font-weight:700; }
+  .var-cards li[data-keep="change"] { border-style:solid; border-color:rgba(251,191,36,.6); background:rgba(251,191,36,.1); color:var(--ink); }
+
+  .quick-picks { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px; margin:12px 0 0; }
+  .quick-picks .kid-choice { min-height:52px; padding:10px 13px; text-align:left; font-size:.92rem; line-height:1.35; }
+  .pick-status { margin:10px 0 0; }
+
+  main :where(.kid-visual-stage,.stage-results,.kid-story-steps,.parent-grid,.grid-2,.task-fields,.teach-points,.fig-grid,.quick-picks) > * { min-width:0; }
+
+  /* ================= 4–5 岁图形层：大图 + 极短标签 ================= */
+  /* kid.css 的 .kid-tile / .kid-icon-btn 用到这两个变量，家长模式下也要有值。 */
+  :root { --touch:52px; --touch-lg:64px; }
+
+  .kid-band { margin:0 0 18px; padding:clamp(14px,2.6vw,20px); border:3px solid var(--line); border-radius:26px; background:linear-gradient(158deg,var(--surface),var(--surface-2)); box-shadow:0 6px 0 rgba(180,130,60,.18); }
+  .kid-band-head { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .kid-band-emoji { flex:0 0 auto; display:grid; place-items:center; width:54px; height:54px; border:3px solid var(--line); border-radius:44% 56% 52% 48%/50% 48% 52% 50%; background:radial-gradient(circle at 34% 30%,#fff,var(--surface-2)); font-size:1.85rem; line-height:1; box-shadow:0 4px 0 rgba(180,130,60,.18); }
+  .kid-band-head h2 { margin:0; font-size:clamp(1.08rem,3.6vw,1.4rem); }
+  .kid-band-head p { margin:2px 0 0; color:var(--ink-mid); font-size:.88rem; }
+  .kid-band > .kid-tiles { margin:12px 0 0; }
+  .kid-status { display:block; margin:12px 0 0; padding:10px 15px; border:3px solid var(--line-soft); border-radius:999px; background:var(--surface); color:var(--ink); font-size:.96rem; font-weight:800; }
+  .kid-band-sub { margin:14px 0 0; color:var(--ink-mid); font-size:.82rem; font-weight:800; letter-spacing:.02em; }
+
+  .kid-badge-row { display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 0; padding:0; list-style:none; }
+  .kid-badge-row .kid-badge { min-height:48px; }
+
+  .kid-mini-svg { display:block; width:clamp(52px,13vw,72px); height:auto; }
+  .kid-tile .kid-mini-svg { color:var(--ink); }
+  .kid-tile[aria-pressed="true"] .kid-mini-svg { color:#0b4a2a; }
+
+  .kid-figure { display:grid; grid-template-columns:minmax(0,140px) minmax(0,1fr); gap:14px; align-items:center; margin:14px 0 0; padding:12px; border:3px solid var(--line-soft); border-radius:22px; background:var(--surface); }
+  .kid-figure svg { display:block; width:100%; height:auto; color:var(--ink-mid); }
+  .kid-figure p { margin:0; color:var(--ink); font-size:.98rem; font-weight:700; line-height:1.45; }
+  .kid-figure p small { display:block; margin-top:4px; color:var(--ink-mid); font-size:.82rem; font-weight:600; }
+
+  .kid-icon-row { display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 0; }
+  .kid-icon-row .kid-icon-btn { flex:1 1 132px; }
+  .kid-icon-btn[aria-pressed="true"] { border-color:#0f8a4d; background:#ddf8e8; color:#0b4a2a; }
+
+  .parent-age-layers { display:grid; gap:12px; margin-top:14px; }
+  .parent-age-layers details { padding:0 16px; border:2px solid var(--line); border-radius:18px; background:var(--surface); }
+  .parent-age-layers summary { min-height:48px; display:flex; align-items:center; flex-wrap:wrap; gap:8px; cursor:pointer; color:var(--ink); font-weight:900; }
+  .parent-age-layers details > div { padding:0 0 16px; color:var(--ink-mid); }
+  .parent-age-layers .layer-age { display:inline-block; padding:2px 10px; border-radius:999px; background:color-mix(in srgb,var(--phys) 12%,var(--surface)); color:var(--phys); font-size:.74rem; font-weight:900; }
+  .parent-age-layers p { margin:0 0 .6em; }
+  .parent-age-layers p:last-child { margin-bottom:0; }
+  .term-list { margin:12px 0 0; }
+  .term-list div { padding:9px 0; border-bottom:1px dashed var(--line-soft); }
+  .term-list div:last-child { border-bottom:0; }
+  .term-list dt { color:var(--ink); font-weight:900; }
+  .term-list dd { margin:3px 0 0; color:var(--ink-mid); font-size:.92rem; }
+
+  .kid-badge-row .kid-badge { opacity:.45; filter:grayscale(.6); transition:opacity .2s ease, filter .2s ease; }
+  .kid-badge-row .kid-badge[data-earned="true"] { opacity:1; filter:none; border-color:#0f8a4d; background:#ddf8e8; color:#0b4a2a; box-shadow:0 4px 0 rgba(15,138,77,.26); }
+
+  .kid-drop-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(78px,1fr)); gap:10px; margin:14px 0 0; padding:0; list-style:none; }
+  .kid-drop-frame { padding:10px 6px; border:3px solid var(--line-soft); border-radius:20px; background:var(--surface); text-align:center; }
+  .kid-drop-frame .emo { display:block; font-size:1.6rem; line-height:1.1; }
+  .kid-drop-frame b { display:block; margin-top:4px; color:var(--ink); font-size:.82rem; }
+  .kid-drop-frame span.bar { display:block; margin:6px auto 0; height:8px; border-radius:999px; background:var(--phys); }
+
+  .kid-status[data-tone="good"] { border-color:#0f8a4d; background:#ddf8e8; color:#0b4a2a; }
+  .kid-status[data-tone="try"] { border-color:#d08a12; background:#fff3d6; color:#6b4708; }
+
+  .kid-bounce { display:inline-block; animation:kidBounce 1.6s ease-in-out infinite; }
+  @keyframes kidBounce { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-7px); } }
+  @media (prefers-reduced-motion: reduce) { .kid-bounce { animation:none; } }
 
   @media (max-width:760px) {
     .kid-action-strip { grid-template-columns:minmax(0,1fr) minmax(138px,.7fr); }
@@ -94,6 +192,7 @@
     .parent-grid, .task-fields { grid-template-columns:1fr; }
     .mission-character { display:none; }
     .kid-hero-scene { grid-template-columns:1fr; }
+    .teach-points, .fig-grid { grid-template-columns:1fr; }
   }
   @media (max-width:520px) {
     .kid-hero-scene { padding:13px; border-radius:18px; }
@@ -113,9 +212,72 @@
   @media (prefers-reduced-motion:reduce) {
     *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
   }
+
+  /* 插画舞台（共享 SVG 场景铺底，内容都放在不透明卡片上保证对比度） */
+  .gd-scene-stage { margin:0 0 16px; padding:clamp(12px,2.6vw,20px); }
+  .gd-scene-copy { display:grid; gap:12px; min-width:0; }
+  .gd-scene-stage .kid-steps-visual { margin:0; }
+  @media (max-width:560px) {
+    .gd-scene-stage { padding:10px; }
+  }
+
+  /* ---------- 图像优先三件套（本页前缀 gdx-）：落体图鉴 / 量表 / 谁先落地 ---------- */
+  .gdx-shell { display:grid; gap:16px; margin:26px 0; }
+  .gdx-card { position:relative; padding:18px; border:3px solid var(--line); border-radius:22px; background:var(--surface); box-shadow:0 6px 0 rgba(180,130,60,.18); }
+  .gdx-card > h3 { margin:.1em 0 .3em; font-size:1.16rem; }
+  .gdx-lead { margin:0 0 12px; color:var(--ink-mid); font-weight:750; font-size:.92rem; }
+  .gdx-card details { margin-top:12px; padding:0 13px; border:1px solid var(--line-soft); border-radius:var(--r,16px); }
+  .gdx-card details[open] { padding-bottom:10px; }
+  .gdx-card details > summary { min-height:44px; display:flex; align-items:center; cursor:pointer; color:var(--ink); font-weight:900; }
+  .gdx-card details > p { color:var(--ink-mid); font-size:.88rem; line-height:1.58; }
+  .gdx-say-row { margin:12px 0 0; }
+
+  /* 本页上方把 .kid-figure 改成了「左图右字」的两栏卡；图鉴里的卡要回到共享层的竖排样式 */
+  .gdx-atlas .kid-figure { display:flex; flex-direction:column; gap:7px; align-items:stretch; margin:0; padding:12px; border-width:2px; border-radius:var(--r,16px); text-align:center; }
+  .gdx-atlas .kid-figure-art { padding:6px; }
+  .gdx-atlas .kid-figure-art > svg { width:100%; max-width:136px; height:auto; color:var(--ink); }
+  .gdx-atlas .kid-figure-fact { display:block; }
+
+  .gdx-meters { display:grid; gap:14px; margin:0 0 12px; }
+  .gdx-model { margin:12px 0 0; padding:11px 14px; border:2px dashed var(--line); border-radius:16px; color:var(--ink-mid); font-size:.86rem; line-height:1.6; }
+  .gdx-model b, .gdx-model code { color:var(--ink); }
+
+  .gdx-race { display:grid; place-items:center; margin:0 0 12px; }
+  .gdx-race-art { display:block; width:100%; max-width:360px; height:auto; border:3px solid var(--line); border-radius:18px; background:#eef3ff; }
+  .gdx-race-picks { grid-template-columns:repeat(3,minmax(0,1fr)); margin:0 0 12px; }
+  .gdx-actions { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 12px; }
+  .gdx-actions .btn { min-height:48px; }
+  .gdx-dots-row { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin:12px 0 0; }
+  .gdx-dots-cap { color:var(--ink-mid); font-weight:750; font-size:.9rem; }
+  .gdx-count { margin:8px 0 0; color:var(--ink-mid); font-weight:750; font-size:.88rem; }
+
+  /* SVG 取色：形状里不写死颜色，统一在这里上色，孩子模式与打印才能一起调整 */
+  .gdx-bg { fill:#eef3ff; }
+  .gdx-ink { fill:#22304a; }
+  .gdx-ink-soft { fill:#4a5a72; font-weight:800; }
+  .gdx-line { fill:none; stroke:#22304a; stroke-width:3.4; stroke-linecap:round; }
+  .gdx-line-thin { fill:none; stroke:#22304a; stroke-width:2; stroke-linecap:round; }
+  .gdx-dash { fill:none; stroke:#7c8aa5; stroke-width:2; stroke-dasharray:4 5; }
+  .gdx-ground { fill:none; stroke:#22304a; stroke-width:3; opacity:.42; }
+  .gdx-air { fill:none; stroke:#5b7fb5; stroke-width:2.2; stroke-linecap:round; }
+  .gdx-metal { fill:#8b97ad; stroke:#22304a; stroke-width:3; }
+  .gdx-wood { fill:#c98a4b; stroke:#22304a; stroke-width:3; }
+  .gdx-paper { fill:#fdfbf2; stroke:#22304a; stroke-width:3; }
+  .gdx-feather { fill:#dbeafe; stroke:#22304a; stroke-width:2.4; }
+  .gdx-balloon { fill:#f472b6; stroke:#22304a; stroke-width:3; }
+  .gdx-water { fill:#60a5fa; stroke:#22304a; stroke-width:2.6; }
+  .gdx-canopy { fill:#f6c445; stroke:#22304a; stroke-width:3; }
+  .gdx-ball { fill:#fb923c; stroke:#22304a; stroke-width:3; }
+  .gdx-pong { fill:#fffbe8; stroke:#22304a; stroke-width:3; }
+  .gdx-shine { fill:#ffffff; fill-opacity:.72; }
+  @media (max-width:520px) {
+    .gdx-card { padding:13px; border-radius:18px; }
+    .gdx-race-picks { grid-template-columns:1fr; }
+  }
 </style>
 </head>
 <body data-playful-page="games/gravity-drop.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
 <a class="skip-link" href="#stage">跳到实验画面</a>
 
 <nav class="nav"><div class="nav-in wrap">
@@ -132,7 +294,7 @@
 
 <main class="wrap" id="main">
 
-  <header class="kid-hero-scene playful-story" aria-labelledby="gravityStoryTitle">
+  <header class="kid-hero-scene" aria-labelledby="gravityStoryTitle">
     <div class="mission-copy">
       <div class="tag-row">
         <span class="pill pill-phys">月球急件 · 力与运动</span>
@@ -145,6 +307,24 @@
     </div>
     <div class="mission-character" aria-hidden="true">🐰🚀</div>
   </header>
+  <!-- 插画舞台：不识字也能看懂这一页在玩什么 -->
+  <div class="kid-visual-stage gd-scene-stage" data-scene-layer="back"
+       data-playful-scene="sky"
+       data-playful-scene-title="落体天空"
+       data-playful-scene-desc="天空里有太阳和大云朵，几滴雨正往下落">
+    <div class="gd-scene-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🪶</span>
+        <p class="kid-speech">没有空气的时候，<b>羽毛和石头一起落地</b>。</p>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步玩法">
+        <li><span class="kid-tile-art" aria-hidden="true">🤏</span>选两样</li>
+        <li><span class="kid-tile-art" aria-hidden="true">💨</span>开关空气</li>
+        <li><span class="kid-tile-art" aria-hidden="true">⏱️</span>看谁先到</li>
+      </ol>
+    </div>
+  </div>
+
 
   <section class="kid-visual-stage" id="stage" aria-labelledby="stageTitle">
     <div class="stage-head">
@@ -197,11 +377,559 @@
     </div>
   </section>
 
-  <ol class="kid-story-steps" aria-label="三步探索路线">
-    <li><b>1 · 有空气</b>选择“有空气”，点一次松手。</li>
-    <li><b>2 · 真空</b>只切换成“真空”，再点一次松手。</li>
-    <li><b>3 · 收证据</b>两张结果卡亮起后，收下实验徽章。</li>
+  <ol class="kid-steps-visual" aria-label="三步探索路线">
+    <li><span class="kid-tile-art" aria-hidden="true">💨</span>有空气<br>松手</li>
+    <li><span class="kid-tile-art" aria-hidden="true">🌌</span>真空<br>松手</li>
+    <li><span class="kid-tile-art" aria-hidden="true">🏅</span>拿徽章</li>
   </ol>
+
+  <!-- ============ 4–5 岁看图就能玩：大图操作台 ============ -->
+  <section class="kid-band" aria-labelledby="kidPanelTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">🎮</span>
+      <div>
+        <h2 id="kidPanelTitle">点大图就能玩</h2>
+        <p>先选空气，再点松手。</p>
+      </div>
+    </div>
+    <div class="kid-icon-row" role="group" aria-label="大图操作按钮">
+      <button class="kid-icon-btn" type="button" data-kid-act="air" aria-pressed="true">
+        <span class="kid-tile-art" aria-hidden="true">🌬️</span>
+        <span class="kid-tile-label">有空气</span>
+      </button>
+      <button class="kid-icon-btn" type="button" data-kid-act="vacuum" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true">🌌</span>
+        <span class="kid-tile-label">真空</span>
+      </button>
+      <button class="kid-icon-btn" type="button" data-kid-act="drop">
+        <span class="kid-tile-art kid-bounce" aria-hidden="true">🖐️</span>
+        <span class="kid-tile-label">松手</span>
+      </button>
+      <button class="kid-icon-btn" type="button" data-kid-act="reset">
+        <span class="kid-tile-art" aria-hidden="true">🔄</span>
+        <span class="kid-tile-label">再来</span>
+      </button>
+    </div>
+    <p class="kid-status" id="kidActStatus" role="status" aria-live="polite">现在是有空气。点 🖐️ 松手。</p>
+    <p class="kid-band-sub">上面的大图和舞台里的按钮做的是同一件事。</p>
+  </section>
+
+  <section class="kid-band" aria-labelledby="kidGuessTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">🤔</span>
+      <div>
+        <h2 id="kidGuessTitle">先猜一猜</h2>
+        <p>谁最后落地？点一个。</p>
+      </div>
+    </div>
+    <div class="kid-answer-group kid-tiles" role="group" aria-labelledby="kidGuessTitle" data-answer-target="guessLast">
+      <button class="kid-tile" type="button" aria-pressed="false" data-value="feather" data-label="羽毛">
+        <span class="kid-tile-art" aria-hidden="true">🪶</span>
+        <span class="kid-tile-label">羽毛</span>
+        <span class="kid-tile-sub">最轻</span>
+      </button>
+      <button class="kid-tile" type="button" aria-pressed="false" data-value="ball" data-label="皮球">
+        <span class="kid-tile-art" aria-hidden="true">⚽</span>
+        <span class="kid-tile-label">皮球</span>
+        <span class="kid-tile-sub">中等</span>
+      </button>
+      <button class="kid-tile" type="button" aria-pressed="false" data-value="hammer" data-label="锤子">
+        <span class="kid-tile-art" aria-hidden="true">🔨</span>
+        <span class="kid-tile-label">锤子</span>
+        <span class="kid-tile-sub">最重</span>
+      </button>
+      <button class="kid-tile" type="button" aria-pressed="false" data-value="same" data-label="一起">
+        <span class="kid-tile-art" aria-hidden="true">🤝</span>
+        <span class="kid-tile-label">一起</span>
+        <span class="kid-tile-sub">同时到</span>
+      </button>
+    </div>
+    <p class="kid-status" id="kidGuessStatus" role="status" aria-live="polite">点一个图，就是你的猜想。</p>
+  </section>
+
+  <section class="kid-band" aria-labelledby="kidOrderTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">🏁</span>
+      <div>
+        <h2 id="kidOrderTitle">谁先到？</h2>
+        <p>松手以后看这里。</p>
+      </div>
+    </div>
+    <ul class="kid-drop-strip" aria-label="三个物体的落地时间条">
+      <li class="kid-drop-frame" data-drop-frame="0">
+        <span class="emo" aria-hidden="true">🪶</span>
+        <b>羽毛</b>
+        <span class="bar" data-drop-bar style="width:6%"></span>
+      </li>
+      <li class="kid-drop-frame" data-drop-frame="1">
+        <span class="emo" aria-hidden="true">⚽</span>
+        <b>皮球</b>
+        <span class="bar" data-drop-bar style="width:6%"></span>
+      </li>
+      <li class="kid-drop-frame" data-drop-frame="2">
+        <span class="emo" aria-hidden="true">🔨</span>
+        <b>锤子</b>
+        <span class="bar" data-drop-bar style="width:6%"></span>
+      </li>
+    </ul>
+    <p class="kid-status" id="kidOrderStatus" role="status" aria-live="polite">条越长，落地用的时间越久。</p>
+    <div class="kid-figure">
+      <svg viewBox="0 0 120 90" role="img" aria-label="图示：羽毛下面画着许多向上的小箭头表示空气托住它，锤子下面几乎没有箭头。">
+        <path d="M18 12c6 10 3 20-1 30" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        <ellipse cx="17" cy="46" rx="8" ry="4" fill="currentColor" opacity=".3"/>
+        <path d="M8 60v-8M17 62v-10M26 60v-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <rect x="86" y="14" width="18" height="7" rx="2" fill="currentColor"/>
+        <rect x="93" y="21" width="4" height="24" rx="2" fill="currentColor"/>
+        <path d="M95 60v-5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <path d="M4 78h112" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+      </svg>
+      <p>空气像好多小手，把宽宽的羽毛托住。
+        <small>锤子又重又窄，小手拦不住它。</small></p>
+    </div>
+  </section>
+
+  <section class="kid-band" aria-labelledby="kidSawTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">👀</span>
+      <div>
+        <h2 id="kidSawTitle">我看到了</h2>
+        <p>点最像你看到的那张图。</p>
+      </div>
+    </div>
+    <div class="kid-answer-group kid-tiles" role="group" aria-labelledby="kidSawTitle" data-answer-target="kidSaw">
+      <button class="kid-tile" type="button" aria-pressed="false" data-value="slow" data-label="羽毛最慢">
+        <span class="kid-tile-art" aria-hidden="true">🐢</span>
+        <span class="kid-tile-label">羽毛慢</span>
+        <span class="kid-tile-sub">有空气</span>
+      </button>
+      <button class="kid-tile" type="button" aria-pressed="false" data-value="together" data-label="一起落地">
+        <span class="kid-tile-art" aria-hidden="true">🤝</span>
+        <span class="kid-tile-label">一起到</span>
+        <span class="kid-tile-sub">真空里</span>
+      </button>
+      <button class="kid-tile" type="button" aria-pressed="false" data-value="faster" data-label="越掉越快">
+        <span class="kid-tile-art" aria-hidden="true">📉</span>
+        <span class="kid-tile-label">越来越快</span>
+        <span class="kid-tile-sub">往下加速</span>
+      </button>
+      <button class="kid-tile" type="button" aria-pressed="false" data-value="fair" data-label="只改了空气">
+        <span class="kid-tile-art" aria-hidden="true">⚖️</span>
+        <span class="kid-tile-label">只改一样</span>
+        <span class="kid-tile-sub">才公平</span>
+      </button>
+    </div>
+    <p class="kid-status" id="kidSawStatus" role="status" aria-live="polite">可以多选，也可以再点一次取消。</p>
+    <p class="kid-band-sub">选好的图会自动记进家长区的反思栏，不用打字。</p>
+  </section>
+
+  <section class="kid-band" aria-labelledby="kidTouchTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">🖼️</span>
+      <div>
+        <h2 id="kidTouchTitle">摸一摸，看会怎样</h2>
+        <p>点图片，画面会变。</p>
+      </div>
+    </div>
+    <div class="kid-answer-group kid-tiles" role="group" aria-labelledby="kidTouchTitle" data-answer-target="kidWhatIf">
+      <button class="kid-tile" type="button" aria-pressed="false" data-whatif="moon">
+        <span class="kid-tile-art" aria-hidden="true">🌙</span>
+        <span class="kid-tile-label">去月球</span>
+        <span class="kid-tile-sub">力气小</span>
+      </button>
+      <button class="kid-tile" type="button" aria-pressed="false" data-whatif="earth">
+        <span class="kid-tile-art" aria-hidden="true">🌍</span>
+        <span class="kid-tile-label">回地球</span>
+        <span class="kid-tile-sub">正常</span>
+      </button>
+      <button class="kid-tile" type="button" aria-pressed="false" data-whatif="tall">
+        <span class="kid-tile-art" aria-hidden="true">🏢</span>
+        <span class="kid-tile-label">变很高</span>
+        <span class="kid-tile-sub">掉得久</span>
+      </button>
+      <button class="kid-tile" type="button" aria-pressed="false" data-whatif="slowmo">
+        <span class="kid-tile-art" aria-hidden="true">🐌</span>
+        <span class="kid-tile-label">慢动作</span>
+        <span class="kid-tile-sub">看清楚</span>
+      </button>
+    </div>
+    <p class="kid-status" id="kidWhatIfStatus" role="status" aria-live="polite">点一个图，舞台就换新条件。</p>
+  </section>
+
+  <section class="kid-band" aria-labelledby="kidBadgeTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">🏅</span>
+      <div>
+        <h2 id="kidBadgeTitle">我的贴纸</h2>
+        <p>做到就会亮。</p>
+      </div>
+    </div>
+    <ul class="kid-badge-row" aria-label="四个进度贴纸">
+      <li class="kid-badge" data-kid-badge="guess" data-earned="false"><span aria-hidden="true">🤔</span> 猜过了</li>
+      <li class="kid-badge" data-kid-badge="air" data-earned="false"><span aria-hidden="true">🌬️</span> 有空气</li>
+      <li class="kid-badge" data-kid-badge="vacuum" data-earned="false"><span aria-hidden="true">🌌</span> 真空</li>
+      <li class="kid-badge" data-kid-badge="match" data-earned="false"><span aria-hidden="true">🎖️</span> 会比较</li>
+    </ul>
+    <p class="kid-status" id="kidBadgeStatus" role="status" aria-live="polite">还没有亮的贴纸。先猜一猜吧。</p>
+  </section>
+
+  <section class="gdx-shell" aria-labelledby="gdxShellTitle">
+    <h2 id="gdxShellTitle">看图就懂：落体图鉴 · 三条量表 · 谁先落地</h2>
+    <p class="gdx-lead">这一段全是大图，点一点就能玩。要看的只有一件事：<b>快慢不是「重不重」决定的，是空气挡住了多少。</b></p>
+
+    <article class="gdx-card gdx-atlas" aria-labelledby="gdxAtlasTitle">
+      <h3 id="gdxAtlasTitle">① 掉下来的东西：图鉴</h3>
+      <p class="gdx-lead">点一张卡，下面的三条量表就换成这个物体。先看「重不重」和「面积有多大」，再看它落得快还是慢。</p>
+      <div class="kid-figure-grid" id="gdxAtlasGrid" aria-label="落体图鉴：八张大图卡">
+
+        <button class="kid-figure" type="button" data-gdx-obj="iron" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="gdx-bg" x="0" y="0" width="120" height="90"/>
+              <path class="gdx-ground" d="M8 82 H112"/>
+              <circle class="gdx-metal" cx="44" cy="40" r="21"/>
+              <circle class="gdx-shine" cx="36" cy="31" r="6"/>
+              <path class="gdx-line" d="M88 14 V58"/>
+              <path class="gdx-line" d="M80 50 L88 62 L96 50"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">铁球</span>
+          <span class="kid-figure-sub">很重 · 面积很小</span>
+          <span class="kid-figure-fact">落得很快。它又结实又小，空气几乎挡不住，掉法和「不算空气」的算法差不多。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-gdx-obj="feather" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="gdx-bg" x="0" y="0" width="120" height="90"/>
+              <path class="gdx-ground" d="M8 82 H112"/>
+              <g transform="rotate(-18 42 38)">
+                <ellipse class="gdx-feather" cx="42" cy="38" rx="11" ry="25"/>
+                <path class="gdx-line-thin" d="M42 14 V66"/>
+              </g>
+              <path class="gdx-air" d="M74 68 V54 M86 72 V56 M98 68 V54"/>
+              <path class="gdx-air" d="M70 58 L74 52 L78 58 M82 60 L86 54 L90 60 M94 58 L98 52 L102 58"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">羽毛</span>
+          <span class="kid-figure-sub">很轻 · 面积很大</span>
+          <span class="kid-figure-fact">落得很慢。一松手空气就把它托住了，速度停在每秒 2 米以内，之后不再变快。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-gdx-obj="paper" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="gdx-bg" x="0" y="0" width="120" height="90"/>
+              <path class="gdx-ground" d="M8 82 H112"/>
+              <path class="gdx-paper" d="M18 28 L76 20 L84 48 L26 56 Z"/>
+              <path class="gdx-line-thin" d="M28 34 L70 28 M30 42 L72 36"/>
+              <path class="gdx-air" d="M34 74 V64 M52 78 V66 M70 74 V64"/>
+              <path class="gdx-air" d="M30 68 L34 62 L38 68 M48 70 L52 64 L56 70 M66 68 L70 62 L74 68"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">摊开的纸</span>
+          <span class="kid-figure-sub">很轻 · 面积很大</span>
+          <span class="kid-figure-fact">落得慢。整张 A4 要推开很多空气，一边掉一边打飘，每秒只走一米左右。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-gdx-obj="wad" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="gdx-bg" x="0" y="0" width="120" height="90"/>
+              <path class="gdx-ground" d="M8 82 H112"/>
+              <path class="gdx-paper" d="M32 26 L46 17 L60 23 L67 38 L58 53 L41 55 L29 44 Z"/>
+              <path class="gdx-line-thin" d="M40 25 L50 38 L44 51 M60 29 L50 36 L63 45"/>
+              <path class="gdx-line" d="M92 16 V56"/>
+              <path class="gdx-line" d="M84 48 L92 60 L100 48"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">同一张纸揉成团</span>
+          <span class="kid-figure-sub">一样重 · 面积很小</span>
+          <span class="kid-figure-fact">快得多，能到每秒 8 米。重量一点没变，只有面积变小了——所以快慢不是重量决定的。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-gdx-obj="balloon" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="gdx-bg" x="0" y="0" width="120" height="90"/>
+              <path class="gdx-ground" d="M8 82 H112"/>
+              <path class="gdx-balloon" d="M44 12 C58 12 66 24 66 36 C66 48 54 60 44 64 C34 60 22 48 22 36 C22 24 30 12 44 12 Z"/>
+              <circle class="gdx-shine" cx="35" cy="26" r="5"/>
+              <path class="gdx-line-thin" d="M44 64 C48 70 40 74 44 80"/>
+              <path class="gdx-air" d="M86 70 V56 M100 74 V58"/>
+              <path class="gdx-air" d="M82 60 L86 54 L90 60 M96 62 L100 56 L104 62"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">气球</span>
+          <span class="kid-figure-sub">特别轻 · 面积大</span>
+          <span class="kid-figure-fact">几乎不往下落，只是慢慢飘，每秒一米多。里面充氦气的话还会往上飞。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-gdx-obj="rain" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="gdx-bg" x="0" y="0" width="120" height="90"/>
+              <path class="gdx-ground" d="M8 82 H112"/>
+              <path class="gdx-water" d="M42 12 C52 30 60 40 60 48 A18 18 0 0 1 24 48 C24 40 32 30 42 12 Z"/>
+              <path class="gdx-line" d="M92 16 V56"/>
+              <path class="gdx-line" d="M84 48 L92 60 L100 48"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">雨滴</span>
+          <span class="kid-figure-sub">很轻 · 面积极小</span>
+          <span class="kid-figure-fact">很快就到自己的顶速，大约每秒 6 米，之后不再变快——所以从很高的云里落下也砸不疼。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-gdx-obj="chute" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="gdx-bg" x="0" y="0" width="120" height="90"/>
+              <path class="gdx-ground" d="M8 82 H112"/>
+              <path class="gdx-canopy" d="M16 40 A32 30 0 0 1 80 40 Z"/>
+              <path class="gdx-line-thin" d="M18 40 L46 58 M48 40 L48 58 M78 40 L50 58"/>
+              <circle class="gdx-ink" cx="48" cy="62" r="5"/>
+              <path class="gdx-line" d="M48 67 V72 M48 70 L42 78 M48 70 L54 78"/>
+              <path class="gdx-air" d="M96 70 V56 M108 74 V58"/>
+              <path class="gdx-air" d="M92 60 L96 54 L100 60"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">降落伞</span>
+          <span class="kid-figure-sub">很重 · 面积特别大</span>
+          <span class="kid-figure-fact">故意做慢的。伞把面积撑到 20 多平方米，速度被压在每秒 5–6 米，落地才安全。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-gdx-obj="balls" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="gdx-bg" x="0" y="0" width="120" height="90"/>
+              <path class="gdx-ground" d="M8 82 H112"/>
+              <path class="gdx-dash" d="M18 16 H104"/>
+              <circle class="gdx-ball" cx="40" cy="46" r="20"/>
+              <path class="gdx-line-thin" d="M20 46 H60 M40 26 V66 M26 32 C36 42 36 50 26 60 M54 32 C44 42 44 50 54 60"/>
+              <circle class="gdx-pong" cx="88" cy="56" r="10"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">篮球和乒乓球</span>
+          <span class="kid-figure-sub">一重一轻 · 都很结实</span>
+          <span class="kid-figure-fact">从同一高度一起放，几乎同时落地。篮球重几十倍，可是并没有更快。</span>
+        </button>
+      </div>
+      <div class="kid-speech-row gdx-say-row">
+        <span class="kid-mascot" aria-hidden="true">🪶</span>
+        <p class="kid-speech" id="gdxAtlasSay" role="status" aria-live="polite">点一张卡，下面三条量表就换成它。</p>
+      </div>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：这份图鉴在教什么</summary>
+        <p><b>学习目标：</b>把「重的掉得快」换成两个可以分别观察的量——<b>重量</b>和<b>迎风面积</b>。八张卡里有三组对照：铁球↔羽毛（重量和面积都不同）、摊开的纸↔纸团（<b>重量完全一样</b>，只有面积不同）、篮球↔乒乓球（重量差几十倍，结果几乎相同）。</p>
+        <p><b>怎么用：</b>把纸和纸团那两张放在一起问：「这两张卡有什么不一样？」孩子会先说「一个是团的」，接着自己发现「一样重」。同重量、不同结果，是本页最强的一条证据，比任何解释都有效。</p>
+        <p><b>注意：</b>卡上的数字是常见量级的估计值（例如雨滴顶速约 6 m/s、降落伞 5–6 m/s），不是某次实测。真实数值随大小、形状、风况变化。</p>
+      </details>
+    </article>
+
+    <article class="gdx-card" aria-labelledby="gdxMeterTitle">
+      <h3 id="gdxMeterTitle">② 三条量表：掉多久、多快、多高</h3>
+      <p class="gdx-lead">三条都跟着舞台走：换图鉴卡、拖高度滑块、换星球、开关空气，数字都会立刻重算。</p>
+      <div class="gdx-meters">
+        <div class="kid-meter" style="--tone:var(--phys)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">⏱️</span>
+            <span id="gdxTimeLabel">下落时间</span>
+            <span class="kid-meter-value" id="gdxTimeValue">—</span>
+          </div>
+          <div class="kid-meter-track" id="gdxTimeMeter" role="img" aria-labelledby="gdxTimeLabel gdxTimeValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note" id="gdxTimeNote">满格＝6 秒。条越长，掉的时间越久。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--sci)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">🚀</span>
+            <span id="gdxSpeedLabel">落地时的速度</span>
+            <span class="kid-meter-value" id="gdxSpeedValue">—</span>
+          </div>
+          <div class="kid-meter-track" id="gdxSpeedMeter" role="img" aria-labelledby="gdxSpeedLabel gdxSpeedValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note" id="gdxSpeedNote">满格＝30 米每秒。空气挡得越多，落地速度越小。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--math)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">📏</span>
+            <span id="gdxHeightLabel">掉了多高</span>
+            <span class="kid-meter-value" id="gdxHeightValue">—</span>
+          </div>
+          <div class="kid-meter-track" id="gdxHeightMeter" role="img" aria-labelledby="gdxHeightLabel gdxHeightValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note" id="gdxHeightNote">满格＝20 米，也就是舞台标尺的最高一格。</p>
+        </div>
+      </div>
+      <p class="kid-speech" id="gdxMeterSay" role="status" aria-live="polite">先在上面点一张图鉴卡。</p>
+      <p class="gdx-model" id="gdxModelNote">
+        <b>这两个算法不一样，别搞混：</b><br>
+        「不算空气」的算法只有两步：<code>t = √(2h ÷ g)</code>、<code>v = g × t</code>（地球上 <code>g</code> 取 9.8 米每秒²）。它假装空气不存在，所以对每样东西给出的答案都一样。<br>
+        真实的东西会更慢，因为空气一直往上顶。上面括号里的「真实估计」就是把空气算进去以后的结果，面积越大、越轻，两个数差得越远。<b>模型只是模型，不是真相。</b>
+      </p>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：三条量表在教什么</summary>
+        <p><b>学习目标：</b>让孩子看到「同一个问题、两个模型、两个答案」。理想模型（<code>h = ½gt²</code>）给出的时间与物体无关；把阻力项 <code>F_d = ½ρC_dAv²</code> 加进去以后，<code>a = g − F_d/m</code>，质量留在分母上没被约掉，于是面积大、质量小的物体明显变慢。</p>
+        <p><b>陪伴追问：</b>「不算空气的那个数，为什么换成羽毛也不变？」这个问题直指模型的假设。能说出「因为那个算法里根本没有空气」，就已经理解了什么叫模型的适用范围。</p>
+        <p><b>本页的算法说明：</b>真实估计用固定步长 1/240 秒积分同一套阻力公式，面积与阻力系数取常见量级；不考虑翻滚、涡流、浮力和空气密度随高度的变化。气球的实际情况还受浮力影响（充氦会上升），量表里只算阻力，所以它给出的是「慢」而不是「上升」。</p>
+      </details>
+    </article>
+
+    <article class="gdx-card" aria-labelledby="gdxRaceTitle">
+      <h3 id="gdxRaceTitle">③ 谁先落地</h3>
+      <p class="gdx-lead">两样东西从同一高度一起松手。先看图，再点一张大图卡：左边先、右边先，还是几乎同时？一共 6 组。</p>
+      <div class="gdx-race">
+        <svg class="gdx-race-art" id="gdxRaceArt" viewBox="0 0 300 180" role="img" aria-labelledby="gdxRaceArtTitle gdxRaceArtDesc">
+          <title id="gdxRaceArtTitle">这一组要比的两样东西</title>
+          <desc id="gdxRaceArtDesc">两样东西并排挂在同一条虚线（同一个高度）下面，请判断哪一样先落地。</desc>
+          <rect class="gdx-bg" x="0" y="0" width="300" height="180"/>
+          <path class="gdx-dash" d="M20 26 H280"/>
+          <path class="gdx-ground" d="M14 152 H286"/>
+          <g id="gdxRaceLeft"></g>
+          <g id="gdxRaceRight"></g>
+          <text class="gdx-ink-soft" id="gdxRaceLeftName" x="80" y="172" text-anchor="middle" font-size="13">左边</text>
+          <text class="gdx-ink-soft" id="gdxRaceRightName" x="220" y="172" text-anchor="middle" font-size="13">右边</text>
+        </svg>
+      </div>
+      <div class="kid-tiles gdx-race-picks" id="gdxRacePicks" role="group" aria-labelledby="gdxRaceTitle">
+        <button class="kid-tile" type="button" data-gdx-answer="left" aria-pressed="false" aria-label="我猜左边那个先落地">
+          <span class="kid-tile-art" aria-hidden="true">⬅️</span>
+          <span class="kid-tile-label">左边先</span>
+          <span class="kid-tile-sub" data-gdx-side="left">左边</span>
+        </button>
+        <button class="kid-tile" type="button" data-gdx-answer="same" aria-pressed="false" aria-label="我猜两个几乎同时落地">
+          <span class="kid-tile-art" aria-hidden="true">🤝</span>
+          <span class="kid-tile-label">几乎同时</span>
+          <span class="kid-tile-sub">一起到</span>
+        </button>
+        <button class="kid-tile" type="button" data-gdx-answer="right" aria-pressed="false" aria-label="我猜右边那个先落地">
+          <span class="kid-tile-art" aria-hidden="true">➡️</span>
+          <span class="kid-tile-label">右边先</span>
+          <span class="kid-tile-sub" data-gdx-side="right">右边</span>
+        </button>
+      </div>
+      <div class="gdx-actions">
+        <button class="btn btn-primary" type="button" id="gdxRaceNext"><span aria-hidden="true">🔄</span> 下一组</button>
+        <button class="btn btn-ghost" type="button" id="gdxRaceHint"><span aria-hidden="true">👀</span> 给点提示</button>
+      </div>
+      <p class="kid-speech" id="gdxRaceSay" role="status" aria-live="polite">看看两样东西的大小，再点一张大图卡。</p>
+      <p class="gdx-dots-row">
+        <span class="gdx-dots-cap" id="gdxDotsCap">六组的进度：</span>
+        <span class="kid-dots" id="gdxDots" role="img" aria-labelledby="gdxDotsCap"></span>
+      </p>
+      <p class="gdx-count" id="gdxRaceCount">已经想通 0 / 6 组。</p>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：这六组是怎么挑的</summary>
+        <p><b>学习目标：</b>六组分成两类。三组答案是「几乎同时」（铁球↔木球、篮球↔乒乓球，重量差很大但形状结实），用来打掉「重＝快」；三组答案不同（纸↔纸团、羽毛↔铁球、伞↔没开伞的人、雨滴↔气球），差别全部来自迎风面积。</p>
+        <p><b>陪伴追问：</b>每组先问「你看它们哪里不一样？」再问「不一样的地方会不会挡住空气？」孩子答错时不要直接给答案，只提醒他去比面积——面积这条线索一旦被抓住，剩下几组基本都能自己想出来。</p>
+        <p><b>背后的原理：</b>答案是「几乎同时」而不是「完全同时」——地球上的空气总会造成一点差别，只是在几米高度、结实物体上小到看不出来。真正严格的「完全同时」只在真空里成立，也就是本页舞台的真空那一次。</p>
+      </details>
+    </article>
+  </section>
+
+  <section class="card science-note" aria-labelledby="gravityTeachTitle">
+    <p class="section-kicker">这在教什么</p>
+    <h2 id="gravityTeachTitle">这在教什么</h2>
+    <p class="teach-lead"><b>重的东西并不会掉得更快。</b>平时看到羽毛慢慢飘，是空气在拖住它；把空气拿走，羽毛和锤子会一起落地。</p>
+    <ul class="teach-points">
+      <li><b>重力不挑轻重</b>同一个地方，所有东西的下落加速度都一样。</li>
+      <li><b>空气会拖住东西</b>又轻又大的东西被拖得最明显。</li>
+      <li><b>公平比较</b>想看清一件事，就只改一个条件。</li>
+    </ul>
+
+    <div class="learning-layers">
+      <details>
+        <summary><span class="layer-age">4–6 岁</span>一句话版本</summary>
+        <div>
+          <p>把空气拿走，羽毛和锤子会一起“咚”地落地。</p>
+        </div>
+      </details>
+      <details>
+        <summary><span class="layer-age">7–9 岁</span>再说清楚一点</summary>
+        <div>
+          <p>地球把每样东西都往下拉。重的东西被拉得更用力，但它也更“难推动”，两件事刚好抵消，所以掉下来的快慢一样。</p>
+          <p>羽毛看起来慢，是因为它一边掉一边要挤开空气。空气推回来的力叫<b>空气阻力</b>。羽毛又轻又宽，空气一推就把它拖住了；锤子又重又窄，同样的空气几乎拦不住它。</p>
+          <p>还有一件容易看漏的事：落下来的东西是越掉越快的。第一秒走的距离，比第二秒走的距离短得多。</p>
+        </div>
+      </details>
+      <details>
+        <summary><span class="layer-age">10–12 岁</span>进阶：加速度、阻力和终端速度</summary>
+        <div>
+          <p>重力大小是 <code>F = m·g</code>，而加速度是 <code>a = F / m</code>。把前式代进后式，质量 <code>m</code> 被约掉，只剩 <code>a = g</code>。这就是“不挑轻重”的原因：在地球表面附近，<code>g</code> 约为 9.8 m/s²。</p>
+          <p>加上空气后，物体受到向上的阻力，阻力大约随速度的平方增长：<code>F_d = ½ · ρ · C_d · A · v²</code>。此时 <code>a = g − F_d / m</code>。分母上的 <code>m</code> 没有被约掉，所以质量小、迎风面积 <code>A</code> 大的物体减速最明显。</p>
+          <p>速度越快，阻力越大。当阻力刚好等于重力时，加速度变成 0，速度不再增加——这个速度叫<b>终端速度</b>。羽毛几乎立刻就达到自己的终端速度，所以它看起来是匀速飘下来的；锤子的终端速度非常高，在几米的下落里根本来不及接近。</p>
+          <p>没有空气时，下落距离与时间不是成正比的，而是 <code>h = ½ · g · t²</code>。时间翻倍，距离变成四倍。你可以在家长面板里把高度调成 2 米和 8 米各试一次：高度变成 4 倍，落地时间只变成 2 倍。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="fig-grid">
+      <div class="fig-card">
+        <h3>阻力越来越大，直到追平重力</h3>
+        <svg viewBox="0 0 240 130" role="img" aria-label="示意图：羽毛的速度先上升后变平，达到终端速度；锤子的速度一直上升，没有变平。">
+          <path d="M28 10v100h204" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/>
+          <path d="M28 34h204" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="4 5" opacity=".8"/>
+          <path d="M28 110C74 44 118 36 232 34" fill="none" stroke="var(--sci)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M28 110C104 96 176 58 232 14" fill="none" stroke="var(--code)" stroke-width="4" stroke-linecap="round"/>
+          <text x="150" y="28" fill="var(--sci)" font-size="12" font-weight="700">羽毛：变平了</text>
+          <text x="120" y="78" fill="var(--code)" font-size="12" font-weight="700">锤子：一直变快</text>
+          <text x="24" y="124" fill="currentColor" font-size="10">时间 →</text>
+          <text x="4" y="20" fill="currentColor" font-size="10">速度</text>
+        </svg>
+        <p>羽毛的速度很快就“封顶”，这条平线就是它的终端速度。锤子在这段高度里一路加速。</p>
+      </div>
+      <div class="fig-card">
+        <h3>越掉越快：每一秒都更长</h3>
+        <svg viewBox="0 0 240 130" role="img" aria-label="示意图：真空中每一秒下落的距离依次是 1 份、3 份、5 份，越来越长。">
+          <path d="M20 12h30M20 12v106" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/>
+          <rect x="64" y="12" width="34" height="12" rx="4" fill="var(--math)" opacity=".85"/>
+          <rect x="64" y="30" width="34" height="34" rx="4" fill="var(--math)" opacity=".7"/>
+          <rect x="64" y="70" width="34" height="52" rx="4" fill="var(--math)" opacity=".55"/>
+          <text x="108" y="22" fill="currentColor" font-size="11" font-weight="700">第 1 秒：1 份</text>
+          <text x="108" y="51" fill="currentColor" font-size="11" font-weight="700">第 2 秒：3 份</text>
+          <text x="108" y="100" fill="currentColor" font-size="11" font-weight="700">第 3 秒：5 份</text>
+        </svg>
+        <p>同样是一秒钟，越靠后走过的距离越长。所以下落距离和时间不是“翻倍再翻倍”那么简单。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="gravityFairTitle">
+    <p class="section-kicker">怎样才算公平</p>
+    <h2 id="gravityFairTitle">设计一次公平的比较</h2>
+    <p>想知道“空气有没有影响”，就只能改空气这一项。其他条件必须一模一样，否则结果说不清是谁造成的。这也是这一页的完成条件：两次实验的高度和重力必须相同。</p>
+    <ul class="var-cards" aria-label="公平比较里的变量安排">
+      <li data-keep="change">只改这一项：有空气 / 真空</li>
+      <li>保持不变：下落高度</li>
+      <li>保持不变：重力（星球）</li>
+      <li>保持不变：三个物体本身</li>
+      <li>要观察的：谁先落地、差多少秒</li>
+    </ul>
+    <p class="obj-sub">如果两次实验的高度不一样，结果卡会变成黄色提醒你——那次比较不算公平。</p>
+  </section>
+
+  <section class="card" aria-labelledby="gravityPickTitle">
+    <p class="section-kicker">不用打字也能回答</p>
+    <h2 id="gravityPickTitle">选一句你的发现</h2>
+    <p>做完两次实验后，点一句最像你看到的情况。它会被记进下面的反思栏，家长导出足迹时能看到。</p>
+    <div class="quick-picks" role="group" aria-labelledby="gravityPickTitle">
+      <button class="kid-choice" type="button" data-gravity-phrase="真空里羽毛和锤子几乎一起落地，所以重力不挑轻重。" aria-pressed="false">真空里它们一起落地</button>
+      <button class="kid-choice" type="button" data-gravity-phrase="有空气的时候羽毛最慢，因为空气把它拖住了。" aria-pressed="false">有空气时羽毛最慢</button>
+      <button class="kid-choice" type="button" data-gravity-phrase="羽毛又轻又宽，所以空气对它的影响特别大。" aria-pressed="false">羽毛又轻又宽，最怕空气</button>
+      <button class="kid-choice" type="button" data-gravity-phrase="羽毛掉到一定速度就不再变快了，锤子还在一直加速。" aria-pressed="false">羽毛的速度会封顶</button>
+      <button class="kid-choice" type="button" data-gravity-phrase="东西是越掉越快的，后面每一秒走得更远。" aria-pressed="false">东西越掉越快</button>
+      <button class="kid-choice" type="button" data-gravity-phrase="两次实验只改了空气这一项，所以这次比较是公平的。" aria-pressed="false">我只改了空气这一项</button>
+    </div>
+    <p class="obj-sub pick-status" id="gravityPickStatus" role="status" aria-live="polite">还没有选。也可以直接在反思栏里自己说一说。</p>
+  </section>
+
+  <section class="card" aria-labelledby="gravityAskTitle">
+    <p class="section-kicker">继续追问</p>
+    <h2 id="gravityAskTitle">还可以问下去</h2>
+    <ol class="qlist">
+      <li>把一张纸摊开丢下去，再把同一张纸捏成团丢下去，哪个先落地？纸的重量变了吗？</li>
+      <li>如果羽毛在真空里掉得和锤子一样快，那月球上的沙子会怎么飘？</li>
+      <li>雨滴从很高的云里落下来，为什么砸在身上不疼？</li>
+      <li>跳伞的人打开伞之后速度变慢了，伞改变了公式里的哪一项？</li>
+      <li>如果把高度调到 4 倍，你猜落地时间会变成几倍？先猜，再去家长面板里试。</li>
+    </ol>
+  </section>
 
   <details class="parent-deep-dive" data-audience="parent">
     <summary>家长与进阶观察：星球、高度、慢动作和详细读数</summary>
@@ -258,6 +986,52 @@
           <div class="readout"><span>最先与最后相差</span><b id="gap">—</b></div>
         </section>
       </div>
+
+      <section class="card" aria-labelledby="gravityAgeLayerTitle">
+        <h2 id="gravityAgeLayerTitle" style="font-size:1.15rem">按年龄分层的讲法</h2>
+        <p>同一个现象，三个年龄段该讲到哪一层。建议只讲孩子当前那一层，讲完就停，把追问留给孩子。</p>
+        <div class="parent-age-layers">
+          <details>
+            <summary><span class="layer-age">4–6 岁</span>只讲「空气托住了它」</summary>
+            <div>
+              <p>这个年龄段不需要任何数字。目标只有一个：把「轻的东西掉得慢」改写成「<b>空气拖住了它</b>」。</p>
+              <p>可用的语言：「空气像好多小手，接住了宽宽的羽毛。」「把空气拿走，小手就没有了，它们一起咚。」</p>
+              <p>他们能做到的是：点图预测、点松手、指出谁最后落地、说出两次里「变了什么」。能说出「空气」这个词就已经到位，不必要求说「阻力」。</p>
+              <p>陪伴要点：先让孩子猜，猜错也不要立刻纠正。让真空那一次的画面自己去反驳他。这个「预测—观察—发现不一样」的循环，本身就是最重要的科学经验。</p>
+            </div>
+          </details>
+          <details>
+            <summary><span class="layer-age">7–9 岁</span>加入「面积」和「公平比较」</summary>
+            <div>
+              <p>可以引入两个新概念。第一是<b>迎风面积</b>：同样重的东西，摊开的比团起来的掉得慢，因为要推开更多空气。纸和纸团的实验就是为这一点准备的——重量完全一样，结果不一样，差别只能来自空气。</p>
+              <p>第二是<b>控制变量</b>。问「刚才两次，你一共改了几样东西？」如果答案是「一样」，那这次比较就是公平的；如果高度也变了，结果就说不清是谁造成的。本页把这一点做成了硬性完成条件：两次实验的高度和重力必须相同，否则结果卡会变黄。</p>
+              <p>这一层还可以观察到：下落<b>越来越快</b>。在慢镜头下看轨迹上的点，会发现后面的点之间间隔更大。这是「加速」的直观形式，不需要公式。</p>
+              <p>常见误解与对策：「重的东西掉得快」——反问「把两个锤子绑在一起，会比一个掉得更快吗？」这个问题会让直觉自己露出矛盾，比直接告诉答案有效得多。</p>
+            </div>
+          </details>
+          <details>
+            <summary><span class="layer-age">10–12 岁</span>公式、终端速度与平方关系</summary>
+            <div>
+              <p><b>为什么与质量无关：</b>重力 <code>F = m·g</code>，牛顿第二定律 <code>a = F / m</code>，代入后 <code>m</code> 被约掉，只剩 <code>a = g</code>。质量越大，被拉得越用力，但也越难加速，两者刚好抵消。</p>
+              <p><b>阻力项：</b><code>F_d = ½ · ρ · C_d · A · v²</code>。加上阻力后 <code>a = g − F_d / m</code>。注意这里的 <code>m</code> 在分母上、<b>没有</b>被约掉，所以质量小、面积 <code>A</code> 大的物体减速最明显。羽毛两条都占，所以它最「怕」空气。</p>
+              <p><b>终端速度：</b>速度上升 → 阻力上升 → 净力下降。当 <code>F_d = m·g</code> 时加速度为 0，速度停在上限 <code>v_t = √(2mg / (ρ·C_d·A))</code>。本页羽毛的 <code>v_t</code> 只有约 0.8 m/s，几乎一松手就达到，所以看起来是匀速飘落；锤子的 <code>v_t</code> 超过 60 m/s，8 米高度里根本来不及接近，所以它几乎是自由落体。</p>
+              <p><b>平方关系：</b>无阻力时 <code>v = g·t</code>、<code>h = ½·g·t²</code>。时间翻倍，距离变四倍；反过来高度变四倍，时间只变两倍。用高度滑块设 2 m 和 8 m 各做一次真空实验，读出的时间比应接近 1:2，而不是 1:4。这是本页最值得亲手验证的一条。</p>
+              <p><b>换星球：</b><code>t = √(2h / g)</code>。月球 <code>g = 1.62</code>，约为地球的 1/6，同高度的落地时间约为地球的 √6 ≈ 2.45 倍。可以先让孩子预测「是 6 倍还是不到 6 倍」，再去试。</p>
+            </div>
+          </details>
+        </div>
+
+        <h3 style="font-size:1rem;margin-top:16px">这一页出现的词</h3>
+        <dl class="term-list">
+          <div><dt>重力</dt><dd>地球（或别的星球）把所有东西往下拉的力。它不挑轻重，给每样东西的加速度都一样。</dd></div>
+          <div><dt>重力加速度 g</dt><dd>物体在只受重力时每秒增加的速度。地球约 9.81 m/s²，月球 1.62，火星 3.71，木星 24.79。</dd></div>
+          <div><dt>空气阻力</dt><dd>物体推开空气时，空气反过来推它的力。速度越快、迎风面积越大，阻力越大。</dd></div>
+          <div><dt>迎风面积</dt><dd>物体正对运动方向的那一面有多大。摊开的纸面积大，团起来的纸面积小。</dd></div>
+          <div><dt>终端速度</dt><dd>阻力增长到与重力相等后，速度不再变快的那个上限值。真空里没有阻力，也就没有终端速度。</dd></div>
+          <div><dt>真空</dt><dd>把空气抽掉后的空间。没有空气，就没有空气阻力。月球表面接近真空。</dd></div>
+          <div><dt>控制变量</dt><dd>比较两件事时，只改动一项、其他全部保持不变。这样结果的差别才能归因于那一项。</dd></div>
+        </dl>
+      </section>
     </div>
   </details>
 
@@ -297,25 +1071,41 @@
 
   <div class="grid-2 parent-deep-dive" data-audience="parent">
     <section class="card">
-      <h2 style="font-size:1.15rem">陪伴追问</h2>
+      <h2 style="font-size:1.15rem">给家长的陪伴追问</h2>
       <ol class="qlist">
-        <li><b>先听预测：</b>“如果同时松手，羽毛和锤子谁先落地？为什么？”</li>
+        <li><b>先听预测：</b>“如果同时松手，羽毛和锤子谁先落地？为什么？”——先不纠正，让孩子把理由说完。</li>
         <li><b>追问空气：</b>“真空里一样快，平时是什么拖住了羽毛？”</li>
         <li><b>换个星球：</b>“月球重力更小，东西会掉得更快还是更慢？”</li>
+        <li><b>逼近误解：</b>“如果重的东西掉得更快，那把两个锤子绑在一起，是不是会掉得比一个更快？”这个问题能让“重＝快”的直觉自己露出矛盾。</li>
+        <li><b>指向变量：</b>“刚才这两次，你一共改了几样东西？”帮孩子把“只改一项”说成自己的话。</li>
       </ol>
+      <h3 style="font-size:1rem">离屏延伸活动</h3>
+      <ol class="qlist">
+        <li><b>纸与纸团：</b>两张同样的纸，一张摊平、一张捏成团，同时松手。重量完全一样，结果不一样——说明差别只能来自空气。</li>
+        <li><b>书与纸：</b>把纸平放在书的上面一起丢下，纸会跟着书一起落；再把纸放在书下面试试。书替纸“挡开”了空气。</li>
+        <li><b>数一数时间：</b>从桌面和从椅子上分别丢一个小球，用嘴数“一、二”。高度差不多两倍时，时间的差别远小于两倍。</li>
+      </ol>
+      <p class="obj-sub">提示：不必追求孩子说出“加速度”这个词。能说出“空气拖住了它”“我只改了一样东西”，就已经抓住了这一页的核心。</p>
     </section>
 
     <section class="card why">
-      <h2 style="font-size:1.15rem">科学原理</h2>
-      <p><b>重力加速度与质量无关。</b>物体受到的重力是 <code>F = m·g</code>，加速度是 <code>a = F / m</code>，所以没有其他力时 <code>a = g</code>。</p>
+      <h2 style="font-size:1.15rem">背后的原理</h2>
+      <p><b>重力加速度与质量无关。</b>物体受到的重力是 <code>F = m·g</code>，加速度是 <code>a = F / m</code>，所以没有其他力时 <code>a = g</code>，质量被约掉了。在地球表面附近，<code>g</code> 约为 9.8 m/s²。</p>
       <h3>空气做了什么？</h3>
-      <p>空气阻力约为 <code>F_d = ½ · ρ · C_d · A · v²</code>。羽毛面积大、质量小，阻力对它的影响特别明显；真空中没有空气阻力，三种物体会一起落地。</p>
+      <p>空气阻力约为 <code>F_d = ½ · ρ · C_d · A · v²</code>，其中 <code>A</code> 是迎风面积、<code>v</code> 是速度。加上阻力后 <code>a = g − F_d / m</code>；这里的 <code>m</code> 留在了分母上，所以质量越小、面积越大，减速越明显。羽毛正好两条都占。</p>
+      <h3>终端速度</h3>
+      <p>速度上升 → 阻力上升 → 净力下降。当阻力增长到与重力相等时，净力为零，速度停在一个上限，这就是终端速度。羽毛的终端速度很低，几乎一松手就达到了，所以看起来是匀速飘落；锤子的终端速度很高，在几米高度内远远达不到。真空中没有阻力，也就没有终端速度，速度会一直增长。</p>
+      <h3>距离和时间不成正比</h3>
+      <p>无阻力时 <code>v = g·t</code>、<code>h = ½ · g · t²</code>。距离随时间的平方增长：时间翻一倍，距离变四倍；反过来，高度变四倍，落地时间只变两倍。这一点用家长面板的高度滑块很容易验证，也是孩子最常猜错的地方。</p>
+      <h3>控制变量为什么重要</h3>
+      <p>本页的完成条件要求两次实验的高度和重力相同，只有空气条件不同。如果高度也跟着变了，落地时间的差别就无法归因于空气——这正是“公平比较”在科学里的含义。</p>
       <h3>Apollo 15</h3>
-      <p>1971 年，航天员 David Scott 在月球同时松开地质锤和猎鹰羽毛，两样东西并排落地。</p>
-      <p class="obj-sub">本模拟使用固定步长 1/480 秒积分；物体画面大小经过夸张，便于观察。</p>
+      <p>1971 年，航天员 David Scott 在月球同时松开地质锤和猎鹰羽毛，两样东西并排落地。月球几乎没有大气，所以这是一次真实的“真空”演示。</p>
+      <p class="obj-sub">本模拟说明：使用固定步长 1/480 秒积分；阻力按上式的简化形式计算，未考虑羽毛翻滚、涡流和空气密度随高度的变化；物体画面大小经过夸张，便于观察。</p>
     </section>
   </div>
 
+  <p class="lab-exit"><a class="btn btn-ghost" href="index.html"><span aria-hidden="true">←</span> 回到实验室目录</a></p>
   <footer class="foot wrap" style="padding-left:0;padding-right:0">
     少儿数理启蒙 · 互动实验 — 重力落体。所有计算在你的浏览器里完成，不联网。
   </footer>
@@ -344,12 +1134,28 @@
     warn:  V('--warn', '#fbbf24')
   };
 
+  /* ---------- 画面配色（写死，只有字体跟随主题） ----------
+     .canvas-shell 的底色是刻意写死的深色夜空，而 --ink-dim / --ink-mid / --math 这些
+     token 在家长模式和孩子模式下都是深色（给浅底用的）。原来刻度数字、物体名字、
+     左上角状态全用这些 token 画，在这块近黑的画布上几乎看不见。 */
+  var P = {
+    mono: V('--mono', 'monospace'), font: V('--font', 'sans-serif'),
+    ink: '#e9eeff', mid: '#b6c2e2', dim: '#93a0c0',
+    grid: 'rgba(150,172,220,.16)', lane: 'rgba(150,172,220,.10)',
+    startLine: 'rgba(198,212,248,.5)',
+    ruler: 'rgba(226,234,255,.09)', rulerEdge: 'rgba(198,212,248,.35)',
+    rulerTick: 'rgba(198,212,248,.6)', rulerInk: '#dbe4ff',
+    rig: '#6c7ba6', rigDark: '#3f4b6d',
+    ground: '#212a45', groundEdge: '#4a5876',
+    chip: 'rgba(12,18,32,.86)', chipAir: '#9ec5ff', chipVac: '#c9b6ff'
+  };
+
   // ---------- 物体定义 ----------
   // m: kg, area: m^2 迎风面积, cd: 阻力系数, draw: 画法
   var BODIES = [
-    { name: '羽毛', m: 0.005, area: 0.020, cd: 1.10, color: C.sci,  kind: 'feather', r: 15 },
-    { name: '皮球', m: 0.150, area: 0.0079, cd: 0.47, color: C.math, kind: 'ball',    r: 14 },
-    { name: '锤子', m: 1.300, area: 0.0060, cd: 1.00, color: C.code, kind: 'hammer',  r: 15 }
+    { name: '羽毛', m: 0.005, area: 0.020, cd: 1.10, color: '#6ee79b', kind: 'feather', r: 15 },
+    { name: '皮球', m: 0.150, area: 0.0079, cd: 0.47, color: '#79b4ff', kind: 'ball',    r: 14 },
+    { name: '锤子', m: 1.300, area: 0.0060, cd: 1.00, color: '#ffab6b', kind: 'hammer',  r: 15 }
   ];
 
   var RHO_AIR = 1.225;          // kg/m^3
@@ -454,6 +1260,22 @@
     ctx.closePath();
   }
 
+  /* 画面上的文字统一垫一层小底片：夜空、地板、量尺三种底色深浅不同，
+     不垫底片总有一处读不清。 */
+  function gchip(x, y, text, bg, fg, align, size) {
+    var fs = size || 11;
+    ctx.font = '800 ' + fs + 'px ' + P.font;
+    var w = ctx.measureText(text).width + 12, h = fs + 9;
+    var bx = align === 'right' ? x - w : (align === 'center' ? x - w / 2 : x);
+    bx = Math.max(2, Math.min(bx, W - w - 2));
+    var by = Math.max(2, Math.min(y - h / 2, H - h - 2));
+    ctx.fillStyle = bg;
+    roundRect(bx, by, w, h, h / 2); ctx.fill();
+    ctx.fillStyle = fg;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, bx + w / 2, by + h / 2 + .5);
+  }
+
   function drawShape(kind, x, y, r, color, alpha) {
     // y = 物体底部
     ctx.save();
@@ -487,7 +1309,7 @@
       ctx.beginPath();
       ctx.moveTo(0, -r * 1.05); ctx.lineTo(0, r * 1.25);
       ctx.lineWidth = 1.6;
-      ctx.strokeStyle = C.ink;
+      ctx.strokeStyle = P.ink;   // 羽轴：固定浅色，深底上才看得见
       ctx.globalAlpha = (alpha === undefined ? 1 : alpha) * 0.55;
       ctx.stroke();
       ctx.restore();
@@ -498,68 +1320,95 @@
   function draw() {
     ctx.clearRect(0, 0, W, H);
 
-    var padT = 30, padB = 44, rulerX = 46;
+    /* padT 原来是 30，但 drawShape 收到的 y 是物体的「底边」，锤子要往上画到 y-2.9r ≈ y-44，
+       于是三个物体在起点位置有一半被画到画布外面、直接截断。padT 抬到 58 才放得下，
+       多出来的这段刚好用来画顶上的吊架。 */
+    var padT = 58, padB = 44, rulerX = 50;
     var y0 = padT, y1 = H - padB;
     var scale = (y1 - y0) / S.height;      // px per meter
-    var lanes = [0.38, 0.60, 0.82].map(function (f) { return rulerX + (W - rulerX) * (f - 0.2) / 0.8; });
-    // 简化：均匀分布在标尺右侧
+    /* 三条跑道均匀分布在标尺右侧。右边要多留一截：窄屏上「当前轨迹」那个角标
+       就压在画布右上角，第三条道原来排到 0.80，锤子刚好被角标挡住。 */
     var usable = W - rulerX - 16;
-    lanes = [0, 1, 2].map(function (i) { return rulerX + usable * (0.22 + 0.29 * i); });
+    var lanes = [0, 1, 2].map(function (i) { return rulerX + usable * (0.18 + 0.28 * i); });
 
-    // 天空渐变（真空更暗）
-    var sky = ctx.createLinearGradient(0, y0 - 18, 0, y1);
+    // 背景：有空气时偏蓝，真空偏紫，都比原来实一点，物体和刻度才压得住
+    var sky = ctx.createLinearGradient(0, 0, 0, y1);
     if (S.air) {
-      sky.addColorStop(0, 'rgba(110,168,254,.13)');
-      sky.addColorStop(1, 'rgba(110,168,254,.02)');
+      sky.addColorStop(0, '#16233d');
+      sky.addColorStop(1, '#0d1526');
     } else {
-      sky.addColorStop(0, 'rgba(167,139,250,.10)');
-      sky.addColorStop(1, 'rgba(11,15,26,.02)');
+      sky.addColorStop(0, '#1d1a38');
+      sky.addColorStop(1, '#0c0a1a');
     }
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, W, y1);
 
-    // 空气「颗粒」提示（只在有空气时）
+    /* 空气「颗粒」：原来是 46 个白圆点，看着像星空，反而把「真空」的意思弄反了。
+       改成一小段一小段的横线，像飘着的空气纹；真空时什么都不画。 */
     if (S.air) {
-      ctx.fillStyle = 'rgba(182,192,224,.20)';
-      for (var i = 0; i < 46; i++) {
-        var px = ((i * 97) % 100) / 100 * (W - rulerX - 10) + rulerX + 5;
-        var py = ((i * 53) % 100) / 100 * (y1 - y0 - 6) + y0 + 3;
-        ctx.beginPath(); ctx.arc(px, py, 1.2, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(160,190,240,.15)';
+      ctx.lineWidth = 1.2;
+      for (var i = 0; i < 22; i++) {
+        var px = ((i * 97) % 100) / 100 * (W - rulerX - 26) + rulerX + 10;
+        var py = ((i * 53) % 100) / 100 * (y1 - y0 - 10) + y0 + 5;
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 6 + (i % 3) * 3, py); ctx.stroke();
       }
     }
 
-    // 标尺
-    ctx.strokeStyle = C.line;
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(rulerX, y0); ctx.lineTo(rulerX, y1); ctx.stroke();
+    /* 顶部吊架：三个物体是从这根横梁上同时松手的。
+       原来这里什么都没有，物体又被画到画布外面，看起来像「飘在半空、还被切掉一半」。 */
+    ctx.fillStyle = P.rig;
+    ctx.fillRect(rulerX - 6, 10, W - rulerX - 2, 7);
+    ctx.fillStyle = P.rigDark;
+    ctx.fillRect(rulerX - 6, 17, W - rulerX - 2, 2);
+
+    // 地面：一块实心地板 + 一条亮边，落地才有「咚」的落点感。
+    // 必须画在标尺之前，否则地板会盖掉标尺最下面那个「0m」。
+    ctx.fillStyle = P.ground;
+    ctx.fillRect(0, y1, W, H - y1);
+    ctx.fillStyle = P.groundEdge;
+    ctx.fillRect(0, y1, W, 3);
+
+    /* 标尺：先铺一条浅色量尺带，刻度数字才有底可读。
+       原来数字用 --ink-dim（浅色主题下是深棕），画在这块近黑的画布上基本看不见。 */
+    ctx.fillStyle = P.ruler;
+    ctx.fillRect(0, y0 - 10, rulerX, y1 - y0 + 20);
+    ctx.strokeStyle = P.rulerEdge; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(rulerX - .5, y0 - 10); ctx.lineTo(rulerX - .5, y1 + 10); ctx.stroke();
     var stepM = S.height <= 6 ? 1 : (S.height <= 12 ? 2 : 4);
-    ctx.font = '600 10px ' + (css.getPropertyValue('--mono') || 'monospace');
+    ctx.font = '800 11px ' + P.mono;
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     for (var m = 0; m <= S.height + 0.001; m += stepM) {
       var yy = y1 - m * scale;
-      ctx.strokeStyle = C.soft;
-      ctx.beginPath(); ctx.moveTo(rulerX - 5, yy); ctx.lineTo(W - 8, yy); ctx.stroke();
-      ctx.fillStyle = C.dim;
-      ctx.fillText(m.toFixed(0) + 'm', rulerX - 8, yy);
+      ctx.strokeStyle = P.grid;
+      ctx.beginPath(); ctx.moveTo(rulerX, yy + .5); ctx.lineTo(W - 8, yy + .5); ctx.stroke();
+      ctx.strokeStyle = P.rulerTick;
+      ctx.beginPath(); ctx.moveTo(rulerX - 9, yy + .5); ctx.lineTo(rulerX - 1, yy + .5); ctx.stroke();
+      ctx.fillStyle = P.rulerInk;
+      ctx.fillText(m.toFixed(0) + 'm', rulerX - 11, yy);
     }
-
-    // 地面
-    ctx.fillStyle = 'rgba(29,37,64,.9)';
-    ctx.fillRect(0, y1, W, H - y1);
-    ctx.strokeStyle = C.line;
-    ctx.beginPath(); ctx.moveTo(0, y1 + .5); ctx.lineTo(W, y1 + .5); ctx.stroke();
 
     // 物体 + 轨迹
     ctx.textAlign = 'center';
     for (var k = 0; k < S.bodies.length; k++) {
       var o = S.bodies[k], d = o.def, x = lanes[k];
 
-      // 起点虚线
+      // 每条跑道一条竖直导引线，看得出三个物体是各走各的一条道
+      ctx.strokeStyle = P.lane; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x + .5, y0); ctx.lineTo(x + .5, y1); ctx.stroke();
+
+      // 起点虚线 = 松手高度
       ctx.setLineDash([3, 5]);
-      ctx.strokeStyle = 'rgba(125,136,171,.45)';
-      ctx.beginPath(); ctx.moveTo(x - 22, y0); ctx.lineTo(x + 22, y0); ctx.stroke();
+      ctx.strokeStyle = P.startLine; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x - 24, y0 + .5); ctx.lineTo(x + 24, y0 + .5); ctx.stroke();
       ctx.setLineDash([]);
+
+      // 还没松手时，从吊架垂一根吊线到物体上方：交代「三个一起松手」
+      if (!o.landed && o.s < 0.001) {
+        ctx.strokeStyle = P.rigDark; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x, 17); ctx.lineTo(x, y0 - d.r * 2.1); ctx.stroke();
+      }
 
       // 轨迹
       for (var j = 0; j < o.trail.length; j++) {
@@ -587,23 +1436,23 @@
 
       drawShape(d.kind, x, yb, d.r, d.color, 1);
 
-      // 名字 + 落地时间
-      ctx.font = '700 11px ' + V('--font', 'sans-serif');
-      ctx.fillStyle = o.landed ? d.color : C.mid;
-      ctx.fillText(d.name, x, H - 26);
-      ctx.font = '600 10px ' + (css.getPropertyValue('--mono') || 'monospace');
-      ctx.fillStyle = C.dim;
-      ctx.fillText(o.landed ? o.tLand.toFixed(2) + 's' : '—', x, H - 12);
+      // 名字 + 落地时间：画在地板上的小底片里，深底浅字，不再用主题 token
+      gchip(x, H - 27, d.name, o.landed ? d.color : P.chip, o.landed ? '#0b0f1a' : P.ink, 'center', 11);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = '800 11px ' + P.mono;
+      ctx.fillStyle = o.landed ? P.ink : P.dim;
+      ctx.fillText(o.landed ? o.tLand.toFixed(2) + 's' : '—', x, H - 11);
     }
 
-    // 左上状态
-    ctx.textAlign = 'left';
-    ctx.font = '700 12px ' + V('--font', 'sans-serif');
-    ctx.fillStyle = S.air ? C.math : C.phys;
-    ctx.fillText(S.air ? '有空气' : '真空', 8, 14);
-    ctx.fillStyle = C.dim;
-    ctx.font = '600 11px ' + (css.getPropertyValue('--mono') || 'monospace');
-    ctx.fillText('g = ' + S.g.toFixed(2) + ' m/s²   t = ' + S.t.toFixed(2) + ' s', 8, 28);
+    /* 左上状态。窄画布上第二行底片会横到第一条跑道那儿，正好压住羽毛，
+       所以窄屏并成一行、放在吊架上方那条空带里。 */
+    if (W < 520) {
+      gchip(8, 15, (S.air ? '有空气' : '真空') + ' · g ' + S.g.toFixed(1) + ' · t ' + S.t.toFixed(2) + 's',
+        S.air ? P.chipAir : P.chipVac, '#0b0f1a', 'left', 11);
+    } else {
+      gchip(8, 15, S.air ? '有空气' : '真空（没有空气）', S.air ? P.chipAir : P.chipVac, '#0b0f1a', 'left', 12);
+      gchip(8, 36, 'g = ' + S.g.toFixed(2) + ' m/s²   t = ' + S.t.toFixed(2) + ' s', P.chip, P.ink, 'left', 11);
+    }
   }
 
   // ---------- 面板刷新 ----------
@@ -655,6 +1504,10 @@
       compareResultEl.textContent = '比较完成：有空气时' + resultText(comparison.air) + '，真空时' + resultText(comparison.vacuum) + '。';
       gravityTaskStatus.textContent = '两次条件匹配，自动证据已生成。';
     }
+    /* 图形层刷新由下面包裹 updateGravityTask 的那层统一负责
+       （refreshDropBars / refreshBadges / refreshActStatus）。
+       这里原来调用的 updateKidLayer() 从未定义过，每次都抛 ReferenceError，
+       连带把那层刷新也一起打断。 */
   }
   function recordComparison(times, gap) {
     comparison[S.air ? 'air' : 'vacuum'] = { times: times.slice(), gap: gap, g: S.g, height: S.height };
@@ -685,8 +1538,10 @@
   }
 
   // ---------- 主循环 ----------
-  var last = 0, acc = 0;
+  // 静止时不空转 RAF：暂停/落地后只补画一帧，需要时用 kick() 唤醒。
+  var last = 0, acc = 0, rafId = 0;
   function loop(now) {
+    rafId = 0;
     if (!last) last = now;
     var real = Math.min(0.05, (now - last) / 1000);
     last = now;
@@ -700,7 +1555,30 @@
     }
     draw();
     refreshPanel();
-    requestAnimationFrame(loop);
+    if (S.running) rafId = requestAnimationFrame(loop);
+  }
+  // 尊重「减少动效」：优先看 Playful 偏好，其次看系统设置。
+  function motionOff() {
+    if (window.Playful && typeof Playful.motionReduced === 'function') {
+      try { if (Playful.motionReduced()) return true; } catch (e) { /* 忽略 */ }
+    }
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
+  function kick() {
+    last = 0;
+    // 减少动效时不做逐帧动画：一次算到落地，只画最终画面。
+    if (S.running && motionOff()) {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+      var guard = 0;
+      while (S.running && guard < 240 * MAX_STEPS) { step(DT); guard++; }
+      S.running = false;
+      acc = 0;
+      draw();
+      refreshPanel();
+      return;
+    }
+    if (!rafId) rafId = requestAnimationFrame(loop);
   }
 
   // ---------- 交互 ----------
@@ -728,16 +1606,17 @@
   });
 
   btnGo.addEventListener('click', function () {
-    if (S.running) { S.running = false; btnGo.textContent = '继续'; return; }
+    if (S.running) { S.running = false; btnGo.textContent = '继续'; kick(); return; }
     var allLanded = S.bodies.every(function (o) { return o.landed; });
     if (allLanded || finished) { resetBodies(); finished = false; }
     S.running = true;
     btnGo.textContent = '暂停';
     announce('开始下落。');
+    kick();
   });
 
   document.getElementById('reset').addEventListener('click', function () {
-    resetBodies(); finished = false; btnGo.textContent = '松手，开始下落';
+    resetBodies(); finished = false; btnGo.textContent = '松手，开始下落'; kick();
   });
 
   var airOn = document.getElementById('airOn'), airOff = document.getElementById('airOff');
@@ -749,6 +1628,7 @@
     airVal.textContent = on ? '有空气' : '真空';
     resetBodies(); finished = false; btnGo.textContent = '松手，开始下落';
     announce(on ? '已切换到有空气。' : '已切换到真空，没有空气阻力。');
+    kick();
   }
   airOn.addEventListener('click', function () { setAir(true); });
   airOff.addEventListener('click', function () { setAir(false); });
@@ -772,6 +1652,7 @@
     planetVal.textContent = name;
     resetBodies(); finished = false; btnGo.textContent = '松手，开始下落';
     if (fromChip) announce('重力已设为' + name + '，g = ' + g.toFixed(2) + '。');
+    kick();
   }
   gRange.addEventListener('input', function () { setG(parseFloat(gRange.value), false); });
   planetBtns.forEach(function (b) {
@@ -783,6 +1664,7 @@
     S.height = Math.min(20, Math.max(2, parseFloat(hRange.value) || 8));
     hOut.textContent = S.height.toFixed(1) + ' m';
     resetBodies(); finished = false; btnGo.textContent = '松手，开始下落';
+    kick();
   });
 
   var tsRange = document.getElementById('tsRange'), tsOut = document.getElementById('tsOut');
@@ -790,6 +1672,523 @@
     S.timeScale = Math.min(1, Math.max(0.1, parseFloat(tsRange.value) || 1));
     tsOut.textContent = S.timeScale.toFixed(2) + '×';
   });
+
+  // ---------- 快捷发现按钮（不用打字也能回答） ----------
+  var phraseBtns = Array.prototype.slice.call(document.querySelectorAll('[data-gravity-phrase]'));
+  var pickStatus = document.getElementById('gravityPickStatus');
+  var reflection = document.getElementById('gravityReflection');
+  phraseBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var on = b.getAttribute('aria-pressed') !== 'true';
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      var picked = phraseBtns.filter(function (x) { return x.getAttribute('aria-pressed') === 'true'; });
+      if (reflection) {
+        reflection.value = picked.map(function (x) { return x.dataset.gravityPhrase; }).join(' ');
+      }
+      if (picked.length) {
+        pickStatus.textContent = '已选 ' + picked.length + ' 句，已写进反思栏。再点一次可以取消。';
+      } else {
+        pickStatus.textContent = '还没有选。也可以直接在反思栏里自己说一说。';
+      }
+    });
+  });
+
+  // ---------- 4–5 岁图形层：所有新按钮都在这里绑定 ----------
+  var kidActBtns    = Array.prototype.slice.call(document.querySelectorAll('[data-kid-act]'));
+  var kidGuessBtns  = Array.prototype.slice.call(document.querySelectorAll('[data-answer-target="guessLast"] button'));
+  var kidSawBtns    = Array.prototype.slice.call(document.querySelectorAll('[data-answer-target="kidSaw"] button'));
+  var kidWhatIfBtns = Array.prototype.slice.call(document.querySelectorAll('[data-whatif]'));
+  var kidBadges     = Array.prototype.slice.call(document.querySelectorAll('[data-kid-badge]'));
+  var dropFrames    = [0, 1, 2].map(function (i) { return document.querySelector('[data-drop-frame="' + i + '"]'); });
+  var kidActStatus    = document.getElementById('kidActStatus');
+  var kidGuessStatus  = document.getElementById('kidGuessStatus');
+  var kidSawStatus    = document.getElementById('kidSawStatus');
+  var kidWhatIfStatus = document.getElementById('kidWhatIfStatus');
+  var kidBadgeStatus  = document.getElementById('kidBadgeStatus');
+  var kidOrderStatus  = document.getElementById('kidOrderStatus');
+  var predictionSel   = document.getElementById('gravityPrediction');
+  var kidGuessed = false;
+
+  function setTone(el, tone) { if (el) el.setAttribute('data-tone', tone || ''); }
+
+  function refreshBadges() {
+    var state = { guess: kidGuessed, air: !!comparison.air, vacuum: !!comparison.vacuum, match: hasMatchingPair() };
+    var earned = 0;
+    kidBadges.forEach(function (li) {
+      var on = !!state[li.getAttribute('data-kid-badge')];
+      li.setAttribute('data-earned', on ? 'true' : 'false');
+      if (on) earned++;
+    });
+    if (!kidBadgeStatus) return;
+    kidBadgeStatus.textContent = earned ? ('已经亮了 ' + earned + ' 张贴纸 ⭐') : '还没有亮的贴纸。先猜一猜吧。';
+    setTone(kidBadgeStatus, earned >= kidBadges.length ? 'good' : (earned ? 'try' : ''));
+  }
+
+  function refreshActStatus() {
+    kidActBtns.forEach(function (b) {
+      var k = b.getAttribute('data-kid-act');
+      if (k === 'air') b.setAttribute('aria-pressed', S.air ? 'true' : 'false');
+      if (k === 'vacuum') b.setAttribute('aria-pressed', S.air ? 'false' : 'true');
+    });
+    if (!kidActStatus) return;
+    kidActStatus.textContent = (S.air ? '现在是有空气 🌬️' : '现在是真空 🌌') +
+      (S.running ? '，正在往下掉 ⬇️' : '。点 🖐️ 松手。');
+    setTone(kidActStatus, S.air ? '' : 'good');
+  }
+
+  function refreshDropBars() {
+    if (!S.bodies.length) return;
+    var ts = S.bodies.map(function (o) { return o.landed ? o.tLand : null; });
+    var known = ts.filter(function (t) { return typeof t === 'number'; });
+    var max = known.length ? Math.max.apply(null, known) : 1;
+    dropFrames.forEach(function (li, i) {
+      if (!li) return;
+      var bar = li.querySelector('[data-drop-bar]');
+      var lab = li.querySelector('b');
+      if (typeof ts[i] !== 'number') {
+        if (bar) bar.style.width = '6%';
+        if (lab) lab.textContent = BODIES[i].name;
+        return;
+      }
+      if (bar) bar.style.width = Math.max(12, Math.round(ts[i] / (max || 1) * 100)) + '%';
+      if (lab) lab.textContent = BODIES[i].name + ' ' + ts[i].toFixed(1) + 's';
+    });
+    if (!kidOrderStatus) return;
+    if (known.length < S.bodies.length) {
+      kidOrderStatus.textContent = '条越长，落地用的时间越久。';
+      setTone(kidOrderStatus, '');
+      return;
+    }
+    var gap = max - Math.min.apply(null, known);
+    if (gap < 0.02) {
+      kidOrderStatus.textContent = '三个一起到！🤝';
+      setTone(kidOrderStatus, 'good');
+    } else {
+      kidOrderStatus.textContent = BODIES[ts.indexOf(max)].name + '最后到 🐢 差 ' + gap.toFixed(1) + ' 秒。';
+      setTone(kidOrderStatus, 'try');
+    }
+  }
+
+  // 结果一变就刷新图形层（重录/重置都会经过这两个函数）
+  var origUpdateTask = updateGravityTask;
+  updateGravityTask = function () {
+    origUpdateTask();
+    refreshDropBars();
+    refreshBadges();
+    refreshActStatus();
+  };
+  var origResetBodies = resetBodies;
+  resetBodies = function () {
+    origResetBodies();
+    refreshDropBars();
+    refreshActStatus();
+  };
+
+  kidActBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.getAttribute('data-kid-act');
+      if (k === 'air') setAir(true);
+      else if (k === 'vacuum') setAir(false);
+      else if (k === 'drop') btnGo.click();
+      else if (k === 'reset') document.getElementById('reset').click();
+      refreshActStatus();
+    });
+  });
+
+  var PRED_TEXT = { feather: '羽毛最后', ball: '皮球最后', hammer: '锤子最后', same: '三个同时' };
+  kidGuessBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      kidGuessBtns.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      kidGuessed = true;
+      var v = b.getAttribute('data-value');
+      var label = b.getAttribute('data-label') || v;
+      if (predictionSel && PRED_TEXT[v]) {
+        for (var i = 0; i < predictionSel.options.length; i++) {
+          if (predictionSel.options[i].text === PRED_TEXT[v]) { predictionSel.selectedIndex = i; break; }
+        }
+      }
+      if (kidGuessStatus) {
+        kidGuessStatus.textContent = '你猜 ' + label + ' 最后到 ✓ 松手看看 🖐️';
+        setTone(kidGuessStatus, 'try');
+      }
+      refreshBadges();
+      announce('已记下猜想：' + label + '最后落地。');
+    });
+  });
+
+  // 图形版“我看到了”与家长区的短句按钮共用同一份数据，避免两套状态
+  var SAW_TO_PHRASE = { slow: 1, together: 0, faster: 4, fair: 5 };
+  function syncSaw() {
+    var n = 0;
+    kidSawBtns.forEach(function (b) {
+      var src = phraseBtns[SAW_TO_PHRASE[b.getAttribute('data-value')]];
+      var on = !!(src && src.getAttribute('aria-pressed') === 'true');
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (on) n++;
+    });
+    if (!kidSawStatus) return;
+    kidSawStatus.textContent = n ? ('已选 ' + n + ' 张图 ✓ 已经记下来了。') : '可以多选，也可以再点一次取消。';
+    setTone(kidSawStatus, n ? 'good' : '');
+  }
+  kidSawBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var src = phraseBtns[SAW_TO_PHRASE[b.getAttribute('data-value')]];
+      if (src) src.click();
+      syncSaw();
+    });
+  });
+  phraseBtns.forEach(function (b) { b.addEventListener('click', syncSaw); });
+
+  function syncWhatIf() {
+    kidWhatIfBtns.forEach(function (b) {
+      var k = b.getAttribute('data-whatif'), on = false;
+      if (k === 'moon') on = Math.abs(S.g - 1.62) < 0.05;
+      else if (k === 'earth') on = Math.abs(S.g - 9.81) < 0.05;
+      else if (k === 'tall') on = S.height >= 14;
+      else if (k === 'slowmo') on = S.timeScale < 0.9;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  function setHeightFromKid(h) {
+    S.height = h;
+    hRange.value = String(h);
+    hOut.textContent = S.height.toFixed(1) + ' m';
+    resetBodies(); finished = false; btnGo.textContent = '松手，开始下落';
+    kick();
+  }
+  function setSlowFromKid(on) {
+    S.timeScale = on ? 0.35 : 1;
+    tsRange.value = String(S.timeScale);
+    tsOut.textContent = S.timeScale.toFixed(2) + '×';
+  }
+  kidWhatIfBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.getAttribute('data-whatif'), msg = '';
+      if (k === 'moon') { setG(1.62, true); msg = '到月球了 🌙 掉得慢慢的。'; }
+      else if (k === 'earth') { setG(9.81, true); msg = '回到地球 🌍 速度正常。'; }
+      else if (k === 'tall') {
+        var goTall = S.height < 14;
+        setHeightFromKid(goTall ? 16 : 8);
+        msg = goTall ? '楼变高了 🏢 要掉好久。' : '换回矮一点 🪜。';
+      } else {
+        var goSlow = S.timeScale >= 0.9;
+        setSlowFromKid(goSlow);
+        msg = goSlow ? '慢镜头打开 🐌 看得更清楚。' : '恢复正常速度 ⏩。';
+      }
+      syncWhatIf();
+      refreshActStatus();
+      if (kidWhatIfStatus) { kidWhatIfStatus.textContent = msg; setTone(kidWhatIfStatus, 'good'); }
+      announce(msg);
+    });
+  });
+
+  syncSaw();
+  syncWhatIf();
+  refreshBadges();
+  refreshActStatus();
+
+  /* ================= 图像优先三件套（前缀 gdx-）：图鉴 / 三条量表 / 谁先落地 ================= */
+
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  function gdxAdd(parent, name, at) {
+    var el = document.createElementNS(SVG_NS, name);
+    for (var k in at) if (Object.prototype.hasOwnProperty.call(at, k)) el.setAttribute(k, String(at[k]));
+    parent.appendChild(el);
+    return el;
+  }
+  function gdxClear(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
+
+  /* 图鉴八张卡的物理参数：m 质量(kg)、area 迎风面积(m²)、cd 阻力系数。
+     取的都是常见量级的估计值，不是某一次实测。 */
+  var GDX_OBJ = {
+    iron:    { cap: '铁球',   m: 1.0,       area: 0.0030,    cd: 0.47,
+               spec: '约 1 千克 · 迎风面积约 30 平方厘米',
+               why: '又结实又小，空气几乎挡不住它' },
+    feather: { cap: '羽毛',   m: 0.005,     area: 0.0200,    cd: 1.10,
+               spec: '约 5 克 · 迎风面积约 200 平方厘米',
+               why: '又轻又大，空气一直把它托着' },
+    paper:   { cap: '摊开的纸', m: 0.005,   area: 0.0620,    cd: 1.20,
+               spec: '约 5 克 · 迎风面积约 620 平方厘米（一整张 A4）',
+               why: '面积特别大，要推开很多空气' },
+    wad:     { cap: '纸团',   m: 0.005,     area: 0.0020,    cd: 0.60,
+               spec: '约 5 克（和摊开的那张纸一样重）· 迎风面积约 20 平方厘米',
+               why: '重量没变，只是面积小了，所以快得多' },
+    balloon: { cap: '气球',   m: 0.003,     area: 0.0300,    cd: 0.60,
+               spec: '约 3 克 · 迎风面积约 300 平方厘米',
+               why: '太轻又太大，空气一顶就只能慢慢飘' },
+    rain:    { cap: '雨滴',   m: 0.0000042, area: 0.0000031, cd: 0.60,
+               spec: '约 4 毫克 · 迎风面积约 3 平方毫米',
+               why: '很快就到自己的顶速，之后不再变快' },
+    chute:   { cap: '降落伞', m: 90,        area: 25,        cd: 1.50,
+               spec: '约 90 千克（人加伞）· 迎风面积约 25 平方米',
+               why: '伞把面积做得特别大，就是专门用来变慢的' },
+    balls:   { cap: '篮球',   m: 0.62,      area: 0.0450,    cd: 0.47,
+               spec: '约 620 克 · 迎风面积约 450 平方厘米（量表按篮球算）',
+               why: '结实的球，几米高的下落里空气影响还很小' }
+  };
+  var GDX_T_MAX = 6, GDX_V_MAX = 30, GDX_H_MAX = 20;
+
+  /* 用页面同一套阻力公式积分一遍，得到「算上空气」的估计值。真空时直接等于理想值。 */
+  function gdxFall(obj) {
+    var h = S.height, g = S.g;
+    var idealT = Math.sqrt(2 * h / g);
+    var out = { h: h, g: g, idealT: idealT, idealV: g * idealT, t: idealT, v: g * idealT, capped: false };
+    if (!S.air) return out;
+    var dt = 1 / 240, s = 0, v = 0, t = 0, guard = 0, limit = 240 * 200;
+    while (s < h && guard < limit) {
+      var a = g - (0.5 * RHO_AIR * obj.cd * obj.area * v * v) / obj.m;
+      v += a * dt;
+      if (v < 0) v = 0;
+      s += v * dt;
+      t += dt;
+      guard++;
+    }
+    out.t = t;
+    out.v = v;
+    out.capped = s < h;
+    return out;
+  }
+
+  /* ---------- ① 图鉴 ---------- */
+  var gdxAtlasBtns = Array.prototype.slice.call(document.querySelectorAll('#gdxAtlasGrid [data-gdx-obj]'));
+  var gdxAtlasSay = document.getElementById('gdxAtlasSay');
+  var gdxCurrent = 'iron';
+
+  /* ---------- ② 三条量表 ---------- */
+  var gdxTimeMeter = document.getElementById('gdxTimeMeter');
+  var gdxSpeedMeter = document.getElementById('gdxSpeedMeter');
+  var gdxHeightMeter = document.getElementById('gdxHeightMeter');
+  var gdxTimeValue = document.getElementById('gdxTimeValue');
+  var gdxSpeedValue = document.getElementById('gdxSpeedValue');
+  var gdxHeightValue = document.getElementById('gdxHeightValue');
+  var gdxTimeNote = document.getElementById('gdxTimeNote');
+  var gdxSpeedNote = document.getElementById('gdxSpeedNote');
+  var gdxHeightNote = document.getElementById('gdxHeightNote');
+  var gdxMeterSay = document.getElementById('gdxMeterSay');
+
+  function gdxSetMeter(track, value, max) {
+    if (!track) return;
+    if (window.Playful && Playful.setMeter) { Playful.setMeter(track, value, max); return; }
+    var fill = track.querySelector('.kid-meter-fill');
+    var ratio = Math.max(0, Math.min(1, Number(value) / Number(max)));
+    if (fill) fill.style.setProperty('--fill', (ratio * 100).toFixed(1) + '%');
+  }
+  function gdxSecText(res) { return res.capped ? '超过 200 秒' : res.t.toFixed(2) + ' 秒'; }
+
+  function gdxSyncMeters() {
+    if (!gdxTimeValue) return;
+    var obj = GDX_OBJ[gdxCurrent];
+    var res = gdxFall(obj);
+    var h = res.h.toFixed(1), g = res.g.toFixed(2);
+    var idealT = res.idealT.toFixed(2), idealV = res.idealV.toFixed(1);
+
+    gdxTimeValue.textContent = gdxSecText(res);
+    gdxSetMeter(gdxTimeMeter, res.capped ? GDX_T_MAX : res.t, GDX_T_MAX);
+    gdxSpeedValue.textContent = res.v.toFixed(1) + ' m/s';
+    gdxSetMeter(gdxSpeedMeter, res.v, GDX_V_MAX);
+    gdxHeightValue.textContent = h + ' m';
+    gdxSetMeter(gdxHeightMeter, res.h, GDX_H_MAX);
+
+    /* 铁球这类物体两个算法几乎给出同一个数，这时不能硬说「会更慢」 */
+    var slower = res.capped || res.t - res.idealT >= 0.02;
+    if (S.air) {
+      gdxTimeNote.textContent = '不算空气：t = √(2 × ' + h + ' ÷ ' + g + ') = ' + idealT +
+        ' 秒。算上空气以后估计 ' + gdxSecText(res) +
+        (slower ? '——真实的' + obj.cap + '会更慢。' : '——两个数几乎一样，空气对它的影响小到看不出来。') + '满格＝6 秒。';
+      gdxSpeedNote.textContent = '不算空气：v = ' + g + ' × ' + idealT + ' = ' + idealV +
+        ' m/s。算上空气以后估计 ' + res.v.toFixed(1) + ' m/s' +
+        (slower ? '，被空气挡掉了一大截。' : '，几乎没被空气挡住。') + '满格＝30 米每秒。';
+    } else {
+      gdxTimeNote.textContent = '现在是真空，没有空气可挡：t = √(2 × ' + h + ' ÷ ' + g + ') = ' + idealT +
+        ' 秒，这就是真实答案，换成别的物体也一样。满格＝6 秒。';
+      gdxSpeedNote.textContent = '真空里没有阻力：v = ' + g + ' × ' + idealT + ' = ' + idealV +
+        ' m/s，速度会一直增加到落地。满格＝30 米每秒。';
+    }
+    gdxHeightNote.textContent = '舞台标尺现在是 ' + h + ' 米。高度变 4 倍，不算空气的时间只变 2 倍，因为 h = ½ × g × t²。满格＝20 米。';
+
+    gdxMeterSay.textContent = S.air
+      ? ('你选的是' + obj.cap + '（' + obj.spec + '）。不算空气要 ' + idealT + ' 秒，算上空气估计 ' +
+         gdxSecText(res) + '：' + obj.why + '。')
+      : ('真空里' + obj.cap + '和羽毛、铁球都一样：' + idealT + ' 秒落地，' + idealV + ' m/s 着地。');
+  }
+
+  function gdxSelect(key) {
+    if (!GDX_OBJ[key]) return;
+    gdxCurrent = key;
+    gdxAtlasBtns.forEach(function (btn) {
+      btn.setAttribute('aria-pressed', btn.getAttribute('data-gdx-obj') === key ? 'true' : 'false');
+    });
+    var obj = GDX_OBJ[key];
+    if (gdxAtlasSay) gdxAtlasSay.textContent = '你选了' + obj.cap + '：' + obj.spec + '。' + obj.why + '。';
+    gdxSyncMeters();
+  }
+  gdxAtlasBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () { gdxSelect(btn.getAttribute('data-gdx-obj')); });
+  });
+
+  /* 高度、重力、空气条件的每一次改动都会先经过 resetBodies，量表跟着它一起刷新 */
+  var gdxPrevReset = resetBodies;
+  resetBodies = function () {
+    gdxPrevReset();
+    gdxSyncMeters();
+  };
+
+  /* ---------- ③ 谁先落地 ---------- */
+  var GDX_SHAPE = {
+    iron: function (g) {
+      gdxAdd(g, 'circle', { cx: 0, cy: 0, r: 20, 'class': 'gdx-metal' });
+      gdxAdd(g, 'circle', { cx: -7, cy: -8, r: 5, 'class': 'gdx-shine' });
+    },
+    wood: function (g) {
+      gdxAdd(g, 'circle', { cx: 0, cy: 0, r: 20, 'class': 'gdx-wood' });
+      gdxAdd(g, 'path', { d: 'M-14 -8 C-4 -2 -4 4 -14 10 M-2 -14 C8 -6 8 4 -2 14', 'class': 'gdx-line-thin' });
+    },
+    feather: function (g) {
+      var r = gdxAdd(g, 'g', { transform: 'rotate(-18)' });
+      gdxAdd(r, 'ellipse', { cx: 0, cy: 0, rx: 10, ry: 24, 'class': 'gdx-feather' });
+      gdxAdd(r, 'path', { d: 'M0 -23 V25', 'class': 'gdx-line-thin' });
+    },
+    paper: function (g) {
+      gdxAdd(g, 'path', { d: 'M-28 -12 L26 -20 L30 12 L-24 20 Z', 'class': 'gdx-paper' });
+      gdxAdd(g, 'path', { d: 'M-20 -6 L20 -11 M-19 2 L21 -3', 'class': 'gdx-line-thin' });
+    },
+    wad: function (g) {
+      gdxAdd(g, 'path', { d: 'M-13 -7 L-1 -16 L11 -10 L16 3 L8 15 L-8 16 L-17 6 Z', 'class': 'gdx-paper' });
+      gdxAdd(g, 'path', { d: 'M-6 -12 L2 0 L-3 12 M10 -8 L1 -2 L12 6', 'class': 'gdx-line-thin' });
+    },
+    balloon: function (g) {
+      gdxAdd(g, 'path', { d: 'M0 -26 C14 -26 22 -14 22 -2 C22 10 10 22 0 26 C-10 22 -22 10 -22 -2 C-22 -14 -14 -26 0 -26 Z', 'class': 'gdx-balloon' });
+      gdxAdd(g, 'circle', { cx: -8, cy: -13, r: 5, 'class': 'gdx-shine' });
+      gdxAdd(g, 'path', { d: 'M0 26 C4 32 -4 36 0 42', 'class': 'gdx-line-thin' });
+    },
+    rain: function (g) {
+      gdxAdd(g, 'path', { d: 'M0 -26 C9 -8 16 2 16 10 A16 16 0 0 1 -16 10 C-16 2 -9 -8 0 -26 Z', 'class': 'gdx-water' });
+    },
+    chute: function (g) {
+      gdxAdd(g, 'path', { d: 'M-32 -12 A32 28 0 0 1 32 -12 Z', 'class': 'gdx-canopy' });
+      gdxAdd(g, 'path', { d: 'M-30 -12 L-2 8 M0 -12 L0 8 M30 -12 L2 8', 'class': 'gdx-line-thin' });
+      gdxAdd(g, 'circle', { cx: 0, cy: 13, r: 5, 'class': 'gdx-ink' });
+      gdxAdd(g, 'path', { d: 'M0 18 V26 M0 22 L-8 32 M0 22 L8 32', 'class': 'gdx-line' });
+    },
+    diver: function (g) {
+      gdxAdd(g, 'circle', { cx: 0, cy: -18, r: 7, 'class': 'gdx-ink' });
+      gdxAdd(g, 'path', { d: 'M0 -11 V6 M0 -4 L-13 3 M0 -4 L13 3 M0 6 L-9 24 M0 6 L9 24', 'class': 'gdx-line' });
+    },
+    basket: function (g) {
+      gdxAdd(g, 'circle', { cx: 0, cy: 0, r: 22, 'class': 'gdx-ball' });
+      gdxAdd(g, 'path', { d: 'M-22 0 H22 M0 -22 V22 M-15 -16 C-5 -6 -5 6 -15 16 M15 -16 C5 -6 5 6 15 16', 'class': 'gdx-line-thin' });
+    },
+    pingpong: function (g) {
+      gdxAdd(g, 'circle', { cx: 0, cy: 0, r: 9, 'class': 'gdx-pong' });
+    }
+  };
+
+  var GDX_ROUNDS = [
+    { left: 'iron', leftName: '铁球', right: 'wood', rightName: '木球（一样大）', answer: 'same',
+      hint: '先比一比：这两个球一样大吗？形状一样吗？',
+      why: '铁球和木球一起放，几乎同时落地。它们一样大、一样结实，空气挡住的力气差不多；而重力让所有东西的加速度都一样，所以重的那个并没有更快。' },
+    { left: 'paper', leftName: '摊开的纸', right: 'wad', rightName: '同一张纸揉成团', answer: 'right',
+      hint: '这是同一张纸，重量完全一样。那不一样的到底是什么？',
+      why: '纸团比摊开的纸快，是因为迎风面积小、空气挡得少。两张纸一样重——重量完全没变，结果却差很多，所以决定快慢的不是「重」。' },
+    { left: 'feather', leftName: '羽毛', right: 'iron', rightName: '铁球', answer: 'right',
+      hint: '哪一个面积更大、更容易被空气托住？',
+      why: '铁球先落地。羽毛又轻又大，一松手就被空气托住，速度停在每秒 2 米以内；铁球又小又结实，空气几乎挡不住它。把空气抽掉，两个就会一起落地。' },
+    { left: 'basket', leftName: '篮球', right: 'pingpong', rightName: '乒乓球', answer: 'same',
+      hint: '两个都是圆圆的硬球。重的那个真的会更快吗？',
+      why: '几乎同时落地。篮球重几十倍，可是两个都很结实，几米高的下落里空气还来不及拖住谁。这是最容易在家试的一组。' },
+    { left: 'chute', leftName: '张开的降落伞', right: 'diver', rightName: '还没开伞的人', answer: 'right',
+      hint: '伞那么大一片，是用来干什么的？',
+      why: '没开伞的人先落地。伞就是专门做出来的大面积：面积一大，空气挡住的力气就大，速度被压到每秒 5–6 米。人的面积小得多，所以落得快很多。' },
+    { left: 'rain', leftName: '雨滴', right: 'balloon', rightName: '气球', answer: 'left',
+      hint: '哪一个又轻又大，容易被空气顶住？',
+      why: '雨滴先落地。雨滴又小又结实，很快就到自己的顶速，大约每秒 6 米；气球又轻又大，顶速只有每秒一米多，只能慢慢地飘。' }
+  ];
+
+  var gdxRaceArt = document.getElementById('gdxRaceArt');
+  var gdxRaceLeft = document.getElementById('gdxRaceLeft');
+  var gdxRaceRight = document.getElementById('gdxRaceRight');
+  var gdxRaceLeftName = document.getElementById('gdxRaceLeftName');
+  var gdxRaceRightName = document.getElementById('gdxRaceRightName');
+  var gdxRaceDesc = document.getElementById('gdxRaceArtDesc');
+  var gdxRaceSay = document.getElementById('gdxRaceSay');
+  var gdxRaceCount = document.getElementById('gdxRaceCount');
+  var gdxDots = document.getElementById('gdxDots');
+  var gdxRacePicks = Array.prototype.slice.call(document.querySelectorAll('#gdxRacePicks [data-gdx-answer]'));
+  var gdxSideSubs = {
+    left: document.querySelector('#gdxRacePicks [data-gdx-side="left"]'),
+    right: document.querySelector('#gdxRacePicks [data-gdx-side="right"]')
+  };
+  var gdxRaceIdx = 0;
+  var gdxSolved = GDX_ROUNDS.map(function () { return false; });
+
+  function gdxSolvedCount() {
+    return gdxSolved.filter(function (x) { return x; }).length;
+  }
+  function gdxPaintDots() {
+    if (!gdxDots) return;
+    gdxDots.textContent = '';
+    GDX_ROUNDS.forEach(function (round, i) {
+      var dot = document.createElement('i');
+      if (!gdxSolved[i]) dot.setAttribute('data-empty', 'true');
+      gdxDots.appendChild(dot);
+    });
+    gdxDots.setAttribute('aria-label', '六格里点亮了 ' + gdxSolvedCount() + ' 格，就是想通了 ' + gdxSolvedCount() + ' 组');
+    if (gdxRaceCount) gdxRaceCount.textContent = '已经想通 ' + gdxSolvedCount() + ' / ' + GDX_ROUNDS.length + ' 组。';
+  }
+
+  function gdxShowRound() {
+    var r = GDX_ROUNDS[gdxRaceIdx];
+    gdxClear(gdxRaceLeft);
+    gdxClear(gdxRaceRight);
+    gdxRaceLeft.setAttribute('transform', 'translate(80,100)');
+    gdxRaceRight.setAttribute('transform', 'translate(220,100)');
+    GDX_SHAPE[r.left](gdxRaceLeft);
+    GDX_SHAPE[r.right](gdxRaceRight);
+    gdxRaceLeftName.textContent = r.leftName;
+    gdxRaceRightName.textContent = r.rightName;
+    if (gdxSideSubs.left) gdxSideSubs.left.textContent = r.leftName;
+    if (gdxSideSubs.right) gdxSideSubs.right.textContent = r.rightName;
+    if (gdxRaceDesc) {
+      gdxRaceDesc.textContent = '第 ' + (gdxRaceIdx + 1) + ' 组：左边是' + r.leftName + '，右边是' +
+        r.rightName + '，两样东西挂在同一条虚线下面，也就是同一个高度。请判断哪一样先落地。';
+    }
+    gdxRacePicks.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+    gdxRaceSay.textContent = '第 ' + (gdxRaceIdx + 1) + ' 组：' + r.leftName + ' 和 ' + r.rightName +
+      '，从同一高度一起松手。谁先落地？' + (gdxSolved[gdxRaceIdx] ? '（这一组你已经想通了。）' : '');
+    gdxPaintDots();
+  }
+
+  gdxRacePicks.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var r = GDX_ROUNDS[gdxRaceIdx];
+      var pick = button.getAttribute('data-gdx-answer');
+      if (pick === r.answer) {
+        gdxRacePicks.forEach(function (other) {
+          other.setAttribute('aria-pressed', other === button ? 'true' : 'false');
+        });
+        var first = !gdxSolved[gdxRaceIdx];
+        gdxSolved[gdxRaceIdx] = true;
+        gdxPaintDots();
+        gdxRaceSay.textContent = '✓ 对了。' + r.why +
+          (gdxSolvedCount() >= GDX_ROUNDS.length ? ' 六组都想通了，你已经能自己解释空气做了什么。' : ' 按「下一组」再看一组。');
+        if (first && window.Playful && Playful.confetti) Playful.confetti(gdxRaceArt.parentNode);
+        return;
+      }
+      button.setAttribute('aria-pressed', 'false');
+      gdxRaceSay.textContent = '○ 再看一眼图：不要只比谁重，要比谁的迎风面积大。' + r.hint;
+    });
+  });
+
+  document.getElementById('gdxRaceNext').addEventListener('click', function () {
+    gdxRaceIdx = (gdxRaceIdx + 1) % GDX_ROUNDS.length;
+    gdxShowRound();
+  });
+  document.getElementById('gdxRaceHint').addEventListener('click', function () {
+    gdxRaceSay.textContent = '提示：' + GDX_ROUNDS[gdxRaceIdx].hint;
+  });
+
+  gdxSelect(gdxCurrent);
+  gdxShowRound();
 
   // 空格键 = 开始/暂停
   document.addEventListener('keydown', function (e) {
@@ -805,14 +2204,14 @@
   resetBodies();
   updateGravityTask();
   resize();
-  requestAnimationFrame(loop);
+  kick();
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>if (window.Progress) Progress.visit("games/gravity-drop.html", "自由落体");</script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

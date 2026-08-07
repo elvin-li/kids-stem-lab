@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>分数实验室 · 面积与数轴上的分数 — 少儿数理启蒙</title>
 <meta name="description" content="把分数同时看成「一块面积」和「数轴上的一个点」：自由切分 2–12 份、涂色、比较大小、发现等值分数，并用公分母图形做分数加法。">
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#0b0f1a">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .head-pills { margin-bottom: 14px; }
@@ -31,7 +31,7 @@
     transition: all .16s var(--ease);
   }
   .tabs button:hover { color: var(--ink); }
-  .tabs button[aria-pressed="true"] { background: var(--accent); color: #08101f; }
+  .tabs button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
 
   .pair { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
   @media (max-width: 620px) { .pair { grid-template-columns: 1fr; } }
@@ -154,8 +154,8 @@
   .kid-picks { display:flex; flex-wrap:wrap; gap:8px; }
   .kid-picks .kid-choice { min-height:44px; }
   .kid-picks .kid-choice[aria-pressed="true"] { border-color:var(--sci); background:rgba(74,222,128,.14); }
-  .kid-challenge { padding:12px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
-  .kid-challenge > p { margin:0 0 8px; color:var(--ink); font-weight:800; }
+  .kid-predict-card { padding:12px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
+  .kid-predict-card > p { margin:0 0 8px; color:var(--ink); font-weight:800; }
   html[data-mode="kid"] main { padding-top:12px !important; }
   html[data-mode="kid"] .story-hero { padding-block:14px; margin-bottom:8px; }
   html[data-mode="kid"] .lab { display:block; }
@@ -170,7 +170,68 @@
   html[data-mode="kid"] .pair.kid-visual-stage { min-height:280px; padding:8px; align-items:stretch; overflow:visible; }
   html[data-mode="kid"] .fraction-primary-actions { margin-top:10px; }
   html[data-mode="kid"] .fraction-primary-actions .btn { padding-inline:6px; font-size:.8rem; }
+  /* ---- 图形玩法引导 ---- */
+  .fl-guide { margin:0 0 14px; display:grid; gap:10px; }
+  .fl-guide .kid-speech b { color:var(--kit); }
+  .fl-legend { margin:0 0 10px; }
+  .fl-meters { display:grid; gap:10px; margin-top:4px; }
+
+  /* ---- 图形小游戏 ---- */
+  .fl-games { margin:30px 0 0; padding:clamp(14px,3vw,22px); border:3px solid color-mix(in srgb,var(--kit) 30%,var(--line)); border-radius:var(--r-xl); background:color-mix(in srgb,var(--kit) 6%,var(--surface)); }
+  .fl-games-title { display:flex; align-items:center; gap:9px; margin:0 0 12px; font-size:clamp(1.15rem,3.6vw,1.5rem); }
+  .fl-panel { padding:clamp(12px,2.4vw,18px); border:2px solid var(--line-soft); border-radius:var(--r-lg); background:var(--surface); }
+  .fl-ask { margin:0 0 12px; display:flex; align-items:center; gap:8px; font-size:clamp(1.02rem,3.2vw,1.22rem); font-weight:800; color:var(--ink); }
+  .fl-say { margin:12px 0 0; color:var(--ink-mid); font-weight:700; }
+  .fl-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+
+  /* 谁更大 */
+  .fl-duel { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:10px; align-items:stretch; }
+  .fl-duel-card { align-items:center; }
+  .fl-duel-card .kid-figure-art > svg { width:100%; max-width:132px; height:auto; }
+  .fl-duel-card .kid-figure-cap { font-family:var(--mono); font-size:1.15rem; }
+  .fl-duel #flDuelSame { --tone:var(--sci); }
+  .fl-overlay { display:grid; place-items:center; margin-top:12px; padding:10px; border:2px dashed var(--line); border-radius:var(--r); background:var(--surface-2); }
+  .fl-overlay > svg { width:100%; max-width:280px; height:auto; }
+
+  /* 找等值 */
+  .fl-target { display:flex; align-items:center; justify-content:center; gap:12px; padding:12px; border:3px solid color-mix(in srgb,var(--math) 34%,var(--line)); border-radius:var(--r-lg); background:color-mix(in srgb,var(--math) 8%,var(--surface)); }
+  .fl-target-art > svg { display:block; width:clamp(78px,20vw,110px); height:auto; }
+  .fl-target-cap { font:800 clamp(1.5rem,6vw,2.2rem)/1 var(--mono); color:var(--math); }
+  .fl-match-grid { margin-top:12px; }
+  .fl-match-grid .kid-figure-art > svg { width:100%; max-width:110px; height:auto; }
+
+  /* 切披萨 */
+  .fl-slice-stage { display:grid; grid-template-columns:auto minmax(0,1fr); gap:14px; align-items:center; }
+  .fl-slice-art > svg { display:block; width:clamp(112px,30vw,170px); height:auto; }
+  .fl-slice-read { min-width:0; }
+  .fl-slice-frac { margin:0; font:800 clamp(2rem,9vw,3.4rem)/1 var(--mono); color:var(--kit); }
+  .fl-slice-note { margin:6px 0 0; color:var(--ink-mid); font-weight:700; }
+  .fl-slide-block { display:grid; gap:4px; margin-top:14px; }
+  .fl-slide-label { margin:0 0 6px; color:var(--ink-mid); font-weight:700; font-size:.9rem; }
+  .fl-slide-label b { font-family:var(--mono); color:var(--ink); }
+
+  /* 图鉴 */
+  .fl-gallery .kid-figure-art > svg { width:100%; max-width:104px; height:auto; }
+  .fl-gallery .kid-figure-cap { font-family:var(--mono); }
+
+  .fl-score { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:14px 0 0; }
+  .fl-stars { font-size:1.3rem; line-height:1; letter-spacing:2px; }
+
+  /* 小游戏里的饼图取色（属性里不写 var()，统一走 class） */
+  .fl-pie-plate { fill:color-mix(in srgb,var(--kit) 14%,var(--surface-2)); }
+  .fl-pie-crust { fill:none; stroke:color-mix(in srgb,var(--warn) 62%,var(--line)); stroke-width:4; }
+  .fl-pie-empty { fill:var(--surface-2); stroke:var(--line); stroke-width:1.5; stroke-dasharray:5 4; }
+  .fl-pie-cut { fill:none; stroke:color-mix(in srgb,var(--ink) 22%,transparent); stroke-width:1.5; }
+  .fl-pie-a { fill:var(--math); stroke:#fff; stroke-width:1.5; }
+  .fl-pie-b { fill:var(--kit); stroke:#fff; stroke-width:1.5; }
+  .fl-pie-shine { fill:#fff; opacity:.3 }
+  .fl-bar-empty { fill:var(--surface-2); stroke:var(--line); stroke-width:1.5; stroke-dasharray:5 4; }
+  .fl-bar-a { fill:var(--math); stroke:#fff; stroke-width:1.2; }
+  .fl-bar-b { fill:var(--kit); stroke:#fff; stroke-width:1.2; }
+
   @media (max-width:620px) {
+    .fl-duel { grid-template-columns:1fr; }
+    .fl-slice-stage { grid-template-columns:1fr; justify-items:center; text-align:center; }
     .story-hero { grid-template-columns:1fr; padding:18px 16px; }
     .story-guide { width:68px; height:68px; font-size:2rem; }
     .story-hero::after { font-size:2.7rem; }
@@ -188,6 +249,33 @@
     html[data-mode="kid"] .frac-top { margin-bottom:4px; }
     html[data-mode="kid"] .frac-lg { font-size:1.15rem; }
     html[data-mode="kid"] .cell-canvas canvas { max-height:none; }
+  }
+  /* 手机孩子模式：说明性的提示条和图例让位，把 ±A / ±B 主操作留在首屏。
+     玩法已由上方 .fl-guide 的三步图卡讲清楚。 */
+  @media (max-width:480px) {
+    html[data-mode="kid"] .stage-ribbon { display:none; }
+    html[data-mode="kid"] .fl-guide { margin-bottom:8px; }
+    html[data-mode="kid"] .stage-head { margin:0 0 6px; gap:6px; }
+    html[data-mode="kid"] .stage-hint { display:none; }
+    html[data-mode="kid"] .fl-legend { margin:4px 0; }
+    html[data-mode="kid"] .story-hero { padding-block:6px; }
+    html[data-mode="kid"] .pair { margin-top:6px; }
+    html[data-mode="kid"] .stage-head { min-height:0; }
+    /* .pair 是本页首个 .kid-visual-stage，「舞台占首屏 24% 面积」按它算，
+       所以只能收到约 220px，不能再低。 */
+    html[data-mode="kid"] .pair { min-height:220px; }
+    /* .fl-guide 原本没有内边距，别再加；收紧它的栅格间距即可。 */
+    html[data-mode="kid"] .fl-guide { gap:6px; margin-bottom:6px; }
+    html[data-mode="kid"] .stage-head { padding:0; }
+    html[data-mode="kid"] .story-kicker { display:none; }
+    /* 松鼠那句旁白和页头的 .story-goal 说的是同一件事：
+         页头「涂一涂、比一比：切法不同，也可能刚好一样多。」
+         旁白「切几刀不重要，吃到一样多才算公平。」
+       375px 上这句话要折三行、占掉 91px，把可涂色的点心整块推到首屏之外
+       （舞台顶端 y=508px，是全部 11 个实验页里最低的一个，次低的只有 336px）。
+       三步图卡已经讲清怎么玩，所以最窄这一档只留图卡，把高度让给主操作。
+       这属于信息密度调整：任务文字、完成状态和无障碍名称都不在这里。 */
+    html[data-mode="kid"] .fl-guide > .kid-speech-row { display:none; }
   }
 </style>
 </head>
@@ -208,7 +296,10 @@
 
 <main id="main" class="wrap" style="padding-top:28px;padding-bottom:8px">
 
-  <header class="story-hero">
+  <header class="story-hero" data-scene-layer="back"
+          data-playful-scene="lab"
+          data-playful-scene-decorative="true"
+          data-playful-scene-tone="var(--kit)">
     <div class="story-guide" aria-hidden="true">🥧</div>
     <div class="story-copy">
       <p class="story-kicker">果果的公平点心铺开门啦</p>
@@ -221,6 +312,19 @@
       <p class="story-goal"><b>涂一涂、比一比：</b>切法不同，也可能刚好一样多。</p>
     </div>
   </header>
+
+  <!-- 图形玩法引导：不识字也知道点哪里 -->
+  <div class="fl-guide" data-audience="kid-only">
+    <div class="kid-speech-row">
+      <span class="kid-mascot" aria-hidden="true">🐿️</span>
+      <p class="kid-speech">切几刀不重要，<b>吃到一样多</b>才算公平。</p>
+    </div>
+    <ol class="kid-steps-visual" aria-label="三步玩法">
+      <li><span class="kid-tile-art" aria-hidden="true">👆</span>点点心涂色</li>
+      <li><span class="kid-tile-art" aria-hidden="true">📏</span>看两条谁长</li>
+      <li><span class="kid-tile-art" aria-hidden="true">🤝</span>一样长就公平</li>
+    </ol>
+  </div>
 
   <div class="stage-ribbon" role="note"><span aria-hidden="true">🍰</span><strong>现在就试：</strong><span>点击圆饼涂色，再看两个点会不会站到一起。</span></div>
 
@@ -235,6 +339,12 @@
         </div>
         <span class="stage-hint">点击 / 拖动图形涂色 · 拖动滑块改变份数</span>
       </div>
+
+      <ul class="fl-legend kid-legend" aria-label="画面图例">
+        <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">🫐</span>蓝色 = A 吃到的</li>
+        <li style="--tone:var(--kit)"><span class="kid-legend-mark" aria-hidden="true">🍓</span>粉斜纹 = B 吃到的</li>
+        <li style="--tone:var(--ink-dim)"><span class="kid-legend-mark" aria-hidden="true">▢</span>虚线 = 还没吃</li>
+      </ul>
 
       <!-- 两个分数 -->
       <div class="pair kid-visual-stage">
@@ -298,11 +408,33 @@
         <div class="fraction-strip-row"><span class="fraction-strip-label" id="kidFracALabel">A 1/2</span><div class="fraction-strip a" id="kidFracA" role="img" aria-label="A 分数长条"></div></div>
         <div class="fraction-strip-row"><span class="fraction-strip-label" id="kidFracBLabel">B 2/4</span><div class="fraction-strip b" id="kidFracB" role="img" aria-label="B 分数长条"></div></div>
         <p class="fraction-kid-conclusion" id="kidFractionConclusion">两条一样长：1/2 和 2/4 是同一个数</p>
+
+        <!-- 图形量表：把「这个分数有多大」画成能比长短的条 -->
+        <div class="fl-meters">
+          <div class="kid-meter" style="--tone:var(--math)">
+            <div class="kid-meter-head">
+              <span class="kid-meter-icon" aria-hidden="true">🫐</span>
+              <span id="flMeterALabel">A 吃到多少</span>
+              <span class="kid-meter-value" id="flMeterAValue">1/2</span>
+            </div>
+            <div class="kid-meter-track" id="flMeterA" role="img" aria-labelledby="flMeterALabel flMeterAValue"><span class="kid-meter-fill"></span></div>
+          </div>
+          <div class="kid-meter" style="--tone:var(--kit)">
+            <div class="kid-meter-head">
+              <span class="kid-meter-icon" aria-hidden="true">🍓</span>
+              <span id="flMeterBLabel">B 吃到多少</span>
+              <span class="kid-meter-value" id="flMeterBValue">2/4</span>
+            </div>
+            <div class="kid-meter-track" id="flMeterB" role="img" aria-labelledby="flMeterBLabel flMeterBValue"><span class="kid-meter-fill"></span></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- ================= 控制面板 ================= -->
     <div data-audience="parent">
+      <!-- 面板里的 h3 需要一个 h2 父级，否则 h1→h3 跳级；.sr-only 不占布局，孩子模式下也不显示。 -->
+      <h2 class="sr-only">家长控制台</h2>
       <div class="panel">
         <h3>切分与涂色</h3>
 
@@ -374,12 +506,16 @@
     </ol>
     <div class="kid-predict-card" data-audience="kid-only">
       <p><b>1/2 和 2/4 呢？</b></p>
-      <div class="kid-picks" data-kid-select="eqPredict"><button class="kid-choice" type="button" data-value="eq">一样大</button><button class="kid-choice" type="button" data-value="neq">不一样大</button></div>
+      <!-- data-kid-choice-group + data-kid-choice 让共享层接管选中态与方向键导航；
+           data-kid-select 仍由本页脚本用来同步家长区那个下拉框。
+           注意：注释里不要写出字面的尖括号标签名，静态契约扫描不剥离注释，
+           会把它当成一个没有可访问名称的真控件。 -->
+      <div class="kid-picks" data-kid-select="eqPredict" data-kid-choice-group role="group" aria-label="猜一猜：1/2 和 2/4 是不是一样大"><button class="kid-choice" type="button" data-kid-choice data-value="eq">一样大</button><button class="kid-choice" type="button" data-kid-choice data-value="neq">不一样大</button></div>
       <button class="btn btn-primary" id="kidEqChallenge" type="button">摆好点心来验证</button>
     </div>
     <div class="kid-predict-card" data-audience="kid-only">
       <p><b>7/4 在数轴哪里？</b></p>
-      <div class="kid-picks" data-kid-select="improperPredict"><button class="kid-choice" type="button" data-value="under">0 和 1 之间</button><button class="kid-choice" type="button" data-value="between">1 和 2 之间</button><button class="kid-choice" type="button" data-value="over">2 的右边</button></div>
+      <div class="kid-picks" data-kid-select="improperPredict" data-kid-choice-group role="group" aria-label="猜一猜：7/4 在数轴上的位置"><button class="kid-choice" type="button" data-kid-choice data-value="under">0 和 1 之间</button><button class="kid-choice" type="button" data-kid-choice data-value="between">1 和 2 之间</button><button class="kid-choice" type="button" data-kid-choice data-value="over">2 的右边</button></div>
       <button class="btn btn-primary" id="kidImproperChallenge" type="button">把 7/4 送上数轴</button>
     </div>
     <div class="mission-grid">
@@ -393,7 +529,7 @@
     <div class="playful-quest parent-deep-dive" data-audience="parent" style="--quest-accent:var(--kit)" aria-labelledby="fractionStoryTitle">
       <div class="playful-quest-head"><div><h3 id="fractionStoryTitle">公平点心铺的证据盘</h3><p class="playful-story">果果只相信看得见的证据：面积一样多、数轴站在同一点。</p></div><div data-playful-companion role="note" aria-label="果果伙伴提示"></div></div>
       <div class="playful-tools"><button class="btn btn-sm" type="button" data-playful-random-task="#fractionSurprise">抽一张点心挑战</button><p class="playful-task-output" id="fractionSurprise" data-playful-task-output role="status" aria-live="polite">再找一组分数来验证。</p></div>
-      <div class="playful-evidence"><span data-playful-sticker aria-label="分数实验证据贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
+      <div class="playful-evidence"><span data-playful-sticker aria-label="分数实验证据收藏卡位"></span><span data-playful-feedback aria-live="polite"></span></div>
       <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="fractionWorkTitle">
         <h4 id="fractionWorkTitle">作品表单 · 保存证据盘</h4>
         <div class="work-card-fields">
@@ -405,6 +541,93 @@
         <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">作品只保存在这台设备上。</p>
       </form>
     </div>
+  </section>
+
+  <!-- ================= 图形小游戏：看图就能玩 ================= -->
+  <section class="fl-games" id="flGames" aria-labelledby="flGamesTitle">
+    <h2 class="fl-games-title" id="flGamesTitle"><span aria-hidden="true">🎲</span>再玩四个点心游戏</h2>
+
+    <div class="kid-tiles" id="flTabs" role="group" aria-labelledby="flGamesTitle"></div>
+
+    <!-- 1. 谁更大 -->
+    <div class="fl-panel" id="flPanelDuel" role="group" aria-labelledby="flAskDuel">
+      <p class="fl-ask" id="flAskDuel"><span aria-hidden="true">⚖️</span> 哪一盘更多？</p>
+      <div class="fl-duel">
+        <button class="kid-figure fl-duel-card" type="button" id="flDuelLeft" data-side="left" style="--tone:var(--math)">
+          <span class="kid-figure-art" id="flDuelLeftArt" aria-hidden="true"></span>
+          <span class="kid-figure-cap" id="flDuelLeftCap">1/2</span>
+        </button>
+        <button class="kid-figure fl-duel-card" type="button" id="flDuelSame" data-side="same" style="--tone:var(--sci)">
+          <span class="kid-figure-art" aria-hidden="true">🤝</span>
+          <span class="kid-figure-cap">一样多</span>
+        </button>
+        <button class="kid-figure fl-duel-card" type="button" id="flDuelRight" data-side="right" style="--tone:var(--kit)">
+          <span class="kid-figure-art" id="flDuelRightArt" aria-hidden="true"></span>
+          <span class="kid-figure-cap" id="flDuelRightCap">1/3</span>
+        </button>
+      </div>
+      <div class="fl-actions">
+        <button class="btn btn-primary" type="button" id="flDuelNext"><span aria-hidden="true">🔄</span> 换一组</button>
+        <button class="btn" type="button" id="flDuelHelp"><span aria-hidden="true">📏</span> 叠起来比</button>
+      </div>
+      <div class="fl-overlay" id="flDuelOverlay" hidden aria-hidden="true"></div>
+      <p class="fl-say" id="flDuelSay" role="status" aria-live="polite">点你觉得更多的那一盘。</p>
+    </div>
+
+    <!-- 2. 找等值 -->
+    <div class="fl-panel" id="flPanelMatch" role="group" aria-labelledby="flAskMatch" hidden>
+      <p class="fl-ask" id="flAskMatch"><span aria-hidden="true">👯</span> 谁和它一样多？</p>
+      <div class="fl-target">
+        <span class="fl-target-art" id="flMatchTargetArt" aria-hidden="true"></span>
+        <span class="fl-target-cap" id="flMatchTargetCap">1/2</span>
+      </div>
+      <div class="kid-figure-grid fl-match-grid" id="flMatchOptions" aria-label="选一个一样多的分数"></div>
+      <div class="fl-actions">
+        <button class="btn btn-primary" type="button" id="flMatchNext"><span aria-hidden="true">🔄</span> 换一题</button>
+      </div>
+      <p class="fl-say" id="flMatchSay" role="status" aria-live="polite">形状不一样，但可能一样多。</p>
+    </div>
+
+    <!-- 3. 切披萨 -->
+    <div class="fl-panel" id="flPanelSlice" role="group" aria-labelledby="flAskSlice" hidden>
+      <p class="fl-ask" id="flAskSlice"><span aria-hidden="true">🍕</span> 自己切一块披萨</p>
+      <div class="fl-slice-stage">
+        <span class="fl-slice-art" id="flSliceArt" role="img" aria-label="一张切成 4 份、吃掉 1 份的披萨"></span>
+        <div class="fl-slice-read">
+          <p class="fl-slice-frac" id="flSliceFrac" aria-hidden="true">1/4</p>
+          <p class="fl-slice-note" id="flSliceNote" role="status" aria-live="polite">切成 4 份，吃掉 1 份。</p>
+        </div>
+      </div>
+      <div class="fl-slide-block">
+        <div class="kid-slide-row">
+          <span class="kid-slide-end" aria-hidden="true">🍕</span>
+          <input type="range" id="flSliceDen" min="2" max="12" step="1" value="4" aria-label="切成几份">
+          <span class="kid-slide-end" aria-hidden="true">🍰</span>
+        </div>
+        <p class="fl-slide-label"><span aria-hidden="true">🔪</span> 切几刀：<b id="flSliceDenOut">4</b> 份</p>
+        <div class="kid-slide-row">
+          <span class="kid-slide-end" aria-hidden="true">😐</span>
+          <input type="range" id="flSliceNum" min="0" max="4" step="1" value="1" aria-label="吃掉几份">
+          <span class="kid-slide-end" aria-hidden="true">😋</span>
+        </div>
+        <p class="fl-slide-label"><span aria-hidden="true">🍴</span> 吃几块：<b id="flSliceNumOut">1</b> 块</p>
+      </div>
+      <div class="fl-actions">
+        <button class="btn" type="button" id="flSliceSend"><span aria-hidden="true">📤</span> 送到上面的实验台</button>
+      </div>
+    </div>
+
+    <!-- 4. 分数图鉴 -->
+    <div class="fl-panel" id="flPanelGallery" role="group" aria-labelledby="flAskGallery" hidden>
+      <p class="fl-ask" id="flAskGallery"><span aria-hidden="true">📖</span> 分数图鉴 · 点一张送上实验台</p>
+      <div class="kid-figure-grid fl-gallery" id="flGallery"></div>
+      <p class="fl-say" id="flGallerySay" role="status" aria-live="polite">同一个大小可以有好几个名字。</p>
+    </div>
+
+    <p class="fl-score">
+      <span class="fl-stars" id="flStars" role="img" aria-label="点心游戏已答对 0 次"></span>
+      <span class="fl-say" id="flTotal" style="margin:0">答对 0 次</span>
+    </p>
   </section>
 
   <!-- ================= 家长提问脚本 ================= -->
@@ -471,6 +694,7 @@
     <b>动手延伸：</b>拿一张纸条，对折一次是 <code>1/2</code>，再对折是 <code>1/4</code>，再对折是 <code>1/8</code>。
     每折一次问孩子：份数怎么变？一份的大小怎么变？折到第几次就折不动了？
   </div>
+<p class="lab-exit"><a class="btn btn-ghost" href="index.html"><span aria-hidden="true">←</span> 回到实验室目录</a></p>
 </main>
 
 <footer class="foot"><div class="wrap">
@@ -569,8 +793,14 @@
     var den = frac.d, num = frac.n;
 
     if (S.shape === 'circle') {
-      var cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - 12;
+      var cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - 14;
       var step = Math.PI * 2 / den;
+
+      // 盘子：让点心看起来是端上来的，而不是漂在空中
+      ctx.beginPath(); ctx.arc(cx, cy + 3, r + 9, 0, Math.PI * 2);
+      ctx.fillStyle = C.surf2; ctx.globalAlpha = .75; ctx.fill(); ctx.globalAlpha = 1;
+      ctx.strokeStyle = C.soft; ctx.lineWidth = 1.5; ctx.stroke();
+
       for (var i = 0; i < den; i++) {
         var s = -Math.PI / 2 + i * step, e = s + step;
         ctx.beginPath();
@@ -578,33 +808,65 @@
         ctx.arc(cx, cy, r, s, e);
         ctx.closePath();
         if (i < num) {
-          ctx.fillStyle = color; ctx.globalAlpha = .85; ctx.fill(); ctx.globalAlpha = 1;
+          ctx.fillStyle = color; ctx.globalAlpha = .88; ctx.fill(); ctx.globalAlpha = 1;
           if (which === 'b') { ctx.fillStyle = ctx.createPattern(hatchB, 'repeat'); ctx.fill(); }
+          ctx.setLineDash([]);
+          ctx.strokeStyle = 'rgba(255,255,255,.55)';
         } else {
-          ctx.fillStyle = C.surf2; ctx.fill();
+          // 没吃的那几块：留白 + 虚线，形状上就和吃掉的不同（不只靠颜色）
+          ctx.fillStyle = C.surf; ctx.fill();
+          ctx.setLineDash([5, 4]);
+          ctx.strokeStyle = C.line;
         }
-        ctx.strokeStyle = i < num ? 'rgba(255,255,255,.45)' : C.line;
         ctx.lineWidth = 1.5;
         ctx.stroke();
+        ctx.setLineDash([]);
       }
+
+      // 饼皮：暖色粗边，一眼看出是块点心
       ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+      ctx.strokeStyle = C.warn; ctx.lineWidth = 4; ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+
+      // 高光：一小片反光，画面立刻不那么平
+      if (num > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(cx - r * 0.32, cy - r * 0.44, r * 0.26, r * 0.12, -0.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff'; ctx.globalAlpha = .3; ctx.fill();
+        ctx.restore();
+      }
     } else {
       var pad = 10, bw = w - pad * 2, bh = h - 34, x0 = pad, y0 = 14;
       var pw = bw / den;
       for (var j = 0; j < den; j++) {
         var x = x0 + j * pw;
+        // 巧克力格：圆角 + 压痕，比直角方块可爱得多
+        var inset = Math.min(2.5, pw * 0.12);
         ctx.beginPath();
-        ctx.rect(x, y0, pw, bh);
+        if (ctx.roundRect) ctx.roundRect(x + inset * .5, y0 + inset, pw - inset, bh - inset * 2, Math.min(6, pw * .22));
+        else ctx.rect(x + inset * .5, y0 + inset, pw - inset, bh - inset * 2);
         if (j < num) {
-          ctx.fillStyle = color; ctx.globalAlpha = .85; ctx.fill(); ctx.globalAlpha = 1;
+          ctx.fillStyle = color; ctx.globalAlpha = .88; ctx.fill(); ctx.globalAlpha = 1;
           if (which === 'b') { ctx.fillStyle = ctx.createPattern(hatchB, 'repeat'); ctx.fill(); }
+          ctx.setLineDash([]);
+          ctx.strokeStyle = 'rgba(255,255,255,.55)';
         } else {
-          ctx.fillStyle = C.surf2; ctx.fill();
+          ctx.fillStyle = C.surf; ctx.fill();
+          ctx.setLineDash([5, 4]);
+          ctx.strokeStyle = C.line;
         }
-        ctx.strokeStyle = j < num ? 'rgba(255,255,255,.45)' : C.line;
         ctx.lineWidth = 1.5;
         ctx.stroke();
+        ctx.setLineDash([]);
+        // 吃掉的格子加一道高光压痕
+        if (j < num) {
+          ctx.beginPath();
+          ctx.moveTo(x + inset * 1.4, y0 + inset * 2.2);
+          ctx.lineTo(x + pw - inset * 1.4, y0 + inset * 2.2);
+          ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = 2; ctx.stroke();
+        }
       }
       ctx.strokeStyle = color; ctx.lineWidth = 2;
       ctx.strokeRect(x0, y0, bw, bh);
@@ -990,7 +1252,51 @@
     updateVerdict();
     updateReadouts();
     updateKidFractionResult();
+    updateKidMeters();
+    /* 让页面末尾的图形小游戏能跟着实验台一起刷新 */
+    try {
+      document.dispatchEvent(new CustomEvent('fractionlab:change', {
+        detail: { a: { n: S.a.n, d: S.a.d }, b: { n: S.b.n, d: S.b.d } }
+      }));
+    } catch (e) { /* 老浏览器不支持 CustomEvent 构造器时静默跳过 */ }
   }
+
+  /* 图形量表：把 A / B 的大小画成能比长短的条，数字仍然写出来 */
+  function updateKidMeters() {
+    var specs = [
+      ['flMeterA', 'flMeterAValue', S.a],
+      ['flMeterB', 'flMeterBValue', S.b]
+    ];
+    for (var i = 0; i < specs.length; i += 1) {
+      var track = document.getElementById(specs[i][0]);
+      var value = document.getElementById(specs[i][1]);
+      var frac = specs[i][2];
+      if (value) value.textContent = frac.n + '/' + frac.d;
+      if (!track) continue;
+      /* 相加模式下可能超过 1，按 2 为满格，保证条不溢出 */
+      var top = S.mode === 'add' ? 2 : 1;
+      if (window.Playful && typeof Playful.setMeter === 'function') Playful.setMeter(track, frac.n / frac.d, top);
+      else {
+        var fill = track.querySelector('.kid-meter-fill');
+        if (fill) fill.style.setProperty('--fill', clamp((frac.n / frac.d) / top * 100, 0, 100).toFixed(1) + '%');
+      }
+    }
+  }
+
+  /* 给页面末尾的图形小游戏一个受控入口，不暴露内部状态对象 */
+  window.FractionLab = {
+    set: function (which, n, d) {
+      var target = which === 'b' ? S.b : S.a;
+      var den = clamp(Math.round(Number(d) || 2), 2, 12);
+      target.d = den;
+      target.n = clamp(Math.round(Number(n) || 0), 0, den);
+      S.guess = null;
+      S.revealed = true;
+      render();
+      return { n: target.n, d: target.d };
+    },
+    get: function () { return { a: { n: S.a.n, d: S.a.d }, b: { n: S.b.n, d: S.b.d } }; }
+  };
 
   var toastTimer = null;
   function toast(msg) {
@@ -1192,10 +1498,299 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>if (window.Progress) Progress.visit("games/fraction-lab.html", "分数实验台");</script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script>
+/* ==========================================================================
+   图形小游戏层：谁更大 / 找等值 / 切披萨 / 分数图鉴
+   全部用内联 SVG 画图，取色走 CSS class；不依赖上面的实验台内部状态。
+   ========================================================================== */
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function sv(name, attrs) {
+    var n = document.createElementNS(NS, name);
+    if (attrs) Object.keys(attrs).forEach(function (k) { n.setAttribute(k, String(attrs[k])); });
+    return n;
+  }
+  function el(id) { return document.getElementById(id); }
+  function node(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  }
+  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = a % b; a = b; b = t; } return a || 1; }
+
+  /* ---- 画一张披萨：饼皮 + 等分刀痕 + 吃掉的份（实心）+ 没吃的（虚线） ---- */
+  function pieSVG(num, den, which, size) {
+    var s = size || 120, c = s / 2, r = s / 2 - 8;
+    var svg = sv('svg', { viewBox: '0 0 ' + s + ' ' + s, focusable: 'false', 'aria-hidden': 'true' });
+    svg.appendChild(sv('circle', { 'class': 'fl-pie-plate', cx: c, cy: c, r: r + 6 }));
+    var step = Math.PI * 2 / den;
+    for (var i = 0; i < den; i += 1) {
+      var a0 = -Math.PI / 2 + i * step, a1 = a0 + step;
+      var x0 = c + Math.cos(a0) * r, y0 = c + Math.sin(a0) * r;
+      var x1 = c + Math.cos(a1) * r, y1 = c + Math.sin(a1) * r;
+      var big = step > Math.PI ? 1 : 0;
+      var d = 'M' + c + ' ' + c + ' L' + x0.toFixed(2) + ' ' + y0.toFixed(2) +
+        ' A' + r + ' ' + r + ' 0 ' + big + ' 1 ' + x1.toFixed(2) + ' ' + y1.toFixed(2) + ' Z';
+      svg.appendChild(sv('path', { 'class': i < num ? (which === 'b' ? 'fl-pie-b' : 'fl-pie-a') : 'fl-pie-empty', d: d }));
+    }
+    svg.appendChild(sv('circle', { 'class': 'fl-pie-crust', cx: c, cy: c, r: r }));
+    svg.appendChild(sv('ellipse', { 'class': 'fl-pie-shine', cx: c - r * 0.3, cy: c - r * 0.42, rx: r * 0.26, ry: r * 0.13 }));
+    return svg;
+  }
+
+  /* ---- 画一条巧克力：等分压痕 + 吃掉的格子 ---- */
+  function barSVG(num, den, which, w, h) {
+    var W = w || 150, H = h || 46, pad = 3;
+    var svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, focusable: 'false', 'aria-hidden': 'true' });
+    var pw = (W - pad * 2) / den;
+    for (var i = 0; i < den; i += 1) {
+      svg.appendChild(sv('rect', {
+        'class': i < num ? (which === 'b' ? 'fl-bar-b' : 'fl-bar-a') : 'fl-bar-empty',
+        x: (pad + i * pw).toFixed(2), y: pad, width: (pw - 1.5).toFixed(2), height: H - pad * 2, rx: 4
+      }));
+    }
+    return svg;
+  }
+  /* ---- 计分：只累计答对总次数，答错不清零，也不做排名 ---- */
+  var wins = 0;
+  function award(ok) {
+    if (!ok) return;
+    wins += 1;
+    var stars = el('flStars');
+    stars.textContent = '⭐'.repeat(Math.min(wins, 10));
+    stars.setAttribute('aria-label', '点心游戏已答对 ' + wins + ' 次');
+    el('flTotal').textContent = '答对 ' + wins + ' 次';
+  }
+
+  /* ---- 面板切换：大图卡当标签 ---- */
+  var PANELS = [
+    { id: 'flPanelDuel', icon: '⚖️', label: '比大小' },
+    { id: 'flPanelMatch', icon: '👯', label: '找一样' },
+    { id: 'flPanelSlice', icon: '🍕', label: '自己切' },
+    { id: 'flPanelGallery', icon: '📖', label: '图鉴' }
+  ];
+  var tabBox = el('flTabs');
+  var tabs = [];
+  PANELS.forEach(function (panel, index) {
+    var b = node('button', 'kid-tile');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', index === 0 ? 'true' : 'false');
+    b.setAttribute('aria-label', panel.label + '游戏');
+    var art = node('span', 'kid-tile-art', panel.icon);
+    art.setAttribute('aria-hidden', 'true');
+    b.appendChild(art);
+    b.appendChild(node('span', 'kid-tile-label', panel.label));
+    b.addEventListener('click', function () {
+      PANELS.forEach(function (other, j) {
+        el(other.id).hidden = j !== index;
+        tabs[j].setAttribute('aria-pressed', j === index ? 'true' : 'false');
+      });
+    });
+    tabs.push(b);
+    tabBox.appendChild(b);
+  });
+
+  /* ================= 1. 谁更大 ================= */
+  var duel = { a: { n: 1, d: 2 }, b: { n: 1, d: 3 }, locked: false };
+  function pickFraction(maxDen) {
+    var d = 2 + Math.floor(Math.random() * ((maxDen || 8) - 1));
+    return { n: 1 + Math.floor(Math.random() * d), d: d };
+  }
+  function paintDuel() {
+    var pairs = [['flDuelLeftArt', 'flDuelLeftCap', duel.a, 'a'], ['flDuelRightArt', 'flDuelRightCap', duel.b, 'b']];
+    pairs.forEach(function (spec) {
+      var art = el(spec[0]);
+      art.textContent = '';
+      art.appendChild(pieSVG(spec[2].n, spec[2].d, spec[3], 128));
+      el(spec[1]).textContent = spec[2].n + '/' + spec[2].d;
+    });
+    el('flDuelLeft').setAttribute('aria-label', '左边这盘是 ' + duel.a.n + ' 份里的 ' + duel.a.d + ' 分之 ' + duel.a.n + '，点它表示左边更多');
+    el('flDuelRight').setAttribute('aria-label', '右边这盘是 ' + duel.b.d + ' 分之 ' + duel.b.n + '，点它表示右边更多');
+    ['flDuelLeft', 'flDuelSame', 'flDuelRight'].forEach(function (id) { el(id).setAttribute('aria-pressed', 'false'); });
+    el('flDuelOverlay').hidden = true;
+    duel.locked = false;
+  }
+  function nextDuel() {
+    duel.a = pickFraction(8);
+    /* 三分之一的题目故意造一组等值分数，让「一样多」真的会出现 */
+    if (Math.random() < 0.34) {
+      var k = 2 + Math.floor(Math.random() * 3);
+      if (duel.a.d * k <= 12) duel.b = { n: duel.a.n * k, d: duel.a.d * k };
+      else duel.b = pickFraction(8);
+    } else duel.b = pickFraction(8);
+    paintDuel();
+    el('flDuelSay').textContent = '点你觉得更多的那一盘。';
+  }
+  function judgeDuel(side) {
+    if (duel.locked) return;
+    var va = duel.a.n / duel.a.d, vb = duel.b.n / duel.b.d;
+    var truth = Math.abs(va - vb) < 1e-9 ? 'same' : (va > vb ? 'left' : 'right');
+    var ok = side === truth;
+    duel.locked = true;
+    el('flDuel' + (side === 'left' ? 'Left' : side === 'right' ? 'Right' : 'Same')).setAttribute('aria-pressed', 'true');
+    var words = { left: '左边更多', right: '右边更多', same: '两盘一样多' };
+    el('flDuelSay').textContent = (ok ? '✓ 对了！' : '○ 再看看：') + words[truth] +
+      '（' + duel.a.n + '/' + duel.a.d + ' 和 ' + duel.b.n + '/' + duel.b.d + '）';
+    showDuelOverlay();
+    if (ok) {
+      award(true);
+      if (window.Playful && Playful.confetti) Playful.confetti(el('flPanelDuel'));
+    }
+  }
+  function showDuelOverlay() {
+    var box = el('flDuelOverlay');
+    box.hidden = false;
+    box.textContent = '';
+    var L = duel.a.d * duel.b.d / gcd(duel.a.d, duel.b.d);
+    var wrap = node('div');
+    wrap.appendChild(barSVG(duel.a.n * (L / duel.a.d), L, 'a', 280, 34));
+    wrap.appendChild(barSVG(duel.b.n * (L / duel.b.d), L, 'b', 280, 34));
+    box.appendChild(wrap);
+    var note = node('p', 'fl-say', '都切成 ' + L + ' 小格后：蓝 ' +
+      (duel.a.n * (L / duel.a.d)) + ' 格，粉 ' + (duel.b.n * (L / duel.b.d)) + ' 格。');
+    note.style.margin = '8px 0 0';
+    box.appendChild(note);
+  }
+  el('flDuelLeft').addEventListener('click', function () { judgeDuel('left'); });
+  el('flDuelRight').addEventListener('click', function () { judgeDuel('right'); });
+  el('flDuelSame').addEventListener('click', function () { judgeDuel('same'); });
+  el('flDuelNext').addEventListener('click', nextDuel);
+  el('flDuelHelp').addEventListener('click', showDuelOverlay);
+  nextDuel();
+
+  /* ================= 2. 找等值 ================= */
+  var match = { target: { n: 1, d: 2 }, options: [], locked: false };
+  function nextMatch() {
+    var base = [{ n: 1, d: 2 }, { n: 1, d: 3 }, { n: 2, d: 3 }, { n: 1, d: 4 }, { n: 3, d: 4 }, { n: 1, d: 6 }, { n: 5, d: 6 }];
+    match.target = base[Math.floor(Math.random() * base.length)];
+    var k = 2 + Math.floor(Math.random() * 3);
+    while (match.target.d * k > 12) k -= 1;
+    var right = { n: match.target.n * k, d: match.target.d * k, ok: true };
+    /* 两个诱饵：一个只改分子，一个只改分母，正好对上常见误区 */
+    var lureA = { n: Math.min(right.n + 1, right.d), d: right.d, ok: false };
+    var lureB = { n: right.n, d: Math.min(right.d + k, 12), ok: false };
+    if (lureA.n / lureA.d === right.n / right.d) lureA.n = Math.max(1, right.n - 1);
+    if (lureB.n / lureB.d === right.n / right.d) lureB.d = Math.max(2, right.d - 1);
+    match.options = [right, lureA, lureB].sort(function () { return Math.random() - 0.5; });
+    match.locked = false;
+
+    var art = el('flMatchTargetArt');
+    art.textContent = '';
+    art.appendChild(pieSVG(match.target.n, match.target.d, 'a', 108));
+    el('flMatchTargetCap').textContent = match.target.n + '/' + match.target.d;
+    el('flMatchTargetArt').setAttribute('role', 'img');
+    el('flMatchTargetArt').setAttribute('aria-label', '要找的分数是 ' + match.target.d + ' 分之 ' + match.target.n);
+
+    var box = el('flMatchOptions');
+    box.textContent = '';
+    match.options.forEach(function (option) {
+      var b = node('button', 'kid-figure');
+      b.type = 'button';
+      b.style.setProperty('--tone', 'var(--kit)');
+      b.setAttribute('aria-pressed', 'false');
+      b.setAttribute('aria-label', option.d + ' 分之 ' + option.n + '，用长条画出来');
+      var figArt = node('span', 'kid-figure-art');
+      figArt.setAttribute('aria-hidden', 'true');
+      figArt.appendChild(barSVG(option.n, option.d, 'b', 150, 52));
+      b.appendChild(figArt);
+      b.appendChild(node('span', 'kid-figure-cap', option.n + '/' + option.d));
+      b.addEventListener('click', function () {
+        if (match.locked) return;
+        match.locked = true;
+        b.setAttribute('aria-pressed', 'true');
+        b.setAttribute('data-selected', 'true');
+        el('flMatchSay').textContent = (option.ok ? '✓ 对了！' : '○ 不一样：') +
+          option.n + '/' + option.d + ' = ' + (option.n / option.d).toFixed(3).replace(/0+$/, '') +
+          '，目标是 ' + (match.target.n / match.target.d).toFixed(3).replace(/0+$/, '');
+        if (option.ok) {
+          award(true);
+          if (window.Playful && Playful.confetti) Playful.confetti(el('flPanelMatch'));
+        }
+      });
+      box.appendChild(b);
+    });
+    el('flMatchSay').textContent = '形状不一样，但可能一样多。';
+  }
+  el('flMatchNext').addEventListener('click', nextMatch);
+  nextMatch();
+
+  /* ================= 3. 切披萨 ================= */
+  function paintSlice() {
+    var den = parseInt(el('flSliceDen').value, 10);
+    var numInput = el('flSliceNum');
+    numInput.max = String(den);
+    var num = Math.min(parseInt(numInput.value, 10), den);
+    numInput.value = String(num);
+    el('flSliceDenOut').textContent = den;
+    el('flSliceNumOut').textContent = num;
+    el('flSliceFrac').textContent = num + '/' + den;
+    var art = el('flSliceArt');
+    art.textContent = '';
+    art.appendChild(pieSVG(num, den, 'b', 168));
+    art.setAttribute('aria-label', '一张切成 ' + den + ' 份、吃掉 ' + num + ' 份的披萨');
+    var each = (100 / den).toFixed(1).replace(/\.0$/, '');
+    el('flSliceNote').textContent = '切成 ' + den + ' 份，吃掉 ' + num + ' 份。刀数越多，每块越小（每块约占整张的 ' + each + '%）。';
+  }
+  el('flSliceDen').addEventListener('input', paintSlice);
+  el('flSliceNum').addEventListener('input', paintSlice);
+  el('flSliceSend').addEventListener('click', function () {
+    var den = parseInt(el('flSliceDen').value, 10);
+    var num = Math.min(parseInt(el('flSliceNum').value, 10), den);
+    if (window.FractionLab) window.FractionLab.set('a', num, den);
+    el('flSliceNote').textContent = '已经把 ' + num + '/' + den + ' 送到上面的实验台，去看看数轴上它站在哪里。';
+  });
+  paintSlice();
+
+  /* ================= 4. 分数图鉴 ================= */
+  var GALLERY = [
+    { n: 1, d: 2, name: '一半', fact: '两块里的一块' },
+    { n: 1, d: 3, name: '三分之一', fact: '三块里的一块' },
+    { n: 2, d: 3, name: '三分之二', fact: '三块里的两块' },
+    { n: 1, d: 4, name: '四分之一', fact: '对折两次' },
+    { n: 3, d: 4, name: '四分之三', fact: '只剩一块没吃' },
+    { n: 2, d: 4, name: '二分之一的兄弟', fact: '和 1/2 一样多' },
+    { n: 1, d: 6, name: '六分之一', fact: '比 1/4 还小' },
+    { n: 5, d: 6, name: '六分之五', fact: '差一点就吃光' },
+    { n: 1, d: 8, name: '八分之一', fact: '对折三次' },
+    { n: 4, d: 8, name: '八分之四', fact: '又是一半' },
+    { n: 1, d: 12, name: '十二分之一', fact: '最小的一块' },
+    { n: 6, d: 12, name: '十二分之六', fact: '还是一半' }
+  ];
+  var galleryBox = el('flGallery');
+  GALLERY.forEach(function (item) {
+    var g = gcd(item.n, item.d);
+    var b = node('button', 'kid-figure');
+    b.type = 'button';
+    b.style.setProperty('--tone', 'var(--math)');
+    b.setAttribute('aria-label', item.name + '，' + item.d + ' 分之 ' + item.n + '，点一下送到上面的实验台');
+    var art = node('span', 'kid-figure-art');
+    art.setAttribute('aria-hidden', 'true');
+    art.appendChild(pieSVG(item.n, item.d, 'a', 104));
+    b.appendChild(art);
+    b.appendChild(node('span', 'kid-figure-cap', item.n + '/' + item.d));
+    b.appendChild(node('span', 'kid-figure-sub', item.name));
+    b.addEventListener('click', function () {
+      if (window.FractionLab) window.FractionLab.set('a', item.n, item.d);
+      el('flGallerySay').textContent = item.n + '/' + item.d + '（' + item.name + '）· ' + item.fact +
+        (g > 1 ? ' · 最简写法是 ' + (item.n / g) + '/' + (item.d / g) : ' · 已经是最简写法') + '，已送上实验台。';
+    });
+    galleryBox.appendChild(b);
+  });
+
+  /* 实验台变化时同步图鉴说明，让两处状态不打架 */
+  document.addEventListener('fractionlab:change', function (event) {
+    var a = event.detail && event.detail.a;
+    if (!a) return;
+    el('flGallerySay').textContent = '实验台上的 A 现在是 ' + a.n + '/' + a.d + '。点一张卡可以换一个。';
+  });
+})();
+</script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

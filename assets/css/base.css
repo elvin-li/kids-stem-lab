@@ -21,10 +21,14 @@
   --math:      #1b64c8;   /* 数学 · 蓝 */
   --sci:       #0b7a45;   /* 科学 · 绿 */
   --phys:      #6d31d4;   /* 物理 · 紫 */
-  --code:      #b8500f;   /* 编程 · 橙 */
+  --code:      #ad4b0c;   /* 编程 · 橙（见下方 --warn 处的对比度说明） */
   --kit:       #c01764;   /* 动手 · 粉 */
   --video:     #0a6f85;   /* 视频 · 青 */
-  --warn:      #96650d;
+  /* --warn / --code 的判定基准是浅色主题里最暗的那层底 --surface-2 #eaeff7（亮度 .860），
+     正文 AA 4.5:1 要求前景亮度 ≤ .152。原来的 #96650d / #b8500f 略高，页面把它们当
+     小号粗体用在 --surface-2 卡片上时真实渲染只有 4.34–4.46。check-contrast.mjs 按
+     「大字/图形 3.0」判学科色，所以放过了这一类。 */
+  --warn:      #8a5c0b;
   --danger:    #c02a1d;
 
   /* ---- canvas 专用取色（JS 通过 getComputedStyle 读取）---- */
@@ -189,6 +193,9 @@ hr { border: 0; border-top: 1px solid var(--line-soft); margin: 2.5rem 0; }
 }
 .brand {
   display: flex; align-items: center; gap: 9px;
+  /* 品牌链接也是回首页的主要触控目标，内容高度只有 36px，补到契约要求的 44。
+     pages/paths.html 早先在本页局部打过同样的补丁，这里统一到共享层。 */
+  min-height: 44px;
   font-weight: 800; font-size: 1.02rem; color: var(--ink);
   margin-right: auto; letter-spacing: -.01em;
 }
@@ -296,7 +303,10 @@ a.card:hover {
   transition: border-color .16s var(--ease), box-shadow .16s var(--ease);
 }
 .input::placeholder { color: var(--ink-dim); }
-.input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(110,168,254,.16); }
+/* .input:focus 的特异度(0,2,0)高于下面的 :focus-visible(0,1,0)，直接写 outline:none 会把键盘焦点圈也吃掉，
+   只剩 16% alpha 的淡光晕。所以只在「非键盘焦点」时去掉 outline。 */
+.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(110,168,254,.16); }
+.input:focus:not(:focus-visible) { outline: none; }
 
 label { font-size: .84rem; font-weight: 600; color: var(--ink-mid); }
 
@@ -456,6 +466,19 @@ input[type="range"] { min-height: 44px; }
   color: var(--ink-mid);
   font-size: .84rem;
 }
+
+/* ---- 家长区联网开关：dinosaurs / ocean 等页面共用同一段标记 ---- */
+.online-gate {
+  margin: 0 0 14px; padding: 12px 14px;
+  border: 2px dashed var(--warn); border-radius: var(--r);
+  background: var(--bg-soft);
+}
+.online-gate-row {
+  display: flex; min-height: 48px; align-items: center; gap: 10px;
+  color: var(--ink); font-weight: 800; cursor: pointer;
+}
+.online-gate-row input { width: 22px; height: 22px; flex: none; }
+.online-gate-note { margin: 4px 0 0; color: var(--ink-mid); font-size: .84rem; line-height: 1.55; }
 
 /* ---- 阶段 1 童趣组件：页面按需声明 data-playful-* 即可启用 ---- */
 .playful-companion {
@@ -675,6 +698,26 @@ button.kid-choice[aria-pressed="true"] { border-color: var(--sci); background: c
 .parent-deep-dive { margin-top: 20px; }
 .parent-deep-dive > summary { min-height: 44px; cursor: pointer; color: var(--ink); font-weight: 800; }
 
+/* 写实插画层。每页在 body 开头静态内联一块 <svg class="art-sprite"> 图库，
+   使用点用 <use href="#art-x"> 取同页 <symbol>。跨文件的外部 SVG 引用在
+   file:// 下会被浏览器当跨源拦掉，所以图库必须留在同一份文档里。
+   尺寸交给槽位：.art 用 1em 跟随所在槽位的 font-size，原有的
+   .kid-tile-art / .kid-mascot 响应式字号因此继续生效，不必逐页写死像素。 */
+.art-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.art {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 1em;
+  height: 1em;
+  vertical-align: -.14em;
+}
+/* 图鉴卡／标本板：固定高度、按比例缩放，卡片等宽时插图基线一致。 */
+.art-plate { display: block; width: auto; height: clamp(104px, 24vw, 150px); margin: 0 auto; }
+/* 整幅舞台插画：占满容器宽度。 */
+.art-wide { display: block; width: 100%; height: auto; }
+/* 撑满已经有固定尺寸的槽位（圆形图标底、伪装台方块等）。 */
+.art-fit { width: 100%; height: 100%; }
+
 @media (max-width: 700px) {
   .kid-hero-scene { grid-template-columns: 1fr; }
   .kid-visual-stage { min-height: 220px; }
@@ -700,6 +743,19 @@ button.kid-choice[aria-pressed="true"] { border-color: var(--sci); background: c
   28% { opacity: 1; }
   100% { opacity: 0; transform: translate(calc(-50% + var(--x)), -42px) rotate(150deg) scale(1); }
 }
+
+/* 分龄解释块（.age-tier）：选定年龄段后只留对应那一层。
+   之前三段话（4–6 / 7–9 / 10–12 进阶）会同时堆在页面上，同一件事被讲三遍，
+   这是「打开就是一堵字墙」的主要来源之一。隐藏是展示层行为，内容仍在 DOM 里，
+   家长切换年龄或改成家长模式就能读到全部层级。 */
+html[data-playful-age="4-6"]   .age-tier.tier-mid,
+html[data-playful-age="4-6"]   .age-tier.tier-adv,
+html[data-playful-age="7-9"]   .age-tier.tier-kid,
+html[data-playful-age="7-9"]   .age-tier.tier-adv,
+html[data-playful-age="10-12"] .age-tier.tier-kid,
+html[data-playful-age="10-12"] .age-tier.tier-mid { display: none; }
+/* 没选年龄时的孩子模式：10–12 岁进阶段落是写给大孩子和家长的，先收起来。 */
+html[data-mode="kid"][data-playful-age="all"] .age-tier.tier-adv { display: none; }
 
 /* 分龄只调整提示密度与字号，不隐藏核心任务。 */
 html[data-playful-age="4-6"] .playful-companion { gap: 14px; padding: 16px; }
@@ -772,4 +828,362 @@ html[data-playful-motion="reduced"] *::after {
     transition-duration: .01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ==========================================================================
+   阶段 3 · 图像优先原语（Picture-first primitives）
+   目标：4–6 岁不识字也能看懂在玩什么。意思由「大插画 + 极短标签」承载，
+   句子只作为家长可读的补充。全部纯 CSS + 内联 SVG，无新增外部依赖。
+   配套 JS：assets/js/playful.js 的 Playful.scene() / data-playful-scene。
+   ========================================================================== */
+
+/* --- 3.1 插画舞台：由 playful.js 生成的内联 SVG 场景（绝对不承载信息） --- */
+.pf-scene {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: inherit;
+}
+.pf-scene-holder {
+  position: relative;
+  min-width: 0;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+/* 场景铺在内容后面时用这个修饰：内容层自动叠在上方 */
+.pf-scene-holder[data-scene-layer="back"] > .pf-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+.pf-scene-holder[data-scene-layer="back"] > :not(.pf-scene) { position: relative; z-index: 1; }
+
+/* 场景取色统一走 CSS，SVG 属性里不写 var()，兼容性更稳。
+   --tone 由页面或 .lab[data-subject] 决定，默认跟随 --accent。 */
+.pf-scene { --tone: var(--accent, var(--math)); --tone-2: var(--sci); }
+.pf-sky        { fill: color-mix(in srgb, var(--tone) 12%, var(--surface)); }
+.pf-sky-deep   { fill: color-mix(in srgb, var(--tone) 46%, #10193a); }
+.pf-sun        { fill: color-mix(in srgb, var(--tone) 26%, #ffd977); }
+.pf-sun-ray    { stroke: color-mix(in srgb, var(--tone) 34%, #ffca57); stroke-width: 3; stroke-linecap: round; }
+.pf-moon       { fill: color-mix(in srgb, var(--tone) 10%, #fff4d2); }
+.pf-cloud      { fill: color-mix(in srgb, var(--tone) 10%, #ffffff); }
+.pf-cloud-soft { fill: color-mix(in srgb, var(--tone) 5%, #ffffff); }
+.pf-hill-a     { fill: color-mix(in srgb, var(--tone) 20%, var(--surface-2)); }
+.pf-hill-b     { fill: color-mix(in srgb, var(--tone) 34%, var(--surface-2)); }
+.pf-hill-c     { fill: color-mix(in srgb, var(--tone-2) 30%, var(--surface-2)); }
+.pf-ground     { fill: color-mix(in srgb, var(--tone) 26%, var(--surface-2)); }
+.pf-water      { fill: color-mix(in srgb, var(--tone) 30%, #7fc7e8); }
+.pf-water-deep { fill: color-mix(in srgb, var(--tone) 52%, #1c5f86); }
+.pf-wave       { stroke: color-mix(in srgb, var(--tone) 46%, #ffffff); stroke-width: 3; stroke-linecap: round; fill: none; }
+.pf-star       { fill: color-mix(in srgb, var(--tone) 14%, #fff6cf); }
+.pf-strata-1   { fill: color-mix(in srgb, var(--kit) 26%, var(--surface-2)); }
+.pf-strata-2   { fill: color-mix(in srgb, var(--warn) 30%, var(--surface-2)); }
+.pf-strata-3   { fill: color-mix(in srgb, var(--code) 26%, var(--surface-2)); }
+.pf-strata-4   { fill: color-mix(in srgb, var(--danger) 22%, var(--surface-2)); }
+.pf-plant      { fill: color-mix(in srgb, var(--sci) 40%, var(--surface-2)); }
+.pf-trunk      { fill: color-mix(in srgb, var(--kit) 34%, var(--surface-2)); }
+.pf-bench      { fill: color-mix(in srgb, var(--tone) 22%, var(--surface-2)); }
+.pf-flask      { fill: color-mix(in srgb, var(--sci) 22%, transparent); stroke: color-mix(in srgb, var(--sci) 58%, transparent); stroke-width: 2; }
+.pf-bubble     { fill: color-mix(in srgb, var(--tone) 18%, #ffffff); }
+.pf-outline    { fill: none; stroke: color-mix(in srgb, var(--tone) 52%, transparent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.pf-figure     { font-size: 62px; }
+.pf-figure-sm  { font-size: 34px; }
+
+/* 场景里的轻微飘动只是装饰；减少动效时完全静止 */
+.pf-drift { animation: pf-drift 26s linear infinite alternate; }
+.pf-twinkle { animation: pf-twinkle 4.5s ease-in-out infinite alternate; }
+@keyframes pf-drift { from { transform: translateX(-10px); } to { transform: translateX(14px); } }
+@keyframes pf-twinkle { from { opacity: .45; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .pf-drift, .pf-twinkle { animation: none !important; }
+}
+html[data-playful-motion="reduced"] .pf-drift,
+html[data-playful-motion="reduced"] .pf-twinkle { animation: none !important; }
+
+/* --- 3.2 图鉴 / 画廊：大插画 + 两三个字标签，代替成段说明 --- */
+.kid-figure-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+  gap: 12px;
+  margin: 14px 0;
+  padding: 0;
+  list-style: none;
+}
+.kid-figure {
+  --tone: var(--accent, var(--math));
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  padding: 12px;
+  border: 2px solid color-mix(in srgb, var(--tone) 26%, var(--line-soft));
+  border-radius: var(--r);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: center;
+}
+.kid-figure-art {
+  display: grid;
+  place-items: center;
+  min-height: 92px;
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--tone) 9%, var(--surface-2));
+  font-size: clamp(2.6rem, 8vw, 3.6rem);
+  line-height: 1;
+}
+.kid-figure-art > svg { width: 100%; height: auto; border-radius: var(--r-sm); }
+.kid-figure-cap { font-weight: 800; font-size: 1rem; line-height: 1.25; }
+.kid-figure-sub { color: var(--ink-dim); font-size: .8rem; line-height: 1.45; }
+.kid-figure-fact { margin: 0; color: var(--ink-mid); font-size: .85rem; line-height: 1.55; text-align: left; }
+button.kid-figure, a.kid-figure { cursor: pointer; font-family: inherit; text-decoration: none; }
+button.kid-figure:hover, a.kid-figure:hover { border-color: var(--tone); }
+button.kid-figure[aria-pressed="true"], a.kid-figure[aria-current="true"], .kid-figure[data-selected="true"] {
+  border-color: var(--sci);
+  background: color-mix(in srgb, var(--sci) 11%, var(--surface));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sci) 18%, transparent);
+}
+button.kid-figure[aria-pressed="true"]::after, .kid-figure[data-selected="true"]::after {
+  content: "✓";
+  position: absolute;
+  top: 6px;
+  right: 9px;
+  color: var(--sci);
+  font-weight: 900;
+}
+
+/* --- 3.3 图形量表：把数字变成一条能看长短的条，数字仍然写出来 --- */
+.kid-meter { display: grid; gap: 5px; min-width: 0; margin: 9px 0; }
+.kid-meter-head { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: .92rem; color: var(--ink); }
+.kid-meter-head > .kid-meter-icon { font-size: 1.5rem; line-height: 1; }
+.kid-meter-head > .kid-meter-value { margin-left: auto; font-family: var(--mono); color: var(--ink-mid); }
+.kid-meter-track {
+  position: relative;
+  height: 26px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.kid-meter-fill {
+  --fill: 0%;
+  display: block;
+  width: var(--fill);
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--tone, var(--accent)) 55%, #fff), var(--tone, var(--accent)));
+  transition: width .28s var(--ease);
+}
+/* 条纹让长短在灰度/色盲下同样可读 */
+.kid-meter-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(115deg, rgba(255,255,255,.34) 0 7px, transparent 7px 15px);
+  border-radius: 999px;
+}
+.kid-meter-track > .kid-meter-fill { position: relative; }
+.kid-meter-note { color: var(--ink-mid); font-size: .82rem; }
+html[data-playful-motion="reduced"] .kid-meter-fill { transition: none; }
+
+/* --- 3.4 漫画对话气泡：角色说一句短话 --- */
+.kid-speech {
+  position: relative;
+  display: inline-block;
+  max-width: 44ch;
+  padding: 11px 15px;
+  border: 2px solid color-mix(in srgb, var(--kit) 26%, var(--line));
+  border-radius: 20px 20px 20px 6px;
+  background: color-mix(in srgb, var(--kit) 6%, var(--surface));
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.5;
+}
+.kid-speech::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  bottom: -11px;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-top-color: color-mix(in srgb, var(--kit) 26%, var(--line));
+}
+.kid-speech-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+
+/* --- 3.5 可数的点：数量用图形直接呈现，旁边仍给数字 --- */
+.kid-dots { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 30px; }
+.kid-dots > i {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--tone, var(--accent)) 55%, var(--line));
+  background: color-mix(in srgb, var(--tone, var(--accent)) 34%, var(--surface));
+  font-style: normal;
+}
+.kid-dots > i[data-empty="true"] { background: var(--surface-2); border-style: dashed; }
+
+/* --- 3.6 图例：颜色/形状 + 图标 + 短词，不只靠颜色区分 --- */
+.kid-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin: 8px 0; padding: 0; list-style: none; }
+.kid-legend > li { display: inline-flex; align-items: center; gap: 7px; font-size: .86rem; font-weight: 700; color: var(--ink-mid); }
+.kid-legend .kid-legend-mark {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid color-mix(in srgb, var(--tone, var(--accent)) 46%, var(--line));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--tone, var(--accent)) 16%, var(--surface));
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* --- 3.7 色块选择器：颜色本身就是标签，附文字名保证无障碍 --- */
+.kid-swatches { display: flex; flex-wrap: wrap; gap: 9px; }
+.kid-swatch {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 3px solid var(--line);
+  border-radius: 16px;
+  background: var(--swatch, var(--accent));
+  cursor: pointer;
+}
+.kid-swatch[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 18%, transparent); }
+.kid-swatch[aria-pressed="true"]::after {
+  content: "✓";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-shadow: 0 1px 2px rgba(0,0,0,.45);
+}
+
+/* --- 3.8 图形滑杆：两端各一个大图标，说明「往哪边是多」 --- */
+.kid-slide-row { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 10px; align-items: center; }
+.kid-slide-row > .kid-slide-end { font-size: 1.7rem; line-height: 1; }
+.kid-slide-row > input[type="range"] { width: 100%; }
+
+/* --- 3.9 展示架：贴纸、收藏卡、作品的图形陈列 --- */
+.kid-shelf {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(96px, 100%), 1fr));
+  gap: 10px;
+  padding: 12px;
+  border: 2px dashed var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+}
+.kid-shelf-item {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  min-height: 92px;
+  padding: 9px 6px;
+  border: 2px solid var(--line-soft);
+  border-radius: var(--r);
+  background: var(--surface);
+  text-align: center;
+}
+.kid-shelf-item > .kid-shelf-art { font-size: 2.1rem; line-height: 1; }
+.kid-shelf-item > span:last-child { font-size: .76rem; font-weight: 800; color: var(--ink-mid); line-height: 1.25; }
+.kid-shelf-item[data-earned="false"] { opacity: .55; border-style: dashed; }
+
+/* --- 3.10 场景说明：给插画一句可读标题，供家长与读屏使用 --- */
+.kid-scene-caption { margin: 7px 0 0; color: var(--ink-dim); font-size: .82rem; line-height: 1.5; text-align: center; }
+
+@media (max-width: 480px) {
+  .kid-figure-grid { grid-template-columns: repeat(auto-fit, minmax(min(126px, 100%), 1fr)); gap: 10px; }
+  .kid-figure-art { min-height: 78px; }
+  .kid-swatch { width: 44px; height: 44px; }
+}
+
+/* 插画舞台的外层容器：只负责给全幅位置的舞台补上和正文一致的左右留白与宽度上限。
+   之前舞台被插在 <header> 与 <main> 之间，没有任何容器，会整条出血到屏幕边缘。 */
+.scene-wrap { padding-block: 0; }
+.scene-wrap > [class*="-scene-stage"] { margin-block: 0 16px; }
+
+/* 实验页底部出口：玩完一个实验，孩子接下来最想做的是换下一个，而不是滑回页顶
+   去找导航栏。触控高度由 .btn 的 44px 下限保证；打印时 button/a.btn 已被隐藏。 */
+.lab-exit { margin: 26px 0 0; }
+
+/* --- 3.11 猜一猜卡：先押一个答案，再动手验证 ---------------------------------
+   好奇心的引擎是「我以为会这样」与「结果居然那样」之间的落差。孩子先押一个
+   答案，再亲手让实验跑一遍，那一下的意外才会变成想问「为什么」。
+
+   分工（对应契约里 Playful 的角色边界）：
+   - 共享层只做三件事：收下猜测、揭示页面事先写好的答案文字、广播
+     playful:predict 事件。
+   - 「怎么演示这个答案」仍由各页自己接线（把滑块设到某个值、切换模式、
+     重新起跑），共享层不接管页面的核心计算，也不参与任务完成判定。
+
+   猜错不是失败：文案统一写成「你猜的是 A，结果是 B」，不出现叉号、扣分或
+   任何惩罚性符号。状态同时由文字、记号和边框表达，不只靠颜色。 */
+.kid-predict {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0;
+  padding: clamp(12px, 2.6vw, 18px);
+  border: 2px solid color-mix(in srgb, var(--tone, var(--math)) 30%, var(--line));
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--tone, var(--math)) 6%, var(--surface));
+}
+.kid-predict-q {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1rem, 3.2vw, 1.18rem);
+  font-weight: 800;
+  line-height: 1.4;
+}
+.kid-predict-q > .kid-predict-icon { flex: none; font-size: 1.5rem; line-height: 1.1; }
+.kid-predict-picks { display: flex; flex-wrap: wrap; gap: 9px; }
+.kid-predict-pick {
+  flex: 1 1 auto;
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 750 .96rem/1.25 var(--font);
+  cursor: pointer;
+  transition: border-color .16s var(--ease), background-color .16s var(--ease);
+}
+.kid-predict-pick:hover { border-color: color-mix(in srgb, var(--tone, var(--math)) 55%, var(--line)); }
+.kid-predict-pick[aria-pressed="true"] {
+  border-color: var(--tone, var(--math));
+  background: color-mix(in srgb, var(--tone, var(--math)) 13%, var(--surface));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone, var(--math)) 16%, transparent);
+}
+/* 「我押的是这个」再加一个记号：灰度打印和色盲下同样分得出选中项。 */
+.kid-predict-pick[aria-pressed="true"]::before { content: "✓ "; font-weight: 900; }
+.kid-predict-go { align-self: start; }
+/* 答案句永远用最深的 --ink：它同时压在 --surface 和上面那层 6% 主题色底上，
+   用学科色当小号粗体文字会掉到 4.5:1 以下（见 --warn / --code 的注释）。 */
+.kid-predict-answer {
+  min-height: 1.6em;
+  margin: 0;
+  color: var(--ink);
+  font-size: .96rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.kid-predict-answer > .kid-predict-mark { margin-right: 6px; font-size: 1.15rem; }
+.kid-predict[data-kid-predict-state="right"] { border-color: color-mix(in srgb, var(--sci) 55%, var(--line)); }
+.kid-predict[data-kid-predict-state="wrong"] { border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); }
+html[data-playful-motion="reduced"] .kid-predict-pick { transition: none; }
+@media (max-width: 430px) {
+  /* 竖着排比挤成两行半的胶囊好点：每个选项都拿到完整的一行和 48px 触控高度。 */
+  .kid-predict-picks { flex-direction: column; }
+  .kid-predict-pick { width: 100%; }
 }

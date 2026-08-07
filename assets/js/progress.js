@@ -28,7 +28,8 @@
     soundEnabled: false,
     motion: "system",
     ageGroup: "all",
-    mode: "kid"
+    mode: "kid",
+    onlineData: false
   };
 
   function dict() { return Object.create(null); }
@@ -47,7 +48,8 @@
         soundEnabled: PREFERENCE_DEFAULTS.soundEnabled,
         motion: PREFERENCE_DEFAULTS.motion,
         ageGroup: PREFERENCE_DEFAULTS.ageGroup,
-        mode: PREFERENCE_DEFAULTS.mode
+        mode: PREFERENCE_DEFAULTS.mode,
+        onlineData: PREFERENCE_DEFAULTS.onlineData
       }
     };
   }
@@ -132,6 +134,7 @@
 
   function preferenceValue(name, value) {
     if (name === "soundEnabled") return typeof value === "boolean" ? value : PREFERENCE_DEFAULTS.soundEnabled;
+    if (name === "onlineData") return typeof value === "boolean" ? value : PREFERENCE_DEFAULTS.onlineData;
     if (name === "motion") return ["system", "full", "reduced"].indexOf(value) >= 0 ? value : PREFERENCE_DEFAULTS.motion;
     if (name === "ageGroup") return ["all", "4-6", "7-9", "10-12"].indexOf(value) >= 0 ? value : PREFERENCE_DEFAULTS.ageGroup;
     if (name === "mode") return ["parent", "kid"].indexOf(value) >= 0 ? value : PREFERENCE_DEFAULTS.mode;

@@ -1,0 +1,1419 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>甲虫图鉴馆 · 把一只甲虫拆开看 | 少儿数理启蒙</title>
+<meta name="description" content="鞘翅是变硬的前翅，飞行的软翅折在下面。用图鉴、腿型配对、伪装台和力量换算，把甲虫当成一整套可以拆开看的工程方案。全部离线内容，附户外观察任务。">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
+<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
+<style>
+  /* 本页配色跟随 data/playful.js 里的 accent #7c4a12 */
+  .bt { --bt-shell: #7c4a12; --bt-wing: #d9a05b; --bt-leaf: #4ade80; }
+
+  .hero { padding: 28px 0 18px; }
+  .hero h1 { margin: 0 0 .28em; }
+  .hero-invite { display: grid; grid-template-columns: minmax(0,1.12fr) minmax(260px,.88fr); gap: 20px; align-items: stretch; }
+  .hero-copy { min-width: 0; }
+  .story-kicker, .section-kicker { margin: 12px 0 6px; color: var(--kit); font-weight: 750; }
+  .big-question, .look-now { display: flex; gap: 11px; align-items: flex-start; padding: 13px 15px; border-radius: var(--r); }
+  .big-question { margin-top: 14px; border: 1px solid rgba(124,74,18,.34); background: rgba(124,74,18,.08); }
+  .look-now { margin-top: 10px; border: 1px solid rgba(74,222,128,.34); background: rgba(74,222,128,.07); }
+  .big-question > span, .look-now > span { font-size: 1.35rem; line-height: 1.25; }
+  .big-question b, .look-now b { color: var(--ink); }
+  .big-question p { margin: 3px 0 0; color: var(--ink-mid); font-size: .9rem; }
+
+  /* ---------- 舞台：可以打开鞘翅的甲虫 ---------- */
+  .beetle-lab { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 3px solid var(--line); border-radius: var(--r-lg); background: linear-gradient(170deg,#fff3dc 0 58%,#e6f6d9 58%); }
+  .stage-label { align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: rgba(11,15,26,.74); color: #fff; font-size: .7rem; font-weight: 750; }
+  .beetle-svg { display: block; width: 100%; max-width: 340px; height: auto; margin: 0 auto; }
+  /* 鞘翅抬起的转轴就在中胸盾片那一点（viewBox 里的 150,128）。
+     用 transform-box: view-box + 用户单位写死转轴，而不是按自身包围盒取百分比：
+     鞘翅里加了纵纹和高光之后包围盒会变，百分比转轴会跟着漂走，抬起来就会压在肚子上。
+     左片正向、右片负向，才是各自向外掀开；符号写反会变成两片一起盖回背上。 */
+  .bt-elytron { transform-box: view-box; transform-origin: 150px 128px; transition: transform .45s var(--ease); }
+  .beetle-lab[data-open="true"] .bt-elytron.left { transform: rotate(58deg); }
+  .beetle-lab[data-open="true"] .bt-elytron.right { transform: rotate(-58deg); }
+  .bt-hindwing { opacity: 0; transition: opacity .4s var(--ease); }
+  .beetle-lab[data-open="true"] .bt-hindwing { opacity: 1; }
+  /* 中缝只在合起来时存在；鞘翅让开后还留一条竖线会看成肚子上有条缝。 */
+  .bt-suture { transition: opacity .3s var(--ease); }
+  .beetle-lab[data-open="true"] .bt-suture { opacity: 0; }
+  .bt-part { transition: filter .2s var(--ease); }
+  .beetle-lab[data-look="elytra"] .bt-zone-elytra,
+  .beetle-lab[data-look="jaw"] .bt-zone-jaw,
+  .beetle-lab[data-look="legs"] .bt-zone-legs,
+  .beetle-lab[data-look="antenna"] .bt-zone-antenna { filter: drop-shadow(0 0 7px #fbbf24); }
+  .look-spots { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .look-spot { min-width: 46px; min-height: 46px; padding: 6px 12px; border: 2px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 800 .95rem/1.2 var(--font); cursor: pointer; }
+  .look-spot[aria-pressed="true"] { border-color: var(--bt-shell); background: #fff2dc; box-shadow: 0 0 0 3px rgba(124,74,18,.22); }
+  .wing-toggle { align-self: center; min-height: 48px; padding: 9px 18px; border: 2px solid var(--bt-shell); border-radius: 999px; background: var(--surface); color: var(--ink); font: 850 1rem/1.2 var(--font); cursor: pointer; }
+  .wing-toggle[aria-pressed="true"] { background: #ffe7c2; }
+
+  /* ---------- 通用小件 ---------- */
+  .plain-note { padding: 11px 13px; border-left: 3px solid var(--sci); background: var(--bg-soft); color: var(--ink-mid); }
+  .text-result { display: block; padding: 12px 14px; border-radius: var(--r); background: var(--bg-soft); font-size: .92rem; }
+  .mission-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(230px,1fr)); gap: 13px; margin: 14px 0; }
+  .mission-step { min-width: 0; padding: 14px 15px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--surface); }
+  .mission-step h3 { margin: 0 0 8px; font-size: 1rem; color: var(--kit); }
+  .mission-step p { margin: 0 0 8px; font-size: .86rem; color: var(--ink-mid); }
+  .quick-picks { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  .kid-choice { min-height: 46px; padding: 8px 13px; border: 2px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 750 .88rem/1.2 var(--font); cursor: pointer; }
+  .kid-choice[aria-pressed="true"] { border-color: var(--sci); background: var(--bg-soft); box-shadow: 0 0 0 3px rgba(74,222,128,.2); }
+  .task-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  .pick-feedback { margin: 6px 0 0; font-size: .8rem; color: var(--ink-dim); }
+  .section-lead { margin: 0 0 12px; color: var(--ink-mid); font-size: .92rem; }
+
+  /* ---------- 图鉴卡 ---------- */
+  .bgrid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill,minmax(230px,1fr)); }
+  .bcard { display: flex; min-width: 0; flex-direction: column; gap: 8px; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  /* 图鉴插图位：由内联 SVG 标本图填充（见页首 art-sprite），不再放 emoji。 */
+  .bcard-art { display: grid; place-items: center; padding: 10px 8px 6px; border-bottom: 1px solid var(--line-soft); background: linear-gradient(168deg,#fffaef,var(--surface-2)); }
+  .bcard-in { display: flex; flex: 1; flex-direction: column; gap: 7px; padding: 0 15px 15px; }
+  .bcard-in h3 { margin: 0; font-size: 1.02rem; }
+  .bcard-in .sci { margin: 0; font-family: var(--mono); font-size: .71rem; color: var(--ink-dim); }
+  .bcard-in dl { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 3px 8px; margin: 0; font-size: .82rem; }
+  .bcard-in dt { color: var(--ink-dim); }
+  .bcard-in dd { margin: 0; color: var(--ink-mid); }
+  .bcard-in .sz { align-self: flex-start; padding: 2px 9px; border: 1px solid var(--line); border-radius: 999px; font-family: var(--mono); font-size: .73rem; color: var(--kit); }
+
+  /* ---------- 腿型配对 ---------- */
+  .legs-wrap { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); }
+  .leg-svg { display: block; width: 100%; max-width: 300px; height: auto; margin: 0 auto; }
+  .leg-svg .lg-shape { transition: fill .25s var(--ease); }
+
+  /* ---------- 伪装台 ---------- */
+  .camo-stage { display: grid; place-items: center; min-height: 176px; margin-bottom: 12px; border: 3px solid var(--line); border-radius: var(--r-lg); transition: background .35s var(--ease); }
+  .camo-stage[data-bg="bark"] { background: repeating-linear-gradient(100deg,#8b5e34 0 9px,#6f4a26 9px 17px); }
+  .camo-stage[data-bg="leaf"] { background: repeating-linear-gradient(80deg,#4ade80 0 11px,#22a559 11px 20px); }
+  .camo-stage[data-bg="sand"] { background: repeating-linear-gradient(115deg,#e8d3a2 0 10px,#d6bd85 10px 19px); }
+  .camo-row { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; padding: 14px; }
+  .camo-bug { display: grid; place-items: center; width: 88px; height: 88px; border-radius: 14px; transition: opacity .35s var(--ease); }
+  .camo-bug[data-hidden="true"] { opacity: .18; }
+
+  /* ---------- 力量换算 ---------- */
+  .lift-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 14px; }
+  .lift-field { display: flex; flex-direction: column; gap: 5px; }
+  .lift-field span { font-size: .74rem; font-weight: 650; color: var(--ink-dim); }
+  .lift-big { font-family: var(--mono); font-size: clamp(1.7rem,6vw,2.5rem); font-weight: 700; line-height: 1.1; color: var(--bt-shell); }
+  .lift-big small { font-size: .9rem; font-weight: 400; color: var(--ink-dim); }
+  .lift-bars { display: flex; flex-direction: column; gap: 10px; }
+  .lift-bar { display: grid; grid-template-columns: 96px minmax(0,1fr); gap: 10px; align-items: center; }
+  .lift-bar > b { font-size: .82rem; font-weight: 650; color: var(--ink-mid); text-align: right; }
+  .lift-track { position: relative; height: 28px; overflow: hidden; border-radius: 6px; background: var(--bg-soft); }
+  .lift-fill { position: absolute; inset: 0 auto 0 0; display: flex; align-items: center; padding-left: 9px; border-radius: 6px; transition: width .45s var(--ease); }
+  .lift-fill span { font-family: var(--mono); font-size: .78rem; color: #0b0f1a; white-space: nowrap; }
+  .fill-you { background: linear-gradient(90deg,#6ea8fe,#818cf8); }
+  .fill-bug { background: linear-gradient(90deg,#d9a05b,#7c4a12); }
+
+  .question-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .question-chips span { padding: 7px 11px; border: 1px solid var(--line-soft); border-radius: 999px; color: var(--ink-mid); font-size: .8rem; }
+  .source-card { margin-top: 12px; padding: 12px 14px; border-radius: var(--r); background: rgba(124,74,18,.07); }
+  .source-card p { margin: 5px 0 0; color: var(--ink-mid); font-size: .85rem; }
+  details.parent-deep-dive > summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; font-weight: 850; }
+  .parent-deep-dive { margin-top: 18px; }
+  .kid-action-strip { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 12px; }
+  .hero-invite > .kid-action-strip { grid-column: 1 / -1; margin-top: 0; }
+  .scene-wrap { margin-top: 14px; }
+  .bt-scene { display: grid; grid-template-columns: minmax(0,1fr); gap: 10px; padding: 14px; border: 3px dashed var(--line); border-radius: var(--r-lg); background: var(--surface); }
+
+  /* ---------- ⑤ 鞘翅开合 ---------- */
+  .bt-lead { margin: 0 0 12px; color: var(--ink-mid); font-size: .95rem; }
+  .bt-wing-stage { display: grid; place-items: center; padding: 12px; border: 3px solid var(--line); border-radius: var(--r-lg); background: linear-gradient(168deg,#fff6e6 0 62%,#eaf7dd 62%); }
+  .bt-wing-art { display: block; width: 100%; max-width: 430px; height: auto; }
+  .bt-wing-picks { margin: 12px 0 10px; }
+  .bt-bg { fill: none; }
+  .bt-ground { fill: rgba(74,222,128,.3); }
+  .bt-shell-a { fill: var(--bt-shell); }
+  .bt-head { fill: #43290b; }
+  .bt-leg { fill: none; stroke: #43290b; stroke-width: 7; stroke-linecap: round; }
+  .bt-feeler { fill: none; stroke: #43290b; stroke-width: 5; stroke-linecap: round; }
+  .bt-seam { fill: none; stroke: #ffe7c2; stroke-width: 4; stroke-linecap: round; }
+  .bt-wing-soft { fill: rgba(206,232,255,.8); stroke: #4b83e0; stroke-width: 2.5; }
+  .bt-belly { fill: var(--bt-wing); }
+  .bt-belly-seam { fill: none; stroke: rgba(67,41,11,.42); stroke-width: 2.5; stroke-linecap: round; }
+  .bt-badge { fill: var(--bt-wing); }
+  .bt-ink { fill: var(--ink); font: 800 15px var(--font); }
+  .bt-ink-soft { fill: var(--ink-dim); font: 650 12px var(--font); }
+
+  /* ---------- ⑥ 知识拓展 ---------- */
+  .bt-more { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill,minmax(268px,1fr)); }
+  .bt-more > details { min-width: 0; overflow: hidden; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .bt-more > details[open] { border-color: var(--bt-shell); }
+  .bt-more > details > summary { display: flex; gap: 11px; align-items: center; min-height: 56px; padding: 11px 14px; list-style: none; font-weight: 850; font-size: .98rem; cursor: pointer; }
+  .bt-more > details > summary::-webkit-details-marker { display: none; }
+  .bt-more > details > summary::after { content: "＋"; margin-left: auto; color: var(--ink-dim); font-size: 1.1rem; }
+  .bt-more > details[open] > summary::after { content: "－"; }
+  .bt-more > details > summary:hover { background: var(--bg-soft); }
+  .bt-more-icon { display: grid; flex: 0 0 auto; place-items: center; width: 46px; height: 46px; border-radius: 13px; background: rgba(124,74,18,.1); font-size: 1.75rem; line-height: 1; }
+  /* 插画版图标要撑满这个圆角方块，否则会比旁边的 emoji 明显小一圈。 */
+  .bt-more-icon > .art { width: 100%; height: 100%; }
+  .bt-more-body { padding: 0 14px 14px; }
+  .bt-more-body p { margin: 0 0 9px; color: var(--ink-mid); font-size: .88rem; }
+  .bt-more-body b { color: var(--ink); }
+  .bt-try { display: flex; gap: 9px; align-items: flex-start; padding: 10px 12px; border: 1px solid rgba(74,222,128,.34); border-radius: var(--r); background: rgba(74,222,128,.1); color: var(--ink-mid); font-size: .85rem; }
+  .bt-try > span { font-size: 1.2rem; line-height: 1.1; }
+  html[data-mode="kid"] .bt-more > details > summary { min-height: 64px; font-size: 1.06rem; }
+  html[data-mode="kid"] .bt-more-icon { width: 54px; height: 54px; font-size: 2.1rem; }
+
+  @media (max-width: 820px) { .hero-invite { grid-template-columns: 1fr; } }
+  @media (max-width: 520px) { .lift-bar { grid-template-columns: 1fr; } .lift-bar > b { text-align: left; } }
+  @media (prefers-reduced-motion: reduce) {
+    .bt-elytron, .bt-hindwing, .camo-stage, .camo-bug, .lift-fill, .leg-svg .lg-shape { transition: none; }
+  }
+  @media print { .look-spots, .wing-toggle, .quick-picks, .camo-picks, .bt-wing-picks { display: none !important; } }
+</style>
+</head>
+<body class="bt" data-playful-page="nature/beetles.html">
+<!-- ART:START 插画图库由 tools/art-build.mjs 生成，请改 tools/art-library.mjs -->
+<svg class="art-sprite" aria-hidden="true" focusable="false" width="0" height="0" viewBox="0 0 0 0">
+  <symbol id="art-beetle-diving" viewBox="0 0 120 120">
+    <linearGradient id="ag-dv-shell" x1=".2" y1="0" x2=".8" y2="1">
+    <stop offset="0" stop-color="#4d5a26"/><stop offset=".55" stop-color="#2f3a14"/><stop offset="1" stop-color="#1a2109"/>
+    </linearGradient>
+    <linearGradient id="ag-dv-water" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8fd3ea" stop-opacity=".45"/><stop offset="1" stop-color="#3f92b8" stop-opacity=".3"/>
+    </linearGradient>
+    <!-- 水：用柔和的椭圆而不是整块方底，放进图鉴卡时不会像贴了一枚 app 图标 -->
+    <ellipse cx="60" cy="62" rx="58" ry="56" fill="url(#ag-dv-water)"/>
+    <g fill="none" stroke="#4d9fbe" stroke-width="1.6" opacity=".55">
+    <circle cx="20" cy="26" r="4"/><circle cx="29" cy="15" r="2.6"/><circle cx="100" cy="32" r="3.4"/>
+    <circle cx="93" cy="19" r="2.2"/><circle cx="17" cy="92" r="2.8"/><circle cx="103" cy="88" r="2.2"/>
+    </g>
+    <!-- 后足：扁平的桨，边上一排缘毛 -->
+    <g>
+    <path d="M44 76 C34 84 24 94 18 104" fill="none" stroke="#6b5a22" stroke-width="4.6" stroke-linecap="round"/>
+    <path d="M76 76 C86 84 96 94 102 104" fill="none" stroke="#6b5a22" stroke-width="4.6" stroke-linecap="round"/>
+    <path d="M26 92 C20 98 16 104 14 110 C22 110 30 104 34 98 Z" fill="#8a7429" opacity=".9"/>
+    <path d="M94 92 C100 98 104 104 106 110 C98 110 90 104 86 98 Z" fill="#8a7429" opacity=".9"/>
+    <g stroke="#4f4214" stroke-width="1.4" stroke-linecap="round">
+    <path d="M27 95 L21 98 M30 99 L24 103 M33 103 L28 107 M22 92 L16 94"/>
+    <path d="M93 95 L99 98 M90 99 L96 103 M87 103 L92 107 M98 92 L104 94"/>
+    </g>
+    </g>
+    <!-- 中足与前足 -->
+    <g stroke="#6b5a22" stroke-width="3.6" stroke-linecap="round" fill="none">
+    <path d="M42 58 C32 58 24 60 18 64"/><path d="M78 58 C88 58 96 60 102 64"/>
+    <path d="M46 42 C38 36 32 30 28 24"/><path d="M74 42 C82 36 88 30 92 24"/>
+    </g>
+    <ellipse cx="60" cy="112" rx="24" ry="4" fill="#2a1c06" opacity="0.12"/>
+    <!-- 身体：泪滴形，前宽后尖，整圈黄边 -->
+    <path d="M60 16 C42 18 30 36 30 60 C30 86 44 106 60 108 C76 106 90 86 90 60 C90 36 78 18 60 16 Z"
+    fill="#d6bf4e"/>
+    <path d="M60 21 C45 23 35 39 35 60 C35 84 47 101 60 103 C73 101 85 84 85 60 C85 39 75 23 60 21 Z"
+    fill="url(#ag-dv-shell)"/>
+    <!-- 前胸背板与头：前端有一条淡色横带 -->
+    <path d="M42 34 C48 27 54 24 60 24 C66 24 72 27 78 34 L76 40 L44 40 Z" fill="#3c4a1b" stroke="#1c2409" stroke-width="1.4"/>
+    <path d="M45 30 C50 26 55 24 60 24 C65 24 70 26 75 30" fill="none" stroke="#d6bf4e" stroke-width="2.6" stroke-linecap="round"/>
+    <circle cx="52" cy="30" r="2.2" fill="#12180a"/><circle cx="68" cy="30" r="2.2" fill="#12180a"/>
+    <!-- 中缝与纵纹 -->
+    <path d="M60 41 L60 102" stroke="#141a08" stroke-width="1.6" opacity=".85"/>
+    <g fill="none" stroke="#141a08" stroke-width="1" opacity=".45">
+    <path d="M50 46 C46 62 47 84 53 98"/><path d="M70 46 C74 62 73 84 67 98"/>
+    </g>
+    <!-- 流线型硬壳的长条高光 -->
+    <path d="M44 44 C40 60 41 80 47 94" fill="none" stroke="#eafbc9" stroke-width="3" stroke-linecap="round" opacity=".35"/>
+    <!-- 鞘翅下存的那口空气：银亮的一小片 -->
+    <ellipse cx="60" cy="96" rx="9" ry="5" fill="#f2ffff" opacity=".6"/>
+    <ellipse cx="60" cy="95" rx="4.4" ry="2.4" fill="#fff" opacity=".85"/>
+  </symbol>
+  <symbol id="art-beetle-dung" viewBox="0 0 120 120">
+    <linearGradient id="ag-dg-shell" x1="0" y1="0" x2=".3" y2="1">
+    <stop offset="0" stop-color="#4c4a52"/><stop offset=".5" stop-color="#26242c"/><stop offset="1" stop-color="#0f0e13"/>
+    </linearGradient>
+    <radialGradient id="ag-dg-ball" cx=".34" cy=".3" r=".82">
+    <stop offset="0" stop-color="#a08661"/><stop offset=".6" stop-color="#6f5837"/><stop offset="1" stop-color="#453521"/>
+    </radialGradient>
+    <!-- 沙地与球滚过的浅沟 -->
+    <path d="M0 104 C24 98 44 100 64 103 C86 106 104 105 120 101 L120 120 L0 120 Z" fill="#d9c188" opacity=".55"/>
+    <path d="M6 106 C26 101 46 103 66 106" fill="none" stroke="#b39a63" stroke-width="2" opacity=".7"/>
+    <ellipse cx="64" cy="106" rx="30" ry="4" fill="#2a1c06" opacity="0.18"/>
+    <!-- 粪球：比虫还大，这是这个物种最出名的一件事 -->
+    <circle cx="29" cy="76" r="24" fill="url(#ag-dg-ball)"/>
+    <g fill="#3b2c19" opacity=".45">
+    <circle cx="21" cy="68" r="2.6"/><circle cx="34" cy="64" r="2"/><circle cx="38" cy="80" r="2.4"/>
+    <circle cx="24" cy="86" r="2.2"/><circle cx="30" cy="76" r="1.6"/><circle cx="15" cy="80" r="1.8"/>
+    </g>
+    <ellipse cx="21" cy="66" rx="6" ry="4" fill="#fff" opacity=".16" transform="rotate(-30 21 66)"/>
+    <!-- 远侧腿 -->
+    <g opacity=".5">
+    <path d="M70 88 C68 96 66 102 63 107" fill="none" stroke="#0d0c11" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M92 86 C97 94 101 100 104 105" fill="none" stroke="#0d0c11" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <!-- 鞘翅：黑亮、结实，常沾泥 -->
+    <path d="M63 58 C77 49 97 51 105 63 C111 73 108 88 96 92 C82 97 68 93 63 85 C59 77 59 64 63 58 Z"
+    fill="url(#ag-dg-shell)" stroke="#08070a" stroke-width="2"/>
+    <path d="M72 55 C84 49 97 52 104 62" fill="none" stroke="#cfd6e6" stroke-width="3.4" stroke-linecap="round" opacity=".4"/>
+    <!-- 鞘翅纵纹 -->
+    <g fill="none" stroke="#07060a" stroke-width="1.2" opacity=".55">
+    <path d="M70 60 C76 70 78 82 76 91"/><path d="M80 56 C86 68 88 80 87 91"/><path d="M90 55 C96 66 98 78 97 89"/>
+    </g>
+    <!-- 沾在壳上的泥点 -->
+    <g fill="#7a6136" opacity=".55"><circle cx="74" cy="72" r="2.2"/><circle cx="88" cy="66" r="1.8"/><circle cx="83" cy="84" r="2"/></g>
+    <!-- 前胸背板 -->
+    <path d="M63 62 C58 53 52 52 48 57 C44 63 44 76 48 82 C52 88 59 88 63 84 Z"
+    fill="#22202a" stroke="#08070a" stroke-width="1.8"/>
+    <!-- 头 + 铲状唇基：前缘一排齿，用来切开和铲起 -->
+    <path d="M49 70 C42 68 34 72 32 79 C30 86 36 91 44 90 C49 89 51 84 50 78 Z"
+    fill="#191821" stroke="#08070a" stroke-width="1.8"/>
+    <path d="M32 79 L26 76 M31 83 L25 82 M32 87 L27 88" stroke="#191821" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="40" cy="78" r="2" fill="#050508"/>
+    <!-- 前足：宽扁带齿，撑在球上。这是「挖掘足」的教学重点 -->
+    <path d="M52 84 C46 88 40 92 34 94 L32 100 C40 99 48 95 54 90 Z" fill="#1b1a23" stroke="#08070a" stroke-width="1.6"/>
+    <path d="M40 92 L38 97 M34 94 L33 99 M46 89 L45 94" stroke="#08070a" stroke-width="1.6" stroke-linecap="round"/>
+    <!-- 中后足：撐地发力 -->
+    <path d="M68 90 C66 98 63 104 59 109" fill="none" stroke="#14131a" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M59 109 L53 111" fill="none" stroke="#14131a" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M90 89 C96 96 101 102 106 106" fill="none" stroke="#14131a" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M106 106 L111 109" fill="none" stroke="#14131a" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="art-beetle-firefly" viewBox="0 0 120 120">
+    <radialGradient id="ag-ff-glow" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#f6ffb0" stop-opacity=".95"/>
+    <stop offset=".35" stop-color="#d8f75c" stop-opacity=".72"/>
+    <stop offset=".7" stop-color="#9ade2a" stop-opacity=".28"/>
+    <stop offset="1" stop-color="#6cb81a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ag-ff-night" cx=".5" cy=".62" r=".58">
+    <stop offset="0" stop-color="#16281f" stop-opacity=".5"/>
+    <stop offset="1" stop-color="#16281f" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 夜色只压在发光器周围，让冷光有对比又不把整张卡变黑 -->
+    <ellipse cx="60" cy="86" rx="52" ry="34" fill="url(#ag-ff-night)"/>
+    <ellipse cx="60" cy="96" rx="40" ry="26" fill="url(#ag-ff-glow)"/>
+    <!-- 六条细足 -->
+    <g stroke="#2c2418" stroke-width="2.6" stroke-linecap="round" fill="none">
+    <path d="M48 40 C40 37 34 33 30 28"/><path d="M72 40 C80 37 86 33 90 28"/>
+    <path d="M45 58 C36 58 29 60 24 64"/><path d="M75 58 C84 58 91 60 96 64"/>
+    <path d="M47 74 C39 78 33 84 30 90"/><path d="M73 74 C81 78 87 84 90 90"/>
+    </g>
+    <!-- 触角：短丝状 -->
+    <path d="M55 20 C50 13 44 9 38 7" fill="none" stroke="#2c2418" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M65 20 C70 13 76 9 82 7" fill="none" stroke="#2c2418" stroke-width="2.4" stroke-linecap="round"/>
+    <!-- 头缩在前胸背板下面，只露一点 -->
+    <path d="M53 20 C53 15 56 12 60 12 C64 12 67 15 67 20 Z" fill="#241d12"/>
+    <!-- 前胸背板：橙红色的盾，中间一块暗斑。萤火虫最容易辨认的部位 -->
+    <path d="M43 34 C43 24 50 18 60 18 C70 18 77 24 77 34 L77 40 L43 40 Z" fill="#e08a3c" stroke="#a4571b" stroke-width="1.6"/>
+    <ellipse cx="60" cy="30" rx="7" ry="8" fill="#3b2a14" opacity=".85"/>
+    <!-- 鞘翅：软、偏暗褐，两侧有淡色边 -->
+    <path d="M60 38 C47 38 42 52 42 72 C42 90 50 100 60 100 Z" fill="#54452e"/>
+    <path d="M60 38 C73 38 78 52 78 72 C78 90 70 100 60 100 Z" fill="#4b3d28"/>
+    <path d="M44 48 C41 62 41 82 45 95" fill="none" stroke="#d9c79a" stroke-width="3.2" stroke-linecap="round" opacity=".85"/>
+    <path d="M76 48 C79 62 79 82 75 95" fill="none" stroke="#d9c79a" stroke-width="3.2" stroke-linecap="round" opacity=".85"/>
+    <path d="M60 38 L60 100" stroke="#2b2317" stroke-width="1.6"/>
+    <path d="M60 38 C47 38 42 52 42 72 C42 90 50 100 60 100 C70 100 78 90 78 72 C78 52 73 38 60 38 Z"
+    fill="none" stroke="#2b2317" stroke-width="1.8"/>
+    <!-- 腹端发光器：亮心 + 两层光晕 -->
+    <ellipse cx="60" cy="100" rx="15" ry="11" fill="url(#ag-ff-glow)"/>
+    <path d="M50 96 C50 92 54 90 60 90 C66 90 70 92 70 96 C70 102 66 106 60 106 C54 106 50 102 50 96 Z"
+    fill="#e9f89a" stroke="#b7d642" stroke-width="1.4"/>
+    <ellipse cx="60" cy="97" rx="6" ry="4.4" fill="#fdffe4"/>
+  </symbol>
+  <symbol id="art-beetle-ladybird" viewBox="0 0 120 120">
+    <radialGradient id="ag-lb-red" cx=".34" cy=".26" r=".85">
+    <stop offset="0" stop-color="#f4614a"/><stop offset=".55" stop-color="#d92d1e"/><stop offset="1" stop-color="#9c1409"/>
+    </radialGradient>
+    <!-- 叶面：给它一个停靠的地方，红壳在绿底上更像实物 -->
+    <path d="M6 96 C22 78 52 70 84 76 C102 79 114 88 116 100 C96 112 40 114 6 96 Z" fill="#5aa63a" opacity=".55"/>
+    <path d="M10 97 C34 88 66 84 100 92" fill="none" stroke="#3f7d26" stroke-width="1.6" opacity=".6"/>
+    <ellipse cx="60" cy="102" rx="30" ry="5" fill="#2a1c06" opacity="0.2"/>
+    <!-- 六条短步行足 -->
+    <g stroke="#191207" stroke-width="3.2" stroke-linecap="round" fill="none">
+    <path d="M40 44 C32 40 26 36 22 31"/><path d="M80 44 C88 40 94 36 98 31"/>
+    <path d="M32 68 C23 68 16 68 10 66"/><path d="M88 68 C97 68 104 68 110 66"/>
+    <path d="M38 88 C31 93 26 98 22 104"/><path d="M82 88 C89 93 94 98 98 104"/>
+    </g>
+    <!-- 头：黑色，两侧各一块白颊斑 -->
+    <path d="M50 26 C50 18 54 13 60 13 C66 13 70 18 70 26 Z" fill="#15100a"/>
+    <circle cx="54" cy="21" r="2.6" fill="#f3ead4"/><circle cx="66" cy="21" r="2.6" fill="#f3ead4"/>
+    <path d="M54 15 C50 10 46 8 42 8" fill="none" stroke="#15100a" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M66 15 C70 10 74 8 78 8" fill="none" stroke="#15100a" stroke-width="2.4" stroke-linecap="round"/>
+    <!-- 前胸背板：黑底 + 两块奶白方斑，这是瓢虫最容易被忽略的识别点 -->
+    <path d="M43 40 C43 29 50 23 60 23 C70 23 77 29 77 40 Z" fill="#15100a"/>
+    <path d="M47 33 C49 29 52 27 55 27 L55 39 L46 39 Z" fill="#f3ead4"/>
+    <path d="M73 33 C71 29 68 27 65 27 L65 39 L74 39 Z" fill="#f3ead4"/>
+    <!-- 两片鞘翅：分开画，中缝才是真的缝 -->
+    <path d="M60 38 C41 38 27 52 27 70 C27 88 42 100 60 100 Z" fill="url(#ag-lb-red)"/>
+    <path d="M60 38 C79 38 93 52 93 70 C93 88 78 100 60 100 Z" fill="url(#ag-lb-red)"/>
+    <path d="M60 38 L60 100" stroke="#7c0f06" stroke-width="1.8"/>
+    <path d="M60 38 C41 38 27 52 27 70 C27 88 42 100 60 100 C78 100 93 88 93 70 C93 52 79 38 60 38 Z"
+    fill="none" stroke="#6d0d05" stroke-width="2"/>
+    <!-- 七个黑斑：中缝上共用一个，左右各三 -->
+    <g fill="#15100a">
+    <circle cx="60" cy="46" r="5.2"/>
+    <circle cx="43" cy="58" r="5.6"/><circle cx="36" cy="76" r="5"/><circle cx="52" cy="87" r="4.4"/>
+    <circle cx="77" cy="58" r="5.6"/><circle cx="84" cy="76" r="5"/><circle cx="68" cy="87" r="4.4"/>
+    </g>
+    <!-- 圆顶硬壳的镜面高光 -->
+    <path d="M36 58 C40 48 48 42 56 41" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".38"/>
+    <ellipse cx="44" cy="52" rx="5" ry="3" fill="#fff" opacity=".3" transform="rotate(-38 44 52)"/>
+  </symbol>
+  <symbol id="art-beetle-larva" viewBox="0 0 120 120">
+    <linearGradient id="ag-lv-body" x1="0" y1="0" x2=".4" y2="1">
+    <stop offset="0" stop-color="#fdf6e4"/><stop offset=".6" stop-color="#f0dfbd"/><stop offset="1" stop-color="#d8c294"/>
+    </linearGradient>
+    <!-- 腐叶土 -->
+    <path d="M0 96 C20 90 40 94 60 98 C82 102 102 100 120 94 L120 120 L0 120 Z" fill="#6b4d2c" opacity=".5"/>
+    <g fill="#4d3720" opacity=".5"><circle cx="18" cy="106" r="3"/><circle cx="46" cy="112" r="2.4"/><circle cx="88" cy="108" r="3.4"/></g>
+    <!-- C 形身体：十来个体节，越往后越细 -->
+    <path d="M74 24 C48 24 28 42 28 62 C28 84 46 98 66 98 C82 98 94 90 98 78
+    C92 82 82 86 72 86 C56 86 44 76 44 62 C44 48 56 38 74 38 Z"
+    fill="url(#ag-lv-body)" stroke="#c3a878" stroke-width="2"/>
+    <g fill="none" stroke="#cdb488" stroke-width="1.8" opacity=".9">
+    <path d="M56 27 C52 34 50 40 51 46"/><path d="M44 34 C40 42 38 48 39 54"/>
+    <path d="M34 48 C31 56 31 62 33 68"/><path d="M34 74 C36 80 40 85 45 88"/>
+    <path d="M48 84 C52 88 58 91 64 92"/><path d="M66 26 C63 32 62 38 63 43"/>
+    </g>
+    <!-- 气门：体侧一列小孔，正是「甲虫怎么呼吸」那张卡要讲的东西 -->
+    <g fill="#b08c55" opacity=".8">
+    <circle cx="56" cy="31" r="1.6"/><circle cx="45" cy="38" r="1.6"/><circle cx="36" cy="50" r="1.6"/>
+    <circle cx="35" cy="70" r="1.6"/><circle cx="44" cy="83" r="1.6"/><circle cx="56" cy="90" r="1.6"/>
+    </g>
+    <!-- 头壳：褐色、硬，带一对小颚 -->
+    <path d="M74 22 C86 22 94 28 94 36 C94 44 86 50 76 49 C70 48 66 42 67 34 C68 27 70 22 74 22 Z"
+    fill="#9a6b2f" stroke="#6e4718" stroke-width="2"/>
+    <circle cx="84" cy="32" r="2.2" fill="#3b2409"/>
+    <path d="M92 42 L100 46 M92 46 L99 51" stroke="#6e4718" stroke-width="3" stroke-linecap="round"/>
+    <!-- 三对短胸足，全挤在身体前段 -->
+    <g stroke="#c9ab77" stroke-width="3.4" stroke-linecap="round" fill="none">
+    <path d="M68 46 C66 53 63 58 59 61"/><path d="M58 40 C54 46 51 51 47 54"/><path d="M50 36 C45 41 42 45 38 48"/>
+    </g>
+  </symbol>
+  <symbol id="art-beetle-longhorn" viewBox="0 0 120 120">
+    <linearGradient id="ag-lh-shell" x1=".1" y1="0" x2=".9" y2="1">
+    <stop offset="0" stop-color="#3b3a42"/><stop offset=".5" stop-color="#1c1b22"/><stop offset="1" stop-color="#0c0b10"/>
+    </linearGradient>
+    <!-- 树皮：只在四角留一点纵向木纹作质感，中间留白给触角轮廓 -->
+    <g opacity=".13" stroke="#8a6236" fill="none" stroke-width="7" stroke-linecap="round">
+    <path d="M7 4 C11 26 10 46 6 66"/><path d="M113 4 C109 26 110 46 114 66"/>
+    <path d="M18 88 C20 102 19 112 16 118"/><path d="M102 88 C100 102 101 112 104 118"/>
+    </g>
+    <!-- 极长的分节触角：黑白相间、向后甩过身体，比身体还长。这是天牛的招牌。
+    左右不对称是故意的：完全镜像会看成一个笼子，不像活虫。 -->
+    <g fill="none" stroke="#17161c" stroke-width="4" stroke-linecap="round">
+    <path d="M53 20 C37 10 19 12 10 26 C4 36 5 52 12 62"/>
+    <path d="M67 20 C85 13 104 20 112 36 C117 47 114 60 108 68"/>
+    </g>
+    <g fill="none" stroke="#cfd3de" stroke-width="3.4" stroke-linecap="butt"
+    stroke-dasharray="3 11" stroke-dashoffset="7">
+    <path d="M53 20 C37 10 19 12 10 26 C4 36 5 52 12 62"/>
+    <path d="M67 20 C85 13 104 20 112 36 C117 47 114 60 108 68"/>
+    </g>
+    <ellipse cx="60" cy="111" rx="26" ry="4.5" fill="#2a1c06" opacity="0.16"/>
+    <!-- 六条粗壮的足，基部有淡蓝白粉被 -->
+    <g stroke="#1a191f" stroke-width="4" stroke-linecap="round" fill="none">
+    <path d="M46 46 C36 44 28 46 22 52"/><path d="M74 46 C84 44 92 46 98 52"/>
+    <path d="M43 66 C32 68 24 74 19 82"/><path d="M77 66 C88 68 96 74 101 82"/>
+    <path d="M45 86 C36 92 30 100 27 108"/><path d="M75 86 C84 92 90 100 93 108"/>
+    </g>
+    <!-- 头 -->
+    <path d="M52 18 C52 12 55 9 60 9 C65 9 68 12 68 18 L68 26 L52 26 Z" fill="#1a191f"/>
+    <circle cx="54" cy="20" r="2.4" fill="#050508"/><circle cx="66" cy="20" r="2.4" fill="#050508"/>
+    <!-- 前胸背板：两侧各一根侧刺 -->
+    <path d="M47 28 C47 24 52 22 60 22 C68 22 73 24 73 28 L75 40 L45 40 Z" fill="#22212a" stroke="#0b0a0f" stroke-width="1.6"/>
+    <path d="M45 32 L38 34 M75 32 L82 34" stroke="#22212a" stroke-width="4" stroke-linecap="round"/>
+    <!-- 两片长条鞘翅：肩部最宽，向后收 -->
+    <path d="M60 39 C46 39 40 52 40 72 C40 94 48 107 60 107 Z" fill="url(#ag-lh-shell)"/>
+    <path d="M60 39 C74 39 80 52 80 72 C80 94 72 107 60 107 Z" fill="url(#ag-lh-shell)"/>
+    <path d="M60 39 L60 107" stroke="#000" stroke-width="1.6" opacity=".8"/>
+    <path d="M60 39 C46 39 40 52 40 72 C40 94 48 107 60 107 C72 107 80 94 80 72 C80 52 74 39 60 39 Z"
+    fill="none" stroke="#08070b" stroke-width="2"/>
+    <!-- 肩部的颗粒感 -->
+    <g fill="#3d3c46" opacity=".8"><circle cx="47" cy="46" r="1.6"/><circle cx="73" cy="46" r="1.6"/><circle cx="52" cy="43" r="1.2"/><circle cx="68" cy="43" r="1.2"/></g>
+    <!-- 不规则白斑：星天牛的标志 -->
+    <g fill="#e8ecf5" opacity=".92">
+    <ellipse cx="48" cy="55" rx="4.2" ry="3.2"/><ellipse cx="72" cy="57" rx="3.6" ry="2.8"/>
+    <ellipse cx="45" cy="72" rx="3.8" ry="3"/><ellipse cx="75" cy="70" rx="4.2" ry="3.2"/>
+    <ellipse cx="53" cy="83" rx="3.4" ry="2.6"/><ellipse cx="68" cy="85" rx="3.8" ry="2.8"/>
+    <ellipse cx="50" cy="97" rx="2.8" ry="2.2"/><ellipse cx="70" cy="97" rx="2.6" ry="2"/>
+    <ellipse cx="57" cy="64" rx="2.4" ry="1.9"/><ellipse cx="63" cy="76" rx="2.4" ry="1.9"/>
+    </g>
+    <!-- 长条硬壳的高光 -->
+    <path d="M45 50 C42 62 42 80 45 94" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".22"/>
+  </symbol>
+  <symbol id="art-beetle-plain" viewBox="0 0 120 120">
+    <ellipse cx="60" cy="110" rx="24" ry="4" fill="#2a1c06" opacity="0.14"/>
+    <g stroke="var(--art-b, #3a2109)" stroke-width="3.4" stroke-linecap="round" fill="none">
+    <path d="M44 44 C35 40 28 35 24 29"/><path d="M76 44 C85 40 92 35 96 29"/>
+    <path d="M41 66 C31 66 23 68 17 72"/><path d="M79 66 C89 66 97 68 103 72"/>
+    <path d="M44 86 C36 92 30 99 27 106"/><path d="M76 86 C84 92 90 99 93 106"/>
+    </g>
+    <path d="M54 18 C50 12 45 9 40 8" fill="none" stroke="var(--art-b, #3a2109)" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M66 18 C70 12 75 9 80 8" fill="none" stroke="var(--art-b, #3a2109)" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M52 20 C52 14 55 11 60 11 C65 11 68 14 68 20 L68 28 L52 28 Z" fill="var(--art-b, #3a2109)"/>
+    <path d="M45 30 C45 24 51 21 60 21 C69 21 75 24 75 30 L77 42 L43 42 Z" fill="var(--art-b, #3a2109)"/>
+    <path d="M60 40 C45 40 38 54 38 72 C38 92 47 104 60 104 Z" fill="var(--art-a, #7c4a12)"/>
+    <path d="M60 40 C75 40 82 54 82 72 C82 92 73 104 60 104 Z" fill="var(--art-a, #7c4a12)"/>
+    <path d="M60 40 L60 104" stroke="var(--art-b, #3a2109)" stroke-width="1.8"/>
+    <path d="M60 40 C45 40 38 54 38 72 C38 92 47 104 60 104 C73 104 82 92 82 72 C82 54 75 40 60 40 Z"
+    fill="none" stroke="var(--art-b, #3a2109)" stroke-width="2"/>
+    <g fill="none" stroke="var(--art-b, #3a2109)" stroke-width="1" opacity=".4">
+    <path d="M49 48 C45 62 46 84 51 97"/><path d="M71 48 C75 62 74 84 69 97"/>
+    </g>
+    <path d="M44 50 C41 64 41 82 45 95" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".26"/>
+  </symbol>
+  <symbol id="art-beetle-rhino" viewBox="0 0 120 120">
+    <linearGradient id="ag-rh-shell" x1=".1" y1="0" x2=".45" y2="1">
+    <stop offset="0" stop-color="#8b5620"/><stop offset=".38" stop-color="#5a300e"/><stop offset="1" stop-color="#24 12 03"/>
+    </linearGradient>
+    <linearGradient id="ag-rh-pro" x1="0" y1="0" x2=".4" y2="1">
+    <stop offset="0" stop-color="#67390f"/><stop offset="1" stop-color="#1f1003"/>
+    </linearGradient>
+    <linearGradient id="ag-rh-horn" x1=".9" y1="1" x2=".1" y2="0">
+    <stop offset="0" stop-color="#3a1e06"/><stop offset=".5" stop-color="#5c3410"/><stop offset="1" stop-color="#2c1604"/>
+    </linearGradient>
+    <!-- 它挂在树干上：树皮既是栖息地信息，也给腿一个落点 -->
+    <path d="M0 100 C22 96 46 98 70 101 C90 104 106 103 120 99 L120 120 L0 120 Z" fill="#8a5f34"/>
+    <g fill="none" stroke="#6a4522" stroke-width="2" stroke-linecap="round" opacity=".8">
+    <path d="M4 108 C28 104 52 106 76 109 C94 111 108 110 120 107"/>
+    <path d="M8 116 C32 112 56 114 80 117"/>
+    </g>
+    <ellipse cx="76" cy="102" rx="30" ry="4" fill="#2a1c06" opacity="0.22"/>
+    <!-- 远侧的三条腿压暗，做出前后层次 -->
+    <g opacity=".5">
+    <path d="M58 84 C51 90 45 95 41 100" fill="none" stroke="#170c02" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M74 90 C72 95 70 99 68 103" fill="none" stroke="#170c02" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M94 88 C99 93 103 97 106 101" fill="none" stroke="#170c02" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <!-- 鞘翅：一整片光滑硬壳，侧面看长明显大于高 -->
+    <path d="M62 62 C70 49 92 44 105 54 C115 62 117 78 109 88 C99 99 74 99 65 89 C58 82 57 70 62 62 Z"
+    fill="url(#ag-rh-shell)"/>
+    <path d="M62 62 C70 49 92 44 105 54 C115 62 117 78 109 88 C99 99 74 99 65 89 C58 82 57 70 62 62 Z"
+    fill="none" stroke="#180b01" stroke-width="2.2"/>
+    <!-- 腹端与鞘翅下缘 -->
+    <path d="M70 93 C84 98 101 95 110 86" fill="none" stroke="#180b01" stroke-width="1.6" opacity=".6"/>
+    <!-- 镜面反射：独角仙最直观的质感就是「亮得像上过漆」 -->
+    <path d="M70 62 C80 52 96 50 106 57" fill="none" stroke="#ffe9c0" stroke-width="4.5" stroke-linecap="round" opacity=".5"/>
+    <ellipse cx="80" cy="60" rx="8" ry="3.2" fill="#fff6e2" opacity=".5" transform="rotate(-24 80 60)"/>
+    <ellipse cx="103" cy="76" rx="3" ry="8" fill="#ffe9c0" opacity=".22"/>
+    <!-- 前胸背板：比鞘翅暗一档，后缘留一道亮边，否则整只虫会糊成一个褐色团 -->
+    <path d="M64 66 C61 54 55 49 50 53 C44 58 43 72 46 81 C49 89 58 92 65 88 Z"
+    fill="url(#ag-rh-pro)" stroke="#150a01" stroke-width="2"/>
+    <path d="M64 67 C61 74 61 82 64 88" fill="none" stroke="#c08b45" stroke-width="2" opacity=".55"/>
+    <path d="M58 56 C54 63 53 78 57 87" fill="none" stroke="#b07c35" stroke-width="1.8" opacity=".45"/>
+    <!-- 胸角：短、粗、末端二叉，从前胸背板前缘伸出，明显比头角短 -->
+    <path d="M60 61 C54 57 48 55 43 54 L42 60 C48 62 54 65 60 69 Z" fill="#33 1a 05"/>
+    <path d="M60 61 C54 57 48 55 43 54 L42 60 C48 62 54 65 60 69 Z" fill="#331a05" stroke="#140a01" stroke-width="1.4"/>
+    <path d="M43 54 L36 51 M42 59 L35 59" stroke="#331a05" stroke-width="3.4" stroke-linecap="round"/>
+    <!-- 头 -->
+    <path d="M51 74 C44 72 37 76 36 82 C35 88 41 92 47 91 C51 90 53 86 52 81 Z"
+    fill="#221002" stroke="#100701" stroke-width="1.8"/>
+    <circle cx="42" cy="81" r="2.4" fill="#080401"/>
+    <circle cx="41.2" cy="80.2" r="0.9" fill="#caa168" opacity=".85"/>
+    <!-- 头角：这一页的主角。基部粗，向前上方弯出一条长弧，
+    先分两叉、每叉再分一次，共四个尖 —— 少了这一步就退化成「一根刺」。 -->
+    <path d="M45 76 C34 66 26 51 21 36 L27 33 C33 48 43 63 55 74 Z" fill="url(#ag-rh-horn)"/>
+    <path d="M45 76 C34 66 26 51 21 36 L27 33 C33 48 43 63 55 74 Z" fill="none" stroke="#150a01" stroke-width="1.6"/>
+    <path d="M22.5 36 C18 31 14 28 10 26" fill="none" stroke="#42230a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M25.5 34 C26 28 28 23 31 20" fill="none" stroke="#42230a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10.5 26.5 L4 24" fill="none" stroke="#4d290c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10.5 26.5 L8 19" fill="none" stroke="#4d290c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M30.5 20.5 L27 14" fill="none" stroke="#4d290c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M30.5 20.5 L37 18" fill="none" stroke="#4d290c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- 角面上的一道反光，说明它是硬角质而不是毛 -->
+    <path d="M43 72 C34 63 27 51 23 39" fill="none" stroke="#c89150" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- 近侧三条腿：股节粗、胫节带刺、末端一对钩爪抓住树皮 -->
+    <path d="M54 88 C48 93 42 97 36 99" fill="none" stroke="#2b1605" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M36 99 L30 102" fill="none" stroke="#2b1605" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M30 102 L26 100 M30 102 L27 105" fill="none" stroke="#2b1605" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M70 92 C68 97 65 102 61 105" fill="none" stroke="#2b1605" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M61 105 L55 107" fill="none" stroke="#2b1605" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M93 90 C99 95 104 99 109 101" fill="none" stroke="#2b1605" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M109 101 L114 104" fill="none" stroke="#2b1605" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- 前足胫节的锯齿 -->
+    <path d="M45 96 L41 94 M42 99 L38 97" fill="none" stroke="#2b1605" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+<!-- ART:END -->
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html">互动实验</a>
+    <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+  </div>
+</div></nav>
+
+<header class="hero wrap">
+  <div class="hero-invite">
+    <div class="hero-copy">
+      <p class="pill pill-kit">4–12 岁 · 户外可做</p>
+      <p class="story-kicker">🪲 甲虫馆长请你来验货</p>
+      <h1>甲虫背上那层硬壳，到底是什么？</h1>
+      <div class="big-question">
+        <span aria-hidden="true">❓</span>
+        <div><b>一个大问题</b><p>它看起来像盔甲，可甲虫又会飞。飞的时候，翅膀藏在哪里？</p></div>
+      </div>
+      <p class="look-now"><span aria-hidden="true">👀</span><span><b>主操作：</b>先点“打开鞘翅”，再点 1、2、3、4 看每个零件解决什么问题。</span></p>
+      <!-- 孩子主操作区不加 data-audience="parent"：那会让 kid.css 在孩子模式下
+           display:none，孩子首屏就没有任何快捷入口了。 -->
+      <div class="kid-action-strip" aria-label="甲虫馆主操作">
+        <a class="btn btn-primary" href="#beetleMissionTitle">开始甲虫任务</a>
+        <a class="btn btn-ghost" href="#atlasTitle">打开离线图鉴</a>
+      </div>
+    </div>
+
+    <div class="kid-visual-stage beetle-lab" id="beetleLab" data-look="elytra" data-open="false">
+      <span class="stage-label">看哪里？点数字热点</span>
+      <svg class="beetle-svg" viewBox="0 0 300 250" role="img" aria-labelledby="beetleMapTitle beetleMapDesc">
+        <title id="beetleMapTitle">一只甲虫的俯视解剖图，鞘翅可以打开</title>
+        <desc id="beetleMapDesc">从正上方看一只甲虫。最前面是头，头前伸出一对左右开合的大颚，头两侧各有一根末端带小球的触角，眼睛长在头的侧面。头后面是盾形的前胸背板，中间有一条纵沟。再往后是背上两片硬鞘翅，每片上有四条纵纹和一排小刻点，两片中间一条直缝，缝的最前端有一小块三角形的中胸盾片。身体两侧各有三条腿，每条分成粗的股节、带刺的胫节和细的跗节，末端是一对钩爪。鞘翅打开后，下面折叠的半透明后翅展开，能看到上面的翅脉。</desc>
+        <defs>
+          <linearGradient id="btElytronL" x1="1" y1="0" x2="0" y2=".5">
+            <stop offset="0" stop-color="#9c6224"/><stop offset=".45" stop-color="#75430f"/><stop offset="1" stop-color="#3c2107"/>
+          </linearGradient>
+          <linearGradient id="btElytronR" x1="0" y1="0" x2="1" y2=".5">
+            <stop offset="0" stop-color="#a86b28"/><stop offset=".45" stop-color="#7d4811"/><stop offset="1" stop-color="#432508"/>
+          </linearGradient>
+          <linearGradient id="btPronotum" x1=".15" y1="0" x2=".85" y2="1">
+            <stop offset="0" stop-color="#8a5318"/><stop offset=".5" stop-color="#603708"/><stop offset="1" stop-color="#33 1c 04"/>
+          </linearGradient>
+          <linearGradient id="btWingMembrane" x1=".5" y1="0" x2=".2" y2="1">
+            <stop offset="0" stop-color="#fdfbf0" stop-opacity=".95"/><stop offset="1" stop-color="#cfe4f2" stop-opacity=".8"/>
+          </linearGradient>
+        </defs>
+
+        <!-- 六条腿：股节（粗）→ 胫节（带刺）→ 跗节（细）→ 一对钩爪。
+             三对都长在胸部，这是「昆虫」的判据之一，孩子数腿时要能数清。 -->
+        <g class="bt-part bt-zone-legs" fill="none" stroke="#33200c" stroke-linecap="round" stroke-linejoin="round">
+          <g stroke-width="11">
+            <path d="M120 104 L82 88"/><path d="M116 132 L74 132"/><path d="M118 158 L78 180"/>
+            <path d="M180 104 L218 88"/><path d="M184 132 L226 132"/><path d="M182 158 L222 180"/>
+          </g>
+          <g stroke-width="8">
+            <path d="M82 88 L54 100"/><path d="M74 132 L48 150"/><path d="M78 180 L56 208"/>
+            <path d="M218 88 L246 100"/><path d="M226 132 L252 150"/><path d="M222 180 L244 208"/>
+          </g>
+          <g stroke-width="5">
+            <path d="M54 100 L34 97"/><path d="M48 150 L28 152"/><path d="M56 208 L40 222"/>
+            <path d="M246 100 L266 97"/><path d="M252 150 L272 152"/><path d="M244 208 L260 222"/>
+          </g>
+          <!-- 钩爪：末端总是一对，靠它挂在树皮上 -->
+          <g stroke-width="3">
+            <path d="M34 97 L25 92 M34 97 L26 103"/><path d="M28 152 L19 148 M28 152 L20 158"/>
+            <path d="M40 222 L31 220 M40 222 L34 229"/>
+            <path d="M266 97 L275 92 M266 97 L274 103"/><path d="M272 152 L281 148 M272 152 L280 158"/>
+            <path d="M260 222 L269 220 M260 222 L266 229"/>
+          </g>
+          <!-- 胫节上的刺 -->
+          <g stroke-width="2.6" opacity=".9">
+            <path d="M70 95 L66 102 M60 99 L57 106"/><path d="M64 139 L61 147 M56 144 L54 152"/>
+            <path d="M70 190 L63 194 M64 199 L57 203"/>
+            <path d="M230 95 L234 102 M240 99 L243 106"/><path d="M236 139 L239 147 M244 144 L246 152"/>
+            <path d="M230 190 L237 194 M236 199 L243 203"/>
+          </g>
+        </g>
+
+        <!-- 触角：末端一节膨大成小球（棒状），负责闻气味 -->
+        <g class="bt-part bt-zone-antenna">
+          <g fill="none" stroke="#33200c" stroke-width="5" stroke-linecap="round">
+            <path d="M130 44 C112 32 96 24 84 23"/><path d="M170 44 C188 32 204 24 216 23"/>
+            <path d="M126 40 L120 34 M120 34 L112 31" stroke-width="4"/>
+            <path d="M174 40 L180 34 M180 34 L188 31" stroke-width="4"/>
+          </g>
+          <ellipse cx="78" cy="22" rx="9" ry="6" fill="#33200c" transform="rotate(-16 78 22)"/>
+          <ellipse cx="222" cy="22" rx="9" ry="6" fill="#33200c" transform="rotate(16 222 22)"/>
+        </g>
+
+        <!-- 大颚：一对向内弯、能左右开合的颚，属于咀嚼式口器。
+             刻意画成向中间钳合而不是向外张开的尖角，否则会被看成两根角。 -->
+        <g class="bt-part bt-zone-jaw">
+          <path d="M136 34 C130 24 126 16 130 10 C136 15 141 22 144 30 Z" fill="#4a2c0d" stroke="#261605" stroke-width="2.5"/>
+          <path d="M164 34 C170 24 174 16 170 10 C164 15 159 22 156 30 Z" fill="#4a2c0d" stroke="#261605" stroke-width="2.5"/>
+          <path d="M143 30 C146 25 154 25 157 30 L156 36 L144 36 Z" fill="#5d3a12" stroke="#261605" stroke-width="2"/>
+        </g>
+
+        <!-- 头：眼睛长在两侧，不在正前方 -->
+        <path d="M122 46 C122 30 133 22 150 22 C167 22 178 30 178 46 L182 72 L118 72 Z"
+              fill="#4a2c0d" stroke="#261605" stroke-width="3"/>
+        <ellipse cx="124" cy="54" rx="6" ry="9" fill="#120a02"/>
+        <ellipse cx="176" cy="54" rx="6" ry="9" fill="#120a02"/>
+        <ellipse cx="122.5" cy="50" rx="2" ry="3" fill="#d8bf92" opacity=".7"/>
+        <ellipse cx="177.5" cy="50" rx="2" ry="3" fill="#d8bf92" opacity=".7"/>
+
+        <!-- 前胸背板：盾形，中间一条纵沟，两侧有加厚的边 -->
+        <path d="M113 80 C113 66 129 60 150 60 C171 60 187 66 187 80 L196 124 L104 124 Z"
+              fill="url(#btPronotum)" stroke="#261605" stroke-width="3"/>
+        <!-- 前缘的亮线把前胸背板和头分开，否则两块深褐色会糊成一团 -->
+        <path d="M117 74 C129 65 171 65 183 74" fill="none" stroke="#c08b45" stroke-width="2.5" opacity=".5"/>
+        <path d="M150 68 L150 120" stroke="#2e1a05" stroke-width="2.5" opacity=".6"/>
+        <path d="M119 82 C117 96 113 112 110 120" fill="none" stroke="#c08b45" stroke-width="2.5" opacity=".45"/>
+        <path d="M181 82 C183 96 187 112 190 120" fill="none" stroke="#c08b45" stroke-width="2.5" opacity=".45"/>
+
+        <!-- 腹部：鞘翅让开后露出来的背面，横向一节一节 -->
+        <path d="M110 128 C122 122 178 122 190 128 C195 172 188 216 167 235 C157 243 143 243 133 235 C112 216 105 172 110 128 Z"
+              fill="#3b2208" stroke="#201203" stroke-width="2.5"/>
+        <g fill="none" stroke="#5c3a13" stroke-width="2" opacity=".8">
+          <path d="M114 152 C136 158 164 158 186 152"/><path d="M116 176 C137 182 163 182 184 176"/>
+          <path d="M120 200 C139 206 161 206 180 200"/><path d="M128 220 C140 225 160 225 172 220"/>
+        </g>
+        <!-- 气门：体侧一列小孔，甲虫靠它换气 -->
+        <g fill="#1a0e02">
+          <circle cx="112" cy="146" r="3"/><circle cx="114" cy="170" r="3"/><circle cx="118" cy="194" r="3"/>
+          <circle cx="188" cy="146" r="3"/><circle cx="186" cy="170" r="3"/><circle cx="182" cy="194" r="3"/>
+        </g>
+
+        <!-- 中胸盾片：两片鞘翅之间最前端那一小块三角，是判断「两片」的好线索 -->
+        <path d="M139 126 L161 126 L150 146 Z" fill="#2e1a05" stroke="#201203" stroke-width="2"/>
+
+        <!-- 后翅：平时折成三折收在鞘翅下面，打开鞘翅后才展开。真正扇动的是这两片。
+             必须画在腹部之后、鞘翅之前：画在腹部前面会被肚子整块盖住，
+             画在鞘翅后面又会盖住掀起的鞘翅——真实的层次是「翅在肚子上、鞘翅在最外」。 -->
+        <g class="bt-hindwing">
+          <path d="M144 132 C116 142 78 172 52 206 C38 226 38 242 54 242 C80 241 118 204 148 158 Z"
+                fill="url(#btWingMembrane)" stroke="#8fb2cc" stroke-width="2"/>
+          <path d="M156 132 C184 142 222 172 248 206 C262 226 262 242 246 242 C220 241 182 204 152 158 Z"
+                fill="url(#btWingMembrane)" stroke="#8fb2cc" stroke-width="2"/>
+          <g fill="none" stroke="#7ba2be" stroke-width="1.6" opacity=".9">
+            <path d="M141 140 C116 154 86 184 66 216"/><path d="M140 154 C120 168 96 194 82 220"/>
+            <path d="M140 170 C126 184 108 204 96 226"/><path d="M104 176 C88 194 72 214 62 232"/>
+            <path d="M78 196 C66 210 56 224 50 236"/>
+            <path d="M159 140 C184 154 214 184 234 216"/><path d="M160 154 C180 168 204 194 218 220"/>
+            <path d="M160 170 C174 184 192 204 204 226"/><path d="M196 176 C212 194 228 214 238 232"/>
+            <path d="M222 196 C234 210 244 224 250 236"/>
+          </g>
+        </g>
+
+        <!-- 鞘翅：两片硬化的前翅。纵纹、刻点和肩角都是真实的鞘翅特征。 -->
+        <g class="bt-part bt-zone-elytra">
+          <g class="bt-elytron left">
+            <path d="M148 126 C124 127 108 144 105 174 C102 206 116 230 148 236 Z"
+                  fill="url(#btElytronL)" stroke="#261605" stroke-width="3"/>
+            <g fill="none" stroke="#2b1805" stroke-width="1.6" opacity=".65">
+              <path d="M141 132 C126 146 118 168 119 196 C120 214 128 226 142 231"/>
+              <path d="M133 133 C119 148 112 170 113 196 C114 212 121 224 134 230"/>
+              <path d="M126 136 C114 152 108 172 109 194 C110 208 116 220 127 227"/>
+              <path d="M119 143 C110 158 106 174 107 192 C108 204 112 214 120 222"/>
+            </g>
+            <g fill="#2b1805" opacity=".5">
+              <circle cx="137" cy="150" r="1.5"/><circle cx="130" cy="166" r="1.5"/><circle cx="126" cy="188" r="1.5"/>
+              <circle cx="133" cy="206" r="1.5"/><circle cx="141" cy="220" r="1.5"/><circle cx="122" cy="150" r="1.5"/>
+            </g>
+            <!-- 肩角：鞘翅前外侧那个凸起 -->
+            <path d="M147 128 C132 130 120 138 113 150" fill="none" stroke="#c99453" stroke-width="3" stroke-linecap="round" opacity=".55"/>
+            <path d="M143 140 C132 154 127 176 128 198" fill="none" stroke="#ffe4b5" stroke-width="3" stroke-linecap="round" opacity=".17"/>
+          </g>
+          <g class="bt-elytron right">
+            <path d="M152 126 C176 127 192 144 195 174 C198 206 184 230 152 236 Z"
+                  fill="url(#btElytronR)" stroke="#261605" stroke-width="3"/>
+            <g fill="none" stroke="#2b1805" stroke-width="1.6" opacity=".65">
+              <path d="M159 132 C174 146 182 168 181 196 C180 214 172 226 158 231"/>
+              <path d="M167 133 C181 148 188 170 187 196 C186 212 179 224 166 230"/>
+              <path d="M174 136 C186 152 192 172 191 194 C190 208 184 220 173 227"/>
+              <path d="M181 143 C190 158 194 174 193 192 C192 204 188 214 180 222"/>
+            </g>
+            <g fill="#2b1805" opacity=".5">
+              <circle cx="163" cy="150" r="1.5"/><circle cx="170" cy="166" r="1.5"/><circle cx="174" cy="188" r="1.5"/>
+              <circle cx="167" cy="206" r="1.5"/><circle cx="159" cy="220" r="1.5"/><circle cx="178" cy="150" r="1.5"/>
+            </g>
+            <path d="M153 128 C168 130 180 138 187 150" fill="none" stroke="#c99453" stroke-width="3" stroke-linecap="round" opacity=".55"/>
+            <path d="M157 140 C168 154 173 176 172 198" fill="none" stroke="#ffe4b5" stroke-width="3" stroke-linecap="round" opacity=".17"/>
+          </g>
+        </g>
+        <!-- 中缝：两片鞘翅合起来的地方。合上时是一条直线，这是「有两片」的证据。 -->
+        <path class="bt-suture" d="M150 128 L150 234" stroke="#201203" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+
+      <div class="look-spots" role="group" aria-label="甲虫身体热点">
+        <button class="look-spot" type="button" data-look="elytra" aria-pressed="true" aria-label="看鞘翅">1 鞘翅</button>
+        <button class="look-spot" type="button" data-look="jaw" aria-pressed="false" aria-label="看大颚">2 大颚</button>
+        <button class="look-spot" type="button" data-look="legs" aria-pressed="false" aria-label="看腿">3 腿</button>
+        <button class="look-spot" type="button" data-look="antenna" aria-pressed="false" aria-label="看触角">4 触角</button>
+      </div>
+      <button class="wing-toggle" type="button" id="wingToggle" aria-pressed="false">打开鞘翅</button>
+      <div class="kid-result-card" id="beetleLookResult" role="status" aria-live="polite"><b>1 鞘翅：</b>背上那层硬壳是变硬的前翅，负责保护身体；它不是用来扇动的。</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap scene-wrap">
+  <div class="kid-visual-stage bt-scene" data-playful-scene="forest-floor"
+       data-playful-scene-title="树皮和落叶层"
+       data-playful-scene-desc="老树皮、落叶和小石头之间，甲虫在缝隙里爬来爬去">
+    <div class="kid-speech-row">
+      <span class="kid-mascot" aria-hidden="true">🪲</span>
+      <p class="kid-speech">翻开一块<b>落叶或树皮</b>，慢慢看，再轻轻放回去。</p>
+    </div>
+    <ol class="kid-steps-visual" aria-label="三步玩法">
+      <li><span class="kid-tile-art" aria-hidden="true">🛡️</span>看硬壳</li>
+      <li><span class="kid-tile-art" aria-hidden="true">🦵</span>看腿型</li>
+      <li><span class="kid-tile-art" aria-hidden="true">📓</span>记一笔</li>
+    </ol>
+  </div>
+</div>
+
+<main class="wrap stack" id="main">
+
+  <section class="mission task" aria-labelledby="beetleMissionTitle">
+    <p class="pill pill-kit">核心任务 · 不伤害观察</p>
+    <h2 id="beetleMissionTitle">挑一只甲虫，说出三个零件各自解决了什么问题</h2>
+    <p class="plain-note"><b>侦察规则：</b>只看不抓，看完把石头和树皮放回原位。不知道名字也能记录零件和用途。</p>
+
+    <div class="work-card" aria-labelledby="beetleStoryTitle">
+      <div data-playful-companion>甲虫馆长正在擦亮展示柜……</div>
+      <div class="row spread">
+        <div><p class="pill pill-kit">甲虫验货单</p><h3 id="beetleStoryTitle" class="work-card-title">把甲虫当成一套工程方案</h3></div>
+        <span data-playful-sticker>○ 完成任务解锁收藏卡</span>
+      </div>
+      <p class="work-card-content">完成四步：先猜硬壳是什么、算一次力量、选一条看到的证据、再决定怎样复查。</p>
+      <div class="row">
+        <button class="btn btn-ghost" type="button" data-playful-random-task="#beetleSurprise">抽取验货单加页</button>
+        <span id="beetleSurprise" data-playful-task-output role="status" aria-live="polite">加页任务会在这里出现。</span>
+      </div>
+      <p data-playful-feedback role="status" aria-live="polite">验货单等待盖章。</p>
+    </div>
+
+    <div class="mission-grid kid-story-steps">
+      <div class="mission-step">
+        <h3>1 先猜一猜</h3>
+        <p>背上那层硬壳，你觉得它是什么？</p>
+        <div class="quick-picks" data-fill="beetlePredict">
+          <button class="kid-choice" type="button" data-value="我猜硬壳就是它的皮肤，直接长在身体外面。" aria-pressed="false">🧱 是皮肤</button>
+          <button class="kid-choice" type="button" data-value="我猜硬壳是变硬的翅膀，飞的时候会打开。" aria-pressed="false">🛡️ 是翅膀</button>
+          <button class="kid-choice" type="button" data-value="我猜硬壳下面还藏着另一对软翅膀。" aria-pressed="false">🪶 下面还有翅</button>
+          <button class="kid-choice" type="button" data-value="我还不确定，先打开舞台上的鞘翅看一看再说。" aria-pressed="false">🤔 先看再说</button>
+        </div>
+        <label class="sr-only" for="beetlePredict">预测记录</label>
+        <textarea class="input" id="beetlePredict" data-audience="parent" placeholder="也可以补充自己的理由"></textarea>
+      </div>
+
+      <div class="mission-step">
+        <h3>2 动手算一算</h3>
+        <label for="beetleWeight">你的体重（千克）：<b id="beetleWeightText">25</b></label>
+        <input id="beetleWeight" type="range" min="10" max="60" step="1" value="25">
+        <p>选一只甲虫的力量记录，再算出“换成你”会是多少。</p>
+        <div class="kid-tiles" id="liftPicks" role="group" aria-label="选一只甲虫的力量记录">
+          <button class="kid-tile" type="button" data-ratio="1141" data-name="公牛屎壳郎" aria-pressed="true" aria-label="选公牛屎壳郎，约 1141 倍"><span class="kid-tile-art"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-beetle-dung"/></svg></span><span class="kid-tile-label">屎壳郎</span></button>
+          <button class="kid-tile" type="button" data-ratio="100" data-name="独角仙" aria-pressed="false" aria-label="选独角仙，约 100 倍"><span class="kid-tile-art"><svg class="art" viewBox="0 0 120 120" aria-hidden="true"><use href="#art-beetle-rhino"/></svg></span><span class="kid-tile-label">独角仙</span></button>
+          <button class="kid-tile" type="button" data-ratio="2" data-name="大力气的人" aria-pressed="false" aria-label="选人类举重，约 2 倍"><span class="kid-tile-art" aria-hidden="true">🏋️</span><span class="kid-tile-label">人举重</span></button>
+        </div>
+        <button class="btn btn-primary" id="beetleRun" type="button">计算并记录</button>
+      </div>
+
+      <div class="mission-step">
+        <h3>3 看见了什么</h3>
+        <output class="text-result kid-result-card" id="beetleOutput" aria-live="polite">等待计算。</output>
+        <p>选一条可以直接观察到的证据。</p>
+        <div class="quick-picks" data-fill="beetleResult">
+          <button class="kid-choice" type="button" data-value="我看到背上两片硬壳中间有一条直缝，说明它们是两片、能打开。" aria-pressed="false">➖ 中间有条缝</button>
+          <button class="kid-choice" type="button" data-value="我看到它的前腿又扁又宽，边上有小齿，很适合挖土。" aria-pressed="false">⛏️ 前腿像铲子</button>
+          <button class="kid-choice" type="button" data-value="我看到它的口器是一对左右开合的大颚，能咬住和咀嚼东西。" aria-pressed="false">🦷 一对大颚</button>
+          <button class="kid-choice" type="button" data-value="我看到它的颜色和停的地方很像，不动的时候很难被发现。" aria-pressed="false">🎨 颜色像背景</button>
+          <button class="kid-choice" type="button" data-value="我看到它正在爬或在啃东西；这是行为记录，不需要先知道名字。" aria-pressed="false">👀 一种行为</button>
+        </div>
+        <label class="sr-only" for="beetleResult">观察结果</label>
+        <textarea class="input" id="beetleResult" data-audience="parent" placeholder="也可以补充自己看到的结构或行为"></textarea>
+      </div>
+
+      <div class="mission-step">
+        <h3>4 怎样复查</h3>
+        <p>怎样把“看到的”和“猜的”分开？</p>
+        <div class="quick-picks" data-fill="beetleReflect">
+          <button class="kid-choice" type="button" data-value="鞘翅能不能打开是可以再看一次的；我会等它起飞或换个角度再确认。" aria-pressed="false">🔁 再看一次</button>
+          <button class="kid-choice" type="button" data-value="腿的用途是我根据形状推断的；我会看它实际在做什么来验证。" aria-pressed="false">🦵 用行为验证</button>
+          <button class="kid-choice" type="button" data-value="我会把它画下来，再和图鉴对照，看哪里对不上。" aria-pressed="false">✏️ 画下来对照</button>
+          <button class="kid-choice" type="button" data-value="我会分两栏写：确定看到的写一栏，推断的写另一栏。" aria-pressed="false">🗂 分开两栏写</button>
+        </div>
+        <label class="sr-only" for="beetleReflect">反思记录</label>
+        <textarea class="input" id="beetleReflect" data-audience="parent" placeholder="也可以写下另一种复查方法"></textarea>
+      </div>
+    </div>
+
+    <div class="task-actions">
+      <button class="btn btn-primary" id="beetleComplete" type="button">完成任务</button>
+      <span class="task-status" id="beetleStatus" role="status" aria-live="polite">尚未完成：不需要上传照片或提供定位。</span>
+    </div>
+
+    <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="beetleWorkTitle">
+      <h3 class="work-card-title" id="beetleWorkTitle">给图鉴馆加一页作品</h3>
+      <p class="work-card-meta">只保存文字，不需要照片和位置。作品只保存在这台设备上。</p>
+      <div class="work-card-fields">
+        <div>
+          <label for="beetleWorkType">作品类型</label>
+          <select class="input" id="beetleWorkType" name="type">
+            <option value="observation">观察记录</option>
+            <option value="drawing">发现画</option>
+            <option value="explanation">我的解释</option>
+            <option value="photo-note">照片说明</option>
+          </select>
+        </div>
+        <div>
+          <label for="beetleWorkName">这一页叫什么</label>
+          <input class="input" id="beetleWorkName" name="title" required maxlength="80" placeholder="例如：前腿像小铲子的甲虫">
+        </div>
+        <div>
+          <label for="beetleWorkContent">三个零件各自解决了什么问题</label>
+          <div class="quick-picks" data-fill="beetleWorkContent" role="group" aria-label="甲虫作品快捷选项">
+            <button class="kid-choice" type="button" data-value="🛡️ 鞘翅保护身体，大颚咬住食物，扁平的前腿用来挖土。我会再看一次它的腿。" aria-pressed="false">🛡️ 三件套</button>
+            <button class="kid-choice" type="button" data-value="🪶 我看到鞘翅打开后下面有软翅；这说明硬壳是变硬的前翅。" aria-pressed="false">🪶 打开看到软翅</button>
+            <button class="kid-choice" type="button" data-value="🎨 它的颜色和停的地方很像，我猜是伪装；我会换一个背景再观察。" aria-pressed="false">🎨 伪装猜想</button>
+          </div>
+          <textarea class="input" id="beetleWorkContent" name="content" required maxlength="4000" placeholder="哪部分是直接看到的，哪部分是推断，准备怎样再看一次。"></textarea>
+          <p class="pick-feedback" role="status" aria-live="polite">点一个图标，就会写进这一页。</p>
+        </div>
+        <button class="btn btn-primary" type="submit">保存这一页</button>
+      </div>
+      <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和观察后就能存档。</p>
+    </form>
+  </section>
+
+  <section aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">① 离线图鉴：六种常见甲虫</h2>
+    <p class="section-lead">全部是内置图形和文字，不联网也能看。先看腿和口器，再看名字。</p>
+    <div class="bgrid">
+      <article class="bcard">
+        <div class="bcard-art">
+          <svg class="art art-plate" viewBox="0 0 120 120" role="img" aria-label="七星瓢虫俯视图：红色圆顶鞘翅上七个黑斑，黑色前胸背板上有两块奶白色斑，六条短腿">
+            <use href="#art-beetle-ladybird"/>
+          </svg>
+        </div>
+        <div class="bcard-in">
+          <h3>瓢虫</h3><p class="sci">Coccinellidae</p>
+          <dl><dt>鞘翅</dt><dd>圆顶、光滑，斑点是警戒色</dd><dt>腿</dt><dd>短步行足，在叶面上走</dd><dt>吃什么</dt><dd>多数种类捕食蚜虫</dd></dl>
+          <span class="sz">约 5–8 mm</span>
+        </div>
+      </article>
+      <article class="bcard">
+        <div class="bcard-art">
+          <svg class="art art-plate" viewBox="0 0 120 120" role="img" aria-label="独角仙侧视图：雄虫头上一根长角向前上方弯出，末端分成四个尖；背上是光亮的深褐色鞘翅，粗腿抓在树皮上">
+            <use href="#art-beetle-rhino"/>
+          </svg>
+        </div>
+        <div class="bcard-in">
+          <h3>独角仙</h3><p class="sci">Dynastinae</p>
+          <dl><dt>鞘翅</dt><dd>又厚又亮，像一层盔甲</dd><dt>腿</dt><dd>粗壮有钩，能牢牢抓住树干</dd><dt>特别处</dt><dd>雄虫头上有角，用来推开对手</dd></dl>
+          <span class="sz">约 40–80 mm</span>
+        </div>
+      </article>
+      <article class="bcard">
+        <div class="bcard-art">
+          <svg class="art art-plate" viewBox="0 0 120 120" role="img" aria-label="屎壳郎侧视图：黑亮的身体正用后腿推一个比自己还大的粪球，前腿宽扁带齿，撑在球上">
+            <use href="#art-beetle-dung"/>
+          </svg>
+        </div>
+        <div class="bcard-in">
+          <h3>屎壳郎（蜣螂）</h3><p class="sci">Scarabaeidae</p>
+          <dl><dt>鞘翅</dt><dd>结实耐磨，常沾着泥土</dd><dt>腿</dt><dd>前足扁宽带齿，是挖掘足</dd><dt>做什么</dt><dd>推走和埋起动物粪便</dd></dl>
+          <span class="sz">约 10–30 mm</span>
+        </div>
+      </article>
+      <article class="bcard">
+        <div class="bcard-art">
+          <svg class="art art-plate" viewBox="0 0 120 120" role="img" aria-label="天牛俯视图：长条形黑色鞘翅上散着白色斑点，一对黑白相间的触角比整个身体还长，向后甩开">
+            <use href="#art-beetle-longhorn"/>
+          </svg>
+        </div>
+        <div class="bcard-in">
+          <h3>天牛</h3><p class="sci">Cerambycidae</p>
+          <dl><dt>鞘翅</dt><dd>长条形，花纹常像树皮</dd><dt>触角</dt><dd>很长，常超过身体长度</dd><dt>做什么</dt><dd>幼虫在木头里蛀出隧道</dd></dl>
+          <span class="sz">约 15–50 mm</span>
+        </div>
+      </article>
+      <article class="bcard">
+        <div class="bcard-art">
+          <svg class="art art-plate" viewBox="0 0 120 120" role="img" aria-label="萤火虫俯视图：橙红色前胸背板中间有一块暗斑，褐色软鞘翅两侧带淡色边，腹部末端的发光器亮着黄绿色的冷光">
+            <use href="#art-beetle-firefly"/>
+          </svg>
+        </div>
+        <div class="bcard-in">
+          <h3>萤火虫</h3><p class="sci">Lampyridae</p>
+          <dl><dt>鞘翅</dt><dd>较软、偏暗，不反光</dd><dt>腹部</dt><dd>末端能发光，用来互相找对象</dd><dt>什么时候</dt><dd>多在夏夜活动</dd></dl>
+          <span class="sz">约 8–20 mm</span>
+        </div>
+      </article>
+      <article class="bcard">
+        <div class="bcard-art">
+          <svg class="art art-plate" viewBox="0 0 120 120" role="img" aria-label="龙虱俯视图：水下一只泪滴形的橄榄褐色甲虫，整圈鞘翅边缘是黄色，后腿扁平如船桨且带一排缘毛，鞘翅下存着一小片银亮的空气">
+            <use href="#art-beetle-diving"/>
+          </svg>
+        </div>
+        <div class="bcard-in">
+          <h3>龙虱</h3><p class="sci">Dytiscidae</p>
+          <dl><dt>鞘翅</dt><dd>流线型，能在下面存一点空气</dd><dt>腿</dt><dd>后足有缘毛，是游泳足</dd><dt>住哪里</dt><dd>池塘和水沟里</dd></dl>
+          <span class="sz">约 5–35 mm</span>
+        </div>
+      </article>
+    </div>
+    <div class="source-card">
+      <b>数字从哪来</b>
+      <p>体长是常见范围，不是某一只的精确值；同一类甲虫里不同种差别可以很大。看到实物时，用尺子量一量再和这里对照。</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="legsTitle">
+    <h2 id="legsTitle">② 腿型配对：形状说明了工作</h2>
+    <p class="section-lead">点一种工作，看看那样的腿长什么样。腿的形状常常能告诉你它住在哪里。</p>
+    <div class="legs-wrap">
+      <div class="kid-visual-stage" style="padding:14px">
+        <svg class="leg-svg" viewBox="0 0 300 170" role="img" aria-labelledby="legSvgTitle legSvgDesc">
+          <title id="legSvgTitle">一条甲虫腿的形状会随着工作改变</title>
+          <desc id="legSvgDesc">图中一条腿分成三段，末端的形状根据挖土、游泳、跳跃或抓握而变化。</desc>
+          <line x1="40" y1="40" x2="120" y2="70" stroke="#3b2410" stroke-width="12" stroke-linecap="round"/>
+          <line x1="120" y1="70" x2="150" y2="120" stroke="#3b2410" stroke-width="11" stroke-linecap="round"/>
+          <path id="legTip" class="lg-shape" d="M150 120 L200 128 L196 150 L146 138 Z" fill="#8a5518" stroke="#2f1d0c" stroke-width="4"/>
+          <text x="222" y="142" font-size="15" fill="#3b2410" id="legTipLabel">铲子</text>
+        </svg>
+        <p class="kid-result-card" id="legResult" role="status" aria-live="polite"><b>挖掘足：</b>前腿又扁又宽，边缘带小齿，像一把小铲子。屎壳郎和金龟子常有这样的腿。</p>
+      </div>
+      <div>
+        <div class="kid-tiles camo-picks" id="legPicks" role="group" aria-label="选一种工作">
+          <button class="kid-tile" type="button" data-leg="dig" aria-pressed="true" aria-label="挖土"><span class="kid-tile-art" aria-hidden="true">⛏️</span><span class="kid-tile-label">挖土</span></button>
+          <button class="kid-tile" type="button" data-leg="swim" aria-pressed="false" aria-label="游泳"><span class="kid-tile-art" aria-hidden="true">🏊</span><span class="kid-tile-label">游泳</span></button>
+          <button class="kid-tile" type="button" data-leg="jump" aria-pressed="false" aria-label="跳跃"><span class="kid-tile-art" aria-hidden="true">🦘</span><span class="kid-tile-label">跳跃</span></button>
+          <button class="kid-tile" type="button" data-leg="grip" aria-pressed="false" aria-label="抓握"><span class="kid-tile-art" aria-hidden="true">🤏</span><span class="kid-tile-label">抓握</span></button>
+        </div>
+        <p class="plain-note" style="margin-top:12px"><b>反过来用：</b>先看到腿，再猜它住在哪里。看到游泳足，就去水边找；看到挖掘足，就翻翻土面（记得放回去）。</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="camoTitle">
+    <h2 id="camoTitle">③ 伪装台：换个背景，谁不见了</h2>
+    <p class="section-lead">同一只甲虫，在不同背景上不一样显眼。点一个背景，看哪一只最难找。</p>
+    <div class="camo-stage" id="camoStage" data-bg="bark" role="img" aria-labelledby="camoStageLabel">
+      <span class="sr-only" id="camoStageLabel">三只不同颜色的甲虫停在可以更换的背景上</span>
+      <!-- 三只同一种甲虫，只有体色不同：这样「谁不见了」比较的才是颜色，而不是形状。
+           颜色通过 --art-a / --art-b 传进同一个 <symbol>。 -->
+      <div class="camo-row">
+        <span class="camo-bug" data-camo="bark" data-hidden="true" title="褐色甲虫">
+          <svg class="art art-fit" viewBox="0 0 120 120" style="--art-a:#7a4a17;--art-b:#3a2109" aria-hidden="true"><use href="#art-beetle-plain"/></svg>
+        </span>
+        <span class="camo-bug" data-camo="leaf" data-hidden="false" title="绿色甲虫">
+          <svg class="art art-fit" viewBox="0 0 120 120" style="--art-a:#3f8f33;--art-b:#1f4a17" aria-hidden="true"><use href="#art-beetle-plain"/></svg>
+        </span>
+        <span class="camo-bug" data-camo="sand" data-hidden="false" title="沙色甲虫">
+          <svg class="art art-fit" viewBox="0 0 120 120" style="--art-a:#d9c08a;--art-b:#8d7444" aria-hidden="true"><use href="#art-beetle-plain"/></svg>
+        </span>
+      </div>
+    </div>
+    <div class="kid-tiles camo-picks" id="camoPicks" role="group" aria-label="选一个背景">
+      <button class="kid-tile" type="button" data-bg="bark" aria-pressed="true" aria-label="树皮背景"><span class="kid-tile-art" aria-hidden="true">🪵</span><span class="kid-tile-label">树皮</span></button>
+      <button class="kid-tile" type="button" data-bg="leaf" aria-pressed="false" aria-label="绿叶背景"><span class="kid-tile-art" aria-hidden="true">🍃</span><span class="kid-tile-label">绿叶</span></button>
+      <button class="kid-tile" type="button" data-bg="sand" aria-pressed="false" aria-label="沙地背景"><span class="kid-tile-art" aria-hidden="true">🏖️</span><span class="kid-tile-label">沙地</span></button>
+    </div>
+    <p class="kid-result-card" id="camoResult" role="status" aria-live="polite">树皮背景：褐色那只几乎看不见了。颜色是否显眼，要看它停在什么地方。</p>
+    <div class="question-chips" data-audience="parent">
+      <span>换个背景，最难找的是谁？</span><span>如果它会动，还能藏住吗？</span><span>斑点鲜艳的瓢虫为什么不躲？</span>
+    </div>
+  </section>
+
+  <section aria-labelledby="liftTitle">
+    <h2 id="liftTitle">④ 力量换算：小身体为什么显得那么强</h2>
+    <p class="section-lead">拖动上面第 2 步的滑杆改体重，这里的两根条会一起变。</p>
+    <div class="lift-row">
+      <div class="lift-field">
+        <span>换成你能拉动</span>
+        <strong class="lift-big" id="liftBig">28.5 <small>吨</small></strong>
+      </div>
+    </div>
+    <div class="lift-bars">
+      <div class="lift-bar"><b>你自己</b><div class="lift-track"><div class="lift-fill fill-you" id="fillYou" style="width:6%"><span id="fillYouText">25 kg</span></div></div></div>
+      <div class="lift-bar"><b id="fillBugName">屎壳郎比例</b><div class="lift-track"><div class="lift-fill fill-bug" id="fillBug" style="width:100%"><span id="fillBugText">28 525 kg</span></div></div></div>
+    </div>
+    <p class="plain-note" style="margin-top:14px"><b>这不是魔法：</b>身体越小，肌肉的横截面相对体重就越占优势，所以“倍数”看起来很大。把甲虫放大到人那么大，它并不会变得这么强。</p>
+    <details class="parent-deep-dive" data-audience="parent">
+      <summary>背后的原理：为什么倍数会随体型变化</summary>
+      <p>肌肉能出多大力，大致跟它的<strong>横截面积</strong>成正比；而体重跟<strong>体积</strong>成正比。长度放大 k 倍时，面积约放大 k²，体积约放大 k³。于是“力量 ÷ 体重”大约按 1/k 缩小——小动物的相对力量自然更高。</p>
+      <p>这条思路和“虫子放大镜”里的表面积与体积计算是同一件事，只是换了一个问题来问。</p>
+    </details>
+  </section>
+
+  <!-- ⑤ 鞘翅开合：甲虫最核心的那一件事 -->
+  <section aria-labelledby="btWingTitle">
+    <h2 id="btWingTitle">⑤ 打开鞘翅：硬壳下面藏着什么</h2>
+    <p class="bt-lead">甲虫背上那层硬壳，其实是<b>变硬的前翅</b>。要飞的时候先把它抬起来，再把折叠的软后翅展开。点两个按钮看看区别。</p>
+    <div class="bt-wing-stage">
+      <svg class="bt-wing-art" id="btWingArt" viewBox="0 0 400 240" role="img" aria-labelledby="btWingSvgTitle btWingSvgDesc">
+        <title id="btWingSvgTitle">鞘翅开合示意</title>
+        <desc id="btWingSvgDesc">从上方看一只甲虫。合起来时背上是两片硬鞘翅、中间一条直缝；打开时鞘翅向两侧抬起，下面折叠的透明后翅展开成飞行的样子。</desc>
+        <g id="btWingBody"></g>
+      </svg>
+    </div>
+    <ul class="kid-legend" aria-label="鞘翅图例">
+      <li style="--tone:var(--kit)"><span class="kid-legend-mark" aria-hidden="true">▌</span>鞘翅（变硬的前翅）</li>
+      <li style="--tone:var(--ink-dim)"><span class="kid-legend-mark" aria-hidden="true">┃</span>中缝（两片合起来的地方）</li>
+      <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">🪽</span>软后翅（真正用来飞）</li>
+    </ul>
+    <div class="kid-tiles bt-wing-picks" id="btWingPicks" role="group" aria-labelledby="btWingTitle">
+      <button class="kid-tile" type="button" data-bt-wing="closed" aria-pressed="true" aria-label="看合起来的样子：硬鞘翅盖住后翅">
+        <span class="kid-tile-art" aria-hidden="true">🛡️</span>
+        <span class="kid-tile-label">合起来</span>
+        <span class="kid-tile-sub">当盔甲穿</span>
+      </button>
+      <button class="kid-tile" type="button" data-bt-wing="open" aria-pressed="false" aria-label="看打开飞的样子：鞘翅抬起，后翅展开">
+        <span class="kid-tile-art" aria-hidden="true">🪽</span>
+        <span class="kid-tile-label">打开飞</span>
+        <span class="kid-tile-sub">软翅伸出</span>
+      </button>
+    </div>
+    <p class="kid-speech" id="btWingSay" role="status" aria-live="polite">现在是合起来的样子：背上只看得见两片硬壳和中间那条缝。</p>
+    <details class="parent-deep-dive" data-audience="parent">
+      <summary>家长深读：鞘翅在教什么</summary>
+      <p><b>学习目标：</b>同一个器官可以换一种用途。鞘翅（elytra）在演化上就是前翅，只是变硬变厚，改去做保护、防水与减少水分流失；飞行的活全交给后翅。甲虫所属的鞘翅目 Coleoptera，名字直译就是「鞘＋翅」。</p>
+      <p><b>一起追问：</b>「硬壳这么重，为什么还值得？」引导孩子想代价与收益：飞得比蜂蝇笨一点，但能钻树皮、钻土、被踩一下也不容易破。这套取舍正是甲虫能占据这么多环境的原因。</p>
+      <p><b>观察建议：</b>找一只瓢虫放在手背上等它起飞。抬壳、伸翅那一下很短，看清一次就会记很久。</p>
+    </details>
+  </section>
+
+  <!-- ⑥ 知识拓展：八个「为什么」 -->
+  <section aria-labelledby="btMoreTitle">
+    <h2 id="btMoreTitle">⑥ 知识拓展：八个关于甲虫的「为什么」</h2>
+    <p class="bt-lead">每张卡片点开看一条。里面都有一件<b>在家或在小区就能做</b>的观察，不用买任何东西。</p>
+    <div class="bt-more">
+
+      <details>
+        <summary><span class="bt-more-icon" aria-hidden="true">🛡️</span>为什么甲虫背上有一层硬壳？</summary>
+        <div class="bt-more-body">
+          <p>那层硬壳是<b>前翅变硬</b>做成的盖子，叫鞘翅。它把柔软的后翅和肚子整个盖住，钻树皮、钻土、被叶子刮到都不容易受伤，还能挡住水分跑掉。</p>
+          <p>代价是：飞起来比苍蝇、蜜蜂笨一点，起飞前还得先把壳抬开。<b>换来的是能去更多地方</b>——所以甲虫住在树上、土里、水里、粮仓里，几乎到处都有。</p>
+          <div class="bt-try"><span aria-hidden="true">🔍</span><div>找一只瓢虫停在手背上，等它起飞。抬壳、伸翅那一下不到一秒，看清一次就忘不掉。</div></div>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="bt-more-icon" aria-hidden="true">🔢</span>为什么甲虫的种类这么多？</summary>
+        <div class="bt-more-body">
+          <p>科学家已经命名了<b>大约 40 万种</b>甲虫，占全部已命名动物的<b>四分之一</b>左右。也就是说，随便指四只动物，平均就有一只是甲虫。</p>
+          <p>一个说得通的原因：甲虫的「基本款」很容易改。壳可以厚可以薄，腿可以做成铲子、船桨或弹簧，口器可以啃木头也可以吸花蜜。<b>同一套设计换几个零件，就能搬进一个新家</b>。</p>
+          <div class="bt-try"><span aria-hidden="true">📓</span><div>在楼下走十分钟，把看到的每一只小虫画一笔。回家数数：有几只背上是硬壳、中间一条缝的？</div></div>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="bt-more-icon" aria-hidden="true"><svg class="art" viewBox="0 0 120 120"><use href="#art-beetle-dung"/></svg></span>屎壳郎为什么要推粪球？</summary>
+        <div class="bt-more-body">
+          <p>那个球有两个用处：<b>是饭，也是育儿房</b>。有些屎壳郎把粪球滚走埋进土里慢慢吃；有些会在球里产一颗卵，幼虫孵出来就住在食物中间。</p>
+          <p>更有意思的是<b>它怎么走直线</b>。研究发现屎壳郎会看天上的偏振光，晚上甚至能靠<b>银河那条亮带</b>校正方向——因为直线离开才最不容易被别的虫抢走。</p>
+          <div class="bt-try"><span aria-hidden="true">🧭</span><div>把一颗小纸球放在桌上，闭上眼推它走「直线」，睁眼看偏了多少。没有参照物走直线，其实很难。</div></div>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="bt-more-icon" aria-hidden="true"><svg class="art" viewBox="0 0 120 120"><use href="#art-beetle-firefly"/></svg></span>萤火虫的光为什么不烫手？</summary>
+        <div class="bt-more-body">
+          <p>萤火虫肚子末端有一小块发光器。里面的<b>荧光素</b>遇上一种叫<b>荧光素酶</b>的帮手，再加上氧气，就把化学能几乎全变成了光。</p>
+          <p>灯泡会烫，是因为大部分电变成了热。萤火虫这种叫<b>冷光</b>——热量极少，所以你捧着它一点都不烫。一闪一闪的节奏是在打招呼，不同种类的「暗号」长短不一样。</p>
+          <div class="bt-try"><span aria-hidden="true">🌙</span><div>夏夜在草丛边站三分钟，用数拍子的方式数一只萤火虫「亮—暗」的间隔。换一只，看节奏是不是一样。</div></div>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="bt-more-icon" aria-hidden="true"><svg class="art" viewBox="0 0 120 120"><use href="#art-beetle-rhino"/></svg></span>独角仙头上的角用来干什么？</summary>
+        <div class="bt-more-body">
+          <p>不是用来打猎的。独角仙吃的是树汁和熟果子，<b>根本不需要武器</b>。长角的是<b>雄虫</b>，角是用来跟别的雄虫「摔跤」的：把对手撬起来、掀下树枝，谁留在树汁旁边谁赢。</p>
+          <p>雌虫没有大角，但前腿更适合挖土——它要钻进腐叶土里产卵。<b>同一种虫，公母的工具完全不同</b>，因为要解决的问题不同。</p>
+          <div class="bt-try"><span aria-hidden="true">🤼</span><div>用两支勺子当「角」，试着把对方的勺子从桌沿撬起来。你会发现角越长、支点越好，越省力——这就是杠杆。</div></div>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="bt-more-icon" aria-hidden="true">💨</span>甲虫怎么呼吸？为什么长不到猫那么大？</summary>
+        <div class="bt-more-body">
+          <p>甲虫<b>没有肺</b>。它身体两侧排着一列小孔叫<b>气门</b>，空气从气门进去，走进越分越细的<b>气管</b>，直接送到每一块肌肉旁边。</p>
+          <p>这套管子靠空气自己扩散，<b>身体越大就越送不到中间</b>。所以昆虫的体型有个上限。远古氧气浓度更高的年代，虫子确实能长得更大。</p>
+          <div class="bt-try"><span aria-hidden="true">🥤</span><div>用一根吸管和三根接起来的吸管各吹一次纸团。管子越长越费劲——气管也是这样，长了就不够用。</div></div>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="bt-more-icon" aria-hidden="true"><svg class="art" viewBox="0 0 120 120"><use href="#art-beetle-larva"/></svg></span>甲虫小时候长什么样？</summary>
+        <div class="bt-more-body">
+          <p>完全不像。甲虫走的是<b>完全变态</b>四步：<b>卵 → 幼虫 → 蛹 → 成虫</b>。幼虫常常是白白软软的一条，住在土里或朽木里，只管吃和长大。</p>
+          <p>到了蛹这一步，它把身体<b>几乎重做一遍</b>：长出鞘翅、腿和触角。所以你在花盆里挖到的白胖虫子，和树上那只亮壳甲虫，很可能是同一种生物的两个阶段。</p>
+          <div class="bt-try"><span aria-hidden="true">🪴</span><div>换花盆土时留意有没有白色小虫。看一眼、拍张照、把土放回去就好——它对土壤有用。</div></div>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="bt-more-icon" aria-hidden="true">🌱</span>甲虫对我们有什么用？</summary>
+        <div class="bt-more-body">
+          <p>做了三件正经事：<b>分解</b>——屎壳郎和埋葬虫把粪便、尸体埋回土里，变成养分；<b>传粉</b>——很多花靠甲虫带花粉；<b>控虫害</b>——一只瓢虫一天能吃掉几十只蚜虫。</p>
+          <p>也有让人头疼的：<b>天牛</b>幼虫在树干里打洞，<b>象鼻虫</b>钻进米和面粉。同一类动物既帮忙又捣乱，<b>「有益」「有害」是站在人的角度说的</b>。</p>
+          <div class="bt-try"><span aria-hidden="true">🐞</span><div>在有蚜虫的枝条上找瓢虫，数一数十分钟里它爬过几片叶子。别抓走，它正在上班。</div></div>
+        </div>
+      </details>
+
+    </div>
+    <details class="parent-deep-dive" data-audience="parent">
+      <summary>家长深读：这八张卡怎么用</summary>
+      <p><b>学习目标：</b>把「知道一个名词」升级成「知道它解决什么问题」。每张卡都是同一个结构——现象、可能的原因、以及代价。孩子迟早要学的不是甲虫，而是这种「有收益就有代价」的看问题方式。</p>
+      <p><b>分龄读法：</b>4–6 岁只看图标和第一句，配上那条动手观察就够；7–9 岁可以把「代价」那半句拿出来讨论（硬壳好，但飞得笨）；10–12 岁可以追问数字是怎么来的，比如「40 万种」是<strong>已命名</strong>的数量，实际种数的估计要高得多。</p>
+      <p><b>一起追问：</b>「这句话是观察到的，还是别人推测的？」「如果结论反过来，会有什么现象出现？」「这个数字是一次记录，还是所有甲虫的平均？」</p>
+      <p><b>安全与善待：</b>只看不抓；翻开的石头、树皮和花盆土要放回原样。萤火虫不要装进瓶子带回家，它离开湿润草地活不了多久。发光、发亮的甲虫也不要用强光直照。</p>
+    </details>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" style="padding:20px" aria-labelledby="parentTitle">
+    <h2 id="parentTitle">给家长：这一页在教什么</h2>
+    <p><strong>核心发现：</strong>甲虫（鞘翅目）的前翅硬化成鞘翅，用来保护身体；真正用来飞的后翅折叠收在鞘翅下面。孩子能亲手“打开”这层壳，就把一个名词变成了一次可验证的观察。</p>
+    <p><strong>一起追问：</strong>“你怎么知道它是两片而不是一片？”“这条腿的形状，让你猜它住在哪里？”“哪一句是你看到的，哪一句是你猜的？”</p>
+    <p><strong>关于数字：</strong>页面上的体长是常见范围。力量倍数来自实验室测量的特定个体记录，用来做量级比较，不适合当成“甲虫都能做到”。带孩子把“一条记录”和“一个普遍结论”分开，比记住数字更重要。</p>
+    <p><strong>安全与尊重：</strong>只看不抓；翻动过的石头和树皮要放回原位。不建议采集活体，观察记录用文字和画就够了。</p>
+  </section>
+
+  <footer class="foot parent-deep-dive" data-audience="parent" style="margin-top:34px">
+    <p>本页全部内容内置，不发起任何网络请求。图鉴数字为常见范围，实际观察请以现场测量为准。</p>
+  </footer>
+</main>
+
+<script src="../data/explorations.js"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
+<script>
+(function () {
+  "use strict";
+  var id = "nature/beetles.html", operated = false;
+
+  var lab = document.getElementById("beetleLab");
+  var lookResult = document.getElementById("beetleLookResult");
+  var toggle = document.getElementById("wingToggle");
+  var weight = document.getElementById("beetleWeight");
+  var weightText = document.getElementById("beetleWeightText");
+  var output = document.getElementById("beetleOutput");
+  var status = document.getElementById("beetleStatus");
+  var predict = document.getElementById("beetlePredict");
+  var result = document.getElementById("beetleResult");
+  var reflect = document.getElementById("beetleReflect");
+
+  var lookNotes = {
+    elytra: "<b>1 鞘翅：</b>背上那层硬壳是变硬的前翅，负责保护身体；它不是用来扇动的。",
+    jaw: "<b>2 大颚：</b>一对左右开合的颚，属于咀嚼式口器。看它是细长还是粗壮，能猜出它吃什么。",
+    legs: "<b>3 腿：</b>六条腿都连在胸部。末端形状跟工作有关：扁的挖土，带毛的游泳，带钩的抓握。",
+    antenna: "<b>4 触角：</b>一对触角负责闻气味和感知周围；天牛的触角常比身体还长。"
+  };
+
+  function selectOne(button, selector) {
+    var group = button.parentNode;
+    [].forEach.call(group.querySelectorAll(selector), function (other) {
+      other.setAttribute("aria-pressed", other === button ? "true" : "false");
+    });
+  }
+
+  /* ---- 舞台热点 ---- */
+  [].forEach.call(document.querySelectorAll(".look-spot[data-look]"), function (button) {
+    button.addEventListener("click", function () {
+      var look = button.getAttribute("data-look");
+      selectOne(button, ".look-spot");
+      lab.setAttribute("data-look", look);
+      lookResult.innerHTML = lookNotes[look];
+    });
+  });
+
+  /* ---- 打开／合上鞘翅 ---- */
+  toggle.addEventListener("click", function () {
+    var open = lab.getAttribute("data-open") !== "true";
+    lab.setAttribute("data-open", open ? "true" : "false");
+    toggle.setAttribute("aria-pressed", open ? "true" : "false");
+    toggle.textContent = open ? "合上鞘翅" : "打开鞘翅";
+    lookResult.innerHTML = open
+      ? "<b>打开了：</b>硬壳下面那两片浅色软翅才是用来飞的后翅，平时折叠收起来。"
+      : lookNotes[lab.getAttribute("data-look")];
+  });
+
+  /* ---- 快捷选项写进文本框 ---- */
+  [].forEach.call(document.querySelectorAll(".quick-picks[data-fill] .kid-choice"), function (button) {
+    button.addEventListener("click", function () {
+      var group = button.parentNode;
+      var field = document.getElementById(group.getAttribute("data-fill"));
+      selectOne(button, ".kid-choice");
+      if (!field) return;
+      field.value = button.getAttribute("data-value");
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+  });
+
+  /* ---- 力量换算 ---- */
+  var ratio = 1141, ratioName = "公牛屎壳郎";
+  var liftBig = document.getElementById("liftBig");
+  var fillYou = document.getElementById("fillYou"), fillYouText = document.getElementById("fillYouText");
+  var fillBug = document.getElementById("fillBug"), fillBugText = document.getElementById("fillBugText");
+  var fillBugName = document.getElementById("fillBugName");
+
+  function group3(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+
+  function renderLift() {
+    var kg = Number(weight.value), total = kg * ratio;
+    weightText.textContent = kg;
+    if (total >= 1000) liftBig.innerHTML = (total / 1000).toFixed(1) + " <small>吨</small>";
+    else liftBig.innerHTML = group3(Math.round(total)) + " <small>千克</small>";
+    fillYouText.textContent = kg + " kg";
+    fillBugText.textContent = group3(Math.round(total)) + " kg";
+    fillBugName.textContent = ratioName + "比例";
+    var share = Math.max(4, Math.round(100 / ratio));
+    fillYou.style.width = share + "%";
+    fillBug.style.width = "100%";
+  }
+
+  [].forEach.call(document.querySelectorAll("#liftPicks [data-ratio]"), function (button) {
+    button.addEventListener("click", function () {
+      ratio = Number(button.getAttribute("data-ratio"));
+      ratioName = button.getAttribute("data-name");
+      selectOne(button, ".kid-tile");
+      renderLift();
+    });
+  });
+  weight.addEventListener("input", renderLift);
+  renderLift();
+
+  /* ---- 腿型配对 ---- */
+  var legTip = document.getElementById("legTip");
+  var legTipLabel = document.getElementById("legTipLabel");
+  var legResult = document.getElementById("legResult");
+  var legShapes = {
+    dig: { d: "M150 120 L200 128 L196 150 L146 138 Z", fill: "#8a5518", label: "铲子",
+      note: "<b>挖掘足：</b>前腿又扁又宽，边缘带小齿，像一把小铲子。屎壳郎和金龟子常有这样的腿。" },
+    swim: { d: "M150 120 Q196 118 206 140 Q180 152 148 140 Z", fill: "#2563eb", label: "船桨",
+      note: "<b>游泳足：</b>后腿扁平，边上排着一列硬毛，划水时张开、收回时合上。龙虱住在池塘里。" },
+    jump: { d: "M150 120 L188 104 L206 146 L166 140 Z", fill: "#16a34a", label: "弹簧",
+      note: "<b>跳跃足：</b>后腿大腿特别粗，肌肉多，能一下把身体弹开。跳甲受惊时会突然消失。" },
+    grip: { d: "M150 120 Q192 122 202 108 M150 132 Q194 140 204 156", fill: "none", label: "钩子",
+      note: "<b>抓握足：</b>末端有钩爪，能牢牢抓住树皮或叶子，风吹也不掉。独角仙就靠这个挂在树干上。" }
+  };
+  [].forEach.call(document.querySelectorAll("#legPicks [data-leg]"), function (button) {
+    button.addEventListener("click", function () {
+      var shape = legShapes[button.getAttribute("data-leg")];
+      selectOne(button, ".kid-tile");
+      legTip.setAttribute("d", shape.d);
+      legTip.setAttribute("fill", shape.fill);
+      legTip.setAttribute("stroke-width", shape.fill === "none" ? "9" : "4");
+      legTipLabel.textContent = shape.label;
+      legResult.innerHTML = shape.note;
+    });
+  });
+
+  /* ---- 伪装台 ---- */
+  var camoStage = document.getElementById("camoStage");
+  var camoResult = document.getElementById("camoResult");
+  var camoNotes = {
+    bark: "树皮背景：褐色那只几乎看不见了。颜色是否显眼，要看它停在什么地方。",
+    leaf: "绿叶背景：绿色那只藏起来了，褐色那只反而变明显。",
+    sand: "沙地背景：沙色那只最难找。同一只甲虫换个地方，显眼程度就变了。"
+  };
+  [].forEach.call(document.querySelectorAll("#camoPicks [data-bg]"), function (button) {
+    button.addEventListener("click", function () {
+      var bg = button.getAttribute("data-bg");
+      selectOne(button, ".kid-tile");
+      camoStage.setAttribute("data-bg", bg);
+      camoResult.textContent = camoNotes[bg];
+      [].forEach.call(document.querySelectorAll(".camo-bug"), function (bug) {
+        bug.setAttribute("data-hidden", bug.getAttribute("data-camo") === bg ? "true" : "false");
+      });
+    });
+  });
+
+  /* ---- ⑤ 鞘翅开合 ---- */
+  var wingBody = document.getElementById("btWingBody");
+  var wingSay = document.getElementById("btWingSay");
+  var wingPicks = document.getElementById("btWingPicks");
+
+  var wingLegs = [
+    "M176 80 C150 74 132 60 124 46",
+    "M172 96 C142 98 120 96 104 88",
+    "M174 112 C146 124 128 142 120 160",
+    "M224 80 C250 74 268 60 276 46",
+    "M228 96 C258 98 280 96 296 88",
+    "M226 112 C254 124 272 142 280 160"
+  ];
+  /* 合起来：两片硬鞘翅在背上对合 */
+  var shutL = "M200 100 C166 100 145 128 145 158 C145 186 175 194 200 194 Z";
+  var shutR = "M200 100 C234 100 255 128 255 158 C255 186 225 194 200 194 Z";
+  /* 打开：鞘翅抬向斜上方，让开中间 */
+  var upL = "M198 102 C160 86 118 90 86 110 C116 130 162 126 198 116 Z";
+  var upR = "M202 102 C240 86 282 90 314 110 C284 130 238 126 202 116 Z";
+  /* 折叠的软后翅展开，铺向斜下方 */
+  var softL = "M196 112 C156 124 106 158 84 204 C122 210 172 174 196 142 Z";
+  var softR = "M204 112 C244 124 294 158 316 204 C278 210 228 174 204 142 Z";
+
+  /* sx = -1 左侧、+1 右侧；off 是离中线的距离，保证斑点落在自己那片鞘翅上 */
+  function spot(sx, off, cy, r) {
+    return '<circle class="bt-badge" cx="' + (200 + sx * off) + '" cy="' + cy + '" r="' + r + '"/>';
+  }
+
+  function elytron(sx, open) {
+    var d = sx < 0 ? (open ? upL : shutL) : (open ? upR : shutR);
+    var spots = open
+      ? spot(sx, 48, 108, 7) + spot(sx, 82, 110, 6)
+      : spot(sx, 24, 140, 9) + spot(sx, 18, 172, 7);
+    return '<g><path class="bt-shell-a" d="' + d + '"/>' + spots + "</g>";
+  }
+
+  function drawWing(open) {
+    var parts = ['<ellipse class="bt-ground" cx="200" cy="200" rx="165" ry="14"/>'];
+    wingLegs.forEach(function (d) { parts.push('<path class="bt-leg" d="' + d + '"/>'); });
+    if (open) {
+      parts.push('<path class="bt-wing-soft" d="' + softL + '"/>');
+      parts.push('<path class="bt-wing-soft" d="' + softR + '"/>');
+      /* 鞘翅让开后，露出下面的腹部 */
+      parts.push('<ellipse class="bt-belly" cx="200" cy="146" rx="29" ry="50"/>');
+      parts.push('<path class="bt-belly-seam" d="M173 132 Q200 140 227 132 M172 152 Q200 160 228 152 M176 172 Q200 179 224 172"/>');
+    }
+    parts.push('<path class="bt-feeler" d="M188 42 C178 30 166 24 154 22"/>');
+    parts.push('<path class="bt-feeler" d="M212 42 C222 30 234 24 246 22"/>');
+    parts.push('<ellipse class="bt-head" cx="200" cy="52" rx="24" ry="16"/>');
+    parts.push('<ellipse class="bt-head" cx="200" cy="82" rx="38" ry="21"/>');
+    parts.push(elytron(-1, open));
+    parts.push(elytron(1, open));
+    if (!open) parts.push('<path class="bt-seam" d="M200 106 L200 190"/>');
+    if (open) {
+      parts.push('<text class="bt-ink-soft" x="72" y="90" text-anchor="middle">鞘翅</text>');
+      parts.push('<text class="bt-ink-soft" x="60" y="220" text-anchor="middle">软后翅</text>');
+    } else {
+      parts.push('<text class="bt-ink-soft" x="66" y="164" text-anchor="middle">鞘翅</text>');
+      parts.push('<text class="bt-ink-soft" x="334" y="164" text-anchor="middle">硬壳合上</text>');
+    }
+    parts.push('<text class="bt-ink" x="200" y="226" text-anchor="middle">'
+      + (open ? "打开：软后翅伸出来了" : "合起来：只看得见硬壳和中缝") + "</text>");
+    wingBody.innerHTML = parts.join("");
+    wingSay.textContent = open
+      ? "打开了：两片硬鞘翅抬向两侧，下面折叠的软后翅展开——真正扇动的就是这两片透明的翅。"
+      : "现在是合起来的样子：背上只看得见两片硬壳和中间那条缝。";
+  }
+
+  if (wingBody && wingPicks && wingSay) {
+    [].forEach.call(wingPicks.querySelectorAll("[data-bt-wing]"), function (button) {
+      button.addEventListener("click", function () {
+        selectOne(button, "[data-bt-wing]");
+        drawWing(button.getAttribute("data-bt-wing") === "open");
+      });
+    });
+    drawWing(false);
+  }
+
+  /* ---- 任务记录 ---- */
+  if (window.Progress) Progress.visit("nature/beetles.html", "甲虫图鉴馆");
+
+  document.getElementById("beetleRun").addEventListener("click", function () {
+    var kg = Number(weight.value), total = kg * ratio;
+    output.textContent = "按" + ratioName + "的记录（约 " + group3(ratio) + " 倍体重）换算："
+      + kg + " 千克的你可以拉动约 " + group3(Math.round(total)) + " 千克，也就是 "
+      + (total / 1000).toFixed(1) + " 吨。这是一条实验记录的量级比较，不代表所有甲虫都能做到。";
+    operated = true;
+  });
+
+  document.getElementById("beetleComplete").addEventListener("click", function () {
+    if (!predict.value.trim() || !operated || !result.value.trim() || !reflect.value.trim()) {
+      status.textContent = "还不能完成：请先猜一猜、算一次、写下观察结果并反思证据。";
+      return;
+    }
+    var done = window.Progress && Progress.complete("nature/beetles.html", "说出甲虫鞘翅、腿和口器各自解决的问题，并完成一次力量换算；未保存定位。");
+    status.textContent = done ? "已完成任务：观察证据已保存，不含定位。" : "四步已完成；当前浏览器无法保存。";
+  });
+
+  if (window.Progress && Progress.getCompletion(id)) {
+    status.textContent = "此任务已完成；可以换一只甲虫再记录一次。";
+  }
+})();
+</script>
+<script src="../assets/js/pwa.js?v=17"></script>
+</body>
+</html>

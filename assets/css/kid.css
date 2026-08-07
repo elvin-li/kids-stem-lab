@@ -19,17 +19,26 @@ html[data-mode="kid"] {
   /* 文字：深棕而非纯黑，眼睛更舒服 */
   --ink:       #402d1c;
   --ink-mid:   #6b4f36;
-  --ink-dim:   #8f7255;
+  /* #8f7255 在孩子模式四层底上只有 4.00–4.46:1，全部低于正文 AA 4.5。
+     加深到 #806244 后 min 5.03:1（surface-2 上最紧），仍是同一支暖棕，观感不变。 */
+  --ink-dim:   #806244;
 
-  /* 学科色：加深到明亮底上也够对比（均 ≥ 4.5:1 on #fff8ec） */
-  --math:      #1f6fd0;   /* 数学 · 蓝 */
-  --sci:       #0f8a4d;   /* 科学 · 绿 */
-  --phys:      #7c3aed;   /* 物理 · 紫 */
-  --code:      #d2591a;   /* 编程 · 橙 */
-  --kit:       #d81b73;   /* 动手 · 粉 */
-  --video:     #0e7f97;   /* 视频 · 青 */
-  --warn:      #b7791f;
-  --danger:    #d13b2e;
+  /* 学科色。判定基准是孩子模式四层底里最紧的那层 --surface-2 #fff1d9（相对亮度 .892），
+     正文 AA 4.5:1 要求前景亮度 ≤ .159；#fff / --bg / --bg-soft 都比它宽松，所以过了它就全过。
+
+     上一版按 --bg #fff8ec 调的，但页面把学科色大量用在 --surface-2 的卡片上当小号粗体
+     （.age-tier b 12px、.pill 16px、.role-card h3 18px），真实渲染下 --sci 只有 4.02、
+     --warn 3.27、--code 3.63、--video 4.09，全部低于 4.5。这里按 ≤ .159 重新定。
+     反向的「白字压在学科色上」（.kid-play 按钮）也因此一起达标：最低 5.0:1。
+     色相不变，只是更饱和更深一档。 */
+  --math:      #1c66c2;   /* 数学 · 蓝 */
+  --sci:       #0b7a45;   /* 科学 · 绿 */
+  --phys:      #7c3aed;   /* 物理 · 紫（亮度 .134，本来就够） */
+  --code:      #b34a12;   /* 编程 · 橙 */
+  --kit:       #c81769;   /* 动手 · 粉 */
+  --video:     #0b6b80;   /* 视频 · 青 */
+  --warn:      #8f5c14;
+  --danger:    #b93227;
 
   --accent:    var(--math);
 
@@ -365,6 +374,25 @@ html[data-mode="kid"] .kid-result-card {
 }
 html[data-mode="kid"] .kid-result-card b { font-size: 1.06rem; }
 html[data-mode="kid"] .kid-result-card p { font-size: .95rem; line-height: 1.45; }
+/* 猜一猜卡：孩子模式下选项要能用手指按，问题要能一眼看完。
+   只放大字号、触控尺寸和边框，问题与答案文字本身一个字都不动。 */
+html[data-mode="kid"] .kid-predict {
+  border-width: 3px;
+  border-radius: var(--r-xl);
+}
+html[data-mode="kid"] .kid-predict-q { font-size: clamp(1.08rem, 4vw, 1.3rem); }
+html[data-mode="kid"] .kid-predict-q > .kid-predict-icon { font-size: 1.85rem; }
+html[data-mode="kid"] .kid-predict-pick {
+  min-height: 56px;
+  border-width: 3px;
+  font-size: 1.02rem;
+}
+html[data-mode="kid"] .kid-predict-go {
+  min-height: 56px;
+  padding-inline: 22px;
+  font-size: 1.08rem;
+}
+html[data-mode="kid"] .kid-predict-answer { font-size: 1.02rem; line-height: 1.5; }
 html[data-mode="kid"] .kid-story-steps {
   grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
   gap: 9px;
@@ -394,7 +422,7 @@ html[data-mode="kid"] .skip-link {
 }
 
 /* --------------------------------------------------------------------------
-   12. iPad 横竖屏
+   13. iPad 横竖屏
    -------------------------------------------------------------------------- */
 @media (min-width: 768px) and (max-width: 1366px) {
   html[data-mode="kid"] body { font-size: 19px; }
@@ -421,4 +449,367 @@ html[data-mode="kid"] .skip-link {
   html[data-mode="kid"] .btn:active,
   html[data-mode="kid"] a.card:active,
   html[data-mode="kid"] .kid-done-btn:active { transform: none; }
+}
+
+/* --------------------------------------------------------------------------
+   14. 图形优先原语（面向 4-5 岁尚不识字的孩子）
+   纯 CSS，无新增脚本。页面只要加一个类名就能用。
+   规则：意思由「大图 + 极短标签」承载，句子只作为家长可读的补充。
+   -------------------------------------------------------------------------- */
+
+/* 14.1 图卡：大 emoji 在上，两三个字在下。用于代替一句话选项。 */
+.kid-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+  gap: 12px;
+  margin: 14px 0;
+  padding: 0;
+  list-style: none;
+}
+/* 14.1.1 作答用的图卡组：孩子点图代替打字。JS 用 data-answer-target 找到它，
+   这里只负责把它和上下文拉开一点距离，让「一组答案」看起来是一块。 */
+.kid-answer-group {
+  margin-block: 10px 4px;
+}
+.kid-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 112px;
+  padding: 14px 10px;
+  border: 3px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: .95rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(180,130,60,.2);
+  transition: transform .12s ease, border-color .12s ease, background-color .12s ease;
+}
+.kid-tile > .kid-tile-art,
+.kid-tile > svg {
+  font-size: 2.6rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+.kid-tile > svg { width: clamp(46px, 12vw, 62px); height: auto; }
+.kid-tile-label { font-size: .95rem; font-weight: 800; }
+.kid-tile-sub {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--ink-dim);
+}
+.kid-tile:hover { border-color: var(--accent); }
+.kid-tile:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(180,130,60,.2); }
+.kid-tile[aria-pressed="true"],
+.kid-tile[data-selected="true"] {
+  border-color: #0f8a4d;
+  background: #ddf8e8;
+  color: #0b4a2a;
+}
+/* 选中后的对勾靠图形传达，不只靠颜色（色盲友好） */
+.kid-tile[aria-pressed="true"]::after,
+.kid-tile[data-selected="true"]::after {
+  content: "✓";
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #0b4a2a;
+}
+html[data-mode="kid"] .kid-tile { min-height: 124px; border-width: 3px; }
+html[data-mode="kid"] .kid-tile > .kid-tile-art { font-size: 3rem; }
+
+/* 14.2 大圆图标按钮：单个动作（播放/再来一次/加一个）用图形表达 */
+.kid-icon-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: var(--touch-lg);
+  min-height: var(--touch-lg);
+  padding: 10px 16px;
+  border: 3px solid var(--accent);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: .82rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(180,130,60,.22);
+}
+.kid-icon-btn > .kid-tile-art { font-size: 1.9rem; line-height: 1; }
+.kid-icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(180,130,60,.22); }
+
+/* 14.3 图形步骤条：1-2-3 用图讲流程，文字只留标签 */
+.kid-steps-visual {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  gap: 12px;
+  margin: 14px 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: kidstep;
+}
+.kid-steps-visual > li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 118px;
+  padding: 30px 10px 12px;
+  border: 3px solid var(--line-soft);
+  border-radius: var(--r-lg);
+  background: linear-gradient(160deg, #fff, var(--surface-2));
+  font-size: .9rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  counter-increment: kidstep;
+}
+.kid-steps-visual > li::before {
+  content: counter(kidstep);
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 1rem;
+  font-weight: 900;
+}
+.kid-steps-visual .kid-tile-art { font-size: 2.3rem; line-height: 1; }
+
+/* 14.4 柔和背景色块：给舞台加一点绘本气息，纯装饰 */
+.kid-blob-bg {
+  position: relative;
+  isolation: isolate;
+}
+.kid-blob-bg::before {
+  content: "";
+  position: absolute;
+  inset: -6% -4% auto -8%;
+  height: 62%;
+  z-index: -1;
+  border-radius: 50% 50% 44% 56% / 60% 56% 44% 40%;
+  background:
+    radial-gradient(circle at 22% 28%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 60%),
+    radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--sci) 12%, transparent), transparent 58%);
+  pointer-events: none;
+}
+
+/* 14.5 吉祥物取景框：给角色一个圆润的窝，而不是裸 emoji */
+.kid-mascot {
+  display: inline-grid;
+  place-items: center;
+  width: clamp(64px, 16vw, 88px);
+  aspect-ratio: 1;
+  border: 3px solid var(--line);
+  border-radius: 42% 58% 54% 46% / 52% 46% 54% 48%;
+  background: radial-gradient(circle at 34% 30%, #fff, var(--surface-2));
+  font-size: clamp(2rem, 7vw, 2.8rem);
+  line-height: 1;
+  box-shadow: 0 5px 0 rgba(180,130,60,.2);
+  flex: 0 0 auto;
+}
+
+/* 14.6 图形化的「已解锁 / 未解锁」徽章 */
+.kid-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 7px 16px;
+  border: 3px dashed var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-dim);
+  font-size: .9rem;
+  font-weight: 800;
+}
+.kid-badge[data-earned="true"] {
+  border-style: solid;
+  border-color: #b7791f;
+  background: linear-gradient(135deg, #fff3c9, #ffe49b);
+  color: #6b4a08;
+  box-shadow: 0 4px 0 rgba(183,121,31,.24);
+}
+
+/* 14.7 4-6 岁：字更大、图更大、每行更少，进一步向图形倾斜 */
+html[data-playful-age="4-6"] .kid-tiles { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); }
+html[data-playful-age="4-6"] .kid-tile { min-height: 140px; font-size: 1.05rem; }
+html[data-playful-age="4-6"] .kid-tile > .kid-tile-art { font-size: 3.5rem; }
+html[data-playful-age="4-6"] .kid-tile-sub { display: none; }
+html[data-playful-age="4-6"] .kid-steps-visual > li { min-height: 132px; font-size: 1rem; }
+html[data-playful-age="4-6"] .kid-steps-visual .kid-tile-art { font-size: 2.8rem; }
+html[data-playful-age="4-6"] .kid-icon-btn { font-size: .9rem; }
+html[data-playful-age="4-6"] .kid-icon-btn > .kid-tile-art { font-size: 2.2rem; }
+
+/* 14.8 手机：图卡仍保证一行两个，不挤成小方块 */
+@media (max-width: 480px) {
+  .kid-tiles { grid-template-columns: repeat(auto-fit, minmax(94px, 1fr)); gap: 10px; }
+  .kid-tile { min-height: 104px; }
+  .kid-tile > .kid-tile-art { font-size: 2.3rem; }
+  /* 三步玩法必须真的排成一行：minmax(100px) 需要 3×100+2×12=324px，
+     而 375px 视口下这里的可用宽度约 323px —— 只差 1px 就折成两行，
+     白白多占 130px 高，直接把主操作挤出首屏。降到 88px 留足余量。 */
+  .kid-steps-visual { grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); }
+}
+
+/* 14.8b 手机首屏预算：绘本引子（.pf-scene-holder 里的旁白 + 三步玩法）压到
+   一屏内看得完的高度，好让每页的孩子主操作条留在首屏。
+   背景插画是绝对定位的 .pf-scene，不吃高度；这里压的全是内容层。 */
+@media (max-width: 480px) {
+  /* 手机上把舞台地板从 280px 降到 224px。仍高于「舞台需占首屏 24% 面积」
+     所要求的约 212px，内容更多的舞台不受影响（这只是下限）。 */
+  html[data-mode="kid"] .kid-visual-stage { min-height: 224px; }
+  /* 旁白与吉祥物并排，不再换行叠成两层 */
+  html[data-mode="kid"] .kid-speech-row {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 10px;
+  }
+  html[data-mode="kid"] .kid-speech-row > .kid-mascot {
+    flex: 0 0 auto;
+    font-size: 2.1rem;
+  }
+  /* min-width:0 是关键：否则 nowrap 下文字撑出横向溢出 */
+  html[data-mode="kid"] .kid-speech {
+    min-width: 0;
+    padding: 9px 12px;
+  }
+  html[data-mode="kid"] .kid-steps-visual {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  html[data-mode="kid"] .kid-steps-visual > li {
+    min-height: 0;
+    padding: 26px 4px 8px;
+    font-size: .76rem;
+  }
+  html[data-mode="kid"] .kid-steps-visual > li::before {
+    top: 5px;
+    left: 5px;
+    width: 22px;
+    height: 22px;
+    font-size: .72rem;
+  }
+  html[data-mode="kid"] .kid-steps-visual .kid-tile-art { font-size: 1.7rem; }
+
+  /* 图例和「现在就试」提示条都是说明性内容，不是操作。手机上收紧它们，
+     把首屏高度让给真正的主操作。.stage-ribbon 不在共享层定义，但
+     games/ 下多页用同一个名字表达同一件事，这里统一收口。 */
+  /* 页头里的学科／年龄／知识点标签是给家长看的元信息。孩子模式手机上收起，
+     和 nature/weather.html 早先的做法一致，把首屏让给标题、插画和主操作。 */
+  html[data-mode="kid"] .story-copy > .row,
+  html[data-mode="kid"] .studio-head-grid > div > .row,
+  html[data-mode="kid"] .hero-top > .row { display: none; }
+  /* 页头里的文字版步骤在手机上与插画区的三步图卡重复，收起。
+     只限 header：正文里的 .kid-story-steps 是四步核心任务，绝不能藏。 */
+  html[data-mode="kid"] header .kid-story-steps { display: none; }
+  html[data-mode="kid"] .story-hero h1 { margin: .1em 0 .22em; }
+  html[data-mode="kid"] .story-guide { font-size: 2.2rem; }
+  html[data-mode="kid"] .story-goal { margin: .2em 0 0; }
+
+  /* 图例在 375px 下会换行占三行。压成单行、可横向滑动：内容一条不少，
+     但只花一行高度。内层滚动容器不会造成页面级横向溢出。 */
+  html[data-mode="kid"] .kid-legend {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 5px 10px;
+    margin: 5px 0;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  html[data-mode="kid"] .kid-legend > li { flex: 0 0 auto; font-size: .78rem; gap: 5px; }
+  html[data-mode="kid"] .kid-legend .kid-legend-mark { width: 21px; height: 21px; font-size: .82rem; }
+  html[data-mode="kid"] .stage-ribbon { margin: 6px 0; padding: 7px 10px; font-size: .84rem; }
+}
+
+/* 14.9 降低动效：去掉按下位移，保留颜色与对勾反馈 */
+@media (prefers-reduced-motion: reduce) {
+  .kid-tile,
+  .kid-icon-btn { transition: none; }
+  .kid-tile:active,
+  .kid-icon-btn:active { transform: none; }
+}
+html[data-playful-motion="reduced"] .kid-tile:active,
+html[data-playful-motion="reduced"] .kid-icon-btn:active { transform: none; }
+
+/* --------------------------------------------------------------------------
+   15. 孩子模式下的图像优先原语（对应 base.css 第 3 节）
+   插画更大、边更粗、标签更少；数字仍然保留但退到次要位置。
+   -------------------------------------------------------------------------- */
+html[data-mode="kid"] .pf-scene-holder { border-radius: var(--r-lg); }
+html[data-mode="kid"] .pf-scene { --tone: var(--accent); }
+
+html[data-mode="kid"] .kid-figure-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(164px, 100%), 1fr));
+  gap: 14px;
+}
+html[data-mode="kid"] .kid-figure {
+  border-width: 3px;
+  border-radius: var(--r-lg);
+  box-shadow: 0 4px 0 rgba(180,130,60,.18);
+}
+html[data-mode="kid"] .kid-figure-art { min-height: 116px; font-size: clamp(3rem, 10vw, 4.2rem); }
+html[data-mode="kid"] .kid-figure-cap { font-size: 1.08rem; }
+html[data-mode="kid"] button.kid-figure:active,
+html[data-mode="kid"] a.kid-figure:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(180,130,60,.18); }
+
+html[data-mode="kid"] .kid-meter-track { height: 34px; border-width: 3px; }
+html[data-mode="kid"] .kid-meter-head { font-size: 1rem; }
+html[data-mode="kid"] .kid-meter-head > .kid-meter-icon { font-size: 1.8rem; }
+html[data-mode="kid"] .kid-meter-head > .kid-meter-value { font-size: 1.05rem; font-weight: 800; color: var(--ink); }
+
+html[data-mode="kid"] .kid-speech {
+  border-width: 3px;
+  border-radius: 24px 24px 24px 8px;
+  font-size: 1.05rem;
+  box-shadow: 0 4px 0 rgba(180,130,60,.16);
+}
+html[data-mode="kid"] .kid-speech::after { border-width: 8px; bottom: -15px; }
+
+html[data-mode="kid"] .kid-dots > i { width: 28px; height: 28px; border-width: 3px; }
+
+html[data-mode="kid"] .kid-legend > li { font-size: .95rem; }
+html[data-mode="kid"] .kid-legend .kid-legend-mark { width: 32px; height: 32px; border-width: 3px; font-size: 1.2rem; }
+
+html[data-mode="kid"] .kid-swatch { width: 56px; height: 56px; border-width: 4px; border-radius: 20px; }
+
+html[data-mode="kid"] .kid-slide-row > .kid-slide-end { font-size: 2.1rem; }
+
+html[data-mode="kid"] .kid-shelf {
+  grid-template-columns: repeat(auto-fill, minmax(min(112px, 100%), 1fr));
+  border-width: 3px;
+  gap: 12px;
+}
+html[data-mode="kid"] .kid-shelf-item { min-height: 112px; border-width: 3px; border-radius: var(--r-lg); }
+html[data-mode="kid"] .kid-shelf-item > .kid-shelf-art { font-size: 2.7rem; }
+
+/* 场景说明是给家长和读屏的补充，孩子模式下不占版面 */
+html[data-mode="kid"] .kid-scene-caption { font-size: .78rem; opacity: .8; }
+
+/* 4–6 岁：进一步放大插画、砍掉次要文字 */
+html[data-playful-age="4-6"] .kid-figure-art { min-height: 128px; font-size: clamp(3.4rem, 11vw, 4.8rem); }
+html[data-playful-age="4-6"] .kid-figure-sub { display: none; }
+html[data-playful-age="4-6"] .kid-meter-note { display: none; }
+html[data-playful-age="4-6"] .kid-scene-caption { display: none; }
+
+@media (max-width: 767px) {
+  html[data-mode="kid"] .kid-figure-grid { grid-template-columns: repeat(auto-fit, minmax(min(138px, 100%), 1fr)); }
+  html[data-mode="kid"] .kid-figure-art { min-height: 96px; }
+  html[data-mode="kid"] .kid-meter-track { height: 30px; }
 }

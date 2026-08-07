@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>对称工作室 · 互动实验室</title>
 <meta name="description" content="画一笔，镜子里同时出现好几笔。用镜像轴和旋转对称亲手画出雪花与万花筒，理解对称到底对的是什么。">
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#0b0f1a">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .lab-head { padding: 28px 0 14px; }
@@ -97,10 +97,13 @@
   /* 镜面舞台：中线、左右映射热区和选择都贴着画板出现。 */
   .mirror-board { position:relative; min-width:0; }
   .mirror-map { position:absolute; inset:0; pointer-events:none; z-index:2; display:grid; grid-template-columns:1fr 1fr; }
-  .mirror-hot { display:flex; align-items:flex-start; justify-content:center; padding-top:12px; color:var(--ink-dim); font-size:.78rem; font-weight:850; letter-spacing:.06em; background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--math) 5%,transparent)); transition:background .16s var(--ease),color .16s var(--ease); }
+  /* 热区标签浮在浅色画板之上，底纹保持半透明（要看得见下面的笔画），
+     所以文字色必须自己够深：原来 var(--math)/var(--sci) 压在 13% 同色底纹上
+     只有 4.06 / 3.87，加深到 78% 学科色 + 22% 墨色后是 6.04 / 5.86。 */
+  .mirror-hot { display:flex; align-items:flex-start; justify-content:center; padding-top:12px; color:var(--ink-mid); font-size:.78rem; font-weight:850; letter-spacing:.06em; background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--math) 5%,transparent)); transition:background .16s var(--ease),color .16s var(--ease); }
   .mirror-hot + .mirror-hot { background:linear-gradient(-90deg,transparent,color-mix(in srgb,var(--sci) 5%,transparent)); }
-  .mirror-hot.is-source { color:var(--math); background:color-mix(in srgb,var(--math) 13%,transparent); }
-  .mirror-hot.is-copy { color:var(--sci); background:color-mix(in srgb,var(--sci) 13%,transparent); }
+  .mirror-hot.is-source { color:color-mix(in srgb,var(--math) 78%,var(--ink)); background:color-mix(in srgb,var(--math) 13%,transparent); }
+  .mirror-hot.is-copy { color:color-mix(in srgb,var(--sci) 78%,var(--ink)); background:color-mix(in srgb,var(--sci) 13%,transparent); }
   .mirror-axis { position:absolute; z-index:3; inset:0 auto 0 50%; width:4px; translate:-2px 0; pointer-events:none; background:repeating-linear-gradient(to bottom,var(--warn) 0 13px,transparent 13px 21px); filter:drop-shadow(0 0 3px color-mix(in srgb,var(--warn) 60%,transparent)); }
   .mirror-axis::before { content:"镜像线"; position:absolute; top:10px; left:8px; white-space:nowrap; padding:3px 8px; border-radius:999px; background:var(--surface); border:1px solid var(--line); color:var(--warn); font-size:.72rem; font-weight:850; }
   .stage-kid-actions { margin-bottom:10px; }
@@ -122,7 +125,7 @@
 
   /* 雪花邮局 */
   html, body { max-width:100%; overflow-x:clip; }
-  .story-hero { position:relative; display:grid; grid-template-columns:auto minmax(0,1fr); gap:16px; align-items:center; margin:22px 0 14px; padding:24px clamp(16px,4vw,30px); overflow:hidden; border:1px solid rgba(74,222,128,.38); border-radius:var(--r-lg); background:linear-gradient(135deg,rgba(74,222,128,.12),rgba(110,168,254,.1) 60%,var(--surface)); }
+  .story-hero { position:relative; display:grid; grid-template-columns:auto minmax(0,1fr); gap:16px; align-items:center; margin:22px 0 14px; padding:24px clamp(16px,4vw,30px); overflow:hidden; border:1px solid color-mix(in srgb,var(--sci) 42%,var(--line)); border-radius:var(--r-lg); background:linear-gradient(135deg,rgba(74,222,128,.12),rgba(110,168,254,.1) 60%,var(--surface)); }
   .story-hero::after { content:"❄  ✦"; position:absolute; right:20px; top:8px; color:rgba(110,168,254,.18); font-size:clamp(2.8rem,10vw,6rem); line-height:1; pointer-events:none; }
   .story-guide { position:relative; z-index:1; width:88px; height:88px; display:grid; place-items:center; border-radius:50% 50% 48% 48%; background:linear-gradient(145deg,#d9fff0,#4ade80); color:#0b4729; font-size:2.5rem; box-shadow:0 10px 28px rgba(74,222,128,.22); transform:rotate(-2deg); }
   .story-copy { position:relative; z-index:1; min-width:0; }
@@ -135,6 +138,44 @@
   .learning-layers details { border:1px solid var(--line); border-radius:var(--r); background:var(--surface); padding:0 16px; }
   .learning-layers summary { min-height:48px; display:flex; align-items:center; cursor:pointer; color:var(--ink); font-weight:800; }
   .learning-layers details > div { padding:0 0 16px; color:var(--ink-mid); }
+  .learning-layers .layer-age { display:inline-block; margin-right:8px; padding:2px 9px; border-radius:999px; background:rgba(110,168,254,.16); color:var(--sci); font-size:.74rem; font-weight:850; }
+  .learning-layers p { margin:0 0 .6em; }
+  .learning-layers p:last-child { margin-bottom:0; }
+
+  /* 深化板块：三种变换、对称轴探索器、检验三步、自然与建筑 */
+  .sym-section { margin:26px 0 8px; }
+  .sym-section > h2 { margin:0 0 .35em; font-size:1.12rem; }
+  .sym-lead { margin:0 0 12px; max-width:64ch; color:var(--ink-mid); }
+  .teach-note { margin:0 0 14px; padding:11px 14px; border-left:3px solid var(--sci); border-radius:0 var(--r) var(--r) 0; background:var(--bg-soft); color:var(--ink-mid); font-size:.9rem; }
+  .teach-note b { color:var(--ink); }
+  .sym-compare { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(212px,1fr)); }
+  .sym-compare > figure { margin:0; padding:14px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); }
+  .sym-compare svg { display:block; width:100%; height:auto; }
+  .sym-compare figcaption { margin-top:9px; color:var(--ink-mid); font-size:.9rem; line-height:1.5; }
+  .sym-compare figcaption b { display:block; margin-bottom:3px; color:var(--ink); font-size:1rem; }
+  .axis-lab { display:grid; gap:16px; grid-template-columns:minmax(0,270px) minmax(0,1fr); align-items:start; }
+  @media (max-width:760px) { .axis-lab { grid-template-columns:1fr; } }
+  .axis-stage { padding:10px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface-2); }
+  .axis-stage svg { display:block; width:100%; height:auto; }
+  .axis-shape { transform-box:view-box; transform-origin:center; transition:transform .55s var(--ease); }
+  html[data-playful-motion="reduced"] .axis-shape { transition:none; }
+  .axis-tools { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .axis-facts { display:grid; gap:8px; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); margin:12px 0 0; padding:0; list-style:none; }
+  .axis-facts li { padding:10px 12px; border:1px solid var(--line-soft); border-radius:var(--r); background:var(--surface-2); font-size:.86rem; color:var(--ink-mid); }
+  .axis-facts b { display:block; font-family:var(--mono); font-size:1.15rem; color:var(--math); }
+  .verify-steps { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(196px,1fr)); margin:0; padding:0; list-style:none; }
+  .verify-steps li { position:relative; padding:36px 13px 13px; border:2px solid var(--line); border-radius:var(--r-lg); background:var(--surface); color:var(--ink-mid); font-size:.9rem; line-height:1.5; }
+  .verify-steps li b { display:block; margin-bottom:4px; color:var(--ink); font-size:1rem; }
+  .verify-steps li::before { content:attr(data-step); position:absolute; top:9px; left:13px; width:24px; height:24px; display:grid; place-items:center; border-radius:50%; background:var(--math); color:#fff; font-family:var(--mono); font-size:.82rem; font-weight:800; }
+  .nature-grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(158px,1fr)); }
+  .nature-grid > figure { margin:0; padding:12px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); text-align:center; }
+  .nature-grid svg { display:block; width:100%; height:auto; margin-bottom:7px; }
+  .nature-grid figcaption { color:var(--ink-mid); font-size:.84rem; line-height:1.45; }
+  .nature-grid figcaption b { display:block; color:var(--ink); font-size:.95rem; }
+  .kid-picks { display:flex; flex-wrap:wrap; gap:8px; }
+  .kid-picks .kid-choice { min-height:44px; }
+  .kid-picks .kid-choice[aria-pressed="true"] { border-color:var(--sci); background:rgba(74,222,128,.14); }
+  .pick-label { margin:0 0 6px; font-weight:700; }
   main#main > * { order:0 !important; }
   [hidden] { display:none !important; }
   button, .btn, .chip, select, input[type="range"] { min-height:44px; }
@@ -147,6 +188,199 @@
     .story-hero::after { font-size:2.8rem; }
     .panel .seg .btn { flex:1 1 44%; }
   }
+
+  /* ======================================================================
+     对称游乐场：给 4~5 岁的大图形任务，全部只需要点
+     ====================================================================== */
+  .play-zone { display:grid; gap:16px; margin:16px 0 24px; }
+  .play-card {
+    padding:16px clamp(12px,3vw,20px);
+    border:3px solid color-mix(in srgb, var(--zone-accent, var(--math)) 30%, var(--line));
+    border-radius:var(--r-xl);
+    background:
+      radial-gradient(circle at 96% 6%, color-mix(in srgb, var(--zone-accent, var(--math)) 14%, transparent) 0 26%, transparent 27%),
+      linear-gradient(155deg,#fffdf6,var(--surface));
+    box-shadow:0 6px 0 rgba(120,84,42,.13);
+  }
+  .play-card > h2 { margin:0 0 5px; font-size:clamp(1.05rem,2.6vw,1.22rem); }
+  .play-card > h2 .em { font-size:1.35em; vertical-align:-.12em; margin-right:6px; }
+  .play-tip { margin:0 0 12px; max-width:46ch; color:var(--ink-mid); font-size:.96rem; }
+  .play-tip b { color:var(--ink); }
+  .play-say {
+    display:flex; gap:10px; align-items:center; min-height:56px;
+    margin:12px 0 0; padding:11px 14px;
+    border:3px solid #bfe8d0; border-radius:var(--r-lg);
+    background:#eafff2; color:#0b4a2a; font-weight:750; font-size:1rem;
+  }
+  .play-say .face { font-size:1.7rem; line-height:1; }
+  .play-tools { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  .play-score { display:inline-flex; align-items:center; gap:6px; padding:6px 12px;
+                border-radius:999px; background:var(--surface); border:2px solid var(--line);
+                font-weight:800; color:var(--ink); }
+
+  /* 半张图 + 三个候选 */
+  .half-stage { display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+                margin:0 0 14px; padding:12px; border-radius:var(--r-lg);
+                background:var(--surface-2); border:2px solid var(--line-soft); }
+  .half-stage svg { display:block; width:clamp(150px,42vw,220px); height:auto; }
+  .half-note { flex:1 1 140px; color:var(--ink-mid); font-size:.9rem; font-weight:700; }
+  .half-picks { display:flex; gap:10px; flex-wrap:wrap; }
+  .half-pick {
+    width:104px; height:104px; min-height:104px; flex:none; padding:6px; cursor:pointer;
+    border:3px solid var(--line); border-radius:20px; background:var(--surface);
+    box-shadow:0 4px 0 rgba(120,84,42,.16);
+    transition:transform .14s var(--ease), border-color .14s var(--ease);
+  }
+  .half-pick svg { display:block; width:100%; height:100%; }
+  .half-pick:hover:not(:disabled) { transform:translateY(-3px); border-color:var(--math); }
+  .half-pick:disabled { cursor:default; }
+  .half-pick.ok { border-color:#0f8a4d; background:#d8f7e4; box-shadow:0 4px 0 rgba(15,138,77,.3); }
+  .half-pick.bad { border-color:var(--danger); background:#ffe6e2; }
+  .half-pick.dim { opacity:.45; }
+
+  /* 对称吗：大 emoji 卡 + 两个答案 */
+  .judge-card {
+    display:grid; place-items:center; gap:4px; margin:0 0 14px;
+    min-height:132px; padding:14px; border-radius:var(--r-lg);
+    background:var(--surface-2); border:2px solid var(--line-soft);
+  }
+  .judge-face { font-size:clamp(3.4rem,15vw,4.6rem); line-height:1; }
+  .judge-name { font-weight:800; color:var(--ink); font-size:1.05rem; }
+  .judge-picks { display:flex; gap:10px; flex-wrap:wrap; }
+  .judge-btn {
+    flex:1 1 150px; min-height:64px; padding:12px 18px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    font-family:inherit; font-size:1.05rem; font-weight:800; color:var(--ink);
+    border:3px solid var(--line); border-radius:999px; background:var(--surface);
+    box-shadow:0 4px 0 rgba(120,84,42,.16);
+  }
+  .judge-btn .em { font-size:1.5rem; }
+  .judge-btn:hover:not(:disabled) { border-color:var(--math); }
+  .judge-btn:disabled { cursor:default; }
+  .judge-btn.ok { border-color:#0f8a4d; background:#d8f7e4; }
+  .judge-btn.bad { border-color:var(--danger); background:#ffe6e2; }
+
+  /* 折纸格子：点左边，右边自己出现 */
+  .fold-lab { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); align-items:start; }
+  .fold-box { padding:12px; border-radius:var(--r-lg); background:var(--surface-2); border:2px solid var(--line-soft); }
+  .fold-box > h3 { margin:0 0 8px; font-size:.95rem; color:var(--ink-mid); }
+  .fold-grid { display:grid; gap:4px; justify-content:start; }
+  .fold-cell {
+    width:44px; height:44px; min-height:44px; padding:0; border-radius:11px;
+    border:2px solid var(--line); background:var(--surface);
+  }
+  button.fold-cell { cursor:pointer; }
+  button.fold-cell:hover { border-color:var(--math); }
+  .fold-cell.on { background:var(--math); border-color:var(--accent-deep); }
+  .fold-cell.mirror { background:#7fd3a6; border-color:#0f8a4d; }
+  .fold-cell.target-on { background:#f2c86b; border-color:var(--warn); }
+  .fold-cell.axis-edge { border-left:3px dashed var(--warn); }
+  .fold-cell:disabled { cursor:default; }
+  @media (max-width:640px) {
+    .fold-cell { width:38px; height:38px; min-height:38px; }
+    .half-pick { width:92px; height:92px; min-height:92px; }
+  }
+
+  /* 数字候选：数折痕用 */
+  .num-picks { display:flex; gap:10px; flex-wrap:wrap; }
+  .num-pick {
+    min-width:66px; min-height:66px; padding:10px 14px; cursor:pointer;
+    font-family:inherit; font-size:1.45rem; font-weight:800; color:var(--ink);
+    border:3px solid var(--line); border-radius:20px; background:var(--surface);
+    box-shadow:0 4px 0 rgba(120,84,42,.16);
+    transition:transform .14s var(--ease), border-color .14s var(--ease);
+  }
+  .num-pick:hover:not(:disabled) { transform:translateY(-3px); border-color:var(--phys); }
+  .num-pick:disabled { cursor:default; }
+  .num-pick.ok { border-color:#0f8a4d; background:#d8f7e4; box-shadow:0 4px 0 rgba(15,138,77,.3); }
+  .num-pick.bad { border-color:var(--danger); background:#ffe6e2; }
+  .num-pick.dim { opacity:.45; }
+
+  /* 镜子里的动物：大表情 + 三个候选 */
+  .mirror-quiz {
+    display:flex; gap:14px; align-items:center; justify-content:center;
+    margin:0 0 14px; padding:14px; border-radius:var(--r-lg);
+    background:var(--surface-2); border:2px solid var(--line-soft);
+  }
+  .mq-source { font-size:clamp(3rem,13vw,4.2rem); line-height:1; }
+  .mq-arrow { font-size:clamp(2rem,8vw,2.6rem); line-height:1; }
+  .emoji-picks { display:flex; gap:10px; flex-wrap:wrap; }
+  .emoji-pick {
+    width:104px; height:104px; min-height:104px; flex:none; padding:6px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    border:3px solid var(--line); border-radius:20px; background:var(--surface);
+    box-shadow:0 4px 0 rgba(120,84,42,.16);
+    transition:transform .14s var(--ease), border-color .14s var(--ease);
+  }
+  .emoji-pick > span { font-size:2.9rem; line-height:1; display:block; }
+  .emoji-pick:hover:not(:disabled) { transform:translateY(-3px); border-color:var(--kit); }
+  .emoji-pick:disabled { cursor:default; }
+  .emoji-pick.ok { border-color:#0f8a4d; background:#d8f7e4; box-shadow:0 4px 0 rgba(15,138,77,.3); }
+  .emoji-pick.bad { border-color:var(--danger); background:#ffe6e2; }
+  .emoji-pick.dim { opacity:.45; }
+  @media (max-width:640px) {
+    .emoji-pick { width:92px; height:92px; min-height:92px; }
+    .emoji-pick > span { font-size:2.5rem; }
+  }
+
+  .parent-block { margin:26px 0 8px; }
+  .parent-block > h2 { margin:0 0 .3em; font-size:1.12rem; }
+  .parent-block .sub { margin:0 0 12px; max-width:64ch; color:var(--ink-mid); }
+  .home-list { margin:0; padding:0; list-style:none; display:grid; gap:10px;
+               grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); }
+  .home-list li { padding:12px 14px; border:2px solid var(--line-soft); border-radius:var(--r);
+                  background:var(--surface); color:var(--ink-mid); font-size:.9rem; line-height:1.55; }
+  .home-list b { display:block; margin-bottom:3px; color:var(--ink); font-size:.98rem; }
+
+  /* 插画舞台（共享 SVG 场景铺底，内容都放在不透明卡片上保证对比度） */
+  .sy-scene-stage { margin:0 0 16px; padding:clamp(12px,2.6vw,20px); }
+  .sy-scene-copy { display:grid; gap:12px; min-width:0; }
+  .sy-scene-stage .kid-steps-visual { margin:0; }
+  @media (max-width:560px) {
+    .sy-scene-stage { padding:10px; }
+  }
+
+  /* ======================================================================
+     syx-*：对称图鉴 / 工作台量表 / 补另一半（本页专属前缀）
+     SVG 一律用 class 上色，颜色跟着卡片的 --tone 走，方便孩子模式与打印统一调
+     ====================================================================== */
+  .syx-block { margin:26px 0 8px; }
+  .syx-block > h2 { margin:0 0 .32em; font-size:1.12rem; }
+  .syx-lead { margin:0 0 12px; max-width:62ch; color:var(--ink-mid); }
+
+  .syx-art > svg { display:block; width:100%; height:auto; }
+  .syx-fill { fill:color-mix(in srgb, var(--tone, var(--math)) 70%, var(--surface)); }
+  .syx-fill-soft { fill:color-mix(in srgb, var(--tone, var(--math)) 38%, var(--surface)); }
+  .syx-stroke { fill:none; stroke:color-mix(in srgb, var(--tone, var(--math)) 78%, var(--ink)); stroke-width:5; stroke-linejoin:round; stroke-linecap:round; }
+  .syx-stroke-thin { stroke-width:3.2; }
+  .syx-stroke-bold { stroke-width:7; }
+  .syx-thin { fill:none; stroke:var(--ink-dim); stroke-width:2.4; stroke-linecap:round; }
+  .syx-axis { fill:none; stroke:var(--warn); stroke-width:2.2; stroke-dasharray:6 5; stroke-linecap:round; }
+  .syx-turn { fill:var(--ink-dim); }
+  .syx-turn-arc { fill:none; stroke:var(--ink-dim); stroke-width:2.6; stroke-linecap:round; }
+  .syx-figure-note { margin:10px 0 0; color:var(--ink-dim); font-size:.86rem; }
+
+  .syx-meters { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(248px,1fr)); }
+  .syx-meter-say { margin-top:12px; }
+
+  .syx-quiz-stage {
+    display:flex; gap:12px; flex-wrap:wrap; align-items:center;
+    margin:0 0 12px; padding:12px;
+    border:2px solid var(--line-soft); border-radius:var(--r-lg); background:var(--surface-2);
+  }
+  .syx-half-svg { display:block; width:clamp(180px,46vw,300px); height:auto; }
+  .syx-quiz-side { flex:1 1 170px; min-width:0; }
+  .syx-quiz-side p { margin:0 0 6px; color:var(--ink-mid); font-size:.9rem; font-weight:700; }
+  .syx-tiles { grid-template-columns:repeat(auto-fit,minmax(136px,1fr)); }
+  .syx-tile .kid-tile-art { display:block; width:100%; }
+  .syx-tile .kid-tile-art > svg { display:block; width:100%; height:auto; }
+  .syx-tile[data-wrong="true"] { border-color:var(--danger); background:#ffe6e2; }
+  .syx-tile:disabled { cursor:default; }
+  .syx-piece { fill:color-mix(in srgb, var(--syx-tone, var(--math)) 76%, var(--surface)); }
+  .syx-piece-ghost { fill:color-mix(in srgb, var(--syx-tone, var(--math)) 28%, var(--surface)); }
+  .syx-say { margin:12px 0 0; max-width:52ch; }
+  .syx-legend { margin:10px 0 0; }
+  .syx-legend .kid-legend-mark { font-size:.86rem; font-weight:850; }
 </style>
 </head>
 <body data-playful-page="games/symmetry-studio.html">
@@ -179,6 +413,24 @@
       <p class="story-goal"><b>只画一笔：</b>看看镜子和旋转会帮你变出多少笔。</p>
     </div>
   </header>
+  <!-- 插画舞台：不识字也能看懂这一页在玩什么 -->
+  <div class="kid-visual-stage sy-scene-stage" data-scene-layer="back"
+       data-playful-scene="snow"
+       data-playful-scene-title="雪花对称工作室"
+       data-playful-scene-desc="下雪的天空和白色小山，雪花一片片飘下来">
+    <div class="sy-scene-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🐰</span>
+        <p class="kid-speech">画一半，<b>镜子帮你画另一半</b>。</p>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步玩法">
+        <li><span class="kid-tile-art" aria-hidden="true">🪞</span>选镜子</li>
+        <li><span class="kid-tile-art" aria-hidden="true">✏️</span>画一半</li>
+        <li><span class="kid-tile-art" aria-hidden="true">❄️</span>看整张</li>
+      </ol>
+    </div>
+  </div>
+
 
   <div class="stage-ribbon" role="note"><span aria-hidden="true">✏️</span><strong>现在就画：</strong><span>在画板拖一笔；也可以聚焦画板，用方向键和空格。</span></div>
 
@@ -259,6 +511,443 @@
     </div>
   </div>
 
+  <!-- ============ 量表：直接读上面工作台的真实状态 ============ -->
+  <section class="syx-block" aria-labelledby="syxMeterTitle">
+    <h2 id="syxMeterTitle">这台工作台现在有多对称？</h2>
+    <p class="syx-lead">在上面拖「镜面数量」，或者切换「沿镜像线翻过去 / 绕中心转过去」，这两条会立刻跟着变长变短。</p>
+    <div class="syx-meters">
+      <div class="kid-meter" style="--tone:var(--warn)">
+        <div class="kid-meter-head">
+          <span class="kid-meter-icon" aria-hidden="true">📐</span>
+          <span id="syxAxisLabel">对称轴条数</span>
+          <b class="kid-meter-value" id="syxAxisValue">6 条</b>
+        </div>
+        <div class="kid-meter-track" id="syxAxisMeter" role="img" aria-labelledby="syxAxisLabel syxAxisValue"><i class="kid-meter-fill"></i></div>
+        <p class="kid-meter-note" id="syxAxisNote">开着镜像：有几面镜子，就有几条能对折重合的折痕。</p>
+      </div>
+      <div class="kid-meter" style="--tone:var(--phys)">
+        <div class="kid-meter-head">
+          <span class="kid-meter-icon" aria-hidden="true">🔄</span>
+          <span id="syxRotLabel">旋转对称次数</span>
+          <b class="kid-meter-value" id="syxRotValue">6 次</b>
+        </div>
+        <div class="kid-meter-track" id="syxRotMeter" role="img" aria-labelledby="syxRotLabel syxRotValue"><i class="kid-meter-fill"></i></div>
+        <p class="kid-meter-note" id="syxRotNote">转一圈（360°）里，图案会有这么多次和原样重合。</p>
+      </div>
+    </div>
+    <p class="kid-speech syx-meter-say" id="syxMeterSay" role="status" aria-live="polite">动一下镜面数量，看这两条怎么变。</p>
+    <p class="teach-note parent-deep-dive" data-audience="parent"><b>这在教什么：</b>把「有多对称」换成两个能数的量：折痕条数、转一圈的重合次数。开着镜像时是 n 条轴 + n 重旋转，关掉镜像只剩 n 重旋转、0 条轴——正是二面体对称与循环对称的区别。</p>
+  </section>
+
+  <!-- ============ 对称图鉴：每张卡都把对称轴画成黄色虚线 ============ -->
+  <section class="syx-block" aria-labelledby="syxAtlasTitle">
+    <h2 id="syxAtlasTitle">对称图鉴 · 黄色虚线就是对称轴</h2>
+    <p class="syx-lead">先看轴，再数次数。<b>风车那张一条轴也没有</b>，可它转起来照样重合。</p>
+    <div class="kid-figure-grid" aria-label="对称图鉴：八张卡">
+
+      <div class="kid-figure" style="--tone:var(--math)">
+        <span class="kid-figure-art syx-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <path class="syx-fill" d="M56 36C36 18 16 28 20 46c3 15 22 19 36 11z"/>
+            <path class="syx-fill" d="M64 36C84 18 104 28 100 46c-3 15-22 19-36 11z"/>
+            <path class="syx-fill-soft" d="M56 52C40 48 26 58 30 72c4 12 20 12 26 2z"/>
+            <path class="syx-fill-soft" d="M64 52c16-4 30 6 26 20-4 12-20 12-26 2z"/>
+            <ellipse class="syx-fill" cx="60" cy="54" rx="4.6" ry="22"/>
+            <path class="syx-thin" d="M60 34c-3-8-8-11-13-11M60 34c3-8 8-11 13-11"/>
+            <path class="syx-axis" d="M60 10V94"/>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">蝴蝶</span>
+        <span class="kid-figure-sub">对称轴 1 条：身体那条竖线</span>
+        <span class="kid-figure-fact">转一圈只重合 1 次（要转满 360° 才回到原样）</span>
+      </div>
+
+      <div class="kid-figure" style="--tone:var(--sci)">
+        <span class="kid-figure-art syx-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <path class="syx-fill" d="M60 10 L67 27 L79 22 L75 35 L89 31 L84 44 L99 46 L87 54 L94 64 L79 63 L82 75 L67 69 L63 84 L63 93 L57 93 L57 84 L53 69 L38 75 L41 63 L26 64 L33 54 L21 46 L36 44 L31 31 L45 35 L41 22 L53 27 Z"/>
+            <path class="syx-thin" d="M60 90V28M60 50l14-11M60 50L46 39M60 66l17-13M60 66L43 53"/>
+            <path class="syx-axis" d="M60 6V96"/>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">枫叶</span>
+        <span class="kid-figure-sub">对称轴 1 条：中间那条主叶脉</span>
+        <span class="kid-figure-fact">转一圈只重合 1 次；左右两边的锯齿一一对应</span>
+      </div>
+
+      <div class="kid-figure" style="--tone:var(--video)">
+        <span class="kid-figure-art syx-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <g class="syx-axis">
+              <path d="M60 8V92"/>
+              <path d="M60 8V92" transform="rotate(30 60 50)"/>
+              <path d="M60 8V92" transform="rotate(60 60 50)"/>
+              <path d="M60 8V92" transform="rotate(90 60 50)"/>
+              <path d="M60 8V92" transform="rotate(120 60 50)"/>
+              <path d="M60 8V92" transform="rotate(150 60 50)"/>
+            </g>
+            <g class="syx-stroke syx-stroke-thin">
+              <path d="M60 50V16M60 27l-8-7M60 27l8-7M60 37l-7-6M60 37l7-6"/>
+              <path d="M60 50V16M60 27l-8-7M60 27l8-7M60 37l-7-6M60 37l7-6" transform="rotate(60 60 50)"/>
+              <path d="M60 50V16M60 27l-8-7M60 27l8-7M60 37l-7-6M60 37l7-6" transform="rotate(120 60 50)"/>
+              <path d="M60 50V16M60 27l-8-7M60 27l8-7M60 37l-7-6M60 37l7-6" transform="rotate(180 60 50)"/>
+              <path d="M60 50V16M60 27l-8-7M60 27l8-7M60 37l-7-6M60 37l7-6" transform="rotate(240 60 50)"/>
+              <path d="M60 50V16M60 27l-8-7M60 27l8-7M60 37l-7-6M60 37l7-6" transform="rotate(300 60 50)"/>
+            </g>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">雪花</span>
+        <span class="kid-figure-sub">对称轴 6 条：3 条穿过枝、3 条走枝中间</span>
+        <span class="kid-figure-fact">转一圈重合 6 次，每转 60° 一次</span>
+      </div>
+
+      <div class="kid-figure" style="--tone:var(--phys)">
+        <span class="kid-figure-art syx-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <g class="syx-axis">
+              <path d="M60 8V96"/>
+              <path d="M60 8V96" transform="rotate(72 60 52)"/>
+              <path d="M60 8V96" transform="rotate(144 60 52)"/>
+              <path d="M60 8V96" transform="rotate(216 60 52)"/>
+              <path d="M60 8V96" transform="rotate(288 60 52)"/>
+            </g>
+            <path class="syx-fill" d="M60 12 L70.6 37.4 L98 39.6 L77.1 57.6 L83.5 84.4 L60 70 L36.5 84.4 L42.9 57.6 L22 39.6 L49.4 37.4 Z"/>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">海星</span>
+        <span class="kid-figure-sub">对称轴 5 条：每条从一个角穿到对边中间</span>
+        <span class="kid-figure-fact">转一圈重合 5 次，每转 72° 一次</span>
+      </div>
+
+      <div class="kid-figure" style="--tone:var(--code)">
+        <span class="kid-figure-art syx-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <rect class="syx-stroke syx-stroke-bold" x="28" y="14" width="64" height="74" rx="3"/>
+            <path class="syx-stroke syx-stroke-bold" d="M60 14V88M28 51H92"/>
+            <path class="syx-axis" d="M60 6V96M16 51H104"/>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">汉字「田」</span>
+        <span class="kid-figure-sub">对称轴 2 条：一条竖的、一条横的</span>
+        <span class="kid-figure-fact">转一圈重合 2 次，转 180° 就又一样了</span>
+      </div>
+
+      <div class="kid-figure" style="--tone:var(--kit)">
+        <span class="kid-figure-art syx-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <path class="syx-stroke syx-stroke-bold" d="M34 16V86M86 16V86M34 51H86"/>
+            <path class="syx-axis" d="M60 8V94M18 51H102"/>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">字母 H</span>
+        <span class="kid-figure-sub">对称轴 2 条：竖着折、横着折都重合</span>
+        <span class="kid-figure-fact">转一圈重合 2 次；写成 h 就一条轴也没有了</span>
+      </div>
+
+      <div class="kid-figure" style="--tone:var(--sci)">
+        <span class="kid-figure-art syx-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <g class="syx-fill">
+              <path d="M60 50V16Q83 21 78 44Z"/>
+              <path d="M60 50V16Q83 21 78 44Z" transform="rotate(90 60 50)"/>
+              <path d="M60 50V16Q83 21 78 44Z" transform="rotate(180 60 50)"/>
+              <path d="M60 50V16Q83 21 78 44Z" transform="rotate(270 60 50)"/>
+            </g>
+            <circle class="syx-turn" cx="60" cy="50" r="3.6"/>
+            <path class="syx-turn-arc" d="M92 84A42 42 0 0 0 104 64"/>
+            <path class="syx-turn" d="M104 62l-8 3 5 7z"/>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">风车</span>
+        <span class="kid-figure-sub">对称轴 0 条：折过去叶片会倒向反方向</span>
+        <span class="kid-figure-fact">转一圈重合 4 次，每转 90° 一次——只有旋转对称</span>
+      </div>
+
+      <div class="kid-figure" style="--tone:var(--accent-deep)">
+        <span class="kid-figure-art syx-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <rect class="syx-fill" x="24" y="14" width="72" height="72" rx="4"/>
+            <path class="syx-axis" d="M60 6V94M14 50H106M16 6L104 94M104 6L16 94"/>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">正方形</span>
+        <span class="kid-figure-sub">对称轴 4 条：2 条中线 + 2 条对角线</span>
+        <span class="kid-figure-fact">转一圈重合 4 次，每转 90° 一次</span>
+      </div>
+
+    </div>
+    <ul class="kid-legend" style="--tone:var(--warn)">
+      <li><span class="kid-legend-mark" aria-hidden="true">┆</span>黄色虚线＝对称轴，沿它对折两半能盖住</li>
+      <li><span class="kid-legend-mark" aria-hidden="true">↻</span>弯箭头＝只能转着重合，没有一条对折轴</li>
+    </ul>
+    <p class="syx-figure-note">找规律：轴的条数和转一圈的重合次数，常常是同一个数（正方形 4 和 4、海星 5 和 5），风车是个例外。</p>
+  </section>
+
+  <!-- ============ 对称小游戏：4~5 岁点图形就能玩 ============ -->
+  <section class="play-zone" aria-labelledby="symPlayTitle">
+    <h2 id="symPlayTitle" class="sr-only">对称小游戏</h2>
+
+    <!-- 1. 补另一半：镜像 / 旋转 / 平移 一眼分清 -->
+    <section class="play-card kid-visual-stage" style="--zone-accent:var(--math)" aria-labelledby="halfTitle">
+      <h2 id="halfTitle"><span class="em" aria-hidden="true">🦋</span>补另一半</h2>
+      <p class="play-tip">左边是半个图形。四个候选里<b>只有一个是真镜像</b>，另外三个是挪过去的、转了半圈的、上下翻的。</p>
+      <div class="syx-quiz-stage">
+        <svg id="halfSvg" class="syx-half-svg" viewBox="0 0 240 150" role="img" aria-labelledby="halfSvgTitle halfSvgDesc">
+          <title id="halfSvgTitle">左边是半个图形，右边空着等你补上</title>
+          <desc id="halfSvgDesc">中间的黄色虚线是镜子，左边有半个图形，右边还空着</desc>
+          <g id="halfLeft"></g>
+          <path class="syx-axis" d="M120 8V142"/>
+          <g id="halfRight"></g>
+        </svg>
+        <div class="syx-quiz-side">
+          <p>中间的黄色虚线是镜子。镜像＝<b>左右换边</b>，上下高度不变。</p>
+          <p id="halfDotsCap">这一套一共 6 个，已经补好几个：</p>
+          <span class="kid-dots" id="halfDots" style="--tone:var(--math)" role="img" aria-labelledby="halfDotsCap"></span>
+        </div>
+      </div>
+      <div class="kid-tiles syx-tiles" id="halfPicks" role="group" aria-label="选择右半边真正的镜像"></div>
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🦋</span>
+        <p class="kid-speech syx-say" id="halfSay" role="status" aria-live="polite">左边是半个图形，点出右边真正的镜像。</p>
+      </div>
+      <ul class="kid-legend syx-legend">
+        <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">翻</span>镜像：左右换边，两点离镜子一样远</li>
+        <li style="--tone:var(--phys)"><span class="kid-legend-mark" aria-hidden="true">转</span>旋转：整体转过去，上下也跟着变</li>
+        <li style="--tone:var(--kit)"><span class="kid-legend-mark" aria-hidden="true">挪</span>平移：原样搬过去，根本没翻面</li>
+      </ul>
+      <div class="play-tools">
+        <button class="btn btn-primary btn-sm" type="button" id="halfNext" disabled>下一个 →</button>
+        <span class="play-score"><span aria-hidden="true">⭐</span><span>一次点对 <b id="halfScore">0</b> / 6</span></span>
+      </div>
+    </section>
+
+    <!-- 2. 是不是对称 -->
+    <section class="play-card kid-visual-stage" style="--zone-accent:var(--sci)" aria-labelledby="yesnoTitle">
+      <h2 id="yesnoTitle"><span class="em" aria-hidden="true">🪞</span>对折能重合吗</h2>
+      <p class="play-tip">看这条黄线。<b>沿它对折，两边能盖住吗？</b></p>
+      <div class="half-stage">
+        <svg id="yesnoSvg" viewBox="0 0 240 140" role="img" aria-labelledby="yesnoSvgTitle">
+          <title id="yesnoSvgTitle">一个图形和一条黄色折痕</title>
+          <g id="yesnoShape"></g>
+          <line id="yesnoAxis" x1="120" y1="6" x2="120" y2="134" stroke="var(--warn)" stroke-width="4" stroke-dasharray="8 6"/>
+        </svg>
+      </div>
+      <div class="judge-picks" role="group" aria-label="判断能不能对折重合">
+        <button class="judge-btn" type="button" id="yesnoYes"><span class="em" aria-hidden="true">✅</span>能重合</button>
+        <button class="judge-btn" type="button" id="yesnoNo"><span class="em" aria-hidden="true">❌</span>不能重合</button>
+      </div>
+      <p class="play-say" id="yesnoSay" role="status" aria-live="polite"><span class="face" aria-hidden="true">🪞</span><span>能盖住点 ✅，盖不住点 ❌。</span></p>
+      <div class="play-tools">
+        <button class="btn btn-primary btn-sm" type="button" id="yesnoNew">换一个 →</button>
+        <span class="play-score"><span aria-hidden="true">⭐</span><span>答对 <b id="yesnoScore">0</b></span></span>
+      </div>
+    </section>
+
+    <!-- 3. 数折痕 -->
+    <section class="play-card kid-visual-stage" style="--zone-accent:var(--phys)" aria-labelledby="countTitle">
+      <h2 id="countTitle"><span class="em" aria-hidden="true">✂️</span>有几条折痕</h2>
+      <p class="play-tip">这个图形能对折几次都重合？<b>点一个数字</b>。</p>
+      <div class="half-stage">
+        <svg id="countSvg" viewBox="0 0 200 150" role="img" aria-labelledby="countSvgTitle">
+          <title id="countSvgTitle">一个图形，等你数它有几条对称轴</title>
+          <g id="countAxes"></g>
+          <g id="countShape"></g>
+        </svg>
+      </div>
+      <div class="num-picks" id="countPicks" role="group" aria-label="选择对称轴条数"></div>
+      <p class="play-say" id="countSay" role="status" aria-live="polite"><span class="face" aria-hidden="true">🦔</span><span>先猜，再点。答对会显示折痕。</span></p>
+      <div class="play-tools">
+        <button class="btn btn-primary btn-sm" type="button" id="countNew">换一个 →</button>
+        <span class="play-score"><span aria-hidden="true">⭐</span><span>答对 <b id="countScore">0</b></span></span>
+      </div>
+    </section>
+
+    <!-- 4. 镜子里的动物 -->
+    <section class="play-card kid-visual-stage" style="--zone-accent:var(--kit)" aria-labelledby="matchTitle">
+      <h2 id="matchTitle"><span class="em" aria-hidden="true">🔎</span>哪个是镜子里的</h2>
+      <p class="play-tip">上面是原来的。<b>点出照镜子后的样子</b>（左右反过来）。</p>
+      <div class="mirror-quiz">
+        <div class="mq-source" id="mqSource" role="img" aria-label="原来的样子">🐕</div>
+        <div class="mq-arrow" aria-hidden="true">🪞</div>
+      </div>
+      <div class="emoji-picks" id="mqPicks" role="group" aria-label="选择镜子里的样子"></div>
+      <p class="play-say" id="mqSay" role="status" aria-live="polite"><span class="face" aria-hidden="true">🐕</span><span>照镜子的时候，朝左会变成朝右。</span></p>
+      <div class="play-tools">
+        <button class="btn btn-primary btn-sm" type="button" id="mqNew">换一个 →</button>
+        <span class="play-score"><span aria-hidden="true">⭐</span><span>答对 <b id="mqScore">0</b></span></span>
+      </div>
+    </section>
+  </section>
+
+  <section class="sym-section" aria-labelledby="symKindsTitle">
+    <h2 id="symKindsTitle">三种“搬动图形”的方式</h2>
+    <p class="sym-lead">对称说的不是“好看”，而是<b>搬动之后还看不出被搬过</b>。搬动图形只有三种基本动作，画板上的每一笔都在用它们。</p>
+    <p class="teach-note parent-deep-dive" data-audience="parent"><b>这在教什么：</b>把“对称”从形容词变成动作——翻（反射）、转（旋转）、挪（平移）。孩子先用手做动作，再认名字，属于 CPA 里从具象到图像的一步。</p>
+    <div class="sym-compare">
+      <figure>
+        <svg viewBox="0 0 200 120" role="img" aria-label="镜像对称示意：一条竖直虚线两侧各有一个方向相反的三角形">
+          <path d="M100 8v104" stroke="var(--warn)" stroke-width="3" stroke-dasharray="7 6"/>
+          <path d="M88 30 L30 60 L88 90 Z" fill="none" stroke="var(--math)" stroke-width="5" stroke-linejoin="round"/>
+          <path d="M112 30 L170 60 L112 90 Z" fill="none" stroke="var(--sci)" stroke-width="5" stroke-linejoin="round"/>
+          <circle cx="88" cy="30" r="4.5" fill="var(--math)"/><circle cx="112" cy="30" r="4.5" fill="var(--sci)"/>
+        </svg>
+        <figcaption><b>翻 · 镜像对称</b>左右交换、方向反过来。两个对应点离镜像线一样远。也叫轴对称、反射对称。</figcaption>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 200 120" role="img" aria-label="旋转对称示意：四个相同的形状绕中心点均匀排列，箭头表示旋转方向">
+          <circle cx="100" cy="60" r="3.6" fill="var(--ink-dim)"/>
+          <g fill="none" stroke="var(--phys)" stroke-width="5" stroke-linejoin="round">
+            <path d="M100 60 L100 20 Q126 26 122 48 Z"/>
+            <path d="M100 60 L140 60 Q134 86 112 82 Z"/>
+            <path d="M100 60 L100 100 Q74 94 78 72 Z"/>
+            <path d="M100 60 L60 60 Q66 34 88 38 Z"/>
+          </g>
+          <path d="M158 34 A44 44 0 0 1 176 66" fill="none" stroke="var(--ink-dim)" stroke-width="3"/>
+          <path d="M176 66 l-6 -8 l10 -1 Z" fill="var(--ink-dim)"/>
+        </svg>
+        <figcaption><b>转 · 旋转对称</b>绕中心转过一个固定角度就重合，方向不翻过来。风车、车轮都是这一类。</figcaption>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 200 120" role="img" aria-label="平移示意：同一个图形沿水平方向等距重复四次">
+          <g fill="none" stroke="var(--kit)" stroke-width="5" stroke-linejoin="round">
+            <path d="M20 78 l16 -30 l16 30 Z"/>
+            <path d="M64 78 l16 -30 l16 30 Z"/>
+            <path d="M108 78 l16 -30 l16 30 Z"/>
+            <path d="M152 78 l16 -30 l16 30 Z"/>
+          </g>
+          <path d="M36 94 H80" stroke="var(--ink-dim)" stroke-width="2.5"/>
+          <path d="M80 94 l-8 -4 l0 8 Z" fill="var(--ink-dim)"/>
+          <text x="46" y="112" fill="var(--ink-dim)" font-size="13">一步</text>
+        </svg>
+        <figcaption><b>挪 · 平移</b>不翻也不转，只沿一个方向挪同样的一步。挪一步又一步，就是重复图案。</figcaption>
+      </figure>
+    </div>
+    <p class="sym-lead" style="margin-top:12px">开放追问：<b>先翻再转</b>，和<b>先转再翻</b>，得到的图案一样吗？在画板上试一次，说说你看到什么。</p>
+  </section>
+
+  <section class="sym-section" aria-labelledby="symAxisTitle">
+    <h2 id="symAxisTitle">对称轴有几条？</h2>
+    <p class="sym-lead">一个图形的对称轴，就是<b>能把它折成完全重合的那些折痕</b>。折痕不是越多越好，而是由形状本身决定的——数一数，你会发现规律。</p>
+    <p class="teach-note parent-deep-dive" data-audience="parent"><b>这在教什么：</b>对称轴的条数是一个可以数、可以验证的量，不是主观印象。数轴条数把几何和计数连起来，也是后面认识正多边形性质的伏笔。</p>
+    <div class="axis-lab">
+      <div class="axis-stage">
+        <svg id="axisSvg" viewBox="0 0 200 200" role="img" aria-labelledby="axisSvgTitle">
+          <title id="axisSvgTitle">对称轴示意图</title>
+          <g id="axisLines" stroke="var(--warn)" stroke-width="2.5" stroke-dasharray="6 5"></g>
+          <g id="axisShape" class="axis-shape" fill="none" stroke="var(--math)" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"></g>
+          <circle cx="100" cy="100" r="3.2" fill="var(--ink-dim)"></circle>
+        </svg>
+        <p class="status" id="axisStatus" role="status" aria-live="polite">选一个图形，看看它有几条对称轴。</p>
+      </div>
+      <div>
+        <p class="pick-label">点一个图形：</p>
+        <div class="axis-tools kid-picks" data-kid-choice-group role="group" aria-label="选择要数对称轴的图形">
+          <button class="kid-choice" type="button" data-kid-choice data-axis-shape="isosceles" data-value="等腰三角形" aria-pressed="false">等腰三角形</button>
+          <button class="kid-choice" type="button" data-kid-choice data-axis-shape="square" data-value="正方形" aria-pressed="false">正方形</button>
+          <button class="kid-choice" type="button" data-kid-choice data-axis-shape="rect" data-value="长方形" aria-pressed="false">长方形</button>
+          <button class="kid-choice" type="button" data-kid-choice data-axis-shape="pentagon" data-value="正五边形" aria-pressed="false">正五边形</button>
+          <button class="kid-choice" type="button" data-kid-choice data-axis-shape="circle" data-value="圆" aria-pressed="false">圆</button>
+          <button class="kid-choice" type="button" data-kid-choice data-axis-shape="pinwheel" data-value="风车" aria-pressed="false">风车</button>
+        </div>
+        <div class="axis-tools">
+          <button class="btn btn-sm" id="axisSpin" type="button">🔄 绕中心转一下试试</button>
+        </div>
+        <ul class="axis-facts">
+          <li>对称轴 <b id="axisCountVal">—</b>条折痕能对折重合</li>
+          <li>旋转对称 <b id="axisRotVal">—</b>转一圈中重合的次数</li>
+          <li>最小旋转角 <b id="axisAngleVal">—</b>转这么多度就重合</li>
+        </ul>
+        <p class="sym-lead" style="margin-top:12px">开放追问：正方形有 4 条对称轴，正五边形有 5 条。<b>正六边形会有几条？</b>先猜，再画出来数一数。</p>
+        <p class="teach-note parent-deep-dive" data-audience="parent"><b>家长延伸：</b>风车是个好例子——它转一圈有 4 次重合，但一条对称轴也没有。请孩子解释“为什么风车折不重合”，比直接告诉他答案更有价值；这种卡住又想通的过程正是 productive struggle。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sym-section" aria-labelledby="symVerifyTitle">
+    <h2 id="symVerifyTitle">怎么检验一个图案真的对称？</h2>
+    <p class="sym-lead">“看起来对称”不算数。要判断真假，得做一件能出结果的事：<b>动一下，看还重不重合</b>。</p>
+    <p class="teach-note parent-deep-dive" data-audience="parent"><b>这在教什么：</b>把审美判断换成可执行的检验步骤。孩子学的不只是对称，还有“怎样验证一个说法”——先提出判据，再执行，最后接受结论。</p>
+    <ol class="verify-steps">
+      <li data-step="1"><b>先说出动作</b>你要沿哪条线翻？还是绕哪个点转多少度？说不清动作，就没法检验。</li>
+      <li data-step="2"><b>动手做那个动作</b>对折纸、把画转过去，或在画板上照着画一遍。</li>
+      <li data-step="3"><b>找一个反例点</b>只看整体容易被骗。挑一个尖角或缺口，看它有没有落到对应位置。</li>
+      <li data-step="4"><b>给出结论</b>处处重合才叫对称；只要有一个点落不上，这条线就不是对称轴。</li>
+    </ol>
+    <p class="sym-lead" style="margin-top:12px">开放追问：把“<b>吕</b>”“<b>中</b>”“<b>王</b>”三个字写在纸上对折。哪些能重合？折痕是竖的还是横的？有的字两个方向都行吗？</p>
+  </section>
+
+  <section class="sym-section" aria-labelledby="symNatureTitle">
+    <h2 id="symNatureTitle">对称藏在哪里</h2>
+    <p class="sym-lead">找对称的时候，顺手问一句<b>“这里是哪种对称？”</b>——是翻的、转的，还是一步步挪出来的。</p>
+    <div class="nature-grid">
+      <figure>
+        <svg viewBox="0 0 120 96" role="img" aria-label="蝴蝶示意图：身体是一条竖直的对称轴，左右翅膀镜像">
+          <path d="M60 16v66" stroke="var(--warn)" stroke-width="2.5" stroke-dasharray="5 4"/>
+          <path d="M57 24c-26-16-44 6-34 24 8 14 26 14 34 4z" fill="none" stroke="var(--math)" stroke-width="4"/>
+          <path d="M63 24c26-16 44 6 34 24-8 14-26 14-34 4z" fill="none" stroke="var(--math)" stroke-width="4"/>
+          <path d="M60 18c-3-6-8-8-10-6M60 18c3-6 8-8 10-6" fill="none" stroke="var(--ink-dim)" stroke-width="2.5"/>
+        </svg>
+        <figcaption><b>蝴蝶 · 1 条轴</b>只有一条竖着的对称轴，左右镜像。</figcaption>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 120 96" role="img" aria-label="海星示意图：五个角绕中心均匀排列，有五条对称轴">
+          <g stroke="var(--warn)" stroke-width="2" stroke-dasharray="5 4">
+            <path d="M60 8v80"/><path d="M22 34l76 28"/><path d="M98 34L22 62"/><path d="M28 82l64-56"/><path d="M92 82L28 26"/>
+          </g>
+          <path d="M60 14l11 25 27 3-20 19 6 27-24-14-24 14 6-27-20-19 27-3z" fill="none" stroke="var(--phys)" stroke-width="4.5" stroke-linejoin="round"/>
+        </svg>
+        <figcaption><b>海星 · 5 条轴</b>翻也重合、转 72 度也重合。</figcaption>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 120 96" role="img" aria-label="窗格花纹示意图：同一个菱形沿水平和竖直方向重复排列">
+          <g fill="none" stroke="var(--kit)" stroke-width="3.4">
+            <path d="M24 24l12 12-12 12-12-12z"/><path d="M60 24l12 12-12 12-12-12z"/><path d="M96 24l12 12-12 12-12-12z"/>
+            <path d="M24 60l12 12-12 12-12-12z"/><path d="M60 60l12 12-12 12-12-12z"/><path d="M96 60l12 12-12 12-12-12z"/>
+          </g>
+        </svg>
+        <figcaption><b>窗格花纹 · 平移</b>一个格子挪一步又一步，铺满整面墙。</figcaption>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 120 96" role="img" aria-label="对称建筑立面示意图：中间是门与塔尖，两侧窗户左右对应">
+          <path d="M60 10v78" stroke="var(--warn)" stroke-width="2.5" stroke-dasharray="5 4"/>
+          <path d="M60 12l30 22v52H30V34z" fill="none" stroke="var(--sci)" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M54 86V64h12v22" fill="none" stroke="var(--sci)" stroke-width="3.4"/>
+          <rect x="36" y="46" width="12" height="12" fill="none" stroke="var(--sci)" stroke-width="3"/>
+          <rect x="72" y="46" width="12" height="12" fill="none" stroke="var(--sci)" stroke-width="3"/>
+        </svg>
+        <figcaption><b>建筑立面 · 1 条轴</b>门在轴上，窗户左右成对出现。</figcaption>
+      </figure>
+    </div>
+    <p class="sym-lead" style="margin-top:12px">开放追问：对称的东西看着稳，<b>不完全对称</b>的呢？树的枝条、你自己的两只手，是对称的吗？哪里不一样？</p>
+    <p class="teach-note parent-deep-dive" data-audience="parent"><b>家长延伸：</b>出门时玩“找对称”——只报出对称种类和轴的条数，不用记名词。地砖、栏杆、井盖、车标都能用。孩子说“这个转一下一样，翻过来不一样”，就已经抓住旋转对称与镜像对称的区别了。</p>
+  </section>
+
+  <section class="learning-layers" aria-labelledby="symLayersTitle">
+    <h2 id="symLayersTitle" class="sr-only">按年龄分层的说法</h2>
+    <details>
+      <summary><span class="layer-age">4–6 岁</span>一句话版：对称就是“折过去正好盖住”</summary>
+      <div>
+        <p>把纸对折，两边正好盖住，就是对称。画板中间那条黄线就是折痕，你在一边画，另一边同时出现。</p>
+        <p>可以一起做：把纸对折，在折痕边剪一个缺口，打开看看变成了什么。</p>
+      </div>
+    </details>
+    <details>
+      <summary><span class="layer-age">7–9 岁</span>翻和转是两件不同的事</summary>
+      <div>
+        <p>镜像对称要<b>翻面</b>：左右交换，对应的两个点离对称轴一样远。旋转对称<b>不翻面</b>：绕中心转过固定角度就重合，像风车。</p>
+        <p>一个图形可能只有旋转对称而没有一条对称轴（风车），也可能两种都有（海星、雪花）。数一数你的图案有几条对称轴，转一圈里重合几次。</p>
+      </div>
+    </details>
+    <details>
+      <summary><span class="layer-age">10–12 岁</span>把对称说成变换</summary>
+      <div>
+        <p>反射、旋转、平移都是<b>保持距离不变的变换</b>：图形上任意两点之间的距离，变换前后一样。所以形状和大小都不会变，只是位置和朝向变了。</p>
+        <p>如果一个图形有 n 重旋转对称，最小旋转角就是 360÷n 度。正 n 边形恰好有 n 条对称轴、n 重旋转对称；而风车只有旋转对称，一条轴也没有——因为反射会改变绕向。</p>
+        <p>把画板的镜像开关关掉，只留旋转，你得到的就是纯旋转对称图案；打开镜像，每一份都多出一个翻面的副本，总份数变成两倍。</p>
+      </div>
+    </details>
+  </section>
+
   <section class="task mission" aria-labelledby="symMissionTitle">
     <div class="card parent-deep-dive" data-audience="parent" style="margin-bottom:14px">
       <h2 style="font-size:1.1rem">这在教什么</h2>
@@ -272,15 +961,36 @@
     </ol>
     <div class="mission-grid">
       <div role="group" aria-label="选择对称挑战"><button class="chip" id="mirrorChallenge" type="button">打开镜像信 · 1 折</button><button class="chip" id="rotateChallenge" type="button">打开旋转信 · 4 折</button></div>
-      <div><label for="symPredict">我猜一笔会变成（笔）</label><input class="input" id="symPredict" type="number" min="1" max="32" step="1" inputmode="numeric"><button class="btn btn-sm" id="symLock" type="button" style="margin-top:6px">就猜这么多笔</button></div>
+      <div><label for="symPredict">我猜一笔会变成（笔）</label><input class="input" id="symPredict" type="number" min="1" max="32" step="1" inputmode="numeric"><button class="btn btn-sm" id="symLock" type="button" style="margin-top:6px">就猜这么多笔</button>
+        <div data-audience="kid-only" style="margin-top:8px">
+          <p class="pick-label">不想打字？点一个数字：</p>
+          <div class="kid-picks" id="symPredictChoices">
+            <button class="kid-choice" type="button" data-sym-predict="1" aria-label="猜 1 笔">1</button>
+            <button class="kid-choice" type="button" data-sym-predict="2" aria-label="猜 2 笔">2</button>
+            <button class="kid-choice" type="button" data-sym-predict="4" aria-label="猜 4 笔">4</button>
+            <button class="kid-choice" type="button" data-sym-predict="6" aria-label="猜 6 笔">6</button>
+            <button class="kid-choice" type="button" data-sym-predict="8" aria-label="猜 8 笔">8</button>
+            <button class="kid-choice" type="button" data-sym-predict="12" aria-label="猜 12 笔">12</button>
+          </div>
+        </div>
+      </div>
       <div><label for="symReflect">我的发现</label><textarea class="input" id="symReflect" placeholder="例如：镜像会翻面，旋转只绕中心转。"></textarea></div>
+      <div data-audience="kid-only">
+        <p class="pick-label">我发现……（点一个就算写好了）</p>
+        <div class="kid-picks" id="symReflectChoices">
+          <button class="kid-choice" type="button" data-sym-reflect="镜像会把图形翻个面，旋转只是绕着中心转，没有翻面。">镜像翻面，旋转不翻面</button>
+          <button class="kid-choice" type="button" data-sym-reflect="开着镜像的时候，一笔变成的笔数是折数的两倍。">开镜像会变两倍笔数</button>
+          <button class="kid-choice" type="button" data-sym-reflect="对折以后两边能完全重合，就说明它是真的对称。">对折能重合才算对称</button>
+          <button class="kid-choice" type="button" data-sym-reflect="折数越多，图案越像雪花，中心附近的线也越密。">折数越多越像雪花</button>
+        </div>
+      </div>
       <button class="btn btn-primary" id="symComplete" type="button" disabled>把图案发现记进足迹</button>
     </div>
     <p class="task-status status" id="symStatus" role="status" aria-live="polite">尚未完成：先选择镜像挑战或旋转挑战。</p>
     <div class="playful-quest" style="--quest-accent:var(--sci)" aria-labelledby="symmetryStoryTitle">
       <div class="playful-quest-head"><div><h3 id="symmetryStoryTitle">雪花邮局的作品袋</h3><p class="playful-story">用镜像和旋转补全图案，再留下“它怎样重合”的说明。</p></div><div data-playful-companion role="note" aria-label="果果伙伴提示"></div></div>
       <div class="playful-tools"><button class="btn btn-sm" type="button" data-playful-random-task="#symmetrySurprise">拆开另一封图案信</button><p class="playful-task-output" id="symmetrySurprise" data-playful-task-output role="status" aria-live="polite">信封里会出现一个新对称任务。</p></div>
-      <div class="playful-evidence"><span data-playful-sticker aria-label="对称工作室贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
+      <div class="playful-evidence"><span data-playful-sticker aria-label="对称工作室收藏卡位"></span><span data-playful-feedback aria-live="polite"></span></div>
       <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form aria-labelledby="symmetryWorkTitle">
         <h4 id="symmetryWorkTitle">作品表单 · 保存对称图案</h4>
         <div class="work-card-fields">
@@ -310,6 +1020,7 @@
     </div>
   </section>
 
+  <p class="lab-exit"><a class="btn btn-ghost" href="index.html"><span aria-hidden="true">←</span> 回到实验室目录</a></p>
   <footer class="foot wrap-narrow" style="text-align:center">
     做完可以试试：用 6 折画一朵完整的雪花，然后去查真实雪花的照片对比一下。
   </footer>
@@ -571,6 +1282,45 @@
       "现在是 <b>" + kind + "</b>。<br>" +
       "已经画了 <span class='n'>" + strokes + "</span> 笔，" +
       "屏幕上一共 <span class='n'>" + (strokes * copies) + "</span> 条线。";
+    updateSymMeters();
+  }
+
+  /* ---------- 两条量表读工作台真实状态：对称轴条数 / 旋转对称次数 ---------- */
+  function setSymMeter(id, value, max) {
+    var track = document.getElementById(id);
+    if (!track) return;
+    if (window.Playful && typeof Playful.setMeter === "function") { Playful.setMeter(track, value, max); return; }
+    var fill = track.querySelector(".kid-meter-fill");
+    var ratio = Math.max(0, Math.min(1, Number(value) / Number(max)));
+    if (fill) fill.style.setProperty("--fill", (ratio * 100).toFixed(1) + "%");
+  }
+
+  function updateSymMeters() {
+    var MAX = 16;
+    var order = state.fold;                          // 转一圈里的重合次数
+    var axes = state.mirror ? state.fold : 0;        // 能对折重合的折痕条数
+    var angle = Math.round(360 / order);
+    var axisValue = document.getElementById("syxAxisValue");
+    var rotValue = document.getElementById("syxRotValue");
+    var axisNote = document.getElementById("syxAxisNote");
+    var rotNote = document.getElementById("syxRotNote");
+    var meterSay = document.getElementById("syxMeterSay");
+    if (!axisValue || !rotValue) return;
+
+    axisValue.textContent = axes + " 条";
+    rotValue.textContent = order + " 次";
+    setSymMeter("syxAxisMeter", axes, MAX);
+    setSymMeter("syxRotMeter", order, MAX);
+
+    axisNote.textContent = state.mirror
+      ? "开着镜像：" + state.fold + " 面镜子就有 " + state.fold + " 条折痕，沿任意一条对折都能重合。"
+      : "关掉镜像：只剩绕中心转，一条对折轴也没有——和风车一样。";
+    rotNote.textContent = order === 1
+      ? "只有 1 面镜子：要转满 360° 才回到原样，所以只算 1 次重合。"
+      : "每转 " + angle + "° 就和原样重合一次，转一圈共 " + order + " 次。";
+    meterSay.textContent = state.mirror
+      ? "现在是雪花式：" + axes + " 条对称轴，转一圈重合 " + order + " 次。"
+      : "现在是风车式：0 条对称轴，可转一圈照样重合 " + order + " 次。";
   }
 
   /* ---------- controls ---------- */
@@ -707,6 +1457,635 @@
     document.getElementById("symStatus").textContent = saved ? "✓ 任务已完成并记录：" + evidence : "✓ 任务已完成；本机存储不可用，未能保存足迹。";
   });
 
+  /* ---------- 对称轴探索器：数折痕、数旋转重合次数 ---------- */
+  var AXIS_SHAPES = {
+    isosceles: {
+      name: "等腰三角形",
+      d: "M100 40 L150 155 L50 155 Z",
+      axes: [90], order: 1,
+      note: "只有一条竖着的折痕。左右两半能盖住，上下不行。"
+    },
+    square: {
+      name: "正方形",
+      d: "M55 55 H145 V145 H55 Z",
+      axes: [0, 90, 45, 135], order: 4,
+      note: "两条边中线加两条对角线，一共 4 条折痕。"
+    },
+    rect: {
+      name: "长方形",
+      d: "M40 68 H160 V132 H40 Z",
+      axes: [0, 90], order: 2,
+      note: "只有横竖两条中线。对角线折过去两半错开，不算对称轴。"
+    },
+    pentagon: {
+      name: "正五边形",
+      d: "M100 40 L157.1 81.5 L135.3 148.5 L64.7 148.5 L42.9 81.5 Z",
+      axes: [90, 18, 306, 234, 162], order: 5,
+      note: "每条折痕都从一个角穿到对边中点，正 5 边形就有 5 条。"
+    },
+    circle: {
+      name: "圆",
+      d: "M100 42 A58 58 0 1 0 100 158 A58 58 0 1 0 100 42",
+      axes: [0, 30, 60, 90, 120, 150], order: 0,
+      note: "任何一条穿过圆心的直线都是对称轴，所以数不完；转任意角度也重合。"
+    },
+    pinwheel: {
+      name: "风车",
+      d: "M100 100 L100 45 Q136 53 128 88 Z M100 100 L155 100 Q147 136 112 128 Z " +
+         "M100 100 L100 155 Q64 147 72 112 Z M100 100 L45 100 Q53 64 88 72 Z",
+      axes: [], order: 4,
+      note: "转 90 度就重合，可是一条对称轴也没有——折过去叶片会倒向反方向。"
+    }
+  };
+  var SVG_NS = "http://www.w3.org/2000/svg";
+  var axisLines = document.getElementById("axisLines");
+  var axisShape = document.getElementById("axisShape");
+  var axisStatus = document.getElementById("axisStatus");
+  var axisCountVal = document.getElementById("axisCountVal");
+  var axisRotVal = document.getElementById("axisRotVal");
+  var axisAngleVal = document.getElementById("axisAngleVal");
+  var axisSpin = document.getElementById("axisSpin");
+  var axisCurrent = null;
+  var axisTurn = 0;
+
+  function motionOff() {
+    if (window.Playful && typeof Playful.motionReduced === "function") return Playful.motionReduced();
+    return document.documentElement.getAttribute("data-playful-motion") === "reduced";
+  }
+
+  function drawAxisLines(angles) {
+    while (axisLines.firstChild) axisLines.removeChild(axisLines.firstChild);
+    angles.forEach(function (deg) {
+      var rad = deg * Math.PI / 180, half = 88;
+      var line = document.createElementNS(SVG_NS, "line");
+      line.setAttribute("x1", (100 - Math.cos(rad) * half).toFixed(1));
+      line.setAttribute("y1", (100 - Math.sin(rad) * half).toFixed(1));
+      line.setAttribute("x2", (100 + Math.cos(rad) * half).toFixed(1));
+      line.setAttribute("y2", (100 + Math.sin(rad) * half).toFixed(1));
+      axisLines.appendChild(line);
+    });
+  }
+
+  function showAxisShape(key) {
+    var shape = AXIS_SHAPES[key];
+    if (!shape) return;
+    axisCurrent = shape;
+    axisTurn = 0;
+    axisShape.style.transform = "";
+    axisShape.setAttribute("d", "");
+    while (axisShape.firstChild) axisShape.removeChild(axisShape.firstChild);
+    var path = document.createElementNS(SVG_NS, "path");
+    path.setAttribute("d", shape.d);
+    axisShape.appendChild(path);
+    drawAxisLines(shape.axes);
+    document.getElementById("axisSvgTitle").textContent =
+      shape.name + "：" + (shape.order === 0 ? "有无数条对称轴" : shape.axes.length + " 条对称轴") + "，图中黄色虚线是折痕";
+    var countText = shape.order === 0 ? "无数" : String(shape.axes.length);
+    var rotText = shape.order === 0 ? "无数" : String(shape.order);
+    var angleText = shape.order === 0 ? "任意" : (shape.order === 1 ? "360°" : Math.round(360 / shape.order) + "°");
+    axisCountVal.textContent = countText;
+    axisRotVal.textContent = rotText;
+    axisAngleVal.textContent = angleText;
+    axisStatus.textContent = shape.name + "：对称轴 " + countText + " 条，转一圈里重合 " + rotText + " 次。" + shape.note;
+  }
+
+  [].forEach.call(document.querySelectorAll("[data-axis-shape]"), function (button) {
+    button.addEventListener("click", function () {
+      showAxisShape(button.getAttribute("data-axis-shape"));
+    });
+  });
+
+  axisSpin.addEventListener("click", function () {
+    if (!axisCurrent) { axisStatus.textContent = "请先点一个图形，再让它转。"; return; }
+    var order = axisCurrent.order === 0 ? 8 : axisCurrent.order;
+    var step = 360 / order;
+    axisTurn = (axisTurn + step) % 360;
+    axisShape.style.transition = motionOff() ? "none" : "";
+    axisShape.style.transform = "rotate(" + axisTurn.toFixed(1) + "deg)";
+    if (axisCurrent.order === 0) {
+      axisStatus.textContent = "圆转多少度都一样，看不出被转过。";
+    } else if (axisCurrent.order === 1) {
+      axisStatus.textContent = "转了 " + Math.round(step) + " 度，也就是转满一圈才回到原样——它没有旋转对称。";
+    } else {
+      axisStatus.textContent = "转了 " + Math.round(step) + " 度就又重合了，所以转一圈里重合 " + axisCurrent.order + " 次。";
+    }
+  });
+
+  showAxisShape("square");
+  document.querySelector('[data-axis-shape="square"]').setAttribute("aria-pressed", "true");
+
+  /* ---------- 不打字也能作答：快捷选项写进对应输入框 ---------- */
+  function bindPicks(selector, attribute, apply) {
+    var buttons = [].slice.call(document.querySelectorAll(selector + " [" + attribute + "]"));
+    buttons.forEach(function (button) {
+      button.setAttribute("aria-pressed", "false");
+      button.addEventListener("click", function () {
+        if (apply(button.getAttribute(attribute)) === false) return;
+        buttons.forEach(function (other) { other.setAttribute("aria-pressed", "false"); });
+        button.setAttribute("aria-pressed", "true");
+      });
+    });
+  }
+  bindPicks("#symPredictChoices", "data-sym-predict", function (value) {
+    var input = document.getElementById("symPredict");
+    if (input.disabled) {
+      document.getElementById("symStatus").textContent = "这一轮的预测已经锁定了，先画一笔看看结果。";
+      return false;
+    }
+    input.value = value;
+    document.getElementById("symStatus").textContent = "已选择预测 " + value + " 笔，点“就猜这么多笔”锁定。";
+  });
+  bindPicks("#symReflectChoices", "data-sym-reflect", function (value) {
+    document.getElementById("symReflect").value = value;
+    document.getElementById("symStatus").textContent = "已记下你的发现：" + value;
+  });
+
+  /* ==================================================================
+     对称游乐场：4 个只需要点的小游戏（不打字、不认字也能玩）
+     ================================================================== */
+
+  /* ---------- 公用小工具 ---------- */
+  function svgEl(name, attrs) {
+    var node = document.createElementNS(SVG_NS, name);
+    Object.keys(attrs || {}).forEach(function (key) {
+      node.setAttribute(key, attrs[key]);
+    });
+    return node;
+  }
+  function clearNode(node) {
+    while (node.firstChild) node.removeChild(node.firstChild);
+  }
+  function shuffle(list) {
+    var out = list.slice();
+    for (var i = out.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = out[i]; out[i] = out[j]; out[j] = t;
+    }
+    return out;
+  }
+  function pickOther(list, current) {
+    var pool = list.filter(function (item) { return item !== current; });
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  /* 说话：只换 <span>，保留表情 <span class="face"> */
+  function say(node, face, text) {
+    var spans = node.getElementsByTagName("span");
+    if (spans.length >= 2) {
+      spans[0].textContent = face;
+      spans[1].textContent = text;
+    } else {
+      node.textContent = text;
+    }
+  }
+  function cheer(card) {
+    if (window.Playful && typeof Playful.confetti === "function" && !motionOff()) {
+      Playful.confetti(card);
+    }
+  }
+  function bumpScore(node) {
+    var next = (parseInt(node.textContent, 10) || 0) + 1;
+    node.textContent = String(next);
+    return next;
+  }
+
+  /* ================= 游戏 1：补另一半（镜像 / 旋转 / 平移） ================= */
+  (function halfGame() {
+    var svgRoot = document.getElementById("halfSvg");
+    var svgLeft = document.getElementById("halfLeft");
+    var svgRight = document.getElementById("halfRight");
+    var picksBox = document.getElementById("halfPicks");
+    var sayBox = document.getElementById("halfSay");
+    var scoreBox = document.getElementById("halfScore");
+    var dotsBox = document.getElementById("halfDots");
+    var nextBtn = document.getElementById("halfNext");
+    var svgTitle = document.getElementById("halfSvgTitle");
+    var svgDesc = document.getElementById("halfSvgDesc");
+    var card = picksBox ? picksBox.closest(".play-card") : null;
+    if (!svgRoot || !svgLeft || !svgRight || !picksBox || !dotsBox || !nextBtn) return;
+
+    var ROUNDS = 6;
+    var LABELS = ["甲", "乙", "丙", "丁"];
+
+    /* 每个图案都用「离镜子的距离 x + 高度 y」描述，镜子在 x=120，画布 240×150。
+       左半边画在 120-x；四个候选各自换一种搬法。 */
+    var SHAPES = [
+      { name: "蝴蝶翅膀", tone: "var(--math)",
+        pts: [[0, 30], [30, 16], [46, 44], [30, 66], [52, 92], [24, 120], [0, 108]] },
+      { name: "小房子", tone: "var(--kit)",
+        pts: [[0, 22], [44, 58], [44, 126], [0, 126]] },
+      { name: "圣诞树", tone: "var(--sci)",
+        pts: [[0, 18], [26, 56], [14, 56], [38, 90], [18, 90], [46, 120], [10, 120], [10, 134], [0, 134]] },
+      { name: "爱心", tone: "var(--danger)",
+        pts: [[0, 44], [22, 24], [44, 38], [42, 68], [20, 96], [0, 120]] },
+      { name: "花瓶", tone: "var(--phys)",
+        pts: [[0, 24], [26, 28], [16, 56], [40, 90], [34, 126], [0, 130]] },
+      { name: "小帆船", tone: "var(--accent-deep)",
+        pts: [[0, 26], [34, 100], [52, 100], [40, 126], [0, 126]] }
+    ];
+
+    /* 一个真镜像 + 三个最容易混的搬法。每一种都要能说清「差在哪」。 */
+    var VARIANTS = [
+      { key: "mirror", ok: true, word: "镜像（翻）",
+        map: function (p) { return [120 + p[0], p[1]]; },
+        why: "对了！镜像就是左右换边：每个点和它的伙伴离镜子一样远，上下高度一点没动。" },
+      { key: "slide", ok: false, word: "平移（挪）",
+        map: function (p, m) { return [120 + (m - p[0]) + 10, p[1]]; },
+        why: "这是原样搬过去的——平移。它没有翻面，两半都朝着同一个方向，尖角也都偏向同一边。" },
+      { key: "turn", ok: false, word: "旋转 180°（转）",
+        map: function (p) { return [120 + p[0], 150 - p[1]]; },
+        why: "这是整体转了半圈——旋转 180°。左右是换了，可上下也跟着颠倒了；照镜子不会把上下调过来。" },
+      { key: "flipY", ok: false, word: "上下翻",
+        map: function (p, m) { return [120 + (m - p[0]) + 10, 150 - p[1]]; },
+        why: "这是沿一条横线上下翻，再搬到右边。我们的镜子是竖的，只该左右换边。" }
+    ];
+
+    function pathFrom(points) {
+      return "M" + points.map(function (p) {
+        return p[0].toFixed(1) + " " + p[1].toFixed(1);
+      }).join(" L") + " Z";
+    }
+    function widest(pts) {
+      var m = 0;
+      pts.forEach(function (p) { if (p[0] > m) m = p[0]; });
+      return m;
+    }
+    function leftPath(shape) {
+      return pathFrom(shape.pts.map(function (p) { return [120 - p[0], p[1]]; }));
+    }
+    function variantPath(shape, variant) {
+      var m = widest(shape.pts);
+      return pathFrom(shape.pts.map(function (p) { return variant.map(p, m); }));
+    }
+
+    /* 候选缩略图：淡色的左半 + 镜子 + 这个候选的右半 */
+    function thumb(shape, dRight) {
+      var svg = svgEl("svg", { viewBox: "0 0 240 150", "aria-hidden": "true", focusable: "false" });
+      svg.style.setProperty("--syx-tone", shape.tone);
+      svg.appendChild(svgEl("path", { "class": "syx-piece-ghost", d: leftPath(shape) }));
+      svg.appendChild(svgEl("path", { "class": "syx-axis", d: "M120 8V142" }));
+      svg.appendChild(svgEl("path", { "class": "syx-piece", d: dRight }));
+      return svg;
+    }
+
+    function talk(text) { sayBox.textContent = text; }
+
+    var queue = [];
+    var roundIndex = 0;
+    var solved = 0;
+    var firstTry = 0;
+    var locked = false;
+
+    function paintDots() {
+      clearNode(dotsBox);
+      for (var i = 0; i < ROUNDS; i++) {
+        var dot = document.createElement("i");
+        if (i >= solved) dot.setAttribute("data-empty", "true");
+        dotsBox.appendChild(dot);
+      }
+      dotsBox.setAttribute("aria-label", "一共 " + ROUNDS + " 个，已经补好 " + solved + " 个");
+    }
+
+    function round() {
+      locked = false;
+      var missed = false;
+      var shape = queue[roundIndex];
+      svgRoot.style.setProperty("--syx-tone", shape.tone);
+
+      clearNode(svgLeft);
+      clearNode(svgRight);
+      svgLeft.appendChild(svgEl("path", { "class": "syx-piece", d: leftPath(shape) }));
+      svgTitle.textContent = "左边是半个" + shape.name + "，右边空着等你补上";
+      svgDesc.textContent = "黄色虚线是镜子，左边是半个" + shape.name + "，右边还空着";
+
+      paintDots();
+      nextBtn.disabled = true;
+      nextBtn.textContent = "下一个 →";
+
+      clearNode(picksBox);
+      var entries = [];
+      shuffle(VARIANTS).forEach(function (variant, index) {
+        var d = variantPath(shape, variant);
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "kid-tile syx-tile";
+        button.setAttribute("aria-pressed", "false");
+        button.setAttribute("aria-label", "候选" + LABELS[index] + "：把这一半放到镜子右边");
+
+        var art = document.createElement("span");
+        art.className = "kid-tile-art";
+        art.setAttribute("aria-hidden", "true");
+        art.appendChild(thumb(shape, d));
+
+        var label = document.createElement("span");
+        label.className = "kid-tile-label";
+        label.textContent = LABELS[index];
+
+        var sub = document.createElement("span");
+        sub.className = "kid-tile-sub";
+        sub.textContent = "点它试试";
+
+        button.appendChild(art);
+        button.appendChild(label);
+        button.appendChild(sub);
+        entries.push({ button: button, sub: sub, variant: variant });
+
+        button.addEventListener("click", function () {
+          if (locked) return;
+          if (!variant.ok) {
+            missed = true;
+            button.setAttribute("data-wrong", "true");
+            sub.textContent = variant.word;
+            talk(variant.why);
+            return;
+          }
+          locked = true;
+          solved += 1;
+          if (!missed) {
+            firstTry += 1;
+            scoreBox.textContent = String(firstTry);
+          }
+          button.setAttribute("aria-pressed", "true");
+          clearNode(svgRight);
+          svgRight.appendChild(svgEl("path", { "class": "syx-piece", d: d }));
+          svgTitle.textContent = "半个" + shape.name + "补成了完整的" + shape.name;
+          svgDesc.textContent = "左右两半离镜子一样远，方向左右相反";
+          /* 答对以后把四个候选各自的真身写出来，翻 / 转 / 挪 摆在一起对比 */
+          entries.forEach(function (item) {
+            item.button.disabled = true;
+            item.sub.textContent = item.variant.word;
+          });
+          paintDots();
+          if (solved >= ROUNDS) {
+            nextBtn.textContent = "再来 6 个";
+            talk("六个都补好了！一次点对 " + firstTry + " 个。记住三句话：镜像＝左右换边，旋转＝整体转过去，平移＝原样搬过去。");
+          } else {
+            talk(variant.why + "（还剩 " + (ROUNDS - solved) + " 个）");
+          }
+          nextBtn.disabled = false;
+          cheer(card);
+        });
+
+        picksBox.appendChild(button);
+      });
+
+      talk("左边是半个" + shape.name + "。哪一个才是照镜子出来的那一半？");
+    }
+
+    function startSet() {
+      queue = shuffle(SHAPES).slice(0, ROUNDS);
+      roundIndex = 0;
+      solved = 0;
+      firstTry = 0;
+      scoreBox.textContent = "0";
+      round();
+    }
+
+    nextBtn.addEventListener("click", function () {
+      if (solved >= ROUNDS) { startSet(); return; }
+      if (!locked) return;
+      roundIndex += 1;
+      round();
+    });
+
+    startSet();
+  })();
+
+  /* ================= 游戏 2：对折能重合吗 ================= */
+  (function yesnoGame() {
+    var shapeBox = document.getElementById("yesnoShape");
+    var axis = document.getElementById("yesnoAxis");
+    var yesBtn = document.getElementById("yesnoYes");
+    var noBtn = document.getElementById("yesnoNo");
+    var sayBox = document.getElementById("yesnoSay");
+    var scoreBox = document.getElementById("yesnoScore");
+    var newBtn = document.getElementById("yesnoNew");
+    var svgTitle = document.getElementById("yesnoSvgTitle");
+    var card = shapeBox.closest(".play-card");
+    if (!shapeBox || !yesBtn) return;
+
+    /* vertical: 折痕竖着放在 x=120；ok 表示沿这条折痕真的能重合 */
+    var ITEMS = [
+      { name: "心形", face: "💗", ok: true, tone: "var(--danger)",
+        d: "M120 124 C74 96 62 66 78 48 C92 32 116 40 120 58 C124 40 148 32 162 48 C178 66 166 96 120 124 Z",
+        why: "沿中间这条线对折，两半正好盖住。" },
+      { name: "正方形", face: "🟦", ok: true, tone: "var(--math)",
+        d: "M78 28 H162 V112 H78 Z",
+        why: "方形的中线两边一样宽，能盖住。" },
+      { name: "等腰三角形", face: "🔺", ok: true, tone: "var(--phys)",
+        d: "M120 24 L170 116 L70 116 Z",
+        why: "两条斜边一样长，对折就重合了。" },
+      { name: "字母 A", face: "🅰️", ok: true, tone: "var(--sci)",
+        d: "M120 26 L158 118 H140 L132 96 H108 L100 118 H82 Z M113 80 H127 L120 58 Z",
+        why: "A 是左右对称的，中间那条线就是折痕。" },
+      { name: "歪掉的旗子", face: "🚩", ok: false, tone: "var(--kit)",
+        d: "M84 26 H160 L138 56 L162 88 H84 Z",
+        why: "折过去右边多出一块，盖不住。" },
+      { name: "字母 P", face: "🅿️", ok: false, tone: "var(--accent-deep)",
+        d: "M92 24 H140 A26 26 0 0 1 140 76 H112 V118 H92 Z",
+        why: "P 的圆头只在右边，左边没有，对折盖不住。" },
+      { name: "小旗子", face: "🏳️", ok: false, tone: "var(--warn)",
+        d: "M96 26 H150 V70 H96 V118 H82 V26 Z",
+        why: "上下两块不一样宽，折过去会错开。" },
+      { name: "月牙", face: "🌙", ok: false, tone: "var(--phys)",
+        d: "M132 24 A48 48 0 1 0 132 120 A38 38 0 1 1 132 24 Z",
+        why: "缺口偏在一边，沿这条线折不重合。" }
+    ];
+
+    var current = null;
+    var locked = false;
+
+    function round() {
+      locked = false;
+      var item = pickOther(ITEMS, current);
+      current = item;
+      clearNode(shapeBox);
+      shapeBox.appendChild(svgEl("path", { d: item.d, fill: item.tone, opacity: ".9" }));
+      axis.setAttribute("x1", 120); axis.setAttribute("x2", 120);
+      axis.setAttribute("y1", 6); axis.setAttribute("y2", 134);
+      svgTitle.textContent = item.name + "，中间有一条黄色折痕";
+      [yesBtn, noBtn].forEach(function (button) {
+        button.disabled = false;
+        button.classList.remove("ok", "bad");
+      });
+      say(sayBox, item.face, "这是" + item.name + "。沿黄线对折，两边能盖住吗？");
+    }
+
+    function answer(guess, button) {
+      if (locked) return;
+      if (guess === current.ok) {
+        locked = true;
+        button.classList.add("ok");
+        yesBtn.disabled = true;
+        noBtn.disabled = true;
+        bumpScore(scoreBox);
+        say(sayBox, current.face, "答对了！" + current.why);
+        cheer(card);
+      } else {
+        button.classList.add("bad");
+        say(sayBox, "🤔", "再想想：用手指顺着黄线折一下，两边真的一样吗？");
+      }
+    }
+
+    yesBtn.addEventListener("click", function () { answer(true, yesBtn); });
+    noBtn.addEventListener("click", function () { answer(false, noBtn); });
+    newBtn.addEventListener("click", round);
+    round();
+  })();
+
+  /* ================= 游戏 3：有几条折痕 ================= */
+  (function countGame() {
+    var shapeBox = document.getElementById("countShape");
+    var axesBox = document.getElementById("countAxes");
+    var picksBox = document.getElementById("countPicks");
+    var sayBox = document.getElementById("countSay");
+    var scoreBox = document.getElementById("countScore");
+    var newBtn = document.getElementById("countNew");
+    var svgTitle = document.getElementById("countSvgTitle");
+    var card = picksBox.closest(".play-card");
+    if (!shapeBox || !picksBox) return;
+
+    /* 复用上面探索器里的图形数据（viewBox 都是 200x150 里的 100,100 为中心） */
+    var ITEMS = [
+      { key: "isosceles", face: "🔺", count: 1, tone: "var(--phys)" },
+      { key: "rect", face: "🟥", count: 2, tone: "var(--danger)" },
+      { key: "square", face: "🟦", count: 4, tone: "var(--math)" },
+      { key: "pentagon", face: "⬟", count: 5, tone: "var(--sci)" },
+      { key: "pinwheel", face: "🎡", count: 0, tone: "var(--kit)" }
+    ];
+    var CHOICES = [0, 1, 2, 4, 5];
+
+    var current = null;
+    var locked = false;
+
+    function drawAxes(angles) {
+      clearNode(axesBox);
+      angles.forEach(function (deg) {
+        var rad = deg * Math.PI / 180, half = 78;
+        axesBox.appendChild(svgEl("line", {
+          x1: (100 - Math.cos(rad) * half).toFixed(1),
+          y1: (100 - Math.sin(rad) * half).toFixed(1),
+          x2: (100 + Math.cos(rad) * half).toFixed(1),
+          y2: (100 + Math.sin(rad) * half).toFixed(1),
+          stroke: "var(--warn)", "stroke-width": 3, "stroke-dasharray": "7 5"
+        }));
+      });
+    }
+
+    function round() {
+      locked = false;
+      var item = pickOther(ITEMS, current);
+      current = item;
+      var shape = AXIS_SHAPES[item.key];
+      clearNode(shapeBox);
+      clearNode(axesBox);
+      shapeBox.appendChild(svgEl("path", { d: shape.d, fill: item.tone, opacity: ".88" }));
+      svgTitle.textContent = shape.name + "，等你数它有几条对称轴";
+
+      clearNode(picksBox);
+      CHOICES.forEach(function (value) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "num-pick";
+        button.textContent = String(value);
+        button.setAttribute("aria-label", value === 0 ? "猜：一条折痕也没有" : "猜 " + value + " 条折痕");
+        button.addEventListener("click", function () {
+          if (locked) return;
+          if (value === item.count) {
+            locked = true;
+            button.classList.add("ok");
+            [].forEach.call(picksBox.children, function (other) {
+              other.disabled = true;
+              if (other !== button) other.classList.add("dim");
+            });
+            drawAxes(shape.axes);
+            svgTitle.textContent = shape.name + "，黄色虚线是它的 " + item.count + " 条对称轴";
+            bumpScore(scoreBox);
+            say(sayBox, item.face, "对了！" + shape.note);
+            cheer(card);
+          } else {
+            button.classList.add("bad");
+            say(sayBox, "🤔", value > item.count
+              ? "猜多了。有的折痕折过去其实会错开，再数一次。"
+              : "猜少了。别忘了斜着的折痕也算。");
+          }
+        });
+        picksBox.appendChild(button);
+      });
+
+      say(sayBox, item.face, "这是" + shape.name + "。它能对折几次都重合？点一个数字。");
+    }
+
+    newBtn.addEventListener("click", round);
+    round();
+  })();
+
+  /* ================= 游戏 4：哪个是镜子里的 ================= */
+  (function mirrorQuiz() {
+    var source = document.getElementById("mqSource");
+    var picksBox = document.getElementById("mqPicks");
+    var sayBox = document.getElementById("mqSay");
+    var scoreBox = document.getElementById("mqScore");
+    var newBtn = document.getElementById("mqNew");
+    var card = picksBox.closest(".play-card");
+    if (!source || !picksBox) return;
+
+    /* 这些表情本身都有明确朝向，左右翻过来看得出来 */
+    var FACES = ["🐕", "🐈", "🐢", "🦆", "🐟", "🚗", "🚚", "🏃", "🦖", "🐧", "🦩", "🚲"];
+
+    var current = null;
+    var locked = false;
+
+    /* 三个候选：左右翻（对）、上下翻、没翻只是挪一点 */
+    var VARIANTS = [
+      { key: "flipX", ok: true, css: "scaleX(-1)", label: "左右翻过来", why: "对了！照镜子只把左右换过来，上下不动。" },
+      { key: "flipY", ok: false, css: "scaleY(-1)", label: "上下翻过来", why: "这是上下翻，头朝下了。镜子不会把上下调过来。" },
+      { key: "same", ok: false, css: "none", label: "没有翻，还是原样", why: "这个和原来一模一样，没有翻过面。" }
+    ];
+
+    function round() {
+      locked = false;
+      var face = pickOther(FACES, current);
+      current = face;
+      source.textContent = face;
+
+      clearNode(picksBox);
+      shuffle(VARIANTS).forEach(function (variant) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "emoji-pick";
+        button.setAttribute("aria-label", "候选：" + variant.label);
+        var span = document.createElement("span");
+        span.setAttribute("aria-hidden", "true");
+        span.textContent = face;
+        if (variant.css !== "none") span.style.transform = variant.css;
+        button.appendChild(span);
+        button.addEventListener("click", function () {
+          if (locked) return;
+          if (variant.ok) {
+            locked = true;
+            button.classList.add("ok");
+            [].forEach.call(picksBox.children, function (other) {
+              other.disabled = true;
+              if (other !== button) other.classList.add("dim");
+            });
+            bumpScore(scoreBox);
+            say(sayBox, face, variant.why);
+            cheer(card);
+          } else {
+            button.classList.add("bad");
+            say(sayBox, "🤔", variant.why);
+          }
+        });
+        picksBox.appendChild(button);
+      });
+
+      say(sayBox, face, "上面是原来的样子。点出照镜子后的样子。");
+    }
+
+    newBtn.addEventListener("click", round);
+    round();
+  })();
+
   /* ---------- go ---------- */
   window.addEventListener("resize", fit);
   fit();
@@ -715,10 +2094,10 @@
 </script>
 
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>if (window.Progress) Progress.visit("games/symmetry-studio.html", "对称工作室");</script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

@@ -1,20 +1,21 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>斜坡滚球 · 能量去哪了 | 少儿数理启蒙</title>
 <meta name="description" content="调节斜坡角度、摩擦和球的质量，用实时能量柱看势能怎么变成动能、又怎么被摩擦变成热。还能先猜球停在哪里。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#0b0f1a">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   html, body { max-width:100%; overflow-x:hidden; }
   *, *::before, *::after { box-sizing:border-box; }
   .lab-head { margin:18px 0 8px; }
+  .mono { font-family:var(--mono); }
   .hint { color:var(--ink-dim); font-family:var(--mono); font-size:.78rem; }
   .ramp-kid-shell { position:relative; display:grid; gap:14px; margin:0; padding:clamp(12px,3vw,22px); overflow:hidden; isolation:isolate; }
   .ramp-kid-shell::before { content:""; position:absolute; inset:-30% -12% auto 42%; height:240px; border-radius:50%; background:radial-gradient(circle,rgba(167,139,250,.2),transparent 68%); z-index:-1; pointer-events:none; }
@@ -28,19 +29,26 @@
   .story-flag { transform:translateY(-5px); }
   @keyframes ball-bob { 0%,100% { transform:translateY(0) rotate(0); } 50% { transform:translateY(-7px) rotate(18deg); } }
   .kid-story-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0; padding:0; list-style:none; }
-  .kid-story-steps li { display:flex; align-items:center; gap:8px; min-height:44px; padding:8px 10px; border:1px solid var(--line-soft); border-radius:13px; background:rgba(255,255,255,.035); color:var(--ink-mid); font-weight:750; }
-  .kid-story-steps b { display:grid; place-items:center; flex:0 0 28px; width:28px; height:28px; border-radius:50%; background:var(--phys); color:#0b0f1a; }
-  .kid-visual-stage { position:relative; min-width:0; padding:10px; border:2px solid rgba(167,139,250,.35); border-radius:20px; background:rgba(11,15,26,.28); overflow:hidden; }
+  /* rgba(255,255,255,.035) 是暗底上的「提亮一点」，浅底上等于没有底色；用 --surface-2。 */
+  .kid-story-steps li { display:flex; align-items:center; gap:8px; min-height:44px; padding:8px 10px; border:1px solid var(--line-soft); border-radius:13px; background:var(--surface-2); color:var(--ink-mid); font-weight:750; }
+  .kid-story-steps b { display:grid; place-items:center; flex:0 0 28px; width:28px; height:28px; border-radius:50%; background:var(--phys); color:var(--on-accent); }
+  /* 只覆盖本页的间距和圆角；描边与底色交给共享层的 .kid-visual-stage（浅色）。
+     原先写死 rgba(11,15,26,.28) 在浅底上是一块灰蒙版，且紫色描边几乎看不见。 */
+  .kid-visual-stage { min-width:0; padding:10px; border-radius:20px; }
   .stage-sign { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; color:var(--ink-mid); font-size:.88rem; }
   .stage-sign b { color:var(--ink); }
   #scene { display:block; width:100%; max-width:100%; border-radius:14px; touch-action:none; }
   #scene:focus-visible { outline:3px solid var(--warn); outline-offset:3px; }
+  /* 画布高度已按世界比例定死（8 米宽 × 1.5 米高，约 0.31 的高宽比）。共享层给
+     .kid-visual-stage 的 min-height:clamp(280px,48vw,520px) 会在画面下方留出一大片
+     空白，所以只给这一个舞台解开；旁边那张插画舞台仍然保留最小高度。 */
+  #stage.kid-visual-stage { min-height:0; }
   .stage-hint { margin:7px 2px 0; }
   .ab-results { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-  .kid-result-card { min-width:0; padding:12px; border:2px solid var(--line-soft); border-radius:16px; background:var(--surface-2); }
-  .kid-result-card[data-state="done"] { border-color:rgba(74,222,128,.55); }
+  .ab-results .kid-result-card { display:block; min-width:0; min-height:0; padding:12px; border:2px solid var(--line-soft); border-radius:16px; background:var(--surface-2); }
+  .ab-results .kid-result-card[data-state="done"] { border-color:rgba(74,222,128,.55); }
   .result-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:9px; }
-  .result-letter { display:grid; place-items:center; width:32px; height:32px; border-radius:10px; background:var(--math); color:#0b0f1a; font-size:1.08rem; font-weight:900; }
+  .result-letter { display:grid; place-items:center; width:32px; height:32px; border-radius:10px; background:var(--math); color:var(--on-accent); font-size:1.08rem; font-weight:900; }
   .result-head strong { overflow:hidden; color:var(--ink-mid); font-size:.8rem; text-overflow:ellipsis; white-space:nowrap; }
   .result-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:0; }
   .result-stats div { min-width:0; }
@@ -51,18 +59,13 @@
   .distance-marker { position:absolute; top:-2px; left:0; width:3px; height:17px; background:var(--warn); transform:translateX(-1px); transition:left .25s ease; }
   .change-callout { display:flex; align-items:center; justify-content:center; gap:7px; min-height:44px; margin-top:10px; padding:8px 12px; border-radius:13px; background:rgba(251,191,36,.1); color:var(--ink-mid); text-align:center; }
   .change-callout b { color:var(--warn); }
-  .kid-choice { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; align-items:end; }
-  .kid-choice .ctrl { min-width:0; padding:10px; border:1px solid var(--line-soft); border-radius:14px; background:var(--surface-2); }
   .ctrl-head { display:flex; align-items:baseline; justify-content:space-between; gap:7px; }
   .ctrl-head label { font-weight:800; }
   .ctrl-head b { color:var(--warn); font-family:var(--mono); white-space:nowrap; }
-  .kid-choice input[type="range"], .parent-deep-dive input[type="range"] { width:100%; min-height:44px; touch-action:pan-y; }
+  .parent-deep-dive input[type="range"] { width:100%; min-height:44px; touch-action:pan-y; }
   .kid-action-strip { display:grid; grid-template-columns:minmax(0,1fr) minmax(100px,.36fr); gap:10px; }
   .kid-action-strip .btn { width:100%; min-height:48px; }
   .child-status { margin:0; padding:9px 12px; border-radius:12px; background:rgba(74,222,128,.08); color:var(--ink-mid); font-weight:750; }
-  #rampComplete[hidden] { display:none; }
-  .finish-row { display:flex; justify-content:center; }
-  .finish-row .btn { min-width:min(100%,280px); min-height:48px; }
   .parent-deep-dive { margin-top:18px; }
   details.parent-deep-dive > summary { min-height:44px; padding:12px 15px; border:1px solid var(--line-soft); border-radius:14px; color:var(--ink); cursor:pointer; font-weight:800; }
   details.parent-deep-dive[open] > summary { margin-bottom:12px; }
@@ -81,12 +84,42 @@
   .qlist b { color:var(--ink); }
   .task-fields { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:end; }
   .fair-card textarea { min-height:120px; resize:vertical; }
+
+  .section-kicker { margin:0 0 5px; color:var(--phys); font-size:.76rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+  .science-note { border-color:rgba(74,222,128,.42); background:linear-gradient(135deg,rgba(74,222,128,.09),var(--surface-2)); }
+  .teach-lead { margin:.2em 0 .9em; color:var(--ink-mid); font-size:1rem; }
+  .teach-lead b { color:var(--ink); }
+
+  .learning-layers { display:grid; gap:12px; margin-top:14px; }
+  .learning-layers details { border:1px solid var(--line); border-radius:var(--r,16px); background:var(--surface-2); padding:0 16px; }
+  .learning-layers summary { min-height:48px; display:flex; align-items:center; flex-wrap:wrap; gap:8px; cursor:pointer; color:var(--ink); font-weight:800; }
+  .learning-layers details > div { padding:0 0 16px; color:var(--ink-mid); }
+  .learning-layers .layer-age { display:inline-block; padding:2px 9px; border-radius:999px; background:rgba(167,139,250,.18); color:var(--phys); font-size:.74rem; font-weight:850; }
+  .learning-layers p { margin:0 0 .6em; }
+  .learning-layers p:last-child { margin-bottom:0; }
+
+  .fig-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; }
+  .fig-card { min-width:0; padding:12px; border:1px solid var(--line-soft); border-radius:16px; background:var(--surface-2); }
+  .fig-card h3 { margin:0 0 8px; font-size:.98rem; line-height:1.3; }
+  .fig-card svg { display:block; width:100%; height:auto; color:var(--ink-dim); }
+  .fig-card p { margin:8px 0 0; color:var(--ink-mid); font-size:.88rem; }
+
+  .var-cards { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 0; padding:0; list-style:none; }
+  .var-cards li { padding:9px 12px; border:1px dashed var(--line); border-radius:12px; background:var(--surface-2); color:var(--ink-mid); font-size:.85rem; font-weight:700; }
+  .var-cards li[data-keep="change"] { border-style:solid; border-color:rgba(251,191,36,.6); background:rgba(251,191,36,.1); color:var(--ink); }
+
+  .quick-picks { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px; margin:12px 0 0; }
+  .quick-picks button { min-height:52px; padding:10px 13px; border:2px solid var(--line); border-radius:14px; background:var(--surface-2); color:var(--ink-mid); text-align:left; font-size:.92rem; font-weight:850; line-height:1.35; cursor:pointer; }
+  .quick-picks button[aria-pressed="true"] { border-color:var(--phys); background:rgba(167,139,250,.18); color:var(--ink); }
+  .pick-status { margin:10px 0 0; }
+  .fig-grid > *, .quick-picks > * { min-width:0; }
+
   @media (max-width:760px) {
+    .fig-grid { grid-template-columns:minmax(0,1fr); }
     .hero-top { grid-template-columns:minmax(0,1fr); }
     .story-track { display:none; }
-    .kid-choice { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .kid-choice .prediction-choice { grid-column:1 / -1; }
     .parent-grid { grid-template-columns:minmax(0,1fr); }
+    .rr-compare { grid-template-columns:minmax(0,1fr); }
   }
   @media (max-width:480px) {
     .lab-head { margin:8px 0 6px; }
@@ -97,14 +130,18 @@
     html[data-mode="kid"] .kid-story-steps { display:none; }
     html[data-mode="kid"] .hero-top h1 { margin:0; font-size:1.45rem; }
     html[data-mode="kid"] .hero-top p { display:none; }
-    html[data-mode="kid"] .kid-visual-stage { min-height:0; padding:7px; }
+    /* 只给交互舞台解开最小高度，跟上面 #stage 那条同一个意图。
+       原来这里写的是 .kid-visual-stage，把插画舞台的最小高度也一起清零了，
+       与本页注释「旁边那张插画舞台仍然保留最小高度」相矛盾，
+       也会让「舞台需占首屏 24% 面积」这条断言失败。 */
+    html[data-mode="kid"] #stage.kid-visual-stage { min-height:0; }
+    html[data-mode="kid"] .kid-visual-stage { padding:7px; }
     html[data-mode="kid"] .stage-sign { margin-bottom:4px; }
-    html[data-mode="kid"] #scene { height:230px !important; }
+    /* 这里原来写 #scene{height:230px!important}：!important 能盖掉 JS 写的 style.height，
+       但盖不掉 canvas 的像素缓冲尺寸，画面会被纵向压扁。高度上限改由 resize() 按视口算。 */
     html[data-mode="kid"] .stage-hint { display:none; }
-    .kid-choice { grid-template-columns:minmax(0,1fr); }
-    .kid-choice .prediction-choice { grid-column:auto; }
     .ab-results { gap:7px; }
-    .kid-result-card { padding:9px 8px; }
+    .ab-results .kid-result-card { padding:9px 8px; }
     .result-stats { grid-template-columns:minmax(0,1fr); gap:3px; }
     .result-stats div { display:flex; justify-content:space-between; gap:5px; }
     .result-stats dd { margin:0; }
@@ -115,9 +152,118 @@
     *, *::before, *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
     .story-ball { animation:none; }
   }
+
+  /* 插画舞台（共享 SVG 场景铺底，内容都放在不透明卡片上保证对比度） */
+  .rr-scene-stage { margin:0 0 16px; padding:clamp(12px,2.6vw,20px); }
+  .rr-scene-copy { display:grid; gap:12px; min-width:0; }
+  .rr-scene-stage .kid-steps-visual { margin:0; }
+  @media (max-width:560px) {
+    .rr-scene-stage { padding:10px; }
+  }
+
+  /* ======================================================================
+     图像优先补强（本页专属前缀 rr-）
+     图形变量卡 / 预测量表 / 停车挑战 / 只改一个 / 材质跑道 / 双球赛跑
+     ====================================================================== */
+
+  /* 舞台图例：旗子、停止线、跑道各是什么，靠图形而不是句子说明 */
+  .rr-legend { margin:0 0 8px; }
+
+  /* 变量图卡：坡高 / 坡度 / 球重 / 跑道各一排，替代纯文字滑杆 */
+  .rr-vars { display:grid; gap:10px; margin:2px 0 0; }
+  .rr-var-block { min-width:0; padding:10px 11px; border:2px solid var(--line-soft); border-radius:16px; background:var(--surface-2); }
+  .rr-var-label { display:flex; align-items:center; gap:7px; margin:0 0 7px; color:var(--ink); font-weight:800; }
+  .rr-var-label > span[aria-hidden="true"] { font-size:1.35rem; line-height:1; }
+  .rr-var-label b { font-family:var(--mono); color:var(--warn); }
+  .rr-var-tiles { grid-template-columns:repeat(3,minmax(0,1fr)); margin:0; }
+  .rr-var-tiles .kid-tile { min-height:96px; padding:9px 6px; }
+  .rr-var-tiles .kid-tile-sub { white-space:nowrap; }
+  html[data-mode="kid"] .rr-var-tiles .kid-tile { min-height:104px; }
+
+  /* 猜停止点：两端大图标的图形滑杆 */
+  .rr-pred { min-width:0; padding:10px 11px; border:2px solid color-mix(in srgb,var(--warn) 42%,var(--line-soft)); border-radius:16px; background:color-mix(in srgb,var(--warn) 9%,var(--surface-2)); }
+  .rr-pred-out { display:flex; align-items:center; gap:7px; margin:6px 0 0; color:var(--ink-mid); font-weight:800; }
+  .rr-pred-out b { font-family:var(--mono); color:var(--ink); }
+
+  /* 预测 vs 实际：两条能比长短的量表 + 可数的误差点 */
+  .rr-meters { display:grid; gap:2px; min-width:0; padding:11px; border:2px solid var(--line-soft); border-radius:16px; background:var(--surface-2); }
+  .rr-gap-row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-top:6px; }
+  .rr-gap-cap { display:inline-flex; align-items:center; gap:6px; color:var(--ink-mid); font-weight:800; }
+  .rr-gap-cap > span[aria-hidden="true"] { font-size:1.2rem; line-height:1; }
+  .rr-gap-dots { --tone:var(--warn); min-height:26px; }
+  .rr-gap-num { font-family:var(--mono); color:var(--ink); }
+
+  /* 完成卡：图形化的完成反馈，按钮就在卡里 */
+  .rr-done-card { margin-top:12px; }
+  .rr-done-card[hidden] { display:none !important; }
+  .rr-done-card > div { min-width:0; }
+  .rr-done-card .kid-done-row { margin-top:9px; }
+
+  /* 小游戏外壳（页面独有前缀，不覆盖共享类） */
+  .rr-games { margin:22px 0 0; padding:clamp(14px,3vw,22px); border:3px solid color-mix(in srgb,var(--phys) 30%,var(--line)); border-radius:var(--r-xl,28px); background:color-mix(in srgb,var(--phys) 6%,var(--surface)); }
+  .rr-games-title { display:flex; align-items:center; gap:9px; margin:0 0 4px; font-size:clamp(1.12rem,3.6vw,1.5rem); }
+  .rr-games-title > span { font-size:1.4em; }
+  .rr-games-sub { margin:0 0 12px; color:var(--ink-mid); }
+  .rr-tabs { grid-template-columns:repeat(4,minmax(0,1fr)); margin:0 0 12px; }
+  .rr-tabs .kid-tile { min-height:96px; }
+  .rr-panel { display:grid; gap:11px; padding:clamp(11px,2.4vw,17px); border:3px dashed var(--line); border-radius:var(--r-lg,22px); background:var(--surface); }
+  .rr-panel[hidden] { display:none !important; }
+  .rr-ask { display:flex; align-items:center; justify-content:center; gap:8px; margin:0; color:var(--ink); font-weight:800; font-size:clamp(1.02rem,3.4vw,1.24rem); text-align:center; }
+  .rr-ask > span[aria-hidden="true"] { font-size:1.4em; line-height:1; }
+  .rr-say { min-height:1.6em; margin:0; color:var(--ink); font-weight:800; text-align:center; }
+  .rr-actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+  .rr-actions .btn { min-height:48px; }
+  .rr-stage { display:grid; place-items:center; padding:8px; border:2px solid var(--line-soft); border-radius:var(--r,18px); background:color-mix(in srgb,var(--math) 5%,var(--surface-2)); }
+  .rr-stage svg { display:block; width:100%; max-width:460px; height:auto; }
+  .rr-picks { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+  .rr-picks .kid-figure { min-width:118px; max-width:190px; }
+  .rr-picks .kid-figure-art { min-height:72px; font-size:clamp(2.1rem,7vw,2.9rem); }
+  .rr-compare { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .rr-compare > * { min-width:0; padding:10px; border:2px solid var(--line-soft); border-radius:var(--r,18px); background:var(--surface-2); text-align:center; }
+  .rr-compare h3 { margin:0 0 6px; font-size:.98rem; }
+  .rr-compare svg { display:block; width:100%; height:auto; }
+  .rr-compare-num { margin:4px 0 0; font:800 clamp(1.2rem,5vw,1.7rem)/1 var(--mono); color:var(--ink); }
+  .rr-surface-grid { margin:0; }
+  .rr-surface-grid .kid-figure-art { min-height:86px; }
+  .rr-score { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:13px 0 0; }
+  .rr-stars { min-height:1.4em; font-size:1.4rem; line-height:1; letter-spacing:2px; }
+  .rr-note { margin:0; color:var(--ink-mid); font-size:.9rem; }
+
+  /* 小游戏 SVG 取色一律走 class，属性里不写 var() */
+  .rr-svg-sky     { fill:color-mix(in srgb,var(--math) 9%,#eaf6ff); }
+  .rr-svg-grass   { fill:color-mix(in srgb,var(--sci) 30%,#dcf3cd); }
+  .rr-svg-soil    { fill:color-mix(in srgb,var(--code) 26%,#e2bd8c); }
+  .rr-svg-soil-dk { fill:color-mix(in srgb,var(--code) 44%,#c79a63); }
+  .rr-svg-shine   { fill:none; stroke:#ffffff; stroke-width:3; stroke-linecap:round; opacity:.75; }
+  .rr-svg-edge    { fill:none; stroke:color-mix(in srgb,var(--sci) 62%,transparent); stroke-width:3; stroke-linecap:round; }
+  .rr-svg-ball    { fill:color-mix(in srgb,var(--math) 74%,#2f6fd0); }
+  .rr-svg-ball-hi { fill:#ffffff; opacity:.8; }
+  .rr-svg-ice     { fill:color-mix(in srgb,var(--video) 16%,#dff3ff); }
+  .rr-svg-wood    { fill:color-mix(in srgb,var(--code) 30%,#e6c093); }
+  .rr-svg-carpet  { fill:color-mix(in srgb,var(--kit) 20%,#f6cfe0); }
+  .rr-svg-tex     { fill:none; stroke:color-mix(in srgb,var(--ink) 26%,transparent); stroke-width:2; stroke-linecap:round; }
+  .rr-svg-pole    { fill:none; stroke:color-mix(in srgb,var(--ink) 55%,transparent); stroke-width:2.5; stroke-linecap:round; }
+  .rr-svg-flag-a  { fill:color-mix(in srgb,var(--warn) 74%,transparent); }
+  .rr-svg-flag-b  { fill:color-mix(in srgb,var(--sci) 70%,transparent); }
+  .rr-svg-bay     { fill:color-mix(in srgb,var(--warn) 12%,transparent); stroke:color-mix(in srgb,var(--warn) 76%,transparent); stroke-width:3; stroke-dasharray:8 6; }
+  .rr-svg-dash    { fill:none; stroke:color-mix(in srgb,var(--sci) 68%,transparent); stroke-width:2.5; stroke-dasharray:6 5; }
+  .rr-svg-tick    { stroke:color-mix(in srgb,var(--ink) 34%,transparent); stroke-width:2; stroke-linecap:round; }
+  .rr-svg-num     { fill:color-mix(in srgb,var(--ink) 72%,transparent); font:800 11px var(--mono); }
+  .rr-svg-glyph   { font-size:20px; }
+  .rr-svg-wall    { fill:color-mix(in srgb,var(--danger) 34%,#d9a6a0); }
+  .rr-tile-slope  { overflow:visible; }
+
+  @media (max-width:560px) {
+    .rr-var-tiles { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+    .rr-var-tiles .kid-tile { min-height:88px; padding:8px 4px; font-size:.86rem; }
+    .rr-var-tiles .kid-tile-sub { display:none; }
+    .rr-tabs { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .rr-compare { grid-template-columns:minmax(0,1fr); }
+  }
 </style>
 </head>
 <body data-playful-page="games/ramp-and-roll.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
 <a class="skip-link" href="#stage">跳到实验画面</a>
 
 <nav class="nav"><div class="nav-in wrap">
@@ -141,6 +287,24 @@
       <span class="pill">约 15 分钟</span>
     </div>
   </header>
+  <!-- 插画舞台：不识字也能看懂这一页在玩什么 -->
+  <div class="kid-visual-stage rr-scene-stage" data-scene-layer="back"
+       data-playful-scene="ramp"
+       data-playful-scene-title="山坡试车场"
+       data-playful-scene-desc="一条斜坡从高处滑下来接到平地，太阳和云朵挂在上面">
+    <div class="rr-scene-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🐹</span>
+        <p class="kid-speech">坡越高，球冲出去就<b>越远</b>。</p>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步玩法">
+        <li><span class="kid-tile-art" aria-hidden="true">⛰️</span>调坡度</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🖐️</span>放手</li>
+        <li><span class="kid-tile-art" aria-hidden="true">📍</span>看停在哪</li>
+      </ol>
+    </div>
+  </div>
+
 
   <section class="card ramp-kid-shell" aria-labelledby="rampStoryTitle">
     <div data-playful-companion></div>
@@ -159,31 +323,140 @@
       <li><b>3</b><span>只改一项做 B</span></li>
     </ol>
 
+    <ul class="kid-legend rr-legend" aria-label="画面图例">
+      <li style="--tone:var(--warn)"><span class="kid-legend-mark" aria-hidden="true">🚩</span>黄旗 = 我猜的</li>
+      <li style="--tone:var(--sci)"><span class="kid-legend-mark" aria-hidden="true">🏁</span>绿旗 + 虚线 = 真的停这</li>
+      <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">🔵</span>蓝球 = 会滚的球</li>
+      <li style="--tone:var(--code)"><span class="kid-legend-mark" aria-hidden="true">🧊</span>跑道花纹 = 滑还是糙</li>
+    </ul>
+
     <div class="kid-visual-stage" id="stage" aria-label="山坡试车主舞台">
       <div class="stage-sign"><b>试车舞台</b><span id="roundLabel">准备 A 轮</span></div>
-      <canvas id="scene" tabindex="0" aria-label="斜坡实验画面：小球从斜坡顶端滚下，滑过地面后停下。点击地面可以移动预测旗。"></canvas>
+      <canvas id="scene" tabindex="0" aria-label="斜坡实验画面：小球从草坡顶端滚下，滑过跑道后停下，停止点用绿旗和虚线标出。点击跑道可以移动黄色预测旗。"></canvas>
       <p id="live" class="sr-only" aria-live="polite"></p>
-      <p class="hint stage-hint">点跑道插旗；空格键可放球或暂停。</p>
+      <p class="hint stage-hint" data-audience="parent">点跑道插旗；空格键可放球或暂停。</p>
     </div>
 
     <div class="kid-action-strip" aria-label="试车操作">
-      <button class="btn btn-primary" id="check" type="button">插旗并放球</button>
-      <button class="btn btn-ghost" id="reset" type="button">重来</button>
+      <button class="btn btn-primary" id="check" type="button"><span aria-hidden="true">🚩</span> <span id="checkLabel">插旗并放球</span></button>
+      <button class="btn btn-ghost" id="reset" type="button"><span aria-hidden="true">🔄</span> 重来</button>
       <button id="go" type="button" hidden>放球出发</button>
     </div>
 
-    <div class="kid-choice" aria-label="斜坡与预测设置">
-      <div class="ctrl">
-        <div class="ctrl-head"><label for="hgt">高度</label><b id="hgtOut">1.20 m</b></div>
-        <input class="input" type="range" id="hgt" min="0.3" max="2.5" step="0.05" value="1.2">
+    <!-- 控制变量图形化：四排大图卡，点一下就换一个条件 -->
+    <div class="rr-vars">
+      <div class="rr-var-block">
+        <p class="rr-var-label" id="rrHeightLabel"><span aria-hidden="true">🪜</span>坡有多高 · <b id="rrHeightNow">0.60 m</b></p>
+        <div class="kid-tiles rr-var-tiles" role="group" aria-labelledby="rrHeightLabel">
+          <button class="kid-tile" type="button" data-rr-h="0.6" aria-pressed="false" aria-label="矮坡，像一本书那么高">
+            <span class="kid-tile-art" aria-hidden="true">📗</span><span class="kid-tile-label">矮</span><span class="kid-tile-sub">一本书</span>
+          </button>
+          <button class="kid-tile" type="button" data-rr-h="1.2" aria-pressed="false" aria-label="中等高的坡，像一把椅子那么高">
+            <span class="kid-tile-art" aria-hidden="true">🪑</span><span class="kid-tile-label">中</span><span class="kid-tile-sub">一把椅子</span>
+          </button>
+          <button class="kid-tile" type="button" data-rr-h="1.8" aria-pressed="false" aria-label="高坡，像一扇门那么高">
+            <span class="kid-tile-art" aria-hidden="true">🚪</span><span class="kid-tile-label">高</span><span class="kid-tile-sub">一扇门</span>
+          </button>
+        </div>
       </div>
-      <div class="ctrl">
-        <div class="ctrl-head"><label for="ang">角度</label><b id="angOut">30°</b></div>
-        <input class="input" type="range" id="ang" min="5" max="45" step="1" value="30">
+
+      <div class="rr-var-block">
+        <p class="rr-var-label" id="rrAngleLabel"><span aria-hidden="true">📐</span>坡有多陡 · <b id="rrAngleNow">30°</b></p>
+        <div class="kid-tiles rr-var-tiles" role="group" aria-labelledby="rrAngleLabel">
+          <button class="kid-tile" type="button" data-rr-ang="15" aria-pressed="false" aria-label="平缓的坡，15 度">
+            <svg class="rr-tile-slope" viewBox="0 0 64 44" aria-hidden="true" focusable="false">
+              <path class="rr-svg-grass" d="M2 38h60v5H2z"/>
+              <path class="rr-svg-soil" d="M8 25.1L56 38H8z"/>
+              <path class="rr-svg-edge" d="M8 25.1L56 38"/>
+              <circle class="rr-svg-ball" cx="12" cy="22" r="4"/>
+            </svg>
+            <span class="kid-tile-label">平缓</span><span class="kid-tile-sub">慢慢溜</span>
+          </button>
+          <button class="kid-tile" type="button" data-rr-ang="30" aria-pressed="false" aria-label="中等陡的坡，30 度">
+            <svg class="rr-tile-slope" viewBox="0 0 64 44" aria-hidden="true" focusable="false">
+              <path class="rr-svg-grass" d="M2 38h60v5H2z"/>
+              <path class="rr-svg-soil" d="M8 10.3L56 38H8z"/>
+              <path class="rr-svg-edge" d="M8 10.3L56 38"/>
+              <circle class="rr-svg-ball" cx="12" cy="8" r="4"/>
+            </svg>
+            <span class="kid-tile-label">中等</span><span class="kid-tile-sub">刚刚好</span>
+          </button>
+          <button class="kid-tile" type="button" data-rr-ang="42" aria-pressed="false" aria-label="很陡的坡，42 度">
+            <svg class="rr-tile-slope" viewBox="0 0 64 44" aria-hidden="true" focusable="false">
+              <path class="rr-svg-grass" d="M2 38h60v5H2z"/>
+              <path class="rr-svg-soil" d="M8 8L41 38H8z"/>
+              <path class="rr-svg-edge" d="M8 8L41 38"/>
+              <circle class="rr-svg-ball" cx="12" cy="6" r="4"/>
+            </svg>
+            <span class="kid-tile-label">很陡</span><span class="kid-tile-sub">一冲到底</span>
+          </button>
+        </div>
       </div>
-      <div class="ctrl prediction-choice">
-        <div class="ctrl-head"><label for="pred">猜停止点</label><b id="predOut">1.50 m</b></div>
-        <input class="input" type="range" id="pred" min="0" max="6" step="0.05" value="1.5">
+
+      <div class="rr-var-block">
+        <p class="rr-var-label" id="rrMassLabel"><span aria-hidden="true">⚖️</span>球有多重 · <b id="rrMassNow">0.80 kg</b></p>
+        <div class="kid-tiles rr-var-tiles" role="group" aria-labelledby="rrMassLabel">
+          <button class="kid-tile" type="button" data-rr-m="0.2" aria-pressed="false" aria-label="很轻的球，0.2 公斤">
+            <span class="kid-tile-art" aria-hidden="true">🎈</span><span class="kid-tile-label">轻</span><span class="kid-tile-sub">0.2 kg</span>
+          </button>
+          <button class="kid-tile" type="button" data-rr-m="0.8" aria-pressed="false" aria-label="中等重的球，0.8 公斤">
+            <span class="kid-tile-art" aria-hidden="true">⚽</span><span class="kid-tile-label">中</span><span class="kid-tile-sub">0.8 kg</span>
+          </button>
+          <button class="kid-tile" type="button" data-rr-m="2.5" aria-pressed="false" aria-label="很重的球，2.5 公斤">
+            <span class="kid-tile-art" aria-hidden="true">🪨</span><span class="kid-tile-label">重</span><span class="kid-tile-sub">2.5 kg</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="rr-var-block">
+        <p class="rr-var-label" id="rrTrackLabel"><span aria-hidden="true">🛣️</span>跑道铺什么 · <b id="rrTrackNow">木板</b></p>
+        <div class="kid-tiles rr-var-tiles" role="group" aria-labelledby="rrTrackLabel">
+          <button class="kid-tile" type="button" data-rr-mu="0.12" aria-pressed="false" aria-label="冰面跑道，最滑">
+            <span class="kid-tile-art" aria-hidden="true">🧊</span><span class="kid-tile-label">冰面</span><span class="kid-tile-sub">最滑</span>
+          </button>
+          <button class="kid-tile" type="button" data-rr-mu="0.24" aria-pressed="false" aria-label="木板跑道，一般">
+            <span class="kid-tile-art" aria-hidden="true">🪵</span><span class="kid-tile-label">木板</span><span class="kid-tile-sub">一般</span>
+          </button>
+          <button class="kid-tile" type="button" data-rr-mu="0.44" aria-pressed="false" aria-label="地毯跑道，最糙">
+            <span class="kid-tile-art" aria-hidden="true">🧶</span><span class="kid-tile-label">地毯</span><span class="kid-tile-sub">最糙</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="rr-pred">
+        <label class="rr-var-label" for="pred"><span aria-hidden="true">🚩</span>猜球停在哪</label>
+        <div class="kid-slide-row">
+          <span class="kid-slide-end" aria-hidden="true">⛰️</span>
+          <input class="input" type="range" id="pred" min="0" max="6" step="0.05" value="1.5" aria-describedby="predOut">
+          <span class="kid-slide-end" aria-hidden="true">🏁</span>
+        </div>
+        <p class="rr-pred-out"><span aria-hidden="true">🚩</span>我猜停在 <b id="predOut">1.50 m</b></p>
+      </div>
+    </div>
+
+    <!-- 预测与实际：两条比长短，误差用可数的点 -->
+    <div class="rr-meters" role="group" aria-labelledby="rrMeterTitle">
+      <p class="rr-var-label" id="rrMeterTitle"><span aria-hidden="true">📏</span>猜的和真的，比一比</p>
+      <div class="kid-meter" style="--tone:var(--warn)">
+        <div class="kid-meter-head">
+          <span class="kid-meter-icon" aria-hidden="true">🚩</span>
+          <span id="rrPredMeterLabel">我猜的</span>
+          <span class="kid-meter-value" id="rrPredMeterValue">1.50 m</span>
+        </div>
+        <div class="kid-meter-track" id="rrPredMeter" role="img" aria-labelledby="rrPredMeterLabel rrPredMeterValue"><span class="kid-meter-fill"></span></div>
+      </div>
+      <div class="kid-meter" style="--tone:var(--sci)">
+        <div class="kid-meter-head">
+          <span class="kid-meter-icon" aria-hidden="true">🔵</span>
+          <span id="rrActMeterLabel">球停的</span>
+          <span class="kid-meter-value" id="rrActMeterValue">还没放球</span>
+        </div>
+        <div class="kid-meter-track" id="rrActMeter" role="img" aria-labelledby="rrActMeterLabel rrActMeterValue"><span class="kid-meter-fill"></span></div>
+      </div>
+      <div class="rr-gap-row">
+        <span class="rr-gap-cap" id="rrGapCap"><span aria-hidden="true">📐</span>差多少</span>
+        <span class="kid-dots rr-gap-dots" id="rrGapDots" role="img" aria-labelledby="rrGapCap rrGapNum"></span>
+        <b class="rr-gap-num" id="rrGapNum">还没放球</b>
       </div>
     </div>
 
@@ -207,13 +480,170 @@
         <div class="distance-track" aria-hidden="true"><i class="distance-fill" id="abFillB"></i><i class="distance-marker" id="abMarkerB"></i></div>
       </article>
     </div>
-    <p class="change-callout"><span>只改变：</span><b id="changedVariable">先完成 A 轮</b></p>
-    <p class="child-status"><span>停止 <b id="actV">—</b></span> · <span>差 <b id="errV" class="mono">—</b></span></p>
-    <p id="fairResult" role="status" aria-live="polite">先锁定预测，完成 A 轮。</p>
-    <p class="task-status status" id="rampTaskStatus" role="status" aria-live="polite">还差两轮公平试车。</p>
-    <div class="finish-row"><button class="btn btn-primary" id="rampComplete" type="button" disabled hidden>记录完成</button></div>
+    <p class="change-callout"><span aria-hidden="true">🔀</span><span>只改变：</span><b id="changedVariable">先完成 A 轮</b></p>
+    <p class="child-status" data-audience="parent"><span>停止 <b id="actV">—</b></span> · <span>差 <b id="errV" class="mono">—</b></span></p>
+    <p id="fairResult" role="status" aria-live="polite">先插旗，再放球，完成 A 轮。</p>
+    <p class="task-status status" id="rampTaskStatus" role="status" aria-live="polite">还差两轮：A 轮 + 只改一项的 B 轮。</p>
+    <div class="kid-result-card rr-done-card" id="rrDoneCard" hidden>
+      <span aria-hidden="true">🏅</span>
+      <div>
+        <b id="rrDoneTitle">公平比较通过</b>
+        <p id="rrDoneText">只改了一项，两轮停的地方不一样。</p>
+        <div class="kid-done-row"><button class="btn btn-primary kid-done-btn" id="rampComplete" type="button" disabled><span aria-hidden="true">🏅</span> 记录完成</button></div>
+      </div>
+    </div>
     <p id="rampPlayfulFeedback" data-playful-feedback></p>
     <span data-playful-sticker></span>
+  </section>
+
+  <section class="card science-note" aria-labelledby="rampTeachTitle">
+    <p class="section-kicker">这在教什么</p>
+    <h2 id="rampTeachTitle">这在教什么</h2>
+    <p class="teach-lead" data-audience="parent"><b>球停在哪里，是被“高度”和“摩擦”一起决定的。</b>放得越高，球到坡底时越快、滚得越远；跑道越粗糙，球停得越早。质量在这个模型里被约掉，所以换成更重的球，停的位置几乎不动。</p>
+    <ul class="kid-figure-grid" aria-label="这一页要发现的四件事">
+      <li class="kid-figure" style="--tone:var(--phys)">
+        <span class="kid-figure-art" aria-hidden="true">🪜</span>
+        <span class="kid-figure-cap">放得高</span>
+        <span class="kid-figure-sub">滚得更远</span>
+      </li>
+      <li class="kid-figure" style="--tone:var(--code)">
+        <span class="kid-figure-art" aria-hidden="true">🧶</span>
+        <span class="kid-figure-cap">跑道糙</span>
+        <span class="kid-figure-sub">早早停下</span>
+      </li>
+      <li class="kid-figure" style="--tone:var(--math)">
+        <span class="kid-figure-art" aria-hidden="true">⚖️</span>
+        <span class="kid-figure-cap">换重球</span>
+        <span class="kid-figure-sub">停在同一处</span>
+      </li>
+      <li class="kid-figure" style="--tone:var(--sci)">
+        <span class="kid-figure-art" aria-hidden="true">🔀</span>
+        <span class="kid-figure-cap">只改一项</span>
+        <span class="kid-figure-sub">才看得清</span>
+      </li>
+    </ul>
+
+    <div class="learning-layers" data-audience="parent">
+      <details>
+        <summary><span class="layer-age">4–6 岁</span>一句话版本</summary>
+        <div>
+          <p>把球放高一点，它就会滚得更远。</p>
+        </div>
+      </details>
+      <details>
+        <summary><span class="layer-age">7–9 岁</span>再说清楚一点</summary>
+        <div>
+          <p>球举得高的时候，身上存着一份“能滚的本钱”。放手以后，这份本钱会一点一点变成速度：越往下滚，球就越快。所以起点越高，到坡底时越快，冲出去也越远。</p>
+          <p>坡越陡，球在坡上加速得越猛，很快就冲到底；坡很平的时候，球慢慢溜，甚至可能停在坡上不动——因为摩擦把它抓住了。</p>
+          <p>平地上的跑道也在偷偷帮忙刹车。冰面几乎不刹车，球滑得很远；地毯刹得厉害，球没滚几步就停了。摩擦不是把速度弄丢了，而是把它变成了一点点热。</p>
+          <p>还有一件反直觉的事：把球换成更重的，它停的位置几乎不变。重的球本钱多，但也更难推动，两件事又抵消了。</p>
+        </div>
+      </details>
+      <details>
+        <summary><span class="layer-age">10–12 岁</span>进阶：能量转换与变量控制</summary>
+        <div>
+          <p>球在高度 <code>h</code> 时具有重力势能 <code>PE = m·g·h</code>。下滚过程中它转成动能 <code>KE = ½·m·v²</code>，同时摩擦不断把一部分变成热 <code>Q</code>。能量总量不变，只是换了形式。</p>
+          <p>忽略摩擦时，坡底速度满足 <code>½·m·v² = m·g·h</code>，两边的 <code>m</code> 可以约掉，得到 <code>v = √(2·g·h)</code>：<b>坡底速度只由高度决定，跟球有多重无关，也跟坡有多陡无关。</b>陡坡只是让球更快地到达坡底，不会让它到得更快（速度更大）。</p>
+          <p>冲上平地后，摩擦力做负功直到球停下，停止距离 <code>d = v² / (2·μ·g)</code>。这里 <code>m</code> 又被约掉了，所以换个更重的球，停的地方几乎一样。但如果球撞到墙上，重球的动能更大，撞击的效果完全不同——质量不影响“停在哪”，却影响“撞多狠”。</p>
+          <p>坡太平时球会卡住：当 <code>tanθ ≤ μ</code> 时，沿坡向下的重力分量小于静摩擦能提供的阻力，球保持不动。</p>
+          <p>要判断某一项的影响，必须做<b>控制变量</b>的对比：两轮之间只允许改动高度、角度、跑道或球重中的一项，其余保持不变。这一页的完成条件就是这样设计的。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="fig-grid">
+      <div class="fig-card">
+        <h3>势能一路换成动能和热</h3>
+        <svg viewBox="0 0 240 130" role="img" aria-label="示意图：球在坡顶时全是势能，滚到坡底时大部分变成动能，还有一小部分变成摩擦热，总量保持不变。">
+          <path d="M22 104h200" fill="none" stroke="currentColor" stroke-width="2" opacity=".45"/>
+          <path d="M30 22L110 104" fill="none" stroke="currentColor" stroke-width="3" opacity=".55"/>
+          <circle cx="34" cy="17" r="8" fill="var(--math)"/>
+          <rect x="140" y="18" width="76" height="14" rx="5" fill="var(--phys)" opacity=".9"/>
+          <text x="140" y="14" fill="var(--phys)" font-size="10" font-weight="700">坡顶：全是势能</text>
+          <rect x="140" y="56" width="58" height="14" rx="5" fill="var(--math)" opacity=".9"/>
+          <rect x="200" y="56" width="16" height="14" rx="5" fill="var(--code)" opacity=".9"/>
+          <text x="140" y="52" fill="currentColor" font-size="10" font-weight="700">坡底：动能 + 摩擦热</text>
+          <rect x="140" y="94" width="30" height="14" rx="5" fill="var(--math)" opacity=".9"/>
+          <rect x="172" y="94" width="44" height="14" rx="5" fill="var(--code)" opacity=".9"/>
+          <text x="140" y="90" fill="currentColor" font-size="10" font-weight="700">滑行中：热越来越多</text>
+        </svg>
+        <p data-audience="parent">三条总长度一样——能量没有消失，只是从紫色换成蓝色，再换成橙色的热。</p>
+      </div>
+      <div class="fig-card">
+        <h3>同样的高度，不同的坡</h3>
+        <svg viewBox="0 0 240 130" role="img" aria-label="示意图：陡坡和缓坡起点高度相同，两个球到达坡底的速度相同，只是陡坡用的时间更短。">
+          <path d="M16 100h208" fill="none" stroke="currentColor" stroke-width="2" opacity=".45"/>
+          <path d="M20 30h204" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="4 5" opacity=".8"/>
+          <path d="M28 30L64 100" fill="none" stroke="var(--phys)" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M120 30L214 100" fill="none" stroke="var(--sci)" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="30" cy="25" r="7" fill="var(--math)"/>
+          <circle cx="122" cy="25" r="7" fill="var(--math)"/>
+          <text x="18" y="20" fill="var(--warn)" font-size="10" font-weight="700">同一高度</text>
+          <text x="26" y="118" fill="var(--phys)" font-size="10" font-weight="700">陡：到得早</text>
+          <text x="140" y="118" fill="var(--sci)" font-size="10" font-weight="700">缓：到得晚</text>
+        </svg>
+        <p data-audience="parent">忽略摩擦时，两个球到坡底的速度一样快；陡坡只是让这件事发生得更早。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="rampFairTitle">
+    <p class="section-kicker">怎样才算公平</p>
+    <h2 id="rampFairTitle">设计一次公平的试车</h2>
+    <p data-audience="parent">A 轮和 B 轮之间，只能改一样东西。改两样，你就不知道该谢谢谁。这也是这一页的完成条件：两轮必须都是真正跑完的试车，而且只有一项不同。</p>
+    <ol class="kid-steps-visual" aria-label="公平试车三步">
+      <li><span class="kid-tile-art" aria-hidden="true">🔒</span>锁住三项</li>
+      <li><span class="kid-tile-art" aria-hidden="true">🔀</span>只改一项</li>
+      <li><span class="kid-tile-art" aria-hidden="true">⚖️</span>比停的远近</li>
+    </ol>
+    <ul class="var-cards" aria-label="公平试车里的变量安排">
+      <li data-keep="change"><span aria-hidden="true">🔀</span> 只改一项：坡高 / 坡度 / 跑道 / 球重</li>
+      <li><span aria-hidden="true">🔒</span> 保持不变：另外三项</li>
+      <li><span aria-hidden="true">🚩</span> 每轮都要：先插旗</li>
+      <li><span aria-hidden="true">📍</span> 要看的：球停在哪</li>
+      <li><span aria-hidden="true">🚫</span> 不算数：撞墙、卡在坡上</li>
+    </ul>
+    <p class="hint" data-audience="parent">如果球撞到了终点墙，或者被摩擦锁在坡上，那一轮量不到真正的停止距离，需要调整条件后重做。</p>
+  </section>
+
+  <section class="card" aria-labelledby="rampPickTitle">
+    <p class="section-kicker">不用打字也能回答</p>
+    <h2 id="rampPickTitle">选一句你的发现</h2>
+    <p data-audience="parent">两轮试车做完后，点一句最像你看到的情况。它会被记进家长区的反思栏。</p>
+    <div class="kid-tiles" role="group" aria-labelledby="rampPickTitle">
+      <button class="kid-tile" type="button" data-ramp-phrase="放得越高，球滚得越远，因为高处存的本钱更多。" aria-pressed="false" aria-label="放得越高，球滚得越远">
+        <span class="kid-tile-art" aria-hidden="true">🪜</span><span class="kid-tile-label">放得高</span><span class="kid-tile-sub">滚得远</span>
+      </button>
+      <button class="kid-tile" type="button" data-ramp-phrase="坡越陡，球在坡上冲得越猛，更快到达坡底。" aria-pressed="false" aria-label="坡越陡，球冲得越猛">
+        <span class="kid-tile-art" aria-hidden="true">📐</span><span class="kid-tile-label">坡越陡</span><span class="kid-tile-sub">冲得猛</span>
+      </button>
+      <button class="kid-tile" type="button" data-ramp-phrase="跑道越粗糙，球停得越早，因为摩擦把速度变成了热。" aria-pressed="false" aria-label="跑道越粗糙，球停得越早">
+        <span class="kid-tile-art" aria-hidden="true">🧶</span><span class="kid-tile-label">跑道糙</span><span class="kid-tile-sub">早停下</span>
+      </button>
+      <button class="kid-tile" type="button" data-ramp-phrase="换成更重的球，它停的位置几乎没变。" aria-pressed="false" aria-label="换成更重的球，停的位置差不多">
+        <span class="kid-tile-art" aria-hidden="true">⚖️</span><span class="kid-tile-label">换重球</span><span class="kid-tile-sub">停一样</span>
+      </button>
+      <button class="kid-tile" type="button" data-ramp-phrase="坡太平的时候球会卡住不动，因为摩擦抓住了它。" aria-pressed="false" aria-label="坡太平的时候球会卡住不动">
+        <span class="kid-tile-art" aria-hidden="true">🛑</span><span class="kid-tile-label">太平了</span><span class="kid-tile-sub">球卡住</span>
+      </button>
+      <button class="kid-tile" type="button" data-ramp-phrase="这两轮我只改了一项，所以能看清这一项的影响。" aria-pressed="false" aria-label="这两轮我只改了一项">
+        <span class="kid-tile-art" aria-hidden="true">🔀</span><span class="kid-tile-label">只改一项</span><span class="kid-tile-sub">看得清</span>
+      </button>
+    </div>
+    <p class="hint pick-status" id="rampPickStatus" role="status" aria-live="polite">还没有选。也可以在家长区的反思栏里自己说一说。</p>
+  </section>
+
+  <section class="card" aria-labelledby="rampAskTitle">
+    <p class="section-kicker">继续追问</p>
+    <h2 id="rampAskTitle">还可以问下去</h2>
+    <ol class="qlist">
+      <li>如果把坡放得非常非常平，球还会滚下来吗？平到什么程度它就不动了？</li>
+      <li>重球和轻球停在同一个地方，那为什么被重球撞到会更疼？</li>
+      <li>摩擦把球的速度变成了什么？摸一摸滑梯滑很久之后的裤子，有没有变热？</li>
+      <li>如果跑道一半是冰面、一半是地毯，球会停在哪一段？</li>
+      <li>滑梯为什么下面要接一段平地？如果直接撞墙会怎样？</li>
+      <li>要证明“高度”真的有用，你至少需要做几轮试车？</li>
+    </ol>
   </section>
 
   <details class="parent-deep-dive" data-audience="parent">
@@ -259,12 +689,27 @@
     </div>
 
     <section class="task parent-deep-dive" data-audience="parent" aria-labelledby="rampTaskTitle">
-      <h2 class="task-title" id="rampTaskTitle">陪伴追问</h2>
+      <h2 class="task-title" id="rampTaskTitle">给家长的陪伴追问</h2>
       <ol>
-        <li>让孩子先锁定预测并完成 A 轮。</li>
+        <li>让孩子先锁定预测并完成 A 轮。预测写错没关系——被自己的预测“打脸”才是最好的学习时刻。</li>
         <li>提醒孩子在高度、角度、摩擦或质量中只改变一项，再锁定预测完成 B 轮。</li>
         <li>追问：「改变的条件怎样影响停止距离？」文字反思可选，不影响完成。</li>
       </ol>
+      <ol class="qlist">
+        <li><b>指向变量：</b>“这两轮你一共改了几样？如果改了两样，你怎么知道是哪一样起作用？”</li>
+        <li><b>逼近误解：</b>“重的球是不是一定滚得更远？”让孩子先猜，再用球重滑块验证。这是本页最有价值的一次意外。</li>
+        <li><b>区分两件事：</b>“重球和轻球停在同一个地方，那被哪个撞到更疼？”帮孩子把“停多远”和“撞多狠”分开。</li>
+        <li><b>追问摩擦：</b>“球慢下来的时候，它的速度去哪了？”引导到“变成了热”，而不是“消失了”。</li>
+        <li><b>陡与快：</b>“同样的高度换成更陡的坡，球到坡底会更快吗？”正确答案是速度一样、时间更短，这一点连大人也常混。</li>
+      </ol>
+      <h3 style="font-size:1rem">离屏延伸活动</h3>
+      <ol class="qlist">
+        <li><b>书本斜坡：</b>用一块木板垫在书上做斜坡，垫一本、三本、五本各放一次小球，用贴纸标记停的位置。</li>
+        <li><b>换跑道：</b>同样的坡，让球分别滚到地板、毛巾和地毯上，比较三段距离。</li>
+        <li><b>大小球：</b>找两个大小相同、重量不同的球（例如实心球和空心球）各滚一次，看看停的位置差多少。</li>
+        <li><b>找卡住的角度：</b>慢慢降低斜坡，直到球再也不肯自己滚下来，记下这个角度——那就是摩擦刚好赢过重力的位置。</li>
+      </ol>
+      <p class="hint">提示：不必要求孩子说出“势能”“动能”。能说出“放高一点本钱多”“地毯把它刹住了”“我只改了一样”，这一页的目标就达到了。</p>
       <div class="task-fields">
         <div><label for="rampReflection">可选反思</label><textarea class="input" id="rampReflection" rows="2" placeholder="例如：只增加高度，小球停得更远。"></textarea></div>
         <button class="btn" id="rampSurpriseBtn" type="button" data-playful-random-task="#rampSurprise">抽一个追问</button>
@@ -287,18 +732,29 @@
     </section>
 
     <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="teachTitle">
-      <h2 id="teachTitle">科学原理</h2>
-      <p><b>能量守恒。</b>球在高处拥有重力势能 <code>PE = m·g·h</code>；下滚时变成动能 <code>KE = ½·m·v²</code>，摩擦做功变成热 <code>Q = μ·m·g·cosθ·d</code>。理想模型中 <code>PE + KE + Q = m·g·h</code>。</p>
+      <h2 id="teachTitle">背后的原理</h2>
+      <p><b>能量守恒。</b>球在高处拥有重力势能 <code>PE = m·g·h</code>；下滚时变成动能 <code>KE = ½·m·v²</code>，摩擦做功变成热 <code>Q = μ·m·g·cosθ·d</code>。理想模型中 <code>PE + KE + Q = m·g·h</code>。能量不会消失，只会换一种形式。</p>
+      <h3>高度决定“本钱”，角度决定“花多久”</h3>
+      <p>在无摩擦的理想情形下，坡底速度只由下落高度决定：<code>½mv² = mgh</code>，得 <code>v = √(2gh)</code>，其中不含角度。换成更陡的坡，同一高度下到坡底的速度相同，只是路程更短、时间更少、平均加速度更大。孩子感觉“陡的更快”，指的通常是“更快到底”，而不是“到底时更快”。</p>
+      <p>加上摩擦后角度就有影响了：坡越陡，斜面上的路程越短，摩擦耗掉的能量 <code>Q</code> 越少，坡底速度反而略高。这也是本页里“只改角度”仍会改变停止距离的原因。</p>
       <h3>为什么质量不影响滑行距离</h3>
-      <p>坡底满足 <code>½mv² = mgh − Q</code>，平地停止距离 <code>d = v² / (2·μ·g)</code>，质量会约去。角度太小时（<code>tanθ ≤ μ</code>），球会被静摩擦锁住。</p>
+      <p>坡底满足 <code>½mv² = mgh − Q</code>，平地停止距离 <code>d = v² / (2·μ·g)</code>；两式里的质量都被约掉，所以轻球和重球停在同一处。直觉上会觉得“重球更有劲”，但重球同时也更难被推动、压在地面上的摩擦力也更大，两者刚好抵消。</p>
+      <p>要注意区分两件事：停止距离与质量无关，但<b>动能</b>与质量成正比。同速度下质量加倍，动能加倍——所以撞击的破坏力会明显不同。孩子说“重球撞得更疼”是对的，只是这和“滚多远”是两个问题。</p>
+      <h3>什么时候球根本不动</h3>
+      <p>斜面上下滑趋势与静摩擦的比较给出临界条件：当 <code>tanθ ≤ μ</code> 时，静摩擦足以锁住球，它会停在坡上不动。把角度调到很小、跑道换成地毯时就能看到这种情况。</p>
+      <h3>为什么必须一次只改一项</h3>
+      <p>本页的完成条件要求两轮试车在高度、角度、跑道、球重四项中恰好有一项不同，且两轮都必须先锁定预测、球必须真正滚到停下（撞墙或卡在坡上的一轮不计入）。如果同时改了两项，停止距离的变化就无法归因，这次比较也就不能回答任何问题——这正是控制变量法的意义。</p>
       <ol class="qlist">
         <li><b>预测：</b>质量加倍，停止距离会变吗？</li>
-        <li><b>观察：</b>势能、动能和摩擦热怎样交换？</li>
+        <li><b>观察：</b>势能、动能和摩擦热怎样交换？总量有变化吗？</li>
         <li><b>推理：</b>同高度时，改变角度为何仍可能改变坡底速度？</li>
+        <li><b>迁移：</b>要让球停得更远，你会优先调哪一项？为什么？</li>
       </ol>
+      <p class="hint">本模拟说明：使用固定步长 1/480 秒积分；把球当作沿斜面滑动的质点，用单一摩擦系数概括滚动与滑动阻力，未区分滚动摩擦、未计入空气阻力与球的转动惯量，因此数值只用于比较趋势，不代表真实测量值。</p>
     </section>
   </details>
 
+  <p class="lab-exit"><a class="btn btn-ghost" href="index.html"><span aria-hidden="true">←</span> 回到实验室目录</a></p>
   <footer class="foot wrap" style="padding-left:0;padding-right:0">
     少儿数理启蒙 · 互动实验 — 斜坡与能量。所有计算在你的浏览器里完成，不联网。
   </footer>
@@ -451,7 +907,16 @@
 
   function resize() {
     var cssW = Math.max(260, stage.clientWidth - 28);
-    var cssH = Math.round(Math.min(520, Math.max(300, cssW * 0.60)));
+    /* 高度上限跟着视口算，而不是用 CSS 的 height:!important 去压：
+       后者盖不掉 canvas 的像素缓冲尺寸，会把整幅画面纵向压扁。 */
+    var vh = window.innerHeight || 800;
+    var cap = vh < 640 ? Math.max(200, Math.round(vh * 0.40)) : 400;
+    /* 画面比例：世界是「8 米宽 × 1.5 米高」的扁长条，缩放又必须等比（30° 得看着像 30°）。
+       原来按 0.60 的高宽比开画布，结果地面只占底部三分之一，上面是一大片空天 ——
+       看着就像画歪了。这里把画布压扁到接近世界本身的比例；窄屏另给一档，
+       因为窄屏的限制项永远是宽度，压太扁反而看不清。 */
+    var ratio = cssW < 520 ? 0.42 : 0.31;
+    var cssH = Math.round(Math.min(cap, Math.max(170, cssW * ratio)));
     dpr = Math.min(3, window.devicePixelRatio || 1);
     cv.style.height = cssH + 'px';
     cv.width = Math.round(cssW * dpr);
@@ -462,15 +927,20 @@
   }
 
   function computeView() {
-    var padL = 30, padR = 16, padT = 26, padB = 46;
+    var padL = 26, padR = 16, padT = 18, padB = 46;
     var worldW = rampBase() + RUNWAY;
     var worldH = S.h + 0.35;
     var sx = (W - padL - padR) / worldW;
     var sy = (H - padT - padB) / worldH;
     view.scale = Math.max(8, Math.min(sx, sy));
-    view.ox = padL;
-    view.floorY = padT + worldH * view.scale;
-    if (view.floorY > H - padB) view.floorY = H - padB;
+    /* 坡很高时缩放受高度限制，世界横向填不满画布：把它居中，
+       否则右边会空出一大块，看着像内容跑偏了。 */
+    var used = worldW * view.scale;
+    view.ox = padL + Math.max(0, (W - padL - padR - used) / 2);
+    /* 地面一律贴在画面底部。原来是 floorY = padT + worldH*scale：宽度是限制项时
+       （多数情况都是），地面会被顶到画面上方三分之一处，下面留一大片空白 —— 旧版
+       那片空白是深色方块，看着像「画歪了」。scale 已经受 sy 约束，坡顶不会顶出上边。 */
+    view.floorY = H - padB;
   }
 
   // 世界坐标（米，原点在斜坡顶的正下方地面）→ 屏幕
@@ -489,144 +959,336 @@
     return { x: rampBase() + S.d, y: 0, onRamp: false };
   }
 
+  /* ---------- 画面配色 ----------
+     原来这里是一张线框图：半透明三角形 + 一条地面线 + 一个渐变圆。可页面的无障碍
+     描述写着「小球从草坡顶端滚下」，画面里既没有草也没有坡体；跑道尽头会撞的那道
+     挡板也没画，撞上了却只有一句 toast。现在补成一幅侧视的户外场景。
+     颜色写死在 P 里：canvas 自己铺不透明底色，不能跟随 --ink / --phys 这类主题变量，
+     否则同一段代码在家长模式和孩子模式下总有一头对比度不够。 */
+  var P = {
+    mono: C.mono, font: C.font,
+    skyTop: '#a9dcff', skyBot: '#eef8ff', sun: '#ffe6a0',
+    cloud: 'rgba(255,255,255,.92)',
+    hillFar: '#d2e9d0', hillNear: '#a9d8ae',
+    grass: '#63b25e', grassDark: '#3f8b45', grassEdge: '#2e6a35',
+    dirt: '#bd9063', dirtDark: '#8d6337',
+    track: '#ece2ca', trackEdge: '#b2a07e', tape: '#fffaec',
+    ice: 'rgba(86,170,222,.6)', rough: '#a85c1a',
+    ink: '#1d2b3a', mid: '#41536a', dim: '#5f7186',
+    ball: '#2f7ad6', ballLit: '#dcecff',
+    pred: '#d79400', stop: '#0f8a4d',
+    barrier: '#a5794c', barrierDark: '#6d4d2d',
+    chip: 'rgba(255,255,255,.94)'
+  };
+
+  /* 画面上的文字一律带白色底片：天空、草地、跑道三种底色深浅不同，
+     不垫底片就总有一处读不清。 */
+  function chipAt(x, y, text, bg, fg, align, size) {
+    var fs = size || 11;
+    ctx.font = '800 ' + fs + 'px ' + P.font;
+    var w = ctx.measureText(text).width + 12, h = fs + 9;
+    var bx = align === 'right' ? x - w : (align === 'center' ? x - w / 2 : x);
+    bx = Math.max(2, Math.min(bx, W - w - 2));
+    var by = Math.max(2, Math.min(y - h / 2, H - h - 2));
+    ctx.fillStyle = bg;
+    rr2(bx, by, w, h, h / 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(29,43,58,.18)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = fg;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, bx + w / 2, by + h / 2 + .5);
+  }
+  function rr2(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function frictionWord() { return S.mu <= 0.05 ? '很滑' : (S.mu < 0.16 ? '有点糙' : '很糙'); }
+
   function draw() {
     computeView();
     ctx.clearRect(0, 0, W, H);
     var th = rad(S.ang);
     var base = rampBase();
+    var floorY = view.floorY;
 
-    // 地面填充
-    ctx.fillStyle = 'rgba(29,37,64,.92)';
-    ctx.fillRect(0, view.floorY, W, H - view.floorY);
+    drawSky(floorY);
+    drawGround(floorY);
+    drawTrack(floorY, base);
+    drawRamp(floorY, base);
+    drawMarks(floorY, base, th);
+    drawFlags(floorY, base);
+    drawBall(floorY, th);
+    drawHud();
+  }
 
-    // 斜坡三角形
+  // ---- 天空 / 太阳 / 云 / 远山 ----
+  function drawSky(floorY) {
+    var sky = ctx.createLinearGradient(0, 0, 0, floorY);
+    sky.addColorStop(0, P.skyTop);
+    sky.addColorStop(1, P.skyBot);
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, floorY);
+
+    ctx.fillStyle = P.sun;
+    ctx.beginPath(); ctx.arc(W - 42, 30, 16, 0, Math.PI * 2); ctx.fill();
+
+    cloud(W * 0.34, 32, 1);
+    cloud(W * 0.66, 20, 0.75);
+
+    // 山高跟着画布高度走：写死像素高度的话，矮画布上山会盖住坡本身
+    var hk = Math.max(22, Math.min(64, floorY * 0.19));
+    ctx.fillStyle = P.hillFar;
+    hump(W * 0.20, floorY, W * 0.34, hk * 0.85);
+    hump(W * 0.78, floorY, W * 0.40, hk);
+    ctx.fillStyle = P.hillNear;
+    hump(W * 0.52, floorY, W * 0.34, hk * 0.62);
+  }
+  function cloud(x, y, k) {
+    ctx.fillStyle = P.cloud;
     ctx.beginPath();
-    ctx.moveTo(wx(0), wy(S.h));
-    ctx.lineTo(wx(base), wy(0));
-    ctx.lineTo(wx(0), wy(0));
-    ctx.closePath();
-    var grad = ctx.createLinearGradient(wx(0), wy(S.h), wx(base), wy(0));
-    grad.addColorStop(0, 'rgba(167,139,250,.30)');
-    grad.addColorStop(1, 'rgba(167,139,250,.10)');
-    ctx.fillStyle = grad; ctx.fill();
-    ctx.strokeStyle = C.phys; ctx.lineWidth = 2; ctx.stroke();
+    ctx.arc(x, y, 13 * k, 0, Math.PI * 2);
+    ctx.arc(x + 15 * k, y + 4 * k, 10 * k, 0, Math.PI * 2);
+    ctx.arc(x - 15 * k, y + 5 * k, 9 * k, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  function hump(cx, baseY, w, h) {
+    ctx.beginPath();
+    ctx.moveTo(cx - w / 2, baseY);
+    ctx.quadraticCurveTo(cx, baseY - h * 2, cx + w / 2, baseY);
+    ctx.closePath(); ctx.fill();
+  }
 
-    // 摩擦纹理（μ 越大越密）
-    var n = Math.round(4 + S.mu * 90);
-    ctx.strokeStyle = 'rgba(251,146,60,' + (0.15 + S.mu * 0.9).toFixed(3) + ')';
-    ctx.lineWidth = 1.5;
-    for (var i = 0; i < n; i++) {
-      var fx = base + (RUNWAY) * (i / n);
+  // ---- 地面：草皮 + 泥土断面 ----
+  function drawGround(floorY) {
+    ctx.fillStyle = P.dirt;
+    ctx.fillRect(0, floorY, W, H - floorY);
+    ctx.fillStyle = P.grass;
+    ctx.fillRect(0, floorY, W, 7);
+    ctx.fillStyle = P.grassEdge;
+    ctx.fillRect(0, floorY, W, 2);
+    ctx.strokeStyle = 'rgba(109,77,45,.55)'; ctx.lineWidth = 1;
+    for (var i = 6; i < W; i += 27) {
+      var y = floorY + 24 + ((i / 27) % 3) * 5;
+      ctx.beginPath(); ctx.moveTo(i, y + .5); ctx.lineTo(i + 13, y + .5); ctx.stroke();
+    }
+  }
+
+  /* ---- 跑道：实体路面 + 花纹（μ 越大越糙）+ 米尺 + 尽头挡板 ----
+     花纹不只靠颜色：滑是长横条，糙是密斜纹，另外 HUD 上还有「很滑 / 有点糙 / 很糙」文字。 */
+  function drawTrack(floorY, base) {
+    var x0 = wx(base), x1 = wx(base + RUNWAY), hTrack = 13;
+    ctx.fillStyle = P.track;
+    ctx.fillRect(x0, floorY, x1 - x0, hTrack);
+    ctx.fillStyle = P.trackEdge;
+    ctx.fillRect(x0, floorY + hTrack, x1 - x0, 3);
+
+    if (S.mu <= 0.05) {
+      ctx.strokeStyle = P.ice; ctx.lineWidth = 2;
+      for (var sx = x0 + 9; sx < x1 - 8; sx += 32) {
+        ctx.beginPath(); ctx.moveTo(sx, floorY + 5.5); ctx.lineTo(sx + 20, floorY + 5.5); ctx.stroke();
+      }
+    } else {
+      var n = Math.round(6 + S.mu * 150);
+      ctx.save();
+      ctx.strokeStyle = P.rough;
+      ctx.globalAlpha = Math.min(0.85, 0.28 + S.mu * 2.2);
+      ctx.lineWidth = 1.4;
+      for (var i = 0; i < n; i++) {
+        var hx = x0 + (x1 - x0) * (i / n);
+        ctx.beginPath(); ctx.moveTo(hx, floorY + 3); ctx.lineTo(hx - 5, floorY + 11); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // 米尺：整米有数字，半米只有短刻度
+    var tapeTop = floorY + hTrack + 3;
+    ctx.fillStyle = P.tape;
+    ctx.fillRect(x0, tapeTop, x1 - x0, 17);
+    ctx.strokeStyle = P.trackEdge; ctx.lineWidth = 1;
+    ctx.strokeRect(x0 + .5, tapeTop + .5, Math.max(0, x1 - x0 - 1), 16);
+    ctx.font = '800 10px ' + P.mono;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (var mk = 0; mk <= RUNWAY + 0.001; mk += 0.5) {
+      var mxp = wx(base + mk);
+      var whole = Math.abs(mk - Math.round(mk)) < 1e-6;
+      ctx.strokeStyle = P.trackEdge;
       ctx.beginPath();
-      ctx.moveTo(wx(fx), view.floorY + 3);
-      ctx.lineTo(wx(fx) - 4, view.floorY + 9);
+      ctx.moveTo(mxp + .5, tapeTop); ctx.lineTo(mxp + .5, tapeTop + (whole ? 5 : 3));
+      ctx.stroke();
+      if (whole) {
+        ctx.fillStyle = P.mid;
+        ctx.fillText(mk + 'm', mxp, tapeTop + 11);
+      }
+    }
+
+    // 尽头挡板：撞到这里球就停了，画出来孩子才知道「跑道到头了」
+    ctx.fillStyle = P.barrier;
+    ctx.fillRect(x1, floorY - 26, 7, 26);
+    ctx.fillStyle = P.barrierDark;
+    ctx.fillRect(x1, floorY - 26, 7, 4);
+    for (var by = floorY - 19; by < floorY - 1; by += 6) {
+      ctx.fillRect(x1, by, 7, 1);
+    }
+    if (S.phase === 'stopped' && S.stopAt === RUNWAY) {
+      chipAt(x1 + 4, floorY - 36, '撞到尽头', P.chip, P.ink, 'right', 10);
+    }
+  }
+
+  /* ---- 草坡：实心坡体 + 左侧断面分层 + 斜面上的草皮和草尖 ---- */
+  function drawRamp(floorY, base) {
+    var xTop = wx(0), yTop = wy(S.h), xFoot = wx(base), yFoot = wy(0);
+
+    ctx.beginPath();
+    ctx.moveTo(xTop, yTop); ctx.lineTo(xFoot, yFoot); ctx.lineTo(xTop, yFoot);
+    ctx.closePath();
+    var g = ctx.createLinearGradient(xTop, yTop, xTop, yFoot);
+    g.addColorStop(0, P.dirt);
+    g.addColorStop(1, P.dirtDark);
+    ctx.fillStyle = g; ctx.fill();
+
+    ctx.save();
+    ctx.clip();
+    ctx.strokeStyle = 'rgba(60,40,20,.18)'; ctx.lineWidth = 1;
+    for (var ly = yTop + 10; ly < yFoot - 3; ly += 10) {
+      ctx.beginPath(); ctx.moveTo(xTop, ly + .5); ctx.lineTo(xFoot, ly + .5); ctx.stroke();
+    }
+    ctx.restore();
+
+    var dx = xFoot - xTop, dy = yFoot - yTop;
+    var L = Math.sqrt(dx * dx + dy * dy) || 1;
+    var ux = dx / L, uy = dy / L;
+    var nx = uy, ny = -ux;              // 斜面法线，朝斜坡上方
+
+    ctx.lineCap = 'butt';
+    ctx.strokeStyle = P.grass; ctx.lineWidth = 7;
+    ctx.beginPath(); ctx.moveTo(xTop, yTop); ctx.lineTo(xFoot, yFoot); ctx.stroke();
+    ctx.strokeStyle = P.grassEdge; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(xTop + nx * 3, yTop + ny * 3); ctx.lineTo(xFoot + nx * 3, yFoot + ny * 3);
+    ctx.stroke();
+    ctx.strokeStyle = P.grassDark; ctx.lineWidth = 1.6;
+    for (var t = 7; t < L - 4; t += 13) {
+      var px = xTop + ux * t, py = yTop + uy * t;
+      ctx.beginPath();
+      ctx.moveTo(px + nx * 3, py + ny * 3);
+      ctx.lineTo(px + nx * 9 - ux * 3, py + ny * 9 - uy * 3);
       ctx.stroke();
     }
 
-    // 地面线
-    ctx.strokeStyle = C.line; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0, view.floorY + .5); ctx.lineTo(W, view.floorY + .5); ctx.stroke();
+    // 坡顶的放球平台
+    ctx.fillStyle = P.barrier;
+    ctx.fillRect(Math.max(0, xTop - 11), yTop - 6, 23, 6);
+    ctx.fillStyle = P.barrierDark;
+    ctx.fillRect(Math.max(0, xTop - 11), yTop - 6, 23, 2);
+  }
 
-    // 高度标注
+  // ---- 坡高 / 角度标注 ----
+  function drawMarks(floorY, base, th) {
+    var xTop = wx(0), yTop = wy(S.h), yFoot = wy(0), xFoot = wx(base);
+    var dimX = Math.max(9, xTop - 15);
+    ctx.strokeStyle = P.ink; ctx.lineWidth = 1.5;
     ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = 'rgba(167,139,250,.55)';
-    ctx.beginPath(); ctx.moveTo(wx(0), wy(S.h)); ctx.lineTo(wx(0), wy(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(dimX, yTop); ctx.lineTo(dimX, yFoot); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.save();
-    ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.phys;
-    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText('h=' + S.h.toFixed(2) + 'm', wx(0) + 5, wy(S.h / 2));
-    ctx.restore();
-
-    // 角度弧
-    ctx.strokeStyle = 'rgba(182,192,224,.6)';
     ctx.beginPath();
-    ctx.arc(wx(base), wy(0), Math.min(40, base * view.scale * 0.5), Math.PI, Math.PI + th);
+    ctx.moveTo(dimX - 5, yTop); ctx.lineTo(dimX + 5, yTop);
+    ctx.moveTo(dimX - 5, yFoot); ctx.lineTo(dimX + 5, yFoot);
     ctx.stroke();
-    ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.mid;
-    ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
-    ctx.fillText(S.ang + '°', wx(base) - 8, wy(0) - 4);
+    var narrow = W < 520;
+    chipAt(xTop + 6, (yTop + yFoot) / 2, (narrow ? '' : '高 ') + S.h.toFixed(2) + ' m',
+      P.chip, P.ink, 'left', narrow ? 10 : 11);
 
-    // 跑道刻度
-    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.font = '600 10px ' + C.mono;
-    for (var mk = 0; mk <= RUNWAY + 0.001; mk += 1) {
-      var mxp = wx(base + mk);
-      ctx.strokeStyle = C.soft;
-      ctx.beginPath(); ctx.moveTo(mxp, view.floorY); ctx.lineTo(mxp, view.floorY + 6); ctx.stroke();
-      ctx.fillStyle = C.dim;
-      ctx.fillText(mk + 'm', mxp, view.floorY + 9);
+    var r = Math.min(46, Math.max(16, base * view.scale * 0.45));
+    ctx.strokeStyle = P.mid; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(xFoot, yFoot, r, Math.PI, Math.PI + th); ctx.stroke();
+    // 坡底太窄时角度标签会和坡高标签叠在一起；角度在下面的图卡里也一直显示，这里让位
+    if (base * view.scale > 96) {
+      chipAt(xFoot - r * 0.5, yFoot - 13, S.ang + '°', P.chip, P.ink, 'center', 11);
     }
+  }
 
-    // 预测旗
-    var pfx = wx(base + S.pred);
-    ctx.strokeStyle = S.predLocked ? C.warn : 'rgba(251,191,36,.55)';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(pfx, view.floorY); ctx.lineTo(pfx, view.floorY - 34); ctx.stroke();
-    ctx.fillStyle = S.predLocked ? C.warn : 'rgba(251,191,36,.55)';
+  /* ---- 两支旗：黄旗 = 我猜的，绿旗 + 虚线 = 真的停这（和页面图例一致） ---- */
+  function flagAt(x, floorY, color, label, dashed) {
+    var top = floorY - 42;
+    ctx.strokeStyle = P.ink; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x + .5, floorY); ctx.lineTo(x + .5, top); ctx.stroke();
+    ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.moveTo(pfx, view.floorY - 34); ctx.lineTo(pfx + 18, view.floorY - 28); ctx.lineTo(pfx, view.floorY - 22);
+    ctx.moveTo(x + 1, top); ctx.lineTo(x + 21, top + 7); ctx.lineTo(x + 1, top + 14);
     ctx.closePath(); ctx.fill();
-    ctx.font = '700 10px ' + C.mono; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-    ctx.fillText('猜 ' + S.pred.toFixed(2) + 'm', pfx + 3, view.floorY - 36);
-
-    // 实际停止标记
-    if (S.phase === 'stopped' && S.stopAt !== null && S.stopAt >= 0) {
-      var sxp = wx(base + S.stopAt);
-      ctx.strokeStyle = C.sci; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(sxp, view.floorY + 2); ctx.lineTo(sxp, view.floorY - 20); ctx.stroke();
-      ctx.fillStyle = C.sci; ctx.font = '700 10px ' + C.mono; ctx.textAlign = 'center';
-      ctx.fillText(S.stopAt.toFixed(2) + 'm', sxp, view.floorY - 22);
+    ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = 1; ctx.stroke();
+    if (dashed) {
+      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(x + .5, floorY); ctx.lineTo(x + .5, floorY + 33); ctx.stroke();
+      ctx.setLineDash([]);
     }
+    chipAt(x, top - 12, label, P.chip, P.ink, 'center', 10);
+  }
+  function drawFlags(floorY, base) {
+    flagAt(wx(base + S.pred), floorY, S.predLocked ? P.pred : 'rgba(215,148,0,.5)',
+      '猜 ' + S.pred.toFixed(2) + ' m', false);
+    if (S.phase === 'stopped' && S.stopAt !== null && S.stopAt >= 0) {
+      flagAt(wx(base + S.stopAt), floorY, P.stop, '停 ' + S.stopAt.toFixed(2) + ' m', true);
+    }
+  }
 
-    // 小球
+  // ---- 小球：接触影 + 高光 + 自转标记 + 速度箭头 ----
+  function drawBall(floorY, th) {
     var p = ballPos();
     var bx = wx(p.x), by = wy(p.y);
-    var rpx = Math.max(6, BALL_R * view.scale);
-    // 让球贴在表面上：沿法线抬起 r
+    var rpx = Math.max(8, BALL_R * view.scale);
     if (p.onRamp) { bx += Math.sin(th) * rpx; by -= Math.cos(th) * rpx; }
     else { by -= rpx; }
 
     ctx.save();
-    ctx.translate(bx, by);
-    ctx.rotate(S.spin);
-    var bg = ctx.createRadialGradient(-rpx * 0.3, -rpx * 0.35, rpx * 0.1, 0, 0, rpx);
-    bg.addColorStop(0, '#dbe6ff');
-    bg.addColorStop(1, C.math);
-    ctx.fillStyle = bg;
-    ctx.beginPath(); ctx.arc(0, 0, rpx, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(11,15,26,.55)'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(0, -rpx); ctx.lineTo(0, rpx); ctx.stroke();   // 自转标记
-    ctx.beginPath(); ctx.moveTo(-rpx, 0); ctx.lineTo(rpx, 0); ctx.stroke();
+    ctx.translate(bx, by + rpx * 0.92); ctx.scale(1, 0.3);
+    ctx.fillStyle = 'rgba(30,45,28,.28)';
+    ctx.beginPath(); ctx.arc(0, 0, rpx * 1.15, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
 
-    // 速度箭头
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.rotate(S.spin);
+    var bg = ctx.createRadialGradient(-rpx * 0.35, -rpx * 0.4, rpx * 0.1, 0, 0, rpx);
+    bg.addColorStop(0, P.ballLit);
+    bg.addColorStop(1, P.ball);
+    ctx.fillStyle = bg;
+    ctx.beginPath(); ctx.arc(0, 0, rpx, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(10,26,50,.6)'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -rpx * 0.78); ctx.lineTo(0, rpx * 0.78); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-rpx * 0.78, 0); ctx.lineTo(rpx * 0.78, 0); ctx.stroke();
+    ctx.restore();
+
     if (S.v > 0.05) {
       var dirx = p.onRamp ? Math.cos(th) : 1;
       var diry = p.onRamp ? Math.sin(th) : 0;
-      var len = Math.min(70, 8 + S.v * 9);
-      ctx.strokeStyle = C.sci; ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(bx, by);
-      ctx.lineTo(bx + dirx * len, by + diry * len);
-      ctx.stroke();
-      ctx.fillStyle = C.sci;
+      var len = Math.min(70, 10 + S.v * 9);
       var ex = bx + dirx * len, ey = by + diry * len;
-      ctx.save(); ctx.translate(ex, ey); ctx.rotate(Math.atan2(diry, dirx));
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-8, -4.5); ctx.lineTo(-8, 4.5); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = P.stop; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(ex, ey); ctx.stroke();
+      ctx.save();
+      ctx.translate(ex, ey); ctx.rotate(Math.atan2(diry, dirx));
+      ctx.fillStyle = P.stop;
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-9, -5); ctx.lineTo(-9, 5); ctx.closePath(); ctx.fill();
       ctx.restore();
-      ctx.font = '700 10px ' + C.mono; ctx.fillStyle = C.sci;
-      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-      ctx.fillText(S.v.toFixed(2) + ' m/s', bx + dirx * len + 6, by + diry * len - 2);
+      chipAt(ex + 7, ey - 9, S.v.toFixed(2) + ' m/s', P.chip, P.ink, 'left', 10);
     }
+  }
 
-    // 左上信息
-    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-    ctx.font = '700 12px ' + C.font; ctx.fillStyle = C.mid;
+  /* ---- 左上状态 ----
+     窄画面上这行字如果写全，会横穿整幅画面并压住坡顶，所以按宽度给两套文案；
+     μ 和质量在下面的图卡里本来就一直显示，画面上不必重复那么多。 */
+  function drawHud() {
     var label = S.phase === 'ready' ? '待放手' : (S.phase === 'stopped' ? '已停下' : (S.phase === 'ramp' ? '下坡中' : '平地滑行'));
-    ctx.fillText(label, 6, 6);
-    ctx.font = '600 11px ' + C.mono; ctx.fillStyle = C.dim;
-    ctx.fillText('t=' + S.t.toFixed(2) + 's  μ=' + S.mu.toFixed(2) + '  m=' + S.m.toFixed(2) + 'kg', 6, 22);
+    chipAt(8, 15, label, P.chip, P.ink, 'left', 12);
+    var line = W < 520
+      ? 't ' + S.t.toFixed(2) + 's · 跑道' + frictionWord()
+      : 't=' + S.t.toFixed(2) + 's  μ=' + S.mu.toFixed(2) + '（跑道' + frictionWord() + '）  m=' + S.m.toFixed(2) + 'kg';
+    chipAt(8, 36, line, P.chip, P.mid, 'left', 11);
   }
 
   // ---------- 面板 ----------
@@ -700,21 +1362,33 @@
   }
   function recordFairTrial(err, hitWall) {
     if (S.trials.length >= 2 || !S.predLocked) return;
-    S.trials.push({ ang: S.ang, h: S.h, mu: S.mu, m: S.m, pred: S.pred, actual: S.d, err: err, hitWall: !!hitWall, locked: true });
+    // 冲到跑道尽头时读数被截断（只能知道「至少 6 米」），不是一次可用的测量，不计入公平比较。
+    if (hitWall) {
+      fairResult.textContent = '这一轮冲出了跑道尽头，只能读到“至少 ' + RUNWAY.toFixed(0) + ' 米”，不算一次有效试车。把坡调矮一点或把摩擦调大一点，重新锁定预测再试。';
+      announce(fairResult.textContent);
+      updateRampTask();
+      updateABDisplay();
+      return;
+    }
+    S.trials.push({ ang: S.ang, h: S.h, mu: S.mu, m: S.m, pred: S.pred, actual: S.d, err: err, hitWall: false, locked: true });
     checkFairPair();
   }
   function checkFairPair() {
     fairPassed = false; fairChanged = '';
     if (S.trials.length < 2) {
-      fairResult.textContent = 'A 已完成。只改变高度、角度、跑道或球重中的一项，再锁定 B 的预测。';
+      fairResult.textContent = 'A 轮已记录。现在只改变高度、角度、跑道或球重中的一项，再锁定 B 轮的预测，两轮都完成才算通过。';
     } else {
       var a = S.trials[0], b = S.trials[1];
       var changed = ['ang', 'h', 'mu', 'm'].filter(function (key) { return Math.abs(a[key] - b[key]) > 0.0001; });
-      if (changed.length === 1) {
-        fairPassed = true; fairChanged = VAR_LABELS[changed[0]];
-        fairResult.textContent = '公平通过：只改变了' + fairChanged + '。';
+      if (changed.length !== 1) {
+        fairResult.textContent = changed.length ? '这次改变了' + changed.length + '项（' + changed.map(function (key) { return VAR_LABELS[key]; }).join('、') + '），说不清是谁造成的差别。请点“重来再试”，只改一项。' : 'A、B 两轮完全相同，没有可比较的变量。请点“重来再试”，只改一项。';
+      } else if (Math.abs(a.actual - b.actual) < 0.05) {
+        // 两轮停止距离几乎一样：变量改得太小，看不出影响，不算完成一次有效对比。
+        fairChanged = VAR_LABELS[changed[0]];
+        fairResult.textContent = '只改了' + fairChanged + '，但两轮停的地方几乎一样（相差不到 5 厘米），还看不出影响。请点“重来再试”，把' + fairChanged + '改得更明显一些。';
       } else {
-        fairResult.textContent = changed.length ? '这次改变了' + changed.length + '项，请点“重来”再做。' : 'A、B 完全相同，请点“重来”后只改变一项。';
+        fairPassed = true; fairChanged = VAR_LABELS[changed[0]];
+        fairResult.textContent = '公平通过：只改变了' + fairChanged + '，两轮停止距离相差 ' + Math.abs(a.actual - b.actual).toFixed(2) + ' 米。';
       }
     }
     updateRampTask();
@@ -735,10 +1409,16 @@
     rampFairCardSave.disabled = !canComplete;
     if (canComplete) {
       rampFairCardContent.value = evidenceText() + '\n' + trialSnapshot(S.trials[0], 1) + '\n' + trialSnapshot(S.trials[1], 2) + (rampReflection.value.trim() ? '\n可选反思：' + rampReflection.value.trim() : '');
-      rampTaskStatus.textContent = progressSaved ? '已记录完成。' : '两轮公平试车完成，可以记录了！';
+      rampTaskStatus.textContent = progressSaved ? '已记录完成。' : '两轮公平试车完成：只改了' + fairChanged + '，可以记录了！';
     } else {
       rampFairCardContent.value = '完成一组公平比较后，这里会生成实验快照。';
-      rampTaskStatus.textContent = S.trials.length ? 'A 已完成：B 轮必须只改一项。' : '还差两轮公平试车。';
+      if (S.trials.length >= 2) {
+        rampTaskStatus.textContent = '这两轮还不算公平比较，点“重来再试”，只改一项、并让差别看得出来。';
+      } else if (S.trials.length === 1) {
+        rampTaskStatus.textContent = '还差 B 轮：只改高度、角度、跑道、球重中的一项，锁定预测后再放一次球。';
+      } else {
+        rampTaskStatus.textContent = '还差两轮公平试车：先锁定预测完成 A 轮，再只改一项完成 B 轮。';
+      }
     }
   }
 
@@ -760,7 +1440,10 @@
   }
 
   // ---------- 循环 ----------
-  var running = false, last = 0, acc = 0;
+  // 原来是永久 rAF：球停下、页面没人动，画布每秒仍重画 60 次，平板上白耗电。
+  // 现在只在「球在滚」或「刚刚有交互」时跑；空闲自己停下，下次交互再唤醒。
+  var running = false, last = 0, acc = 0, rafId = 0, settle = 0;
+  var SETTLE_FRAMES = 30;   // 交互后多画约 0.5 秒，等拖动、滑杆等状态落定
   function loop(now) {
     if (!last) last = now;
     var real = Math.min(0.05, (now - last) / 1000);
@@ -773,8 +1456,17 @@
     } else { acc = 0; }
     draw();
     refresh();
-    requestAnimationFrame(loop);
+    if (settle > 0) settle--;
+    if (running || settle > 0) { rafId = requestAnimationFrame(loop); }
+    else { rafId = 0; last = 0; }
   }
+  function requestDraw() {
+    settle = SETTLE_FRAMES;
+    if (!rafId) { last = 0; rafId = requestAnimationFrame(loop); }
+  }
+  // 捕获阶段委托唤醒：不必逐个改控件处理器，绘制发生在下一帧、状态已更新完。
+  ['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'input', 'change', 'click', 'keydown']
+    .forEach(function (type) { document.addEventListener(type, requestDraw, true); });
 
   // ---------- UI ----------
   var toastEl = document.getElementById('toast'), toastTimer = 0;
@@ -786,6 +1478,16 @@
   var liveEl = document.getElementById('live');
   function announce(m) { liveEl.textContent = m; }
 
+  [].forEach.call(document.querySelectorAll('[data-ramp-phrase]'), function (button) {
+    button.addEventListener('click', function () {
+      document.querySelectorAll('[data-ramp-phrase]').forEach(function (item) {
+        item.setAttribute('aria-pressed', item === button ? 'true' : 'false');
+      });
+      rampReflection.value = button.getAttribute('data-ramp-phrase');
+      rampReflection.dispatchEvent(new Event('input', { bubbles: true }));
+      document.getElementById('rampPickStatus').textContent = '已选：' + button.textContent.trim() + '。完成两轮公平试车后即可记录。';
+    });
+  });
   rampReflection.addEventListener('input', updateRampTask);
   rampComplete.addEventListener('click', function () {
     if (rampComplete.disabled || progressSaved || !fairPassed || S.trials.length !== 2 || !window.Progress) return;
@@ -835,10 +1537,10 @@
     return el;
   }
 
-  var angEl = bindRange('ang', 'angOut', function (v) { return v.toFixed(0) + '°'; },
-    function (v) { S.ang = Math.min(45, Math.max(5, v)); running = false; reset(true); });
-  var hgtEl = bindRange('hgt', 'hgtOut', function (v) { return v.toFixed(2) + ' m'; },
-    function (v) { S.h = Math.min(2.5, Math.max(0.3, v)); running = false; reset(true); });
+  /* 角度与高度滑杆已从界面移除，S.ang / S.h 用初始值（30°、1.2 m）。
+     这里原本还绑定 'ang' / 'hgt'，但那两个 id 早已不在 markup 里：
+     bindRange 第一行就对 null 调 addEventListener，整段脚本从此中断，
+     后面所有控件都绑不上。别再按 id 绑不存在的控件。 */
   var muEl = bindRange('mu', 'muOut', function (v) { return v.toFixed(2); },
     function (v) { S.mu = Math.min(0.5, Math.max(0, v)); syncMuChips(); running = false; reset(true); });
   bindRange('mass', 'massOut', function (v) { return v.toFixed(2) + ' kg'; },
@@ -929,14 +1631,14 @@
   reset(false);
   updateRampTask();
   resize();
-  requestAnimationFrame(loop);
+  requestDraw();   // 走 requestDraw 而不是裸 rAF：否则首帧待执行时 rafId 仍为 0，交互唤醒会重复排帧
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>if (window.Progress) Progress.visit("games/ramp-and-roll.html", "斜坡滚球");</script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

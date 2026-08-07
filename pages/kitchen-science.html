@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>厨房科学 · 30 个零成本家庭实验 | 少儿数理启蒙</title>
 <meta name="description" content="30 个用家里现成材料就能做的数学与物理实验：材料、步骤、背后的原理，以及最关键的——该问孩子什么问题。按年龄、学科、脏乱程度筛选。">
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#f8f4ea">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .hero { padding: 40px 0 20px; }
@@ -26,7 +26,8 @@
 
   .filters {
     position: sticky; top: 51px; z-index: 50;
-    background: rgba(11,15,26,.88);
+    /* 用共享层的粘性条底色：随主题走。写死深色会让条里的 --ink 文字变成深底深字。 */
+    background: var(--nav-bg);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
     padding: 12px 0; margin: 20px 0 24px;
@@ -110,20 +111,22 @@
   /* 本页局部浅色主题 */
   :root {
     color-scheme: light;
-    --bg: #f8f4ea;
-    --bg-soft: #f3eee2;
+    --bg: #fff8ec;
+    --bg-soft: #fff1d9;
     --surface: #fffdf8;
-    --surface-2: #f3f7f1;
-    --line: #cfd9d1;
-    --line-soft: #e2e8e1;
-    --ink: #213a32;
-    --ink-mid: #405b51;
-    --ink-dim: #667a72;
-    --accent: #3f7663;
-    --sci: #39765f;
-    --phys: #756796;
-    --warn: #93621f;
-    --danger: #8a514d;
+    --surface-2: #fff4df;
+    --line: #e9bd77;
+    --line-soft: #f3d9aa;
+    --ink: #402d1c;
+    --ink-mid: #6b4f36;
+    /* 两个值都按本页纸色底重算：原来 --ink-dim 4.34、--accent 3.55（还有白字压在
+       --accent 上只有 3.65），都低于 AA 4.5。加深后分别是 5.05 与 5.04（白字 5.19）。 */
+    --ink-dim: #7f6247;
+    --accent: #b34f18;
+    --sci: #177447;
+    --phys: #7252a3;
+    --warn: #9b641c;
+    --danger: #a63c35;
   }
   html { overflow-x: hidden; background: var(--bg); }
   body {
@@ -223,6 +226,251 @@
   a, p, li { overflow-wrap: anywhere; }
   :focus-visible { outline: 3px solid #c68138; outline-offset: 3px; }
 
+  /* 图形优先实验卡：大色块、粗描边、硬阴影。 */
+  .xp {
+    border: 3px solid var(--line);
+    border-radius: 28px;
+    box-shadow: 0 7px 0 #dfb66f;
+    background: #fffdf8;
+  }
+  .xp-head { border-bottom: 3px solid var(--line-soft); }
+  .xp h3 { font-size: 1.25rem; color: var(--ink); }
+  .xp .hook { font-style: normal; font-weight: 800; color: var(--accent); }
+  .xp-visual {
+    min-height: 250px;
+    padding: 12px;
+    border: 3px solid var(--line);
+    border-radius: 24px;
+    background: linear-gradient(155deg, #fff, #fff1d9);
+    box-shadow: 0 6px 0 #e8c88e;
+  }
+  .xp-visual .kid-scene-art { min-height: 190px; }
+  .xp-scene { display: block; width: 100%; max-width: 420px; height: auto; }
+  .xp-scene .stage-bubble { transform-box: fill-box; transform-origin: center; animation: kitchen-bob 2.4s ease-in-out infinite; }
+  .xp-scene .stage-bubble:nth-of-type(2n) { animation-delay: -.8s; }
+  .xp-scene .stage-arrow { animation: kitchen-nudge 1.6s ease-in-out infinite; }
+  .scene-labels { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 8px; }
+  .scene-label {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 40px; padding: 6px 13px;
+    border: 3px solid var(--line); border-radius: 999px;
+    background: #fff; color: var(--ink); font-weight: 850;
+    box-shadow: 0 3px 0 #e8c88e;
+  }
+  .kid-answer-group { padding: 12px; border: 3px solid var(--line-soft); border-radius: 22px; background: #fff8ec; }
+  .kid-answer-group > b { display: block; margin-bottom: 8px; color: var(--ink); }
+  .kid-answer-group .kid-choice { gap: 8px; }
+  .kid-answer-group button,
+  .quick-fill {
+    min-width: 48px; min-height: 48px; padding: 9px 14px;
+    border: 3px solid var(--line); border-radius: 999px;
+    background: #fff; color: var(--ink); font: 800 .94rem/1.2 inherit;
+    box-shadow: 0 4px 0 #e8c88e; cursor: pointer;
+  }
+  .kid-answer-group button:active,
+  .quick-fill:active { transform: translateY(3px); box-shadow: 0 1px 0 #e8c88e; }
+  .kid-answer-group button[aria-pressed="true"],
+  .quick-fill[aria-pressed="true"] {
+    border-color: var(--sci); background: #ddf8e8; color: #0b4a2a;
+    box-shadow: 0 3px 0 #8bc9a7;
+  }
+  .choice-status { min-height: 1.5em; margin: 8px 0 0; color: var(--sci); font-weight: 800; }
+  .quick-picks { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  .kid-steps-visual > li {
+    border: 3px solid var(--line-soft); border-radius: 22px;
+    background: #fff; color: var(--ink); box-shadow: 0 4px 0 #ecd09c;
+  }
+  .kid-steps-visual .kid-tile-art { font-size: 2.5rem; }
+  .parent-deep-dive {
+    margin-top: 2px; padding: 0 12px 12px;
+    border: 3px dashed var(--line); border-radius: 20px; background: #fffaf1;
+  }
+  .parent-deep-dive > summary {
+    display: flex; align-items: center; min-height: 48px;
+    cursor: pointer; color: var(--ink); font-weight: 850;
+  }
+  .parent-deep-dive h4 { margin: 12px 0 5px; color: var(--ink); }
+  .parent-deep-dive p, .parent-deep-dive ol { color: var(--ink-mid); font-size: .9rem; }
+  .parent-deep-dive .sci-note { margin-top: 12px; }
+  .observation textarea { min-height: 84px; }
+  .observation .save-msg { display: inline-block; min-height: 1.5em; margin-left: 8px; font-weight: 800; }
+  .card-safety { border-width: 3px; font-weight: 800; }
+  .btn, button, .chip, .input, input, textarea, summary, .nav-link, .brand, .hunt-list a, .skip-link { min-height: 48px; }
+  .nav-link, .brand, .hunt-list a, .skip-link { display: inline-flex; align-items: center; }
+  .favorite { min-width: 48px; }
+  .hero-kid-scene { margin-top: 14px; border: 3px solid var(--line); box-shadow: 0 7px 0 #dfb66f; }
+  .hero-kid-scene .kid-scene-art { min-height: 190px; }
+  .hero-kid-scene svg { display: block; width: 100%; max-width: 360px; height: auto; }
+
+  /* ============ 孩子图形版：安全提示 + 免打字选实验 ============ */
+  .kid-block { margin: 18px 0; }
+  .kid-block > h2 {
+    margin: 0 0 4px; font-size: clamp(1.3rem, 1.1rem + 1vw, 1.65rem); color: var(--ink);
+  }
+  .kid-block > p.kid-sub { margin: 0 0 12px; color: var(--ink-mid); font-weight: 800; }
+
+  .kid-safety-row {
+    display: grid; gap: 12px; margin: 0; padding: 0; list-style: none;
+    grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
+  }
+  .kid-safety-row > li {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+    min-height: 128px; padding: 14px 10px; text-align: center;
+    border: 3px solid var(--line); border-radius: 26px;
+    background: #fff; color: var(--ink); font-weight: 850;
+    box-shadow: 0 5px 0 #e8c88e;
+  }
+  .kid-safety-row > li > span[aria-hidden="true"] { font-size: 2.9rem; line-height: 1; }
+  .kid-safety-row > li[data-tone="no"] {
+    border-color: #d99a92; background: #fff1ee; color: #7d2f27;
+    box-shadow: 0 5px 0 #eebcb5;
+  }
+  .kid-safety-row > li[data-tone="yes"] {
+    border-color: #8bc9a7; background: #f0fbf4; color: #12512f;
+    box-shadow: 0 5px 0 #b6e0c8;
+  }
+
+  .kid-mat-tiles {
+    display: grid; gap: 12px; margin: 12px 0 0;
+    grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  }
+  .kid-mat-tile {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    min-height: 122px; padding: 14px 10px;
+    border: 3px solid var(--line); border-radius: 26px;
+    background: #fff; color: var(--ink);
+    font: 850 1rem/1.25 inherit; text-align: center; cursor: pointer;
+    box-shadow: 0 5px 0 #e8c88e;
+  }
+  .kid-mat-tile > .kid-tile-art { font-size: 2.9rem; line-height: 1; }
+  .kid-mat-tile:active { transform: translateY(3px); box-shadow: 0 2px 0 #e8c88e; }
+  .kid-mat-tile[aria-pressed="true"] {
+    border-color: var(--sci); background: #ddf8e8; color: #0b4a2a;
+    box-shadow: 0 4px 0 #8bc9a7;
+  }
+  .kid-mat-tile[aria-pressed="true"]::after { content: "✓"; font-size: 1.05rem; font-weight: 900; }
+
+  .kid-found {
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+    margin-top: 14px; padding: 16px;
+    border: 3px solid var(--line); border-radius: 26px;
+    background: linear-gradient(135deg, #fffaf0, #fff1d9);
+    box-shadow: 0 5px 0 #e8c88e;
+  }
+  .kid-found > span[aria-hidden="true"] { font-size: clamp(2.6rem, 9vw, 3.5rem); line-height: 1; }
+  .kid-found b { display: block; font-size: 1.12rem; color: var(--ink); }
+  .kid-found p { margin: 3px 0 0; font-weight: 700; color: var(--ink-mid); }
+  .kid-found .btn { min-height: 52px; border-radius: 999px; font-weight: 850; }
+  .kid-go-row {
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 14px;
+    padding: 13px 16px; border: 3px solid var(--line-soft); border-radius: 24px; background: #fffaf1;
+  }
+  .kid-go-row .btn { min-height: 56px; padding-inline: 22px; border-radius: 999px; font-weight: 850; }
+
+  /* ============ 厨房三件套（本页前缀 ksx-）：实验图鉴 · 液体量表 · 谁浮谁沉 ============ */
+  .ksx-shell { display: grid; gap: 16px; margin: 26px 0; }
+  .ksx-shell > h2 { margin: 0; font-size: clamp(1.3rem, 1.1rem + 1vw, 1.68rem); color: var(--ink); }
+  .ksx-lead { margin: 0; color: var(--ink-mid); font-weight: 800; font-size: .93rem; line-height: 1.55; }
+  .ksx-card {
+    padding: 18px; border: 3px solid var(--line); border-radius: 28px;
+    background: #fffdf8; box-shadow: 0 7px 0 #dfb66f;
+  }
+  .ksx-card > h3 { margin: 0 0 6px; font-size: 1.18rem; color: var(--ink); }
+  .ksx-card > .ksx-lead { margin-bottom: 12px; }
+
+  /* ---- ① 实验图鉴 ---- */
+  .ksx-shell .kid-figure { --tone: var(--accent); border-width: 3px; border-radius: 24px; background: #fff; }
+  .ksx-shell .kid-figure-art { min-height: 122px; padding: 6px; background: #fff6e4; }
+  .ksx-shell .kid-figure-art > svg { width: 100%; max-width: 152px; height: auto; }
+  .ksx-shell .kid-figure-cap { font-size: 1.06rem; }
+  .ksx-shell .kid-figure-fact { font-weight: 700; }
+  .ksx-safe {
+    margin: 4px 0 0; padding: 8px 10px;
+    border: 2px dashed #c9932f; border-radius: 14px;
+    background: #fff9ea; color: #6b4a12;
+    font-size: .8rem; font-weight: 700; line-height: 1.5; text-align: left;
+  }
+  .ksx-safe b { color: #7d2f27; }
+  .ksx-safe-all { margin: 14px 0 0; }
+
+  /* ---- ② 液体量表 ---- */
+  .ksx-liquid-picks { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); margin: 8px 0 14px; }
+  .ksx-liquid-picks .kid-tile { min-height: 112px; padding: 10px 6px; }
+  .ksx-meters { display: grid; gap: 14px; margin: 0 0 10px; }
+  .ksx-scale-row { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin: 0 0 10px; }
+  .ksx-scale-cap { color: var(--ink-mid); font-weight: 800; font-size: .86rem; }
+  .ksx-say-row { margin: 12px 0 0; }
+
+  /* ---- ③ 谁浮谁沉 ---- */
+  .ksx-game-stage { display: grid; place-items: center; margin: 0 0 12px; }
+  .ksx-cup {
+    display: block; width: 100%; max-width: 340px; height: auto;
+    border: 3px solid var(--line); border-radius: 22px; background: #fff6e4;
+  }
+  .ksx-answer-picks { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); margin: 0 0 12px; }
+  .ksx-round-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0 0 10px; }
+  .ksx-round-cap { color: var(--ink-mid); font-weight: 800; font-size: .88rem; }
+  .ksx-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 0; }
+  .ksx-tally { margin: 10px 0 0; color: var(--ink-mid); font-weight: 800; font-size: .9rem; }
+
+  /* ---- SVG 取色：颜色只写在 class 上，图里不硬编码 ---- */
+  .ksx-bg { fill: #fff6e4; }
+  .ksx-plate { fill: #f6ecd6; stroke: #402d1c; stroke-width: 2.5; }
+  .ksx-glass { fill: #ffffff; fill-opacity: .55; stroke: #402d1c; stroke-width: 3; }
+  .ksx-outline { fill: none; stroke: #402d1c; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .ksx-hair { fill: none; stroke: #402d1c; stroke-width: 2; stroke-linecap: round; }
+  .ksx-dash { fill: none; stroke: #402d1c; stroke-width: 2; stroke-dasharray: 5 5; }
+  .ksx-water { fill: #86cef2; }
+  .ksx-brine { fill: #bfe3f2; }
+  .ksx-oil { fill: #f2c744; }
+  .ksx-honey { fill: #d98f1f; }
+  .ksx-vinegar { fill: #f4e6b6; }
+  .ksx-powder { fill: #fbfaf5; stroke: #402d1c; stroke-width: 2; }
+  .ksx-foam { fill: #ffffff; stroke: #402d1c; stroke-width: 2; }
+  .ksx-bubble { fill: #ffffff; fill-opacity: .9; stroke: #402d1c; stroke-width: 1.8; }
+  .ksx-gas { fill: #cfe9f7; stroke: #402d1c; stroke-width: 1.8; }
+  .ksx-cabbage { fill: #8a5bc0; }
+  .ksx-acid { fill: #cc3f68; }
+  .ksx-base { fill: #2f9e8b; }
+  .ksx-lemon { fill: #f5d33c; }
+  .ksx-milk { fill: #fdf8ee; stroke: #402d1c; stroke-width: 2.5; }
+  .ksx-dye-a { fill: #e0405f; }
+  .ksx-dye-b { fill: #3f7fd0; }
+  .ksx-dye-c { fill: #f0b429; }
+  .ksx-soap { fill: #7ed0c0; stroke: #402d1c; stroke-width: 2; }
+  .ksx-egg { fill: #f6e3c2; stroke: #402d1c; stroke-width: 2.5; }
+  .ksx-starch { fill: #f1e8d2; }
+  .ksx-ice { fill: #d5f0ff; stroke: #402d1c; stroke-width: 2.5; }
+  .ksx-salt { fill: #ffffff; stroke: #402d1c; stroke-width: 1.6; }
+  .ksx-onion { fill: #f3e2f0; stroke: #402d1c; stroke-width: 2.5; }
+  .ksx-onion-skin { fill: #e0b7a0; }
+  .ksx-tear { fill: #86cef2; stroke: #402d1c; stroke-width: 2; }
+  .ksx-grape { fill: #7b4f9e; stroke: #402d1c; stroke-width: 2.5; }
+  .ksx-skin { fill: #f0c39a; stroke: #402d1c; stroke-width: 2.5; }
+  .ksx-face { fill: #f0c39a; stroke: #402d1c; stroke-width: 2.5; }
+  .ksx-ink { fill: #3a2a1a; font-weight: 800; }
+  .ksx-ink-soft { fill: #5f4a30; font-weight: 700; }
+  .ksx-chip { fill: #ffffff; stroke: #402d1c; stroke-width: 2.5; }
+  .ksx-float-bob { transform-box: fill-box; transform-origin: center; animation: kitchen-bob 2.6s ease-in-out infinite; }
+  .ksx-float-bob:nth-of-type(2n) { animation-delay: -.9s; }
+
+  @keyframes kitchen-bob {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.06); }
+  }
+  @keyframes kitchen-nudge {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .xp-scene .stage-bubble, .xp-scene .stage-arrow { animation: none; }
+    .kid-answer-group button, .quick-fill { transition: none; }
+    .kid-answer-group button:active, .quick-fill:active { transform: none; }
+    .kid-mat-tile:active { transform: none; }
+    .ksx-float-bob { animation: none; }
+  }
+
   @media (max-width: 640px) {
     .passport-grid { grid-template-columns:1fr; }
     .xgrid { grid-template-columns: minmax(0, 1fr); }
@@ -255,7 +503,7 @@
 
   <header class="hero">
     <h1>厨房科学</h1>
-    <section class="today-xp" aria-labelledby="todayXpTitle">
+    <section class="today-xp" data-audience="parent" aria-labelledby="todayXpTitle">
       <h2 id="todayXpTitle">今天就能做：数一数硬币能托住多少滴水</h2>
       <p>准备一枚硬币、一杯水和吸管或滴管，约 8 分钟，不用买材料。</p>
       <ol>
@@ -266,13 +514,32 @@
       <a class="btn btn-primary" href="#out">直接看“硬币水滴”观察卡</a>
       <small class="today-safety">安全提示：硬币不要入口；桌面垫毛巾，实验后洗手。</small>
     </section>
-    <p class="lead">
+    <div class="kid-hero-scene hero-kid-scene kid-blob-bg" data-audience="kid-only" aria-label="厨房科学图形地图：水滴、泡泡、彩虹和发芽豆子">
+      <div>
+        <span class="kid-mascot" aria-hidden="true">🧑‍🔬</span>
+        <h2>看图选一个，马上玩！</h2>
+        <div class="scene-labels" aria-hidden="true"><span class="scene-label">💧 水滴</span><span class="scene-label">🫧 泡泡</span><span class="scene-label">🌈 颜色</span><span class="scene-label">🌱 发芽</span></div>
+      </div>
+      <div class="kid-scene-art" aria-hidden="true">
+        <svg viewBox="0 0 360 220" focusable="false">
+          <rect x="18" y="24" width="324" height="174" rx="38" fill="#fff1b8" stroke="#402d1c" stroke-width="6"/>
+          <circle cx="86" cy="106" r="42" fill="#79c9ff" stroke="#402d1c" stroke-width="6"/>
+          <circle cx="180" cy="106" r="42" fill="#ff9fc7" stroke="#402d1c" stroke-width="6"/>
+          <circle cx="274" cy="106" r="42" fill="#91dfaa" stroke="#402d1c" stroke-width="6"/>
+          <text x="86" y="120" text-anchor="middle" font-size="45">💧</text>
+          <text x="180" y="120" text-anchor="middle" font-size="45">🫧</text>
+          <text x="274" y="120" text-anchor="middle" font-size="45">🌱</text>
+          <path d="M70 165 Q180 197 290 165" fill="none" stroke="#402d1c" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+    <p class="lead" data-audience="parent">
       为什么值得这样做？这 30 个实验都用厨房、抽屉和回收箱里的常见材料，
       大多数十五分钟内完成。每项都先让孩子猜，再动手、记录和解释。
     </p>
   </header>
 
-  <div class="why">
+  <div class="why" data-audience="parent">
     <p>
       <b>先猜，再做，比只看现象多一步思考。</b>
       比如先问「你猜泡泡从哪里来」，孩子会带着自己的答案观察，再用结果修正想法。
@@ -280,23 +547,60 @@
     </p>
   </div>
 
-  <div class="safety">
+  <!-- 孩子图形版安全提示：只看图，不用读句子 -->
+  <section class="safety" data-audience="kid-only" aria-labelledby="kidSafetyTitle">
+    <h3 id="kidSafetyTitle">玩之前看图 👀</h3>
+    <ul class="kid-safety-row">
+      <li data-tone="no"><span aria-hidden="true">🚫👄</span><b>不吃</b></li>
+      <li data-tone="no"><span aria-hidden="true">🔥🧑</span><b>火找大人</b></li>
+      <li data-tone="no"><span aria-hidden="true">🔪🧑</span><b>刀找大人</b></li>
+      <li data-tone="no"><span aria-hidden="true">🚿🧴</span><b>不混洗剂</b></li>
+      <li data-tone="yes"><span aria-hidden="true">🧼💧</span><b>玩完洗手</b></li>
+    </ul>
+  </section>
+
+  <div class="safety" data-audience="parent">
     <h3>开始前先看：安全须知</h3>
     <ul>
       <li>凡涉及<b>热水、明火、刀具、玻璃</b>的步骤，一律由大人操作，孩子只观察和记录。</li>
-      <li>本页所有实验<b>都不需要品尝</b>。定个规矩：实验台上的东西不进嘴。</li>
+      <li>除“闭眼尝味道”中由大人现切、确认不过敏的新鲜水果外，<b>实验材料一律不入口</b>。</li>
       <li>小苏打加醋只产生二氧化碳，安全；但<b>不要把任何清洁剂互相混合</b>，尤其漂白剂和含氨清洁剂，会产生有毒气体。</li>
       <li>三岁以下注意小零件（硬币、豆子、弹珠）的误吞风险。</li>
       <li>做完洗手。这本身也是科学习惯的一部分。</li>
     </ul>
   </div>
 
-  <section class="card passport no-print" aria-labelledby="passportTitle">
+  <!-- 孩子图形版：点材料图标就能挑实验，全程不用打字 -->
+  <section class="card passport no-print" data-audience="kid-only" aria-labelledby="kidPickTitle">
+    <h2 id="kidPickTitle">点一个东西 👇</h2>
+    <p class="passport-intro">你手上有什么？点它的图，我就给你一个好玩的。</p>
+    <div class="kid-mat-tiles" role="group" aria-labelledby="kidPickTitle">
+      <button class="kid-mat-tile" type="button" data-kid-mat="水" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">💧</span><span class="kid-tile-label">水</span></button>
+      <button class="kid-mat-tile" type="button" data-kid-mat="纸" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">📄</span><span class="kid-tile-label">纸</span></button>
+      <button class="kid-mat-tile" type="button" data-kid-mat="硬币" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">🪙</span><span class="kid-tile-label">硬币</span></button>
+      <button class="kid-mat-tile" type="button" data-kid-mat="鸡蛋" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">🥚</span><span class="kid-tile-label">鸡蛋</span></button>
+      <button class="kid-mat-tile" type="button" data-kid-mat="醋" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">🧴</span><span class="kid-tile-label">醋</span></button>
+      <button class="kid-mat-tile" type="button" data-kid-mat="牛奶" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">🥛</span><span class="kid-tile-label">牛奶</span></button>
+      <button class="kid-mat-tile" type="button" data-kid-mat="冰" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">🧊</span><span class="kid-tile-label">冰块</span></button>
+      <button class="kid-mat-tile" type="button" data-kid-mat="豆" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">🫘</span><span class="kid-tile-label">豆子</span></button>
+    </div>
+    <div class="kid-result-card" id="kidMatOut" role="status" aria-live="polite">
+      <span aria-hidden="true">👆</span>
+      <div><b>点一个图</b><p>点完这里会出现一个实验。</p></div>
+    </div>
+    <div class="kid-action-strip">
+      <b aria-hidden="true">🎲</b>
+      <button class="btn btn-primary" type="button" id="kidRandomXp">给我一个 🎲</button>
+      <a class="btn btn-ghost" id="kidGoCard" href="#out" hidden>去玩这个 ▶</a>
+    </div>
+  </section>
+
+  <section class="card passport no-print" data-audience="parent" aria-labelledby="passportTitle">
     <h2 id="passportTitle">实验护照：先选一项，再找材料</h2>
     <p class="passport-intro">不知道做哪个就随机抽；已经拿着一种材料，就从材料开始找。抽卡和收藏都不算完成，观察记录会保存在本机。</p>
     <div class="passport-grid" style="margin-top:14px">
       <div class="passport-box"><h3>1 · 随机抽一项</h3><p id="passportOutput" role="status" aria-live="polite">抽取后会显示实验、安全提醒和“先猜”的问题。</p><div class="passport-actions"><button class="btn btn-primary" id="randomPassport" type="button">抽一个实验</button><a class="btn btn-ghost" id="passportGo" href="#out" hidden>打开这张观察卡 →</a></div></div>
-      <div class="passport-box"><h3>2 · 用手边材料找</h3><p>输入一种现成材料，最多列出 6 项可做实验。</p><label for="huntMaterial">我手边有</label><input class="input" id="huntMaterial" name="huntMaterial" type="search" placeholder="例如：水、纸、硬币"><button class="btn btn-ghost" id="huntButton" type="button" style="margin-top:8px">找能做的实验</button><div id="huntOutput" role="status" aria-live="polite"></div></div>
+      <div class="passport-box"><h3>2 · 用手边材料找</h3><p>输入一种现成材料，或直接点图标。</p><label for="huntMaterial">我手边有</label><input class="input" id="huntMaterial" name="huntMaterial" type="search" placeholder="例如：水、纸、硬币"><div class="quick-picks" aria-label="快捷选择手边材料"><button class="quick-fill" type="button" value="水" aria-pressed="false">💧 水</button><button class="quick-fill" type="button" value="纸" aria-pressed="false">📄 纸</button><button class="quick-fill" type="button" value="硬币" aria-pressed="false">🪙 硬币</button><button class="quick-fill" type="button" value="鸡蛋" aria-pressed="false">🥚 鸡蛋</button></div><button class="btn btn-ghost" id="huntButton" type="button" style="margin-top:8px">🔎 找实验</button><div id="huntOutput" role="status" aria-live="polite"></div></div>
     </div>
   </section>
 
@@ -330,12 +634,287 @@
       <div class="frow">
         <label class="flabel" for="materialFilter">材料</label>
         <input class="input material-search" id="materialFilter" name="material" type="search" placeholder="输入硬币、水、纸、鸡蛋……" autocomplete="off">
+        <div class="quick-picks" aria-label="快捷筛选材料"><button class="quick-fill filter-fill" type="button" value="水" aria-pressed="false">💧 水</button><button class="quick-fill filter-fill" type="button" value="纸" aria-pressed="false">📄 纸</button><button class="quick-fill filter-fill" type="button" value="硬币" aria-pressed="false">🪙 硬币</button><button class="quick-fill filter-fill" type="button" value="鸡蛋" aria-pressed="false">🥚 鸡蛋</button></div>
       </div>
     </div>
   </div>
 
   <div id="out" class="xgrid"></div>
   <p class="empty" id="empty" hidden>这个组合下没有实验，放宽一个条件试试。</p>
+
+  <!-- 厨房三件套：实验图鉴 · 液体量表 · 谁浮谁沉 -->
+  <section class="ksx-shell" aria-labelledby="ksxTitle">
+    <h2 id="ksxTitle">看图就懂：实验图鉴 · 液体量表 · 谁浮谁沉</h2>
+    <p class="ksx-lead">不认字也能挑：先看图，再看下面那一句原理。八个实验都只用厨房里现成的东西。</p>
+
+    <div class="ksx-card" aria-labelledby="ksxAtlasTitle">
+      <h3 id="ksxAtlasTitle">① 厨房实验图鉴</h3>
+      <p class="ksx-lead">每张卡最下面那一句，就是这个实验真正在教的事。</p>
+      <div class="kid-figure-grid" aria-label="厨房实验图鉴：八张卡">
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 100" focusable="false">
+              <rect class="ksx-bg" x="0" y="0" width="120" height="100" rx="10"/>
+              <path class="ksx-glass" d="M38 32 h44 l-5 56 h-34 Z"/>
+              <path class="ksx-vinegar" d="M41 52 h38 l-2.5 36 h-33 Z"/>
+              <ellipse class="ksx-foam" cx="60" cy="34" rx="22" ry="8"/>
+              <circle class="ksx-bubble" cx="48" cy="26" r="6"/>
+              <circle class="ksx-bubble" cx="62" cy="19" r="8"/>
+              <circle class="ksx-bubble" cx="74" cy="27" r="5"/>
+              <circle class="ksx-gas" cx="55" cy="10" r="4"/>
+              <circle class="ksx-gas" cx="72" cy="8" r="3"/>
+              <path class="ksx-powder" d="M14 46 q10 -7 19 0 q-9 9 -19 0 Z"/>
+              <path class="ksx-outline" d="M14 46 L4 42"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">小苏打加白醋</span>
+          <span class="kid-figure-sub">小苏打 · 白醋 · 一个高杯子</span>
+          <span class="kid-figure-fact">泡泡是<b>二氧化碳</b>：两样东西碰到一起生成了一种新的气体，所以杯子会满出来。</span>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 100" focusable="false">
+              <rect class="ksx-bg" x="0" y="0" width="120" height="100" rx="10"/>
+              <path class="ksx-cabbage" d="M50 16 q10 -10 20 0 q-10 12 -20 0 Z"/>
+              <path class="ksx-glass" d="M12 34 h28 l-3 46 h-22 Z"/>
+              <path class="ksx-acid" d="M14 50 h24 l-2 28 h-20 Z"/>
+              <path class="ksx-glass" d="M46 34 h28 l-3 46 h-22 Z"/>
+              <path class="ksx-cabbage" d="M48 50 h24 l-2 28 h-20 Z"/>
+              <path class="ksx-glass" d="M80 34 h28 l-3 46 h-22 Z"/>
+              <path class="ksx-base" d="M82 50 h24 l-2 28 h-20 Z"/>
+              <text class="ksx-ink-soft" x="26" y="94" text-anchor="middle" font-size="11">加柠檬</text>
+              <text class="ksx-ink-soft" x="60" y="94" text-anchor="middle" font-size="11">原色</text>
+              <text class="ksx-ink-soft" x="94" y="94" text-anchor="middle" font-size="11">加小苏打</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">紫甘蓝变色水</span>
+          <span class="kid-figure-sub">紫甘蓝 · 温水 · 柠檬 · 小苏打</span>
+          <span class="kid-figure-fact">紫甘蓝里的色素是<b>酸碱指示剂</b>：遇酸偏红、遇碱偏蓝绿。颜色替你把看不见的酸碱说出来。</span>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 100" focusable="false">
+              <rect class="ksx-bg" x="0" y="0" width="120" height="100" rx="10"/>
+              <circle class="ksx-milk" cx="60" cy="52" r="40"/>
+              <circle class="ksx-dye-a" cx="45" cy="39" r="9"/>
+              <circle class="ksx-dye-b" cx="74" cy="44" r="8"/>
+              <circle class="ksx-dye-c" cx="56" cy="70" r="7"/>
+              <path class="ksx-hair" d="M45 39 q-13 8 -15 21 M74 44 q13 6 15 19 M56 70 q-5 13 1 21"/>
+              <circle class="ksx-soap" cx="60" cy="52" r="6"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">牛奶烟花</span>
+          <span class="kid-figure-sub">一盘牛奶 · 食用色素 · 一滴洗碗液</span>
+          <span class="kid-figure-fact">牛奶表面原本是绷紧的。洗碗液把这层<b>表面张力</b>拆开，颜色就被拉着往四周跑。</span>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 100" focusable="false">
+              <rect class="ksx-bg" x="0" y="0" width="120" height="100" rx="10"/>
+              <path class="ksx-glass" d="M8 24 h44 l-4 58 h-36 Z"/>
+              <path class="ksx-water" d="M11 40 h38 l-2.5 40 h-33 Z"/>
+              <ellipse class="ksx-egg" cx="30" cy="72" rx="11" ry="8"/>
+              <path class="ksx-glass" d="M68 24 h44 l-4 58 h-36 Z"/>
+              <path class="ksx-brine" d="M71 40 h38 l-2.5 40 h-33 Z"/>
+              <ellipse class="ksx-egg" cx="90" cy="43" rx="11" ry="8"/>
+              <g class="ksx-salt"><circle cx="80" cy="58" r="1.8"/><circle cx="94" cy="64" r="1.8"/><circle cx="87" cy="72" r="1.8"/><circle cx="100" cy="56" r="1.6"/></g>
+              <text class="ksx-ink-soft" x="30" y="95" text-anchor="middle" font-size="11">清水：沉</text>
+              <text class="ksx-ink-soft" x="90" y="95" text-anchor="middle" font-size="11">盐水：浮</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">让鸡蛋浮起来</span>
+          <span class="kid-figure-sub">两个杯子 · 一个鸡蛋 · 很多盐</span>
+          <span class="kid-figure-fact">鸡蛋一点没变，是<b>水变重了</b>。浮还是沉，比的是鸡蛋和水谁的密度大。</span>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 100" focusable="false">
+              <rect class="ksx-bg" x="0" y="0" width="120" height="100" rx="10"/>
+              <path class="ksx-glass" d="M34 18 h52 l-6 70 h-40 Z"/>
+              <path class="ksx-oil" d="M37 32 h46 l-2 26 h-42 Z"/>
+              <path class="ksx-water" d="M38.5 58 h43 l-2 28 h-39 Z"/>
+              <path class="ksx-dash" d="M38 58 H81"/>
+              <text class="ksx-ink" x="96" y="46" font-size="12">油</text>
+              <text class="ksx-ink" x="96" y="76" font-size="12">水</text>
+              <path class="ksx-hair" d="M92 42 L82 42 M92 72 L82 72"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">油水分层</span>
+          <span class="kid-figure-sub">一个杯子 · 水 · 食用油</span>
+          <span class="kid-figure-fact">油比水轻，所以永远在上面；而且它们<b>不相溶</b>，摇多久都会重新分开。</span>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 100" focusable="false">
+              <rect class="ksx-bg" x="0" y="0" width="120" height="100" rx="10"/>
+              <path class="ksx-plate" d="M12 50 q48 -16 96 0 l-10 34 h-76 Z"/>
+              <path class="ksx-starch" d="M19 54 q41 -12 82 0 l-7 26 h-68 Z"/>
+              <path class="ksx-skin" d="M30 10 q7 0 7 9 v46 q0 6 -7 6 q-7 0 -7 -6 v-46 q0 -9 7 -9 Z"/>
+              <path class="ksx-hair" d="M46 40 v22 M42 56 l4 6 l4 -6"/>
+              <circle class="ksx-skin" cx="88" cy="26" r="13"/>
+              <path class="ksx-hair" d="M88 56 v-14 M84 48 l4 -6 l4 6"/>
+              <text class="ksx-ink-soft" x="32" y="94" text-anchor="middle" font-size="11">慢按：软</text>
+              <text class="ksx-ink-soft" x="88" y="94" text-anchor="middle" font-size="11">快打：硬</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">又软又硬的淀粉浆</span>
+          <span class="kid-figure-sub">玉米淀粉 · 少量水</span>
+          <span class="kid-figure-fact">它是<b>非牛顿流体</b>：用力越快越像固体。「软」和「硬」在这里不是它的性质，而看你多快碰它。</span>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 100" focusable="false">
+              <rect class="ksx-bg" x="0" y="0" width="120" height="100" rx="10"/>
+              <path class="ksx-glass" d="M26 26 h56 l-6 60 h-44 Z"/>
+              <path class="ksx-ice" d="M38 40 h22 v20 h-22 Z"/>
+              <path class="ksx-ice" d="M56 54 h20 v20 h-20 Z"/>
+              <path class="ksx-ice" d="M40 62 h20 v20 h-20 Z"/>
+              <g class="ksx-salt"><circle cx="48" cy="34" r="2"/><circle cx="62" cy="30" r="2"/><circle cx="72" cy="36" r="1.8"/></g>
+              <rect class="ksx-chip" x="96" y="16" width="14" height="58" rx="7"/>
+              <rect class="ksx-water" x="100" y="48" width="6" height="24" rx="3"/>
+              <circle class="ksx-water" cx="103" cy="74" r="6"/>
+              <text class="ksx-ink" x="6" y="16" font-size="12">−8℃</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">冰里加盐会更冷</span>
+          <span class="kid-figure-sub">冰块 · 盐 · 温度计</span>
+          <span class="kid-figure-fact">盐让水的<b>凝固点降低</b>，冰要在更低的温度才能待住，于是杯子里比 0℃ 还冷。冬天撒盐化雪就是这个道理。</span>
+        </div>
+
+        <div class="kid-figure">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 100" focusable="false">
+              <rect class="ksx-bg" x="0" y="0" width="120" height="100" rx="10"/>
+              <circle class="ksx-onion" cx="34" cy="58" r="26"/>
+              <circle class="ksx-hair" cx="34" cy="58" r="18" fill="none"/>
+              <circle class="ksx-hair" cx="34" cy="58" r="11" fill="none"/>
+              <circle class="ksx-hair" cx="34" cy="58" r="5" fill="none"/>
+              <path class="ksx-onion-skin" d="M34 32 q6 -10 2 -18 q9 6 11 16 Z"/>
+              <path class="ksx-dash" d="M62 46 q10 -9 20 -1"/>
+              <circle class="ksx-face" cx="90" cy="44" r="19"/>
+              <path class="ksx-hair" d="M81 40 q4 5 8 0 M93 40 q4 5 8 0 M85 55 q5 4 10 0"/>
+              <path class="ksx-tear" d="M82 48 q-4 9 0 11 q4 -3 0 -11 Z"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">洋葱为什么辣眼睛</span>
+          <span class="kid-figure-sub">一个洋葱 · 冷藏过的更温和</span>
+          <span class="kid-figure-fact">切开时细胞破了，放出一种<b>会飘的含硫气体</b>；它碰到眼睛里的水就变刺激，眼睛只好流泪冲掉它。</span>
+        </div>
+
+      </div>
+      <p class="ksx-safe ksx-safe-all" data-audience="parent"><b>安全与收拾：</b>这八个都不涉及明火和加热。紫甘蓝水、牛奶盘、淀粉浆做完都<b>不要喝</b>；淀粉浆别倒进下水道（会堵），装袋扔垃圾；冰盐水很冷，别用手长时间捏着；切洋葱和用刀的步骤请大人来做，孩子负责观察和记录。</p>
+    </div>
+
+    <div class="ksx-card" aria-labelledby="ksxMeterTitle">
+      <h3 id="ksxMeterTitle">② 液体量表：谁更重、谁更酸</h3>
+      <p class="ksx-lead">点一种液体，两条量表就会跟着变。<b>密度以水为 1</b>，比 1 小的会浮在水上面。</p>
+      <div class="kid-tiles ksx-liquid-picks" id="ksxLiquidPicks" role="group" aria-labelledby="ksxMeterTitle">
+        <button class="kid-tile" type="button" data-ksx-liquid="water" aria-pressed="true" aria-label="选清水：密度 1.0，pH 7">
+          <span class="kid-tile-art" aria-hidden="true">💧</span>
+          <span class="kid-tile-label">清水</span>
+          <span class="kid-tile-sub">基准</span>
+        </button>
+        <button class="kid-tile" type="button" data-ksx-liquid="oil" aria-pressed="false" aria-label="选食用油：密度约 0.92，接近中性">
+          <span class="kid-tile-art" aria-hidden="true">🫗</span>
+          <span class="kid-tile-label">食用油</span>
+          <span class="kid-tile-sub">比水轻</span>
+        </button>
+        <button class="kid-tile" type="button" data-ksx-liquid="honey" aria-pressed="false" aria-label="选蜂蜜：密度约 1.42，微酸">
+          <span class="kid-tile-art" aria-hidden="true">🍯</span>
+          <span class="kid-tile-label">蜂蜜</span>
+          <span class="kid-tile-sub">很重</span>
+        </button>
+        <button class="kid-tile" type="button" data-ksx-liquid="brine" aria-pressed="false" aria-label="选浓盐水：密度约 1.2，接近中性">
+          <span class="kid-tile-art" aria-hidden="true">🧂</span>
+          <span class="kid-tile-label">浓盐水</span>
+          <span class="kid-tile-sub">比水重</span>
+        </button>
+        <button class="kid-tile" type="button" data-ksx-liquid="lemon" aria-pressed="false" aria-label="选柠檬汁：密度约 1.03，很酸">
+          <span class="kid-tile-art" aria-hidden="true">🍋</span>
+          <span class="kid-tile-label">柠檬汁</span>
+          <span class="kid-tile-sub">最酸</span>
+        </button>
+        <button class="kid-tile" type="button" data-ksx-liquid="soda" aria-pressed="false" aria-label="选小苏打水：密度约 1.05，偏碱">
+          <span class="kid-tile-art" aria-hidden="true">🥄</span>
+          <span class="kid-tile-label">小苏打水</span>
+          <span class="kid-tile-sub">偏碱</span>
+        </button>
+      </div>
+      <div class="ksx-meters">
+        <div class="kid-meter" style="--tone:var(--math)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">⚖️</span>
+            <span id="ksxDensityLabel">密度有多大（水 = 1.0）</span>
+            <b class="kid-meter-value" id="ksxDensityValue">1.00</b>
+          </div>
+          <div class="kid-meter-track" id="ksxDensityMeter" role="img" aria-labelledby="ksxDensityLabel ksxDensityValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note" id="ksxDensityNote">条子满格是 1.5。比水（1.0）短的会浮在水上，比水长的会沉到水下面。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--kit)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">🧪</span>
+            <span id="ksxPhLabel">酸还是碱（pH）</span>
+            <b class="kid-meter-value" id="ksxPhValue">7</b>
+          </div>
+          <div class="kid-meter-track" id="ksxPhMeter" role="img" aria-labelledby="ksxPhLabel ksxPhValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note" id="ksxPhNote">0 到 14。小于 7 是酸，等于 7 是中性，大于 7 是碱。紫甘蓝水就是用颜色告诉你这个数。</p>
+        </div>
+      </div>
+      <div class="kid-speech-row ksx-say-row">
+        <span class="kid-mascot" aria-hidden="true">🧑‍🍳</span>
+        <p class="kid-speech" id="ksxMeterSay" role="status" aria-live="polite">现在是清水：密度 1.0、pH 7，其他液体都拿它当尺子比。</p>
+      </div>
+      <p class="ksx-safe" data-audience="parent"><b>关于这些数字：</b>都是常见的近似值，用来做量级比较，不是精确测量。浓盐水的密度取决于加了多少盐（饱和食盐水约 1.2），蜂蜜和柠檬汁也会随品种浮动。带孩子的重点不是记住数字，而是记住「跟水比」这个动作。</p>
+    </div>
+
+    <div class="ksx-card" aria-labelledby="ksxGameTitle">
+      <h3 id="ksxGameTitle">③ 谁浮谁沉</h3>
+      <p class="ksx-lead">看清杯子里是<b>什么液体</b>，再看放进去的东西。浮沉不看「重不重」，看两个人比出来谁的密度大。</p>
+      <p class="ksx-round-row">
+        <span class="ksx-round-cap" id="ksxDotsCap">第 1 题，共 6 题</span>
+        <span class="kid-dots" id="ksxDots" style="--tone:var(--math)" role="img" aria-labelledby="ksxDotsCap"></span>
+      </p>
+      <div class="ksx-game-stage">
+        <svg class="ksx-cup" id="ksxCup" viewBox="0 0 240 180" role="img" aria-labelledby="ksxCupTitle ksxCupDesc">
+          <title id="ksxCupTitle">这一题的杯子</title>
+          <desc id="ksxCupDesc">一个装着液体的杯子，旁边是等着放进去的东西。</desc>
+          <g id="ksxCupBody"></g>
+        </svg>
+      </div>
+      <p class="ksx-lead" id="ksxAsk">它放进去会怎样？</p>
+      <div class="kid-tiles ksx-answer-picks" id="ksxAnswerPicks" role="group" aria-labelledby="ksxGameTitle">
+        <button class="kid-tile" type="button" data-ksx-answer="float" aria-pressed="false" aria-label="选：浮在上面">
+          <span class="kid-tile-art" aria-hidden="true">⬆️</span>
+          <span class="kid-tile-label">浮在上面</span>
+        </button>
+        <button class="kid-tile" type="button" data-ksx-answer="middle" aria-pressed="false" aria-label="选：停在中间">
+          <span class="kid-tile-art" aria-hidden="true">↔️</span>
+          <span class="kid-tile-label">停在中间</span>
+        </button>
+        <button class="kid-tile" type="button" data-ksx-answer="sink" aria-pressed="false" aria-label="选：沉到底">
+          <span class="kid-tile-art" aria-hidden="true">⬇️</span>
+          <span class="kid-tile-label">沉到底</span>
+        </button>
+      </div>
+      <div class="kid-speech-row ksx-say-row">
+        <span class="kid-mascot" aria-hidden="true">🥚</span>
+        <p class="kid-speech" id="ksxGameSay" role="status" aria-live="polite">先猜一个。答错也会告诉你为什么，可以再点别的。</p>
+      </div>
+      <div class="ksx-actions">
+        <button class="btn btn-primary" type="button" id="ksxNext"><span aria-hidden="true">➡️</span> 下一题</button>
+        <button class="btn btn-ghost" type="button" id="ksxAgain"><span aria-hidden="true">🔄</span> 从第 1 题重来</button>
+      </div>
+      <p class="ksx-tally" id="ksxTally">一次猜对 0 / 6 题。</p>
+      <p class="ksx-safe" data-audience="parent"><b>这在教什么：</b>孩子最常把浮沉归给「重」。第 3、4 题是同一个鸡蛋分别放进清水和浓盐水——物体一点没变、结果却反了，这是最短的一条反驳路径。接着可以问：「那到底变的是什么？」把结论从「重的会沉」纠正成「比周围的液体密度大才会沉」。</p>
+    </div>
+  </section>
 
 </main>
 
@@ -789,7 +1368,7 @@
   var SUBJ_PILL = { phys: "pill-phys", math: "pill-math", chem: "pill-sci", bio: "pill-sci" };
   var MESS = ["不脏手", "有点乱", "水槽边做"];
 
-  function needsAdult(x) { return /打火机|明火|热水|刀|剪刀|图钉|玻璃|生鸡蛋|缝衣针/.test(x.mats.join(" ") + x.steps.join(" ")); }
+  function needsAdult(x) { return /打火机|明火|点燃|热水|热风|加热|吹风机|台灯|刀|切|剪刀|图钉|玻璃|生鸡蛋|缝衣针|牙签|喂/.test(x.mats.join(" ") + x.steps.join(" ")); }
 
   function passes(x) {
     if (state.subject !== "all" && x.subject !== state.subject) return false;
@@ -826,14 +1405,70 @@
     "用三片面包比较洗手前后", "捏住鼻子，闭眼分苹果和梨", "跳三十下，画心跳恢复曲线", "往紫甘蓝水里加酸和碱", "用紫甘蓝水测试厨房液体"
   ];
 
+  var SCENES = [
+    ["💧", "🪙", "先猜", "慢慢滴", "数一数", "#79c9ff"],
+    ["🔥", "🚀", "大人点火", "退后看", "飞起来", "#ff9d67"],
+    ["🥔", "🌾", "放进去", "米升高", "画刻度", "#e6b66d"],
+    ["🍋", "✉️", "写一写", "等变干", "大人加热", "#ffd966"],
+    ["📄", "📚", "折形状", "放书本", "比一比", "#9fd5ff"],
+    ["🍯", "🫗", "慢慢倒", "看分层", "放小物", "#ffbf69"],
+    ["🫧", "🍇", "放进去", "上下跳", "数次数", "#b9a0ff"],
+    ["🌀", "🍍", "找螺旋", "两边数", "排数字", "#ffd166"],
+    ["🫧", "🌈", "吹大泡", "找颜色", "看流动", "#ff9fc7"],
+    ["📎", "💧", "轻轻放", "浮起来", "滴肥皂", "#78d5d7"],
+    ["🧲", "🧭", "同向擦", "放水面", "找北方", "#ef767a"],
+    ["🧊", "🧵", "搭棉线", "撒点盐", "提起来", "#9ed8ff"],
+    ["🫘", "🔢", "先猜", "数一碗", "乘一乘", "#dfb07e"],
+    ["🥛", "🎨", "滴颜色", "点肥皂", "看散开", "#ff93c9"],
+    ["🎶", "🥤", "剪长短", "排一排", "吹一吹", "#91e5c1"],
+    ["🥚", "📚", "竖鸡蛋", "慢加书", "数一数", "#ffe4a8"],
+    ["☀️", "📏", "立筷子", "描影子", "量长短", "#ffd45c"],
+    ["🥔", "💡", "插金属", "接导线", "看灯光", "#c7e77f"],
+    ["✂️", "❄️", "先折纸", "剪一下", "打开数", "#a8dbff"],
+    ["🌱", "☀️", "分四杯", "每天看", "比一比", "#91dfaa"],
+    ["✈️", "📏", "飞三次", "改一处", "量距离", "#8ec5ff"],
+    ["📞", "🧵", "拉紧线", "小声说", "再放松", "#ffab91"],
+    ["🧊", "🧣", "包起来", "等一等", "比融化", "#9ed8ff"],
+    ["🍴", "⚖️", "叉子扣", "搭杯口", "找平衡", "#c2b6ff"],
+    ["🥬", "💙", "放彩水", "等一等", "看叶脉", "#7ddbb2"],
+    ["🍞", "🦠", "三片面包", "封好袋", "只看不开", "#d7b38c"],
+    ["🍎", "👃", "大人切", "捏鼻猜", "松开猜", "#ff8f8f"],
+    ["❤️", "🏃", "数心跳", "跳一跳", "再数", "#ff8a9a"],
+    ["🟣", "🌈", "大人泡菜", "分四杯", "看变色", "#b79cff"],
+    ["🕵️", "🟣", "滴液体", "看颜色", "排一排", "#9f8ae8"]
+  ];
+
+  function sceneSvg(scene) {
+    return '<svg class="xp-scene" viewBox="0 0 420 230" aria-hidden="true" focusable="false">' +
+      '<rect x="12" y="12" width="396" height="206" rx="42" fill="#fff8ec" stroke="#402d1c" stroke-width="6"/>' +
+      '<path d="M45 181 Q210 213 375 181" fill="none" stroke="#402d1c" stroke-width="6" stroke-linecap="round"/>' +
+      '<circle cx="132" cy="111" r="65" fill="' + scene[5] + '" stroke="#402d1c" stroke-width="6"/>' +
+      '<circle cx="288" cy="111" r="65" fill="#ffffff" stroke="#402d1c" stroke-width="6"/>' +
+      '<text x="132" y="131" text-anchor="middle" font-size="64">' + scene[0] + '</text>' +
+      '<text x="288" y="131" text-anchor="middle" font-size="64">' + scene[1] + '</text>' +
+      '<circle class="stage-bubble" cx="205" cy="55" r="14" fill="#fff" stroke="#402d1c" stroke-width="4"/>' +
+      '<circle class="stage-bubble" cx="230" cy="32" r="8" fill="#fff" stroke="#402d1c" stroke-width="3"/>' +
+      '<path class="stage-arrow" d="M190 111h38m-12-12 12 12-12 12" fill="none" stroke="#402d1c" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>';
+  }
+
+  function setExclusivePressed(group, chosen) {
+    [].slice.call(group.querySelectorAll("button")).forEach(function (button) {
+      button.setAttribute("aria-pressed", button === chosen ? "true" : "false");
+    });
+  }
+
   function card(x, i) {
+    var scene = SCENES[i];
     var c = el("article", "card xp");
     c.id = "kitchen-" + itemKey(i);
 
     var head = el("div", "xp-head");
     head.appendChild(el("div", "xp-no", "实验 " + String(i + 1).padStart(2, "0")));
     head.appendChild(el("h3", null, DISPLAY_TITLES[i] || x.t));
-    head.appendChild(el("p", "hook", x.hook));
+    var hook = el("p", "hook", x.hook);
+    hook.setAttribute("data-audience", "parent");
+    head.appendChild(hook);
     c.appendChild(head);
 
     var body = el("div", "xp-body");
@@ -843,44 +1478,121 @@
     meta.appendChild(el("span", "pill " + SUBJ_PILL[x.subject], SUBJ[x.subject]));
     body.appendChild(meta);
 
-    var safetyText = needsAdult(x)
-      ? "需要成人协助：涉及热源、尖锐物、玻璃或生食材；孩子只做安全步骤。"
-      : "孩子可主做：材料不入口，避开眼睛，结束后洗手并清理台面。";
-    body.appendChild(el("div", "card-safety", "安全提示：" + safetyText));
+    var adult = needsAdult(x);
+    body.appendChild(el("div", "card-safety", adult
+      ? "🧑 需要大人陪着：大人负责火、热水、刀剪、尖锐物、玻璃和食物切配喂食。"
+      : "🧼 洗手再玩：不入口，不碰眼睛，做完擦干净。"));
 
-    var ba = el("div", "blk ask");
-    ba.appendChild(el("h4", null, "动手前先猜"));
-    ba.appendChild(el("p", null, x.ask));
-    body.appendChild(ba);
+    var visual = el("div", "kid-visual-stage xp-visual");
+    visual.setAttribute("role", "img");
+    visual.setAttribute("aria-label", (DISPLAY_TITLES[i] || x.t) + "：" + scene.slice(2, 5).join("、"));
+    var art = el("div", "kid-scene-art");
+    art.innerHTML = sceneSvg(scene);
+    visual.appendChild(art);
+    var labels = el("div", "scene-labels");
+    scene.slice(2, 5).forEach(function (text, index) {
+      labels.appendChild(el("span", "scene-label", ["1️⃣ ", "2️⃣ ", "3️⃣ "][index] + text));
+    });
+    visual.appendChild(labels);
+    body.appendChild(visual);
 
     var bm = el("div", "blk");
-    bm.appendChild(el("h4", null, "准备这些材料"));
+    bm.appendChild(el("h4", null, "🧺 找材料"));
     var mats = el("div", "mats");
     x.mats.forEach(function (m) { mats.appendChild(el("span", "mat", m)); });
     bm.appendChild(mats);
     body.appendChild(bm);
 
-    var bs = el("div", "blk");
-    bs.appendChild(el("h4", null, "照着做"));
-    var ol = document.createElement("ol");
-    x.steps.forEach(function (s) {
+    var kidSteps = el("ol", "kid-steps-visual");
+    scene.slice(2, 5).forEach(function (text, index) {
       var li = document.createElement("li");
-      li.innerHTML = s;
-      ol.appendChild(li);
+      li.appendChild(el("span", "kid-tile-art", [scene[0], "👉", scene[1]][index]));
+      li.appendChild(el("b", null, text));
+      kidSteps.appendChild(li);
     });
-    bs.appendChild(ol);
-    body.appendChild(bs);
+    body.appendChild(kidSteps);
 
     var store = loadStore(), key = itemKey(i), saved = store[key] || {};
-    var obs = el("div", "observation work-card"); var label=el("label", null, "记录看到的结果（保存在本机）"); label.setAttribute("for", "observation-"+(i+1));
-    var area=el("textarea", "input"); area.id="observation-"+(i+1); area.name="observation-"+(i+1); area.maxLength=500; area.placeholder="我先预测……\n我观察到……\n证据或测量……\n下一次想改……"; area.value=saved.observation||"";
-    var save=el("button", "btn btn-sm no-print", "保存观察记录"); save.type="button"; var noteMsg=el("span", "save-msg");
-    save.addEventListener("click", function(){var data=loadStore(),rec=data[key]||{};rec.observation=area.value.trim().slice(0,500);data[key]=rec;noteMsg.textContent=saveStore(data)?"已保存":"保存失败";});
-    label.appendChild(area); obs.appendChild(label); obs.appendChild(save); obs.appendChild(noteMsg); body.appendChild(obs);
+    var obs = el("div", "observation work-card");
+    var label = el("label", null, "📝 我的发现（可以点图，不用打字）");
+    label.setAttribute("for", "observation-" + (i + 1));
+    var area = el("textarea", "input");
+    area.id = "observation-" + (i + 1);
+    area.name = "observation-" + (i + 1);
+    area.maxLength = 500;
+    area.placeholder = "也可以在这里说说你看到了什么……";
+    area.value = saved.observation || "";
 
-    var bn = el("div", "sci-note");
-    bn.innerHTML = "<b>为什么会这样：</b>" + x.sci;
-    body.appendChild(bn);
+    var prediction = el("div", "kid-answer-group no-print");
+    prediction.appendChild(el("b", null, "先猜一个"));
+    var predictionChoices = el("div", "kid-choice");
+    ["⬆️ 会变多", "⬇️ 会变少", "➖ 不会变"].forEach(function (text) {
+      var button = el("button", null, text);
+      button.type = "button";
+      button.setAttribute("aria-pressed", "false");
+      predictionChoices.appendChild(button);
+    });
+    var predictionStatus = el("p", "choice-status");
+    predictionStatus.setAttribute("role", "status");
+    predictionStatus.setAttribute("aria-live", "polite");
+    predictionChoices.addEventListener("click", function (event) {
+      if (event.target.tagName !== "BUTTON") return;
+      setExclusivePressed(predictionChoices, event.target);
+      area.value = "我先预测：" + event.target.textContent.replace(/^[^\s]+\s*/, "") + "。";
+      predictionStatus.textContent = "已选好预测，可以开始实验！";
+    });
+    prediction.appendChild(predictionChoices);
+    prediction.appendChild(predictionStatus);
+    body.appendChild(prediction);
+
+    var quick = el("div", "quick-picks no-print");
+    ["👀 我看到了变化", "✨ 和我猜的不一样", "🔁 我想再试一次"].forEach(function (text) {
+      var button = el("button", "quick-fill", text);
+      button.type = "button";
+      button.setAttribute("aria-pressed", "false");
+      button.addEventListener("click", function () {
+        setExclusivePressed(quick, button);
+        area.value = text.replace(/^[^\s]+\s*/, "") + "。";
+        noteMsg.textContent = "已放进记录，点保存就完成。";
+      });
+      quick.appendChild(button);
+    });
+    var save = el("button", "btn btn-sm no-print", "💾 保存发现");
+    save.type = "button";
+    var noteMsg = el("span", "save-msg");
+    noteMsg.setAttribute("role", "status");
+    noteMsg.setAttribute("aria-live", "polite");
+    save.addEventListener("click", function () {
+      var data = loadStore(), rec = data[key] || {};
+      rec.observation = area.value.trim().slice(0, 500);
+      data[key] = rec;
+      noteMsg.textContent = saveStore(data) ? "已保存发现！" : "保存失败，请再试一次。";
+    });
+    label.appendChild(area);
+    obs.appendChild(label);
+    obs.appendChild(quick);
+    obs.appendChild(save);
+    obs.appendChild(noteMsg);
+    body.appendChild(obs);
+
+    var deep = el("details", "parent-deep-dive");
+    deep.setAttribute("data-audience", "parent");
+    deep.appendChild(el("summary", null, "给大人：完整步骤、追问与原理"));
+    deep.appendChild(el("h4", null, "动手前先猜"));
+    deep.appendChild(el("p", null, x.ask));
+    deep.appendChild(el("h4", null, "完整步骤"));
+    var ol = document.createElement("ol");
+    x.steps.forEach(function (step) {
+      var li = document.createElement("li");
+      li.innerHTML = step;
+      ol.appendChild(li);
+    });
+    deep.appendChild(ol);
+    deep.appendChild(el("h4", null, "背后的原理"));
+    var science = el("div", "sci-note");
+    science.innerHTML = x.sci;
+    deep.appendChild(science);
+    body.appendChild(deep);
 
     var foot = el("div", "xp-foot");
     foot.appendChild(el("span", "mess", MESS[x.mess]));
@@ -888,9 +1600,26 @@
 
     var tools = el("div", "xp-tools no-print");
     var fav = el("button", "btn btn-ghost btn-sm favorite", saved.favorite ? "★ 已收藏" : "☆ 收藏稍后做");
-    fav.type = "button"; fav.setAttribute("aria-pressed", String(!!saved.favorite));
-    fav.addEventListener("click", function () { var data=loadStore(), rec=data[key]||{}; rec.favorite=!rec.favorite; data[key]=rec; if(saveStore(data)){ fav.setAttribute("aria-pressed",String(rec.favorite)); fav.textContent=rec.favorite?"★ 已收藏":"☆ 收藏稍后做"; } });
-    tools.appendChild(fav); tools.appendChild(el("span", "save-msg", "收藏不等于完成")); body.appendChild(tools);
+    fav.type = "button";
+    fav.setAttribute("aria-pressed", String(!!saved.favorite));
+    var favStatus = el("span", "save-msg", "收藏不等于完成");
+    favStatus.setAttribute("role", "status");
+    favStatus.setAttribute("aria-live", "polite");
+    fav.addEventListener("click", function () {
+      var data = loadStore(), rec = data[key] || {};
+      rec.favorite = !rec.favorite;
+      data[key] = rec;
+      if (saveStore(data)) {
+        fav.setAttribute("aria-pressed", String(rec.favorite));
+        fav.textContent = rec.favorite ? "★ 已收藏" : "☆ 收藏稍后做";
+        favStatus.textContent = rec.favorite ? "已收藏，仍需动手并保存发现才算完成。" : "已取消收藏。";
+      } else {
+        favStatus.textContent = "收藏失败，请再试一次。";
+      }
+    });
+    tools.appendChild(fav);
+    tools.appendChild(favStatus);
+    body.appendChild(tools);
 
     c.appendChild(body);
     return c;
@@ -906,10 +1635,92 @@
       : "显示 " + list.length + " / " + XP.length;
   }
 
-  document.getElementById("randomPassport").addEventListener("click", function () { var i=Math.floor(Math.random()*XP.length),x=XP[i],go=document.getElementById("passportGo");document.getElementById("passportOutput").textContent="实验 "+String(i+1).padStart(2,"0")+" · "+(DISPLAY_TITLES[i]||x.t)+"。安全："+(needsAdult(x)?"需要成人协助。":"孩子可在成人看护下主做。")+" 先猜："+x.ask;go.href="#kitchen-"+itemKey(i);go.hidden=false; });
+  document.getElementById("randomPassport").addEventListener("click", function () { var i=Math.floor(Math.random()*XP.length),x=XP[i],go=document.getElementById("passportGo");document.getElementById("passportOutput").textContent="实验 "+String(i+1).padStart(2,"0")+" · "+(DISPLAY_TITLES[i]||x.t)+"。安全："+(needsAdult(x)?"需要大人陪着。":"孩子可在成人看护下主做。")+" 先猜："+x.ask;go.href="#kitchen-"+itemKey(i);go.hidden=false; });
   document.getElementById("huntButton").addEventListener("click", function () { var term=document.getElementById("huntMaterial").value.trim().toLowerCase(),box=document.getElementById("huntOutput");box.textContent="";if(!term){box.textContent="先输入一种手边材料。";return;}var found=XP.map(function(x,i){return{x:x,i:i};}).filter(function(v){return v.x.mats.join(" ").toLowerCase().indexOf(term)>=0;}).slice(0,6);if(!found.length){box.textContent="暂时没找到含“"+term+"”的实验，试试更短的材料名。";return;}var ul=el("ul","hunt-list");found.forEach(function(v){var li=el("li"),a=el("a",null,DISPLAY_TITLES[v.i]||v.x.t);a.href="#kitchen-"+itemKey(v.i);li.appendChild(a);li.appendChild(document.createTextNode(" · "+v.x.mats.join("、")));ul.appendChild(li);});box.appendChild(ul);});
-  document.getElementById("huntMaterial").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();document.getElementById("huntButton").click();}});
-  document.getElementById("materialFilter").addEventListener("input", function (e) { state.material=e.target.value.trim().toLowerCase(); render(); });
+
+  /* ---- 孩子图形版：点材料图标挑实验，全程不用打字 ---- */
+  var kidMatBtns = [].slice.call(document.querySelectorAll("[data-kid-mat]"));
+  if (kidMatBtns.length) {
+    var kidMatOut = document.getElementById("kidMatOut");
+    var kidGoCard = document.getElementById("kidGoCard");
+    var kidRandom = document.getElementById("kidRandomXp");
+
+    function kidFill(emoji, title, text) {
+      kidMatOut.textContent = "";
+      var art = el("span", null, emoji);
+      art.setAttribute("aria-hidden", "true");
+      var box = document.createElement("div");
+      box.appendChild(el("b", null, title));
+      box.appendChild(el("p", null, text));
+      kidMatOut.appendChild(art);
+      kidMatOut.appendChild(box);
+    }
+
+    function kidShow(i, emoji) {
+      var x = XP[i];
+      kidFill(emoji, DISPLAY_TITLES[i] || x.t,
+        (needsAdult(x) ? "要大人帮忙 🧑 · " : "你自己就能玩 🙌 · ") + "约 " + x.mins + " 分钟");
+      kidGoCard.href = "#kitchen-" + itemKey(i);
+      kidGoCard.hidden = false;
+    }
+
+    function kidPickByMat(term, emoji) {
+      var hits = XP.map(function (x, i) { return { x: x, i: i }; }).filter(function (v) {
+        return v.x.mats.join(" ").indexOf(term) >= 0;
+      });
+      if (!hits.length) {
+        kidFill("🤷", "这个还没有", "换一个图试试看。");
+        kidGoCard.hidden = true;
+        return;
+      }
+      kidShow(hits[Math.floor(Math.random() * hits.length)].i, emoji);
+    }
+
+    kidMatBtns.forEach(function (button) {
+      button.addEventListener("click", function () {
+        kidMatBtns.forEach(function (other) {
+          other.setAttribute("aria-pressed", other === button ? "true" : "false");
+        });
+        var artNode = button.querySelector(".kid-tile-art");
+        kidPickByMat(button.getAttribute("data-kid-mat"), artNode ? artNode.textContent : "🔍");
+      });
+    });
+
+    kidRandom.addEventListener("click", function () {
+      kidMatBtns.forEach(function (other) { other.setAttribute("aria-pressed", "false"); });
+      kidShow(Math.floor(Math.random() * XP.length), "🎲");
+    });
+  }
+
+  var huntMaterial = document.getElementById("huntMaterial");
+  var huntQuick = [].slice.call(document.querySelectorAll(".passport-box .quick-picks .quick-fill"));
+  huntQuick.forEach(function (button) {
+    button.addEventListener("click", function () {
+      setExclusivePressed(button.parentElement, button);
+      huntMaterial.value = button.value;
+      document.getElementById("huntButton").click();
+    });
+  });
+  huntMaterial.addEventListener("input", function () {
+    huntQuick.forEach(function (button) { button.setAttribute("aria-pressed", "false"); });
+  });
+  huntMaterial.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();document.getElementById("huntButton").click();}});
+
+  var materialFilter = document.getElementById("materialFilter");
+  var filterQuick = [].slice.call(document.querySelectorAll(".filter-fill"));
+  filterQuick.forEach(function (button) {
+    button.addEventListener("click", function () {
+      setExclusivePressed(button.parentElement, button);
+      materialFilter.value = button.value;
+      state.material = button.value.toLowerCase();
+      render();
+    });
+  });
+  materialFilter.addEventListener("input", function (e) {
+    filterQuick.forEach(function (button) { button.setAttribute("aria-pressed", "false"); });
+    state.material=e.target.value.trim().toLowerCase();
+    render();
+  });
 
   chips.forEach(function (c) {
     c.addEventListener("click", function () {
@@ -928,6 +1739,239 @@
 })();
 </script>
 
-<script src="../assets/js/pwa.js?v=13"></script>
+<!-- 本页用 data-audience 标记家长/孩子内容，必须接入共享层：
+     playful.js 会设置 <html data-mode> 与 data-playful-motion，
+     否则 kid.css 的显隐规则与站内「动效」偏好在这一页全部失效。 -->
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
+<script>
+/* 厨房三件套的②③：液体量表 + 谁浮谁沉。放在共享层之后，可以用 Playful.setMeter，并做兜底。 */
+(function () {
+  "use strict";
+
+  var NS = "http://www.w3.org/2000/svg";
+  function sv(name, attrs) {
+    var node = document.createElementNS(NS, name);
+    Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    return node;
+  }
+  function svText(x, y, str, cls, size) {
+    var node = sv("text", { x: x, y: y, "class": cls, "text-anchor": "middle", "font-size": size || 13 });
+    node.textContent = str;
+    return node;
+  }
+  function clear(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
+  function setMeter(track, value, max) {
+    if (!track) return;
+    if (window.Playful && typeof Playful.setMeter === "function") { Playful.setMeter(track, value, max); return; }
+    var fill = track.querySelector(".kid-meter-fill");
+    var ratio = Math.max(0, Math.min(1, value / (max || 1)));
+    if (fill) fill.style.setProperty("--fill", (ratio * 100).toFixed(1) + "%");
+  }
+  function pressOnly(list, active) {
+    [].forEach.call(list, function (b) { b.setAttribute("aria-pressed", b === active ? "true" : "false"); });
+  }
+
+  /* ---------- ② 液体量表 ----------
+     密度以水为 1.0；pH 用常见近似值。两条量表的满格分别是 1.5 和 14。 */
+  var LIQUIDS = {
+    water: { name: "清水", density: 1.00, ph: 7,
+      say: "清水是那把尺子：密度 1.0、pH 7（中性）。别的液体都拿它来比。" },
+    oil:  { name: "食用油", density: 0.92, ph: 7,
+      say: "食用油密度约 0.92，比水小，所以倒进水里会浮到上面，而且不跟水混。" },
+    honey:{ name: "蜂蜜", density: 1.42, ph: 4,
+      say: "蜂蜜密度约 1.42，比水大得多，会直接沉到杯底；它还微微偏酸（pH 约 4）。" },
+    brine:{ name: "浓盐水", density: 1.20, ph: 7,
+      say: "浓盐水密度约 1.2：水没变多，是盐溶进去让同样一杯变重了，所以鸡蛋能浮起来。" },
+    lemon:{ name: "柠檬汁", density: 1.03, ph: 2,
+      say: "柠檬汁 pH 约 2，是这几样里最酸的。密度 1.03 跟水差不多，所以它跟水混得开。" },
+    soda: { name: "小苏打水", density: 1.05, ph: 9,
+      say: "小苏打水 pH 约 9，偏碱。紫甘蓝水碰到它会往蓝绿色变。" }
+  };
+  var DENSITY_MAX = 1.5, PH_MAX = 14;
+
+  var liquidPicks = document.getElementById("ksxLiquidPicks");
+  var dValue = document.getElementById("ksxDensityValue");
+  var dMeter = document.getElementById("ksxDensityMeter");
+  var dNote = document.getElementById("ksxDensityNote");
+  var pValue = document.getElementById("ksxPhValue");
+  var pMeter = document.getElementById("ksxPhMeter");
+  var pNote = document.getElementById("ksxPhNote");
+  var meterSay = document.getElementById("ksxMeterSay");
+
+  function showLiquid(key) {
+    var L = LIQUIDS[key];
+    if (!L) return;
+    dValue.textContent = L.density.toFixed(2);
+    setMeter(dMeter, L.density, DENSITY_MAX);
+    pValue.textContent = String(L.ph);
+    setMeter(pMeter, L.ph, PH_MAX);
+    dNote.textContent = L.density < 1
+      ? L.name + "比水轻（" + L.density.toFixed(2) + " < 1.0），倒进水里会浮在上面。"
+      : (L.density > 1
+        ? L.name + "比水重（" + L.density.toFixed(2) + " > 1.0），会沉到水下面。"
+        : L.name + "就是基准，密度正好 1.0。");
+    pNote.textContent = L.ph < 7
+      ? "pH " + L.ph + "，小于 7 → 是酸的。数字越小越酸。"
+      : (L.ph > 7 ? "pH " + L.ph + "，大于 7 → 偏碱。数字越大碱性越强。" : "pH 7 → 不酸也不碱，正好中性。");
+    meterSay.textContent = L.say;
+  }
+
+  if (liquidPicks) {
+    var liquidButtons = liquidPicks.querySelectorAll("[data-ksx-liquid]");
+    [].forEach.call(liquidButtons, function (b) {
+      b.addEventListener("click", function () {
+        pressOnly(liquidButtons, b);
+        showLiquid(b.getAttribute("data-ksx-liquid"));
+      });
+    });
+    showLiquid("water");
+  }
+
+  /* ---------- ③ 谁浮谁沉 ----------
+     第 3、4 题是同一个鸡蛋换液体：物体没变、结果反了，这是「浮沉是比出来的」最短证据。 */
+  var ROUNDS = [
+    { liquid: "water", lc: "ksx-water", ln: "清水", item: "木块", ic: "ksx-honey", shape: "block",
+      answer: "float", d: 0.6,
+      why: "木块密度约 0.6，比水（1.0）小，所以浮着，而且大半截露在外面。" },
+    { liquid: "water", lc: "ksx-water", ln: "清水", item: "硬币", ic: "ksx-chip", shape: "coin",
+      answer: "sink", d: 8.9,
+      why: "硬币的金属密度差不多是水的 9 倍，沉得又快又直。" },
+    { liquid: "water", lc: "ksx-water", ln: "清水", item: "鸡蛋", ic: "ksx-egg", shape: "egg",
+      answer: "sink", d: 1.03,
+      why: "新鲜鸡蛋密度约 1.03，只比水大一点点，所以慢慢沉下去、贴在杯底。" },
+    { liquid: "brine", lc: "ksx-brine", ln: "浓盐水", item: "鸡蛋", ic: "ksx-egg", shape: "egg",
+      answer: "float", d: 1.03,
+      why: "同一个鸡蛋！它一点没变，是盐水密度升到约 1.2 比鸡蛋大了，所以这次浮起来。浮沉是拿两个人比出来的。" },
+    { liquid: "oil", lc: "ksx-oil", ln: "食用油", item: "葡萄", ic: "ksx-grape", shape: "grape",
+      answer: "sink", d: 1.1,
+      why: "葡萄密度约 1.1，比油（0.92）大，所以在油里会沉。同一颗葡萄放清水里就几乎悬着。" },
+    { liquid: "water", lc: "ksx-water", ln: "清水", item: "葡萄", ic: "ksx-grape", shape: "grape",
+      answer: "middle", d: 1.05,
+      why: "葡萄密度跟水非常接近，所以常常不上不下地悬在中间，轻轻一碰就会动。" }
+  ];
+  var LABELS = { float: "浮在上面", middle: "停在中间", sink: "沉到底" };
+
+  var cupBody = document.getElementById("ksxCupBody");
+  var cupTitle = document.getElementById("ksxCupTitle");
+  var cupDesc = document.getElementById("ksxCupDesc");
+  var answerPicks = document.getElementById("ksxAnswerPicks");
+  var gameSay = document.getElementById("ksxGameSay");
+  var dots = document.getElementById("ksxDots");
+  var dotsCap = document.getElementById("ksxDotsCap");
+  var tally = document.getElementById("ksxTally");
+  var nextBtn = document.getElementById("ksxNext");
+  var againBtn = document.getElementById("ksxAgain");
+  var picks = answerPicks ? [].slice.call(answerPicks.querySelectorAll("[data-ksx-answer]")) : [];
+  var round = 0, answers = [], firstTry = 0;
+
+  /* 物体形状：都画在给定的 (cx, cy) 上，方便按浮／中／沉换高度 */
+  function itemShape(kind, cls, cx, cy) {
+    if (kind === "coin") return sv("ellipse", { "class": cls, cx: cx, cy: cy, rx: 15, ry: 5 });
+    if (kind === "block") return sv("rect", { "class": cls, x: cx - 16, y: cy - 12, width: 32, height: 24, rx: 3 });
+    if (kind === "grape") return sv("circle", { "class": cls, cx: cx, cy: cy, r: 13 });
+    return sv("ellipse", { "class": cls, cx: cx, cy: cy, rx: 13, ry: 17 });   /* egg */
+  }
+
+  function drawCup(index, resolved) {
+    var r = ROUNDS[index];
+    clear(cupBody);
+    /* 杯子：上宽下窄的梯形，液面在 y=58 */
+    cupBody.appendChild(sv("path", { "class": "ksx-glass", d: "M62 26 h116 l-13 132 h-90 Z" }));
+    cupBody.appendChild(sv("path", { "class": r.lc, d: "M66 58 h108 l-11 96 h-86 Z" }));
+    cupBody.appendChild(sv("path", { "class": "ksx-dash", d: "M66 58 H174" }));
+    if (r.liquid === "brine") {
+      ["82,96", "108,120", "136,104", "150,134", "96,142"].forEach(function (p) {
+        var xy = p.split(",");
+        cupBody.appendChild(sv("circle", { "class": "ksx-salt", cx: xy[0], cy: xy[1], r: 2 }));
+      });
+    }
+    /* 没作答前物体停在杯口外等着；作答后按正确答案落到相应高度 */
+    var cx = resolved ? 120 : 216;
+    var cy = resolved ? (r.answer === "float" ? 52 : (r.answer === "middle" ? 104 : 142)) : 44;
+    cupBody.appendChild(itemShape(r.shape, r.ic, cx, cy));
+    cupBody.appendChild(svText(120, 176, r.ln, "ksx-ink", 15));
+    if (!resolved) cupBody.appendChild(svText(216, 76, r.item, "ksx-ink-soft", 13));
+    cupTitle.textContent = "第 " + (index + 1) + " 题：一杯" + r.ln + "，旁边是" + r.item;
+    cupDesc.textContent = resolved
+      ? r.item + "放进" + r.ln + "以后" + LABELS[r.answer] + "了。"
+      : "杯子里装着" + r.ln + "，" + r.item + "还没放进去。";
+  }
+
+  function paintDots() {
+    if (!dots) return;
+    clear(dots);
+    for (var i = 0; i < ROUNDS.length; i++) {
+      var dot = document.createElement("i");
+      if (!answers[i]) dot.setAttribute("data-empty", "true");
+      else if (!answers[i].ok) dot.style.setProperty("--tone", "var(--warn)");
+      else dot.style.setProperty("--tone", "var(--sci)");
+      dots.appendChild(dot);
+    }
+    if (dotsCap) dotsCap.textContent = "第 " + (round + 1) + " 题，共 " + ROUNDS.length + " 题";
+  }
+
+  function updateTally() {
+    if (!tally) return;
+    var done = answers.filter(Boolean).length;
+    tally.textContent = "一次猜对 " + firstTry + " / " + ROUNDS.length + " 题。" +
+      (done >= ROUNDS.length ? "六题都做完啦，可以点「从第 1 题重来」。" : "答错不清零，可以再点别的看解释。");
+  }
+
+  function explain(chosen) {
+    var r = ROUNDS[round];
+    if (chosen === r.answer) return "对了，" + LABELS[r.answer] + "。" + r.why;
+    return "其实是" + LABELS[r.answer] + "，不是" + LABELS[chosen] + "。" + r.why +
+      "（记住：不是看它重不重，是看它和周围的液体谁的密度大。）";
+  }
+
+  function startRound() {
+    var done = answers[round];
+    drawCup(round, Boolean(done));
+    picks.forEach(function (b) {
+      b.setAttribute("aria-pressed", done && done.key === b.getAttribute("data-ksx-answer") ? "true" : "false");
+    });
+    if (gameSay) {
+      gameSay.textContent = done
+        ? explain(done.key)
+        : "第 " + (round + 1) + " 题：杯子里是" + ROUNDS[round].ln + "。" + ROUNDS[round].item + "放进去会怎样？";
+    }
+    if (nextBtn) nextBtn.textContent = round >= ROUNDS.length - 1 ? "回到第 1 题" : "下一题";
+    paintDots();
+    updateTally();
+  }
+
+  picks.forEach(function (b) {
+    b.addEventListener("click", function () {
+      var key = b.getAttribute("data-ksx-answer");
+      var first = !answers[round];
+      var ok = key === ROUNDS[round].answer;
+      if (first) {
+        answers[round] = { ok: ok, key: key };
+        if (ok) firstTry++;
+      }
+      pressOnly(picks, b);
+      drawCup(round, true);
+      if (gameSay) gameSay.textContent = explain(key);
+      paintDots();
+      updateTally();
+      if (first && ok && window.Playful && typeof Playful.confetti === "function") Playful.confetti(answerPicks);
+    });
+  });
+
+  if (nextBtn) nextBtn.addEventListener("click", function () {
+    round = round >= ROUNDS.length - 1 ? 0 : round + 1;
+    startRound();
+  });
+  if (againBtn) againBtn.addEventListener("click", function () {
+    round = 0; answers = []; firstTry = 0;
+    startRound();
+  });
+
+  if (cupBody && picks.length) startRound();
+})();
+</script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>估算站 · 互动实验室</title>
 <meta name="description" content="扫一眼估个数，答「差不多」就算赢。练量级感、抽样估计和费米估算（Fermi estimation），适合 6–12 岁。">
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#0b0f1a">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .head { padding: 30px 0 18px; }
@@ -19,12 +19,12 @@
   .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
 
   .stage-wrap { position: relative; }
+  /* 只管布局；外观（浅色花布底 + 描边）在下面「遮布」那条规则里统一给，
+     这里不要再写深色蒙层和模糊，否则是会被覆盖的死代码。 */
   .veil {
     position: absolute; inset: 14px;
     display: grid; place-items: center; text-align: center;
     border-radius: var(--r);
-    background: rgba(13,20,36,.9);
-    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
     padding: 20px;
   }
   .veil[hidden] { display: none; }
@@ -119,6 +119,7 @@
   .learning-layers details { border:1px solid var(--line); border-radius:var(--r); background:var(--surface); padding:0 16px; }
   .learning-layers summary { min-height:48px; display:flex; align-items:center; cursor:pointer; color:var(--ink); font-weight:800; }
   .learning-layers details > div { padding:0 0 16px; color:var(--ink-mid); }
+  .learning-layers .layer-age { display:inline-block; margin-right:8px; padding:2px 9px; border-radius:999px; background:rgba(110,168,254,.16); color:var(--sci); font-size:.74rem; font-weight:850; }
   main#main > * { order:0 !important; }
   [hidden] { display:none !important; }
   button, .btn, .chip, select, input[type="range"] { min-height:44px; }
@@ -152,6 +153,228 @@
     .guessbar > * { width:100%; }
     .verdict .row .btn { flex:1 1 100%; }
   }
+
+  /* ===== 孩子路径：大图形选项 + 量感小游戏 ===== */
+  .eg-wrap { margin:26px 0 10px; padding:18px clamp(14px,3vw,24px); border:3px solid var(--line); border-radius:var(--r-lg); background:var(--surface); box-shadow:0 6px 0 rgba(180,130,60,.18); }
+  .eg-title { display:flex; align-items:center; gap:10px; margin:0 0 4px; font-size:clamp(1.1rem,4vw,1.4rem); }
+  .eg-title > span { font-size:1.5em; }
+  .eg-sub { margin:0 0 14px; color:var(--ink-mid); }
+  .eg-tabs { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+  .eg-tab { display:flex; align-items:center; justify-content:center; gap:8px; min-height:56px; padding:8px 16px; border:3px solid var(--line); border-radius:999px; background:var(--surface-2); color:var(--ink); font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 4px 0 rgba(180,130,60,.2); }
+  .eg-tab > span { font-size:1.5em; }
+  .eg-tab[aria-pressed="true"] { border-color:var(--warn); background:rgba(251,191,36,.2); }
+  .eg-panel { display:grid; gap:12px; padding:14px; border:3px dashed var(--line); border-radius:var(--r-lg); background:var(--surface-2); }
+  .eg-panel[hidden] { display:none !important; }
+  .eg-ask { display:flex; align-items:center; justify-content:center; gap:8px; margin:0; font-weight:800; font-size:clamp(1.15rem,5vw,1.5rem); }
+  .eg-ask > span { font-size:1.35em; }
+  .eg-jars { display:grid; gap:10px; grid-template-columns:1fr 1fr; align-items:start; }
+  .eg-jar { display:grid; gap:6px; }
+  .eg-jar-title { text-align:center; font-weight:800; color:var(--ink-mid); }
+  .eg-blobs { display:flex; flex-wrap:wrap; gap:3px; align-content:center; justify-content:center; min-height:124px; padding:10px; border:3px solid var(--line); border-radius:var(--r); background:var(--surface); }
+  .eg-blobs i { font-style:normal; line-height:1; font-size:clamp(1rem,4vw,1.5rem); }
+  .eg-blobs-big { min-height:160px; }
+  .eg-blobs-big i { font-size:clamp(1.1rem,4.5vw,1.7rem); }
+  .eg-cup-row { display:flex; gap:12px; align-items:flex-end; justify-content:center; min-height:150px; padding:10px; border:3px solid var(--line); border-radius:var(--r); background:var(--surface); }
+  .eg-cup { position:relative; width:76px; height:120px; overflow:hidden; border:3px solid var(--line); border-radius:10px 10px 20px 20px; background:var(--surface-2); }
+  .eg-cup > i { position:absolute; left:0; right:0; bottom:0; display:block; background:linear-gradient(180deg,var(--math),var(--phys)); }
+  .eg-answers { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+  .eg-answer { display:grid; gap:4px; place-items:center; min-width:92px; min-height:88px; padding:10px 14px; border:3px solid var(--line); border-radius:var(--r-lg); background:var(--surface); color:var(--math); font-weight:800; cursor:pointer; box-shadow:0 5px 0 rgba(180,130,60,.2); }
+  .eg-answer big { font-family:var(--mono); font-size:1.7rem; line-height:1; color:var(--ink); }
+  .eg-answer small { font-size:.86rem; color:var(--ink-mid); }
+  .eg-answer svg { width:76px; height:auto; }
+  .eg-answer[data-state="right"] { border-color:var(--sci); background:rgba(74,222,128,.16); }
+  .eg-answer[data-state="wrong"] { border-color:var(--danger); background:rgba(209,59,46,.12); }
+  .eg-answer:disabled { cursor:default; opacity:.78; }
+  .eg-tools { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+  .eg-say { min-height:1.6em; margin:0; text-align:center; font-weight:800; color:var(--ink); }
+  .eg-foot { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:center; margin-top:14px; }
+  .eg-stars { min-height:1.4em; font-size:1.5rem; letter-spacing:2px; }
+  .kid-guess-wrap { margin-top:14px; padding:12px; border:3px dashed var(--line); border-radius:var(--r-lg); background:var(--surface-2); }
+  .kid-guess-wrap > p { margin:0 0 8px; text-align:center; font-weight:800; font-size:1.1rem; }
+  #kidGuessPicks .eg-answer { min-width:104px; }
+  html[data-mode="kid"] .eg-tab { min-height:64px; font-size:1.05rem; }
+  html[data-mode="kid"] .eg-answer { min-width:104px; min-height:104px; }
+  @media (max-width:620px) {
+    .eg-tabs { display:grid; grid-template-columns:1fr 1fr; }
+    .eg-answer { min-width:84px; }
+  }
+
+  /* ======================================================================
+     图像优先补强（本页专属前缀 es-）
+     顶部草地舞台 / 图例 / 具象估算对象 / 分组放大镜 / 基准量 / 猜长度 / 越猜越近
+     ====================================================================== */
+
+  /* 顶部插画舞台：草地铺底，小鸡先开口，再给三步图 */
+  .es-hero-stage { margin:14px 0 12px; }
+  .es-hero-copy { display:grid; gap:12px; }
+  .es-hero-copy .kid-steps-visual { margin:0; }
+  .es-hero-flock { font-size:clamp(2rem,7vw,3rem); line-height:1; }
+  .es-legend { margin:2px 0 10px; }
+
+  /* 遮布：从深色蒙层换成浅色花布，孩子看得见自己在哪 */
+  .veil {
+    background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--warn) 12%, var(--surface)) 0 15px, color-mix(in srgb, var(--warn) 24%, var(--surface)) 15px 30px);
+    border:3px solid color-mix(in srgb, var(--warn) 55%, var(--line));
+    backdrop-filter:none; -webkit-backdrop-filter:none;
+  }
+  .veil h2, .veil p { color:var(--ink); }
+  .es-veil-face { display:block; font-size:clamp(2.2rem,9vw,3.2rem); line-height:1; }
+
+  /* 估什么 / 怎么估：两排图形选择，代替下拉句子 */
+  .es-picker { margin:0 0 6px; }
+  .es-picker-label { display:flex; align-items:center; gap:7px; margin:0 0 6px; font-weight:800; color:var(--ink); }
+  .es-picker-label > span[aria-hidden="true"] { font-size:1.3rem; line-height:1; }
+  .es-picker .kid-tiles { margin:0; }
+
+  /* 结果卡：猜的 / 真的 / 差多少，三条能比长短 */
+  .es-meters { display:grid; gap:4px; }
+  .es-gap-row { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; }
+  .es-gap-dots { display:flex; flex-wrap:wrap; gap:5px; justify-content:center; max-width:100%; }
+  .es-gap-dots i { width:16px; height:16px; border-radius:50%; border:2px solid color-mix(in srgb, var(--warn) 62%, var(--line)); background:color-mix(in srgb, var(--warn) 34%, var(--surface)); font-style:normal; }
+  .es-gap-dots i[data-empty="true"] { border-style:dashed; background:var(--surface-2); }
+  .es-gap-more { font:800 .9rem/1 var(--mono); color:var(--ink-mid); }
+
+  /* 新玩法面板（沿用 .eg-panel 外观，另加自己的零件） */
+  .es-stage { display:grid; place-items:center; padding:10px; border:3px solid var(--line); border-radius:var(--r); background:var(--surface); }
+  .es-stage svg { display:block; width:100%; max-width:430px; height:auto; }
+  .es-bench-row { display:grid; gap:12px; grid-template-columns:auto minmax(0,1fr); align-items:center; }
+  .es-card { display:grid; gap:6px; justify-items:center; padding:10px; border:3px dashed color-mix(in srgb, var(--warn) 60%, var(--line)); border-radius:var(--r); background:color-mix(in srgb, var(--warn) 10%, var(--surface)); }
+  .es-card svg { display:block; width:clamp(96px,24vw,138px); height:auto; }
+  .es-card-cap { font-weight:800; color:var(--warn); font-size:.92rem; text-align:center; }
+  .es-trend-meters { display:grid; gap:6px; }
+  .es-trend-empty { margin:0; font-weight:800; color:var(--ink-mid); text-align:center; }
+
+  /* SVG 取色一律走 class，属性里不写 var() */
+  .es-sky   { fill:color-mix(in srgb, var(--video) 10%, #eaf7ff); }
+  .es-field { fill:color-mix(in srgb, var(--sci) 16%, #e9f8e6); }
+  .es-hill  { fill:color-mix(in srgb, var(--sci) 26%, #dff2d8); }
+  .es-sun   { fill:color-mix(in srgb, var(--warn) 32%, #ffdc7a); }
+  .es-grass { stroke:color-mix(in srgb, var(--sci) 52%, transparent); stroke-width:2.5; stroke-linecap:round; fill:none; }
+  .es-ring  { fill:color-mix(in srgb, var(--warn) 15%, transparent); stroke:color-mix(in srgb, var(--warn) 72%, transparent); stroke-width:2.5; }
+  .es-band  { fill:color-mix(in srgb, var(--sci) 13%, transparent); stroke:color-mix(in srgb, var(--sci) 62%, transparent); stroke-width:2.5; }
+  .es-band-num { fill:color-mix(in srgb, var(--sci) 78%, var(--ink)); font:800 13px var(--mono); }
+  .es-frame-dash { fill:none; stroke:color-mix(in srgb, var(--warn) 74%, transparent); stroke-width:3; stroke-dasharray:8 5; }
+  .es-frame-plate { fill:color-mix(in srgb, var(--warn) 8%, var(--surface)); }
+  .es-rope  { fill:none; stroke:color-mix(in srgb, var(--kit) 66%, transparent); stroke-width:10; stroke-linecap:round; }
+  .es-rope-shine { fill:none; stroke:color-mix(in srgb, var(--kit) 18%, #ffffff); stroke-width:3; stroke-linecap:round; }
+  .es-unit  { fill:color-mix(in srgb, var(--math) 20%, var(--surface)); stroke:color-mix(in srgb, var(--math) 66%, transparent); stroke-width:2; }
+  .es-tick  { stroke:color-mix(in srgb, var(--ink) 40%, transparent); stroke-width:2; stroke-linecap:round; }
+  .es-glyph { font-size:19px; }
+  .es-glyph-sm { font-size:13px; }
+  .es-glyph-lg { font-size:26px; }
+
+  html[data-mode="kid"] .es-hero-copy .kid-speech { font-size:1.08rem; }
+  html[data-mode="kid"] .es-stage { border-width:3px; }
+  @media (max-width:620px) {
+    .es-bench-row { grid-template-columns:1fr; }
+  }
+
+  /* ======================================================================
+     图鉴 + 看图估数（本页专属前缀 esx-）
+     ① 参照物图鉴：8 张卡共用同一个 viewBox 0 0 300 176，卡内自带刻度尺；
+        同一把尺子上的四样东西严格按真实比例画，所以能直接比大小。
+     ② 看图估数：固定伪随机散点，答完把「切四块」的虚线显示出来。
+     ====================================================================== */
+  .esx-shell { display:grid; gap:16px; margin:26px 0 10px; }
+  .esx-card { padding:18px clamp(14px,3vw,24px); border:3px solid var(--line); border-radius:var(--r-lg); background:var(--surface); box-shadow:0 6px 0 rgba(180,130,60,.18); }
+  .esx-card > h2, .esx-card > h3 { display:flex; align-items:center; gap:9px; margin:.1em 0 .3em; font-size:clamp(1.08rem,4vw,1.32rem); }
+  .esx-card > h2 > span[aria-hidden="true"], .esx-card > h3 > span[aria-hidden="true"] { font-size:1.4em; line-height:1; }
+  .esx-lead { margin:0 0 12px; color:var(--ink-mid); font-weight:750; }
+  .esx-lead b { color:var(--ink); }
+
+  /* ① 图鉴：卡片给大一点，小东西才不至于缩成一个点 */
+  .esx-atlas { grid-template-columns:repeat(auto-fit,minmax(min(216px,100%),1fr)); }
+  .esx-atlas .kid-figure-art { min-height:0; padding:5px; }
+  .esx-atlas .kid-figure-art > svg { display:block; width:100%; height:auto; }
+  .esx-atlas .kid-figure-fact { padding-top:5px; border-top:1px dashed var(--line-soft); }
+  html[data-mode="kid"] .esx-atlas { grid-template-columns:repeat(auto-fit,minmax(min(232px,100%),1fr)); }
+  html[data-mode="kid"] .esx-atlas .kid-figure-art { min-height:0; }
+
+  /* ② 看图估数 */
+  .esx-progress { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:0 0 10px; }
+  .esx-progress .kid-dots { --tone:var(--sci); }
+  .esx-progress .kid-dots > i[data-esx-now="true"] { border-color:var(--warn); box-shadow:0 0 0 3px color-mix(in srgb, var(--warn) 26%, transparent); }
+  .esx-count { font:800 .88rem/1 var(--mono); color:var(--ink-mid); }
+  .esx-stage { display:grid; place-items:center; padding:8px; border:3px solid var(--line); border-radius:var(--r); background:var(--surface-2); }
+  .esx-quiz-art { display:block; width:100%; max-width:560px; height:auto; border-radius:var(--r-sm); }
+  .esx-picks { grid-template-columns:repeat(auto-fit,minmax(min(122px,100%),1fr)); margin:12px 0 10px; }
+  .esx-picks .kid-tile > .kid-tile-art { font:800 clamp(1.5rem,6vw,2.1rem)/1 var(--mono); }
+  .esx-picks .kid-tile[data-esx-good="true"] { border-color:var(--sci); box-shadow:0 0 0 3px color-mix(in srgb, var(--sci) 30%, transparent); }
+  .esx-picks .kid-tile[data-esx-off="true"][aria-pressed="true"] { border-color:var(--warn); background:color-mix(in srgb, var(--warn) 16%, var(--surface)); color:var(--ink); }
+  .esx-picks .kid-tile[data-esx-off="true"][aria-pressed="true"]::after { content:"○"; color:var(--warn); }
+  .esx-says { display:grid; gap:8px; margin:0 0 12px; }
+  .esx-actions { display:flex; flex-wrap:wrap; gap:10px; }
+  .esx-actions .btn { min-height:48px; }
+  .esx-tally { margin-top:12px; }
+  .esx-tally .kid-meter { margin:0; }
+
+  /* SVG 一律用 class 上色，属性里不写颜色 */
+  .esx-bg { fill:color-mix(in srgb, var(--video) 8%, #f2fbff); }
+  .esx-quiz-bg { fill:color-mix(in srgb, var(--sci) 9%, #f1fbef); }
+  .esx-ruler { fill:color-mix(in srgb, var(--warn) 26%, #fff6e0); stroke:color-mix(in srgb, var(--ink) 42%, transparent); stroke-width:1.6; }
+  .esx-ruler-tick { fill:none; stroke:color-mix(in srgb, var(--ink) 58%, transparent); stroke-width:1.8; stroke-linecap:round; }
+  .esx-ruler-num { fill:color-mix(in srgb, var(--ink) 74%, transparent); font:800 11px var(--mono); text-anchor:middle; }
+  .esx-ruler-end { fill:color-mix(in srgb, var(--ink) 74%, transparent); font:800 11px var(--mono); text-anchor:end; }
+  .esx-guide { fill:none; stroke:color-mix(in srgb, var(--ink) 24%, transparent); stroke-width:1.4; stroke-dasharray:6 6; }
+  .esx-guide-num { fill:color-mix(in srgb, var(--ink) 52%, transparent); font:700 10px var(--mono); text-anchor:end; }
+  .esx-dim { fill:none; stroke:color-mix(in srgb, var(--math) 72%, transparent); stroke-width:1.8; stroke-linecap:round; }
+  .esx-dim-num { fill:color-mix(in srgb, var(--math) 82%, var(--ink)); font:800 12px var(--mono); text-anchor:middle; }
+  .esx-ghost { fill:none; stroke:color-mix(in srgb, var(--ink) 26%, transparent); stroke-width:1.5; stroke-dasharray:5 4; }
+  .esx-metal { fill:color-mix(in srgb, var(--warn) 52%, #e7cf94); stroke:color-mix(in srgb, var(--ink) 52%, transparent); stroke-width:2; }
+  .esx-metal-face { fill:color-mix(in srgb, var(--warn) 26%, #f6e7bf); stroke:color-mix(in srgb, var(--ink) 34%, transparent); stroke-width:1.4; }
+  .esx-coin-num { fill:color-mix(in srgb, var(--ink) 74%, transparent); font:800 30px var(--mono); text-anchor:middle; }
+  .esx-lens { fill:color-mix(in srgb, var(--video) 7%, #ffffff); stroke:color-mix(in srgb, var(--ink) 46%, transparent); stroke-width:3; }
+  .esx-lens-grip { fill:none; stroke:color-mix(in srgb, var(--kit) 62%, #b98a4e); stroke-width:9; stroke-linecap:round; }
+  .esx-lens-link { fill:none; stroke:color-mix(in srgb, var(--ink) 34%, transparent); stroke-width:1.5; stroke-dasharray:5 4; }
+  .esx-lens-cap { fill:color-mix(in srgb, var(--ink) 62%, transparent); font:800 12px var(--mono); text-anchor:middle; }
+  .esx-eraser { fill:color-mix(in srgb, var(--danger) 34%, #f3a9a2); stroke:color-mix(in srgb, var(--ink) 42%, transparent); stroke-width:1.4; }
+  .esx-ferrule { fill:color-mix(in srgb, var(--ink) 22%, #cfd3d6); stroke:color-mix(in srgb, var(--ink) 42%, transparent); stroke-width:1.2; }
+  .esx-wood { fill:color-mix(in srgb, var(--warn) 46%, #f4cd77); stroke:color-mix(in srgb, var(--ink) 42%, transparent); stroke-width:1.4; }
+  .esx-cone { fill:color-mix(in srgb, var(--warn) 16%, #f8ecd6); stroke:color-mix(in srgb, var(--ink) 42%, transparent); stroke-width:1.4; }
+  .esx-lead-tip { fill:color-mix(in srgb, var(--ink) 78%, transparent); }
+  .esx-paper { fill:#ffffff; stroke:color-mix(in srgb, var(--ink) 40%, transparent); stroke-width:2; }
+  .esx-paper-line { fill:none; stroke:color-mix(in srgb, var(--ink) 20%, transparent); stroke-width:2.6; stroke-linecap:round; }
+  .esx-paper-fold { fill:color-mix(in srgb, var(--ink) 10%, #eef1f4); stroke:color-mix(in srgb, var(--ink) 40%, transparent); stroke-width:1.6; }
+  /* 脚印用几个不描边的图形拼出来，重叠处才不会露出接缝 */
+  .esx-foot { fill:color-mix(in srgb, var(--math) 42%, #9dbff5); }
+  .esx-unit-box { fill:none; stroke:color-mix(in srgb, var(--ink) 38%, transparent); stroke-width:1.4; stroke-dasharray:2.4 1.8; }
+  .esx-mark { fill:color-mix(in srgb, var(--danger) 46%, #e08a80); }
+  .esx-door { fill:color-mix(in srgb, var(--kit) 44%, #d3a06a); stroke:color-mix(in srgb, var(--ink) 52%, transparent); stroke-width:1.4; }
+  .esx-door-frame { fill:color-mix(in srgb, var(--kit) 16%, #efe0cd); stroke:color-mix(in srgb, var(--ink) 44%, transparent); stroke-width:1.4; }
+  .esx-door-knob { fill:color-mix(in srgb, var(--ink) 62%, transparent); }
+  .esx-wall { fill:color-mix(in srgb, var(--warn) 14%, #f7eddb); stroke:color-mix(in srgb, var(--ink) 44%, transparent); stroke-width:1.6; }
+  .esx-slab { fill:color-mix(in srgb, var(--ink) 26%, #b9bec4); }
+  .esx-window { fill:color-mix(in srgb, var(--video) 30%, #b6e6f5); stroke:color-mix(in srgb, var(--ink) 44%, transparent); stroke-width:1.2; }
+  .esx-car-body { fill:color-mix(in srgb, var(--phys) 46%, #9ec8f0); stroke:color-mix(in srgb, var(--ink) 52%, transparent); stroke-width:1.4; }
+  .esx-car-window { fill:color-mix(in srgb, var(--video) 26%, #d8f2fb); stroke:color-mix(in srgb, var(--ink) 34%, transparent); stroke-width:1; }
+  .esx-wheel { fill:color-mix(in srgb, var(--ink) 68%, transparent); }
+  .esx-court { fill:color-mix(in srgb, var(--kit) 12%, #e8c48f); stroke:color-mix(in srgb, var(--ink) 50%, transparent); stroke-width:2.4; }
+  .esx-court-line { fill:none; stroke:#ffffff; stroke-width:2.2; }
+  .esx-hoop { fill:color-mix(in srgb, var(--danger) 52%, #d9705f); }
+  .esx-ball { fill:color-mix(in srgb, var(--warn) 62%, #e08a3c); stroke:color-mix(in srgb, var(--ink) 52%, transparent); stroke-width:1.2; }
+  .esx-person { fill:color-mix(in srgb, var(--sci) 48%, #5fae7a); }
+  .esx-dot { fill:color-mix(in srgb, var(--math) 58%, #5b8fe0); stroke:color-mix(in srgb, var(--ink) 34%, transparent); stroke-width:1; }
+  .esx-grid-lines { opacity:0; transition:opacity .25s var(--ease); }
+  .esx-grid-lines[data-on="true"] { opacity:1; }
+  .esx-grid-line { fill:none; stroke:color-mix(in srgb, var(--danger) 66%, transparent); stroke-width:2.6; stroke-dasharray:9 6; stroke-linecap:round; }
+  .esx-quad-num { fill:color-mix(in srgb, var(--danger) 74%, var(--ink)); font:800 16px var(--mono); text-anchor:middle; }
+  .esx-quad-plate { fill:#ffffff; stroke:color-mix(in srgb, var(--danger) 46%, transparent); stroke-width:1.6; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .esx-grid-lines { transition:none; }
+  }
+  @media (max-width:620px) {
+    .esx-picks { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+  /* 手机孩子模式：图例排成两列（原来换行要占三行），把首屏让给主操作。 */
+  @media (max-width:480px) {
+    html[data-mode="kid"] .es-hero-stage { margin-bottom:8px; }
+    html[data-mode="kid"] .story-hero { padding-block:8px; }
+    html[data-mode="kid"] .story-kicker { margin:0 0 2px; }
+    /* 「现在就试」提示条的内容已由插画舞台的三步图卡表达，手机上收起。 */
+    html[data-mode="kid"] .stage-ribbon { display:none; }
+  }
+
 </style>
 </head>
 <body data-playful-page="games/estimation-station.html">
@@ -170,17 +393,36 @@
 </div></nav>
 
 <header class="story-hero wrap">
-  <div class="story-guide" aria-hidden="true">☁️</div>
+  <div class="story-guide" aria-hidden="true">🐤</div>
   <div class="story-copy">
-    <p class="story-kicker">妙妙的云端补给站正在装箱</p>
-    <p class="row" style="margin:0 0 8px"><span class="pill pill-math">数学</span><span class="pill">6–12 岁</span><span class="pill">估算 · 量级感</span></p>
-    <h1>一眼猜出补给有多少</h1>
-    <p class="story-goal"><b>不用一个个数：</b>先看整体、分成小块，再猜一个差不多的数量。</p>
+    <p class="story-kicker">妙妙的草地上跑出好多小鸡</p>
+    <p class="row" style="margin:0 0 8px"><span class="pill pill-math">数学</span><span class="pill">5–10 岁</span><span class="pill">估算 · 分组</span></p>
+    <h1>一眼猜出草地上有多少</h1>
+    <p class="story-goal"><b>不用一个一个数：</b>先分组，再猜一个差不多的数。</p>
   </div>
 </header>
-
 <main id="main" class="wrap">
-  <div class="stage-ribbon" role="note"><span aria-hidden="true">🫘</span><strong>准备开箱：</strong><span>选一种估法，扫一眼糖豆，再写下你的判断。</span></div>
+
+  <!-- ============ 顶部图形舞台：不识字也看得懂这页在玩什么 ============ -->
+  <div class="kid-visual-stage es-hero-stage" data-scene-layer="back"
+       data-playful-scene="meadow"
+       data-playful-scene-title="草地上散着一群小鸡"
+       data-playful-scene-desc="太阳、云朵和小山后面是一片草地，草地上散着一群小鸡，等着被一眼猜出有多少只">
+    <div class="es-hero-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🐥</span>
+        <p class="kid-speech">先<b>分成一组一组</b>，再猜。分了组的猜，比瞎猜近得多。</p>
+        <span class="es-hero-flock" aria-hidden="true">🐤🐤🐤</span>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步玩法">
+        <li><span class="kid-tile-art" aria-hidden="true">👀</span>扫一眼</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🔟</span>分组数</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🎯</span>猜个差不多</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="stage-ribbon" role="note"><span aria-hidden="true">👆</span><strong>现在就试：</strong><span>点「开始」，草地闪一下就盖住。</span></div>
 
   <div class="tabs" role="tablist" aria-label="选择模式" data-audience="parent">
     <button class="chip" type="button" role="tab" id="tab-count" aria-selected="true"  aria-pressed="true"  aria-controls="mode-count" data-mode="count">模式一 · 数糖豆</button>
@@ -189,16 +431,47 @@
 
   <!-- ================= 模式一 ================= -->
   <section id="mode-count" role="tabpanel" aria-labelledby="tab-count" class="lab">
-    <div class="lab-stage stage-wrap kid-visual-stage">
-      <canvas id="cv" width="800" height="520" aria-label="散落着许多糖豆的画面，用于估算数量">糖豆数量估算图。糖豆短暂显示后会隐藏，请在表单中填写估计值。</canvas>
-      <div class="veil" id="veil">
-        <div class="kid-action-strip">
-          <h2 id="veil-title">准备好了吗？</h2>
-          <p id="veil-text">糖豆会闪一下就藏起来。别去一个一个数，扫一眼，猜个大概。</p>
-          <button class="btn btn-primary" type="button" id="flash">开始第 1 轮</button>
+    <div class="lab-stage">
+      <ul class="es-legend kid-legend" aria-label="画面图例">
+        <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">🐤</span>小动物 = 要猜的东西</li>
+        <li style="--tone:var(--warn)"><span class="kid-legend-mark" aria-hidden="true">⭕</span>黄圈 = 5 个一组</li>
+        <li style="--tone:var(--sci)"><span class="kid-legend-mark" aria-hidden="true">▬</span>绿排 = 10 个一排</li>
+        <li style="--tone:var(--ink-dim)"><span class="kid-legend-mark" aria-hidden="true">🙈</span>花布 = 藏起来了</li>
+      </ul>
+
+      <div class="stage-wrap kid-visual-stage">
+        <canvas id="cv" width="800" height="520" aria-label="草地上散着许多小动物的画面，用于估算数量">草地估算图。小动物短暂显示后会被花布盖住，请点一个大概的数量或填写估计值。</canvas>
+        <div class="veil" id="veil">
+          <div class="kid-action-strip">
+            <span class="es-veil-face" aria-hidden="true" id="veil-face">🐣</span>
+            <h2 id="veil-title">准备好了吗？</h2>
+            <p id="veil-text">闪一下就盖住。<span data-audience="parent">别去一个一个数，扫一眼，猜个大概。</span></p>
+            <button class="btn btn-primary" type="button" id="flash"><span aria-hidden="true">▶️</span> 开始第 1 轮</button>
+          </div>
         </div>
       </div>
       <p class="sr-only" id="live-count" aria-live="polite"></p>
+
+      <div class="es-picker">
+        <p class="es-picker-label" id="esKindLabel"><span aria-hidden="true">🐤</span>草地上放什么</p>
+        <div class="kid-tiles" id="esKindTiles" role="group" aria-labelledby="esKindLabel"></div>
+      </div>
+
+      <div class="es-picker">
+        <p class="es-picker-label" id="esStrategyLabel"><span aria-hidden="true">🔍</span>这次怎么猜</p>
+        <div class="kid-tiles" id="esStrategyTiles" role="group" aria-labelledby="esStrategyLabel">
+          <button class="kid-tile" type="button" data-kid-strategy="whole" aria-pressed="true" aria-label="整体看，凭感觉猜">
+            <span class="kid-tile-art" aria-hidden="true">👀</span><span class="kid-tile-label">整体看</span><span class="kid-tile-sub">凭感觉</span>
+          </button>
+          <button class="kid-tile" type="button" data-kid-strategy="quarter" aria-pressed="false" aria-label="切成四块，估一块再乘四">
+            <span class="kid-tile-art" aria-hidden="true">🍰</span><span class="kid-tile-label">切四块</span><span class="kid-tile-sub">一块 × 4</span>
+          </button>
+          <button class="kid-tile" type="button" data-kid-strategy="sample" aria-pressed="false" aria-label="小框放大，估小框里几个再按面积放大">
+            <span class="kid-tile-art" aria-hidden="true">🔍</span><span class="kid-tile-label">小框放大</span><span class="kid-tile-sub">样方</span>
+          </button>
+        </div>
+        <p class="eg-say" id="kidStrategySay" role="status" aria-live="polite">换一种看法，任务才算完成。</p>
+      </div>
     </div>
 
     <div>
@@ -228,7 +501,7 @@
           </select>
         </div>
 
-        <div class="ctrl">
+        <div class="ctrl" data-audience="parent">
           <div class="ctrl-head"><label for="estimate-strategy">本轮使用的策略</label></div>
           <select class="input" id="estimate-strategy">
             <option value="whole">整体感觉</option>
@@ -238,12 +511,19 @@
         </div>
 
         <div class="guessbar">
-          <div class="f">
+          <div class="f" data-audience="parent">
             <label for="guess">我猜有几个</label>
             <input class="input" type="number" id="guess" min="1" max="9999" step="1" inputmode="numeric" placeholder="例如 80" disabled>
           </div>
           <button class="btn btn-primary" type="button" id="submit" disabled>看答案</button>
         </div>
+
+        <div class="kid-guess-wrap" id="kidGuessWrap">
+          <p><span aria-hidden="true">👉</span> 点一个差不多的数</p>
+          <div class="eg-answers" id="kidGuessPicks" aria-label="选一个大概的数量"></div>
+          <p class="eg-say" id="kidGuessSay" role="status" aria-live="polite">先点「开始」，扫一眼糖豆。</p>
+        </div>
+
         <p id="err" class="note note-warn" role="alert" hidden style="margin-top:10px"></p>
 
         <div class="verdict" id="verdict" hidden>
@@ -259,9 +539,35 @@
         </div>
         <div class="kid-result-card estimate-result" id="kidEstimateResult" hidden aria-live="polite">
           <div class="estimate-numbers"><span>我猜<b id="kidGuessValue">—</b></span><span>真实<b id="kidTruthValue">—</b></span><span>相差<b id="kidDiffValue">—</b></span></div>
-          <div class="estimate-distance" role="img" id="kidDistanceVisual" aria-label="猜测和真实值的长度比较">
-            <div class="estimate-distance-row"><span>猜</span><div class="estimate-distance-track"><i id="kidGuessBar" style="width:0"></i></div></div>
-            <div class="estimate-distance-row"><span>真的</span><div class="estimate-distance-track"><i id="kidTruthBar" style="width:0"></i></div></div>
+          <div class="es-meters" role="group" id="kidDistanceVisual" aria-label="猜的和真的画成两条，比一比谁长">
+            <div class="kid-meter" style="--tone:var(--math)">
+              <div class="kid-meter-head">
+                <span class="kid-meter-icon" aria-hidden="true">🙋</span>
+                <span id="kidGuessMeterLabel">你猜的</span>
+                <span class="kid-meter-value" id="kidGuessMeterValue">—</span>
+              </div>
+              <div class="kid-meter-track" id="kidGuessMeter" role="img" aria-labelledby="kidGuessMeterLabel kidGuessMeterValue"><span class="kid-meter-fill"></span></div>
+            </div>
+            <div class="kid-meter" style="--tone:var(--sci)">
+              <div class="kid-meter-head">
+                <span class="kid-meter-icon" aria-hidden="true">🐤</span>
+                <span id="kidTruthMeterLabel">真的有</span>
+                <span class="kid-meter-value" id="kidTruthMeterValue">—</span>
+              </div>
+              <div class="kid-meter-track" id="kidTruthMeter" role="img" aria-labelledby="kidTruthMeterLabel kidTruthMeterValue"><span class="kid-meter-fill"></span></div>
+            </div>
+            <div class="kid-meter" style="--tone:var(--warn)">
+              <div class="kid-meter-head">
+                <span class="kid-meter-icon" aria-hidden="true">📏</span>
+                <span id="kidGapMeterLabel">差这么多</span>
+                <span class="kid-meter-value" id="kidGapMeterValue">—</span>
+              </div>
+              <div class="kid-meter-track" id="kidGapMeter" role="img" aria-labelledby="kidGapMeterLabel kidGapMeterValue"><span class="kid-meter-fill"></span></div>
+            </div>
+          </div>
+          <div class="es-gap-row">
+            <span class="es-gap-dots" id="kidGapDots" role="img" aria-label="差距还没算出来"></span>
+            <span class="es-gap-more" id="kidGapMore"></span>
           </div>
           <p style="margin:0;text-align:center;font-weight:800" id="kidEstimateFinding">揭晓后看看两条相差多远。</p>
         </div>
@@ -362,27 +668,601 @@
     </div>
   </section>
 
+  <!-- ================= 量感三个小游戏（孩子路径，全图形） ================= -->
+  <section class="eg-wrap" id="kidEstimateGames" aria-labelledby="kidEstimateGamesTitle">
+    <h2 id="kidEstimateGamesTitle" class="eg-title"><span aria-hidden="true">🎈</span>再玩七个小游戏</h2>
+    <p class="eg-sub">扫一眼就好，不要一个一个数。答对了星星会变多。</p>
+
+    <div class="eg-tabs" role="group" aria-label="选择小游戏">
+      <button class="eg-tab" type="button" data-eg-tab="more" aria-pressed="true"><span aria-hidden="true">🍇</span>哪边多</button>
+      <button class="eg-tab" type="button" data-eg-tab="near" aria-pressed="false"><span aria-hidden="true">🎯</span>大概几个</button>
+      <button class="eg-tab" type="button" data-eg-tab="full" aria-pressed="false"><span aria-hidden="true">🥛</span>装了多少</button>
+      <button class="eg-tab" type="button" data-eg-tab="group" aria-pressed="false"><span aria-hidden="true">🔍</span>分组放大镜</button>
+      <button class="eg-tab" type="button" data-eg-tab="bench" aria-pressed="false"><span aria-hidden="true">🪪</span>基准量卡</button>
+      <button class="eg-tab" type="button" data-eg-tab="length" aria-pressed="false"><span aria-hidden="true">📏</span>猜有多长</button>
+      <button class="eg-tab" type="button" data-eg-tab="trend" aria-pressed="false"><span aria-hidden="true">📈</span>越猜越近</button>
+    </div>
+
+    <!-- 小游戏 1：哪边多 -->
+    <div class="eg-panel" id="egPanelMore" role="group" aria-labelledby="egAskMore">
+      <p class="eg-ask" id="egAskMore"><span aria-hidden="true">🍇</span> 哪边多？</p>
+      <div class="eg-jars">
+        <div class="eg-jar">
+          <span class="eg-jar-title">左边</span>
+          <div class="eg-blobs" id="egMoreLeft" role="img" aria-label="左边的糖豆"></div>
+        </div>
+        <div class="eg-jar">
+          <span class="eg-jar-title">右边</span>
+          <div class="eg-blobs" id="egMoreRight" role="img" aria-label="右边的糖豆"></div>
+        </div>
+      </div>
+      <div class="eg-answers" aria-label="选一个答案">
+        <button class="eg-answer" type="button" data-eg-more="left"><span aria-hidden="true" style="font-size:2rem">👈</span><small>左边多</small></button>
+        <button class="eg-answer" type="button" data-eg-more="same"><span aria-hidden="true" style="font-size:2rem">🟰</span><small>差不多</small></button>
+        <button class="eg-answer" type="button" data-eg-more="right"><span aria-hidden="true" style="font-size:2rem">👉</span><small>右边多</small></button>
+      </div>
+      <div class="eg-tools">
+        <button class="btn btn-primary" type="button" id="egMoreNext"><span aria-hidden="true">🔄</span> 换一组</button>
+        <button class="btn" type="button" id="egMoreShow"><span aria-hidden="true">🔢</span> 数给我看</button>
+      </div>
+      <p class="eg-say" id="egMoreSay" role="status" aria-live="polite">扫一眼，再点一个。</p>
+    </div>
+
+    <!-- 小游戏 2：大概几个 -->
+    <div class="eg-panel" id="egPanelNear" role="group" aria-labelledby="egAskNear" hidden>
+      <p class="eg-ask" id="egAskNear"><span aria-hidden="true">🎯</span> 大概几个？</p>
+      <div class="eg-blobs eg-blobs-big" id="egNearScene" role="img" aria-label="一堆糖豆"></div>
+      <div class="eg-answers" id="egNearAnswers" aria-label="选一个大概的数量"></div>
+      <div class="eg-tools">
+        <button class="btn btn-primary" type="button" id="egNearNext"><span aria-hidden="true">🔄</span> 换一堆</button>
+        <button class="btn" type="button" id="egNearHelp"><span aria-hidden="true">🔟</span> 圈出十个</button>
+      </div>
+      <p class="eg-say" id="egNearSay" role="status" aria-live="polite">差不多就算对，不用数完。</p>
+    </div>
+
+    <!-- 小游戏 3：装了多少 -->
+    <div class="eg-panel" id="egPanelFull" role="group" aria-labelledby="egAskFull" hidden>
+      <p class="eg-ask" id="egAskFull"><span aria-hidden="true">🥛</span> 装了多少？</p>
+      <div class="eg-cup-row" id="egFullScene"></div>
+      <div class="eg-answers" aria-label="选一个答案">
+        <button class="eg-answer" type="button" data-eg-full="empty"><span aria-hidden="true" style="font-size:2rem">🫙</span><small>几乎空</small></button>
+        <button class="eg-answer" type="button" data-eg-full="half"><span aria-hidden="true" style="font-size:2rem">🥛</span><small>一半</small></button>
+        <button class="eg-answer" type="button" data-eg-full="most"><span aria-hidden="true" style="font-size:2rem">🧋</span><small>快满了</small></button>
+      </div>
+      <div class="eg-tools">
+        <button class="btn btn-primary" type="button" id="egFullNext"><span aria-hidden="true">🔄</span> 换一杯</button>
+        <button class="btn" type="button" id="egFullHelp"><span aria-hidden="true">📏</span> 画中线</button>
+      </div>
+      <p class="eg-say" id="egFullSay" role="status" aria-live="polite">看水面在哪里。</p>
+    </div>
+
+    <!-- 小游戏 4：分组放大镜（同一堆，三种看法） -->
+    <div class="eg-panel" id="esPanelGroup" role="group" aria-labelledby="esAskGroup" hidden>
+      <p class="eg-ask" id="esAskGroup"><span aria-hidden="true">🔍</span> 同一堆，换个看法再猜</p>
+      <div class="kid-tiles" id="esGroupViews" role="group" aria-label="选择看法">
+        <button class="kid-tile" type="button" data-es-view="free" aria-pressed="true" aria-label="随便看，不分组">
+          <span class="kid-tile-art" aria-hidden="true">👀</span><span class="kid-tile-label">随便看</span><span class="kid-tile-sub">不分组</span>
+        </button>
+        <button class="kid-tile" type="button" data-es-view="five" aria-pressed="false" aria-label="五个一圈">
+          <span class="kid-tile-art" aria-hidden="true">⭕</span><span class="kid-tile-label">5 个一圈</span><span class="kid-tile-sub">圈一圈</span>
+        </button>
+        <button class="kid-tile" type="button" data-es-view="ten" aria-pressed="false" aria-label="十个一排">
+          <span class="kid-tile-art" aria-hidden="true">▬</span><span class="kid-tile-label">10 个一排</span><span class="kid-tile-sub">排一排</span>
+        </button>
+      </div>
+      <div class="es-stage" id="esGroupScene" role="img" aria-label="一堆小动物，还没分组"></div>
+      <div class="eg-answers" id="esGroupAnswers" aria-label="选一个大概的数量"></div>
+      <div class="eg-tools">
+        <button class="btn btn-primary" type="button" id="esGroupNext"><span aria-hidden="true">🔄</span> 换一堆</button>
+        <button class="btn" type="button" id="esGroupHelp"><span aria-hidden="true">🔢</span> 帮我数组数</button>
+      </div>
+      <p class="eg-say" id="esGroupSay" role="status" aria-live="polite">先点一种看法，再点一个数。</p>
+      <div class="es-meters" role="group" aria-label="三种看法各自最接近的一次">
+        <div class="kid-meter" style="--tone:var(--ink-dim)">
+          <div class="kid-meter-head"><span class="kid-meter-icon" aria-hidden="true">👀</span><span id="esMeterFreeLabel">随便看 · 最接近</span><span class="kid-meter-value" id="esMeterFreeValue">还没试</span></div>
+          <div class="kid-meter-track" id="esMeterFree" role="img" aria-labelledby="esMeterFreeLabel esMeterFreeValue"><span class="kid-meter-fill"></span></div>
+        </div>
+        <div class="kid-meter" style="--tone:var(--warn)">
+          <div class="kid-meter-head"><span class="kid-meter-icon" aria-hidden="true">⭕</span><span id="esMeterFiveLabel">5 个一圈 · 最接近</span><span class="kid-meter-value" id="esMeterFiveValue">还没试</span></div>
+          <div class="kid-meter-track" id="esMeterFive" role="img" aria-labelledby="esMeterFiveLabel esMeterFiveValue"><span class="kid-meter-fill"></span></div>
+        </div>
+        <div class="kid-meter" style="--tone:var(--sci)">
+          <div class="kid-meter-head"><span class="kid-meter-icon" aria-hidden="true">▬</span><span id="esMeterTenLabel">10 个一排 · 最接近</span><span class="kid-meter-value" id="esMeterTenValue">还没试</span></div>
+          <div class="kid-meter-track" id="esMeterTen" role="img" aria-labelledby="esMeterTenLabel esMeterTenValue"><span class="kid-meter-fill"></span></div>
+        </div>
+      </div>
+      <p class="eg-say parent-deep-dive" data-audience="parent" style="margin:0">三条越往右，说明那种看法猜得越准。多数孩子会看到「10 个一排」明显更长。</p>
+    </div>
+
+    <!-- 小游戏 5：基准量卡（先给一张「这是 10 个」） -->
+    <div class="eg-panel" id="esPanelBench" role="group" aria-labelledby="esAskBench" hidden>
+      <p class="eg-ask" id="esAskBench"><span aria-hidden="true">🪪</span> 用「10 个」这张卡去量一大堆</p>
+      <div class="es-bench-row">
+        <div class="es-card" id="esBenchCard" role="img" aria-label="参照卡：整整 10 个">
+          <span class="es-card-cap">这是 10 个</span>
+        </div>
+        <div class="es-stage" id="esBenchScene" role="img" aria-label="一大堆东西，要估个大概"></div>
+      </div>
+      <div class="eg-answers" id="esBenchAnswers" aria-label="选一个大概的数量"></div>
+      <div class="eg-tools">
+        <button class="btn btn-primary" type="button" id="esBenchNext"><span aria-hidden="true">🔄</span> 换一堆</button>
+        <button class="btn" type="button" id="esBenchHelp"><span aria-hidden="true">🪪</span> 把卡叠上去</button>
+      </div>
+      <p class="eg-say" id="esBenchSay" role="status" aria-live="polite">看这堆里能放进几张卡。</p>
+    </div>
+
+    <!-- 小游戏 6：猜有多长（换一个维度估） -->
+    <div class="eg-panel" id="esPanelLength" role="group" aria-labelledby="esAskLength" hidden>
+      <p class="eg-ask" id="esAskLength"><span aria-hidden="true">📏</span> 这条绳子有几块积木长？</p>
+      <div class="es-stage" id="esLengthScene" role="img" aria-label="一条绳子，下面有一块积木当尺子"></div>
+      <div class="eg-answers" id="esLengthAnswers" aria-label="选一个长度"></div>
+      <div class="eg-tools">
+        <button class="btn btn-primary" type="button" id="esLengthNext"><span aria-hidden="true">🔄</span> 换一条</button>
+        <button class="btn" type="button" id="esLengthHelp"><span aria-hidden="true">🧱</span> 用积木量一量</button>
+      </div>
+      <p class="eg-say" id="esLengthSay" role="status" aria-live="polite">先用眼睛比，再点一个数。</p>
+    </div>
+
+    <!-- 小游戏 7：越猜越近（跟着上面的草地三轮走） -->
+    <div class="eg-panel" id="esPanelTrend" role="group" aria-labelledby="esAskTrend" hidden>
+      <p class="eg-ask" id="esAskTrend"><span aria-hidden="true">📈</span> 三次猜，越来越近了吗？</p>
+      <div class="es-trend-meters" role="group" aria-label="最近三轮的接近度">
+        <div class="kid-meter" style="--tone:var(--math)">
+          <div class="kid-meter-head"><span class="kid-meter-icon" aria-hidden="true">1️⃣</span><span id="esTrend1Label">第 1 次</span><span class="kid-meter-value" id="esTrend1Value">还没猜</span></div>
+          <div class="kid-meter-track" id="esTrend1" role="img" aria-labelledby="esTrend1Label esTrend1Value"><span class="kid-meter-fill"></span></div>
+        </div>
+        <div class="kid-meter" style="--tone:var(--phys)">
+          <div class="kid-meter-head"><span class="kid-meter-icon" aria-hidden="true">2️⃣</span><span id="esTrend2Label">第 2 次</span><span class="kid-meter-value" id="esTrend2Value">还没猜</span></div>
+          <div class="kid-meter-track" id="esTrend2" role="img" aria-labelledby="esTrend2Label esTrend2Value"><span class="kid-meter-fill"></span></div>
+        </div>
+        <div class="kid-meter" style="--tone:var(--sci)">
+          <div class="kid-meter-head"><span class="kid-meter-icon" aria-hidden="true">3️⃣</span><span id="esTrend3Label">第 3 次</span><span class="kid-meter-value" id="esTrend3Value">还没猜</span></div>
+          <div class="kid-meter-track" id="esTrend3" role="img" aria-labelledby="esTrend3Label esTrend3Value"><span class="kid-meter-fill"></span></div>
+        </div>
+      </div>
+      <p class="es-trend-empty" id="esTrendEmpty"><span aria-hidden="true">👆</span> 到上面草地猜三轮，这里就会长出三条。</p>
+      <div class="eg-tools">
+        <button class="btn btn-primary" type="button" id="esTrendJump"><span aria-hidden="true">🌱</span> 回草地再猜一轮</button>
+      </div>
+      <p class="eg-say" id="esTrendSay" role="status" aria-live="polite">条越长，就是猜得越近。</p>
+    </div>
+
+    <div class="eg-foot">
+      <span class="eg-stars" id="egStars" role="img" aria-label="小游戏已答对 0 次"></span>
+      <span class="eg-say" id="egTotal" style="margin:0">答对 0 次</span>
+    </div>
+
+    <div class="card parent-deep-dive" data-audience="parent" style="margin-top:16px">
+      <h3 style="margin-top:0">七个小游戏各练什么</h3>
+      <ul style="margin:0;padding-left:1.2rem;color:var(--ink-mid);line-height:1.8">
+        <li><b>哪边多</b>：不点数的<b>近似数量系统</b>（ANS）。两边比值越接近 1 越难分辨，这条规律叫韦伯定律；「差不多」这个选项本身就在教孩子接受模糊答案。</li>
+        <li><b>大概几个</b>：<b>基准量</b>（benchmark）训练。「圈出十个」给孩子一把心里的尺——记住 10 个占多大一片，再看整堆有几片。</li>
+        <li><b>装了多少</b>：连续量的<b>量感</b>，也是分数的直观起点（空 / 一半 / 快满）。中线一画，「一半」就从感觉变成可判断的位置。</li>
+        <li><b>分组放大镜</b>：同一堆数量，只换呈现方式。三条量表把「分组让估算变准」变成孩子自己看得见的结果，而不是家长口头断言。这正是<b>单位化</b>（unitizing）：把「一个一个」换成「一组一组」来数。</li>
+        <li><b>基准量卡</b>：先给一张标好「这是 10 个」的参照卡，再估一大堆。孩子学的是<b>用已知量去量未知量</b>——所有测量的本质都是这件事。</li>
+        <li><b>猜有多长</b>：换一个维度估。长度是<b>连续量</b>，必须先选定单位（一块积木）才能报数；「量一量」会把单位一块块摆上去，演示<b>单位迭代</b>（unit iteration）。</li>
+        <li><b>越猜越近</b>：把上面草地三轮的误差画成三条。重点不是第三次最准，而是孩子能<b>用上一次的差值调整下一次</b>，这叫校准（calibration）。</li>
+      </ul>
+    </div>
+
+    <div class="learning-layers parent-deep-dive" data-audience="parent">
+      <details open>
+        <summary><span class="layer-age">4–6 岁</span>先建立「多、少、差不多」</summary>
+        <div>
+          <p>这个年龄不要求数字准确，要求<b>敢猜</b>。孩子说「好多」就是有效答案，接着问「比十个多还是少？」把模糊感觉挂到一个基准上。</p>
+          <p>常见卡点：孩子坚持要一个一个数完才肯回答。这时限制时间（本页的「看多久」滑到最短）比讲道理有效。</p>
+          <p><b>离屏活动：</b>抓一把豆子放桌上，先猜再数；每天倒牛奶前问「这次到一半吗？」</p>
+        </div>
+      </details>
+      <details>
+        <summary><span class="layer-age">7–9 岁</span>学会分块、抽样、说出方法</summary>
+        <div>
+          <p>重点从「猜得准」转向<b>说得出怎么猜的</b>：四分区、样方放大、找 10 个当尺子。让孩子在猜之前先说一句方法，猜完再对照误差。</p>
+          <p>引入<b>相对误差</b>：猜 100 差 10 个，和猜 1000 差 100 个，一样好。这解释了为什么本页按百分比而不是按差几个记分。</p>
+          <p><b>离屏活动：</b>估一本书有多少字（数一行 × 行数 × 页数）；估一次超市排队要几分钟，再计时验证。</p>
+        </div>
+      </details>
+      <details>
+        <summary><span class="layer-age">10–12 岁</span>量级思维与费米估算</summary>
+        <div>
+          <p>切换到模式二。关键不是答案，而是<b>拆解链条</b>：把一个没法查的问题拆成几个能猜的因子，各取整数相乘，只看结果有几位数。高估和低估互相抵消，是费米估算常常落在 10 倍以内的原因。</p>
+          <p>顺势介绍<b>对数刻度</b>：滑块往右挪一小段就翻十倍，科学家画跨度极大的数据时都这么画。</p>
+          <p><b>离屏活动：</b>估算全家一年用多少度电，再翻电费单核对；估算走到学校要多少步，用手机计步器验证。</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================= 图鉴 + 看图估数（前缀 esx-） ================= -->
+  <section class="esx-shell" aria-labelledby="esxShellTitle">
+    <h2 id="esxShellTitle">看图就懂：先估一估 · 参照物图鉴 + 看图估数</h2>
+
+    <article class="esx-card" aria-labelledby="esxAtlasTitle">
+      <h3 id="esxAtlasTitle"><span aria-hidden="true">📏</span>① 先估一估：心里的八把尺子</h3>
+      <p class="esx-lead">估算不是瞎猜，是<b>拿身边知道大小的东西去比</b>。这八样都按真实比例画在刻度尺上，先记住它们，再去估别的东西。</p>
+      <ul class="kid-legend" aria-label="图鉴看图说明">
+        <li style="--tone:var(--warn)"><span class="kid-legend-mark" aria-hidden="true">📏</span>底下那条 = 刻度尺</li>
+        <li style="--tone:var(--ink-dim)"><span class="kid-legend-mark" aria-hidden="true">┅</span>横虚线 = 高度参考线</li>
+        <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">↔</span>蓝箭头 = 它有多大</li>
+        <li style="--tone:var(--sci)"><span class="kid-legend-mark" aria-hidden="true">🧍</span>绿色小人 = 1.65 米的大人</li>
+      </ul>
+
+      <div class="kid-figure-grid esx-atlas" id="esxAtlasGrid" aria-label="参照物图鉴：八张按比例画的图卡">
+        <button class="kid-figure" type="button" data-esx-ref="coin" aria-pressed="false" aria-label="图卡：1 元硬币，直径 2.5 厘米">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 300 176" focusable="false">
+              <rect class="esx-bg" x="0" y="0" width="300" height="176"/>
+              <path class="esx-guide" d="M10 80H290M10 10H290"/>
+              <text class="esx-guide-num" x="288" y="76">10 厘米</text>
+              <text class="esx-guide-num" x="288" y="24">20 厘米</text>
+              <path class="esx-lens-link" d="M28 136 L146 92"/>
+              <path class="esx-lens-grip" d="M240 110 L278 146"/>
+              <circle class="esx-lens" cx="200" cy="70" r="56"/>
+              <circle class="esx-metal" cx="200" cy="70" r="44"/>
+              <circle class="esx-metal-face" cx="200" cy="70" r="28"/>
+              <text class="esx-coin-num" x="200" y="81">1</text>
+              <text class="esx-lens-cap" x="200" y="142">放大 5 倍</text>
+              <circle class="esx-metal" cx="18.75" cy="141.25" r="8.75"/>
+              <circle class="esx-metal-face" cx="18.75" cy="141.25" r="5.6"/>
+              <rect class="esx-ruler" x="10" y="150" width="280" height="10" rx="3"/>
+              <path class="esx-ruler-tick" d="M10 150v10M80 150v10M150 150v10M220 150v10M290 150v10"/>
+              <text class="esx-ruler-num" x="10" y="172">0</text>
+              <text class="esx-ruler-num" x="80" y="172">10</text>
+              <text class="esx-ruler-num" x="150" y="172">20</text>
+              <text class="esx-ruler-num" x="220" y="172">30</text>
+              <text class="esx-ruler-end" x="292" y="172">40 厘米</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">1 元硬币</span>
+          <span class="kid-figure-sub">直径 2.5 厘米（约一个指甲盖）</span>
+          <span class="kid-figure-fact">量小东西：橡皮、纽扣、一本书有多厚。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-esx-ref="pencil" aria-pressed="false" aria-label="图卡：一支铅笔，长约 18 厘米">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 300 176" focusable="false">
+              <rect class="esx-bg" x="0" y="0" width="300" height="176"/>
+              <path class="esx-guide" d="M10 80H290M10 10H290"/>
+              <text class="esx-guide-num" x="288" y="76">10 厘米</text>
+              <text class="esx-guide-num" x="288" y="24">20 厘米</text>
+              <path class="esx-dim" d="M10 128H136M10 124v8M136 124v8"/>
+              <text class="esx-dim-num" x="73" y="119">18 厘米</text>
+              <rect class="esx-eraser" x="10" y="142" width="9" height="8" rx="2.5"/>
+              <rect class="esx-ferrule" x="19" y="142" width="5" height="8"/>
+              <rect class="esx-wood" x="24" y="142" width="88" height="8"/>
+              <path class="esx-cone" d="M112 142 L112 150 L129 146 Z"/>
+              <path class="esx-lead-tip" d="M129 144.6 L129 147.4 L136 146 Z"/>
+              <rect class="esx-ruler" x="10" y="150" width="280" height="10" rx="3"/>
+              <path class="esx-ruler-tick" d="M10 150v10M80 150v10M150 150v10M220 150v10M290 150v10"/>
+              <text class="esx-ruler-num" x="10" y="172">0</text>
+              <text class="esx-ruler-num" x="80" y="172">10</text>
+              <text class="esx-ruler-num" x="150" y="172">20</text>
+              <text class="esx-ruler-num" x="220" y="172">30</text>
+              <text class="esx-ruler-end" x="292" y="172">40 厘米</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">一支铅笔</span>
+          <span class="kid-figure-sub">约 18 厘米（一支没削过的新铅笔）</span>
+          <span class="kid-figure-fact">量桌面和书本：一本书大约半支铅笔长。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-esx-ref="paper" aria-pressed="false" aria-label="图卡：一张 A4 纸，长边 30 厘米">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 300 176" focusable="false">
+              <rect class="esx-bg" x="0" y="0" width="300" height="176"/>
+              <path class="esx-guide" d="M10 80H290M10 10H290"/>
+              <text class="esx-guide-num" x="288" y="76">10 厘米</text>
+              <text class="esx-guide-num" x="288" y="24">20 厘米</text>
+              <rect class="esx-paper" x="10" y="3" width="208" height="147" rx="2"/>
+              <path class="esx-paper-fold" d="M194 3 H218 V27 Z"/>
+              <path class="esx-paper-line" d="M26 34H186M26 52H202M26 70H176M26 88H202M26 106H160M26 124H190"/>
+              <path class="esx-dim" d="M10 140H218M10 136v8M218 136v8"/>
+              <text class="esx-dim-num" x="114" y="131">30 厘米</text>
+              <rect class="esx-ruler" x="10" y="150" width="280" height="10" rx="3"/>
+              <path class="esx-ruler-tick" d="M10 150v10M80 150v10M150 150v10M220 150v10M290 150v10"/>
+              <text class="esx-ruler-num" x="10" y="172">0</text>
+              <text class="esx-ruler-num" x="80" y="172">10</text>
+              <text class="esx-ruler-num" x="150" y="172">20</text>
+              <text class="esx-ruler-num" x="220" y="172">30</text>
+              <text class="esx-ruler-end" x="292" y="172">40 厘米</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">一张 A4 纸</span>
+          <span class="kid-figure-sub">长边 30 厘米（21 × 29.7 厘米）</span>
+          <span class="kid-figure-fact">量桌子和书包：桌面大约几张 A4 纸宽。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-esx-ref="step" aria-pressed="false" aria-label="图卡：走一步，约 40 厘米">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 300 176" focusable="false">
+              <rect class="esx-bg" x="0" y="0" width="300" height="176"/>
+              <path class="esx-guide" d="M10 80H290M10 10H290"/>
+              <text class="esx-guide-num" x="278" y="76">10 厘米</text>
+              <text class="esx-guide-num" x="278" y="24">20 厘米</text>
+              <path class="esx-ghost" d="M10 52V138M290 52V138"/>
+              <path class="esx-dim" d="M10 52H290M10 48v8M290 48v8"/>
+              <text class="esx-dim-num" x="150" y="43">一步 40 厘米</text>
+              <ellipse class="esx-foot" cx="26" cy="112" rx="16" ry="17"/>
+              <ellipse class="esx-foot" cx="72" cy="112" rx="32" ry="21"/>
+              <circle class="esx-foot" cx="106" cy="99" r="7"/>
+              <circle class="esx-foot" cx="109" cy="110" r="6"/>
+              <circle class="esx-foot" cx="108" cy="120" r="5.5"/>
+              <circle class="esx-foot" cx="104" cy="128" r="5"/>
+              <circle class="esx-foot" cx="99" cy="135" r="4.5"/>
+              <circle class="esx-mark" cx="10" cy="145" r="4.5"/>
+              <circle class="esx-mark" cx="290" cy="145" r="4.5"/>
+              <rect class="esx-ruler" x="10" y="150" width="280" height="10" rx="3"/>
+              <path class="esx-ruler-tick" d="M10 150v10M80 150v10M150 150v10M220 150v10M290 150v10"/>
+              <text class="esx-ruler-num" x="10" y="172">0</text>
+              <text class="esx-ruler-num" x="80" y="172">10</text>
+              <text class="esx-ruler-num" x="150" y="172">20</text>
+              <text class="esx-ruler-num" x="220" y="172">30</text>
+              <text class="esx-ruler-end" x="292" y="172">40 厘米</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">走一步</span>
+          <span class="kid-figure-sub">约 40 厘米（两个红点之间就是一步）</span>
+          <span class="kid-figure-fact">用步数量房间：走 10 步大约 4 米。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-esx-ref="door" aria-pressed="false" aria-label="图卡：一扇门，高约 2 米">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 300 176" focusable="false">
+              <rect class="esx-bg" x="0" y="0" width="300" height="176"/>
+              <path class="esx-guide" d="M10 100H290M10 50H290"/>
+              <text class="esx-guide-num" x="288" y="96">5 米</text>
+              <text class="esx-guide-num" x="288" y="46">10 米</text>
+              <path class="esx-dim" d="M20 130V150M16 130h8M16 150h8"/>
+              <text class="esx-dim-num" x="20" y="126">2 米</text>
+              <rect class="esx-door-frame" x="28" y="129" width="13" height="21"/>
+              <rect class="esx-door" x="30" y="130" width="9" height="20"/>
+              <circle class="esx-door-knob" cx="37" cy="140" r="1.2"/>
+              <circle class="esx-person" cx="52" cy="136" r="2.5"/>
+              <rect class="esx-person" x="50.4" y="138.5" width="3.2" height="11.5" rx="1.4"/>
+              <path class="esx-unit-box" d="M62 140H72V150H62Z"/>
+              <text class="esx-guide-num" x="96" y="148">1 米</text>
+              <rect class="esx-ruler" x="10" y="150" width="280" height="10" rx="3"/>
+              <path class="esx-ruler-tick" d="M10 150v10M60 150v10M110 150v10M160 150v10M210 150v10M260 150v10M290 150v10"/>
+              <text class="esx-ruler-num" x="10" y="172">0</text>
+              <text class="esx-ruler-num" x="60" y="172">5</text>
+              <text class="esx-ruler-num" x="110" y="172">10</text>
+              <text class="esx-ruler-num" x="160" y="172">15</text>
+              <text class="esx-ruler-num" x="210" y="172">20</text>
+              <text class="esx-ruler-end" x="292" y="172">28 米</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">一扇门</span>
+          <span class="kid-figure-sub">高约 2 米（比一个大人高一点）</span>
+          <span class="kid-figure-fact">量高的东西：冰箱、衣柜都不到一扇门高。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-esx-ref="floor" aria-pressed="false" aria-label="图卡：一层楼，高约 3 米">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 300 176" focusable="false">
+              <rect class="esx-bg" x="0" y="0" width="300" height="176"/>
+              <path class="esx-guide" d="M10 100H290M10 50H290"/>
+              <text class="esx-guide-num" x="288" y="96">5 米</text>
+              <text class="esx-guide-num" x="288" y="46">10 米</text>
+              <path class="esx-ghost" d="M20 90H100V120H20Z M20 60H100V90H20Z"/>
+              <text class="esx-dim-num" x="60" y="55">3 层 = 9 米</text>
+              <path class="esx-dim" d="M12 120V150M8 120h8M8 150h8"/>
+              <text class="esx-dim-num" x="20" y="116">3 米</text>
+              <rect class="esx-wall" x="20" y="120" width="80" height="30"/>
+              <rect class="esx-slab" x="17" y="118" width="86" height="4"/>
+              <rect class="esx-slab" x="17" y="146" width="86" height="4"/>
+              <rect class="esx-window" x="30" y="127" width="16" height="13"/>
+              <rect class="esx-window" x="58" y="127" width="16" height="13"/>
+              <circle class="esx-person" cx="88" cy="132" r="2.5"/>
+              <rect class="esx-person" x="86.4" y="134.5" width="3.2" height="11.5" rx="1.4"/>
+              <path class="esx-unit-box" d="M108 140H118V150H108Z"/>
+              <text class="esx-guide-num" x="142" y="148">1 米</text>
+              <rect class="esx-ruler" x="10" y="150" width="280" height="10" rx="3"/>
+              <path class="esx-ruler-tick" d="M10 150v10M60 150v10M110 150v10M160 150v10M210 150v10M260 150v10M290 150v10"/>
+              <text class="esx-ruler-num" x="10" y="172">0</text>
+              <text class="esx-ruler-num" x="60" y="172">5</text>
+              <text class="esx-ruler-num" x="110" y="172">10</text>
+              <text class="esx-ruler-num" x="160" y="172">15</text>
+              <text class="esx-ruler-num" x="210" y="172">20</text>
+              <text class="esx-ruler-end" x="292" y="172">28 米</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">一层楼</span>
+          <span class="kid-figure-sub">约 3 米高（楼板到楼板）</span>
+          <span class="kid-figure-fact">数楼层估高度：6 层楼大约 18 米。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-esx-ref="car" aria-pressed="false" aria-label="图卡：一辆小汽车，长约 4 米">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 300 176" focusable="false">
+              <rect class="esx-bg" x="0" y="0" width="300" height="176"/>
+              <path class="esx-guide" d="M10 100H290M10 50H290"/>
+              <text class="esx-guide-num" x="288" y="96">5 米</text>
+              <text class="esx-guide-num" x="288" y="46">10 米</text>
+              <path class="esx-ghost" d="M60 135H100V150H60Z M100 135H140V150H100Z M140 135H180V150H140Z M180 135H220V150H180Z"/>
+              <text class="esx-dim-num" x="140" y="129">5 辆 ≈ 20 米</text>
+              <path class="esx-dim" d="M20 118H60M20 114v8M60 114v8"/>
+              <text class="esx-dim-num" x="40" y="109">4 米</text>
+              <path class="esx-car-body" d="M30 140 L34 133 H47 L51 140 Z"/>
+              <rect class="esx-car-body" x="20" y="140" width="40" height="8" rx="3"/>
+              <path class="esx-car-window" d="M33.5 139 L36.5 135 H45 L47.5 139 Z"/>
+              <circle class="esx-wheel" cx="29" cy="147.4" r="2.6"/>
+              <circle class="esx-wheel" cx="51" cy="147.4" r="2.6"/>
+              <circle class="esx-person" cx="240" cy="136" r="2.5"/>
+              <rect class="esx-person" x="238.4" y="138.5" width="3.2" height="11.5" rx="1.4"/>
+              <path class="esx-unit-box" d="M250 140H260V150H250Z"/>
+              <text class="esx-guide-num" x="284" y="148">1 米</text>
+              <rect class="esx-ruler" x="10" y="150" width="280" height="10" rx="3"/>
+              <path class="esx-ruler-tick" d="M10 150v10M60 150v10M110 150v10M160 150v10M210 150v10M260 150v10M290 150v10"/>
+              <text class="esx-ruler-num" x="10" y="172">0</text>
+              <text class="esx-ruler-num" x="60" y="172">5</text>
+              <text class="esx-ruler-num" x="110" y="172">10</text>
+              <text class="esx-ruler-num" x="160" y="172">15</text>
+              <text class="esx-ruler-num" x="210" y="172">20</text>
+              <text class="esx-ruler-end" x="292" y="172">28 米</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">一辆小汽车</span>
+          <span class="kid-figure-sub">约 4 米长、1.7 米高</span>
+          <span class="kid-figure-fact">量院子和车位：停 5 辆车大约 20 米。</span>
+        </button>
+
+        <button class="kid-figure" type="button" data-esx-ref="court" aria-pressed="false" aria-label="图卡：一个篮球场，长 28 米">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 300 176" focusable="false">
+              <rect class="esx-bg" x="0" y="0" width="300" height="176"/>
+              <rect class="esx-court" x="10" y="0" width="280" height="150"/>
+              <path class="esx-court-line" d="M150 0V150"/>
+              <circle class="esx-court-line" cx="150" cy="75" r="18"/>
+              <path class="esx-court-line" d="M10 50H68V100H10M290 50H232V100H290"/>
+              <path class="esx-court-line" d="M10 12H24A67 67 0 0 1 24 138H10M290 12H276A67 67 0 0 0 276 138H290"/>
+              <circle class="esx-hoop" cx="16" cy="75" r="2.3"/>
+              <circle class="esx-hoop" cx="284" cy="75" r="2.3"/>
+              <circle class="esx-person" cx="95" cy="58" r="2.8"/>
+              <circle class="esx-person" cx="205" cy="96" r="2.8"/>
+              <circle class="esx-ball" cx="112" cy="118" r="4.5"/>
+              <path class="esx-dim" d="M14 140H286M14 136v8M286 136v8"/>
+              <text class="esx-dim-num" x="150" y="131">28 米</text>
+              <rect class="esx-ruler" x="10" y="150" width="280" height="10" rx="3"/>
+              <path class="esx-ruler-tick" d="M10 150v10M60 150v10M110 150v10M160 150v10M210 150v10M260 150v10M290 150v10"/>
+              <text class="esx-ruler-num" x="10" y="172">0</text>
+              <text class="esx-ruler-num" x="60" y="172">5</text>
+              <text class="esx-ruler-num" x="110" y="172">10</text>
+              <text class="esx-ruler-num" x="160" y="172">15</text>
+              <text class="esx-ruler-num" x="210" y="172">20</text>
+              <text class="esx-ruler-end" x="292" y="172">28 米</text>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">一个篮球场</span>
+          <span class="kid-figure-sub">长 28 米、宽 15 米</span>
+          <span class="kid-figure-fact">量操场和马路：200 米跑道大约 7 个球场长。</span>
+        </button>
+      </div>
+
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🐥</span>
+        <p class="kid-speech" id="esxAtlasSay" role="status" aria-live="polite">点一张卡，我说说这把尺子能量什么。</p>
+      </div>
+      <p class="esx-lead" style="margin:12px 0 0">前四张卡的尺子一整条是 <b>40 厘米</b>，后四张一整条是 <b>28 米</b>。同一条尺子上的四样东西，大小是真的能互相比的。</p>
+
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：图鉴在教什么</summary>
+        <p><b>学习目标：</b>建立<b>基准量</b>（benchmark）。估算的本质是「用已知量去量未知量」，孩子心里没有几把固定的尺子，报出的数就只能是瞎猜。硬币、铅笔、A4、一步、门、层高、车长、球场，覆盖了 2.5 厘米到 28 米这段日常生活最常用的量程。</p>
+        <p><b>为什么分成两条尺子：</b>硬币和篮球场差了 1000 多倍，画在同一条刻度上，硬币会小到看不见。所以图鉴用了两条尺子：厘米尺（整条 40 厘米）和米尺（整条 28 米）。同一条尺子内部严格按真实比例，跨尺子时要换单位——「换尺子」本身就是测量里的一个关键概念。</p>
+        <p><b>怎么用：</b>先让孩子挑一张最熟悉的卡（多数孩子选「一步」），然后离开屏幕去量真东西：用步数量客厅，用铅笔量桌子。回来再问「客厅大概几米」，这时他报的数就有依据了。</p>
+      </details>
+    </article>
+
+    <article class="esx-card" aria-labelledby="esxQuizTitle">
+      <h3 id="esxQuizTitle"><span aria-hidden="true">🔵</span>② 看图估数：大概有多少个？</h3>
+      <p class="esx-lead">别一个一个数，扫一眼就点一个数。<b>接近就算对</b>——估算不用刚好，落在正确数的两成以内都算你估对了。</p>
+
+      <div class="esx-progress">
+        <span class="kid-dots" id="esxQuizDotsRow" role="img" aria-label="六轮进度，已答 0 轮"></span>
+        <span class="esx-count" id="esxQuizCount">第 1 轮 / 共 6 轮</span>
+      </div>
+
+      <div class="esx-stage" id="esxQuizStage">
+        <svg class="esx-quiz-art" id="esxQuizArt" viewBox="0 0 300 200" role="img" aria-labelledby="esxQuizArtTitle esxQuizArtDesc">
+          <title id="esxQuizArtTitle">一堆散开的小圆点</title>
+          <desc id="esxQuizArtDesc">画面里散着一些小圆点，每一轮的排布都是固定的，刷新也不会变。先扫一眼估个大概；答完之后，把画面分成四块的红色虚线会显示出来，每块上还会写出那一块有几个。</desc>
+          <rect class="esx-quiz-bg" x="0" y="0" width="300" height="200"/>
+          <g id="esxQuizDotLayer"></g>
+          <g class="esx-grid-lines" id="esxQuizGrid" data-on="false">
+            <path class="esx-grid-line" d="M150 6V194M6 100H294"/>
+            <g id="esxQuizQuadLayer"></g>
+          </g>
+        </svg>
+      </div>
+
+      <div class="kid-tiles esx-picks" id="esxQuizPicks" role="group" aria-labelledby="esxQuizTitle"></div>
+
+      <div class="esx-says">
+        <div class="kid-speech-row">
+          <span class="kid-mascot" aria-hidden="true">🐣</span>
+          <p class="kid-speech" id="esxQuizSay" role="status" aria-live="polite">扫一眼就好，点一个差不多的数。</p>
+        </div>
+        <div class="kid-speech-row">
+          <span class="kid-mascot" aria-hidden="true">🍰</span>
+          <p class="kid-speech" id="esxQuizMethod">教你一招：把画面切成四块，只数清一块，再乘 4。</p>
+        </div>
+      </div>
+
+      <div class="esx-actions">
+        <button class="btn btn-primary" type="button" id="esxQuizNext" hidden><span aria-hidden="true">➡️</span> 下一轮</button>
+        <button class="btn" type="button" id="esxQuizHint"><span aria-hidden="true">🍰</span> 帮我切成四块</button>
+        <button class="btn btn-ghost" type="button" id="esxQuizReset"><span aria-hidden="true">🔄</span> 从第 1 轮重新开始</button>
+      </div>
+
+      <div class="esx-tally">
+        <div class="kid-meter" style="--tone:var(--sci)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">🎯</span>
+            <span id="esxQuizMeterLabel">估对的轮数</span>
+            <span class="kid-meter-value" id="esxQuizMeterValue">0 / 6</span>
+          </div>
+          <div class="kid-meter-track" id="esxQuizMeter" role="img" aria-labelledby="esxQuizMeterLabel esxQuizMeterValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note">落在正确数的两成以内就算估对。差得远也没关系，看一眼四块的数字，下一轮就近了。</p>
+        </div>
+      </div>
+
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：这一关在教什么</summary>
+        <p><b>学习目标：</b>把「切块相乘」从口头方法变成能看见的操作。人一眼能准确报数的上限只有 4 个左右（subitizing，瞬识），再多就只能近似。切成四块后，孩子要判断的是「一块里有几个」这个小得多的数，再乘 4——这是从点数走向乘法思维的关键一步。</p>
+        <p><b>为什么允许差两成：</b>估算的判分标准是<b>相对误差</b>。猜 100 差 20 个和猜 10 差 2 个一样好。把「刚好猜中」当成目标，孩子就会退回去一个一个数；把「接近」当成目标，他才会用方法。</p>
+        <p><b>一起追问：</b>答完先别翻下一轮，问一句「你是看哪一块猜出来的」。如果孩子说不出来，让他用「帮我切成四块」再看一遍。</p>
+      </details>
+    </article>
+  </section>
+
   <section class="task mission" aria-labelledby="estimateMissionTitle">
     <div class="card parent-deep-dive" data-audience="parent" style="margin-bottom:14px">
-      <h2 style="font-size:1.1rem">这在教什么</h2>
-      <p style="margin:0">估算不是乱猜，而是先分组、抽样、判断几十还是几百，再用误差校准下一次。</p>
+      <h2 style="font-size:1.1rem">这在教什么 · 学习目标</h2>
+      <ul style="margin:0;padding-left:1.2rem;line-height:1.8;color:var(--ink-mid)">
+        <li><b>敢先估、后数</b>：能在不点数的情况下报出一个数，并接受「差不多」是有效答案。</li>
+        <li><b>会分组再估</b>：能用 5 个一组、10 个一排、四分区、样方这四种方法之一说出自己怎么估的。</li>
+        <li><b>判断合理范围</b>：先答对量级（几十还是几百），再谈具体数字；能说出一个「最少 / 最多」区间。</li>
+        <li><b>用基准量去量</b>：拿一张「这是 10 个」的参照卡（benchmark）去量一大堆，而不是凭空报数。</li>
+        <li><b>看误差校准下一次</b>：知道上一轮偏大就往小调，这一步比猜准本身更重要。</li>
+      </ul>
     </div>
-    <h2 class="task-title" id="estimateMissionTitle">正式任务 · 完成三张装箱单</h2>
+    <h2 class="task-title" id="estimateMissionTitle">正式任务 · 连着猜三次</h2>
     <ol class="kid-story-steps">
-      <li><b>选一种估法</b>，扫一眼再猜。</li>
-      <li><b>揭晓差多少</b>，做满三轮并换一次方法。</li>
-      <li><b>点一句发现</b>，把经验记进足迹。</li>
+      <li data-step="1"><span class="kid-tile-art" aria-hidden="true">🔍</span><b>选一种看法</b>，扫一眼再猜。</li>
+      <li data-step="2"><span class="kid-tile-art" aria-hidden="true">📏</span><b>看差多少</b>，满三轮并换一种看法。</li>
+      <li data-step="3"><span class="kid-tile-art" aria-hidden="true">🏅</span><b>点一句发现</b>，记进足迹。</li>
     </ol>
     <div class="mission-grid">
       <div data-audience="parent"><label for="estimateReflect">我的发现</label><textarea class="input" id="estimateReflect" placeholder="例如：聚类时先估每团，再把几团相加。"></textarea></div>
-      <div data-audience="kid-only"><p style="margin:0 0 6px;font-weight:700">我发现……</p><div class="kid-picks" id="estimateReflectChoices"><button class="kid-choice" type="button" data-estimate-reflect="分成四块，先估一块再乘四更容易。">分四块再乘 4</button><button class="kid-choice" type="button" data-estimate-reflect="先看是几十还是几百，再猜具体数量。">先判断几十还是几百</button><button class="kid-choice" type="button" data-estimate-reflect="看过差多少后，下一轮可以把猜测调大或调小。">看差值再调整</button></div></div>
-      <button class="btn btn-primary" id="estimateComplete" type="button" disabled>把装箱经验记进足迹</button>
+      <div data-audience="kid-only">
+        <p style="margin:0 0 6px;font-weight:800"><span aria-hidden="true">💡</span> 我发现……</p>
+        <div class="kid-tiles" id="estimateReflectChoices" aria-label="选一句我的发现">
+          <button class="kid-tile" type="button" data-estimate-reflect="分成四块，先估一块再乘四更容易。" aria-label="分四块再乘四"><span class="kid-tile-art" aria-hidden="true">🍰</span><span class="kid-tile-label">分四块</span><span class="kid-tile-sub">一块 × 4</span></button>
+          <button class="kid-tile" type="button" data-estimate-reflect="10 个一排地看，比一个一个看猜得准。" aria-label="十个一排更准"><span class="kid-tile-art" aria-hidden="true">🔟</span><span class="kid-tile-label">10 个一排</span><span class="kid-tile-sub">更好猜</span></button>
+          <button class="kid-tile" type="button" data-estimate-reflect="先看是几十还是几百，再猜具体数量。" aria-label="先判断几十还是几百"><span class="kid-tile-art" aria-hidden="true">🔢</span><span class="kid-tile-label">先看量级</span><span class="kid-tile-sub">几十？几百？</span></button>
+          <button class="kid-tile" type="button" data-estimate-reflect="看过差多少后，下一轮可以把猜测调大或调小。" aria-label="看差值再调整"><span class="kid-tile-art" aria-hidden="true">📏</span><span class="kid-tile-label">看差值</span><span class="kid-tile-sub">再调大小</span></button>
+        </div>
+      </div>
+      <button class="btn btn-primary kid-done-btn" id="estimateComplete" type="button" disabled><span aria-hidden="true">🏅</span> 把估算经验记进足迹</button>
     </div>
     <p class="task-status status" id="estimateStatus" role="status" aria-live="polite">尚未完成：需要三轮估算，并至少使用两种策略。</p>
+
+    <!-- 伙伴、收藏卡与神秘任务：孩子模式下也要看得见 -->
+    <div class="playful-quest" style="--quest-accent:var(--sci)" aria-labelledby="estimateBuddyTitle">
+      <div class="playful-quest-head">
+        <div>
+          <h3 id="estimateBuddyTitle"><span aria-hidden="true">🐥</span> 草地上的小伙伴</h3>
+          <p class="playful-story" data-audience="parent">完成任务后收藏卡会亮起来；神秘任务是一句开放式挑战。</p>
+        </div>
+        <div data-playful-companion role="note" aria-label="妙妙伙伴提示"></div>
+      </div>
+      <div class="playful-tools"><button class="btn btn-sm" type="button" data-playful-random-task="#estimateSurpriseKid"><span aria-hidden="true">🎁</span> 翻一个神秘任务</button><p class="playful-task-output" id="estimateSurpriseKid" data-playful-task-output role="status" aria-live="polite">这里会跳出一种新估法。</p></div>
+      <div class="playful-evidence"><span data-playful-sticker aria-label="估算站收藏卡位"></span><span data-playful-feedback aria-live="polite"></span></div>
+    </div>
+
     <div class="playful-quest parent-deep-dive" data-audience="parent" style="--quest-accent:var(--warn)" aria-labelledby="estimateStoryTitle">
       <div class="playful-quest-head"><div><h3 id="estimateStoryTitle">云端补给观察卡</h3><p class="playful-story">妙妙不需要精确点完。记录你的估法和下一次怎样校准。</p></div><div data-playful-companion role="note" aria-label="妙妙伙伴提示"></div></div>
       <div class="playful-tools"><button class="btn btn-sm" type="button" data-playful-random-task="#estimateSurprise">打开一箱新补给</button><p class="playful-task-output" id="estimateSurprise" data-playful-task-output role="status" aria-live="polite">补给箱里会出现一种新估法。</p></div>
-      <div class="playful-evidence"><span data-playful-sticker aria-label="估算站贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
+      <div class="playful-evidence"><span data-playful-sticker aria-label="估算站收藏卡位"></span><span data-playful-feedback aria-live="polite"></span></div>
       <form class="work-card work-card-form" data-playful-work-form aria-labelledby="estimateWorkTitle">
         <h4 id="estimateWorkTitle">作品表单 · 保存估算观察</h4>
         <div class="work-card-fields">
@@ -399,24 +1279,29 @@
   <!-- ================= 家长脚本 + 原理 ================= -->
   <section class="grid-2 parent-deep-dive" data-audience="parent" style="margin-top:26px">
     <div class="card">
-      <h2 style="font-size:1.18rem">给家长的提问脚本</h2>
-      <p style="font-size:.88rem">孩子猜完先别说对错，按顺序问这三句。目标是让孩子说出方法，而不是碰运气。</p>
+      <h2 style="font-size:1.18rem">给家长的提问脚本 · 三条陪伴追问</h2>
+      <p style="font-size:.88rem">孩子猜完先别说对错，按顺序问这三句，每句问完等 5 秒。目标是让孩子说出方法，而不是碰运气。</p>
       <ol class="ask">
-        <li><b>你是怎么猜出这个数的？</b>是数了一小块再乘，还是凭感觉？说出方法，估算才从运气变成技能。</li>
-        <li><b>你觉得真实答案最少可能是多少，最多可能是多少？</b>给出一个区间，比给一个数更接近真正的科学思维。</li>
+        <li><b>你是怎么猜出这个数的？</b>是 5 个一组数的、10 个一排数的，还是估了一小块再乘？说出方法，估算才从运气变成技能。</li>
+        <li><b>你觉得真实答案最少可能是多少，最多可能是多少？</b>给出一个区间，比给一个数更接近真正的科学思维。追问「有可能是 5 个吗？有可能是 500 个吗？」帮孩子夹出合理范围。</li>
         <li><b>差了 20%，算猜对了吗？</b>让孩子自己定标准，顺势聊「什么时候需要精确、什么时候差不多就够」——买菜和造桥不一样。</li>
       </ol>
+      <p style="font-size:.86rem;margin:10px 0 0;color:var(--ink-dim)">加分追问：玩完「分组放大镜」后问「哪一种看法让你猜得最近？为什么？」——这是本页真正想让孩子说出口的一句话。</p>
     </div>
 
     <div class="card">
       <h2 style="font-size:1.18rem">背后的原理</h2>
-      <p style="font-size:.9rem">人眼有一套天生的「数量感」（number sense）：1 到 4 个东西能瞬间看出来，这叫 <b style="color:var(--ink)">subitizing</b>（瞬识）。超过 4 个，大脑就切换成估算模式，而估算的误差大致<b style="color:var(--ink)">与数量成比例</b>——猜 100 个错 10 个，和猜 1000 个错 100 个，难度是一样的。所以这里按百分比误差记分，而不是按差了几个。</p>
+      <p style="font-size:.9rem"><b style="color:var(--ink)">瞬识的上限只有 4 左右。</b>人一眼能准确报数的数量约为 1–4 个，这叫 <b style="color:var(--ink)">subitizing</b>（瞬识）。超过 4 个，大脑就切到近似数量系统（ANS），误差大致<b style="color:var(--ink)">与数量成比例</b>——猜 100 个错 10 个，和猜 1000 个错 100 个，难度一样。所以这里按百分比误差记分，而不是按差了几个。</p>
+      <p style="font-size:.9rem"><b style="color:var(--ink)">为什么分组能提升估算。</b>分组把「数很多个东西」换成「数很少个组」：10 个一排时，孩子只需要判断有几排——排数通常落在瞬识能处理的范围里，再乘 10。这一步叫<b style="color:var(--ink)">单位化</b>（unitizing），是从点数走向乘法思维的关键。同理，基准量卡（这是 10 个）把未知量变成「几张卡这么多」，估算于是有了尺子。代价是引入新的误差源：组的大小估错，误差会被乘法放大，所以要提醒孩子先把一组数准。</p>
+      <p style="font-size:.9rem"><b style="color:var(--ink)">常见误区：「估算就是瞎猜」。</b>这是孩子（有时也是家长）最容易踩的坑。区别有三条：估算<b style="color:var(--ink)">有方法</b>（分组、抽样、基准量），有<b style="color:var(--ink)">范围</b>（能说出最少和最多），而且<b style="color:var(--ink)">可校准</b>（上一轮偏大，这一轮就往小调）。所以本页不奖励「刚好猜中」，而是把三轮的误差画成三条给孩子看——越猜越近，才是学会了。另一个常见误区是孩子坚持要一个一个数完才肯回答；限制看的时间（把「看多久」滑到最短）比讲道理有效。</p>
       <p style="font-size:.9rem">模式二练的是 <b style="color:var(--ink)">Fermi estimation</b>（费米估算），得名于物理学家 Enrico Fermi。做法是把无从下手的大问题拆成几个能猜的小问题，各取粗略值再相乘。因为高估和低估会互相抵消，结果常常落在正确量级的 10 倍以内。对数滑块把「翻十倍」变成等距的一小段，这也是科学家画数据时常用的坐标方式。</p>
       <p style="font-size:.9rem;margin-bottom:0">课堂上估算被反复强调，不是因为答案不重要，而是因为它是<b style="color:var(--ink)">检错的第一道防线</b>：会估算的孩子算出「一个人有 300 只手」时会自己停下来，不会算完就交。</p>
     </div>
   </section>
 
-  <p style="margin-top:20px"><a href="index.html">← 回到实验室目录</a></p>
+  <!-- 全站 11 个实验页底部同一约定：一颗 .btn，触控高度由共享层的 44px 下限保证。
+       裸链接在 375px 手机上只有 130×18，孩子的手指按不准（check-controls.mjs 会报）。 -->
+  <p class="lab-exit"><a class="btn btn-ghost" href="index.html"><span aria-hidden="true">←</span> 回到实验室目录</a></p>
 </main>
 
 <footer class="foot"><div class="wrap">
@@ -466,12 +1351,23 @@
 
   var LEVELS = { easy: [10, 40], mid: [40, 150], hard: [150, 600] };
   var PALETTE = ["#6ea8fe", "#a78bfa", "#4ade80", "#fbbf24", "#f472b6", "#22d3ee", "#fb923c"];
+  var EMOJI_FONT = "'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','EmojiOne Color',sans-serif";
+
+  /* 估算对象换成具象可爱的小东西：草地上的小鸡 / 瓢虫 / 糖果，夜空里的星星 */
+  var ES_KINDS = [
+    { key: "chick", glyph: "🐤", name: "小鸡", unit: "只", sub: "草地上" },
+    { key: "bug",   glyph: "🐞", name: "瓢虫", unit: "只", sub: "草叶上" },
+    { key: "candy", glyph: "🍬", name: "糖果", unit: "颗", sub: "野餐布" },
+    { key: "star",  glyph: "⭐", name: "星星", unit: "颗", sub: "夜空里" }
+  ];
+  var esKind = ES_KINDS[0];
+  var ITEM_TOP = 0.30, ITEM_BOTTOM = 0.94;   /* 小动物只待在草地上，不会飘到天上 */
 
   var items = [], truth = 0, round = 0, phase = "idle"; /* idle | flash | guess | done */
   var history = [];
   var STRATEGY_NAMES = { whole: "整体", quarter: "四分区", sample: "样方抽样" };
   var LAYOUT_NAMES = { scatter: "散点", cluster: "聚类", grid: "网格" };
-  var flashEndsAt = 0, rafId = 0;
+  var flashEndsAt = 0, rafId = 0, flashTimeout = 0;
 
   function fit() {
     dpr = Math.min(window.devicePixelRatio || 1, 3);
@@ -509,55 +1405,197 @@
         nx = rnd(pad, CSS_W - pad) / CSS_W;
         ny = rnd(pad, CSS_H - pad) / CSS_H;
       }
+      ny = ITEM_TOP + Math.max(0, Math.min(1, ny)) * (ITEM_BOTTOM - ITEM_TOP);
       items.push({ x:nx, y:ny, r:r * rnd(0.86,1.16),
         c:PALETTE[(Math.random() * PALETTE.length) | 0], a:rnd(0,Math.PI) });
     }
-    cv.setAttribute("aria-label", LAYOUT_NAMES[mode] + "分布，共有若干糖豆，用于估算数量");
+    cv.setAttribute("aria-label",
+      esKind.sub + LAYOUT_NAMES[mode] + "分布着许多" + esKind.name + "，用于估算数量");
   }
 
-  function draw(showItems) {
-    ctx.clearRect(0, 0, CSS_W, CSS_H);
-    var g = ctx.createLinearGradient(0, 0, 0, CSS_H);
-    g.addColorStop(0, "#0d1424"); g.addColorStop(1, "#121829");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, CSS_W, CSS_H);
+  /* ---------- 童趣画面：草地 / 夜空 + 太阳 + 云 + 小山 + 草丛 ---------- */
+  function drawCloud(x, y, s) {
+    ctx.fillStyle = "rgba(255,255,255,.94)";
+    ctx.beginPath();
+    ctx.arc(x, y, s, 0, Math.PI * 2);
+    ctx.arc(x + s * 0.95, y + s * 0.18, s * 0.72, 0, Math.PI * 2);
+    ctx.arc(x - s * 0.9, y + s * 0.22, s * 0.62, 0, Math.PI * 2);
+    ctx.rect(x - s * 1.5, y + s * 0.12, s * 3, s * 0.9);
+    ctx.fill();
+  }
 
-    /* 当前策略的视觉抓手 */
+  function drawScene() {
+    var W = CSS_W, H = CSS_H, night = esKind.key === "star";
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, night ? "#1d2a58" : "#e7f5ff");
+    g.addColorStop(1, night ? "#3f4f8d" : "#f8fdf2");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    var sunX = W * 0.87, sunY = H * 0.13, r = Math.max(15, Math.min(44, W * 0.048));
+    ctx.fillStyle = night ? "#fdf3cd" : "#ffd45e";
+    ctx.beginPath(); ctx.arc(sunX, sunY, r, 0, Math.PI * 2); ctx.fill();
+    if (night) {
+      ctx.fillStyle = "rgba(29,42,88,.95)";
+      ctx.beginPath(); ctx.arc(sunX - r * 0.55, sunY - r * 0.28, r * 0.86, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.8)";
+      for (var s = 0; s < 30; s++) {
+        var sx = ((s * 71 + 13) % 100) / 100 * W;
+        var sy = ((s * 37 + 5) % 26) / 100 * H;
+        ctx.beginPath(); ctx.arc(sx, sy, s % 3 === 0 ? 2.2 : 1.4, 0, Math.PI * 2); ctx.fill();
+      }
+    } else {
+      ctx.strokeStyle = "rgba(214,150,20,.55)";
+      ctx.lineWidth = 3; ctx.lineCap = "round";
+      for (var k = 0; k < 8; k++) {
+        var a = k * Math.PI / 4;
+        ctx.beginPath();
+        ctx.moveTo(sunX + Math.cos(a) * (r + 6), sunY + Math.sin(a) * (r + 6));
+        ctx.lineTo(sunX + Math.cos(a) * (r + 15), sunY + Math.sin(a) * (r + 15));
+        ctx.stroke();
+      }
+      drawCloud(W * 0.22, H * 0.14, Math.max(12, W * 0.032));
+      drawCloud(W * 0.56, H * 0.09, Math.max(9, W * 0.023));
+    }
+
+    /* 远山 */
+    ctx.fillStyle = night ? "#2b3868" : "#cfeac0";
+    ctx.beginPath();
+    ctx.moveTo(0, H * 0.34);
+    ctx.quadraticCurveTo(W * 0.2, H * 0.2, W * 0.42, H * 0.32);
+    ctx.quadraticCurveTo(W * 0.68, H * 0.46, W, H * 0.26);
+    ctx.lineTo(W, H); ctx.lineTo(0, H);
+    ctx.closePath(); ctx.fill();
+
+    /* 草地（或夜里的草坡） */
+    ctx.fillStyle = night ? "#233060" : "#bfe4a8";
+    ctx.beginPath();
+    ctx.moveTo(0, H * 0.30);
+    ctx.quadraticCurveTo(W * 0.32, H * 0.25, W * 0.6, H * 0.31);
+    ctx.quadraticCurveTo(W * 0.84, H * 0.35, W, H * 0.28);
+    ctx.lineTo(W, H); ctx.lineTo(0, H);
+    ctx.closePath(); ctx.fill();
+
+    /* 草丛：让草地不是一块纯色 */
+    ctx.strokeStyle = night ? "rgba(190,210,255,.45)" : "rgba(58,138,72,.5)";
+    ctx.lineWidth = 2.4; ctx.lineCap = "round";
+    for (var t = 0; t < 26; t++) {
+      var gx = ((t * 41 + 9) % 100) / 100 * W;
+      var gy = H * (0.36 + ((t * 29) % 58) / 100);
+      ctx.beginPath();
+      ctx.moveTo(gx, gy); ctx.quadraticCurveTo(gx - 4, gy - 8, gx - 8, gy - 13);
+      ctx.moveTo(gx, gy); ctx.quadraticCurveTo(gx + 4, gy - 9, gx + 9, gy - 14);
+      ctx.stroke();
+    }
+  }
+
+  /* 策略抓手：四分区的虚线十字 / 样方的黄框，都用暖色虚线，形状可辨 */
+  function drawStrategyOverlay() {
     var strategy = document.getElementById("estimate-strategy").value;
-    ctx.strokeStyle = "rgba(125,136,171,.65)";
-    ctx.lineWidth = 1;
     if (strategy === "quarter") {
+      ctx.save();
+      ctx.setLineDash([9, 7]); ctx.lineWidth = 3;
+      ctx.strokeStyle = "rgba(150,101,13,.85)";
       ctx.beginPath();
       ctx.moveTo(CSS_W / 2, 0); ctx.lineTo(CSS_W / 2, CSS_H);
       ctx.moveTo(0, CSS_H / 2); ctx.lineTo(CSS_W, CSS_H / 2);
       ctx.stroke();
+      ctx.setLineDash([]);
+      var spots = [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]];
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      for (var i = 0; i < 4; i++) {
+        var cx = CSS_W * spots[i][0], cy = CSS_H * spots[i][1];
+        ctx.fillStyle = "rgba(255,255,255,.92)";
+        ctx.beginPath(); ctx.arc(cx, cy, 15, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "rgba(150,101,13,.85)"; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(cx, cy, 15, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = "#96650d";
+        ctx.font = "800 15px " + "sans-serif";
+        ctx.fillText(String(i + 1), cx, cy + 1);
+      }
+      ctx.restore();
     } else if (strategy === "sample") {
-      ctx.save(); ctx.setLineDash([6,5]); ctx.lineWidth = 2;
-      ctx.strokeStyle = "rgba(251,191,36,.9)";
-      ctx.strokeRect(CSS_W * .08, CSS_H * .10, CSS_W * .28, CSS_H * .32);
-      ctx.fillStyle = "rgba(251,191,36,.9)"; ctx.font = "700 12px sans-serif";
-      ctx.fillText("样方：估这里，再按面积放大", CSS_W * .08 + 5, CSS_H * .10 + 18);
-      ctx.restore();
-    }
-
-    if (!showItems) return;
-    for (var i = 0; i < items.length; i++) {
-      var it = items[i], x = it.x * CSS_W, y = it.y * CSS_H;
       ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(it.a);
-      ctx.fillStyle = it.c;
-      ctx.globalAlpha = 0.92;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, it.r, it.r * 0.78, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 0.5;
-      ctx.fillStyle = "rgba(255,255,255,.75)";
-      ctx.beginPath();
-      ctx.ellipse(-it.r * 0.28, -it.r * 0.28, it.r * 0.26, it.r * 0.2, 0, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.setLineDash([8, 6]); ctx.lineWidth = 3;
+      ctx.strokeStyle = "rgba(150,101,13,.9)";
+      var bx = CSS_W * 0.08, by = CSS_H * 0.34, bw = CSS_W * 0.26, bh = CSS_H * 0.28;
+      ctx.fillStyle = "rgba(255,255,255,.32)";
+      ctx.fillRect(bx, by, bw, bh);
+      ctx.strokeRect(bx, by, bw, bh);
+      ctx.setLineDash([]);
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.font = "26px " + EMOJI_FONT;
+      ctx.fillText("🔍", bx + 4, by - 14);
+      ctx.fillStyle = "#7a5309";
+      ctx.font = "800 13px sans-serif";
+      ctx.fillText("数这一格", bx + 34, by - 12);
       ctx.restore();
     }
+  }
+
+  function drawItems() {
+    var size = truth > 260 ? 11 : truth > 120 ? 15 : truth > 60 ? 21 : 28;
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    /* 小的时候给个影子，看起来像站在草地上 */
+    if (size >= 21) {
+      ctx.fillStyle = "rgba(40,80,40,.16)";
+      for (var j = 0; j < items.length; j++) {
+        ctx.beginPath();
+        ctx.ellipse(items[j].x * CSS_W, items[j].y * CSS_H + size * 0.42,
+          size * 0.34, size * 0.13, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.font = size + "px " + EMOJI_FONT;
+    for (var i = 0; i < items.length; i++) {
+      ctx.fillText(esKind.glyph, items[i].x * CSS_W, items[i].y * CSS_H);
+    }
+    ctx.restore();
+  }
+
+  function draw(showItems) {
+    ctx.clearRect(0, 0, CSS_W, CSS_H);
+    drawScene();
+    drawStrategyOverlay();
+    if (!showItems) return;
+    drawItems();
+  }
+
+  /* ---------- 估什么：图形选择，点一下就换一批小动物 ---------- */
+  var esKindTiles = document.getElementById("esKindTiles");
+  function renderKindTiles() {
+    esKindTiles.textContent = "";
+    ES_KINDS.forEach(function (kind) {
+      var btn = document.createElement("button");
+      btn.className = "kid-tile";
+      btn.type = "button";
+      btn.setAttribute("data-es-kind", kind.key);
+      btn.setAttribute("aria-pressed", String(kind.key === esKind.key));
+      btn.setAttribute("aria-label", "换成" + kind.name);
+      var art = document.createElement("span");
+      art.className = "kid-tile-art";
+      art.setAttribute("aria-hidden", "true");
+      art.textContent = kind.glyph;
+      var label = document.createElement("span");
+      label.className = "kid-tile-label";
+      label.textContent = kind.name;
+      var sub = document.createElement("span");
+      sub.className = "kid-tile-sub";
+      sub.textContent = kind.sub;
+      btn.appendChild(art); btn.appendChild(label); btn.appendChild(sub);
+      btn.addEventListener("click", function () {
+        esKind = kind;
+        Array.prototype.forEach.call(esKindTiles.children, function (b) {
+          b.setAttribute("aria-pressed", String(b.getAttribute("data-es-kind") === esKind.key));
+        });
+        draw(phase === "done" || phase === "flash");
+        veilFace.textContent = esKind.glyph;
+        liveCount.textContent = "草地上换成了" + esKind.name + "。";
+      });
+      esKindTiles.appendChild(btn);
+    });
   }
 
   var peek = document.getElementById("peek");
@@ -572,14 +1610,39 @@
   levelSel.addEventListener("change", function () {
     levelOut.textContent = { easy: "简单", mid: "中", hard: "难" }[levelSel.value];
   });
-  document.getElementById("estimate-strategy").addEventListener("change", function () {
+  var strategySel = document.getElementById("estimate-strategy");
+  strategySel.addEventListener("change", function () {
     draw(phase === "done" || phase === "flash");
+    syncStrategyPicks();
     liveCount.textContent = "本轮策略切换为" + STRATEGY_NAMES[this.value];
   });
+
+  /* 孩子路径：策略也要能点图选（完成门禁需要两种策略，不能只靠 select） */
+  var kidStrategyPicks = [].slice.call(document.querySelectorAll("[data-kid-strategy]"));
+  var kidStrategySay = document.getElementById("kidStrategySay");
+  var STRATEGY_KID_WORDS = { whole: "看整片：一眼看全部。", quarter: "分四块：估一块，再乘 4。", sample: "数小框：数一小格，再看有几格。" };
+  function syncStrategyPicks() {
+    kidStrategyPicks.forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-kid-strategy") === strategySel.value));
+      b.removeAttribute("data-state");
+      if (b.getAttribute("aria-pressed") === "true") b.setAttribute("data-state", "right");
+    });
+  }
+  kidStrategyPicks.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      strategySel.value = btn.getAttribute("data-kid-strategy");
+      syncStrategyPicks();
+      draw(phase === "done" || phase === "flash");
+      kidStrategySay.textContent = STRATEGY_KID_WORDS[strategySel.value];
+      liveCount.textContent = "本轮策略切换为" + STRATEGY_NAMES[strategySel.value];
+    });
+  });
+  syncStrategyPicks();
 
   var veil = document.getElementById("veil");
   var veilTitle = document.getElementById("veil-title");
   var veilText = document.getElementById("veil-text");
+  var veilFace = document.getElementById("veil-face");
   var flashBtn = document.getElementById("flash");
   var guessInput = document.getElementById("guess");
   var submitBtn = document.getElementById("submit");
@@ -600,23 +1663,131 @@
     errEl.textContent = msg;
   }
 
+  /* ---------- 动效偏好：优先站内设置 ---------- */
+  function motionOff() {
+    if (window.Playful && typeof Playful.motionReduced === "function") return Playful.motionReduced();
+    try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
+  }
+
+  /* ---------- 孩子路径：可点的图形数量选项（不打字也能完成） ---------- */
+  var kidPicks = document.getElementById("kidGuessPicks");
+  var kidGuessSay = document.getElementById("kidGuessSay");
+  var kidGuessWrap = document.getElementById("kidGuessWrap");
+
+  function niceRound(n) {
+    n = Math.max(1, Math.round(n));
+    if (n <= 10) return n;
+    if (n < 100) return Math.round(n / 5) * 5;
+    if (n < 1000) return Math.round(n / 10) * 10;
+    return Math.round(n / 100) * 100;
+  }
+
+  /* 面积正比于数量：孩子靠「这堆有多大」比较，而不是读数字 */
+  function pileSvg(value, maxValue, label) {
+    var svgNS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", "0 0 60 60");
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", label);
+    var r = 8 + 20 * Math.sqrt(Math.max(1, value) / Math.max(1, maxValue));
+    var c = document.createElementNS(svgNS, "circle");
+    c.setAttribute("cx", "30"); c.setAttribute("cy", "30");
+    c.setAttribute("r", String(Math.min(28, r)));
+    c.setAttribute("fill", "currentColor");
+    c.setAttribute("fill-opacity", ".28");
+    c.setAttribute("stroke", "currentColor");
+    c.setAttribute("stroke-width", "3");
+    svg.appendChild(c);
+    /* 圈里放一个当前的小东西，孩子一眼知道在数什么 */
+    var face = document.createElementNS(svgNS, "text");
+    face.setAttribute("x", "30");
+    face.setAttribute("y", "30");
+    face.setAttribute("text-anchor", "middle");
+    face.setAttribute("dominant-baseline", "central");
+    face.setAttribute("font-size", "19");
+    face.textContent = esKind.glyph;
+    svg.appendChild(face);
+    return svg;
+  }
+
+  function kidPickOptions(real) {
+    var raw = [niceRound(real), niceRound(real / 3.2), niceRound(real * 3.2), niceRound(real / 9)];
+    var seen = {}, out = [];
+    raw.forEach(function (v) {
+      if (v < 1 || v > 99999 || seen[v]) return;
+      seen[v] = true; out.push(v);
+    });
+    var guard = 0;
+    while (out.length < 3 && guard++ < 20) {
+      var extra = niceRound(real * (2 + guard));
+      if (!seen[extra] && extra <= 99999) { seen[extra] = true; out.push(extra); }
+    }
+    out.sort(function (a, b) { return a - b; });
+    return out;
+  }
+
+  function kidPicksReady(active, real) {
+    kidPicks.textContent = "";
+    if (!active) {
+      kidGuessSay.textContent = "先点「开始」，扫一眼糖豆。";
+      return;
+    }
+    var opts = kidPickOptions(real);
+    var maxV = opts[opts.length - 1];
+    opts.forEach(function (v) {
+      var btn = document.createElement("button");
+      btn.className = "eg-answer";
+      btn.type = "button";
+      btn.setAttribute("data-kid-guess", String(v));
+      btn.setAttribute("aria-label", "大约 " + v + " 个");
+      btn.appendChild(pileSvg(v, maxV, "大约 " + v + " 个的一堆"));
+      var big = document.createElement("big");
+      big.textContent = String(v);
+      btn.appendChild(big);
+      btn.addEventListener("click", function () {
+        Array.prototype.forEach.call(kidPicks.children, function (b) { b.disabled = true; });
+        btn.setAttribute("data-state", Math.abs(v - truth) / truth <= 0.3 ? "right" : "wrong");
+        kidGuessSay.textContent = "你选了大约 " + v + " 个，看看答案 👀";
+        guessInput.value = String(v);
+        reveal();
+      });
+      kidPicks.appendChild(btn);
+    });
+    kidGuessSay.textContent = "点一个差不多的数。";
+    kidGuessWrap.setAttribute("data-ready", "true");
+  }
+
   function startRound() {
     showErr("");
     verdict.hidden = true;
     guessInput.value = "";
+    document.getElementById("kidEstimateResult").hidden = true;
     fit();
     makeItems();
     phase = "flash";
     veil.hidden = true;
     draw(true);
+    kidPicksReady(false);
     flashEndsAt = performance.now() + peekSeconds() * 1000;
     cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(tickFlash);
+    clearTimeout(flashTimeout);
+    if (motionOff()) {
+      /* 减少动效：不做倒计时补间，直接等时间到后进入猜测阶段 */
+      timerWrap.hidden = true;
+      timerFill.style.width = "100%";
+      flashTimeout = setTimeout(endFlash, peekSeconds() * 1000);
+    } else {
+      timerWrap.hidden = false;
+      timerFill.style.width = "100%";
+      rafId = requestAnimationFrame(tickFlash);
+    }
   }
 
   function tickFlash(now) {
+    var total = Math.max(1, peekSeconds() * 1000);
     var left = flashEndsAt - now;
     if (left <= 0) { endFlash(); return; }
+    timerFill.style.width = Math.max(0, left / total * 100) + "%";
     rafId = requestAnimationFrame(tickFlash);
   }
 
@@ -626,12 +1797,12 @@
     veil.hidden = false;
     timerWrap.hidden = true;
     veilTitle.textContent = "藏起来了！";
-    veilText.textContent = "刚才大概有多少个？在右边填个数，不用精确。";
+    veilText.textContent = "大概有多少个？点一个差不多的数就好。";
     flashBtn.hidden = true;
     guessInput.disabled = false;
     submitBtn.disabled = false;
-    guessInput.focus();
-    liveCount.textContent = "糖豆已隐藏，请在输入框填写你的估计。";
+    kidPicksReady(true, truth);
+    liveCount.textContent = "糖豆已隐藏。可以点一个大概的数量，也可以填写具体数字。";
   }
 
   function score(guess, real) {
@@ -684,20 +1855,85 @@
     document.getElementById("kidGuessValue").textContent = g;
     document.getElementById("kidTruthValue").textContent = truth;
     document.getElementById("kidDiffValue").textContent = difference;
-    document.getElementById("kidGuessBar").style.width = Math.max(4, g / scaleMax * 100) + "%";
-    document.getElementById("kidTruthBar").style.width = Math.max(4, truth / scaleMax * 100) + "%";
-    document.getElementById("kidDistanceVisual").setAttribute("aria-label", "猜测 " + g + "，真实 " + truth + "，相差 " + difference);
-    document.getElementById("kidEstimateFinding").textContent = g === truth
-      ? "刚好猜中！两条一样长。"
-      : "这次猜得" + (g > truth ? "偏大" : "偏小") + "，相差 " + difference + " 个。";
-    kidResult.hidden = false;
-    liveCount.textContent = "真实数量 " + truth + " 个，你的相对误差 " + (s.err * 100).toFixed(1) + "%。";
 
+    /* 图形量表：猜的、真的、差的，三条能直接比长短 */
+    setMeterSafe(document.getElementById("kidGuessMeter"), g, scaleMax);
+    setMeterSafe(document.getElementById("kidTruthMeter"), truth, scaleMax);
+    setMeterSafe(document.getElementById("kidGapMeter"), difference, scaleMax);
+    document.getElementById("kidGuessMeterValue").textContent = g + " " + esKind.unit;
+    document.getElementById("kidTruthMeterValue").textContent = truth + " " + esKind.unit;
+    document.getElementById("kidGapMeterValue").textContent = difference + " " + esKind.unit;
+    document.getElementById("kidDistanceVisual").setAttribute("aria-label",
+      "你猜 " + g + "，真的有 " + truth + "，相差 " + difference);
+
+    /* 差距也画成一排点，不识字也能看出差多少 */
+    var dots = document.getElementById("kidGapDots");
+    dots.textContent = "";
+    var show = Math.min(difference, 20);
+    for (var d = 0; d < show; d++) {
+      var dot = document.createElement("i");
+      dot.setAttribute("aria-hidden", "true");
+      dots.appendChild(dot);
+    }
+    if (!difference) {
+      var okDot = document.createElement("i");
+      okDot.setAttribute("aria-hidden", "true");
+      okDot.setAttribute("data-empty", "true");
+      dots.appendChild(okDot);
+    }
+    dots.setAttribute("aria-label", difference ? "差 " + difference + " 个" : "一个不差");
+    document.getElementById("kidGapMore").textContent =
+      difference > 20 ? "+" + (difference - 20) : (difference ? "" : "✓ 刚好");
+
+    document.getElementById("kidEstimateFinding").textContent = g === truth
+      ? "✓ 刚好猜中！两条一样长。"
+      : (s.err <= 0.15 ? "✓ 很接近了！" : "○ ") + "这次猜得" + (g > truth ? "偏大" : "偏小") +
+        "，差 " + difference + " " + esKind.unit + "。下一轮往" + (g > truth ? "小" : "大") + "一点调。";
+    kidResult.hidden = false;
+    liveCount.textContent = "真的有 " + truth + " " + esKind.unit + "，你的相对误差 " + (s.err * 100).toFixed(1) + "%。";
+
+    if (s.err <= 0.15 && window.Playful && typeof Playful.confetti === "function") Playful.confetti(kidResult);
     if (s.err <= 0.05) toast("误差 5% 以内，眼睛很准！");
     else if (s.err <= 0.15) toast("很接近了！");
 
     renderHistory();
     updateEstimateMission();
+    esUpdateTrend();
+  }
+
+  /* 图形量表：优先用站内 Playful.setMeter，失败时自己写宽度 */
+  function setMeterSafe(track, value, max) {
+    if (!track) return;
+    if (window.Playful && typeof Playful.setMeter === "function") { Playful.setMeter(track, value, max); return; }
+    var top = Number(max) > 0 ? Number(max) : 1;
+    var ratio = Math.max(0, Math.min(1, Number(value) / top));
+    var fill = track.querySelector(".kid-meter-fill");
+    if (fill) fill.style.setProperty("--fill", (ratio * 100).toFixed(1) + "%");
+  }
+
+  /* ---------- 越猜越近：把最近三轮的接近度画成三条 ---------- */
+  var ES_TREND = [["esTrend1", "esTrend1Value"], ["esTrend2", "esTrend2Value"], ["esTrend3", "esTrend3Value"]];
+  function esUpdateTrend() {
+    var last = history.slice(-3);
+    ES_TREND.forEach(function (pair, i) {
+      var track = document.getElementById(pair[0]);
+      var out = document.getElementById(pair[1]);
+      var h = last[i];
+      if (!h) { setMeterSafe(track, 0, 1); out.textContent = "还没猜"; return; }
+      var near = Math.max(0, 1 - h.err);
+      setMeterSafe(track, near, 1);
+      out.textContent = "接近 " + Math.round(near * 100) + "%";
+    });
+    document.getElementById("esTrendEmpty").hidden = last.length > 0;
+    var say = document.getElementById("esTrendSay");
+    if (last.length < 2) {
+      say.textContent = last.length ? "再猜一轮，就能比一比两条谁长。" : "条越长，就是猜得越近。";
+      return;
+    }
+    var errs = last.map(function (h) { return Math.round(h.err * 100); });
+    var closer = last[last.length - 1].err <= last[0].err;
+    say.textContent = "误差 " + errs.join("% → ") + "%。" +
+      (closer ? "✓ 越猜越近了" : "○ 这次远了一点，看差值再往回调");
   }
 
   function updateEstimateMission() {
@@ -707,7 +1943,7 @@
     var ready = history.length >= 3 && names.length >= 2;
     document.getElementById("estimateComplete").disabled = !ready;
     document.getElementById("estimateStatus").textContent = ready
-      ? "✓ 已完成 " + history.length + " 轮，使用了 " + names.join("、") + "。请写反思并记录。"
+      ? "✓ 已完成 " + history.length + " 轮，使用了 " + names.join("、") + "。可以记进足迹了（文字反思是可选的）。"
       : "进度：" + history.length + "/3 轮；已用策略：" + (names.join("、") || "尚无") + "。至少需要两种策略。";
   }
 
@@ -722,8 +1958,12 @@
   });
 
   document.getElementById("estimateComplete").addEventListener("click", function () {
-    var reflection = document.getElementById("estimateReflect").value.trim();
-    if (!reflection) { document.getElementById("estimateStatus").textContent = "请先写下哪种方法更接近。"; document.getElementById("estimateReflect").focus(); return; }
+    // 反思一律可选：孩子模式下 textarea 被隐藏，不能用它卡住完成条件。
+    var reflectEl = document.getElementById("estimateReflect");
+    var pickedReflect = document.querySelector('[data-estimate-reflect][aria-pressed="true"]');
+    var reflection = (reflectEl.value || "").trim();
+    if (!reflection && pickedReflect) reflection = pickedReflect.getAttribute("data-estimate-reflect");
+    if (!reflection) reflection = "（未留下文字，用图形选项完成了三轮估算）";
     var sum = 0, best = Infinity, strategies = {};
     history.forEach(function (h) { sum += h.err; best = Math.min(best, h.err); strategies[h.strategy] = true; });
     var evidence = "完成 " + history.length + " 轮；策略：" + Object.keys(strategies).map(function(k){return STRATEGY_NAMES[k];}).join("、") +
@@ -810,6 +2050,7 @@
     }, 120);
   });
 
+  renderKindTiles();
   fit();
   draw(false);
   renderHistory();
@@ -952,13 +2193,458 @@
 
   loadFermi();
   renderFermiStats();
+
+  /* ================= 孩子路径：三个量感小游戏（全图形，不需打字） ================= */
+  function eg(x) { return document.getElementById(x); }
+  function ri(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+
+  var EG_BEANS = ["🫐", "🍬", "🍭", "🌰", "🍇"];
+  var egWins = 0;
+
+  function egAddWin() {
+    egWins++;
+    var host = eg("egStars");
+    host.textContent = "";
+    var show = Math.min(egWins, 10);
+    for (var i = 0; i < show; i++) {
+      var s = document.createElement("span");
+      s.textContent = "⭐";
+      host.appendChild(s);
+    }
+    if (egWins > 10) {
+      var more = document.createElement("span");
+      more.style.fontSize = ".9rem";
+      more.style.fontWeight = "800";
+      more.textContent = "+" + (egWins - 10);
+      host.appendChild(more);
+    }
+    host.setAttribute("aria-label", "小游戏已答对 " + egWins + " 次");
+    eg("egTotal").textContent = "答对 " + egWins + " 次";
+  }
+
+  function egFill(host, n, glyph, label) {
+    host.textContent = "";
+    for (var i = 0; i < n; i++) {
+      var it = document.createElement("i");
+      it.setAttribute("aria-hidden", "true");
+      it.textContent = glyph;
+      host.appendChild(it);
+    }
+    host.setAttribute("aria-label", label);
+  }
+
+  function egLock(selector, on) {
+    Array.prototype.forEach.call(document.querySelectorAll(selector), function (b) {
+      b.disabled = !!on;
+      if (!on) b.removeAttribute("data-state");
+    });
+  }
+
+  /* ---------- 小游戏 A：哪边多（不数，靠整体感觉） ---------- */
+  var egMoreL = 0, egMoreR = 0;
+  function egNewMore() {
+    var glyph = EG_BEANS[ri(0, EG_BEANS.length - 1)];
+    egMoreL = ri(8, 26);
+    /* 约三分之一的题目做成「差不多」（相差 ≤ 2），练容差判断 */
+    if (Math.random() < .34) egMoreR = Math.max(6, egMoreL + ri(-2, 2));
+    else egMoreR = Math.max(6, egMoreL + ri(6, 14) * (Math.random() < .5 ? -1 : 1));
+    egFill(eg("egMoreLeft"), egMoreL, glyph, "左边有一些糖豆");
+    egFill(eg("egMoreRight"), egMoreR, glyph, "右边有一些糖豆");
+    eg("egMoreSay").textContent = "扫一眼，再点一个。";
+    egLock("[data-eg-more]", false);
+  }
+  function egMoreTruth() {
+    if (Math.abs(egMoreL - egMoreR) <= 2) return "same";
+    return egMoreL > egMoreR ? "left" : "right";
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-eg-more]"), function (btn) {
+    btn.addEventListener("click", function () {
+      var truthKey = egMoreTruth();
+      var right = btn.getAttribute("data-eg-more") === truthKey;
+      btn.setAttribute("data-state", right ? "right" : "wrong");
+      if (right) {
+        egLock("[data-eg-more]", true);
+        eg("egMoreSay").textContent = truthKey === "same"
+          ? "对了！两边差不多（" + egMoreL + " 和 " + egMoreR + "）🎉"
+          : "对了！" + (truthKey === "left" ? "左边" : "右边") + "多 🎉";
+        egAddWin();
+      } else {
+        eg("egMoreSay").textContent = "再看看，可以点「数给我看」👇";
+      }
+    });
+  });
+  eg("egMoreNext").addEventListener("click", egNewMore);
+  eg("egMoreShow").addEventListener("click", function () {
+    eg("egMoreLeft").setAttribute("aria-label", "左边 " + egMoreL + " 个");
+    eg("egMoreRight").setAttribute("aria-label", "右边 " + egMoreR + " 个");
+    eg("egMoreSay").textContent = "左边 " + egMoreL + " 个，右边 " + egMoreR + " 个。";
+  });
+
+  /* ---------- 小游戏 B：大概几个（选量级，差不多就算对） ---------- */
+  var egNearTruth = 0, egNearBest = 0;
+  function egNewNear() {
+    egNearTruth = ri(12, 60);
+    var glyph = EG_BEANS[ri(0, EG_BEANS.length - 1)];
+    egFill(eg("egNearScene"), egNearTruth, glyph, "一堆糖豆，请估个大概");
+    var opts = [10, 20, 30, 50].slice();
+    egNearBest = opts[0];
+    opts.forEach(function (v) {
+      if (Math.abs(v - egNearTruth) < Math.abs(egNearBest - egNearTruth)) egNearBest = v;
+    });
+    var host = eg("egNearAnswers");
+    host.textContent = "";
+    opts.forEach(function (v) {
+      var btn = document.createElement("button");
+      btn.className = "eg-answer";
+      btn.type = "button";
+      btn.setAttribute("aria-label", "大约 " + v + " 个");
+      btn.appendChild(pileSvg(v, 50, "大约 " + v + " 个的一堆"));
+      var big = document.createElement("big");
+      big.textContent = "≈" + v;
+      btn.appendChild(big);
+      btn.addEventListener("click", function () {
+        var right = v === egNearBest;
+        btn.setAttribute("data-state", right ? "right" : "wrong");
+        if (right) {
+          Array.prototype.forEach.call(host.children, function (b) { b.disabled = true; });
+          eg("egNearSay").textContent = "对了！真的有 " + egNearTruth + " 个，最接近 " + v + " 🎉";
+          egAddWin();
+        } else {
+          eg("egNearSay").textContent = v > egNearTruth ? "猜多了一点 🙂" : "猜少了一点 🙂";
+        }
+      });
+      host.appendChild(btn);
+    });
+    eg("egNearSay").textContent = "差不多就算对，不用数完。";
+  }
+  eg("egNearNext").addEventListener("click", egNewNear);
+  eg("egNearHelp").addEventListener("click", function () {
+    var tens = Math.floor(egNearTruth / 10);
+    eg("egNearSay").textContent = "先看有几个「十」：大约 " + tens + " 个十，就是 " + tens * 10 + " 多。";
+  });
+
+  /* ---------- 小游戏 C：装了多少（量感：空 / 一半 / 快满） ---------- */
+  var egFullRatio = 0;
+  function egFullTruth() {
+    if (egFullRatio < .3) return "empty";
+    if (egFullRatio < .68) return "half";
+    return "most";
+  }
+  function egNewFull() {
+    var band = ri(0, 2);
+    egFullRatio = band === 0 ? (ri(5, 25) / 100) : band === 1 ? (ri(40, 60) / 100) : (ri(78, 96) / 100);
+    var scene = eg("egFullScene");
+    scene.textContent = "";
+    var cup = document.createElement("div");
+    cup.className = "eg-cup";
+    cup.setAttribute("role", "img");
+    cup.setAttribute("aria-label", "一个杯子，水装到大约" +
+      (egFullTruth() === "empty" ? "很少的位置" : egFullTruth() === "half" ? "一半" : "快满的位置"));
+    var water = document.createElement("i");
+    water.style.height = Math.round(egFullRatio * 100) + "%";
+    cup.appendChild(water);
+    scene.appendChild(cup);
+    eg("egFullSay").textContent = "看水面在哪里。";
+    egLock("[data-eg-full]", false);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-eg-full]"), function (btn) {
+    btn.addEventListener("click", function () {
+      var right = btn.getAttribute("data-eg-full") === egFullTruth();
+      btn.setAttribute("data-state", right ? "right" : "wrong");
+      if (right) {
+        egLock("[data-eg-full]", true);
+        eg("egFullSay").textContent = "对了！大约装了 " + Math.round(egFullRatio * 100) + "% 🎉";
+        egAddWin();
+      } else {
+        eg("egFullSay").textContent = "再看看杯子的一半在哪里 🙂";
+      }
+    });
+  });
+  eg("egFullNext").addEventListener("click", egNewFull);
+  eg("egFullHelp").addEventListener("click", function () {
+    eg("egFullSay").textContent = "把杯子分成上下两半：水面在一半以下就是「几乎空」，差不多在中间就是「一半」，靠杯口就是「快满了」。";
+  });
+
+  /* ---------- 面板切换 ---------- */
+  var EG_PANELS = { more: "egPanelMore", near: "egPanelNear", full: "egPanelFull" };
+  var egTabs = Array.prototype.slice.call(document.querySelectorAll("[data-eg-tab]"));
+  egTabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      var key = tab.getAttribute("data-eg-tab");
+      egTabs.forEach(function (t) { t.setAttribute("aria-pressed", String(t === tab)); });
+      Object.keys(EG_PANELS).forEach(function (k) { eg(EG_PANELS[k]).hidden = k !== key; });
+      if (key === "more") egNewMore();
+      else if (key === "near") egNewNear();
+      else egNewFull();
+    });
+  });
+
+  egNewMore();
+  egNewNear();
+  egNewFull();
+  eg("egStars").textContent = "";
+  eg("egStars").setAttribute("aria-label", "小游戏已答对 0 次");
+  eg("egTotal").textContent = "答对 0 次";
+})();
+</script>
+<script>
+/* ======================================================================
+   ① 参照物图鉴  ② 看图估数（前缀 esx-）
+   独立作用域，不改动上面任何已有逻辑。
+   ====================================================================== */
+(function () {
+  "use strict";
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function id(name) { return document.getElementById(name); }
+  function clear(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
+
+  /* ---------------- ① 图鉴：点一张卡，说说这把尺子能量什么 ---------------- */
+  var ATLAS_TIPS = {
+    coin: "硬币叠起来量厚度：10 枚差不多 1.5 厘米，一本故事书大概就是这么厚。",
+    pencil: "铅笔横着摆：桌子有几支铅笔宽？一支 18 厘米，摆 5 支差不多 1 米。",
+    paper: "A4 纸铺在桌面上：铺满几张，桌子就大概有几个 30 厘米。",
+    step: "用脚量：走 10 步大约 4 米。量房间最快的办法就是走一走。",
+    door: "门高 2 米：比门矮的东西都不到 2 米，冰箱差不多到门的四分之三。",
+    floor: "抬头数楼层：一层 3 米，看见 6 层就是差不多 18 米高。",
+    car: "看路边的车：一辆 4 米，数出 5 个车位就是 20 米。",
+    court: "篮球场一整个 28 米：操场跑一圈 200 米，差不多 7 个球场那么长。"
+  };
+  var atlasCards = Array.prototype.slice.call(document.querySelectorAll("[data-esx-ref]"));
+  var atlasSay = id("esxAtlasSay");
+  atlasCards.forEach(function (card) {
+    card.addEventListener("click", function () {
+      atlasCards.forEach(function (other) { other.setAttribute("aria-pressed", String(other === card)); });
+      atlasSay.textContent = ATLAS_TIPS[card.getAttribute("data-esx-ref")] || "点一张卡，我说说这把尺子能量什么。";
+    });
+  });
+
+  /* ---------------- ② 看图估数 ---------------- */
+  /* 每轮的正确数量固定；四个选项里恰好一个落在正确数 ±20% 内。 */
+  var ROUNDS = [
+    { truth: 12,  opts: [5, 10, 25, 50] },
+    { truth: 25,  opts: [10, 20, 45, 80] },
+    { truth: 40,  opts: [15, 40, 70, 120] },
+    { truth: 60,  opts: [25, 50, 90, 150] },
+    { truth: 85,  opts: [35, 80, 140, 200] },
+    { truth: 120, opts: [50, 120, 200, 320] }
+  ];
+  var TOL = 0.2 + 1e-9;               /* 差两成以内就算估对 */
+  /* 四块的计数牌各占一个外角；散点会主动避开这四个角，牌子不会压住要数的点。 */
+  var QUAD_SPOTS = [[38, 28], [262, 28], [38, 172], [262, 172]];
+  var round = 0, answered = false, rightCount = 0;
+  var results = ROUNDS.map(function () { return null; });
+  var quizSay = id("esxQuizSay");
+  var quizMethod = id("esxQuizMethod");
+  var quizNext = id("esxQuizNext");
+
+  /* 固定的伪随机：同一轮永远是同一张图，刷新也不变。 */
+  function makeRng(seed) {
+    var s = seed % 2147483647;
+    if (s <= 0) s += 2147483646;
+    return function () { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+  }
+  var layoutCache = {};
+  /* 四块各放差不多一样多，「数一块再乘 4」才真的成立；
+     块内仍是随机散布，看上去不像格子。 */
+  function layoutFor(index) {
+    if (layoutCache[index]) return layoutCache[index];
+    var n = ROUNDS[index].truth;
+    var rng = makeRng(index * 7919 + 104729);
+    var gap = n > 90 ? 10 : n > 45 ? 13 : 17;
+    var pts = [];
+    var base = Math.floor(n / 4), extra = n - base * 4;
+    /* 余数分给哪几块也是固定的，不随机，图才不会每次刷新都变。 */
+    [[14, 14], [155, 14], [14, 105], [155, 105]].forEach(function (origin, q) {
+      var want = base + (q < extra ? 1 : 0), got = 0, guard = 0;
+      while (got < want && guard < want * 400) {
+        guard++;
+        var x = origin[0] + rng() * 131, y = origin[1] + rng() * 81, ok = true;
+        for (var i = 0; i < pts.length; i++) {
+          var dx = pts[i][0] - x, dy = pts[i][1] - y;
+          if (dx * dx + dy * dy < gap * gap) { ok = false; break; }
+        }
+        if (ok) { pts.push([x, y]); got++; }
+      }
+      /* 兜底：排布再挤也必须画满，画面数量要和答案完全一致。 */
+      while (got < want) { pts.push([origin[0] + rng() * 131, origin[1] + rng() * 81]); got++; }
+    });
+    layoutCache[index] = pts;
+    return pts;
+  }
+  function quadCounts(index) {
+    var out = [0, 0, 0, 0];
+    layoutFor(index).forEach(function (p) {
+      out[(p[1] < 100 ? 0 : 2) + (p[0] < 150 ? 0 : 1)]++;
+    });
+    return out;
+  }
+
+  function renderDots(index) {
+    var layer = id("esxQuizDotLayer");
+    clear(layer);
+    var r = ROUNDS[index].truth > 90 ? 3.4 : 4.2;
+    layoutFor(index).forEach(function (p) {
+      var dot = document.createElementNS(SVGNS, "circle");
+      dot.setAttribute("class", "esx-dot");
+      dot.setAttribute("cx", p[0].toFixed(1));
+      dot.setAttribute("cy", p[1].toFixed(1));
+      dot.setAttribute("r", String(r));
+      layer.appendChild(dot);
+    });
+  }
+  function showGrid(on) { id("esxQuizGrid").setAttribute("data-on", on ? "true" : "false"); }
+  function renderQuads(index, show) {
+    var layer = id("esxQuizQuadLayer");
+    clear(layer);
+    if (!show) return;
+    quadCounts(index).forEach(function (n, i) {
+      var plate = document.createElementNS(SVGNS, "rect");
+      plate.setAttribute("class", "esx-quad-plate");
+      plate.setAttribute("x", String(QUAD_SPOTS[i][0] - 21));
+      plate.setAttribute("y", String(QUAD_SPOTS[i][1] - 15));
+      plate.setAttribute("width", "42");
+      plate.setAttribute("height", "21");
+      plate.setAttribute("rx", "6");
+      layer.appendChild(plate);
+      var text = document.createElementNS(SVGNS, "text");
+      text.setAttribute("class", "esx-quad-num");
+      text.setAttribute("x", String(QUAD_SPOTS[i][0]));
+      text.setAttribute("y", String(QUAD_SPOTS[i][1]));
+      text.textContent = n + " 个";
+      layer.appendChild(text);
+    });
+  }
+
+  function renderPicks(index) {
+    var host = id("esxQuizPicks");
+    clear(host);
+    ROUNDS[index].opts.forEach(function (value) {
+      var btn = document.createElement("button");
+      btn.className = "kid-tile";
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", "false");
+      btn.setAttribute("aria-label", "选大约 " + value + " 个");
+      btn.setAttribute("data-esx-value", String(value));
+      var art = document.createElement("span");
+      art.className = "kid-tile-art";
+      art.setAttribute("aria-hidden", "true");
+      art.textContent = "≈" + value;
+      var label = document.createElement("span");
+      label.className = "kid-tile-label";
+      label.textContent = "大约 " + value + " 个";
+      var sub = document.createElement("span");
+      sub.className = "kid-tile-sub";
+      sub.hidden = true;
+      btn.appendChild(art);
+      btn.appendChild(label);
+      btn.appendChild(sub);
+      btn.addEventListener("click", function () { choose(btn, value); });
+      host.appendChild(btn);
+    });
+  }
+
+  function updateProgress() {
+    var row = id("esxQuizDotsRow"), done = 0;
+    clear(row);
+    for (var i = 0; i < ROUNDS.length; i++) {
+      var dot = document.createElement("i");
+      if (results[i] === null) dot.setAttribute("data-empty", "true");
+      else done++;
+      if (i === round) dot.setAttribute("data-esx-now", "true");
+      row.appendChild(dot);
+    }
+    row.setAttribute("aria-label", "六轮进度，已答 " + done + " 轮");
+  }
+  function updateMeter() {
+    var track = id("esxQuizMeter");
+    id("esxQuizMeterValue").textContent = rightCount + " / " + ROUNDS.length;
+    if (window.Playful && typeof Playful.setMeter === "function") {
+      Playful.setMeter(track, rightCount, ROUNDS.length);
+      return;
+    }
+    var fill = track.querySelector(".kid-meter-fill");
+    if (fill) fill.style.setProperty("--fill", (rightCount / ROUNDS.length * 100).toFixed(1) + "%");
+  }
+
+  function choose(btn, value) {
+    if (answered) return;
+    answered = true;
+    var truth = ROUNDS[round].truth;
+    var ok = Math.abs(value - truth) / truth <= TOL;
+    results[round] = ok;
+    if (ok) rightCount++;
+
+    Array.prototype.forEach.call(id("esxQuizPicks").children, function (tile) {
+      tile.disabled = true;
+      var v = Number(tile.getAttribute("data-esx-value"));
+      var good = Math.abs(v - truth) / truth <= TOL;
+      if (good) tile.setAttribute("data-esx-good", "true");
+      var sub = tile.querySelector(".kid-tile-sub");
+      sub.hidden = false;
+      sub.textContent = good ? "✓ 接近" : v > truth ? "多了" : "少了";
+    });
+    btn.setAttribute("aria-pressed", "true");
+    if (!ok) btn.setAttribute("data-esx-off", "true");
+
+    showGrid(true);
+    renderQuads(round, true);
+    var one = quadCounts(round)[0];
+    quizSay.textContent = (ok ? "✓ 估对了！" : "○ 这次差得多了一点。") +
+      "真的有 " + truth + " 个，你选了 " + value + " 个。估算不用刚好，接近就行。";
+    quizMethod.textContent = "看红虚线：画面切成四块，左上角这块有 " + one + " 个，" +
+      one + " × 4 ≈ " + (one * 4) + "，离真的 " + truth + " 个已经很近了。";
+
+    var last = round >= ROUNDS.length - 1;
+    quizNext.hidden = last;
+    if (last) {
+      quizSay.textContent += " 六轮都玩完了，估对 " + rightCount + " 轮。";
+      if (rightCount >= 4 && window.Playful && typeof Playful.confetti === "function") {
+        Playful.confetti(id("esxQuizStage"));
+      }
+    }
+    updateProgress();
+    updateMeter();
+  }
+
+  function start(index) {
+    round = index;
+    answered = false;
+    renderDots(index);
+    renderQuads(index, false);
+    showGrid(false);
+    renderPicks(index);
+    id("esxQuizCount").textContent = "第 " + (index + 1) + " 轮 / 共 " + ROUNDS.length + " 轮";
+    quizSay.textContent = "扫一眼就好，点一个差不多的数。";
+    quizMethod.textContent = "教你一招：把画面切成四块，只数清一块，再乘 4。";
+    quizNext.hidden = true;
+    updateProgress();
+  }
+
+  quizNext.addEventListener("click", function () {
+    if (round < ROUNDS.length - 1) start(round + 1);
+  });
+  id("esxQuizHint").addEventListener("click", function () {
+    showGrid(true);
+    quizMethod.textContent = answered
+      ? quizMethod.textContent
+      : "虚线把画面切成了四块。只数清左上角那一块，再乘 4，就是整幅的大概数量。";
+  });
+  id("esxQuizReset").addEventListener("click", function () {
+    rightCount = 0;
+    results = ROUNDS.map(function () { return null; });
+    updateMeter();
+    start(0);
+  });
+
+  updateMeter();
+  start(0);
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>if (window.Progress) Progress.visit("games/estimation-station.html", "估算站");</script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

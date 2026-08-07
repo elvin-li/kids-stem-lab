@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>人体探索 · 用自己的身体做实验 | 少儿数理启蒙</title>
 <meta name="description" content="心跳、呼吸、骨头、反应速度、味觉、视觉盲点：14 个用自己身体就能做的测量实验，输入身高体重看个性化数据。">
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
-<meta name="theme-color" content="#0b0f1a">
+<meta name="theme-color" content="#fff8ec">
 <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
 <style>
   .hero { padding: 32px 0 20px; }
@@ -30,7 +30,10 @@
   .quick-look b { display: block; margin-bottom: 4px; color: var(--sci); }
   .quick-look p { margin: 0; color: var(--ink-mid); }
   html, body { max-width: 100%; overflow-x: hidden; }
-  .body-demo { min-width: 0; display: grid; align-content: start; gap: 10px; }
+  /* 源码里 h1 必须先出现（标题层级），但视觉上插图列在左、文字列在右，所以用 order 换回来。
+     窄屏单列时 order 依然生效：插图先、文字后，和改动前的移动端顺序一致。 */
+  .hero-copy-col { min-width: 0; order: 2; }
+  .body-demo { min-width: 0; order: 1; display: grid; align-content: start; gap: 10px; }
   .body-scene { min-width: 0; display: grid; place-items: center; gap: 10px; padding: 8px; overflow: hidden; }
   .body-system-figure { width: min(100%, 330px); margin: 0; }
   .body-system-svg { display: block; width: 100%; max-height: 345px; filter: drop-shadow(0 18px 26px rgba(0,0,0,.2)); }
@@ -43,9 +46,9 @@
   .body-quick { min-width: 0; display: grid; gap: 9px; }
   .body-quick h2, .body-quick p { margin: 0; }
   .body-quick p { font-size: .86rem; line-height: 1.4; }
-  .body-quick-actions { min-width: 0; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
-  .body-quick-actions button { min-width: 0; min-height: 48px; padding: 8px 6px; border: 2px solid var(--line); border-radius: var(--r-sm); background: var(--surface); color: var(--ink); font: 750 .86rem/1.25 var(--font); cursor: pointer; }
-  .body-quick-actions button[aria-pressed="true"] { border-color: var(--kit); background: color-mix(in srgb,var(--kit) 12%,var(--surface)); }
+  .body-quick-actions { min-width: 0; display: grid; grid-template-columns: repeat(auto-fit,minmax(92px,1fr)); gap: 8px; margin: 0; }
+  .body-quick-actions.kid-tiles .kid-tile { min-width: 0; min-height: 104px; padding: 10px 6px; }
+  .body-quick-actions.kid-tiles .kid-tile > .kid-tile-art { font-size: 2.2rem; }
   .body-quick output { min-width: 0; padding: 8px 10px; border-radius: var(--r-sm); background: var(--surface); color: var(--ink-mid); font-size: .84rem; line-height: 1.35; overflow-wrap: anywhere; }
   html[data-mode="kid"] .mission > p:not(.pill),
   html[data-mode="kid"] .mission > .work-card { display: none; }
@@ -82,7 +85,9 @@
     border: 1px solid var(--line); border-radius: var(--r-sm);
     padding: 8px 10px;
   }
-  .me-f input:focus { outline: none; border-color: var(--kit); }
+  /* 只在鼠标/触摸点击时去掉轮廓；键盘 focus 仍要保留共享层的高可见焦点圈。 */
+  .me-f input:focus { border-color: var(--kit); }
+  .me-f input:focus:not(:focus-visible) { outline: none; }
 
   .me-out {
     display: grid; gap: 12px; margin-top: 18px;
@@ -172,11 +177,13 @@
     display: inline-block; font-size: .66rem; font-weight: 700; letter-spacing: .1em;
     text-transform: uppercase; padding: 2px 8px; border-radius: 999px; margin-bottom: 8px;
   }
-  .s-heart { background: rgba(244,114,182,.16); color: #f9a8d4; }
-  .s-lung  { background: rgba(34,211,238,.16); color: #67e8f9; }
-  .s-brain { background: rgba(167,139,250,.16); color: #c4b5fd; }
-  .s-bone  { background: rgba(251,191,36,.16); color: #fcd34d; }
-  .s-sense { background: rgba(74,222,128,.16); color: #86efac; }
+  /* 系统徽章：原先用的是暗色主题的浅色文字（#f9a8d4 等），压在浅色底纹上几乎看不见。
+     改成「学科色文字 + 8% 同色底纹」，三套主题下都 ≥ 4.5:1。 */
+  .s-heart { background: color-mix(in srgb, var(--kit) 8%, var(--surface));   color: var(--kit); }
+  .s-lung  { background: color-mix(in srgb, var(--video) 8%, var(--surface)); color: var(--video); }
+  .s-brain { background: color-mix(in srgb, var(--phys) 8%, var(--surface));  color: var(--phys); }
+  .s-bone  { background: color-mix(in srgb, var(--warn) 8%, var(--surface));  color: var(--warn); }
+  .s-sense { background: color-mix(in srgb, var(--sci) 8%, var(--surface));   color: var(--sci); }
   .bcard-h h3 { margin: 0; font-size: 1.06rem; }
   .bcard-b { padding: 13px 17px 16px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
   .bcard-b .how { margin: 0; font-size: .88rem; color: var(--ink-mid); flex: 1; }
@@ -206,6 +213,7 @@
     .hero-story { grid-template-columns: 1fr; }
     .term-atlas { grid-template-columns: 1fr; }
     .body-scene { min-height: 220px; }
+    .layers { grid-template-columns: 1fr; }
   }
   @media (max-width: 640px) {
     .hero { padding-top: 20px; }
@@ -220,6 +228,135 @@
     .spread { align-items: flex-start !important; }
     .spread > .row { width: 100%; flex-wrap: wrap; padding-bottom: 4px; }
     .chip { flex: 0 0 auto; }
+  }
+
+  /* ---------- 分层教学：身体的五条线索 ---------- */
+  .lesson-stack { display: grid; gap: 18px; }
+  .lesson-block { min-width: 0; padding: clamp(14px, 3vw, 22px); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .lesson-block > h3 { margin: 0 0 6px; font-size: 1.06rem; }
+  .lesson-lead { margin: 0 0 12px; color: var(--ink-mid); font-size: .9rem; line-height: 1.6; }
+  .lesson-figure { margin: 0 0 10px; }
+  .lesson-figure svg { display: block; width: 100%; height: auto; }
+  .lesson-figure figcaption { margin-top: 6px; color: var(--ink-dim); font-size: .76rem; line-height: 1.5; text-align: center; }
+  .layers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0 0 12px; padding: 0; list-style: none; }
+  .layer { min-width: 0; padding: 12px 13px; border: 1px solid var(--line-soft); border-left: 3px solid var(--sci); border-radius: var(--r-sm); background: var(--bg-soft); color: var(--ink-mid); font-size: .85rem; line-height: 1.55; overflow-wrap: anywhere; }
+  .layer b { display: block; margin-bottom: 4px; color: var(--ink); font-size: .73rem; letter-spacing: .05em; }
+  .layer-mid { border-left-color: var(--math); }
+  .layer-adv { border-left-color: var(--phys); }
+  .teaches { margin: 0 0 10px; padding: 10px 12px; border-left: 3px solid var(--kit); border-radius: 0 var(--r-sm) var(--r-sm) 0; background: var(--bg-soft); color: var(--ink-mid); font-size: .84rem; line-height: 1.55; }
+  .teaches b { color: var(--kit); }
+  .ask { margin: 0 0 8px; color: var(--ink); font-size: .88rem; font-weight: 650; line-height: 1.5; }
+  .quick-picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); gap: 8px; margin: 0 0 8px; }
+  .quick-picks button.kid-choice { min-width: 0; padding: 10px 12px; border-radius: var(--r-sm); font-size: .84rem; line-height: 1.35; text-align: left; }
+  .think-field label { display: block; margin: 0 0 5px; font-size: .82rem; font-weight: 650; }
+  .think-field textarea { width: 100%; min-height: 66px; resize: vertical; }
+  .lesson-parent { margin-top: 12px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: var(--r); background: var(--surface-2); color: var(--ink-mid); font-size: .85rem; line-height: 1.6; }
+  .lesson-parent > :first-child { margin-top: 0; }
+  .lesson-parent > :last-child { margin-bottom: 0; }
+  .lesson-parent b { color: var(--phys); }
+  .board-picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 7px; margin: 0 0 9px; }
+  .board-picks button { min-width: 0; min-height: 48px; padding: 8px 9px; border: 2px solid var(--line); border-radius: var(--r-sm); background: var(--surface); color: var(--ink); font: 750 .82rem/1.3 var(--font); cursor: pointer; }
+  .board-picks button[aria-pressed="true"] { border-color: var(--kit); background: color-mix(in srgb, var(--kit) 12%, var(--surface)); }
+  .board-note { display: block; margin: 0 0 10px; padding: 10px 12px; border-left: 3px solid var(--sci); border-radius: 0 var(--r-sm) var(--r-sm) 0; background: var(--bg-soft); color: var(--ink); font-size: .85rem; line-height: 1.55; }
+
+  /* 供氧动线 */
+  .o2-svg .o2-pipe { transition: stroke-width .3s var(--ease); }
+  .o2-svg .o2-dot { animation: o2run 2.8s linear infinite; }
+  .o2-svg .o2-dot-back { animation-name: o2back; }
+  @keyframes o2run { from { transform: translateX(0); } to { transform: translateX(150px); } }
+  @keyframes o2back { from { transform: translateX(0); } to { transform: translateX(-150px); } }
+  .o2-svg[data-effort="active"] .o2-dot { animation-duration: 1.1s; }
+  .o2-svg[data-effort="active"] .o2-pipe { stroke-width: 11; }
+  .o2-svg[data-effort="active"] .o2-muscle { fill-opacity: .55; }
+
+  /* 三类杠杆 */
+  .lever-svg .lever-case { opacity: .22; transition: opacity .25s var(--ease); }
+  .lever-svg[data-lever="first"] .lever-first,
+  .lever-svg[data-lever="second"] .lever-second,
+  .lever-svg[data-lever="third"] .lever-third { opacity: 1; }
+
+  /* 消化旅程 */
+  .digest-svg .digest-stop { opacity: .3; transition: opacity .25s var(--ease); }
+  .digest-svg[data-stop="mouth"] [data-stop-key="mouth"],
+  .digest-svg[data-stop="pipe"] [data-stop-key="pipe"],
+  .digest-svg[data-stop="stomach"] [data-stop-key="stomach"],
+  .digest-svg[data-stop="small"] [data-stop-key="small"],
+  .digest-svg[data-stop="large"] [data-stop-key="large"] { opacity: 1; }
+
+  /* 神经接力 */
+  .relay-svg .relay-dot { opacity: 0; }
+  .relay-svg[data-run="on"] .relay-dot { animation: relayrun 1.4s linear 1; }
+  @keyframes relayrun {
+    0% { opacity: 1; transform: translateX(0); }
+    92% { opacity: 1; }
+    100% { opacity: 0; transform: translateX(244px); }
+  }
+
+  /* ---------- 图形优先舞台（复用 kid-tiles / kid-result-card / kid-steps-visual） ---------- */
+  .cute-face { pointer-events: none; }
+  .stage-caption { margin: 6px 0 0; color: var(--ink-mid); font-size: .8rem; text-align: center; }
+
+  /* ① 我的身体：点身体部位读大数字 */
+  .me-stage { display: grid; grid-template-columns: minmax(0,190px) minmax(0,1fr); gap: 16px; align-items: center; margin: 10px 0 14px; }
+  .me-body-svg { display: block; width: 100%; max-width: 190px; height: auto; }
+  .me-body-svg .mp { opacity: .2; transition: opacity .2s var(--ease); }
+  .me-body-svg[data-part="blood"] [data-mp="blood"],
+  .me-body-svg[data-part="heart"] [data-mp="heart"],
+  .me-body-svg[data-part="skin"]  [data-mp="skin"],
+  .me-body-svg[data-part="air"]   [data-mp="air"],
+  .me-body-svg[data-part="legs"]  [data-mp="legs"],
+  .me-body-svg[data-part="head"]  [data-mp="head"] { opacity: 1; }
+  .me-bignum { display: block; font-family: var(--mono); font-size: clamp(1.7rem,6vw,2.6rem); font-weight: 800; line-height: 1.05; color: var(--kit); }
+  .me-bigunit { font-size: .8rem; font-weight: 700; color: var(--ink-mid); margin-left: 4px; }
+  .me-picks { margin: 0 0 12px; }
+  .me-big-card { display: grid; gap: 2px; padding: 14px 16px; border: 3px solid var(--line); border-radius: var(--r-lg); background: #fff8ec; box-shadow: 0 5px 0 rgba(180,130,60,.2); }
+  .me-biglabel { color: var(--ink); font-size: .88rem; font-weight: 800; }
+  .me-bignote { color: var(--ink-mid); font-size: .84rem; line-height: 1.5; }
+
+  /* ③ 反应速度：红绿灯舞台 */
+  .react-light { display: block; width: 100%; max-width: 210px; height: auto; margin: 0 auto 10px; }
+  .react-light .lamp { opacity: .16; transition: opacity .18s var(--ease); }
+  .react-light[data-state="idle"] [data-lamp="idle"],
+  .react-light[data-state="wait"] [data-lamp="wait"],
+  .react-light[data-state="go"]   [data-lamp="go"],
+  .react-light[data-state="done"] [data-lamp="done"] { opacity: 1; }
+  .react-light[data-state="go"] [data-lamp="go"] { animation: lampPop .45s var(--ease) 2; transform-origin: center; }
+  @keyframes lampPop { 0%,100% { transform: scale(1); } 50% { transform: scale(1.09); } }
+
+  /* ⑥ 线索五：睡眠一轮一轮 */
+  .sleep-svg .sleep-band { opacity: .18; transition: opacity .22s var(--ease); }
+  .sleep-svg[data-cycle="early"] [data-band="early"],
+  .sleep-svg[data-cycle="late"]  [data-band="late"],
+  .sleep-svg[data-cycle="wake"]  [data-band="wake"] { opacity: 1; }
+
+  /* 大数字与实验卡：先图后字 */
+  .fstat-art { display: block; margin-bottom: 3px; font-size: 2.2rem; line-height: 1; }
+  .bcard-h { display: flex; gap: 12px; align-items: center; }
+  .bcard-h > div { min-width: 0; }
+  .bcard-art { flex: none; font-size: 2.5rem; line-height: 1; }
+  .bcard-short { margin: 3px 0 0; color: var(--kit); font-size: .84rem; font-weight: 800; }
+  .bcard .parent-deep-dive { margin-top: 2px; }
+  .bcard .parent-deep-dive > summary { font-size: .82rem; }
+  .body-kid-stage { margin: 10px 0 14px; border: 3px solid var(--line); border-radius: var(--r-lg); background: #fff8ec; box-shadow: 0 5px 0 rgba(180,130,60,.22); }
+  .body-kid-stage .kid-scene-art { min-height: 150px; }
+  .body-kid-stage svg { display: block; width: min(100%, 360px); height: auto; margin: auto; }
+  .step-ask { color: var(--ink); font-weight: 800; }
+  .mission-step .kid-tiles { margin: 8px 0; }
+  .mission-step .kid-tile { min-height: 112px; }
+  .fact-strip .fstat { border: 3px solid var(--line); border-radius: var(--r); background: #fff8ec; box-shadow: 0 4px 0 rgba(180,130,60,.2); }
+  .lesson-block { border-width: 3px; box-shadow: 0 5px 0 rgba(180,130,60,.18); }
+  .lesson-figure { padding: 10px; border: 3px solid var(--line); border-radius: var(--r-lg); background: #fff8ec; }
+  .lesson-parent > summary { min-height: 48px; cursor: pointer; color: var(--ink); font-weight: 800; }
+  .lesson-block .parent-deep-dive > summary,
+  .mission .parent-deep-dive > summary,
+  .mebox .parent-deep-dive > summary,
+  .pulse .parent-deep-dive > summary,
+  .react .parent-deep-dive > summary { font-size: .85rem; }
+
+  @media (max-width: 640px) { .me-stage { grid-template-columns: 1fr; justify-items: center; } }
+  @media (prefers-reduced-motion: reduce) {
+    .react-light[data-state="go"] [data-lamp="go"] { animation: none; }
+    .me-body-svg .mp, .react-light .lamp, .sleep-svg .sleep-band { transition: none; }
   }
 
   /* ---------- 探索任务与无障碍 ---------- */
@@ -238,9 +375,78 @@
   .task-status { min-height: 1.5em; color: var(--ink-mid); }
   .principle { border-left: 3px solid var(--phys); padding-left: 12px; color: var(--ink-mid); }
   .parent-q li + li { margin-top: 7px; }
-  button, input, select, textarea, [role="button"] { min-height: 44px; }
+  button, input, select, textarea, [role="button"] { min-height: 48px; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
 
+
+  /* 插画舞台（共享 SVG 场景铺底，内容都放在不透明卡片上保证对比度） */
+  .hb-scene-stage { margin:0 0 16px; padding:clamp(12px,2.6vw,20px); }
+  .hb-scene-copy { display:grid; gap:12px; min-width:0; }
+  .hb-scene-stage .kid-steps-visual { margin:0; }
+  @media (max-width:560px) {
+    .hb-scene-stage { padding:10px; }
+  }
+
+  /* ---------- 图像优先三件套（本页前缀 hb-）：器官图鉴 / 心跳量表 / 谁在干这件事 ---------- */
+  .hb-shell { display:grid; gap:16px; margin:26px 0; }
+  .hb-card { position:relative; padding:18px; border:3px solid var(--line); border-radius:22px; background:var(--surface); box-shadow:0 6px 0 rgba(180,130,60,.2); }
+  .hb-card > h3 { margin:.1em 0 .3em; font-size:1.16rem; }
+  .hb-lead { margin:0 0 12px; color:var(--ink-mid); font-weight:750; font-size:.92rem; }
+  .hb-stage { display:block; width:100%; max-width:420px; height:auto; margin:0 auto; border:3px solid var(--line); border-radius:18px; background:#fff3e2; }
+  .hb-shell .kid-figure { --tone:var(--kit); }
+  .hb-shell .kid-figure-art { padding:6px; }
+  .hb-shell .kid-figure-art > svg { width:100%; max-width:142px; height:auto; }
+  .hb-shell .kid-figure-fact { display:block; }
+  .hb-say-row { margin:12px 0 0; }
+  .hb-card > details { margin-top:12px; border:1px solid var(--line-soft); border-radius:var(--r); padding:0 13px; }
+  .hb-card > details[open] { padding-bottom:10px; }
+  .hb-card > details > p, .hb-card > details > ol { color:var(--ink-mid); font-size:.88rem; line-height:1.58; }
+
+  /* 器官示意图的取色（SVG 里只挂 class，不写 var()） */
+  .hb-fig-bg { fill:#fff6ea; }
+  .hb-skin { fill:#ffd7b5; stroke:#402d1c; stroke-width:4; }
+  .hb-face { fill:#402d1c; }
+  .hb-face-line { fill:none; stroke:#402d1c; stroke-width:3; stroke-linecap:round; }
+  .hb-line { fill:none; stroke:#402d1c; stroke-width:9; stroke-linecap:round; }
+  .hb-torso { fill:#8de3c1; stroke:#402d1c; stroke-width:4; }
+  .hb-o-heart { fill:#ff769d; stroke:#402d1c; stroke-width:3; }
+  .hb-o-vein { fill:none; stroke:#38bdf8; stroke-width:5; stroke-linecap:round; }
+  .hb-o-artery { fill:none; stroke:#e0325c; stroke-width:5; stroke-linecap:round; }
+  .hb-o-lung { fill:#7cc9ff; stroke:#402d1c; stroke-width:3; }
+  .hb-o-airway { fill:none; stroke:#402d1c; stroke-width:4; stroke-linecap:round; }
+  .hb-o-bone { fill:#fdf3dc; stroke:#402d1c; stroke-width:3; }
+  .hb-o-bone-s { fill:none; stroke:#fdf3dc; stroke-width:8; stroke-linecap:round; }
+  .hb-o-bone-line { fill:none; stroke:#fdf3dc; stroke-width:5; stroke-linecap:round; }
+  .hb-o-joint { fill:#a78bfa; stroke:#402d1c; stroke-width:2.5; }
+  .hb-o-stomach { fill:#fb7185; stroke:#402d1c; stroke-width:3; }
+  .hb-o-pipe { fill:none; stroke:#fb7185; stroke-width:6; stroke-linecap:round; }
+  .hb-o-gut { fill:none; stroke:#f6c445; stroke-width:9; stroke-linecap:round; }
+  .hb-o-brain { fill:#c4b5fd; stroke:#402d1c; stroke-width:3; }
+  .hb-o-brain-line { fill:none; stroke:#402d1c; stroke-width:2; stroke-linecap:round; }
+  .hb-o-skin { fill:none; stroke:#f59e0b; stroke-width:5; stroke-dasharray:9 7; stroke-linecap:round; }
+  .hb-o-drop { fill:#7cc9ff; stroke:#402d1c; stroke-width:2.5; }
+  .hb-ring { fill:none; stroke:#e0325c; stroke-width:3; stroke-dasharray:7 6; }
+  .hb-panel { fill:#ffffff; stroke:#402d1c; stroke-width:2.5; }
+  .hb-ink { fill:#2a1c10; font-weight:800; }
+  .hb-ink-soft { fill:#5a4736; }
+
+  .hb-meters { display:grid; gap:14px; margin:0 0 12px; }
+  .hb-effort-picks { grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); margin:0 0 14px; }
+  .hb-dots-row { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin:0 0 10px; }
+  .hb-dots-cap { color:var(--ink-mid); font-weight:750; font-size:.9rem; }
+  .hb-parent-field { margin-top:12px; }
+  .hb-parent-field label { display:block; margin:0 0 5px; font-size:.84rem; font-weight:650; }
+
+  .hb-task { display:flex; align-items:center; gap:14px; min-height:96px; margin:0 0 12px; padding:14px 16px; border:3px solid var(--line); border-radius:var(--r-lg); background:#fff3e2; }
+  .hb-task-art { flex:none; font-size:clamp(2.6rem,9vw,3.6rem); line-height:1; }
+  .hb-task-text { min-width:0; color:var(--ink); font-size:clamp(1.02rem,3.6vw,1.28rem); font-weight:800; line-height:1.32; overflow-wrap:anywhere; }
+  .hb-quiz-picks { grid-template-columns:repeat(2,minmax(0,1fr)); margin:0 0 12px; }
+  .hb-quiz-picks .kid-tile-art { display:grid; place-items:center; }
+  .hb-quiz-picks .kid-tile-art > svg { width:100%; max-width:100px; height:auto; border-radius:var(--r-sm); }
+  .hb-quiz-actions { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 12px; }
+  .hb-quiz-actions .btn { min-height:48px; }
+  .hb-quiz-score { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0 0; color:var(--ink-mid); font-weight:750; }
+  .hb-quiz-stars { min-height:1.4em; font-size:1.3rem; line-height:1; letter-spacing:2px; }
 </style>
 </head>
 <body data-playful-page="nature/human-body.html">
@@ -260,6 +466,17 @@
 
 <header class="hero wrap">
   <div class="hero-story">
+    <!-- h1 必须排在 .body-quick 的 h2 之前（源码顺序 = 标题层级顺序）；
+         视觉上这一列仍在右边，靠 .hero-story 的 order 调回来。 -->
+    <div class="hero-copy-col">
+      <p class="story-kicker">跳跳队长邀请你：成为身体线索员！</p>
+      <h1 class="big-question">运动以后，心脏和肺会怎样合作？</h1>
+      <p class="story-copy">先看图，再测自己的活动前后变化。数字不是分数，也不和别人比。</p>
+      <div class="quick-look">
+        <b>现在就摸一摸</b>
+        <p>用两根手指轻放在手腕靠拇指的一侧，找找一下、一下的跳动。</p>
+      </div>
+    </div>
     <div class="body-demo">
       <div class="body-scene kid-visual-stage">
         <figure class="body-system-figure">
@@ -293,26 +510,49 @@
       </div>
       <div class="body-quick kid-action-strip" aria-labelledby="bodyQuickTitle">
         <h2 id="bodyQuickTitle">安全比较</h2>
-        <div class="body-quick-actions" aria-label="活动前后快捷步骤">
-          <button type="button" data-body-quick="before" aria-pressed="false">① 活动前</button>
-          <button type="button" data-body-quick="move" aria-pressed="false">② 踏步 30 秒</button>
-          <button type="button" data-body-quick="after" aria-pressed="false">③ 活动后</button>
+        <div class="kid-tiles body-quick-actions" aria-label="活动前后快捷步骤">
+          <button class="kid-tile" type="button" data-body-quick="before" aria-pressed="false" aria-label="第一步：活动前坐稳摸脉搏">
+            <span class="kid-tile-art" aria-hidden="true">🪑</span>
+            <span class="kid-tile-label">活动前</span>
+            <span class="kid-tile-sub">① 坐稳摸</span>
+          </button>
+          <button class="kid-tile" type="button" data-body-quick="move" aria-pressed="false" aria-label="第二步：轻轻踏步 30 秒">
+            <span class="kid-tile-art" aria-hidden="true">🚶</span>
+            <span class="kid-tile-label">动一动</span>
+            <span class="kid-tile-sub">② 30 秒</span>
+          </button>
+          <button class="kid-tile" type="button" data-body-quick="after" aria-pressed="false" aria-label="第三步：活动后再摸脉搏">
+            <span class="kid-tile-art" aria-hidden="true">💓</span>
+            <span class="kid-tile-label">活动后</span>
+            <span class="kid-tile-sub">③ 再摸摸</span>
+          </button>
         </div>
         <output id="bodyQuickOutput" aria-live="polite">坐稳，先摸一摸脉搏；不舒服就停止并告诉大人。</output>
         <a class="btn btn-primary hero-start" href="#bodyMissionTitle">记录正式比较</a>
       </div>
     </div>
-    <div>
-      <p class="story-kicker">跳跳队长邀请你：成为身体线索员！</p>
-      <h1 class="big-question">运动以后，心脏和肺会怎样合作？</h1>
-      <p class="story-copy">先看图，再测自己的活动前后变化。数字不是分数，也不和别人比。</p>
-      <div class="quick-look">
-        <b>现在就摸一摸</b>
-        <p>用两根手指轻放在手腕靠拇指的一侧，找找一下、一下的跳动。</p>
-      </div>
-    </div>
   </div>
 </header>
+<div class="wrap scene-wrap">
+  <!-- 插画舞台：不识字也能看懂这一页在玩什么 -->
+  <div class="kid-visual-stage hb-scene-stage" data-scene-layer="back"
+       data-playful-scene="body"
+       data-playful-scene-title="心跳曲线"
+       data-playful-scene-desc="暖色背景上有一条一起一伏的心跳线">
+    <div class="hb-scene-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">❤️</span>
+        <p class="kid-speech">跑一跑再摸脉搏，<b>身体会告诉你答案</b>。</p>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步玩法">
+        <li><span class="kid-tile-art" aria-hidden="true">🤚</span>摸脉搏</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🏃</span>动一动</li>
+        <li><span class="kid-tile-art" aria-hidden="true">📊</span>比一比</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
 
 <main class="wrap stack" id="main" style="padding-bottom:56px">
 
@@ -321,16 +561,87 @@
     <p>这在教什么：运动时循环与呼吸共同提高供氧；手臂是杠杆，负载离关节越远，肌肉需要的力矩越大。身体数值只保留在本次页面会话中。</p>
     <div class="work-card" aria-labelledby="bodyStoryTitle">
       <div data-playful-companion>解释伙伴正在打开线索板……</div>
-      <div class="row spread"><div><p class="pill pill-kit">剧情 · 身体侦探</p><h3 id="bodyStoryTitle" class="work-card-title">只追踪趋势，不收集数值</h3></div><span data-playful-sticker>○ 完成任务可获得贴纸</span></div>
+      <div class="row spread"><div><p class="pill pill-kit">剧情 · 身体侦探</p><h3 id="bodyStoryTitle" class="work-card-title">只追踪趋势，不收集数值</h3></div><span data-playful-sticker>○ 完成任务解锁收藏卡</span></div>
       <p class="work-card-content">星星请你调查活动前后的变化和手臂杠杆。身体数字只在当前页面参与计算；结案时只记录做过哪些比较，绝不保存身体数值。</p>
       <div class="row"><button class="btn btn-ghost" type="button" data-playful-random-task="#bodySurprise">抽取侦探支线</button><span id="bodySurprise" data-playful-task-output role="status" aria-live="polite">支线任务会在这里出现。</span></div>
-      <p data-playful-feedback role="status" aria-live="polite">线索仍在本页内：完成核心任务后会收到贴纸反馈。</p>
+      <p data-playful-feedback role="status" aria-live="polite">线索仍在本页内：完成核心任务后会解锁这一站的收藏卡。</p>
     </div>
     <div class="mission-grid">
-      <div class="mission-step"><h3>1 预测</h3><label for="bodyPredict">活动 30 秒后，脉搏和呼吸会怎样变化？把同一本书拿远会怎样？</label><textarea class="input" id="bodyPredict"></textarea></div>
-      <div class="mission-step"><h3>2 操作</h3><p>先安静测量，再做 30 秒安全活动后复测；不适立即停止。</p><label for="pulseRest">安静脉搏（次/分）</label><input class="input" id="pulseRest" type="number" min="30" max="240"><label for="pulseAfter">活动后脉搏（次/分）</label><input class="input" id="pulseAfter" type="number" min="30" max="240"><label for="breathRest">安静呼吸（次/分）</label><input class="input" id="breathRest" type="number" min="5" max="80"><label for="breathAfter">活动后呼吸（次/分）</label><input class="input" id="breathAfter" type="number" min="5" max="80"><label for="leverDistance">书离肘关节距离（厘米）</label><input class="input" id="leverDistance" type="number" min="10" max="70" value="30"><button class="btn btn-primary" id="bodyCompare" type="button">比较本次数据</button></div>
-      <div class="mission-step"><h3>3 结果</h3><output class="text-result" id="bodyOutput" aria-live="polite">数据不会写入 localStorage，刷新页面即清除。</output><label for="bodyResult">写下变化趋势，不必写姓名或健康信息</label><textarea class="input" id="bodyResult"></textarea></div>
-      <div class="mission-step"><h3>4 反思</h3><label for="bodyReflect">怎样让比较更公平（活动时间、姿势、计数时长）？</label><textarea class="input" id="bodyReflect"></textarea></div>
+      <div class="mission-step">
+        <h3>1 预测</h3>
+        <p class="step-ask">动一动以后，心跳会怎样？</p>
+        <div class="kid-answer-group kid-tiles" data-answer-target="bodyPredict">
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我猜活动后脉搏和呼吸都会变快。">
+            <span class="kid-tile-art" aria-hidden="true">🐇</span>
+            <span class="kid-tile-label">变快</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我猜活动后脉搏和呼吸差不多，不会变。">
+            <span class="kid-tile-art" aria-hidden="true">🐢</span>
+            <span class="kid-tile-label">一样</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我猜书拿得越远，手臂会越费力。">
+            <span class="kid-tile-art" aria-hidden="true">💪</span>
+            <span class="kid-tile-label">拿远更累</span>
+          </button>
+        </div>
+        <div data-audience="parent"><label for="bodyPredict">家长层：活动 30 秒后，脉搏和呼吸会怎样变化？把同一本书拿远会怎样？</label><textarea class="input" id="bodyPredict"></textarea></div>
+      </div>
+      <div class="mission-step">
+        <h3>2 操作</h3>
+        <div class="body-kid-stage kid-visual-stage">
+          <div class="kid-scene-art" aria-hidden="true">🪑 → 🐇 → 💓</div>
+          <p class="stage-caption">坐稳 → 轻轻动 → 再摸心跳</p>
+        </div>
+        <div class="kid-answer-group kid-tiles" data-body-operation>
+          <button class="kid-tile" type="button" aria-pressed="false" data-operation="demo">
+            <span class="kid-tile-art" aria-hidden="true">🐾</span><span class="kid-tile-label">我跟着做</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-operation="adult">
+            <span class="kid-tile-art" aria-hidden="true">🧑‍🧒</span><span class="kid-tile-label">和大人一起</span>
+          </button>
+        </div>
+        <output class="board-note" id="bodyOperationStatus" role="status" aria-live="polite">选一种安全做法，不舒服马上停。</output>
+        <details class="parent-deep-dive" data-audience="parent"><summary>家长层：输入本次测量值</summary><p>先安静测量，再做 30 秒安全活动后复测；不适立即停止。</p><label for="pulseRest">安静脉搏（次/分）</label><input class="input" id="pulseRest" type="number" min="30" max="240"><label for="pulseAfter">活动后脉搏（次/分）</label><input class="input" id="pulseAfter" type="number" min="30" max="240"><label for="breathRest">安静呼吸（次/分）</label><input class="input" id="breathRest" type="number" min="5" max="80"><label for="breathAfter">活动后呼吸（次/分）</label><input class="input" id="breathAfter" type="number" min="5" max="80"><label for="leverDistance">书离肘关节距离（厘米）</label><input class="input" id="leverDistance" type="number" min="10" max="70" value="30"><button class="btn btn-primary" id="bodyCompare" type="button">比较本次数据</button></details>
+      </div>
+      <div class="mission-step">
+        <h3>3 结果</h3>
+        <output class="text-result" id="bodyOutput" aria-live="polite">数据不会写入 localStorage，刷新页面即清除。</output>
+        <p class="step-ask">你看到的变化是哪一种？</p>
+        <div class="kid-answer-group kid-tiles" data-answer-target="bodyResult">
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="活动后脉搏和呼吸都变快了。">
+            <span class="kid-tile-art" aria-hidden="true">📈</span>
+            <span class="kid-tile-label">两个都变快</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="只有脉搏明显变快，呼吸变化不大。">
+            <span class="kid-tile-art" aria-hidden="true">💗</span>
+            <span class="kid-tile-label">只有心跳快</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="书拿得越远，手臂越快就酸了。">
+            <span class="kid-tile-art" aria-hidden="true">📚</span>
+            <span class="kid-tile-label">拿远更酸</span>
+          </button>
+        </div>
+        <div data-audience="parent"><label for="bodyResult">家长层：写下变化趋势，不必写姓名或健康信息</label><textarea class="input" id="bodyResult"></textarea></div>
+      </div>
+      <div class="mission-step">
+        <h3>4 反思</h3>
+        <p class="step-ask">下次怎样比才公平？</p>
+        <div class="kid-answer-group kid-tiles" data-answer-target="bodyReflect">
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="下次要活动一样长的时间，才算公平。">
+            <span class="kid-tile-art" aria-hidden="true">⏱️</span>
+            <span class="kid-tile-label">时间一样长</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="下次要用一样的姿势数，才算公平。">
+            <span class="kid-tile-art" aria-hidden="true">🧍</span>
+            <span class="kid-tile-label">姿势一样</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="下次只改一件事，其它都不变，才算公平。">
+            <span class="kid-tile-art" aria-hidden="true">1️⃣</span>
+            <span class="kid-tile-label">只改一件事</span>
+          </button>
+        </div>
+        <div data-audience="parent"><label for="bodyReflect">家长层：怎样让比较更公平（活动时间、姿势、计数时长）？</label><textarea class="input" id="bodyReflect"></textarea></div>
+      </div>
     </div><div class="task-actions"><button class="btn btn-primary" id="bodyComplete" type="button">完成任务</button><span class="task-status" id="bodyStatus" role="status" aria-live="polite">尚未完成：身体数据仅在当前会话中使用。</span></div>
     <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="bodyWorkTitle">
       <h3 class="work-card-title" id="bodyWorkTitle">把这次调查存进作品册</h3>
@@ -350,22 +661,351 @@
         </div>
         <div>
           <label for="bodyWorkContent">趋势与做法（不写身体数值）</label>
-          <textarea class="input" id="bodyWorkContent" name="content" required maxlength="4000" placeholder="例如：活动后脉搏和呼吸都变快；书拿得越远越费力；下次我会固定活动时间再比较。"></textarea>
+          <div class="kid-tiles quick-picks" data-fill="bodyWorkContent" role="group" aria-label="作品内容快捷图卡">
+            <button class="kid-tile" type="button" aria-pressed="false" data-value="活动后心跳和呼吸都变快；下次保持活动时间一样长。" aria-label="写：活动后心跳和呼吸都变快">
+              <span class="kid-tile-art" aria-hidden="true">💓</span>
+              <span class="kid-tile-label">活动后变快</span>
+              <span class="kid-tile-sub">心跳＋呼吸</span>
+            </button>
+            <button class="kid-tile" type="button" aria-pressed="false" data-value="同一本书拿得越远越费力；下次只改变距离。" aria-label="写：同一本书拿得越远越费力">
+              <span class="kid-tile-art" aria-hidden="true">📚</span>
+              <span class="kid-tile-label">拿远更费力</span>
+              <span class="kid-tile-sub">只改距离</span>
+            </button>
+            <button class="kid-tile" type="button" aria-pressed="false" data-value="我先预测，再操作，再看结果；没有记录身体数字。" aria-label="写：我先预测，再操作，再看结果">
+              <span class="kid-tile-art" aria-hidden="true">🔎</span>
+              <span class="kid-tile-label">我这样调查</span>
+              <span class="kid-tile-sub">预测→做→看</span>
+            </button>
+          </div>
+          <textarea class="input" id="bodyWorkContent" name="content" required maxlength="4000" placeholder="也可以直接点上面的图卡。"></textarea>
         </div>
         <button class="btn btn-primary" type="submit">保存调查卡</button>
       </div>
       <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和趋势后就能存档。</p>
     </form>
   </section>
-  <section class="card parent-deep-dive" data-audience="parent" style="padding:20px"><h2>安全、隐私与原理</h2><p class="principle"><b>背后的原理：</b>心率和呼吸率都是单位时间计数；活动后通常一起上升，为肌肉送氧并排出二氧化碳。力矩 = 力 × 到关节的垂直距离，所以同样重量拿得越远越费力。个体数字不是成绩，也不能用于诊断。</p><p><b>隐私：</b>身高、体重、年龄、脉搏、呼吸和杠杆输入仅存在页面内存，不写入进度、笔记、localStorage 或网络。任务完成记录只保存“已完成三项比较”，不保存身体数值。</p><ol class="parent-q"><li>为什么同一人数 15 秒再乘 4，结果每次仍可能不同？</li><li>怎样只改变“书离肘的距离”来公平比较？</li><li>恢复到安静值要多久，怎样画成一条趋势线？</li></ol></section>
+  <section class="card parent-deep-dive" data-audience="parent" style="padding:20px">
+    <h2>学习目标、陪伴追问、原理与安全</h2>
+    <h3>这在教什么（学习目标）</h3>
+    <ul>
+      <li><b>器官＝位置＋职责：</b>能指出心、肺、胃肠、大脑、皮肤、骨与关节的大致位置，并说出各自负责什么。</li>
+      <li><b>把快慢换成可比较的量：</b>心跳用“次/分钟”，呼吸用“每口送多少氧”，两条量表一起变长，说明它们是同一条供氧链上的两环。</li>
+      <li><b>用功能反推器官：</b>看到一件事（跑步、吃饭、出汗、蹲起），能推出是谁在干。</li>
+      <li><b>关节即杠杆：</b>理解“同样重量拿得越远越费力”，并知道原因在距离，不在重量。</li>
+      <li><b>公平比较的意识：</b>只改一个条件、其他保持一致，才叫比较。</li>
+    </ul>
+    <h3>一起追问（给家长的 3 条）</h3>
+    <ol class="parent-q">
+      <li>为什么同一个人数 15 秒再乘 4，每次结果还是会不一样？（引到测量误差与身体本来的波动）</li>
+      <li>怎样只改变“书离肘的距离”，其他都不变，来做一次公平的比较？</li>
+      <li>活动后要多久才回到安静时的样子？如果把它画成一条线，这条线是什么形状？</li>
+    </ol>
+    <h3>背后的原理</h3>
+    <p class="principle"><b>心率与需氧量：</b>肌肉用力时耗氧上升，身体主要靠提高心率与每次泵血量来增加送氧量（每分钟送氧 ≈ 每分钟泵出的血量 × 每份血携带的氧）。所以心跳快慢基本跟着“现在需要多少氧”走，而不是反过来。</p>
+    <p class="principle"><b>呼吸与循环为何串联：</b>呼吸负责装货（把氧装进血、把二氧化碳卸下来），循环负责运货（把血送到肌肉再送回肺）。两段接在一条链上，任一环变慢，整条链就慢，因此脉搏和呼吸几乎总是一起变——观察时要同时看两个指标。</p>
+    <p class="principle"><b>关节即杠杆与力矩：</b>骨头是杆，关节是支点，肌肉出力。力矩 = 力 × 到支点的垂直距离；同样重量拿远一倍，对关节的力矩就大约翻一倍。手臂属于第三类杠杆，肌肉着力点离关节很近，因此要用比重物大得多的力，换来的是手末端动得更快、范围更大。</p>
+    <h3>常见误区，先讲清楚</h3>
+    <ul>
+      <li><b>“心脏在正中间”：</b>心脏在胸腔中央<b>稍偏左</b>，被两片肺夹着；既不在正中，也不是长在左胸口。摸脉搏更容易的位置是手腕靠拇指一侧。</li>
+      <li><b>“吃下去直接到胃就消化完了”：</b>胃主要把食物搅成糊并用胃液拆解，真正把营养吸收进血液的是小肠；大肠再把水收回来。是一条流水线，不是一个终点。</li>
+      <li><b>“心跳快就是心肺不好”：</b>年龄越小静息心率越快，活动、情绪、体温都会影响它。单次测量既不能评价能力，也不能用于诊断。</li>
+      <li><b>“练到最后反应可以快到零”：</b>信号从眼睛到大脑再到手指要走完整条路，练习主要缩短判断那一段，所以成绩会卡在一个下限附近。</li>
+    </ul>
+    <h3>隐私与安全</h3>
+    <p><b>隐私：</b>身高、体重、年龄、脉搏、呼吸和杠杆输入仅存在页面内存，不写入进度、笔记、localStorage 或网络。任务完成记录只保存“已完成三项比较”，不保存身体数值。</p>
+    <p><b>安全：</b>活动只做轻度踏步，场地平稳无障碍；孩子说不舒服就立刻停止。憋气类观察只在陆地上做，绝不可以在水里做。页面所有数字都是人群平均量级参考，不构成健康或医疗建议。</p>
+  </section>
 
+
+  <!-- 图像优先三件套：器官图鉴 / 心跳与呼吸量表 / 谁在干这件事 -->
+  <section class="hb-shell" aria-labelledby="hbShellTitle">
+    <h2 id="hbShellTitle">看图就懂：器官图鉴 · 心跳量表 · 谁在干这件事</h2>
+    <p class="hb-lead">这一段全是大图，点一点就能玩，不用先读句子。</p>
+
+    <article class="hb-card" aria-labelledby="hbAtlasTitle">
+      <h3 id="hbAtlasTitle">① 器官图鉴：身体里都有谁</h3>
+      <p class="hb-lead">点一张卡，上面的舞台就把那个器官画在它在身体里的位置上。</p>
+      <svg class="hb-stage" id="hbStage" viewBox="0 0 300 262" role="img" aria-labelledby="hbStageTitle hbStageDesc">
+        <title id="hbStageTitle">器官放大舞台</title>
+        <desc id="hbStageDesc">一个身体小人的轮廓。点下面的图鉴卡，这里就把那个器官画在它在身体里的位置上，并写出它负责什么。</desc>
+        <path class="hb-line" d="M118 84 L84 126 M182 84 L216 126 M134 166 L128 204 M166 166 L172 204"/>
+        <circle class="hb-skin" cx="84" cy="126" r="8"/>
+        <circle class="hb-skin" cx="216" cy="126" r="8"/>
+        <rect class="hb-torso" x="112" y="62" width="76" height="106" rx="34"/>
+        <circle class="hb-skin" cx="150" cy="36" r="24"/>
+        <circle class="hb-face" cx="142" cy="32" r="2.6"/>
+        <circle class="hb-face" cx="158" cy="32" r="2.6"/>
+        <path class="hb-face-line" d="M141 43 Q150 50 159 43"/>
+        <g id="hbStageOrgan"></g>
+        <rect class="hb-panel" x="8" y="216" width="284" height="40" rx="14"/>
+        <text class="hb-ink" id="hbStageName" x="20" y="236" font-size="15">先点一张图鉴卡</text>
+        <text class="hb-ink-soft" id="hbStageJob" x="20" y="250" font-size="11.5">下面 6 张卡，点一张就把那个器官画出来</text>
+      </svg>
+      <p class="kid-scene-caption">红色虚线圈住的地方，就是那个器官在身体里的位置。</p>
+      <ul class="kid-legend" aria-label="舞台配色图例">
+        <li style="--tone:#ff769d"><span class="kid-legend-mark" aria-hidden="true">♥</span>心与血</li>
+        <li style="--tone:#7cc9ff"><span class="kid-legend-mark" aria-hidden="true">◎</span>空气</li>
+        <li style="--tone:#a78bfa"><span class="kid-legend-mark" aria-hidden="true">●</span>关节</li>
+      </ul>
+      <div class="kid-figure-grid" id="hbAtlasGrid" aria-label="器官图鉴：六张大图卡">
+        <button class="kid-figure" type="button" data-hb-organ="heart" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="hb-fig-bg" x="0" y="0" width="120" height="90"/>
+              <path class="hb-o-vein" d="M44 30 C38 18 30 14 22 14"/>
+              <path class="hb-o-artery" d="M76 30 C82 18 90 14 98 14"/>
+              <path class="hb-o-heart" d="M60 32 C50 18 28 22 28 44 C28 64 60 80 60 80 C60 80 92 64 92 44 C92 22 70 18 60 32 Z"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">心脏</span>
+          <span class="kid-figure-sub">从不休息</span>
+          <span class="kid-figure-fact">像水泵，把血推到全身</span>
+        </button>
+        <button class="kid-figure" type="button" data-hb-organ="lungs" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="hb-fig-bg" x="0" y="0" width="120" height="90"/>
+              <path class="hb-o-lung" d="M54 26 C34 22 20 46 22 68 C24 82 44 84 54 76 Z"/>
+              <path class="hb-o-lung" d="M66 26 C86 22 100 46 98 68 C96 82 76 84 66 76 Z"/>
+              <path class="hb-o-airway" d="M60 8 L60 34 M60 22 L46 34 M60 22 L74 34"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">肺</span>
+          <span class="kid-figure-sub">一对两个</span>
+          <span class="kid-figure-fact">把氧换进血里，把废气送出去</span>
+        </button>
+        <button class="kid-figure" type="button" data-hb-organ="bones" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="hb-fig-bg" x="0" y="0" width="120" height="90"/>
+              <path class="hb-o-bone" d="M12 22 L50 34 L46 48 L8 36 Z"/>
+              <path class="hb-o-bone" d="M64 40 L104 30 L108 44 L68 54 Z"/>
+              <circle class="hb-o-joint" cx="57" cy="41" r="12"/>
+              <path class="hb-o-brain-line" d="M57 62 L57 78 M50 71 L57 78 L64 71"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">骨与关节</span>
+          <span class="kid-figure-sub">支架＋支点</span>
+          <span class="kid-figure-fact">撑住身体，关节像杠杆帮你弯</span>
+        </button>
+        <button class="kid-figure" type="button" data-hb-organ="gut" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="hb-fig-bg" x="0" y="0" width="120" height="90"/>
+              <path class="hb-o-pipe" d="M46 8 L42 26"/>
+              <path class="hb-o-stomach" d="M44 24 C66 18 78 36 68 54 C58 70 36 66 32 48 C29 34 34 28 44 24 Z"/>
+              <path class="hb-o-gut" d="M52 62 C82 66 78 74 50 76 C26 78 28 84 56 86"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">胃肠</span>
+          <span class="kid-figure-sub">绕成一大圈</span>
+          <span class="kid-figure-fact">先搅成糊，再把营养送进血里</span>
+        </button>
+        <button class="kid-figure" type="button" data-hb-organ="brain" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="hb-fig-bg" x="0" y="0" width="120" height="90"/>
+              <path class="hb-o-brain" d="M30 42 C26 20 60 10 74 22 C96 20 102 44 92 56 C86 74 46 78 36 64 C26 60 26 50 30 42 Z"/>
+              <path class="hb-o-brain-line" d="M60 18 L58 70 M44 30 C52 38 44 46 50 58 M76 30 C68 38 76 46 70 58"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">大脑</span>
+          <span class="kid-figure-sub">总指挥</span>
+          <span class="kid-figure-fact">收信号、做判断、再发命令</span>
+        </button>
+        <button class="kid-figure" type="button" data-hb-organ="skin" aria-pressed="false">
+          <span class="kid-figure-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90" focusable="false">
+              <rect class="hb-fig-bg" x="0" y="0" width="120" height="90"/>
+              <rect class="hb-skin" x="20" y="18" width="80" height="56" rx="16"/>
+              <rect class="hb-o-skin" x="28" y="26" width="64" height="40" rx="12"/>
+              <circle class="hb-face" cx="44" cy="40" r="2.4"/>
+              <circle class="hb-face" cx="60" cy="52" r="2.4"/>
+              <circle class="hb-face" cx="76" cy="38" r="2.4"/>
+              <path class="hb-o-drop" d="M100 60 C104 68 108 72 103 77 C97 81 92 75 95 68 Z"/>
+            </svg>
+          </span>
+          <span class="kid-figure-cap">皮肤</span>
+          <span class="kid-figure-sub">最大的器官</span>
+          <span class="kid-figure-fact">挡脏东西、感觉冷热、出汗降温</span>
+        </button>
+      </div>
+      <div class="kid-speech-row hb-say-row">
+        <span class="kid-mascot" aria-hidden="true">🔎</span>
+        <p class="kid-speech" id="hbAtlasSay" role="status" aria-live="polite">点一张卡，舞台就告诉你它在身体的哪里、做什么。</p>
+      </div>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：图鉴在教什么</summary>
+        <p><b>学习目标：</b>先建立「位置 + 职责」这一对信息。孩子不必背器官名，只要能指出大致位置并说出它负责什么，就已经掌握了器官系统的入门框架。</p>
+        <p><b>怎么用：</b>点一张卡后，让孩子先在自己身上指一指那个位置，再读舞台上的短句。心脏那张要特别停一下：它在胸腔中央<b>稍偏左</b>，不是长在左胸口，也不在正中间。</p>
+      </details>
+    </article>
+
+    <article class="hb-card" aria-labelledby="hbMeterTitle">
+      <h3 id="hbMeterTitle">② 两条量表：动得越用力，条子越长</h3>
+      <p class="hb-lead">点一张大图卡，两条条子一起变长变短。第一条是心跳快慢，第二条是一次呼吸能送多少氧。</p>
+      <div class="kid-tiles hb-effort-picks" id="hbEffortPicks" role="group" aria-label="选一种活动强度">
+        <button class="kid-tile" type="button" data-hb-effort="rest" aria-pressed="true" aria-label="选活动强度：坐着不动">
+          <span class="kid-tile-art" aria-hidden="true">🪑</span>
+          <span class="kid-tile-label">坐着</span>
+          <span class="kid-tile-sub">静息</span>
+        </button>
+        <button class="kid-tile" type="button" data-hb-effort="walk" aria-pressed="false" aria-label="选活动强度：慢慢走路">
+          <span class="kid-tile-art" aria-hidden="true">🚶</span>
+          <span class="kid-tile-label">走路</span>
+          <span class="kid-tile-sub">轻轻动</span>
+        </button>
+        <button class="kid-tile" type="button" data-hb-effort="run" aria-pressed="false" aria-label="选活动强度：跑起来">
+          <span class="kid-tile-art" aria-hidden="true">🏃</span>
+          <span class="kid-tile-label">跑步</span>
+          <span class="kid-tile-sub">很用力</span>
+        </button>
+      </div>
+      <div class="hb-meters">
+        <div class="kid-meter" style="--tone:var(--kit)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">💓</span>
+            <span id="hbBpmLabel">心跳快慢</span>
+            <span class="kid-meter-value" id="hbBpmValue">—</span>
+          </div>
+          <div class="kid-meter-track" id="hbBpmMeter" role="img" aria-labelledby="hbBpmLabel hbBpmValue"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note" data-audience="parent">单位是「次/分钟」，条子最长按 200 次/分钟画。这是同龄孩子的大致参考，不是孩子本人的测量值。</p>
+        </div>
+        <div class="kid-meter" style="--tone:var(--sci)">
+          <div class="kid-meter-head">
+            <span class="kid-meter-icon" aria-hidden="true">🌬️</span>
+            <span id="hbO2Label">一次呼吸送到的氧</span>
+            <span class="kid-meter-value" id="hbO2Value">—</span>
+          </div>
+          <div class="kid-meter-track" id="hbO2Meter" role="img" aria-labelledby="hbO2Label hbO2Value"><span class="kid-meter-fill"></span></div>
+          <p class="kid-meter-note" data-audience="parent">越用力每一口吸得越深，一口带走的氧就越多；再乘呼吸次数，就是一分钟送到的氧。数值为量级示意。</p>
+        </div>
+      </div>
+      <p class="hb-dots-row">
+        <span class="hb-dots-cap" id="hbBeatDotsCap">用点点数出 10 秒里跳几下：</span>
+        <span class="kid-dots" id="hbBeatDots" role="img" aria-labelledby="hbBeatDotsCap"></span>
+      </p>
+      <p class="kid-speech" id="hbMeterSay" role="status" aria-live="polite">先点一张大图卡：坐着、走路还是跑步。</p>
+      <div class="hb-parent-field" data-audience="parent">
+        <label for="hbEffortSelect">家长层：也可以用下拉选活动强度</label>
+        <select class="input" id="hbEffortSelect">
+          <option value="rest">坐着（静息）</option>
+          <option value="walk">走路</option>
+          <option value="run">跑步</option>
+        </select>
+      </div>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：两条量表在教什么</summary>
+        <p><b>学习目标：</b>把「快/慢」换成能比长短的量，并让孩子看到两条量表<b>总是一起动</b>——这就是心率与需氧量成正比的直观版本。</p>
+        <p><b>背后的原理：</b>每分钟送到肌肉的氧 ≈ 每分钟泵出的血量 × 每份血携带的氧。身体主要靠提高心率与每次泵血量来加大前一项；呼吸加深加快则负责把血里的氧补满、把二氧化碳排掉。所以脉搏和呼吸几乎总是同步变化。</p>
+        <p><b>要说清楚的一点：</b>这里的数字是同龄儿童的量级参考（静息心率随年龄下降，学龄儿童约 70–110 次/分钟），用来看长短关系，不是测量结果，也不能用于健康判断。</p>
+      </details>
+    </article>
+
+    <article class="hb-card" aria-labelledby="hbQuizTitle">
+      <h3 id="hbQuizTitle">③ 哪个器官在干这件事</h3>
+      <p class="hb-lead">看一眼上面的任务图，从 4 张器官大图卡里点一个。点错了不要紧，可以看看图鉴再点。</p>
+      <div class="hb-task" id="hbQuizTask">
+        <span class="hb-task-art" id="hbQuizTaskArt" aria-hidden="true">🏃</span>
+        <b class="hb-task-text" id="hbQuizTaskText">跑起来时，谁跳得更快？</b>
+      </div>
+      <div class="kid-tiles hb-quiz-picks" id="hbQuizPicks" role="group" aria-labelledby="hbQuizTitle">
+        <button class="kid-tile" type="button" data-hb-pick="heart" aria-pressed="false" aria-label="选器官：心脏">
+          <span class="kid-tile-art" aria-hidden="true">❤️</span>
+          <span class="kid-tile-label">心脏</span>
+        </button>
+        <button class="kid-tile" type="button" data-hb-pick="lungs" aria-pressed="false" aria-label="选器官：肺">
+          <span class="kid-tile-art" aria-hidden="true">💨</span>
+          <span class="kid-tile-label">肺</span>
+        </button>
+        <button class="kid-tile" type="button" data-hb-pick="gut" aria-pressed="false" aria-label="选器官：胃肠">
+          <span class="kid-tile-art" aria-hidden="true">🍚</span>
+          <span class="kid-tile-label">胃肠</span>
+        </button>
+        <button class="kid-tile" type="button" data-hb-pick="brain" aria-pressed="false" aria-label="选器官：大脑">
+          <span class="kid-tile-art" aria-hidden="true">🧠</span>
+          <span class="kid-tile-label">大脑</span>
+        </button>
+      </div>
+      <div class="hb-quiz-actions">
+        <button class="btn btn-primary" type="button" id="hbQuizNext"><span aria-hidden="true">🔄</span> 换一题</button>
+        <button class="btn btn-ghost" type="button" id="hbQuizHint"><span aria-hidden="true">👀</span> 给点提示</button>
+      </div>
+      <p class="kid-speech" id="hbQuizSay" role="status" aria-live="polite">看图选一个器官，点错了可以再看看上面的图鉴。</p>
+      <p class="hb-quiz-score">
+        <span class="hb-quiz-stars" id="hbQuizStars" role="img" aria-label="已经答对 0 次"></span>
+        <span id="hbQuizTotal">答对 0 次</span>
+      </p>
+      <details class="parent-deep-dive" data-audience="parent">
+        <summary>家长深读：这个小游戏在教什么</summary>
+        <p><b>学习目标：</b>把「器官」和「它做的事」对起来——从认名字升级到会用功能推断。答错只给提示，不清零、不计时，因为要练的是想清楚，而不是抢答。</p>
+        <p><b>一起做：</b>每道题先让孩子在自己身上指位置，再说「它是干什么的」，最后才按卡。答对以后追问一句「那另外三个在干什么」，一次复习四个器官。</p>
+        <p><b>注意：</b>「咽下去先到哪里」的答案是胃，但要补一句：胃只把食物搅成糊，营养真正被吸收是在小肠。这两步分开说，孩子才不会以为吃下去到胃就结束了。</p>
+      </details>
+    </article>
+  </section>
 
   <!-- 我的身体数据 -->
   <section class="mebox">
     <h2 style="margin-top:0;font-size:1.16rem">① 属于我的数字</h2>
-    <p style="color:var(--ink-mid);font-size:.9rem;margin-top:0">
-      填进去，下面所有数字都会跟着变。这比背「成人有 206 块骨头」有用得多。
-    </p>
+    <div class="me-stage kid-visual-stage">
+      <svg class="me-body-svg" data-part="blood" viewBox="0 0 180 220" role="img" aria-labelledby="meFigTitle meFigDesc">
+        <title id="meFigTitle">身体小人，可以点亮不同部位</title>
+        <desc id="meFigDesc">一个笑脸小人。下面的按钮可以点亮身体里的血液、心脏、皮肤、空气、腿和头，被点亮的部位会变清楚。</desc>
+        <circle cx="90" cy="42" r="28" fill="#ffd7b5" stroke="#402d1c" stroke-width="4"/>
+        <circle cx="80" cy="38" r="3" fill="#402d1c"/><circle cx="100" cy="38" r="3" fill="#402d1c"/>
+        <path d="M80 51 Q90 59 100 51" fill="none" stroke="#402d1c" stroke-width="3" stroke-linecap="round"/>
+        <rect x="58" y="72" width="64" height="82" rx="28" fill="#8de3c1" stroke="#402d1c" stroke-width="4"/>
+        <path d="M58 92 L28 130 M122 92 L152 130 M75 151 L64 204 M105 151 L116 204" fill="none" stroke="#402d1c" stroke-width="9" stroke-linecap="round"/>
+        <g class="mp" data-mp="blood">
+          <path d="M90 80 L90 148 M90 96 L66 122 M90 96 L114 122 M90 130 L74 150 M90 130 L106 150"
+                fill="none" stroke="#e0325c" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="90" cy="80" r="5" fill="#e0325c"/>
+        </g>
+        <g class="mp" data-mp="heart">
+          <path d="M76 106 Q90 92 104 106 Q104 125 90 134 Q76 125 76 106" fill="#ff769d" stroke="#402d1c" stroke-width="3"/>
+          <circle cx="90" cy="112" r="26" fill="none" stroke="#ff769d" stroke-width="4" stroke-dasharray="7 6"/>
+        </g>
+        <g class="mp" data-mp="skin">
+          <rect x="52" y="66" width="76" height="94" rx="34" fill="none" stroke="#f59e0b" stroke-width="5" stroke-dasharray="9 7"/>
+          <circle cx="90" cy="42" r="33" fill="none" stroke="#f59e0b" stroke-width="5" stroke-dasharray="9 7"/>
+        </g>
+        <g class="mp" data-mp="air">
+          <path d="M84 96 Q68 100 70 122 Q72 136 84 132 Z" fill="#7cc9ff" stroke="#402d1c" stroke-width="3"/>
+          <path d="M96 96 Q112 100 110 122 Q108 136 96 132 Z" fill="#7cc9ff" stroke="#402d1c" stroke-width="3"/>
+          <path d="M90 76 L90 98" fill="none" stroke="#402d1c" stroke-width="4" stroke-linecap="round"/>
+        </g>
+        <g class="mp" data-mp="legs">
+          <path d="M75 151 L64 204 M105 151 L116 204" fill="none" stroke="#22a06b" stroke-width="11" stroke-linecap="round"/>
+          <path d="M58 210 Q72 200 78 210" fill="none" stroke="#22a06b" stroke-width="4" stroke-linecap="round"/>
+          <path d="M102 210 Q116 200 122 210" fill="none" stroke="#22a06b" stroke-width="4" stroke-linecap="round"/>
+        </g>
+        <g class="mp" data-mp="head">
+          <circle cx="90" cy="42" r="28" fill="none" stroke="#a78bfa" stroke-width="6"/>
+          <path d="M62 42 L38 42 M118 42 L142 42" fill="none" stroke="#a78bfa" stroke-width="4" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <div class="kid-story-steps">
+        <p data-step="1"><b>填三个数</b><br>身高 · 体重 · 年龄</p>
+        <p data-step="2"><b>点身体部位</b><br>看一个大数字</p>
+        <p data-step="3"><b>看身体卡</b><br>只和自己比</p>
+      </div>
+    </div>
+    <div class="kid-choice me-picks" id="mePicks" role="group" aria-label="选择要看的身体部位">
+      <button type="button" data-me-part="blood" aria-pressed="true"><span aria-hidden="true">🩸</span> 血液</button>
+      <button type="button" data-me-part="heart" aria-pressed="false"><span aria-hidden="true">💗</span> 心跳</button>
+      <button type="button" data-me-part="skin" aria-pressed="false"><span aria-hidden="true">🧍</span> 皮肤</button>
+      <button type="button" data-me-part="air" aria-pressed="false"><span aria-hidden="true">💨</span> 空气</button>
+      <button type="button" data-me-part="legs" aria-pressed="false"><span aria-hidden="true">🦵</span> 走路</button>
+      <button type="button" data-me-part="head" aria-pressed="false"><span aria-hidden="true">🧠</span> 几个头</button>
+    </div>
+    <div class="me-big-card" id="meBig" role="status" aria-live="polite">
+      <span class="me-biglabel" id="meBigLabel">我的血液大约</span>
+      <span class="me-bignum" id="meBigNum">—<span class="me-bigunit" id="meBigUnit">mL</span></span>
+      <span class="me-bignote" id="meBigNote">先填上面三个数，就能算出来。</span>
+    </div>
+    <details class="parent-deep-dive" data-audience="parent"><summary>家长层：这些数字怎样算</summary><p>输入后会按人群平均比例估算血量、皮肤面积、呼吸空气与步幅。它比单背成人数字更贴近孩子，但仍只是科普估算，不是体检结论。</p></details>
     <div class="me-in">
       <div class="me-f">
         <label for="ht">身高（厘米）</label>
@@ -381,7 +1021,7 @@
       </div>
     </div>
     <div class="me-out" id="meOut"></div>
-    <p style="font-size:.74rem;color:var(--ink-dim);margin-bottom:0;margin-top:14px">
+    <p style="font-size:.74rem;color:var(--ink-dim);margin-bottom:0;margin-top:14px" data-audience="parent">
       这些是按人群平均比例估算的参考值，个体差异很大，不是体检结论。
     </p>
   </section>
@@ -412,7 +1052,7 @@
         <div class="taps" id="log"></div>
       </div>
     </div>
-    <p style="font-size:.82rem;color:var(--ink-mid);margin-bottom:0">
+    <p style="font-size:.82rem;color:var(--ink-mid);margin-bottom:0" data-audience="parent">
       测完安静时的心率，可以做 30 秒安全活动后再测一次。活动后心跳通常会变快；多久接近安静时的数值会受活动强度、休息、情绪和测量误差影响。<b>这次观察不能判断心肺能力，也不能用于诊断。</b>
     </p>
   </section>
@@ -420,27 +1060,35 @@
   <!-- 反应速度 -->
   <section class="react">
     <h2 style="margin-top:0;font-size:1.16rem">③ 你的神经有多快</h2>
-    <p style="color:var(--ink-mid);font-size:.9rem;margin-top:0">
-      点开始，屏幕变红时<b>等着</b>，一变绿就马上点。测 5 次取最快的那次。
-    </p>
-    <div class="rtarget" id="rt" role="button" tabindex="0">点这里开始</div>
-    <div class="rt-list" id="rtList"></div>
-    <p style="font-size:.82rem;color:var(--ink-mid);margin-bottom:0" id="rtNote">
-      信号要从眼睛到大脑、再到手指，这一路要过好多个神经接头，每个接头都要花时间。
-    </p>
+    <div class="body-kid-stage kid-visual-stage">
+      <svg class="react-light" data-state="idle" viewBox="0 0 210 180" role="img" aria-label="等待、出发和完成三盏笑脸信号灯">
+        <rect x="52" y="8" width="106" height="150" rx="34" fill="#fff8ec" stroke="#402d1c" stroke-width="5"/>
+        <g class="lamp" data-lamp="wait"><circle cx="105" cy="45" r="25" fill="#ff769d" stroke="#402d1c" stroke-width="4"/><path d="M94 50 Q105 43 116 50" fill="none" stroke="#402d1c" stroke-width="3" stroke-linecap="round"/></g>
+        <g class="lamp" data-lamp="idle"><circle cx="105" cy="85" r="25" fill="#ffd166" stroke="#402d1c" stroke-width="4"/><circle cx="97" cy="81" r="3" fill="#402d1c"/><circle cx="113" cy="81" r="3" fill="#402d1c"/></g>
+        <g class="lamp" data-lamp="go"><circle cx="105" cy="125" r="25" fill="#8de3c1" stroke="#402d1c" stroke-width="4"/><path d="M94 121 Q105 134 116 121" fill="none" stroke="#402d1c" stroke-width="3" stroke-linecap="round"/></g>
+        <path d="M88 158 H122 V174 H88Z" fill="#8bb7ff" stroke="#402d1c" stroke-width="4"/>
+        <g class="lamp" data-lamp="done"><text x="174" y="102" text-anchor="middle" font-size="30">⭐</text></g>
+      </svg>
+      <p class="stage-caption">黄灯点开始 · 红灯等一等 · 绿灯快快点</p>
+    </div>
+    <div class="rtarget" id="rt" role="button" tabindex="0" aria-describedby="rtNote">点这里开始</div>
+    <div class="rt-list" id="rtList" aria-label="反应时间记录"></div>
+    <p style="font-size:.82rem;color:var(--ink-mid);margin-bottom:0" id="rtNote" role="status" aria-live="polite">眼睛 → 大脑 → 手指，所以手会慢一点点。</p>
+    <details class="parent-deep-dive" data-audience="parent"><summary>家长层：反应时间说明</summary><p>测 5 次可比较最快值。信号需从眼睛传到大脑再到手指，判断、神经传递和肌肉启动都会耗时；结果不用于评价能力。</p></details>
   </section>
 
   <!-- 身体里的大数字 -->
   <section>
     <h2 style="font-size:1.16rem">④ 身体里的大数字</h2>
     <div class="fact-strip">
-      <div class="fstat"><b>206</b><span>成人骨头数。<b>新生儿约 270 块</b>，长大过程中一部分融合在了一起。</span></div>
-      <div class="fstat"><b>600+</b><span>骨骼肌数量。光是说一句话，就要用上上百块肌肉配合。</span></div>
-      <div class="fstat"><b>10 万公里</b><span>全身血管接起来的长度，能绕地球赤道<b>两圈半</b>。</span></div>
-      <div class="fstat"><b>2 万次</b><span>一天呼吸的次数，平均每分钟约 14 次，你几乎从不需要去想它。</span></div>
-      <div class="fstat"><b>2% / 20%</b><span>大脑只占体重 2%，却要消耗全身约 20% 的氧气。</span></div>
-      <div class="fstat"><b>120 天</b><span>一颗红细胞的寿命，之后就会被替换掉。你身体一直在重建自己。</span></div>
+      <div class="fstat"><span class="fstat-art" aria-hidden="true">🦴</span><b>206</b><span>成人骨头</span></div>
+      <div class="fstat"><span class="fstat-art" aria-hidden="true">💪</span><b>600+</b><span>骨骼肌</span></div>
+      <div class="fstat"><span class="fstat-art" aria-hidden="true">🩸</span><b>10 万公里</b><span>血管连起来</span></div>
+      <div class="fstat"><span class="fstat-art" aria-hidden="true">🌬️</span><b>2 万次</b><span>一天的呼吸</span></div>
+      <div class="fstat"><span class="fstat-art" aria-hidden="true">🧠</span><b>2% / 20%</b><span>小身体占比 · 大氧气需求</span></div>
+      <div class="fstat"><span class="fstat-art" aria-hidden="true">🔄</span><b>120 天</b><span>红细胞换新</span></div>
     </div>
+    <details class="parent-deep-dive" data-audience="parent"><summary>家长层：这些大数字怎样理解</summary><p>新生儿约有 270 块骨，成长时部分融合；血管总长度与每日呼吸次数是数量级估算；大脑约占体重 2%，静息时使用约 20% 的氧；红细胞平均寿命约 120 天。数字用于建立尺度感，不用于个体健康判断。</p></details>
   </section>
 
   <!-- 实验 -->
@@ -448,15 +1096,365 @@
     <div class="spread" style="align-items:flex-end;margin-bottom:14px">
       <h2 style="margin:0;font-size:1.16rem">⑤ 用身体做的实验</h2>
       <div class="row" style="gap:6px">
-        <button class="chip" data-s="all" aria-pressed="true">全部</button>
-        <button class="chip" data-s="sense" aria-pressed="false">感官</button>
-        <button class="chip" data-s="brain" aria-pressed="false">大脑</button>
-        <button class="chip" data-s="heart" aria-pressed="false">心脏血液</button>
-        <button class="chip" data-s="lung" aria-pressed="false">呼吸</button>
-        <button class="chip" data-s="bone" aria-pressed="false">骨骼肌肉</button>
+        <button class="chip" data-s="all" aria-pressed="true"><span aria-hidden="true">🔎</span> 全部</button>
+        <button class="chip" data-s="sense" aria-pressed="false"><span aria-hidden="true">👀</span> 感官</button>
+        <button class="chip" data-s="brain" aria-pressed="false"><span aria-hidden="true">🧠</span> 大脑</button>
+        <button class="chip" data-s="heart" aria-pressed="false"><span aria-hidden="true">💓</span> 心脏血液</button>
+        <button class="chip" data-s="lung" aria-pressed="false"><span aria-hidden="true">🌬️</span> 呼吸</button>
+        <button class="chip" data-s="bone" aria-pressed="false"><span aria-hidden="true">🦴</span> 骨骼肌肉</button>
       </div>
     </div>
     <div class="bgrid" id="exp"></div>
+  </section>
+
+  <!-- 分层讲解 -->
+  <section aria-labelledby="lessonTitle">
+    <h2 id="lessonTitle" style="font-size:1.16rem">⑥ 五条身体线索：从一句话到进阶</h2>
+    <p style="color:var(--ink-mid);font-size:.9rem;margin-top:0">
+      每条线索都有三种说法：先读适合自己的那一层，再往下看一层。不打字也可以点选下面的按钮回答。
+    </p>
+    <div class="lesson-stack">
+
+      <!-- 1 循环与呼吸 -->
+      <article class="lesson-block" aria-labelledby="o2Title">
+        <h3 id="o2Title">线索一 · 氧气怎么从空气送到肌肉</h3>
+        <p class="lesson-lead">呼吸负责把氧气取进来，循环负责把它送到需要的地方。两件事必须配合，缺一个都送不到。</p>
+        <figure class="lesson-figure">
+          <svg class="o2-svg" data-effort="rest" viewBox="0 0 320 152" role="img" aria-labelledby="o2FigTitle o2FigDesc">
+            <title id="o2FigTitle">氧气运输环路示意图</title>
+            <desc id="o2FigDesc">红色管道从肺经过心脏到肌肉，代表含氧较多的血；蓝色管道从肌肉经过心脏回到肺，代表含氧较少的血。活动时管道变粗、圆点移动更快。</desc>
+            <path class="o2-pipe" d="M74 46 H246" fill="none" stroke="#fb7185" stroke-width="7" stroke-linecap="round"/>
+            <path class="o2-pipe" d="M246 106 H74" fill="none" stroke="#38bdf8" stroke-width="7" stroke-linecap="round"/>
+            <circle class="o2-dot" cx="84" cy="46" r="5" fill="#fecdd3"/>
+            <circle class="o2-dot o2-dot-back" cx="236" cy="106" r="5" fill="#bae6fd"/>
+            <g stroke="#22d3ee" stroke-width="3" fill="#67e8f9" fill-opacity=".3">
+              <path d="M40 30 q-22 10 -22 34 q0 26 22 22 z"/>
+              <path d="M52 30 q22 10 22 34 q0 26 -22 22 z"/>
+            </g>
+            <path class="o2-muscle" d="M252 58 q26 -14 46 4 q10 26 -12 40 q-30 8 -40 -14 z" fill="#fbbf24" fill-opacity=".28" stroke="#fbbf24" stroke-width="3"/>
+            <path d="M138 60 q-16 -14 -26 4 q0 20 22 32 q22 -12 22 -32 q-10 -18 -18 -4 z" fill="#fb7185" stroke="#fecdd3" stroke-width="2.5" transform="translate(14 0)"/>
+            <g font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="currentColor">
+              <text x="30" y="20">肺</text>
+              <text x="140" y="20">心脏</text>
+              <text x="258" y="34">肌肉</text>
+              <text x="98" y="140">红：含氧多　蓝：含氧少</text>
+            </g>
+          </svg>
+          <figcaption>同一份血一直在跑环路：肺 → 心脏 → 肌肉 → 心脏 → 肺。</figcaption>
+        </figure>
+        <div class="board-picks" aria-label="切换安静与活动状态">
+          <button type="button" data-o2="rest" aria-pressed="true"><span aria-hidden="true">🪑</span> 安静时</button>
+          <button type="button" data-o2="active" aria-pressed="false"><span aria-hidden="true">🏃</span> 活动时</button>
+        </div>
+        <output class="board-note" id="o2Note" role="status" aria-live="polite">安静时管子里的圆点走得慢：肌肉需要的氧气少，心脏和肺不用太用力。</output>
+        <ul class="layers">
+          <li class="layer"><b>4–6 岁 · 一句话</b>吸气把氧气吸进来，心脏把它推到全身。</li>
+          <li class="layer layer-mid"><b>7–9 岁</b>氧气先进肺，再钻进血里；心脏像水泵，把带氧的血推到肌肉，再把用过的血送回肺换新的氧。跑起来两边都要加快。</li>
+          <li class="layer layer-adv"><b>10–12 岁 · 进阶</b>送氧量差不多等于「每分钟送出的血量 × 每份血带的氧」。身体能调的主要是前一半：心跳更快、每次泵出更多；呼吸加快则负责补上血里的氧并排掉二氧化碳。所以脉搏和呼吸几乎总是一起变。</li>
+        </ul>
+        <p class="teaches" data-audience="parent"><b>这在教什么：</b>两个系统串联成一条链路，链路的总效果由最慢的一环决定；观察时要同时看两个指标，而不是只看一个。</p>
+        <p class="ask">追问：如果只让心脏加快、呼吸完全不变，你猜会发生什么？</p>
+        <div class="kid-tiles quick-picks" data-fill="askO2" role="group" aria-label="选一个想法：只让心脏加快会怎样">
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="血跑得更快，但血里的氧不够，肌肉还是会觉得不够用。" aria-label="我猜：血跑得更快，但血里的氧不够">
+            <span class="kid-tile-art" aria-hidden="true">🩸</span>
+            <span class="kid-tile-label">血快氧少</span>
+            <span class="kid-tile-sub">还是不够用</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我猜没关系，因为心脏够快就行了。" aria-label="我猜：没关系，心脏够快就行">
+            <span class="kid-tile-art" aria-hidden="true">🤷</span>
+            <span class="kid-tile-label">没关系</span>
+            <span class="kid-tile-sub">心脏够快</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我猜身体会自己让呼吸也变快，因为二氧化碳会积起来。" aria-label="我猜：呼吸会自己跟着变快">
+            <span class="kid-tile-art" aria-hidden="true">🌬️</span>
+            <span class="kid-tile-label">呼吸跟上</span>
+            <span class="kid-tile-sub">身体自己来</span>
+          </button>
+        </div>
+        <div class="think-field" data-audience="parent">
+          <label for="askO2">我的想法（写下来或先点上面的按钮）</label>
+          <textarea class="input" id="askO2"></textarea>
+        </div>
+        <div class="lesson-parent" data-audience="parent">
+          <p><b>家长延伸：</b>把它当成一条「运输链」：呼吸是装货，循环是运货。请孩子指出链条上任意一环变慢时，哪些地方会跟着变化。</p>
+          <p>可以问：为什么闭气不能一直坚持？为什么爬完楼梯要先喘几口气才说得出话？把答案落在「氧气要送、二氧化碳要排」这两件事上，而不是记名词。</p>
+        </div>
+      </article>
+
+      <!-- 2 三类杠杆 -->
+      <article class="lesson-block" aria-labelledby="leverTitle">
+        <h3 id="leverTitle">线索二 · 身体里的三类杠杆</h3>
+        <p class="lesson-lead">骨头是杆，关节是支点，肌肉出力。支点、用力点、重物的排列顺序不同，就分成三类。</p>
+        <figure class="lesson-figure">
+          <svg class="lever-svg" data-lever="third" viewBox="0 0 320 216" role="img" aria-labelledby="leverFigTitle leverFigDesc">
+            <title id="leverFigTitle">三类杠杆排列示意图</title>
+            <desc id="leverFigDesc">三条横杆分别表示第一类、第二类、第三类杠杆，标出支点、用力点和重物的先后位置。当前高亮的那一类颜色最深。</desc>
+            <g class="lever-case lever-first">
+              <path d="M26 34 H294" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+              <path d="M160 36 l-14 22 h28 z" fill="#a78bfa"/>
+              <path d="M44 34 V14" stroke="#fbbf24" stroke-width="5" stroke-linecap="round"/>
+              <path d="M276 34 V14" stroke="#22d3ee" stroke-width="5" stroke-linecap="round"/>
+              <g font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="currentColor">
+                <text x="26" y="10">重物</text><text x="146" y="70">支点</text><text x="256" y="10">用力</text>
+                <text x="26" y="58">第一类 · 点头（支点在中间）</text>
+              </g>
+            </g>
+            <g class="lever-case lever-second" transform="translate(0 72)">
+              <path d="M26 34 H294" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+              <path d="M34 36 l-8 22 h16 z" fill="#a78bfa"/>
+              <path d="M160 34 V14" stroke="#fbbf24" stroke-width="5" stroke-linecap="round"/>
+              <path d="M282 34 V14" stroke="#22d3ee" stroke-width="5" stroke-linecap="round"/>
+              <g font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="currentColor">
+                <text x="142" y="10">重物</text><text x="20" y="70">支点</text><text x="262" y="10">用力</text>
+                <text x="26" y="58">第二类 · 踮脚尖（重物在中间）</text>
+              </g>
+            </g>
+            <g class="lever-case lever-third" transform="translate(0 144)">
+              <path d="M26 34 H294" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+              <path d="M34 36 l-8 22 h16 z" fill="#a78bfa"/>
+              <path d="M108 34 V14" stroke="#22d3ee" stroke-width="5" stroke-linecap="round"/>
+              <path d="M282 34 V14" stroke="#fbbf24" stroke-width="5" stroke-linecap="round"/>
+              <g font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="currentColor">
+                <text x="88" y="10">用力</text><text x="20" y="70">支点</text><text x="264" y="10">重物</text>
+                <text x="26" y="58">第三类 · 手臂弯举（用力在中间）</text>
+              </g>
+            </g>
+          </svg>
+          <figcaption>黄色是重物，青色是肌肉用力，紫色三角是支点（关节）。</figcaption>
+        </figure>
+        <div class="board-picks" aria-label="选择杠杆类型">
+          <button type="button" data-lever-pick="first" aria-pressed="false"><span aria-hidden="true">🙇</span> 第一类</button>
+          <button type="button" data-lever-pick="second" aria-pressed="false"><span aria-hidden="true">🦶</span> 第二类</button>
+          <button type="button" data-lever-pick="third" aria-pressed="true"><span aria-hidden="true">💪</span> 第三类</button>
+        </div>
+        <output class="board-note" id="leverNote" role="status" aria-live="polite">第三类：用力点在支点和重物之间。手肘弯举就是这样——很费力，但手能动得又快又远。</output>
+        <ul class="layers">
+          <li class="layer"><b>4–6 岁 · 一句话</b>东西拿得越远，胳膊越酸。</li>
+          <li class="layer layer-mid"><b>7–9 岁</b>关节是支点，肌肉拉骨头。重物离关节远一点，肌肉就要多出好多力；靠近身体就轻松。搬东西时贴近身体，就是这个道理。</li>
+          <li class="layer layer-adv"><b>10–12 岁 · 进阶</b>力矩 = 力 × 到支点的垂直距离。手臂属于第三类杠杆，肌肉的着力点离关节很近，所以要用比重物大得多的力——换来的是手末端移动得更快、范围更大。这是一次典型的取舍：省力还是求速度，不能同时全要。</li>
+        </ul>
+        <p class="teaches" data-audience="parent"><b>这在教什么：</b>同一个物理量（力矩）能解释身体里三种不同的动作结构；结构决定了它省力还是求速度。</p>
+        <p class="ask">追问：如果把手臂的肌肉着力点挪到手腕附近，动作会变成什么样？</p>
+        <div class="kid-tiles quick-picks" data-fill="askLever" role="group" aria-label="选一个想法：肌肉挪到手腕会怎样">
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="会更省力，但手挥动的速度会变慢。" aria-label="我猜：更省力，但手挥得更慢">
+            <span class="kid-tile-art" aria-hidden="true">💪</span>
+            <span class="kid-tile-label">更省力</span>
+            <span class="kid-tile-sub">但会变慢</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="会更费力，因为距离变大了。" aria-label="我猜：更费力，因为距离变大">
+            <span class="kid-tile-art" aria-hidden="true">🏋️</span>
+            <span class="kid-tile-label">更费力</span>
+            <span class="kid-tile-sub">距离变大</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我猜手臂会变得很粗，动作也不灵活了。" aria-label="我猜：手臂变粗，动作不灵活">
+            <span class="kid-tile-art" aria-hidden="true">🐘</span>
+            <span class="kid-tile-label">变粗笨</span>
+            <span class="kid-tile-sub">不灵活</span>
+          </button>
+        </div>
+        <div class="think-field" data-audience="parent">
+          <label for="askLever">我的想法（写下来或先点上面的按钮）</label>
+          <textarea class="input" id="askLever"></textarea>
+        </div>
+        <div class="lesson-parent" data-audience="parent">
+          <p><b>家长延伸：</b>用一本书做一次「同重量、变距离」的对照：贴胸口拿 15 秒，再伸直手臂拿 15 秒，只描述「更累/更轻松」，不必记录任何身体数值。</p>
+          <p>再找三个家里的杠杆：剪刀（第一类）、开瓶器或独轮车（第二类）、镊子（第三类）。让孩子自己判断类别并说理由，比背分类表有效。</p>
+        </div>
+      </article>
+
+      <!-- 3 消化的旅程 -->
+      <article class="lesson-block" aria-labelledby="digestTitle">
+        <h3 id="digestTitle">线索三 · 一口饭的旅程</h3>
+        <p class="lesson-lead">食物要被拆成很小的分子，才能进到血里。这一路上每一站都在做不同的拆解工作。</p>
+        <figure class="lesson-figure">
+          <svg class="digest-svg" data-stop="mouth" viewBox="0 0 320 208" role="img" aria-labelledby="digestFigTitle digestFigDesc">
+            <title id="digestFigTitle">消化通道各站示意图</title>
+            <desc id="digestFigDesc">从上到下依次是口腔、食道、胃、小肠和大肠，当前选中的一站颜色最亮。</desc>
+            <g class="digest-stop" data-stop-key="mouth">
+              <path d="M92 26 q34 -18 62 0 q-30 20 -62 0 z" fill="#fbbf24" fill-opacity=".5" stroke="#fbbf24" stroke-width="3"/>
+              <text x="168" y="30" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="currentColor">口腔 · 咬碎＋口水</text>
+            </g>
+            <g class="digest-stop" data-stop-key="pipe">
+              <path d="M122 34 V72" stroke="#22d3ee" stroke-width="11" stroke-linecap="round"/>
+              <text x="168" y="60" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="currentColor">食道 · 挤着往下推</text>
+            </g>
+            <g class="digest-stop" data-stop-key="stomach">
+              <path d="M122 74 q34 4 32 32 q-2 28 -30 30 q-26 -2 -24 -30 q2 -26 22 -32 z" fill="#fb7185" fill-opacity=".45" stroke="#fb7185" stroke-width="3"/>
+              <text x="168" y="100" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="currentColor">胃 · 搅拌成糊</text>
+            </g>
+            <g class="digest-stop" data-stop-key="small">
+              <path d="M116 138 q40 6 22 22 q-38 6 -20 22 q40 6 20 20" fill="none" stroke="#4ade80" stroke-width="9" stroke-linecap="round"/>
+              <text x="168" y="160" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="currentColor">小肠 · 拆开并吸收</text>
+            </g>
+            <g class="digest-stop" data-stop-key="large">
+              <path d="M62 196 H206" stroke="#a78bfa" stroke-width="11" stroke-linecap="round"/>
+              <text x="168" y="188" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="currentColor">大肠 · 收回水分</text>
+            </g>
+          </svg>
+          <figcaption>点下面的站名，看看每一站负责什么。</figcaption>
+        </figure>
+        <div class="board-picks" aria-label="选择消化通道的一站">
+          <button type="button" data-digest="mouth" aria-pressed="true"><span aria-hidden="true">👄</span> 口腔</button>
+          <button type="button" data-digest="pipe" aria-pressed="false"><span aria-hidden="true">🚚</span> 食道</button>
+          <button type="button" data-digest="stomach" aria-pressed="false"><span aria-hidden="true">🫙</span> 胃</button>
+          <button type="button" data-digest="small" aria-pressed="false"><span aria-hidden="true">🌀</span> 小肠</button>
+          <button type="button" data-digest="large" aria-pressed="false"><span aria-hidden="true">💧</span> 大肠</button>
+        </div>
+        <output class="board-note" id="digestNote" role="status" aria-live="polite">口腔：牙齿把食物咬成小块，口水把它泡软，同时开始分解淀粉——所以馒头多嚼一会儿会变甜。</output>
+        <ul class="layers">
+          <li class="layer"><b>4–6 岁 · 一句话</b>饭在身体里被磨得很碎很碎，好东西才能被吸收进去。</li>
+          <li class="layer layer-mid"><b>7–9 岁</b>牙齿和胃负责把食物弄碎弄糊，小肠负责把营养拿走送进血里，大肠把剩下的水收回来。整条通道像一条很长的加工流水线。</li>
+          <li class="layer layer-adv"><b>10–12 岁 · 进阶</b>「弄碎」有两种：牙齿和胃的搅拌是物理拆解，消化液里的酶是化学拆解。小肠内壁有大量褶皱和绒毛，把接触面积放大很多倍——同样长的管子，能吸收的量差别巨大。表面积是这里的关键变量。</li>
+        </ul>
+        <p class="teaches" data-audience="parent"><b>这在教什么：</b>一条通道可以按功能分段；「放大表面积」是生物结构里反复出现的策略，和肺里的小气囊是同一个思路。</p>
+        <p class="ask">追问：为什么馒头嚼久一点会变甜？</p>
+        <div class="kid-tiles quick-picks" data-fill="askDigest" role="group" aria-label="选一个想法：馒头为什么会变甜">
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="因为口水把淀粉拆成了更小的、甜味的糖。" aria-label="我猜：口水把淀粉拆成了甜的糖">
+            <span class="kid-tile-art" aria-hidden="true">💧</span>
+            <span class="kid-tile-label">口水拆开</span>
+            <span class="kid-tile-sub">变成糖</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="因为嚼碎以后接触舌头的面积变大了。" aria-label="我猜：嚼碎后接触舌头的面积变大">
+            <span class="kid-tile-art" aria-hidden="true">👅</span>
+            <span class="kid-tile-label">接触变大</span>
+            <span class="kid-tile-sub">碎了更多</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我还不确定，我想先自己嚼一次试试看。" aria-label="我还不确定，想先自己嚼一次">
+            <span class="kid-tile-art" aria-hidden="true">🍞</span>
+            <span class="kid-tile-label">先试一次</span>
+            <span class="kid-tile-sub">还不确定</span>
+          </button>
+        </div>
+        <div class="think-field" data-audience="parent">
+          <label for="askDigest">我的想法（写下来或先点上面的按钮）</label>
+          <textarea class="input" id="askDigest"></textarea>
+        </div>
+        <div class="lesson-parent" data-audience="parent">
+          <p><b>家长延伸：</b>用一块毛巾展示表面积：摊平和团起来占的地方差很多，但布还是那块布。小肠靠褶皱做的就是这件事。</p>
+          <p>嚼馒头变甜是个好起点：让孩子先预测再尝，然后追问「甜味是本来就有，还是嚼出来的」。这里练的是区分「发现」和「产生」。</p>
+        </div>
+      </article>
+
+      <!-- 4 感官与反应时间 -->
+      <article class="lesson-block" aria-labelledby="relayTitle">
+        <h3 id="relayTitle">线索四 · 反应为什么不能快到零</h3>
+        <p class="lesson-lead">看到信号再动手，中间要走完一条接力路线。每一段都要花时间，所以再练也有下限。</p>
+        <figure class="lesson-figure">
+          <svg class="relay-svg" data-run="off" viewBox="0 0 320 112" role="img" aria-labelledby="relayFigTitle relayFigDesc">
+            <title id="relayFigTitle">从眼睛到手指的神经接力示意图</title>
+            <desc id="relayFigDesc">信号从眼睛出发，经过大脑做判断，再送到手指完成动作，一共三段路程和两个接头。</desc>
+            <path d="M46 56 H268" stroke="currentColor" stroke-opacity=".3" stroke-width="6" stroke-linecap="round" stroke-dasharray="9 7"/>
+            <circle class="relay-dot" cx="46" cy="56" r="7" fill="#4ade80"/>
+            <path d="M18 56 q16 -16 32 0 q-16 16 -32 0 z" fill="#67e8f9" fill-opacity=".45" stroke="#22d3ee" stroke-width="3"/>
+            <circle cx="34" cy="56" r="4" fill="#22d3ee"/>
+            <path d="M140 40 q30 -14 44 8 q14 24 -14 30 q-34 4 -34 -18 z" fill="#a78bfa" fill-opacity=".38" stroke="#a78bfa" stroke-width="3"/>
+            <path d="M262 44 q22 -6 30 10 q4 18 -16 20 q-20 0 -18 -16 z" fill="#fbbf24" fill-opacity=".38" stroke="#fbbf24" stroke-width="3"/>
+            <g font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="currentColor">
+              <text x="14" y="26">眼睛</text><text x="146" y="26">大脑判断</text><text x="258" y="26">手指</text>
+              <text x="66" y="96">① 看到</text><text x="150" y="96">② 决定</text><text x="230" y="96">③ 动手</text>
+            </g>
+          </svg>
+          <figcaption>绿点跑完全程才算一次反应；点按钮看它跑一次。</figcaption>
+        </figure>
+        <div class="board-picks" aria-label="播放神经接力动画">
+          <button type="button" id="relayRun">让信号跑一次</button>
+        </div>
+        <output class="board-note" id="relayNote" role="status" aria-live="polite">三段路加上中间的判断，都要花时间。这就是「反应时间」的来源。</output>
+        <ul class="layers">
+          <li class="layer"><b>4–6 岁 · 一句话</b>眼睛看见了，要先告诉大脑，大脑再告诉手，所以手总是慢一点点。</li>
+          <li class="layer layer-mid"><b>7–9 岁</b>信号沿神经一段一段传，中间还要在接头处交接。大脑判断「该不该动」也要花时间。练习能让判断变快，但传递本身省不掉。</li>
+          <li class="layer layer-adv"><b>10–12 岁 · 进阶</b>总时间 = 感受时间 + 传递时间 + 判断时间 + 肌肉启动时间。练习主要缩短判断这一段；路程和接头的耗时几乎不变，所以成绩会越来越难提高，最后卡在一个下限附近。凡是多环节串联的过程，都会出现这种「先快后停」的进步曲线。</li>
+        </ul>
+        <p class="teaches" data-audience="parent"><b>这在教什么：</b>把一个笼统的「快慢」拆成可数的环节；理解为什么练习的收益会逐渐变小。</p>
+        <p class="ask">追问：如果改成「听到声音就按」，你猜会比看到绿色更快还是更慢？怎样才算公平地比？</p>
+        <div class="kid-tiles quick-picks" data-fill="askRelay" role="group" aria-label="选一个想法：听声音按会不会更快">
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我猜听到声音更快，因为耳朵到大脑的路更短。" aria-label="我猜：听声音更快，耳朵的路更短">
+            <span class="kid-tile-art" aria-hidden="true">👂</span>
+            <span class="kid-tile-label">听声更快</span>
+            <span class="kid-tile-sub">路更短</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我猜差不多，因为主要时间花在判断上。" aria-label="我猜：差不多，时间主要花在判断上">
+            <span class="kid-tile-art" aria-hidden="true">⚖️</span>
+            <span class="kid-tile-label">差不多</span>
+            <span class="kid-tile-sub">判断最慢</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="要公平比，就得两种都测同样次数，还要都取最快的几次。" aria-label="我先说怎么比才公平">
+            <span class="kid-tile-art" aria-hidden="true">📏</span>
+            <span class="kid-tile-label">先说公平</span>
+            <span class="kid-tile-sub">次数一样</span>
+          </button>
+        </div>
+        <div class="think-field" data-audience="parent">
+          <label for="askRelay">我的想法（写下来或先点上面的按钮）</label>
+          <textarea class="input" id="askRelay"></textarea>
+        </div>
+        <div class="lesson-parent" data-audience="parent">
+          <p><b>家长延伸：</b>上面第③节的直尺实验可以配合这里用：先让孩子预测「练 10 次能快多少」，再看真实结果，讨论为什么没有一直变快。</p>
+          <p>重点不是成绩，而是「多环节串联」这个模型。可以类比接力赛：换棒也要时间，所以四个人的总时间一定大于四段跑的时间之和。</p>
+        </div>
+      </article>
+
+      <!-- 5 睡眠与恢复 -->
+      <article class="lesson-block" aria-labelledby="sleepTitle">
+        <h3 id="sleepTitle">线索五 · 睡觉时身体在做什么</h3>
+        <p class="lesson-lead">睡着不等于停机。一整夜里，身体会一轮一轮地做整理和修补工作。</p>
+        <figure class="lesson-figure">
+          <svg class="sleep-svg" data-cycle="early" viewBox="0 0 320 128" role="img" aria-labelledby="sleepFigTitle sleepFigDesc">
+            <title id="sleepFigTitle">一夜睡眠深浅变化示意图</title>
+            <desc id="sleepFigDesc">曲线一夜之间反复下降到深处再回到浅处，形成好几轮循环；靠前的几轮下得更深，靠后的几轮偏浅。</desc>
+            <rect class="sleep-band" data-band="early" x="22" y="14" width="112" height="100" rx="10" fill="#6d28d9"/>
+            <rect class="sleep-band" data-band="late" x="138" y="14" width="100" height="100" rx="10" fill="#2563eb"/>
+            <rect class="sleep-band" data-band="wake" x="242" y="14" width="56" height="100" rx="10" fill="#f59e0b"/>
+            <path d="M22 30 H298 M22 62 H298 M22 94 H298" stroke="currentColor" stroke-opacity=".16" stroke-width="1.5"/>
+            <path d="M22 26 L52 26 L64 92 L96 92 L108 34 L132 34 L146 86 L176 86 L188 38 L212 38 L224 70 L252 70 L264 30 L298 30" fill="none" stroke="#a78bfa" stroke-width="4" stroke-linecap="round"/>
+            <g font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="currentColor">
+              <text x="22" y="20">浅</text><text x="22" y="112">深</text>
+              <text x="118" y="20">一轮</text><text x="238" y="112">快睡醒了</text>
+            </g>
+          </svg>
+          <figcaption>深浅交替出现好几轮，不是一条直线睡到底。</figcaption>
+        </figure>
+        <div class="board-picks" aria-label="选择睡眠时段">
+          <button type="button" data-sleep-cycle="early" aria-pressed="true">🌙 前半夜</button>
+          <button type="button" data-sleep-cycle="late" aria-pressed="false">💭 后半夜</button>
+          <button type="button" data-sleep-cycle="wake" aria-pressed="false">☀️ 快醒来</button>
+        </div>
+        <output class="board-note" id="sleepNote" role="status" aria-live="polite">前半夜：深睡通常更多，身体安静修补。</output>
+        <ul class="layers">
+          <li class="layer"><b>4–6 岁 · 一句话</b>睡觉的时候，身体在悄悄修好白天用累的地方。</li>
+          <li class="layer layer-mid"><b>7–9 岁</b>一夜里睡眠会由浅到深、再回到浅，来回好几轮。身体趁这段时间长个子、修补组织；大脑则在整理白天记住的东西。所以睡不够时，记东西和控制情绪都会变难。</li>
+          <li class="layer layer-adv"><b>10–12 岁 · 进阶</b>睡眠是分阶段的循环过程，靠前的循环深睡更多，靠后的循环里做梦的阶段更长。这解释了两件事：为什么在深处被叫醒会特别迷糊，以及为什么「少睡两小时」砍掉的往往正是后半夜那部分，不能靠白天补齐同样的效果。孩子一般比大人需要更多睡眠。</li>
+        </ul>
+        <p class="teaches" data-audience="parent"><b>这在教什么：</b>周期性过程的概念——不是均匀的一整段，而是有结构的重复；也说明「总量相同」不代表「效果相同」。</p>
+        <p class="ask">追问：同样睡 8 小时，中间被叫醒 4 次和一觉到底，你猜有什么不同？</p>
+        <div class="kid-tiles quick-picks" data-fill="askSleep" role="group" aria-label="选一个想法：中间被叫醒有什么不同">
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我猜被叫醒的那次会更累，因为每次都要重新开始一轮。" aria-label="我猜：被叫醒更累，每次都要重新开始一轮">
+            <span class="kid-tile-art" aria-hidden="true">😴</span>
+            <span class="kid-tile-label">被叫更累</span>
+            <span class="kid-tile-sub">重新一轮</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我猜一样，因为总时间是一样的。" aria-label="我猜：一样，因为总时间相同">
+            <span class="kid-tile-art" aria-hidden="true">⏳</span>
+            <span class="kid-tile-label">一样</span>
+            <span class="kid-tile-sub">总时间同</span>
+          </button>
+          <button class="kid-tile" type="button" aria-pressed="false" data-value="我想连着记几天：几点睡、第二天早上感觉怎么样，再来比较。" aria-label="我想先连着记几天再比较">
+            <span class="kid-tile-art" aria-hidden="true">🗓️</span>
+            <span class="kid-tile-label">记几天</span>
+            <span class="kid-tile-sub">再来比</span>
+          </button>
+        </div>
+        <div class="think-field" data-audience="parent">
+          <label for="askSleep">我的想法（写下来或先点上面的按钮）</label>
+          <textarea class="input" id="askSleep"></textarea>
+        </div>
+        <div class="lesson-parent" data-audience="parent">
+          <p><b>家长延伸：</b>可以和孩子一起做一份「感觉记录」：只记就寝时间和第二天早上的精神状态（用笑脸或三档词），不记录任何身体数值。重点是让孩子自己发现规律，而不是被告知结论。</p>
+          <p>这里只讲睡眠的结构，不涉及具体作息安排或任何健康判断；孩子的睡眠情况如有疑问，请咨询医生。</p>
+        </div>
+      </article>
+
+    </div>
   </section>
 
 </main>
@@ -500,6 +1498,26 @@
     return n.toLocaleString("zh-CN");
   }
 
+  /* 图形优先：点身体部位 → 读一个大数字 */
+  var meSvg = document.querySelector(".me-body-svg"),
+      meBigLabel = document.getElementById("meBigLabel"),
+      meBigNum = document.getElementById("meBigNum"),
+      meBigUnit = document.getElementById("meBigUnit"),
+      meBigNote = document.getElementById("meBigNote");
+  var mePart = "blood", meStats = null;
+
+  function paintBig() {
+    if (!meStats) return;
+    var s = meStats[mePart];
+    if (!s) return;
+    if (meSvg) meSvg.setAttribute("data-part", mePart);
+    meBigLabel.textContent = s.label;
+    meBigNum.textContent = s.value;
+    meBigUnit.textContent = s.unit;
+    meBigNum.appendChild(meBigUnit);
+    meBigNote.textContent = s.note;
+  }
+
   function renderMe() {
     var H = +ht.value || 130, W = +wt.value || 26, A = +ag.value || 8;
     meOut.textContent = "";
@@ -532,10 +1550,36 @@
       "按你的身高，一步约 " + Math.round(step) + " 厘米。"));
     meOut.appendChild(cell("身高 ≈ 几个头", headRatio, " 个头",
       "小时候头占比大，长大慢慢变成约 7.5 个头——画画时很有用。"));
+
+    meStats = {
+      blood: { label: "我的血液大约", value: fmt(blood), unit: "mL",
+        note: "差不多是 " + (blood / 250).toFixed(1) + " 个大纸杯那么多。" },
+      heart: { label: "心跳一天大约", value: fmt(perDay), unit: "次",
+        note: "安静时每分钟约 " + hr + " 下，它一直不休息。" },
+      skin: { label: "我的皮肤有", value: bsa.toFixed(2), unit: "m²",
+        note: "皮肤是身体最大的器官，比一张小桌子还大。" },
+      air: { label: "一天吸进空气", value: fmt(airDay), unit: "升",
+        note: "每一口约 " + tidal + " mL，一天要吸两万多口。" },
+      legs: { label: "走 1 公里要", value: fmt(steps1km), unit: "步",
+        note: "按你的身高，一步大约 " + Math.round(step) + " 厘米。" },
+      head: { label: "身高 ≈ 几个头", value: headRatio, unit: "个头",
+        note: "小时候头占比大，长大慢慢变成约 7.5 个头。" }
+    };
+    paintBig();
   }
 
   [ht, wt, ag].forEach(function (el) {
     el.addEventListener("input", renderMe);
+  });
+
+  [].forEach.call(document.querySelectorAll("#mePicks [data-me-part]"), function (button) {
+    button.addEventListener("click", function () {
+      [].forEach.call(button.parentNode.querySelectorAll("[data-me-part]"), function (other) {
+        other.setAttribute("aria-pressed", other === button ? "true" : "false");
+      });
+      mePart = button.getAttribute("data-me-part");
+      paintBig();
+    });
   });
 
   /* ================= 心跳测量 ================= */
@@ -616,22 +1660,26 @@
   /* ================= 反应速度 ================= */
   var rt = document.getElementById("rt"),
       rtList = document.getElementById("rtList"),
-      rtNote = document.getElementById("rtNote");
+      rtNote = document.getElementById("rtNote"),
+      reactLight = document.querySelector(".react-light");
   var rState = "idle", goAt = 0, timer = null, results = [];
 
   function setIdle(msg) {
     rState = "idle"; rt.className = "rtarget"; rt.textContent = msg;
+    reactLight.setAttribute("data-state", "idle");
   }
 
   function arm() {
     rState = "wait";
     rt.className = "rtarget wait";
     rt.textContent = "等着…别急";
+    reactLight.setAttribute("data-state", "wait");
     clearTimeout(timer);
     timer = setTimeout(function () {
       rState = "go";
       rt.className = "rtarget go";
       rt.textContent = "点！";
+      reactLight.setAttribute("data-state", "go");
       goAt = performance.now();
     }, 1200 + Math.random() * 2600);
   }
@@ -642,6 +1690,8 @@
       clearTimeout(timer);
       rt.className = "rtarget done";
       rt.textContent = "太早了！还没变绿呢。点一下再来";
+      reactLight.setAttribute("data-state", "done");
+      rtNote.textContent = "红灯时要等一等。点一下重新开始。";
       rState = "idle";
       return;
     }
@@ -650,6 +1700,8 @@
       results.push(ms);
       rt.className = "rtarget done";
       rt.textContent = ms + " 毫秒！点一下再测";
+      reactLight.setAttribute("data-state", "done");
+      rtNote.textContent = "⭐ 接力完成：眼睛 → 大脑 → 手指。";
       rState = "idle";
       paintRT();
     }
@@ -772,9 +1824,9 @@
   ];
 
   var expBox = document.getElementById("exp");
-  var SYS = { heart: ["心肺", "s-heart"], lung: ["呼吸", "s-lung"],
-              brain: ["大脑", "s-brain"], bone: ["骨骼肌肉", "s-bone"],
-              sense: ["感官", "s-sense"] };
+  var SYS = { heart: ["心肺", "s-heart", "💓"], lung: ["呼吸", "s-lung", "🌬️"],
+              brain: ["大脑", "s-brain", "🧠"], bone: ["骨骼肌肉", "s-bone", "🦴"],
+              sense: ["感官", "s-sense", "👀"] };
   var sState = "all";
 
   function expCard(e) {
@@ -783,26 +1835,41 @@
 
     var h = document.createElement("div");
     h.className = "bcard-h";
-    var meta = SYS[e.sys] || ["其他", ""];
+    var meta = SYS[e.sys] || ["其他", "", "🔎"];
+    var art = document.createElement("span");
+    art.className = "bcard-art";
+    art.setAttribute("aria-hidden", "true");
+    art.textContent = meta[2];
+    var heading = document.createElement("div");
     var s = document.createElement("span");
     s.className = "sys " + meta[1];
     s.textContent = meta[0];
     var t = document.createElement("h3");
     t.textContent = e.t;
-    h.appendChild(s); h.appendChild(t);
+    var short = document.createElement("p");
+    short.className = "bcard-short";
+    short.textContent = "看图 → 准备 → 和大人一起试";
+    heading.appendChild(s); heading.appendChild(t); heading.appendChild(short);
+    h.appendChild(art); h.appendChild(heading);
 
     var b = document.createElement("div");
     b.className = "bcard-b";
     var need = document.createElement("div");
     need.className = "need";
     need.textContent = "需要：" + e.need;
+    var details = document.createElement("details");
+    details.className = "parent-deep-dive";
+    details.setAttribute("data-audience", "parent");
+    var summary = document.createElement("summary");
+    summary.textContent = "家长层：做法与原理";
     var how = document.createElement("p");
     how.className = "how";
     how.innerHTML = e.how;
     var why = document.createElement("p");
     why.className = "why";
     why.innerHTML = "<b>为什么会这样：</b>" + e.why;
-    b.appendChild(need); b.appendChild(how); b.appendChild(why);
+    details.appendChild(summary); details.appendChild(how); details.appendChild(why);
+    b.appendChild(need); b.appendChild(details);
 
     c.appendChild(h); c.appendChild(b);
     return c;
@@ -838,9 +1905,9 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>
 (function () {
   "use strict";
@@ -869,6 +1936,24 @@
     if (![pr,pa,br,ba,d].every(function (n) { return isFinite(n) && n > 0; })) { output.textContent = "请先填完五个本次测量值。"; return; }
     output.textContent = "本次比较：活动后脉搏变化 " + (pa-pr >= 0 ? "+" : "") + (pa-pr) + " 次/分；呼吸变化 " + (ba-br >= 0 ? "+" : "") + (ba-br) + " 次/分。书离肘 " + d + " cm；若移到 " + Math.min(70,d*2) + " cm，同样重量对肘的力矩约变为 " + (Math.min(70,d*2)/d).toFixed(1) + " 倍。数据只在当前页面内存中使用。";
     operated = true;
+    status.textContent = "测量比较完成。再选结果和公平做法。";
+  });
+  document.querySelectorAll("[data-answer-target] button").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var group = button.closest("[data-answer-target]");
+      selectOne(group, button);
+      document.getElementById(group.dataset.answerTarget).value = button.dataset.value;
+      status.textContent = "图卡已记下。继续完成四步。";
+    });
+  });
+  document.querySelectorAll("[data-body-operation] button").forEach(function (button) {
+    button.addEventListener("click", function () {
+      selectOne(button.closest("[data-body-operation]"), button);
+      operated = true;
+      output.textContent = "已完成安全示范比较：活动后心跳和呼吸通常更快；同一本书拿远时手臂更费力。没有保存身体数字。";
+      document.getElementById("bodyOperationStatus").textContent = button.dataset.operation === "adult" ? "已选：和大人一起安全比较。" : "已选：跟着三步图完成安全比较。";
+      status.textContent = "操作完成！再选结果和公平做法。";
+    });
   });
   document.getElementById("bodyComplete").addEventListener("click", function () {
     if (!predict.value.trim() || !operated || !result.value.trim() || !reflect.value.trim()) {
@@ -878,8 +1963,415 @@
     status.textContent = done ? "已完成任务：仅保存任务证据，不含身体数值。" : "四步已完成；当前浏览器无法保存。";
   });
   if (window.Progress && Progress.getCompletion(id)) status.textContent = "此任务已完成；身体数值没有写入足迹。";
+
+  /* ---------- 分层讲解的可点选答案：只填进输入框，不做任何保存 ---------- */
+  function selectOne(group, button) {
+    [].forEach.call(group.querySelectorAll("button"), function (item) {
+      item.setAttribute("aria-pressed", item === button ? "true" : "false");
+    });
+  }
+  [].forEach.call(document.querySelectorAll(".quick-picks[data-fill]"), function (group) {
+    var field = document.getElementById(group.getAttribute("data-fill"));
+    if (!field) return;
+    [].forEach.call(group.querySelectorAll("button"), function (button) {
+      button.addEventListener("click", function () {
+        selectOne(group, button);
+        field.value = button.getAttribute("data-value");
+        status.textContent = field.id === "bodyWorkContent" ? "作品图卡已填好；再写一个名称就能保存。" : "想法图卡已记下，不用打字也可以继续。";
+      });
+    });
+  });
+
+  /* 供氧动线：安静 / 活动 */
+  var o2Svg = document.querySelector(".o2-svg"), o2Note = document.getElementById("o2Note");
+  var o2Copy = {
+    rest: "安静时管子里的圆点走得慢：肌肉需要的氧气少，心脏和肺不用太用力。",
+    active: "活动时管子变粗、圆点跑得更快：肌肉要的氧气多，心跳和呼吸一起加快，二氧化碳也要更快排掉。"
+  };
+  [].forEach.call(document.querySelectorAll("[data-o2]"), function (button) {
+    button.addEventListener("click", function () {
+      selectOne(button.parentNode, button);
+      var key = button.getAttribute("data-o2");
+      o2Svg.setAttribute("data-effort", key);
+      o2Note.textContent = o2Copy[key];
+    });
+  });
+
+  /* 三类杠杆 */
+  var leverSvg = document.querySelector(".lever-svg"), leverNote = document.getElementById("leverNote");
+  var leverCopy = {
+    first: "第一类：支点在用力点和重物中间。点头时颈部关节就在中间，一边压下一边抬起。",
+    second: "第二类：重物在中间。踮脚尖时脚掌前端是支点，身体重量在中间，小腿肌肉在后面拉——这类最省力。",
+    third: "第三类：用力点在支点和重物之间。手肘弯举就是这样——很费力，但手能动得又快又远。"
+  };
+  [].forEach.call(document.querySelectorAll("[data-lever-pick]"), function (button) {
+    button.addEventListener("click", function () {
+      selectOne(button.parentNode, button);
+      var key = button.getAttribute("data-lever-pick");
+      leverSvg.setAttribute("data-lever", key);
+      leverNote.textContent = leverCopy[key];
+    });
+  });
+
+  /* 消化各站 */
+  var digestSvg = document.querySelector(".digest-svg"), digestNote = document.getElementById("digestNote");
+  var digestCopy = {
+    mouth: "口腔：牙齿把食物咬成小块，口水把它泡软，同时开始分解淀粉——所以馒头多嚼一会儿会变甜。",
+    pipe: "食道：不是靠掉下去，而是管壁一圈圈挤压把食物推下去。所以躺着也能把水喝下去。",
+    stomach: "胃：像一个会揉面的袋子，把食物搅成糊，并用酸性的胃液继续拆解。",
+    small: "小肠：最主要的吸收站。内壁全是褶皱和绒毛，把接触面积放得很大，营养从这里进入血液。",
+    large: "大肠：把剩下的东西里的水分收回来，让身体少浪费水。"
+  };
+  [].forEach.call(document.querySelectorAll("[data-digest]"), function (button) {
+    button.addEventListener("click", function () {
+      selectOne(button.parentNode, button);
+      var key = button.getAttribute("data-digest");
+      digestSvg.setAttribute("data-stop", key);
+      digestNote.textContent = digestCopy[key];
+    });
+  });
+
+  /* 神经接力动画 */
+  var relaySvg = document.querySelector(".relay-svg"), relayNote = document.getElementById("relayNote");
+  var relayBtn = document.getElementById("relayRun"), relayTimer = null;
+
+  /* 站内「减少动效」偏好优先，其次才是操作系统设置 */
+  function calmMotion() {
+    if (window.Playful && typeof Playful.motionReduced === "function") {
+      return Playful.motionReduced() === true;
+    }
+    return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+
+  relayBtn.addEventListener("click", function () {
+    clearTimeout(relayTimer);
+    relaySvg.setAttribute("data-run", "off");
+    if (calmMotion()) {
+      /* 不播动画：直接把三段路的结论写出来，信息不丢 */
+      relayNote.textContent = "看到 → 判断 → 动手：三段路依次走完，每一段都要花时间，这就是「反应时间」的来源。";
+      return;
+    }
+    relayNote.textContent = "信号出发了：看到 → 判断 → 动手，一段也跳不过去。";
+    window.requestAnimationFrame(function () {
+      relaySvg.setAttribute("data-run", "on");
+    });
+    relayTimer = setTimeout(function () {
+      relaySvg.setAttribute("data-run", "off");
+      relayNote.textContent = "跑完一趟了。三段路加上中间的判断都要花时间，这就是「反应时间」的来源。";
+    }, 1500);
+  });
+
+  /* 睡眠时段（此前这三个按钮没有事件处理器） */
+  var sleepSvg = document.querySelector(".sleep-svg"), sleepNote = document.getElementById("sleepNote");
+  var sleepCopy = {
+    early: "前半夜：深睡通常更多，身体安静修补，长个子的活儿多半在这段做。",
+    late: "后半夜：做梦的阶段变长，大脑忙着整理白天记住的东西。",
+    wake: "快醒来：睡得最浅，所以这时候被叫醒最容易清醒、不迷糊。"
+  };
+  [].forEach.call(document.querySelectorAll("[data-sleep-cycle]"), function (button) {
+    button.addEventListener("click", function () {
+      selectOne(button.parentNode, button);
+      var key = button.getAttribute("data-sleep-cycle");
+      sleepSvg.setAttribute("data-cycle", key);
+      sleepNote.textContent = sleepCopy[key];
+    });
+  });
 })();
 </script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script>
+/* 图像优先三件套：① 器官图鉴 ② 心跳与呼吸量表 ③ 谁在干这件事 */
+(function () {
+  "use strict";
+
+  var NS = "http://www.w3.org/2000/svg";
+  function sv(name, attrs) {
+    var node = document.createElementNS(NS, name);
+    Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    return node;
+  }
+  function clearGroup(g) { while (g && g.firstChild) g.removeChild(g.firstChild); }
+
+  /* 六个器官：舞台上的形状全部写死坐标，不做运算，避免出现 NaN */
+  var HB = {
+    heart: {
+      cap: "心脏", where: "胸腔中央稍偏左", job: "把血推到全身",
+      say: "心脏在胸腔中央、稍稍偏左（不是长在左胸口）。它一下一下地挤压，把带氧的血推到全身，再把用过的血送回肺。",
+      ring: { cx: 144, cy: 104, r: 46 },
+      parts: [
+        ["path", { "class": "hb-o-vein", d: "M130 84 C124 72 118 68 112 66" }],
+        ["path", { "class": "hb-o-artery", d: "M158 84 C166 72 172 68 178 66" }],
+        ["path", { "class": "hb-o-heart", d: "M144 88 C134 76 116 82 116 100 C116 118 144 132 144 132 C144 132 172 118 172 100 C172 82 154 76 144 88 Z" }]
+      ]
+    },
+    lungs: {
+      cap: "肺", where: "胸腔两边，左右各一个", job: "把氧换进血里",
+      say: "肺在胸腔两边，左右各一个，把心脏夹在中间。吸气时空气进到肺里的小气囊，氧钻进血里，二氧化碳换出来。",
+      ring: { cx: 150, cy: 106, r: 50 },
+      parts: [
+        ["path", { "class": "hb-o-lung", d: "M142 78 C124 74 114 98 116 124 C118 140 134 142 142 132 Z" }],
+        ["path", { "class": "hb-o-lung", d: "M158 78 C176 74 186 98 184 124 C182 140 166 142 158 132 Z" }],
+        ["path", { "class": "hb-o-airway", d: "M150 60 L150 86 M150 74 L136 86 M150 74 L164 86" }]
+      ]
+    },
+    bones: {
+      cap: "骨与关节", where: "从头到脚的支架", job: "关节当支点，骨头当杠杆",
+      say: "骨头从头到脚撑起整个身体，紫色的圆点是关节。关节就是支点，骨头就是杠杆：肌肉一拉，手脚就绕着关节转起来。",
+      ring: { cx: 101, cy: 105, r: 24 },
+      parts: [
+        ["path", { "class": "hb-o-bone-s", d: "M150 64 L150 162" }],
+        ["path", { "class": "hb-o-bone-line", d: "M150 84 C132 82 124 92 124 104 M150 96 C130 94 121 104 121 116 M150 108 C132 106 123 116 123 128 M150 84 C168 82 176 92 176 104 M150 96 C170 94 179 104 179 116 M150 108 C168 106 177 116 177 128" }],
+        ["circle", { "class": "hb-o-joint", cx: 114, cy: 80, r: 6 }],
+        ["circle", { "class": "hb-o-joint", cx: 186, cy: 80, r: 6 }],
+        ["circle", { "class": "hb-o-joint", cx: 101, cy: 105, r: 7 }],
+        ["circle", { "class": "hb-o-joint", cx: 199, cy: 105, r: 7 }],
+        ["circle", { "class": "hb-o-joint", cx: 136, cy: 166, r: 6 }],
+        ["circle", { "class": "hb-o-joint", cx: 164, cy: 166, r: 6 }],
+        ["circle", { "class": "hb-o-joint", cx: 131, cy: 186, r: 6 }],
+        ["circle", { "class": "hb-o-joint", cx: 169, cy: 186, r: 6 }]
+      ]
+    },
+    gut: {
+      cap: "胃肠", where: "肚子里，绕成一大圈", job: "搅成糊，再把营养送进血里",
+      say: "咽下去的饭先顺着食道被挤到胃里，胃把它搅成糊；真正把营养拿进血里的是后面又细又长的小肠。",
+      ring: { cx: 148, cy: 128, r: 44 },
+      parts: [
+        ["path", { "class": "hb-o-pipe", d: "M148 66 L142 96" }],
+        ["path", { "class": "hb-o-stomach", d: "M140 96 C158 92 166 108 158 122 C150 136 134 134 130 120 C127 108 131 100 140 96 Z" }],
+        ["path", { "class": "hb-o-gut", d: "M144 130 C170 134 166 146 142 148 C120 150 122 160 148 162" }]
+      ]
+    },
+    brain: {
+      cap: "大脑", where: "头里面，头骨保护着", job: "收信号、做判断、发命令",
+      say: "大脑装在头骨里面。眼睛耳朵把信号送上来，它判断一下，再把命令发给手脚——所以看见了才动手，中间总要花一点时间。",
+      ring: { cx: 150, cy: 34, r: 34 },
+      parts: [
+        ["path", { "class": "hb-o-brain", d: "M133 30 C132 18 168 18 167 30 C171 42 158 50 150 50 C142 50 129 42 133 30 Z" }],
+        ["path", { "class": "hb-o-brain-line", d: "M150 22 L150 48 M139 26 C145 32 139 38 144 46 M161 26 C155 32 161 38 156 46" }]
+      ]
+    },
+    skin: {
+      cap: "皮肤", where: "包住整个身体", job: "挡脏东西、感觉冷热、出汗降温",
+      say: "皮肤把整个身体包起来，是身体最大的器官。它挡住脏东西，感觉冷热和碰触，太热时还会出汗帮你降温。",
+      ring: null,
+      parts: [
+        ["circle", { "class": "hb-o-skin", cx: 150, cy: 36, r: 30 }],
+        ["rect", { "class": "hb-o-skin", x: 104, y: 55, width: 92, height: 120, rx: 42 }],
+        ["path", { "class": "hb-o-skin", d: "M116 88 L76 134 M184 88 L224 134 M130 174 L124 208 M170 174 L176 208" }],
+        ["path", { "class": "hb-o-drop", d: "M232 150 C238 160 244 166 236 172 C227 178 220 169 225 160 Z" }]
+      ]
+    }
+  };
+
+  /* ---------- ① 器官图鉴 ---------- */
+  var stageOrgan = document.getElementById("hbStageOrgan");
+  var stageSvg = document.getElementById("hbStage");
+  var stageName = document.getElementById("hbStageName");
+  var stageJob = document.getElementById("hbStageJob");
+  var atlasSay = document.getElementById("hbAtlasSay");
+  var atlasButtons = [].slice.call(document.querySelectorAll("#hbAtlasGrid [data-hb-organ]"));
+  var hbCurrent = null;
+
+  function drawOrgan(key) {
+    var o = HB[key];
+    clearGroup(stageOrgan);
+    if (!o) return;
+    o.parts.forEach(function (spec) { stageOrgan.appendChild(sv(spec[0], spec[1])); });
+    if (o.ring) {
+      stageOrgan.appendChild(sv("circle", {
+        "class": "hb-ring", cx: o.ring.cx, cy: o.ring.cy, r: o.ring.r
+      }));
+    }
+    stageName.textContent = o.cap + " · " + o.where;
+    stageJob.textContent = "它负责：" + o.job;
+    stageSvg.setAttribute("aria-label",
+      "器官放大舞台：" + o.cap + "画在" + o.where + "，它负责" + o.job + "。");
+  }
+
+  function selectOrgan(key) {
+    if (!HB[key]) return;
+    hbCurrent = key;
+    atlasButtons.forEach(function (btn) {
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-hb-organ") === key ? "true" : "false");
+    });
+    drawOrgan(key);
+    atlasSay.textContent = "✓ 你选了" + HB[key].cap + "（" + HB[key].where + "）：" + HB[key].say;
+  }
+
+  atlasButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () { selectOrgan(btn.getAttribute("data-hb-organ")); });
+  });
+
+  /* ---------- ② 心跳快慢 + 一次呼吸送多少氧 ---------- */
+  var EFFORT = {
+    rest: { cap: "坐着不动", bpm: 90, breaths: 20, air: 200, o2: 10, o2Min: 200 },
+    walk: { cap: "慢慢走路", bpm: 120, breaths: 28, air: 300, o2: 15, o2Min: 420 },
+    run: { cap: "跑起来", bpm: 165, breaths: 44, air: 500, o2: 25, o2Min: 1100 }
+  };
+  var BPM_MAX = 200, O2_MAX = 30, DOT_SLOTS = 30;
+
+  var bpmMeter = document.getElementById("hbBpmMeter");
+  var bpmValue = document.getElementById("hbBpmValue");
+  var o2Meter = document.getElementById("hbO2Meter");
+  var o2Value = document.getElementById("hbO2Value");
+  var beatDots = document.getElementById("hbBeatDots");
+  var meterSay = document.getElementById("hbMeterSay");
+  var effortButtons = [].slice.call(document.querySelectorAll("#hbEffortPicks [data-hb-effort]"));
+  var effortSelect = document.getElementById("hbEffortSelect");
+
+  function setMeter(track, value, max) {
+    if (!track) return;
+    if (window.Playful && Playful.setMeter) { Playful.setMeter(track, value, max); return; }
+    var fill = track.querySelector(".kid-meter-fill");
+    var ratio = Math.max(0, Math.min(1, Number(value) / Number(max)));
+    if (fill) fill.style.setProperty("--fill", (ratio * 100).toFixed(1) + "%");
+  }
+
+  function paintBeatDots(beats) {
+    beatDots.textContent = "";
+    for (var i = 0; i < DOT_SLOTS; i++) {
+      var dot = document.createElement("i");
+      if (i >= beats) dot.setAttribute("data-empty", "true");
+      beatDots.appendChild(dot);
+    }
+    beatDots.setAttribute("aria-label",
+      "三十格里点亮了 " + beats + " 格，就是 10 秒里跳 " + beats + " 下");
+  }
+
+  function paintEffort(key) {
+    var e = EFFORT[key];
+    if (!e) return;
+    var beats = Math.round(e.bpm / 6);
+    bpmValue.textContent = e.bpm + " 次/分钟";
+    setMeter(bpmMeter, e.bpm, BPM_MAX);
+    o2Value.textContent = e.o2 + " 毫升";
+    setMeter(o2Meter, e.o2, O2_MAX);
+    paintBeatDots(beats);
+    meterSay.textContent = "✓ " + e.cap + "：心跳约 " + e.bpm + " 次/分钟，10 秒里跳 " + beats +
+      " 下；一次呼吸能送到约 " + e.o2 + " 毫升氧，一分钟呼吸 " + e.breaths + " 次，合起来约 " +
+      e.o2Min + " 毫升。两条条子总是一起变长。";
+    effortButtons.forEach(function (btn) {
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-hb-effort") === key ? "true" : "false");
+    });
+    if (effortSelect && effortSelect.value !== key) effortSelect.value = key;
+  }
+
+  effortButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () { paintEffort(btn.getAttribute("data-hb-effort")); });
+  });
+  if (effortSelect) {
+    effortSelect.addEventListener("change", function () { paintEffort(effortSelect.value); });
+  }
+  paintEffort("rest");
+
+  /* ---------- ③ 哪个器官在干这件事 ---------- */
+  var TASKS = [
+    { art: "🏃", text: "跑起来时，谁跳得更快？", answer: "heart",
+      options: ["heart", "lungs", "gut", "brain"],
+      ok: "跑步时肌肉要更多氧，心脏就跳得更快，把带氧的血更快送出去。",
+      hint: "提示：它在胸腔中央稍偏左，一下一下地挤压。" },
+    { art: "🍎", text: "咽下去以后，先到哪里？", answer: "gut",
+      options: ["gut", "lungs", "heart", "skin"],
+      ok: "先顺着食道被挤到胃，胃把它搅成糊；营养真正被拿走，是在后面又细又长的小肠。",
+      hint: "提示：它在肚子里，绕成一大圈。" },
+    { art: "🌬️", text: "空气里的氧，在哪里换进血？", answer: "lungs",
+      options: ["lungs", "heart", "gut", "bones"],
+      ok: "氧在肺里的小气囊钻进血里，二氧化碳同时换出来，再被呼出去。",
+      hint: "提示：胸腔两边各一个，把心脏夹在中间。" },
+    { art: "🦵", text: "蹲下站起，谁在当支点？", answer: "bones",
+      options: ["bones", "skin", "gut", "heart"],
+      ok: "膝盖和髋这些关节就是支点，骨头是杠杆，肌肉一拉就绕着关节转起来。",
+      hint: "提示：舞台上那些紫色的小圆点就是它。" },
+    { art: "⚽", text: "球飞过来，谁先做判断？", answer: "brain",
+      options: ["brain", "heart", "lungs", "bones"],
+      ok: "眼睛把信号送到大脑，大脑判断以后才命令手脚——所以中间总要花一点时间。",
+      hint: "提示：它装在头骨里面，是总指挥。" },
+    { art: "🥵", text: "太热了，谁出汗降温？", answer: "skin",
+      options: ["skin", "gut", "brain", "lungs"],
+      ok: "皮肤出汗，汗水蒸发时把热带走，身体就凉下来。",
+      hint: "提示：它包住整个身体，是最大的器官。" },
+    { art: "🩸", text: "血一直在跑，谁在推它？", answer: "heart",
+      options: ["heart", "bones", "skin", "gut"],
+      ok: "心脏像水泵，一下一下地把血推向全身，再把用过的血送回肺换氧。",
+      hint: "提示：把手放在胸口偏左，能感觉到它。" },
+    { art: "🍚", text: "营养从哪里进到血里？", answer: "gut",
+      options: ["gut", "lungs", "brain", "skin"],
+      ok: "小肠内壁全是褶皱和绒毛，接触面积很大，营养就从这里进入血液。",
+      hint: "提示：它在肚子里，又细又长绕成一大圈。" }
+  ];
+
+  var quizTask = document.getElementById("hbQuizTask");
+  var quizTaskArt = document.getElementById("hbQuizTaskArt");
+  var quizTaskText = document.getElementById("hbQuizTaskText");
+  var quizSay = document.getElementById("hbQuizSay");
+  var quizStars = document.getElementById("hbQuizStars");
+  var quizTotal = document.getElementById("hbQuizTotal");
+  var quizPicks = [].slice.call(document.querySelectorAll("#hbQuizPicks [data-hb-pick]"));
+  var quizAt = 0, quizSolved = false, quizWins = 0;
+
+  function organArt(key) {
+    var src = document.querySelector("#hbAtlasGrid [data-hb-organ=\"" + key + "\"] svg");
+    return src ? src.cloneNode(true) : null;
+  }
+
+  function paintTask() {
+    var task = TASKS[quizAt];
+    quizSolved = false;
+    quizTaskArt.textContent = task.art;
+    quizTaskText.textContent = task.text;
+    quizPicks.forEach(function (button, index) {
+      var key = task.options[index];
+      var organ = HB[key];
+      button.setAttribute("data-hb-pick", key);
+      button.setAttribute("aria-pressed", "false");
+      button.setAttribute("aria-label", "选器官：" + organ.cap);
+      var art = button.querySelector(".kid-tile-art");
+      var label = button.querySelector(".kid-tile-label");
+      if (label) label.textContent = organ.cap;
+      if (!art) return;
+      art.textContent = "";
+      var svgNode = organArt(key);
+      if (svgNode) art.appendChild(svgNode);
+      else art.textContent = organ.cap;
+    });
+  }
+
+  function nextTask() {
+    quizAt = (quizAt + 1) % TASKS.length;
+    paintTask();
+    quizSay.textContent = "换好了：" + TASKS[quizAt].text + " 从下面 4 张卡里点一个。";
+  }
+
+  quizPicks.forEach(function (button) {
+    button.addEventListener("click", function () {
+      if (quizSolved) return;
+      var task = TASKS[quizAt];
+      var key = button.getAttribute("data-hb-pick");
+      var organ = HB[key];
+      if (key === task.answer) {
+        quizSolved = true;
+        quizPicks.forEach(function (other) {
+          other.setAttribute("aria-pressed", other === button ? "true" : "false");
+        });
+        quizWins += 1;
+        quizStars.textContent = new Array(Math.min(quizWins, 10) + 1).join("⭐");
+        quizStars.setAttribute("aria-label", "已经答对 " + quizWins + " 次");
+        quizTotal.textContent = "答对 " + quizWins + " 次";
+        quizSay.textContent = "✓ 对了，是" + organ.cap + "（" + organ.where + "）：" + task.ok + " 按「换一题」再来一个。";
+        if (window.Playful && Playful.confetti) Playful.confetti(quizTask);
+        return;
+      }
+      button.setAttribute("aria-pressed", "false");
+      quizSay.textContent = "○ 再看看图鉴：" + organ.cap + "负责" + organ.job + "，和这件事不是同一件。" + task.hint;
+    });
+  });
+
+  document.getElementById("hbQuizNext").addEventListener("click", nextTask);
+  document.getElementById("hbQuizHint").addEventListener("click", function () {
+    quizSay.textContent = TASKS[quizAt].hint;
+  });
+  paintTask();
+})();
+</script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>

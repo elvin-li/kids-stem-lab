@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="kid">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>彩虹小画室 · iPad 涂鸦板 | 少儿数理启蒙</title>
 <meta name="description" content="为小孩子设计的 iPad 触控涂鸦板：彩虹画笔、橡皮擦、可爱印章、镜像画、撤销重做和本地下载。无需注册，离线也能画。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=17">
+<link rel="stylesheet" href="../assets/css/kid.css?v=17">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#fff8ec">
@@ -31,7 +31,8 @@
   .quick-tools { display:none; align-items:center; gap:8px; margin:0 0 10px; padding:8px; overflow-x:auto; border:1px solid var(--line-soft); border-radius:18px; background:var(--surface); scrollbar-width:none; }
   .quick-tools::-webkit-scrollbar { display:none; }
   .quick-tool,.quick-color { flex:0 0 auto; display:grid; place-items:center; min-width:46px; height:46px; border:2px solid var(--line); background:var(--bg-soft); color:var(--ink); border-radius:14px; font:800 .78rem/1 var(--font); cursor:pointer; }
-  .quick-color { min-width:42px; width:42px; border-radius:50%; border-color:var(--surface); box-shadow:0 0 0 1px var(--line); }
+  /* 42px 低于契约的 44px 触控目标；圆形色块补到 44。 */
+  .quick-color { min-width:44px; width:44px; border-radius:50%; border-color:var(--surface); box-shadow:0 0 0 1px var(--line); }
   .quick-tool[aria-pressed="true"],.quick-color[aria-pressed="true"] { border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent); }
   .quick-color[aria-pressed="true"]::after { content:"✓"; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.7); }
   .canvas-wrap { position:relative; width:100%; aspect-ratio:4/3; min-height:320px; overflow:hidden; border-radius:calc(var(--r-xl) - 8px); background:#fffdf8; border:2px solid var(--line); touch-action:none; user-select:none; -webkit-user-select:none; }
@@ -53,9 +54,17 @@
   .swatches { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; }
   .swatch { position:relative; aspect-ratio:1; min-height:42px; border:3px solid var(--surface); border-radius:50%; box-shadow:0 0 0 1px var(--line); cursor:pointer; }
   .swatch[aria-pressed="true"]::after { content:"✓"; position:absolute; inset:0; display:grid; place-items:center; color:#fff; font-weight:900; text-shadow:0 1px 3px rgba(0,0,0,.65); }
-  .size-line { display:grid; grid-template-columns:auto 1fr auto; gap:9px; align-items:center; }
+  .size-line { display:grid; grid-template-columns:auto 1fr auto; gap:9px; align-items:center; margin-top:9px; }
   .size-dot { display:block; width:9px; height:9px; border-radius:50%; background:var(--paint); }
   .size-dot.big { width:23px; height:23px; }
+  /* 4~5 岁：用四个「墨点越来越大」的图标按钮代替难点的 range 滑块 */
+  .size-picks { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; }
+  .size-picks .tool-btn { min-height:60px; }
+  .size-ink { display:block; border-radius:50%; background:var(--paint); box-shadow:0 0 0 1px color-mix(in srgb,var(--ink) 18%,transparent); }
+  .size-ink.is-thin { width:7px; height:7px; }
+  .size-ink.is-mid { width:13px; height:13px; }
+  .size-ink.is-fat { width:20px; height:20px; }
+  .size-ink.is-max { width:28px; height:28px; }
   .action-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .action-grid .btn { padding-inline:8px; }
   .clear-ready { border-color:var(--danger)!important; color:var(--danger)!important; }
@@ -107,12 +116,15 @@
   html,body { max-width:100%; overflow-x:hidden; }
   main > *,.studio-shell > * { min-width:0; }
   button,.btn,input,textarea { max-width:100%; }
-  button,.btn,.quick-tool,.quick-color,.swatch { min-height:44px; }
-  input[type="range"] { min-height:44px; }
+  /* 4~5 岁触控目标：所有可点控件不小于 48px */
+  button,.btn,.quick-tool,.quick-color,.swatch { min-height:48px; }
+  input[type="range"] { min-height:48px; }
+  /* 弹性行里的主按钮不许被挤窄，保证横向也有足够触控宽度 */
+  .mission-actions #completeBtn { flex:0 0 auto; min-width:150px; }
   .studio-head { padding:14px 0 8px; }
   .studio-head h1 { font-size:clamp(1.65rem,5vw,2.5rem); }
   .studio-head .lead { font-size:.92rem; }
-  .tiny-step { min-height:44px; }
+  .tiny-step { min-height:48px; }
   .studio-shell { gap:12px; }
   .canvas-wrap.kid-visual-stage { background:linear-gradient(145deg,color-mix(in srgb,var(--kit) 7%,var(--surface)),var(--bg-soft)); }
   .studio-playful-strip {
@@ -121,7 +133,7 @@
   }
   .studio-playful-strip [data-playful-companion],.studio-playful-strip [data-playful-sticker] { flex:0 0 auto; }
   .studio-playful-strip [data-playful-task-output] { flex:1 1 180px; min-width:0; font-size:.8rem; }
-  .studio-playful-strip .btn { min-height:44px; }
+  .studio-playful-strip .btn { min-height:48px; }
   .canvas-mission-band {
     display:grid; grid-template-columns:auto minmax(0,1fr); gap:10px; align-items:center;
     margin:0 0 10px; padding:9px; border:1px solid var(--line); border-radius:18px;
@@ -139,7 +151,7 @@
   .quick-tool[data-quick-tool="eraser"] { background:color-mix(in srgb,var(--kit) 14%,var(--surface)); }
   .quick-tool[data-quick-stamp] { background:color-mix(in srgb,var(--sci) 16%,var(--surface)); }
   .tool-btn .tool-icon { font-size:1.55rem; }
-  .swatch { min-height:44px; }
+  .swatch { min-width:48px; min-height:48px; }
   .playful-story { margin:14px 0 0; padding:10px 12px; border:1px solid var(--line-soft); border-radius:16px; }
   .challenge { grid-template-columns:1fr; }
   .challenge .mission-top p { margin-top:4px; font-size:.88rem; }
@@ -152,20 +164,110 @@
     .studio-head h1 { margin:0; font-size:1.55rem; }
     .tiny-steps { flex-wrap:nowrap; gap:5px; }
     .tiny-step { flex:1 1 0; min-height:40px; justify-content:center; padding:4px; font-size:.7rem; }
-    .studio-playful-strip { min-height:44px; margin-bottom:6px; padding:0; border:0; background:transparent; justify-content:center; }
+    .studio-playful-strip { min-height:48px; margin-bottom:6px; padding:0; border:0; background:transparent; justify-content:center; }
     .studio-playful-strip [data-playful-companion],.studio-playful-strip [data-playful-sticker],.studio-playful-strip [data-playful-task-output] { display:none; }
-    .studio-playful-strip .btn { width:100%; min-height:44px; }
+    .studio-playful-strip .btn { width:100%; min-height:48px; }
     .canvas-mission-band { grid-template-columns:auto minmax(0,1fr); gap:6px; padding:6px; }
     .canvas-mission-title { text-align:left; font-size:.7rem; }
     .canvas-mission-title b { display:block; font-size:.78rem; }
     .canvas-mission-band .mission-check { min-height:52px; padding:5px 2px; font-size:.65rem; }
     .quick-tools { padding:6px; gap:6px; }
-    .quick-tool,.quick-color { min-width:44px; width:44px; height:44px; }
+    .quick-tool,.quick-color { min-width:48px; width:48px; height:48px; }
     .canvas-hint { inset:auto 8px 8px; }
     .canvas-hint span:last-child { display:none; }
   }
   @media (prefers-reduced-motion:reduce) {
     .tool-btn,.quick-tool,.quick-color,.mission-check { transition:none!important; animation:none!important; transform:none!important; }
+  }
+
+  /* 教学内容层 */
+  .teach-what { margin-top:18px; padding:15px 17px; border:1px solid var(--line); border-left:4px solid var(--kit); border-radius:var(--r); background:var(--bg-soft); }
+  .teach-what h2 { margin:0 0 5px; font-size:1.05rem; }
+  .teach-what p { margin:0; color:var(--ink-mid); font-size:.9rem; }
+  .quick-picks { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin:9px 0; }
+  .quick-picks .kid-choice { min-width:0; padding:10px 12px; font-size:.85rem; line-height:1.35; text-align:left; }
+  .pick-hint { margin:3px 0 0; color:var(--ink-dim); font-size:.76rem; }
+  .studio-knowledge { display:grid; gap:15px; margin-top:18px; }
+  .know-card { padding:19px; }
+  .know-card > h3 { margin:.1em 0 .35em; font-size:1.14rem; }
+  .know-lead { margin:0 0 8px; color:var(--ink); font-weight:750; font-size:.94rem; }
+  .know-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(224px,.8fr); gap:15px; align-items:start; }
+  .know-grid > * { min-width:0; }
+  .know-art { display:block; width:100%; height:auto; border:1px solid var(--line-soft); border-radius:var(--r); background:var(--bg-soft); }
+  .tiers { display:grid; gap:7px; margin:11px 0 0; }
+  .tiers p { margin:0; padding:9px 11px; border-radius:var(--r-sm); background:var(--surface-2); color:var(--ink-mid); font-size:.86rem; line-height:1.5; }
+  .tiers p b { color:var(--ink); }
+  .tier-a { border-left:3px solid var(--kit); }
+  .tier-b { border-left:3px solid var(--math); }
+  .tier-c { border-left:3px solid var(--phys); }
+  .fold { margin:10px 0 0; }
+  .fold summary { display:flex; align-items:center; min-height:44px; cursor:pointer; font-weight:750; font-size:.88rem; color:var(--ink); list-style:none; }
+  .fold summary::-webkit-details-marker { display:none; }
+  .fold summary::before { content:"▸"; color:var(--kit); margin-right:6px; }
+  .fold[open] summary::before { content:"▾"; }
+  .open-q { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:10px; margin:10px 0 0; padding:0; list-style:none; }
+  .open-q li { padding:12px 13px; border:1px dashed var(--line); border-radius:var(--r); background:var(--surface-2); color:var(--ink-mid); font-size:.88rem; }
+  .open-q li b { display:block; color:var(--ink); margin-bottom:3px; }
+  .mix-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:8px; margin:0 0 4px; }
+  .draw-steps, .look-list { margin:8px 0 0; padding-left:1.25em; color:var(--ink-mid); font-size:.88rem; }
+  .draw-steps li + li, .look-list li + li { margin-top:6px; }
+  .draw-steps b, .look-list b { color:var(--ink); }
+  .myth li + li { margin-top:8px; }
+  .myth li { color:var(--ink-mid); font-size:.88rem; }
+  .myth b { color:var(--ink); }
+  @media (max-width:680px) { .know-grid { grid-template-columns:1fr; } }
+
+  /* 三件套：临摹图鉴 / 两条量表 / 照着画挑战（本页前缀 dpx-） */
+  .dpx-block { margin-top:18px; padding:17px; }
+  .dpx-block > h2 { margin:.1em 0 .3em; font-size:1.14rem; }
+  .dpx-lead { margin:0 0 10px; color:var(--ink-mid); font-size:.92rem; }
+  .dpx-block .kid-figure-art { padding:6px; }
+  .dpx-block .kid-figure-art > svg { width:100%; max-width:152px; height:auto; }
+  /* SVG 只描边不填充，颜色全部走 class，孩子模式和打印能统一调 */
+  .dpx-paper { fill:var(--canvas-bg,#fffdf8); stroke:none; }
+  .dpx-ink { fill:none; stroke:var(--math); stroke-width:4.5; stroke-linecap:round; stroke-linejoin:round; }
+  .dpx-ink-a { stroke:var(--math); }
+  .dpx-ink-b { stroke:var(--kit); }
+  .dpx-ink-c { stroke:var(--sci); }
+  .dpx-ink-d { stroke:var(--code); }
+  .dpx-ink-e { stroke:var(--video); }
+  .dpx-ink-f { stroke:var(--phys); }
+  .dpx-meters { display:grid; grid-template-columns:repeat(auto-fit,minmax(238px,1fr)); gap:6px 20px; }
+  .dpx-copy-row { display:grid; grid-template-columns:minmax(150px,214px) minmax(0,1fr); gap:14px; align-items:start; }
+  .dpx-copy-row > * { min-width:0; }
+  .dpx-ghost-card { border-style:dashed; }
+  .dpx-ghost > svg { opacity:.42; }
+  .dpx-copy-side { display:grid; gap:10px; min-width:0; }
+  .dpx-dots-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0; }
+  .dpx-dots-cap { color:var(--ink-mid); font-size:.82rem; font-weight:750; }
+  .dpx-next-btn { justify-self:start; }
+  .dpx-judge { margin:0; }
+  @media (max-width:620px) {
+    .dpx-copy-row { grid-template-columns:1fr; }
+    .dpx-block { padding:13px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .dpx-ghost > svg,.dpx-block .kid-figure { transition:none!important; animation:none!important; }
+  }
+
+  /* 插画舞台（共享 SVG 场景铺底，内容都放在不透明卡片上保证对比度） */
+  .dp-scene-stage { margin:0 0 16px; padding:clamp(12px,2.6vw,20px); }
+  .dp-scene-copy { display:grid; gap:12px; min-width:0; }
+  .dp-scene-stage .kid-steps-visual { margin:0; }
+  /* 手机孩子模式：收紧插画舞台与画板之间的间隙，让画画工具条留在首屏。 */
+  @media (max-width:480px) {
+    html[data-mode="kid"] .dp-scene-stage { margin-bottom:6px; }
+    /* 这两条原本 padding 为 0，加内边距只会更高；只收外边距。 */
+    html[data-mode="kid"] .studio-playful-strip { margin:4px 0; }
+    html[data-mode="kid"] .canvas-mission-band { margin:4px 0; padding:0; gap:6px; }
+    html[data-mode="kid"] .studio-head { padding-bottom:2px; }
+    html[data-mode="kid"] .canvas-mission-band .mission-check { min-height:44px; padding:5px 4px; }
+    html[data-mode="kid"] .canvas-wrap { margin-top:4px; }
+    /* 副标题在手机上与插画舞台里的旁白重复 */
+    html[data-mode="kid"] .studio-head .lead { display:none; }
+  }
+  @media (max-width:560px) {
+    .dp-scene-stage { padding:10px; }
   }
 </style>
 </head>
@@ -196,11 +298,34 @@
       </div>
     </div>
   </header>
+  <!-- 插画舞台：不识字也能看懂这一页在玩什么 -->
+  <div class="kid-visual-stage dp-scene-stage" data-scene-layer="back"
+       data-playful-scene="rainbow"
+       data-playful-scene-title="彩虹画室"
+       data-playful-scene-desc="云朵后面挂着一道六色彩虹，太阳在旁边">
+    <div class="dp-scene-copy">
+      <div class="kid-speech-row">
+        <span class="kid-mascot" aria-hidden="true">🦄</span>
+        <p class="kid-speech">换个颜色、换支笔，<b>怎么画都对</b>。</p>
+      </div>
+      <ol class="kid-steps-visual" aria-label="三步玩法">
+        <li><span class="kid-tile-art" aria-hidden="true">🎨</span>选颜色</li>
+        <li><span class="kid-tile-art" aria-hidden="true">🖌️</span>画一笔</li>
+        <li><span class="kid-tile-art" aria-hidden="true">⭐</span>盖印章</li>
+      </ol>
+    </div>
+  </div>
 
-  <section class="studio-playful-strip no-print" aria-label="画室伙伴与随机画画任务">
+
+  <section class="card teach-what" data-audience="parent" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">今天的发现</h2>
+    <p>画画不只是好看。这一页练的是三件可以说出来的事：两种颜色叠在一起会变成第三种颜色（减色混合）；对称和重复让画面有秩序；先看清楚再下笔，比凭印象画更像。往下滚动有四个知识站和分龄陪玩建议。</p>
+  </section>
+
+  <section class="studio-playful-strip" aria-label="小伙伴和画画点子">
     <div data-playful-companion></div>
     <span data-playful-sticker></span>
-    <button class="btn btn-sm" type="button" data-playful-random-task="#studioSurprise">抽一个画画点子</button>
+    <button class="btn btn-sm" type="button" data-playful-random-task="#studioSurprise"><span aria-hidden="true">🎲 </span>抽点子</button>
     <p id="studioSurprise" data-playful-task-output>先画三笔、换三种颜色，再盖一个印章。</p>
   </section>
 
@@ -249,8 +374,14 @@
       </section>
 
       <section class="tool-group">
-        <h2><label for="brushSize">画笔粗细</label></h2>
-        <div class="size-line"><i class="size-dot" aria-hidden="true"></i><input id="brushSize" type="range" min="3" max="34" value="10" aria-label="画笔粗细"><i class="size-dot big" aria-hidden="true"></i></div>
+        <h2>笔要多粗</h2>
+        <div class="size-picks" id="sizePicks" role="group" aria-label="画笔粗细">
+          <button class="tool-btn" type="button" data-size="5" aria-pressed="false" aria-label="细笔"><span class="tool-icon size-ink is-thin" aria-hidden="true"></span><span>细</span></button>
+          <button class="tool-btn" type="button" data-size="10" aria-pressed="true" aria-label="中等笔"><span class="tool-icon size-ink is-mid" aria-hidden="true"></span><span>中</span></button>
+          <button class="tool-btn" type="button" data-size="20" aria-pressed="false" aria-label="粗笔"><span class="tool-icon size-ink is-fat" aria-hidden="true"></span><span>粗</span></button>
+          <button class="tool-btn" type="button" data-size="32" aria-pressed="false" aria-label="超粗笔"><span class="tool-icon size-ink is-max" aria-hidden="true"></span><span>超粗</span></button>
+        </div>
+        <div class="size-line" data-audience="parent"><i class="size-dot" aria-hidden="true"></i><input id="brushSize" type="range" min="3" max="34" value="10" aria-label="画笔粗细"><i class="size-dot big" aria-hidden="true"></i></div>
       </section>
 
       <section class="tool-group">
@@ -284,6 +415,230 @@
     </aside>
   </section>
 
+  <!-- ① 临摹图鉴：用几笔画出一样东西 -->
+  <section class="card dpx-block" aria-labelledby="dpxAtlasTitle">
+    <h2 id="dpxAtlasTitle">用几笔画出一样东西</h2>
+    <p class="dpx-lead">每张卡都是一个只用几笔就能画完的形状。点一张，它就成为下面「照着画」的目标。</p>
+    <div class="kid-figure-grid" id="dpxAtlasGrid" aria-label="临摹图鉴：八张大图卡">
+      <button class="kid-figure" type="button" data-dpx-fig="spiral" data-dpx-strokes="1" data-dpx-tip="手腕别动，用整条胳膊慢慢转出去。" aria-pressed="true" aria-label="选为目标：1 笔画螺旋">
+        <span class="kid-figure-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <rect class="dpx-paper" x="0" y="0" width="120" height="100"/>
+            <g class="dpx-ink dpx-ink-a" fill="none">
+              <path d="M60 50 a4 4 0 0 1 8 0 a8 8 0 0 1 -16 0 a12 12 0 0 1 24 0 a16 16 0 0 1 -32 0 a20 20 0 0 1 40 0 a24 24 0 0 1 -48 0"/>
+            </g>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">螺旋</span>
+        <span class="kid-figure-sub">1 笔</span>
+        <span class="kid-figure-fact">一笔不抬手，圈一圈比上一圈大一点。</span>
+      </button>
+      <button class="kid-figure" type="button" data-dpx-fig="fish" data-dpx-strokes="2" data-dpx-tip="先把身体那条弧画长一点，尾巴才有地方放。" aria-pressed="false" aria-label="选为目标：2 笔画一条鱼">
+        <span class="kid-figure-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <rect class="dpx-paper" x="0" y="0" width="120" height="100"/>
+            <g class="dpx-ink dpx-ink-e" fill="none">
+              <path d="M18 50 Q52 20 86 50 Q52 80 18 50 Z"/>
+              <path d="M86 50 L110 32 L110 68 Z"/>
+            </g>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">小鱼</span>
+        <span class="kid-figure-sub">2 笔</span>
+        <span class="kid-figure-fact">一个两头尖的椭圆，加一个三角尾巴。</span>
+      </button>
+      <button class="kid-figure" type="button" data-dpx-fig="cat" data-dpx-strokes="3" data-dpx-tip="先画大形状，再加小细节：圆画好了，耳朵才知道接在哪。" aria-pressed="false" aria-label="选为目标：3 笔画猫脸">
+        <span class="kid-figure-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <rect class="dpx-paper" x="0" y="0" width="120" height="100"/>
+            <g class="dpx-ink dpx-ink-b" fill="none">
+              <circle cx="60" cy="58" r="30"/>
+              <path d="M38 34 L34 12 L56 24"/>
+              <path d="M82 34 L86 12 L64 24"/>
+            </g>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">猫脸</span>
+        <span class="kid-figure-sub">3 笔</span>
+        <span class="kid-figure-fact">先画大形状，再加小细节；眼睛鼻子最后自己加。</span>
+      </button>
+      <button class="kid-figure" type="button" data-dpx-fig="cloud" data-dpx-strokes="3" data-dpx-tip="两个鼓包不要画一样大，一大一小才像真的云。" aria-pressed="false" aria-label="选为目标：3 笔画一朵云">
+        <span class="kid-figure-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <rect class="dpx-paper" x="0" y="0" width="120" height="100"/>
+            <g class="dpx-ink dpx-ink-a" fill="none">
+              <path d="M22 66 A18 18 0 0 1 50 50"/>
+              <path d="M46 54 A24 24 0 0 1 94 64"/>
+              <path d="M22 66 L94 66"/>
+            </g>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">云朵</span>
+        <span class="kid-figure-sub">3 笔</span>
+        <span class="kid-figure-fact">两个鼓包加一条底线，底线要拉平。</span>
+      </button>
+      <button class="kid-figure" type="button" data-dpx-fig="house" data-dpx-strokes="4" data-dpx-tip="先画方方的墙，再盖屋顶；门和窗最后放。" aria-pressed="false" aria-label="选为目标：4 笔画一栋房子">
+        <span class="kid-figure-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <rect class="dpx-paper" x="0" y="0" width="120" height="100"/>
+            <g class="dpx-ink dpx-ink-d" fill="none">
+              <path d="M30 44 L90 44 L90 88 L30 88 Z"/>
+              <path d="M22 44 L60 14 L98 44"/>
+              <path d="M52 88 L52 64 L68 64 L68 88"/>
+              <path d="M36 52 L48 52 L48 64 L36 64 Z"/>
+            </g>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">房子</span>
+        <span class="kid-figure-sub">4 笔</span>
+        <span class="kid-figure-fact">墙是长方形，屋顶是一个「人」字。</span>
+      </button>
+      <button class="kid-figure" type="button" data-dpx-fig="boat" data-dpx-strokes="4" data-dpx-tip="桅杆用一条直线画到底，帆才不会歪。" aria-pressed="false" aria-label="选为目标：4 笔画一只船">
+        <span class="kid-figure-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <rect class="dpx-paper" x="0" y="0" width="120" height="100"/>
+            <g class="dpx-ink dpx-ink-e" fill="none">
+              <path d="M18 74 L102 74 L90 92 L30 92 Z"/>
+              <path d="M60 74 L60 16"/>
+              <path d="M64 22 L64 68 L98 68 Z"/>
+              <path d="M56 28 L56 68 L28 68 Z"/>
+            </g>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">小船</span>
+        <span class="kid-figure-sub">4 笔</span>
+        <span class="kid-figure-fact">船身是上宽下窄的梯形，两张帆一大一小。</span>
+      </button>
+      <button class="kid-figure" type="button" data-dpx-fig="tree" data-dpx-strokes="5" data-dpx-tip="对称的东西画一半再镜像：打开左右镜像，只画左半边。" aria-pressed="false" aria-label="选为目标：5 笔画一棵树">
+        <span class="kid-figure-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <rect class="dpx-paper" x="0" y="0" width="120" height="100"/>
+            <g class="dpx-ink dpx-ink-c" fill="none">
+              <path d="M22 72 L60 44 L98 72 Z"/>
+              <path d="M28 54 L60 30 L92 54 Z"/>
+              <path d="M34 38 L60 14 L86 38 Z"/>
+              <path d="M54 72 L54 92"/>
+              <path d="M66 72 L66 92"/>
+            </g>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">松树</span>
+        <span class="kid-figure-sub">5 笔</span>
+        <span class="kid-figure-fact">对称的东西画一半再镜像；三个三角越往上越小。</span>
+      </button>
+      <button class="kid-figure" type="button" data-dpx-fig="car" data-dpx-strokes="6" data-dpx-tip="两个轮子要一样大，可以先各画一个点当圆心。" aria-pressed="false" aria-label="选为目标：6 笔画一辆小车">
+        <span class="kid-figure-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <rect class="dpx-paper" x="0" y="0" width="120" height="100"/>
+            <g class="dpx-ink dpx-ink-f" fill="none">
+              <path d="M14 72 L106 72 L106 54 L14 54 Z"/>
+              <path d="M36 54 L48 34 L82 34 L92 54"/>
+              <path d="M52 50 L52 40 L78 40 L78 50 Z"/>
+              <circle cx="36" cy="76" r="10"/>
+              <circle cx="86" cy="76" r="10"/>
+              <circle cx="112" cy="62" r="4"/>
+            </g>
+          </svg>
+        </span>
+        <span class="kid-figure-cap">小车</span>
+        <span class="kid-figure-sub">6 笔</span>
+        <span class="kid-figure-fact">长方形车身 + 一个车顶 + 两个一样大的圆轮子。</span>
+      </button>
+    </div>
+    <div class="kid-speech-row">
+      <span class="kid-mascot" aria-hidden="true">🖍️</span>
+      <p class="kid-speech" id="dpxAtlasSay" role="status" aria-live="polite">点一张卡，下面的目标就换成它。笔数少的先玩。</p>
+    </div>
+    <details class="parent-deep-dive" data-audience="parent">
+      <summary>家长深读：图鉴在教什么</summary>
+      <p><b>学习目标：</b>把「会不会画」换成「拆成几笔」。每张卡都标了笔数，孩子于是知道复杂形状是由少数几个简单笔画拼出来的，而不是一次性凭天赋画成。</p>
+      <p><b>陪伴追问：</b>先让孩子数一数卡上有几笔，再问「哪一笔要先画？」答案几乎总是最大的那一笔。这一句问答就是整页最关键的画画方法。</p>
+    </details>
+  </section>
+
+  <!-- ② 两条量表：读画布的真实状态 -->
+  <section class="card dpx-block" aria-labelledby="dpxMeterTitle">
+    <h2 id="dpxMeterTitle">画到哪儿了</h2>
+    <p class="dpx-lead">这两条会跟着你的每一笔、每一次换颜色自己变长。</p>
+    <div class="dpx-meters">
+      <div class="kid-meter" style="--tone:var(--math)">
+        <div class="kid-meter-head">
+          <span class="kid-meter-icon" aria-hidden="true">🖌️</span>
+          <span id="dpxStrokeLabel">已经画了几笔</span>
+          <b class="kid-meter-value" id="dpxStrokeValue">0 / 1 笔</b>
+        </div>
+        <div class="kid-meter-track" id="dpxStrokeMeter" role="img" aria-labelledby="dpxStrokeLabel dpxStrokeValue"><span class="kid-meter-fill"></span></div>
+        <p class="kid-meter-note">右边的数字是目标图形的笔数。多画几笔不算错，条满了就是够用了。</p>
+      </div>
+      <div class="kid-meter" style="--tone:var(--kit)">
+        <div class="kid-meter-head">
+          <span class="kid-meter-icon" aria-hidden="true">🎨</span>
+          <span id="dpxColorLabel">用了几种颜色</span>
+          <b class="kid-meter-value" id="dpxColorValue">0 / 8 种</b>
+        </div>
+        <div class="kid-meter-track" id="dpxColorMeter" role="img" aria-labelledby="dpxColorLabel dpxColorValue"><span class="kid-meter-fill"></span></div>
+        <p class="kid-meter-note" id="dpxColorNote">画室一共 8 种颜色。同一个颜色画很多笔也只算一种；橡皮擦不算颜色。</p>
+      </div>
+    </div>
+    <details class="parent-deep-dive" data-audience="parent">
+      <summary>家长深读：两条量表在教什么</summary>
+      <p><b>学习目标：</b>数数与「去重」。第一条是简单计数；第二条是集合概念——同一种颜色反复用，计数不增加。孩子多试几次就会自己发现这条规则。</p>
+      <p><b>背后的原理：</b>量表把数量画成长度，是最早的一种数据可视化。孩子看条的长短做判断，比读数字更快，这也是柱状图的起点。</p>
+    </details>
+  </section>
+
+  <!-- ③ 图形小游戏：照着画 -->
+  <section class="card dpx-block" aria-labelledby="dpxCopyTitle">
+    <h2 id="dpxCopyTitle">照着画：把目标画一遍</h2>
+    <p class="dpx-lead">目标画得淡淡的，就摆在旁边，方便你一边看一边比。回到上面的画布画一遍，再自己说说像不像。</p>
+    <div class="dpx-copy-row">
+      <div class="kid-figure dpx-ghost-card">
+        <span class="kid-figure-art dpx-ghost" id="dpxTargetArt" aria-hidden="true">
+          <svg viewBox="0 0 120 100" focusable="false">
+            <rect class="dpx-paper" x="0" y="0" width="120" height="100"/>
+            <g class="dpx-ink dpx-ink-a" fill="none">
+              <path d="M60 50 a4 4 0 0 1 8 0 a8 8 0 0 1 -16 0 a12 12 0 0 1 24 0 a16 16 0 0 1 -32 0 a20 20 0 0 1 40 0 a24 24 0 0 1 -48 0"/>
+            </g>
+          </svg>
+        </span>
+        <span class="kid-figure-cap" id="dpxTargetCap">螺旋</span>
+        <span class="kid-figure-sub" id="dpxTargetSub">1 笔</span>
+        <span class="kid-figure-fact" id="dpxTargetFact">一笔不抬手，圈一圈比上一圈大一点。</span>
+      </div>
+      <div class="dpx-copy-side">
+        <p class="dpx-dots-row">
+          <span class="dpx-dots-cap" id="dpxDotsCap">第 1 个目标，一共 8 个</span>
+          <span class="kid-dots" id="dpxTargetDots" style="--tone:var(--kit)" role="img" aria-labelledby="dpxDotsCap"></span>
+        </p>
+        <button class="btn btn-ghost dpx-next-btn" type="button" id="dpxNextTarget" aria-label="换下一个临摹目标"><span aria-hidden="true">🔄 </span>换一个目标</button>
+        <div class="kid-tiles dpx-judge" id="dpxJudge" role="group" aria-label="自己看看画得像不像">
+          <button class="kid-tile" type="button" data-dpx-judge="like" aria-pressed="false" aria-label="我觉得画得像">
+            <span class="kid-tile-art" aria-hidden="true">😃</span>
+            <span class="kid-tile-label">像</span>
+            <span class="kid-tile-sub">大形状抓到了</span>
+          </button>
+          <button class="kid-tile" type="button" data-dpx-judge="half" aria-pressed="false" aria-label="我觉得有点像">
+            <span class="kid-tile-art" aria-hidden="true">🙂</span>
+            <span class="kid-tile-label">有点像</span>
+            <span class="kid-tile-sub">对了一半</span>
+          </button>
+          <button class="kid-tile" type="button" data-dpx-judge="far" aria-pressed="false" aria-label="我觉得差很多">
+            <span class="kid-tile-art" aria-hidden="true">🤔</span>
+            <span class="kid-tile-label">差很多</span>
+            <span class="kid-tile-sub">再看一眼再画</span>
+          </button>
+        </div>
+        <p class="kid-speech" id="dpxJudgeSay" role="status" aria-live="polite">画完以后，点一张卡说说像不像。没有对错，说实话就好。</p>
+      </div>
+    </div>
+    <details class="parent-deep-dive" data-audience="parent">
+      <summary>家长深读：自评在教什么</summary>
+      <p><b>学习目标：</b>自我评价。这里没有分数、没有判对错，只让孩子自己说出「像 / 有点像 / 差很多」，再拿到一条具体可执行的下一步。会评价自己的作品，是继续画下去的前提。</p>
+      <p><b>陪伴追问：</b>孩子说「差很多」时，不要否认他的判断，问「哪一处最不一样？」然后只改那一处。一次只改一个地方，进步看得见，作品也不会被推翻。</p>
+      <p><b>背后的原理：</b>画得像不像，多半不是手的问题，而是看的时间不够。线条抖是正常的：手指小肌肉还在发育，用整条胳膊带动笔比用手腕更稳。</p>
+    </details>
+  </section>
+
   <section class="challenge">
     <article class="card mission kid-result-card" aria-labelledby="finishTitle">
       <div class="mission-top"><h2 id="finishTitle">画好后，给作品盖完成章</h2><p>上方任务带会实时核对：至少 3 笔、3 种颜色和 1 个印章，条件不变。</p></div>
@@ -295,12 +650,254 @@
       <p class="work-card-content">本站只保存标题和你讲的故事，不上传画布图片。想保留图片请点“保存图片”。</p>
       <div class="work-card-fields">
         <input type="hidden" name="type" value="drawing">
-        <div><label for="workTitle">作品名字</label><input class="input" id="workTitle" name="title" maxlength="80" placeholder="例如：会飞的彩虹怪兽"></div>
-        <div><label for="workStory">这幅画里发生了什么？</label><textarea class="input" id="workStory" name="content" maxlength="1200" placeholder="孩子可以说，家长帮忙写一句。"></textarea></div>
+        <div>
+          <label for="workTitle">作品名字</label>
+          <input class="input" id="workTitle" name="title" maxlength="80" placeholder="例如：会飞的彩虹怪兽">
+          <div class="quick-picks" data-fill="workTitle" role="group" aria-label="作品名字快捷选项">
+            <button class="kid-choice" type="button" aria-pressed="false" data-value="会飞的彩虹怪兽">🌈 会飞的彩虹怪兽</button>
+            <button class="kid-choice" type="button" aria-pressed="false" data-value="对称的蝴蝶花园">🦋 对称的蝴蝶花园</button>
+            <button class="kid-choice" type="button" aria-pressed="false" data-value="我调出来的新颜色">🎨 我调出来的新颜色</button>
+            <button class="kid-choice" type="button" aria-pressed="false" data-value="只用圆形和直线的城市">⭕ 只用圆形和直线的城市</button>
+          </div>
+        </div>
+        <div>
+          <label for="workStory">这幅画里发生了什么？</label>
+          <textarea class="input" id="workStory" name="content" maxlength="1200" placeholder="孩子可以说，家长帮忙写一句。"></textarea>
+          <div class="quick-picks" data-fill="workStory" role="group" aria-label="作品故事快捷选项">
+            <button class="kid-choice" type="button" aria-pressed="false" data-value="我把蓝色和黄色叠在一起，它变成了绿色，我很惊讶。">🔵🟡 蓝加黄变成了绿色</button>
+            <button class="kid-choice" type="button" aria-pressed="false" data-value="我打开了镜像，画一半就自动出现另一半，像蝴蝶的两只翅膀。">🦋 画一半就出现另一半</button>
+            <button class="kid-choice" type="button" aria-pressed="false" data-value="我先用细线画外形，再用粗线画重要的地方，重要的地方看起来更靠前。">✏️ 粗线画重要的地方</button>
+            <button class="kid-choice" type="button" aria-pressed="false" data-value="我先看了很久再画的：我数了它有几条腿，才开始下笔。">👀 先数清楚再下笔</button>
+            <button class="kid-choice" type="button" aria-pressed="false" data-value="我把同一个印章重复盖了好几次，排成一行，看起来像花边。">✨ 重复盖印章排成花边</button>
+            <button class="kid-choice" type="button" aria-pressed="false" data-value="颜色叠太多次以后变得脏脏的，下次我要少叠几层。">🟤 叠太多次变脏了</button>
+          </div>
+        </div>
       </div>
       <button class="btn btn-primary" type="submit">保存作品说明</button>
       <p class="work-card-status" data-playful-work-status role="status" aria-live="polite"></p>
     </form>
+  </section>
+
+  <section class="studio-knowledge" aria-labelledby="studioKnowTitle">
+    <div class="teach-what">
+      <h2 id="studioKnowTitle">这在教什么</h2>
+      <p>画画不只是好看。你在练四件事：<b>颜色怎么混</b>、<b>对称和重复</b>、<b>用线条和形状搭出一个东西</b>，还有<b>先看清楚再画</b>。下面四个知识站，每一个都可以直接回画布上试。</p>
+    </div>
+
+    <article class="card know-card" aria-labelledby="knowColorTitle">
+      <h3 id="knowColorTitle">知识站 1 · 颜色混合：颜料越混越暗</h3>
+      <p class="know-lead">两种颜料混在一起，得到的不是更亮，而是更暗的第三种颜色。这叫减色混合。</p>
+      <div class="know-grid">
+        <div>
+          <!-- 先押一个再揭示。原本孩子直接点「🟡+🔴+🔵」就看到答案，没有押注就没有意外，
+               而「越混越暗」恰恰是要靠意外才记得住的一条。共享层只管收猜测和揭示文字，
+               真正的演示仍然是下面那颗 data-mix="all" 按钮。 -->
+          <div class="kid-predict" style="--tone:var(--kit)"
+               data-kid-predict
+               data-kid-predict-explain="三种颜料把各段光都吃掉了，几乎没有光反射回来，所以越混越暗。"
+               data-kid-predict-hint="先押一个你猜的颜色，再点「混给我看」。"
+               data-kid-predict-again="押好了，点「混给我看」。">
+            <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🤔</span><b>黄、红、蓝三种颜料全涂在同一块地方，会变成什么颜色？</b></p>
+            <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：三种颜料混在一起会变成什么颜色">
+              <button class="kid-predict-pick" type="button" data-kid-choice data-value="white">白色</button>
+              <button class="kid-predict-pick" type="button" data-kid-choice data-value="rainbow">更亮的彩虹色</button>
+              <button class="kid-predict-pick" type="button" data-kid-choice data-value="dark" data-kid-predict-correct>灰棕色</button>
+            </div>
+            <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🎨</span> 混给我看</button>
+            <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「混给我看」。</p>
+          </div>
+          <div class="kid-choice" role="group" aria-label="选择两种颜色混合">
+            <button class="btn btn-ghost" type="button" data-mix="yellow-blue" aria-pressed="false">🟡 + 🔵</button>
+            <button class="btn btn-ghost" type="button" data-mix="yellow-red" aria-pressed="false">🟡 + 🔴</button>
+            <button class="btn btn-ghost" type="button" data-mix="red-blue" aria-pressed="false">🔴 + 🔵</button>
+            <button class="btn btn-ghost" type="button" data-mix="all" aria-pressed="false">🟡 + 🔴 + 🔵</button>
+          </div>
+          <div class="kid-result-card" id="mixCard" role="status" aria-live="polite"><span aria-hidden="true">👆</span><span><b>点两个颜色试试</b><p>右边的圆圈会重叠，中间就是混出来的颜色。</p></span></div>
+          <div class="tiers">
+            <p class="tier-a"><b>4–6 岁：</b>黄色加蓝色变绿色，黄色加红色变橙色，红色加蓝色变紫色。颜料混得越多，颜色就越深。</p>
+            <p class="tier-b"><b>7–9 岁：</b>红、黄、蓝是<b>三原色</b>，它们混不出来，只能用来混别的。两两相混得到的绿、橙、紫叫<b>间色</b>。想画浅一点，不是加白光，而是少蘸颜料或加白色颜料。</p>
+            <p class="tier-c"><b>10–12 岁进阶：</b>颜料的颜色来自它<b>吸收</b>了哪些光、把剩下的反射给你的眼睛。混两种颜料，吸收的光就叠加起来，反射回来的自然更少，所以越混越暗——这就是“减色”。屏幕相反：屏幕用红绿蓝三种光相加，加得越多越亮，白色是三种光全开。所以在屏幕上调色和用颜料调色的规律是反的。</p>
+          </div>
+          <ul class="open-q">
+            <li><b>你怎么想？</b>把画室里所有颜色都涂在同一块地方，你猜最后会变成什么颜色？为什么不会变成白色？</li>
+            <li><b>去试试：</b>用“彩笔”工具画两笔交叠在一起（彩笔是半透明的），交叠的地方和旁边一样吗？</li>
+          </ul>
+          <details class="fold parent-deep-dive" data-audience="parent">
+            <summary>家长延伸：一次就能看懂减色混合</summary>
+            <p>拿三支水彩笔或三张玻璃纸（黄、红、蓝），叠在窗光前让孩子往外看。叠一层还挺亮，叠两层变暗，三层几乎全黑。这比任何解释都直观：<b>每加一层，就多挡掉一些光</b>。接着可以顺手对比：手机屏幕上的白色其实是红绿蓝三种小灯全亮，用放大镜或水滴贴近屏幕就能看到那三个小点。孩子理解了“颜料是减、光是加”，以后学配色不会再混淆。</p>
+          </details>
+        </div>
+        <svg class="know-art" viewBox="0 0 220 200" role="img" aria-label="减色混合示意图：黄、红、蓝三个半透明圆圈相互重叠，重叠处出现更暗的绿、橙、紫，三色重叠处接近黑色">
+          <rect x="0" y="0" width="220" height="200" fill="#fffaf0"/>
+          <g id="mixCircles">
+            <circle id="mixYellow" cx="110" cy="70" r="52" fill="#e8c21c" fill-opacity=".72"/>
+            <circle id="mixRed" cx="80" cy="122" r="52" fill="#d6362f" fill-opacity=".72"/>
+            <circle id="mixBlue" cx="140" cy="122" r="52" fill="#2456b8" fill-opacity=".72"/>
+          </g>
+          <text x="102" y="18" font-size="11" fill="#5c4a1c" font-weight="800">黄</text>
+          <text x="28" y="150" font-size="11" fill="#6b2320" font-weight="800">红</text>
+          <text x="186" y="150" font-size="11" fill="#1c3670" font-weight="800">蓝</text>
+          <text x="110" y="192" font-size="10" fill="#7a6a52" text-anchor="middle">重叠越多 → 越暗</text>
+        </svg>
+      </div>
+    </article>
+
+    <article class="card know-card" aria-labelledby="knowSymTitle">
+      <h3 id="knowSymTitle">知识站 2 · 对称与重复：画一半，得到一整个</h3>
+      <p class="know-lead">工具栏里的“镜像魔法”就是对称。打开它，你画一笔，另一边会自动出现一笔。</p>
+      <div class="know-grid">
+        <div>
+          <div class="kid-choice" role="group" aria-label="选择一种对称方式">
+            <button class="btn btn-ghost" type="button" data-sym="none" aria-pressed="false">1️⃣ 普通</button>
+            <button class="btn btn-ghost" type="button" data-sym="vertical" aria-pressed="false">↔️ 左右对称</button>
+            <button class="btn btn-ghost" type="button" data-sym="quad" aria-pressed="false">✳️ 四面对称</button>
+          </div>
+          <div class="kid-result-card" id="symCard" role="status" aria-live="polite"><span aria-hidden="true">👆</span><span><b>点一种看看</b><p>右图会显示这种镜像画出来是什么样，画布上的镜像也会跟着切换。</p></span></div>
+          <div class="tiers">
+            <p class="tier-a"><b>4–6 岁：</b>像把纸对折。你在这边画什么，那边就出现一样的，只是方向反过来。</p>
+            <p class="tier-b"><b>7–9 岁：</b>中间那条看不见的线叫<b>对称轴</b>。蝴蝶、人脸、树叶都有一条对称轴；雪花有六条。<b>重复</b>是另一件事：同一个形状一遍遍出现，就成了花边和图案。</p>
+            <p class="tier-c"><b>10–12 岁进阶：</b>镜像不是平移。镜像会把左右调过来（你写的字在镜像里是反的），平移只是搬个位置，旋转是绕一个点转。四面镜像其实同时用了两条轴，效果接近旋转对称。真正的自然界几乎没有完美对称——蝴蝶两边的斑点大小总有点差别，这一点“不完美”反而让它看起来是活的。</p>
+          </div>
+          <ul class="open-q">
+            <li><b>你怎么想？</b>为什么用左右镜像画怪兽的脸很容易，画它伸出的一只手却很奇怪？</li>
+            <li><b>去试试：</b>打开四面对称，只画一笔弯线。你觉得它会像雪花、像花，还是像别的东西？</li>
+          </ul>
+          <details class="fold parent-deep-dive" data-audience="parent">
+            <summary>家长延伸：从镜像走到“规律”</summary>
+            <p>关掉镜像，让孩子自己动手画对称——他会立刻发现难度：手要反着走。这时候再打开镜像，孩子就懂了工具替他做了什么。接着可以引一句：“你能不打开镜像，用重复画一条花边吗？”重复和对称是同一族的数学结构，画花边其实是在做规律延伸。孩子把同一个形状画第五遍时，就已经在做“预测下一个是什么”了。</p>
+          </details>
+        </div>
+        <svg class="know-art" id="symArt" viewBox="0 0 200 200" role="img" aria-label="对称示意图：一条对称轴把画面分成两半，一侧的图形在另一侧镜像出现">
+          <rect x="0" y="0" width="200" height="200" fill="#fffaf0"/>
+          <line id="symAxisV" x1="100" y1="8" x2="100" y2="192" stroke="#c8b79a" stroke-width="2" stroke-dasharray="7 6"/>
+          <line id="symAxisH" x1="8" y1="100" x2="192" y2="100" stroke="#c8b79a" stroke-width="2" stroke-dasharray="7 6" opacity="0"/>
+          <g id="symBase" fill="none" stroke="#1f6fd0" stroke-width="7" stroke-linecap="round">
+            <path d="M100 100C82 84 62 88 58 66c-3-18 16-26 26-12"/>
+            <circle cx="70" cy="46" r="8" fill="#d81b73" stroke="none"/>
+          </g>
+          <g id="symMirrorV" opacity="0" transform="translate(200,0) scale(-1,1)" fill="none" stroke="#0f8a4d" stroke-width="7" stroke-linecap="round">
+            <path d="M100 100C82 84 62 88 58 66c-3-18 16-26 26-12"/>
+            <circle cx="70" cy="46" r="8" fill="#d2591a" stroke="none"/>
+          </g>
+          <g id="symMirrorH" opacity="0">
+            <g transform="translate(0,200) scale(1,-1)" fill="none" stroke="#7c3aed" stroke-width="7" stroke-linecap="round">
+              <path d="M100 100C82 84 62 88 58 66c-3-18 16-26 26-12"/>
+              <circle cx="70" cy="46" r="8" fill="#0e7f97" stroke="none"/>
+            </g>
+            <g transform="translate(200,200) scale(-1,-1)" fill="none" stroke="#d68a00" stroke-width="7" stroke-linecap="round">
+              <path d="M100 100C82 84 62 88 58 66c-3-18 16-26 26-12"/>
+              <circle cx="70" cy="46" r="8" fill="#6b4f36" stroke="none"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </article>
+
+    <article class="card know-card" aria-labelledby="knowShapeTitle">
+      <h3 id="knowShapeTitle">知识站 3 · 任何东西都能拆成简单形状</h3>
+      <p class="know-lead">不会画猫？别急着画猫。先画一个圆、一个椭圆、两个三角形——拼起来就是猫了。</p>
+      <div class="know-grid">
+        <div>
+          <div class="kid-choice" role="group" aria-label="选择拆解到第几步">
+            <button class="btn btn-ghost" type="button" data-build="1" aria-pressed="false">① 大形状</button>
+            <button class="btn btn-ghost" type="button" data-build="2" aria-pressed="false">② 加零件</button>
+            <button class="btn btn-ghost" type="button" data-build="3" aria-pressed="false">③ 加细节</button>
+          </div>
+          <div class="kid-result-card" id="buildCard" role="status" aria-live="polite"><span aria-hidden="true">👆</span><span><b>按顺序点一遍</b><p>看这只猫是怎么从两个圆变出来的。</p></span></div>
+          <div class="tiers">
+            <p class="tier-a"><b>4–6 岁：</b>先画大的，再画小的。大圆是头，小三角是耳朵，长长的线是尾巴。</p>
+            <p class="tier-b"><b>7–9 岁：</b>顺序很重要：<b>先定大形状和位置，最后才加细节</b>。如果一开始就画眼睛，往往会发现头不够地方画。线条也在说话：直线显得硬和快，弯线显得软和慢，短促的线看起来毛毛的。</p>
+            <p class="tier-c"><b>10–12 岁进阶：</b>还有两件事让画面“站得住”：一是<b>比例</b>——耳朵有几个眼睛那么宽？二是<b>留白</b>——形状之间的空隙也是画面的一部分，挤满了反而看不清主角。有意打破规律也是技巧：一群一模一样的圆里放一个方块，眼睛会立刻被那个方块吸引。这就是画面的重点安排。</p>
+          </div>
+          <ul class="open-q">
+            <li><b>你怎么想？</b>你的怪兽如果要显得“很快”，你会用直线还是弯线？为什么？</li>
+            <li><b>去试试：</b>只用圆形和直线，画一样房间里的东西，让别人猜出来是什么。</li>
+          </ul>
+          <details class="fold parent-deep-dive" data-audience="parent">
+            <summary>家长延伸：不要替孩子画</summary>
+            <p>孩子说“我不会画”时，最没用的回应是拿过笔来示范一遍。有用的问法是：“它的头是圆的还是方的？”“它比身子大还是小？”把“画”的问题换成“看”的问题，孩子就能自己下笔。他画出来的比例可能很夸张——那不是错误，儿童画里的夸张往往正是他觉得最重要的部分。可以顺着问：“你把手画得这么大，是因为它要拿什么吗？”</p>
+          </details>
+        </div>
+        <svg class="know-art" id="buildArt" viewBox="0 0 200 190" role="img" aria-label="形状拆解示意图：先用圆形和三角形摆出大形状，再加上四肢和尾巴，最后添加五官细节">
+          <rect x="0" y="0" width="200" height="190" fill="#fffaf0"/>
+          <g id="buildStep1" opacity="0">
+            <circle cx="100" cy="62" r="34" fill="none" stroke="#1f6fd0" stroke-width="4" stroke-dasharray="6 5"/>
+            <ellipse cx="100" cy="132" rx="42" ry="32" fill="none" stroke="#1f6fd0" stroke-width="4" stroke-dasharray="6 5"/>
+            <path d="M74 38l4-24 20 14M126 38l-4-24-20 14" fill="none" stroke="#1f6fd0" stroke-width="4"/>
+          </g>
+          <g id="buildStep2" opacity="0">
+            <circle cx="100" cy="62" r="34" fill="#f3d9a6" stroke="#8a6a2f" stroke-width="3"/>
+            <ellipse cx="100" cy="132" rx="42" ry="32" fill="#f3d9a6" stroke="#8a6a2f" stroke-width="3"/>
+            <path d="M74 38l4-24 20 16zM126 38l-4-24-20 16z" fill="#f3d9a6" stroke="#8a6a2f" stroke-width="3"/>
+            <path d="M142 140c22 4 26-18 14-28" fill="none" stroke="#8a6a2f" stroke-width="6" stroke-linecap="round"/>
+            <path d="M78 162v14M100 164v12M122 162v14" stroke="#8a6a2f" stroke-width="6" stroke-linecap="round"/>
+          </g>
+          <g id="buildStep3" opacity="0">
+            <circle cx="88" cy="58" r="5" fill="#33261a"/><circle cx="112" cy="58" r="5" fill="#33261a"/>
+            <path d="M100 68l-5 6h10z" fill="#d81b73"/>
+            <path d="M92 80c4 5 12 5 16 0" fill="none" stroke="#33261a" stroke-width="3" stroke-linecap="round"/>
+            <path d="M62 70H40M62 78H42M138 70h22M138 78h20" stroke="#33261a" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="82" cy="128" r="7" fill="#e8c21c"/><circle cx="112" cy="140" r="6" fill="#0f8a4d"/>
+          </g>
+          <text x="100" y="14" font-size="10" fill="#7a6a52" text-anchor="middle" id="buildLabel">先大后小</text>
+        </svg>
+      </div>
+    </article>
+
+    <article class="card know-card" aria-labelledby="knowLookTitle">
+      <h3 id="knowLookTitle">知识站 4 · 先看清楚，再动笔</h3>
+      <p class="know-lead">画得像不像，多半不是手的问题，是看得够不够久。真正的画家会先看很久，才画第一笔。</p>
+      <div class="know-grid">
+        <div>
+          <ol class="look-list">
+            <li><b>找一个真东西。</b>一个杯子、一片叶子、一只玩具，放在你面前，不要照着别人的画画。</li>
+            <li><b>数到十再动笔。</b>这十秒里只做一件事：看它的外形轮廓。</li>
+            <li><b>问自己三句话。</b>它整体最像什么形状？哪里最宽？哪里有个转折或缺口？</li>
+            <li><b>先画最大的那条轮廓线。</b>不用一次画对，画歪了就在旁边再画一条。</li>
+            <li><b>最后回头对比。</b>看一眼真东西，再看一眼你的画，找出一个最不一样的地方，只改那一个。</li>
+          </ol>
+          <div class="tiers">
+            <p class="tier-a"><b>4–6 岁：</b>先用眼睛把它从头到尾“摸”一圈，再画。</p>
+            <p class="tier-b"><b>7–9 岁：</b>我们常常画的不是眼前的东西，而是脑子里记住的样子——所以画杯子容易画成一个标准杯子，而不是眼前这个有缺口的杯子。多看几眼，就能发现真实的细节。</p>
+            <p class="tier-c"><b>10–12 岁进阶：</b>有一个好用的办法叫<b>画空隙</b>：不要画椅子，而去画椅背和横杆之间那几块空白。因为你对“空白”没有记忆中的成见，画出来的形状反而更准。<b>先整体后局部</b>也是同一个道理，先定关系，再补细节。</p>
+          </div>
+          <ul class="open-q">
+            <li><b>你怎么想？</b>为什么闭上眼睛回想一只手，再画出来，总是和真手不太一样？</li>
+            <li><b>挑战：</b>看着一片叶子画两次：第一次只看 3 秒，第二次看满 30 秒。哪一张更像？你多看到了什么？</li>
+          </ul>
+          <details class="fold parent-deep-dive" data-audience="parent">
+            <summary>家长延伸：把“画得不像”变成一次观察练习</summary>
+            <p>孩子沮丧地说“画得不像”时，不要评价画，去问观察：“我们一起再看看，它这里是圆的还是尖的？”然后只让他改这一处。一次只改一个地方，孩子既有进步感，也不会推翻自己的作品。另一个好玩的练法是“不看纸画”：眼睛全程盯着实物，笔在纸上走，不许看纸。画出来通常很滑稽，但线条常常出奇地准——因为注意力完全在观察上。</p>
+          </details>
+        </div>
+        <svg class="know-art" viewBox="0 0 200 200" role="img" aria-label="观察后再画示意图：左边是真实的杯子，右边是纸上的画，中间用箭头表示先反复观察再落笔">
+          <rect x="0" y="0" width="200" height="200" fill="#fffaf0"/>
+          <path d="M28 78h54l-6 62c-1 8-6 12-21 12s-20-4-21-12z" fill="#cfe6f5" stroke="#3d6a86" stroke-width="3"/>
+          <path d="M82 92c16 0 16 26 0 26" fill="none" stroke="#3d6a86" stroke-width="3"/>
+          <text x="55" y="176" font-size="11" fill="#3d6a86" text-anchor="middle" font-weight="800">真东西</text>
+          <rect x="118" y="70" width="62" height="82" rx="4" fill="#fff" stroke="#c8b79a" stroke-width="3"/>
+          <path d="M130 88h34l-4 44c0 6-4 8-13 8s-13-2-13-8z" fill="none" stroke="#d2591a" stroke-width="3"/>
+          <path d="M164 98c10 0 10 18 0 18" fill="none" stroke="#d2591a" stroke-width="3"/>
+          <text x="149" y="176" font-size="11" fill="#8a6a2f" text-anchor="middle" font-weight="800">我的画</text>
+          <path d="M96 100h14" stroke="#7a6a52" stroke-width="3" stroke-linecap="round"/>
+          <path d="M104 94l8 6-8 6" fill="#7a6a52"/>
+          <text x="100" y="40" font-size="11" fill="#7a6a52" text-anchor="middle">👀 看 10 秒</text>
+          <path d="M112 126h-14" stroke="#7a6a52" stroke-width="3" stroke-linecap="round" stroke-dasharray="5 4"/>
+          <path d="M104 120l-8 6 8 6" fill="#7a6a52"/>
+          <text x="100" y="58" font-size="10" fill="#5d4a30" text-anchor="middle">再看一眼，只改一处</text>
+        </svg>
+      </div>
+    </article>
+
+    <article class="card know-card" aria-labelledby="knowMythTitle">
+      <h3 id="knowMythTitle">容易搞错的四件事</h3>
+      <ul class="myth">
+        <li><b>“颜色混多了会变白。”</b>颜料相反，混得越多越暗，最后接近黑褐色。会变白的是光。</li>
+        <li><b>“对称就是一模一样。”</b>镜像里左右是调过来的。写个字试试，你就看出区别了。</li>
+        <li><b>“先画细节比较保险。”</b>先画眼睛，往往后面就摆不下头了。先大后小才不会挤。</li>
+        <li><b>“画得像才算画得好。”</b>像只是其中一种目标。夸张、简化、编故事，都是有意思的画法。</li>
+      </ul>
+    </article>
   </section>
 
   <section class="learn-grid parent-deep-dive" data-audience="parent">
@@ -308,6 +905,7 @@
     <article class="card learn-card"><h2>背后的原理</h2><p>连续的小点连在一起，就成了线。镜像会把每个点复制到对称的位置；这和蝴蝶翅膀、剪纸图案里的轴对称很像。</p></article>
     <article class="card learn-card"><h2>玩得更有意思</h2><ul><li>轮流画：每个人一次只添一笔。</li><li>闭眼画一个形状，再睁眼把它变成动物。</li><li>只用圆形、直线和印章讲一个故事。</li></ul></article>
   </section>
+<p class="lab-exit"><a class="btn btn-ghost" href="index.html"><span aria-hidden="true">←</span> 回到实验室目录</a></p>
 </main>
 
 <footer class="foot"><div class="wrap">画布只在当前设备中运行；下载图片由浏览器直接生成，不上传到服务器。</div></footer>
@@ -415,10 +1013,12 @@
     document.getElementById("strokeCount").textContent=state.strokes;document.getElementById("colorCount").textContent=state.used.size;document.getElementById("stampCount").textContent=state.stamps;
     document.getElementById("strokeCheck").classList.toggle("done",a>=3);document.getElementById("colorCheck").classList.toggle("done",b>=3);document.getElementById("stampCheck").classList.toggle("done",c>=1);
     var ready=a>=3&&b>=3&&c>=1;document.getElementById("completeBtn").disabled=!ready;document.getElementById("missionStatus").textContent=ready?"任务完成条件都满足了，给作品盖章吧！":"还差一点点：3 笔、3 种颜色和 1 个印章。";
+    /* 两条 dpx 量表读的是同一份画布状态：落笔、盖章、撤销、清空都会经过这里 */
+    dpxSync();
   }
 
   var swatches=document.getElementById("swatches");
-  colors.forEach(function(item,index){var b=document.createElement("button");b.type="button";b.className="swatch";b.style.background=item.value;b.setAttribute("aria-label",item.name);b.setAttribute("aria-pressed",index===0?"true":"false");b.addEventListener("click",function(){state.color=item.value;document.documentElement.style.setProperty("--paint",item.value);document.querySelectorAll(".swatch").forEach(function(n){n.setAttribute("aria-pressed","false");});b.setAttribute("aria-pressed","true");if(state.tool==="eraser"){state.tool="pen";setPressed("#toolGrid [data-tool]","pen");}syncQuickControls();status("选好了“"+item.name+"”。");});swatches.appendChild(b);});
+  colors.forEach(function(item,index){var b=document.createElement("button");b.type="button";b.className="swatch";b.style.background=item.value;b.setAttribute("aria-label",item.name);b.setAttribute("aria-pressed",index===0?"true":"false");b.addEventListener("click",function(){state.color=item.value;document.documentElement.style.setProperty("--paint",item.value);document.querySelectorAll(".swatch").forEach(function(n){n.setAttribute("aria-pressed","false");});b.setAttribute("aria-pressed","true");if(state.tool==="eraser"){state.tool="pen";setPressed("#toolGrid [data-tool]","pen");}syncQuickControls();status("选好了“"+item.name+"”。");dpxColorPicked(item.name);});swatches.appendChild(b);});
   function syncQuickControls(){
     document.querySelectorAll("[data-quick-tool]").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.quickTool===state.tool?"true":"false");});
     document.querySelectorAll("[data-quick-color]").forEach(function(b){var item=colors[Number(b.dataset.quickColor)];b.style.background=item.value;b.setAttribute("aria-pressed",item.value===state.color?"true":"false");});
@@ -431,7 +1031,24 @@
   syncQuickControls();
   document.querySelectorAll("#mirrorGrid [data-mirror]").forEach(function(b){b.addEventListener("click",function(){state.mirror=b.dataset.mirror;setPressed("#mirrorGrid [data-mirror]",state.mirror);document.getElementById("mirrorV").className="mirror-line"+(state.mirror!=="none"?" v":"");document.getElementById("mirrorH").className="mirror-line"+(state.mirror==="quad"?" h":"");status(state.mirror==="none"?"普通画法。":state.mirror==="vertical"?"左右镜像打开了。":"四面镜像打开了。");});});
   document.querySelectorAll("#stampGrid [data-stamp]").forEach(function(b){b.setAttribute("aria-pressed","false");b.addEventListener("click",function(){state.stamp=b.dataset.stamp;setPressed("#stampGrid [data-stamp]",state.stamp);status("点一下画布，盖上印章。");});});
-  document.getElementById("brushSize").addEventListener("input",function(){state.size=Number(this.value);});
+  /* 粗细：孩子点图标按钮，家长可用 range 微调；两条通路互相同步 */
+  var sizeRange=document.getElementById("brushSize");
+  function syncSizePicks(){
+    document.querySelectorAll("#sizePicks [data-size]").forEach(function(b){
+      b.setAttribute("aria-pressed",Number(b.dataset.size)===state.size?"true":"false");
+    });
+  }
+  document.querySelectorAll("#sizePicks [data-size]").forEach(function(b){
+    b.addEventListener("click",function(){
+      state.size=Number(b.dataset.size);
+      sizeRange.value=state.size;
+      if(state.tool==="eraser"){state.tool="pen";setPressed("#toolGrid [data-tool]","pen");syncQuickControls();}
+      syncSizePicks();
+      status(b.getAttribute("aria-label")+"选好了，画一笔看看。");
+    });
+  });
+  sizeRange.addEventListener("input",function(){state.size=Number(this.value);syncSizePicks();});
+  syncSizePicks();
   canvas.addEventListener("pointerdown",pointerDown);canvas.addEventListener("pointermove",pointerMove);canvas.addEventListener("pointerup",pointerUp);canvas.addEventListener("pointercancel",pointerUp);
   document.getElementById("undoBtn").addEventListener("click",function(){if(undo.length<2)return;redo.push(undo.pop());restore(undo[undo.length-1],updateHistoryButtons);status("撤销了一步。");});
   document.getElementById("redoBtn").addEventListener("click",function(){if(!redo.length)return;var snap=redo.pop();undo.push(snap);restore(snap,updateHistoryButtons);status("重做了一步。");});
@@ -439,14 +1056,234 @@
   document.getElementById("downloadBtn").addEventListener("click",function(){var a=document.createElement("a");a.download="我的彩虹画-"+new Date().toISOString().slice(0,10)+".png";a.href=canvas.toDataURL("image/png");a.click();status("图片已经保存到设备。");});
   document.getElementById("completeBtn").addEventListener("click",function(){var evidence="画了 "+state.strokes+" 笔，用了 "+state.used.size+" 种颜色和 "+state.stamps+" 个印章";if(window.Progress&&Progress.complete("games/doodle-pad.html",evidence)){document.getElementById("missionStatus").textContent="完成啦！作品任务已经记录在我的足迹。";this.disabled=true;}else{document.getElementById("missionStatus").textContent="作品完成啦；当前浏览器没有保存足迹。";}});
   if(window.ResizeObserver)new ResizeObserver(function(){fitCanvas(true);}).observe(wrap);else window.addEventListener("resize",function(){fitCanvas(true);});
+
+  function pressOnly(list,active){[].forEach.call(list,function(b){b.setAttribute("aria-pressed",b===active?"true":"false");});}
+  function fillCard(card,icon,title,text){
+    while(card.firstChild)card.removeChild(card.firstChild);
+    var i=document.createElement("span");i.setAttribute("aria-hidden","true");i.textContent=icon;
+    var body=document.createElement("span");
+    var b=document.createElement("b");b.textContent=title;
+    var p=document.createElement("p");p.textContent=text;
+    body.appendChild(b);body.appendChild(p);
+    card.appendChild(i);card.appendChild(body);
+  }
+
+  // 快捷答案：让还不会打字的孩子也能填完作品说明。
+  [].forEach.call(document.querySelectorAll(".quick-picks[data-fill]"),function(group){
+    var field=document.getElementById(group.getAttribute("data-fill"));
+    if(!field)return;
+    var buttons=group.querySelectorAll("button[data-value]");
+    [].forEach.call(buttons,function(button){
+      button.addEventListener("click",function(){
+        pressOnly(buttons,button);
+        field.value=button.getAttribute("data-value");
+        field.dispatchEvent(new Event("input",{bubbles:true}));
+      });
+    });
+  });
+
+  // 知识站 1：减色混合。
+  var mixNotes={
+    "yellow-blue":{icon:"🟢",name:"黄 + 蓝 = 绿",text:"黄色颜料把蓝紫光吃掉，蓝色颜料把红橙光吃掉。剩下能反射出来的，就只有绿色。",show:["mixYellow","mixBlue"]},
+    "yellow-red":{icon:"🟠",name:"黄 + 红 = 橙",text:"两种颜料都不吃橙色附近的光，所以橙色留了下来，看起来又暖又亮。",show:["mixYellow","mixRed"]},
+    "red-blue":{icon:"🟣",name:"红 + 蓝 = 紫",text:"红和蓝各自吃掉中间的绿色光，剩下两头的红光和蓝光一起进眼睛，就成了紫。",show:["mixRed","mixBlue"]},
+    "all":{icon:"🟤",name:"三种一起 = 灰棕",text:"三种颜料把各段光都吃掉了，几乎没有光反射回来，所以越混越暗，变成灰棕色。",show:["mixYellow","mixRed","mixBlue"]}
+  };
+  var mixCard=document.getElementById("mixCard");
+  var mixButtons=document.querySelectorAll("button[data-mix]");
+  var mixIds=["mixYellow","mixRed","mixBlue"];
+  [].forEach.call(mixButtons,function(button){
+    button.addEventListener("click",function(){
+      var note=mixNotes[button.getAttribute("data-mix")];
+      pressOnly(mixButtons,button);
+      mixIds.forEach(function(id){
+        var node=document.getElementById(id);
+        if(node)node.setAttribute("opacity",note.show.indexOf(id)>=0?"1":"0.12");
+      });
+      fillCard(mixCard,note.icon,note.name,note.text);
+    });
+  });
+
+  /* 猜一猜卡：共享层收下猜测并揭示答案文字后广播 playful:predict，
+     这里只负责把「三种一起」那一格真的演示出来。判定和文案都在卡片身上，
+     混色逻辑仍然只有上面那一处。 */
+  var mixPredict=document.querySelector("[data-kid-predict]");
+  if(mixPredict)mixPredict.addEventListener("playful:predict",function(){
+    var all=document.querySelector('button[data-mix="all"]');
+    if(all)all.click();
+  });
+
+  // 知识站 2：对称，同时切换画布上的镜像。
+  var symNotes={
+    none:{icon:"1️⃣",name:"普通：一笔就是一笔",text:"没有镜像的时候，你画的每一笔只出现一次，形状完全由你决定。"},
+    vertical:{icon:"↔️",name:"左右对称：一笔变两笔",text:"中间有一条看不见的对称轴。你在左边画，右边就同时出现一模一样的一笔——蝴蝶的翅膀就是这样。"},
+    quad:{icon:"✳️",name:"四面对称：一笔变四笔",text:"竖着一条轴、横着一条轴，你的一笔被复制到四个角。雪花和很多剪纸花样，就是这么重复出来的。"}
+  };
+  var symCard=document.getElementById("symCard");
+  var symButtons=document.querySelectorAll("button[data-sym]");
+  [].forEach.call(symButtons,function(button){
+    button.addEventListener("click",function(){
+      var key=button.getAttribute("data-sym"),note=symNotes[key];
+      pressOnly(symButtons,button);
+      var axisH=document.getElementById("symAxisH"),mv=document.getElementById("symMirrorV"),mh=document.getElementById("symMirrorH");
+      if(axisH)axisH.setAttribute("opacity",key==="quad"?"1":"0");
+      if(mv)mv.setAttribute("opacity",key==="none"?"0":"1");
+      if(mh)mh.setAttribute("opacity",key==="quad"?"1":"0");
+      fillCard(symCard,note.icon,note.name,note.text);
+      var target=document.querySelector('#mirrorGrid [data-mirror="'+key+'"]');
+      if(target)target.click();
+    });
+  });
+
+  // 知识站 3：先大后小的搭形状顺序。
+  var buildNotes={
+    "1":{icon:"⭕",name:"第一步：只放大形状",text:"先用一个大圆当身体、一个小圆当头。这一步只管位置和大小，不画任何细节。"},
+    "2":{icon:"🔺",name:"第二步：接上零件",text:"耳朵用三角形，腿和尾巴用线条。大形状定好了，零件才知道该接在哪里。"},
+    "3":{icon:"✨",name:"第三步：最后加细节",text:"眼睛、鼻子、胡须放在最后。先画细节的话，等身体画歪了就没法改了。"}
+  };
+  var buildCard=document.getElementById("buildCard");
+  var buildButtons=document.querySelectorAll("button[data-build]");
+  var buildLabels={"1":"第 1 步 · 大形状","2":"第 2 步 · 加零件","3":"第 3 步 · 加细节"};
+  [].forEach.call(buildButtons,function(button){
+    button.addEventListener("click",function(){
+      var step=Number(button.getAttribute("data-build")),note=buildNotes[String(step)];
+      pressOnly(buildButtons,button);
+      [1,2,3].forEach(function(n){
+        var g=document.getElementById("buildStep"+n);
+        if(g)g.setAttribute("opacity",n<=step?"1":"0");
+      });
+      var label=document.getElementById("buildLabel");
+      if(label)label.textContent=buildLabels[String(step)];
+      fillCard(buildCard,note.icon,note.name,note.text);
+    });
+  });
+
+  /* ======================================================================
+     三件套（dpx-）：临摹图鉴 → 两条量表 → 照着画挑战
+     量表读的是画板真实状态（state.strokes / state.used），不另开一套计数。
+     ====================================================================== */
+  var dpxCards=[].slice.call(document.querySelectorAll("#dpxAtlasGrid [data-dpx-fig]"));
+  var dpxIndex=0;
+  var dpxTargetArt=document.getElementById("dpxTargetArt");
+  var dpxTargetCap=document.getElementById("dpxTargetCap");
+  var dpxTargetSub=document.getElementById("dpxTargetSub");
+  var dpxTargetFact=document.getElementById("dpxTargetFact");
+  var dpxDotsCap=document.getElementById("dpxDotsCap");
+  var dpxDots=document.getElementById("dpxTargetDots");
+  var dpxAtlasSay=document.getElementById("dpxAtlasSay");
+  var dpxJudgeSay=document.getElementById("dpxJudgeSay");
+  var dpxJudgeButtons=[].slice.call(document.querySelectorAll("#dpxJudge [data-dpx-judge]"));
+  var dpxStrokeMeter=document.getElementById("dpxStrokeMeter");
+  var dpxStrokeValue=document.getElementById("dpxStrokeValue");
+  var dpxColorMeter=document.getElementById("dpxColorMeter");
+  var dpxColorValue=document.getElementById("dpxColorValue");
+  var dpxColorNote=document.getElementById("dpxColorNote");
+
+  function dpxGoal(){
+    var card=dpxCards[dpxIndex];
+    var n=card?Number(card.getAttribute("data-dpx-strokes")):1;
+    return n>0?n:1;
+  }
+  function dpxName(){
+    var card=dpxCards[dpxIndex];
+    var cap=card?card.querySelector(".kid-figure-cap"):null;
+    return cap?cap.textContent:"目标";
+  }
+  function dpxTip(){
+    var card=dpxCards[dpxIndex];
+    return card?(card.getAttribute("data-dpx-tip")||""):"";
+  }
+  function dpxFill(track,value,max){
+    if(!track)return;
+    if(window.Playful&&typeof Playful.setMeter==="function"){Playful.setMeter(track,value,max);return;}
+    var fill=track.querySelector(".kid-meter-fill");
+    var top=max>0?max:1;
+    var ratio=Math.max(0,Math.min(1,value/top));
+    if(fill)fill.style.setProperty("--fill",(ratio*100).toFixed(1)+"%");
+  }
+  /* 两条量表：笔画数 / 目标笔画数，去重颜色数 / 可选颜色总数 */
+  function dpxSync(){
+    if(!dpxStrokeMeter||!dpxColorMeter)return;
+    var goal=dpxGoal();
+    dpxStrokeValue.textContent=state.strokes+" / "+goal+" 笔";
+    dpxFill(dpxStrokeMeter,state.strokes,goal);
+    dpxColorValue.textContent=state.used.size+" / "+colors.length+" 种";
+    dpxFill(dpxColorMeter,state.used.size,colors.length);
+  }
+  function dpxColorPicked(name){
+    if(dpxColorNote){
+      dpxColorNote.textContent="现在拿着「"+name+"」。画一笔它才算进这条里；同一个颜色只算一种。";
+    }
+    dpxSync();
+  }
+  function dpxPaintDots(){
+    if(!dpxDots)return;
+    while(dpxDots.firstChild)dpxDots.removeChild(dpxDots.firstChild);
+    dpxCards.forEach(function(_,n){
+      var dot=document.createElement("i");
+      if(n!==dpxIndex)dot.setAttribute("data-empty","true");
+      dpxDots.appendChild(dot);
+    });
+    if(dpxDotsCap)dpxDotsCap.textContent="第 "+(dpxIndex+1)+" 个目标，一共 "+dpxCards.length+" 个";
+  }
+  function dpxResetJudge(){
+    dpxJudgeButtons.forEach(function(b){b.setAttribute("aria-pressed","false");});
+  }
+  function dpxSetTarget(next,announce){
+    if(!dpxCards.length)return;
+    var total=dpxCards.length;
+    dpxIndex=((next%total)+total)%total;
+    var card=dpxCards[dpxIndex];
+    dpxCards.forEach(function(b,n){b.setAttribute("aria-pressed",n===dpxIndex?"true":"false");});
+    var art=card.querySelector("svg");
+    if(dpxTargetArt&&art){
+      while(dpxTargetArt.firstChild)dpxTargetArt.removeChild(dpxTargetArt.firstChild);
+      dpxTargetArt.appendChild(art.cloneNode(true));
+    }
+    var sub=card.querySelector(".kid-figure-sub");
+    var fact=card.querySelector(".kid-figure-fact");
+    if(dpxTargetCap)dpxTargetCap.textContent=dpxName();
+    if(dpxTargetSub)dpxTargetSub.textContent=sub?sub.textContent:"";
+    if(dpxTargetFact)dpxTargetFact.textContent=fact?fact.textContent:"";
+    dpxPaintDots();
+    dpxResetJudge();
+    dpxSync();
+    if(announce){
+      if(dpxAtlasSay)dpxAtlasSay.textContent="目标换成「"+dpxName()+"」，"+dpxGoal()+" 笔就能画完。";
+      if(dpxJudgeSay)dpxJudgeSay.textContent="新目标：「"+dpxName()+"」。"+dpxTip()+"画完再回来点一张卡。";
+    }
+  }
+  dpxCards.forEach(function(card,n){
+    card.addEventListener("click",function(){dpxSetTarget(n,true);});
+  });
+  var dpxNextBtn=document.getElementById("dpxNextTarget");
+  if(dpxNextBtn)dpxNextBtn.addEventListener("click",function(){dpxSetTarget(dpxIndex+1,true);});
+
+  /* 自评：三个选项都给鼓励 + 一条能马上照做的下一步，不打分、不判对错 */
+  var dpxJudgeNotes={
+    like:{praise:"画完一整个形状就已经很了不起了。",next:"再画一次，这次把它画大一倍——大一点的画反而更容易画准。"},
+    half:{praise:"抓到一半的形状，说明你已经在比着看了。",next:"找出最不一样的那一处，只改那一个地方，别整张重画。"},
+    far:{praise:"敢说差很多，是很厉害的眼力。",next:"线条抖是正常的，试试手腕不动、用整条胳膊画，速度慢一点。"}
+  };
+  dpxJudgeButtons.forEach(function(button){
+    button.addEventListener("click",function(){
+      var note=dpxJudgeNotes[button.getAttribute("data-dpx-judge")];
+      dpxResetJudge();
+      button.setAttribute("aria-pressed","true");
+      if(!note||!dpxJudgeSay)return;
+      dpxJudgeSay.textContent=note.praise+"下一步："+note.next+"（这个「"+dpxName()+"」是 "+dpxGoal()+" 笔的："+dpxTip()+"）";
+    });
+  });
+  dpxSetTarget(0,false);
+
   fitCanvas(false);pushHistory();updateMission();
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=17"></script>
+<script src="../data/playful.js?v=17"></script>
+<script src="../assets/js/playful.js?v=17"></script>
 <script>if (window.Progress) Progress.visit("games/doodle-pad.html", "彩虹小画室");</script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script src="../assets/js/pwa.js?v=17"></script>
 </body>
 </html>
