@@ -50,7 +50,11 @@ var labels={math:"数学",physics:"物理",code:"编程",art:"创意绘画"};
 var controls=["subjectFilter","ageFilter","statusFilter","durationFilter"].map(function(id){return document.getElementById(id);});
 function ages(text){var n=String(text).match(/\d+/g)||[];return [Number(n[0]||0),Number(n[1]||n[0]||99)];}
 function minutes(x){return x.subject==="code"||x.subject==="physics"?15:10;}
-function stateFor(id){var d=Progress.all();return {visited:!!d.pages[id],completed:!!d.completions[id],discovery:!!d.notes[id]};}
+/* 首页同一处已经承认 progress.js 可能没加载成（缓存残缺等），这里却裸调
+   Progress.all()：同样情况下 render 在第一张卡上就抛 TypeError，整个目录
+   一张卡都画不出来，顶上的计数也停在「载入中」。目录本身不依赖足迹，
+   读不到就当全部「还没去过」。 */
+function stateFor(id){var d=window.Progress?Progress.all():{pages:{},completions:{},notes:{}};return {visited:!!d.pages[id],completed:!!d.completions[id],discovery:!!d.notes[id]};}
 function pass(x){var a=ages(x.age),age=document.getElementById("ageFilter").value,status=document.getElementById("statusFilter").value,s=stateFor(x.id),duration=document.getElementById("durationFilter").value;
 if(document.getElementById("subjectFilter").value!=="all"&&x.subject!==document.getElementById("subjectFilter").value)return false;
 if(age!=="all"&&!(a[0]<=Number(age)+1&&a[1]>=Number(age)))return false;
