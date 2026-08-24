@@ -2742,6 +2742,86 @@ window.ILLUSTRATIONS = (function () {
       '<path d="M51 101 L69 101 L67 105 L53 105Z" fill="#333c5c"/>'
   });
 
+  /* ================= 学习路径的年龄横幅 =================
+     `route/<slug>` 是学习路径页四张年龄卡的图位：一张 96×56 的横幅，
+     画的是这个阶段「在做什么样的数学」，而不是一个抽象图标。
+     颜色写死，因为这一页自己覆盖了一套浅色变量。 */
+
+  function defRoute(slug, spec) {
+    def("route/" + slug, {
+      viewBox: "0 0 96 56",
+      fit: "xMidYMid meet",
+      title: spec.title,
+      desc: spec.desc,
+      art: spec.art
+    });
+  }
+
+  defRoute("count", {
+    title: "玩数量",
+    desc: "三块积木摞成一列，旁边是三颗一一对应的圆点和数字 1、2、3。",
+    art:
+      '<g stroke="#2f5a4d" stroke-width="1.6" stroke-linejoin="round">' +
+      '<rect x="10" y="34" width="18" height="14" rx="3" fill="#7fb0ef"/>' +
+      '<rect x="10" y="21" width="18" height="14" rx="3" fill="#9ec8f5"/>' +
+      '<rect x="10" y="8" width="18" height="14" rx="3" fill="#c6e0fb"/>' +
+      "</g>" +
+      '<g fill="#e08a3c">' +
+      '<circle cx="44" cy="15" r="5"/><circle cx="44" cy="28" r="5"/><circle cx="44" cy="41" r="5"/>' +
+      "</g>" +
+      '<g fill="#2f5a4d" font-size="12" font-weight="800" font-family="monospace">' +
+      '<text x="58" y="19">1</text><text x="58" y="32">2</text><text x="58" y="45">3</text>' +
+      "</g>" +
+      '<g stroke="#8aa79d" stroke-width="1.2" stroke-dasharray="2 2">' +
+      '<path d="M28 15 L39 15"/><path d="M28 28 L39 28"/><path d="M28 41 L39 41"/>' +
+      "</g>"
+  });
+
+  defRoute("relate", {
+    title: "画关系",
+    desc: "一条长条被分成两段，两段各标着一个数，下方的大括号标出合起来的总数。",
+    art:
+      '<rect x="8" y="12" width="46" height="17" rx="4" fill="#69b394" stroke="#2f5a4d" stroke-width="1.6"/>' +
+      '<rect x="54" y="12" width="30" height="17" rx="4" fill="#f0c268" stroke="#2f5a4d" stroke-width="1.6"/>' +
+      '<text x="28" y="25" text-anchor="middle" font-size="11" font-weight="800" fill="#12332a" font-family="monospace">6</text>' +
+      '<text x="69" y="25" text-anchor="middle" font-size="11" font-weight="800" fill="#4a3208" font-family="monospace">4</text>' +
+      '<path d="M8 34 L8 39 L44 39 L44 43 L48 39 L84 39 L84 34" fill="none" stroke="#2f5a4d" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<text x="46" y="54" text-anchor="middle" font-size="11" font-weight="800" fill="#2f5a4d" font-family="monospace">10</text>'
+  });
+
+  defRoute("solve", {
+    title: "找办法",
+    desc: "一张小迷宫，虚线从左下角的起点绕过墙壁，一路走到右上角的星星。",
+    art:
+      '<rect x="7" y="6" width="82" height="44" rx="5" fill="#f3f7f4" stroke="#2f5a4d" stroke-width="1.6"/>' +
+      '<g stroke="#a4736f" stroke-width="3" stroke-linecap="round">' +
+      '<path d="M24 6 L24 32"/><path d="M41 50 L41 22"/><path d="M58 6 L58 34"/><path d="M75 50 L75 24"/>' +
+      "</g>" +
+      '<path d="M15 44 L15 38 L32 38 L32 14 L49 14 L49 42 L66 42 L66 16 L82 16" fill="none" stroke="#377866" stroke-width="2" stroke-dasharray="4 3" stroke-linecap="round"/>' +
+      '<circle cx="15" cy="44" r="3.4" fill="#377866"/>' +
+      '<path d="M82 9 L84 14 L89 14 L85 17 L86 22 L82 19 L78 22 L79 17 L75 14 L80 14Z" fill="#e0a33c"/>'
+  });
+
+  defRoute("reason", {
+    title: "讲理由",
+    desc: "两张写着已知条件的卡片指向下方的结论，结论前面是数学里表示「所以」的三点符号。",
+    art:
+      '<g stroke="#2f5a4d" stroke-width="1.5">' +
+      '<rect x="6" y="5" width="36" height="16" rx="4" fill="#dbe7fa"/>' +
+      '<rect x="52" y="5" width="38" height="16" rx="4" fill="#dbe7fa"/>' +
+      '<rect x="20" y="36" width="56" height="17" rx="4" fill="#cdeade"/>' +
+      "</g>" +
+      '<g fill="#2f5a4d" font-family="monospace" font-weight="800">' +
+      '<text x="24" y="17" text-anchor="middle" font-size="10">已知</text>' +
+      '<text x="71" y="17" text-anchor="middle" font-size="10">已知</text>' +
+      '<text x="55" y="49" text-anchor="middle" font-size="10">结论</text>' +
+      "</g>" +
+      '<g stroke="#8aa79d" stroke-width="1.6" fill="none" stroke-linecap="round">' +
+      '<path d="M30 21 L38 33"/><path d="M68 21 L58 33"/>' +
+      "</g>" +
+      '<g fill="#c2410c"><circle cx="31" cy="41" r="1.9"/><circle cx="27" cy="48" r="1.9"/><circle cx="35" cy="48" r="1.9"/></g>'
+  });
+
   /* ---------------- 对外 API ---------------- */
 
   function cssName(name) { return String(name).replace(/[^a-z0-9]+/gi, "-"); }

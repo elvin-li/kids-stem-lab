@@ -194,6 +194,8 @@
   .plan-output { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
   .week-list, .task-map { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; padding:0; list-style:none; }
   .week-list li, .task-map-step { min-width: 0; padding:12px; border:1px solid var(--line-soft); border-radius:var(--r-sm); background:var(--surface-2); }
+  /* 站号已经写在「第 N 站 · 20 分钟」那行里，共享层的圆形序号徽章在这里是重复的。 */
+  .task-map-step::before { content: none; }
   .week-list b, .task-map-step b { display:block; color:var(--ink); }
   .week-list span, .task-map-step span { font-size:.84rem; color:var(--ink-mid); }
   .task-map-step a { overflow-wrap: anywhere; }
@@ -217,6 +219,10 @@
   html[data-mode="kid"] .track { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   html[data-mode="kid"] .track a { min-height: 100px; align-items: center; text-align: center; border-left-width: 2px; border-top: 7px solid var(--tone, var(--math)); }
   html[data-mode="kid"] .track .t-age { font-size: 1.24rem; }
+  /* 年龄卡的图位：没有插图库时退化成一个 emoji，有插图库就换成这一阶段在做什么样的数学。 */
+  .t-art { display: block; margin-bottom: 6px; font-size: 1.5rem; line-height: 1; }
+  .t-art.has-art { width: 100%; max-width: 132px; margin-inline: auto; }
+  .t-art svg { display: block; width: 100%; height: auto; }
   html[data-mode="kid"] .planner { margin-top: 24px; }
   html[data-mode="kid"] .planner > p, html[data-mode="kid"] .map-note { display: none; }
   html[data-mode="kid"] .tl, html[data-mode="kid"] main > section:last-of-type, html[data-mode="kid"] + body .foot { display: none; }
@@ -267,10 +273,10 @@
       <a href="#s4" style="--tone: var(--code)"><span class="t-age">10–12 岁</span><span class="t-key">抽象与证明</span></a>
     </nav>
     <nav class="track kid-routes" data-audience="kid-only" aria-label="选择年龄路线">
-      <a href="#planner" data-plan-age="4-6" style="--tone: var(--math)"><span class="t-age">4–6 岁</span><span class="t-key">🧱 玩数量</span></a>
-      <a href="#planner" data-plan-age="6-8" style="--tone: var(--sci)"><span class="t-age">6–8 岁</span><span class="t-key">🧩 画关系</span></a>
-      <a href="#planner" data-plan-age="8-10" style="--tone: var(--phys)"><span class="t-age">8–10 岁</span><span class="t-key">🔎 找办法</span></a>
-      <a href="#planner" data-plan-age="10-12" style="--tone: var(--code)"><span class="t-age">10–12 岁</span><span class="t-key">💡 讲理由</span></a>
+      <a href="#planner" data-plan-age="4-6" data-route-art="count" style="--tone: var(--math)"><span class="t-art" aria-hidden="true">🧱</span><span class="t-age">4–6 岁</span><span class="t-key">玩数量</span></a>
+      <a href="#planner" data-plan-age="6-8" data-route-art="relate" style="--tone: var(--sci)"><span class="t-art" aria-hidden="true">🧩</span><span class="t-age">6–8 岁</span><span class="t-key">画关系</span></a>
+      <a href="#planner" data-plan-age="8-10" data-route-art="solve" style="--tone: var(--phys)"><span class="t-art" aria-hidden="true">🔎</span><span class="t-age">8–10 岁</span><span class="t-key">找办法</span></a>
+      <a href="#planner" data-plan-age="10-12" data-route-art="reason" style="--tone: var(--code)"><span class="t-art" aria-hidden="true">💡</span><span class="t-age">10–12 岁</span><span class="t-key">讲理由</span></a>
     </nav>
   </header>
 
@@ -747,6 +753,7 @@
 </footer>
 
 <script src="../data/explorations.js"></script>
+<script src="../assets/js/illustrations.js?v=15"></script>
 <script src="../data/playful.js?v=15"></script>
 <script src="../assets/js/progress.js?v=15"></script>
 <script src="../assets/js/playful.js?v=15"></script>
@@ -756,7 +763,10 @@ function read(){try{return JSON.parse(localStorage.getItem(key)||"null");}catch(
 function range(text){var n=String(text).match(/\d+/g)||[];return[Number(n[0]||0),Number(n[1]||n[0]||99)];}function candidates(){var band=range(age.value),list=(window.EXPLORATIONS||[]).filter(function(x){var r=range(x.age);return x.ready&&r[0]<=band[1]&&r[1]>=band[0];});if(interest.value==="nature")list=list.filter(function(x){return x.type==="nature";});else if(interest.value!=="all")list=list.filter(function(x){return x.subject===interest.value;});if(device.value==="none")list=list.filter(function(x){return x.type==="nature";});return list.length?list:(window.EXPLORATIONS||[]).filter(function(x){return x.ready;});}
 function render(plan){out.textContent="";var h=document.createElement("h3");h.textContent="本周探险地图 · "+plan.age.replace("-","–")+" 岁 · 共约 "+plan.minutes+" 分钟";out.appendChild(h);var ul=document.createElement("ol");ul.className="task-map";plan.items.forEach(function(v,i){var li=document.createElement("li"),b=document.createElement("b"),span=document.createElement("span"),a=document.createElement("a"),cfg=window.PLAYFUL&&PLAYFUL.pages&&PLAYFUL.pages[v.id],friend=window.Playful&&Playful.companion(v.id);li.className="task-map-step";b.textContent="第 "+(i+1)+" 站 · "+v.minutes+" 分钟";a.href="../"+v.id;a.textContent=v.title;span.textContent=(friend?friend.emoji+" "+friend.name+"陪你 · ":"")+"任务："+v.task+(cfg&&cfg.sticker?" · 贴纸预告："+cfg.sticker.emoji+cfg.sticker.label:"");li.appendChild(b);li.appendChild(a);li.appendChild(document.createElement("br"));li.appendChild(span);ul.appendChild(li);});out.appendChild(ul);}
 function make(){var list=candidates(),minutes=Number(time.value),sessions=minutes<=60?3:minutes<=120?4:6,each=Math.max(15,Math.round(minutes/sessions)),items=[];for(var i=0;i<sessions;i++){var x=list[i%list.length];items.push({id:x.id,title:x.title,task:x.task,minutes:each});}var plan={minutes:each*sessions,age:age.value,time:time.value,interest:interest.value,device:device.value,items:items,savedAt:new Date().toISOString()};render(plan);msg.textContent=write(plan)?"探险地图已保存在本机；未产生任何完成记录":"地图已生成，但浏览器不允许保存；未产生任何完成记录";}
-Array.prototype.slice.call(document.querySelectorAll("[data-plan-age]")).forEach(function(route){route.addEventListener("click",function(){age.value=route.dataset.planAge;make();});});document.getElementById("makePlan").addEventListener("click",make);document.getElementById("printPlan").addEventListener("click",function(){document.body.classList.add("print-plan");window.print();});window.addEventListener("afterprint",function(){document.body.classList.remove("print-plan");});var saved=read();if(saved&&saved.items){age.value=saved.age||"4-6";time.value=saved.time||"60";interest.value=saved.interest||"all";device.value=saved.device||"mixed";render(saved);msg.textContent="已恢复上次保存的计划";}
+Array.prototype.slice.call(document.querySelectorAll("[data-plan-age]")).forEach(function(route){route.addEventListener("click",function(){age.value=route.dataset.planAge;make();});
+/* 年龄卡上原本只有一个 emoji，看不出这一阶段在做什么。换成共享插图里的路线横幅。 */
+var art=route.querySelector("[data-route-art]")||route.querySelector(".t-art"),slug="route/"+route.dataset.routeArt;
+if(art&&window.ILLUSTRATIONS&&ILLUSTRATIONS.hasArt(slug)&&ILLUSTRATIONS.renderArt(art,slug,{decorative:true}))art.classList.add("has-art");});document.getElementById("makePlan").addEventListener("click",make);document.getElementById("printPlan").addEventListener("click",function(){document.body.classList.add("print-plan");window.print();});window.addEventListener("afterprint",function(){document.body.classList.remove("print-plan");});var saved=read();if(saved&&saved.items){age.value=saved.age||"4-6";time.value=saved.time||"60";interest.value=saved.interest||"all";device.value=saved.device||"mixed";render(saved);msg.textContent="已恢复上次保存的计划";}
 })();
 </script>
 <script src="../assets/js/pwa.js?v=15"></script>
