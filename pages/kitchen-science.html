@@ -93,6 +93,8 @@
   .safety li + li { margin-top: 4px; }
   .material-search { flex:1; min-width:220px; }
   .xp-tools { display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding-top:10px; border-top:1px solid var(--line-soft); }
+  .favorite { display:inline-flex; align-items:center; gap:6px; }
+  .favorite svg { width:1.15em; height:1.15em; flex:0 0 auto; }
   .favorite[aria-pressed="true"] { color:var(--warn); border-color:color-mix(in oklab,var(--warn) 45%,var(--line)); }
   .observation label { display:block; font-size:.72rem; font-weight:700; color:var(--ink-dim); margin-bottom:5px; }
   /* 占位文字是「预测 / 观察 / 证据 / 下次改什么」四行，高度要放得下，
@@ -154,6 +156,16 @@
     background: #f1f7f2;
     box-shadow: 0 10px 30px rgba(46, 67, 57, .06);
   }
+  /* 宽屏时文字与剖面图并排：图讲「长什么样」，文字讲「怎么做」，
+     两边同时进入首屏才不用来回滚动。窄屏退回上下排。 */
+  .today-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: center; }
+  .today-figure { margin: 0; min-width: 0; }
+  .today-art {
+    border: 1px solid #cfdcd2; border-radius: var(--r-sm);
+    background: #f7fbf8; overflow: hidden;
+  }
+  .today-art svg { display: block; width: 100%; height: auto; }
+  .today-figure figcaption { margin-top: 7px; font-size: .82rem; color: var(--ink-dim); }
   .today-xp h2 { margin: 0 0 7px; font-size: 1.18rem; color: var(--ink); }
   .today-xp p { margin: 0; color: var(--ink-mid); }
   .today-xp ol {
@@ -206,8 +218,18 @@
   .chip[aria-pressed="true"] { background: #dfece4; border-color: #8fb4a0; color: #244c3e; }
   .input, input, textarea { max-width: 100%; color: var(--ink); background: #fff; border-color: var(--line); }
   .xp-head { background: #fbfcf8; }
-  .xp-meta { display: flex; flex-wrap: wrap; gap: 6px; }
-  .xp-meta .pill { background: #eef4ef; border-color: #d2ddd4; color: var(--ink-mid); }
+  .xp-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .xp-meta .pill { display: inline-flex; align-items: center; gap: 5px; background: #eef4ef; border-color: #d2ddd4; color: var(--ink-mid); }
+  .xp-meta .pill svg, .chip svg { width: 1.3em; height: 1.3em; flex: 0 0 auto; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; }
+  .chip > span[data-illus], .mess-meter > span { display: inline-flex; }
+  .chip > span[data-illus]:empty { display: none; }
+  /* 脏乱程度原来只有「不脏手 / 有点乱 / 水槽边做」一行小字，三档之间没有轻重感。
+     三滴水按档位点亮，扫一眼就知道要不要先铺报纸。 */
+  .mess { display: inline-flex; align-items: center; gap: 6px; }
+  .mess-meter { display: inline-flex; gap: 2px; }
+  .mess-meter svg { width: 15px; height: 15px; }
+  .mess-meter .off { opacity: .28; }
   .card-safety {
     border-color: #dfc995;
     border-left: 4px solid #b47b2c;
@@ -225,6 +247,9 @@
   a, p, li { overflow-wrap: anywhere; }
   :focus-visible { outline: 3px solid #c68138; outline-offset: 3px; }
 
+  @media (max-width: 860px) {
+    .today-body { grid-template-columns: minmax(0, 1fr); }
+  }
   @media (max-width: 640px) {
     .passport-grid { grid-template-columns:1fr; }
     .xgrid { grid-template-columns: minmax(0, 1fr); }
@@ -258,15 +283,23 @@
   <header class="hero">
     <h1>厨房科学</h1>
     <section class="today-xp" aria-labelledby="todayXpTitle">
-      <h2 id="todayXpTitle">今天就能做：数一数硬币能托住多少滴水</h2>
-      <p>准备一枚硬币、一杯水和吸管或滴管，约 8 分钟，不用买材料。</p>
-      <ol>
-        <li>孩子先猜一个滴数，写下来</li>
-        <li>一滴一滴加水，边滴边数</li>
-        <li>水溢出后记录结果，再说说为什么</li>
-      </ol>
-      <a class="btn btn-primary" href="#out">直接看“硬币水滴”观察卡</a>
-      <small class="today-safety">安全提示：硬币不要入口；桌面垫毛巾，实验后洗手。</small>
+      <div class="today-body">
+        <div class="today-text">
+          <h2 id="todayXpTitle">今天就能做：数一数硬币能托住多少滴水</h2>
+          <p>准备一枚硬币、一杯水和吸管或滴管，约 8 分钟，不用买材料。</p>
+          <ol>
+            <li>孩子先猜一个滴数，写下来</li>
+            <li>一滴一滴加水，边滴边数</li>
+            <li>水溢出后记录结果，再说说为什么</li>
+          </ol>
+          <a class="btn btn-primary" href="#out">直接看“硬币水滴”观察卡</a>
+          <small class="today-safety">安全提示：硬币不要入口；桌面垫毛巾，实验后洗手。</small>
+        </div>
+        <figure class="today-figure">
+          <div class="today-art" data-illus="scene/coin-dome"></div>
+          <figcaption>侧面看才明白：水已经高过硬币边缘，却还被“兜”在上面。</figcaption>
+        </figure>
+      </div>
     </section>
     <p class="lead">
       为什么值得这样做？这 30 个实验都用厨房、抽屉和回收箱里的常见材料，
@@ -308,10 +341,10 @@
       <div class="frow">
         <span class="flabel">学科</span>
         <button class="chip" data-k="subject" data-v="all" aria-pressed="true">全部</button>
-        <button class="chip" data-k="subject" data-v="phys" aria-pressed="false">物理</button>
-        <button class="chip" data-k="subject" data-v="math" aria-pressed="false">数学</button>
-        <button class="chip" data-k="subject" data-v="chem" aria-pressed="false">化学</button>
-        <button class="chip" data-k="subject" data-v="bio" aria-pressed="false">生物</button>
+        <button class="chip" data-k="subject" data-v="phys" aria-pressed="false"><span data-illus="ui/magnet" data-illus-decorative></span>物理</button>
+        <button class="chip" data-k="subject" data-v="math" aria-pressed="false"><span data-illus="ui/abacus" data-illus-decorative></span>数学</button>
+        <button class="chip" data-k="subject" data-v="chem" aria-pressed="false"><span data-illus="ui/flask" data-illus-decorative></span>化学</button>
+        <button class="chip" data-k="subject" data-v="bio" aria-pressed="false"><span data-illus="ui/sprout" data-illus-decorative></span>生物</button>
       </div>
       <div class="frow">
         <span class="flabel">年龄</span>
@@ -346,6 +379,7 @@
   材料替换为中国家庭常见物品。
 </footer>
 
+<script src="../assets/js/illustrations.js?v=15"></script>
 <script>
 (function () {
   "use strict";
@@ -789,7 +823,43 @@
 
   var SUBJ = { phys: "物理", math: "数学", chem: "化学", bio: "生物" };
   var SUBJ_PILL = { phys: "pill-phys", math: "pill-math", chem: "pill-sci", bio: "pill-sci" };
+  var SUBJ_ICON = { phys: "ui/magnet", math: "ui/abacus", chem: "ui/flask", bio: "ui/sprout" };
   var MESS = ["不脏手", "有点乱", "水槽边做"];
+
+  /* 插图库缺席时（脚本没加载成功）一切照旧，只是少了图标。 */
+  var IL = window.ILLUSTRATIONS;
+  function icon(name) {
+    return IL && IL.hasArt(name) ? IL.art(name, { decorative: true }) : "";
+  }
+  function prependIcon(node, name) {
+    var svg = icon(name);
+    if (svg) node.insertAdjacentHTML("afterbegin", svg);
+    return node;
+  }
+
+  /* 三滴水：亮着的滴数就是脏乱档位。文字标签紧跟在后面，
+     所以这一串对读屏软件隐藏，免得念出三次「水滴」。 */
+  function messMeter(level) {
+    var wrap = document.createElement("span");
+    wrap.className = "mess-meter";
+    wrap.setAttribute("aria-hidden", "true");
+    var drop = icon("ui/droplet");
+    if (!drop) return wrap;
+    for (var i = 0; i < 3; i++) {
+      var cell = document.createElement("span");
+      if (i > level) cell.className = "off";
+      cell.innerHTML = drop;
+      wrap.appendChild(cell);
+    }
+    return wrap;
+  }
+
+  function setFavorite(btn, on) {
+    btn.setAttribute("aria-pressed", String(on));
+    var star = icon(on ? "ui/star-on" : "ui/star");
+    btn.textContent = star ? (on ? "已收藏" : "收藏稍后做") : (on ? "★ 已收藏" : "☆ 收藏稍后做");
+    if (star) btn.insertAdjacentHTML("afterbegin", star);
+  }
 
   function needsAdult(x) { return /打火机|明火|热水|刀|剪刀|图钉|玻璃|生鸡蛋|缝衣针/.test(x.mats.join(" ") + x.steps.join(" ")); }
 
@@ -841,8 +911,8 @@
     var body = el("div", "xp-body");
     var meta = el("div", "xp-meta");
     meta.appendChild(el("span", "pill", x.lo + "–" + x.hi + " 岁"));
-    meta.appendChild(el("span", "pill", "约 " + x.mins + " 分钟"));
-    meta.appendChild(el("span", "pill " + SUBJ_PILL[x.subject], SUBJ[x.subject]));
+    meta.appendChild(prependIcon(el("span", "pill", "约 " + x.mins + " 分钟"), "ui/clock"));
+    meta.appendChild(prependIcon(el("span", "pill " + SUBJ_PILL[x.subject], SUBJ[x.subject]), SUBJ_ICON[x.subject]));
     body.appendChild(meta);
 
     var safetyText = needsAdult(x)
@@ -885,13 +955,16 @@
     body.appendChild(bn);
 
     var foot = el("div", "xp-foot");
-    foot.appendChild(el("span", "mess", MESS[x.mess]));
+    var mess = el("span", "mess");
+    mess.appendChild(messMeter(x.mess));
+    mess.appendChild(el("span", null, MESS[x.mess]));
+    foot.appendChild(mess);
     body.appendChild(foot);
 
     var tools = el("div", "xp-tools no-print");
-    var fav = el("button", "btn btn-ghost btn-sm favorite", saved.favorite ? "★ 已收藏" : "☆ 收藏稍后做");
-    fav.type = "button"; fav.setAttribute("aria-pressed", String(!!saved.favorite));
-    fav.addEventListener("click", function () { var data=loadStore(), rec=data[key]||{}; rec.favorite=!rec.favorite; data[key]=rec; if(saveStore(data)){ fav.setAttribute("aria-pressed",String(rec.favorite)); fav.textContent=rec.favorite?"★ 已收藏":"☆ 收藏稍后做"; } });
+    var fav = el("button", "btn btn-ghost btn-sm favorite");
+    fav.type = "button"; setFavorite(fav, !!saved.favorite);
+    fav.addEventListener("click", function () { var data=loadStore(), rec=data[key]||{}; rec.favorite=!rec.favorite; data[key]=rec; if(saveStore(data)) setFavorite(fav, !!rec.favorite); });
     tools.appendChild(fav); tools.appendChild(el("span", "save-msg", "收藏不等于完成")); body.appendChild(tools);
 
     c.appendChild(body);
@@ -924,6 +997,13 @@
       });
       render();
     });
+  });
+
+  /* 筛选按钮上的图标只是重复旁边的文字，标成装饰；
+     首屏剖面图带 title/desc，读屏软件要能念出来。 */
+  [].forEach.call(document.querySelectorAll("[data-illus]"), function (node) {
+    if (!IL) return;
+    IL.renderArt(node, node.getAttribute("data-illus"), { decorative: node.hasAttribute("data-illus-decorative") });
   });
 
   render();

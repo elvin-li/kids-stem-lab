@@ -2295,6 +2295,56 @@ window.ILLUSTRATIONS = (function () {
     '<rect x="9" y="21" width="30" height="23" rx="5" fill="#e7ece8" stroke="#8a9a92" stroke-width="2.6"/>' +
     '<circle cx="24" cy="30" r="3.6" fill="#7b8a82"/><path d="M24 31 L24 38" stroke="#7b8a82" stroke-width="3.4" stroke-linecap="round"/>');
 
+  /* 四门学科各一枚，配色沿用 base.css 的 --phys / --math / --sci：
+     厨房科学那 30 张卡片以前只靠一颗彩色文字药丸区分学科，扫一眼分不出来。 */
+  defIcon("magnet", "物理", "一块马蹄形磁铁，两端一红一蓝。",
+    '<path d="M11 38 L11 25 A13 13 0 0 1 37 25 L37 38" fill="none" stroke="#7c6fa6" stroke-width="13" stroke-linejoin="round"/>' +
+    '<path d="M4.5 33 L17.5 33 L17.5 45 L4.5 45Z" fill="#d1495b"/>' +
+    '<path d="M30.5 33 L43.5 33 L43.5 45 L30.5 45Z" fill="#3f7cc0"/>' +
+    '<path d="M11 25 A13 13 0 0 1 24 12" fill="none" stroke="#a99cd0" stroke-width="3.4" stroke-linecap="round"/>');
+
+  defIcon("abacus", "数学", "一副算盘，两根横杆上串着可以拨动的算珠。",
+    '<rect x="4" y="8" width="40" height="32" rx="5" fill="none" stroke="#8b5a2b" stroke-width="3.6"/>' +
+    '<g stroke="#c9a877" stroke-width="2.6"><path d="M4 19 L44 19"/><path d="M4 31 L44 31"/></g>' +
+    '<g fill="#3f7cc0"><circle cx="13" cy="19" r="6"/><circle cx="25" cy="19" r="6"/></g>' +
+    '<g fill="#e08a2c"><circle cx="13" cy="31" r="6"/></g>' +
+    '<g fill="#d9c6a5"><circle cx="37" cy="19" r="6"/><circle cx="25" cy="31" r="6"/><circle cx="37" cy="31" r="6"/></g>');
+
+  defIcon("flask", "化学", "一只锥形瓶，瓶里的绿色液体正冒着气泡。",
+    '<path d="M19 5 L29 5 L29 19 L41 39 A4 4 0 0 1 37.5 45 L10.5 45 A4 4 0 0 1 7 39 L19 19Z" fill="#eef6f1" stroke="#3f7663" stroke-width="2.6" stroke-linejoin="round"/>' +
+    '<path d="M14.4 29 L33.6 29 L41 39 A4 4 0 0 1 37.5 45 L10.5 45 A4 4 0 0 1 7 39Z" fill="#79c49a"/>' +
+    '<g fill="#ffffff" opacity=".85"><circle cx="18" cy="36" r="2.6"/><circle cx="26" cy="40" r="1.8"/><circle cx="31" cy="34" r="2"/></g>' +
+    '<path d="M17 5 L31 5" stroke="#3f7663" stroke-width="3.4" stroke-linecap="round"/>' +
+    '<g fill="none" stroke="#8fb9a5" stroke-width="2" stroke-linecap="round"><path d="M23 24 C20 21 26 18 23 14"/></g>');
+
+  defIcon("sprout", "生物", "一棵刚破土的小苗，两片子叶朝两边张开。",
+    '<path d="M4 36 C14 31 34 31 44 36 L44 46 L4 46Z" fill="#b98a5a"/>' +
+    '<path d="M24 42 L24 20" stroke="#3f7f42" stroke-width="4.4" stroke-linecap="round"/>' +
+    '<path d="M24 28 C24 17 16 10 5 10 C5 21 13 28 24 28Z" fill="#79bf5c" stroke="#3f7f42" stroke-width="1.6" stroke-linejoin="round"/>' +
+    '<path d="M24 23 C24 12 32 5 43 5 C43 16 35 23 24 23Z" fill="#5da84a" stroke="#3f7f42" stroke-width="1.6" stroke-linejoin="round"/>');
+
+  /* 收藏按钮上的 ☆/★ 是文字符号：字体缺字时会退成方框，
+     两个状态的粗细也随字体变，索性换成同一副轮廓的空心/实心两版。 */
+  defIcon("star", "未收藏", "一颗空心的五角星轮廓。",
+    '<path d="M24 6 L30.2 18.8 L44 20.8 L34 30.6 L36.4 44.4 L24 37.9 L11.6 44.4 L14 30.6 L4 20.8 L17.8 18.8Z" ' +
+    'fill="none" stroke="#a8935f" stroke-width="3.2" stroke-linejoin="round"/>');
+
+  defIcon("star-on", "已收藏", "一颗填满金色的五角星。",
+    '<path d="M24 6 L30.2 18.8 L44 20.8 L34 30.6 L36.4 44.4 L24 37.9 L11.6 44.4 L14 30.6 L4 20.8 L17.8 18.8Z" ' +
+    'fill="#f2c14b" stroke="#a9761a" stroke-width="3.2" stroke-linejoin="round"/>');
+
+  defIcon("clock", "用时", "一只圆形挂钟，指针指向十点十分。",
+    '<circle cx="24" cy="25" r="18" fill="#f7f4ea" stroke="#8a7a5c" stroke-width="2.8"/>' +
+    '<g stroke="#c2b291" stroke-width="2.2" stroke-linecap="round">' +
+    '<path d="M24 9 L24 12"/><path d="M24 38 L24 41"/><path d="M8 25 L11 25"/><path d="M37 25 L40 25"/></g>' +
+    '<path d="M24 25 L24 15" stroke="#4a3f2a" stroke-width="3.2" stroke-linecap="round"/>' +
+    '<path d="M24 25 L32 29" stroke="#4a3f2a" stroke-width="3.2" stroke-linecap="round"/>' +
+    '<circle cx="24" cy="25" r="2.4" fill="#4a3f2a"/>');
+
+  defIcon("droplet", "水滴", "一颗水滴，左上角有一点高光。",
+    '<path d="M24 4 C33 16 40 24 40 31 A16 16 0 0 1 8 31 C8 24 15 16 24 4Z" fill="#6fb7e8" stroke="#2f6f9e" stroke-width="2.4" stroke-linejoin="round"/>' +
+    '<path d="M17 30 C17 24 19 21 22 18" stroke="#e6f4ff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".9"/>');
+
   /* ---------------- 探索目录页的故事图 ----------------
      原来这一格是四个绝对定位的 emoji（☀️☁️🦊🍃）摞在一条 SVG 小路上：
      emoji 长相随系统字体变，缺字时还会退成方框，而那只狐狸和页面上方
@@ -2346,7 +2396,62 @@ window.ILLUSTRATIONS = (function () {
       '<path d="M78 24 L88 21"/><path d="M78 28 L88 29"/></g></g>'
   });
 
-  /* ---------------- 离线时顶替远程照片的星空图 ----------------
+  /* ---------------- 厨房科学首屏：硬币上的水包 ----------------
+     「今天就能做」原来只有三行文字步骤，孩子看不到要观察的到底是什么。
+     画成剖面图才说得清关键：水面高过硬币边缘还不流下来，鼓起的那一段
+     就是表面张力。鼓起高度按真实比例给（约硬币直径的五分之一），
+     不夸张成半个球。 */
+  def("scene/coin-dome", {
+    viewBox: "0 0 420 240", fit: "xMidYMid meet",
+    title: "硬币上的水包（剖面）",
+    desc: "从侧面看：一枚硬币平放在毛巾上，硬币上盛着的水高过了硬币边缘，鼓成一个扁扁的包还没有流下来。上方一支滴管正落下一滴水。左边的小卡片写着先猜 15 滴、实际 24 滴。",
+    bg: '<rect width="420" height="240" fill="#f7fbf8"/>',
+    art:
+      /* 桌面与毛巾：告诉孩子这实验要垫东西 */
+      '<path d="M0 208 L420 208" stroke="#cfd9d1" stroke-width="2"/>' +
+      '<path d="M46 190 L374 190 A6 6 0 0 1 374 208 L46 208 A6 6 0 0 1 46 190Z" fill="#e8ded0" stroke="#c8b9a4" stroke-width="1.8"/>' +
+      '<g stroke="#d3c4ad" stroke-width="1.6" stroke-linecap="round">' +
+      '<path d="M92 193 L92 205"/><path d="M148 193 L148 205"/><path d="M272 193 L272 205"/><path d="M328 193 L328 205"/></g>' +
+      /* 硬币：侧视只有薄薄一条，边缘的滚花是它能「兜住」水的地方 */
+      '<path d="M132 178 L268 178 A4 4 0 0 1 268 190 L132 190 A4 4 0 0 1 132 178Z" fill="#cdd3d8" stroke="#8d979f" stroke-width="1.8"/>' +
+      '<path d="M136 181 L264 181" stroke="#eef1f3" stroke-width="2" stroke-linecap="round"/>' +
+      '<g stroke="#a8b1b8" stroke-width="1.4"><path d="M136 185 L136 189"/><path d="M262 185 L262 189"/></g>' +
+      /* 水包：两侧被硬币边缘钉住，顶上是一段圆弧 */
+      '<path d="M132 178 C132 156 154 150 200 150 C246 150 268 156 268 178Z" fill="#8ec9ea" opacity=".92"/>' +
+      '<path d="M132 178 C132 156 154 150 200 150 C246 150 268 156 268 178" fill="none" stroke="#3f88b5" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<path d="M152 170 C156 160 168 155 184 154" fill="none" stroke="#eaf6fd" stroke-width="4" stroke-linecap="round" opacity=".85"/>' +
+      /* 参考线与鼓起高度：没有这条线，「鼓起来」就无从比较 */
+      '<path d="M84 178 L288 178" stroke="#6b8f7f" stroke-width="1.6" stroke-dasharray="7 6"/>' +
+      '<path d="M104 150 L104 178" stroke="#2f6f5c" stroke-width="2"/>' +
+      '<path d="M100 154 L104 148 L108 154Z" fill="#2f6f5c"/><path d="M100 174 L104 180 L108 174Z" fill="#2f6f5c"/>' +
+      '<text x="98" y="160" font-size="12" font-weight="700" fill="#2f6f5c" text-anchor="end">鼓起</text>' +
+      '<text x="98" y="174" font-size="11" fill="#5c6b64" text-anchor="end">≈5 mm</text>' +
+      /* 滴管与正在落下的那一滴 */
+      '<path d="M186 26 A14 15 0 0 1 214 26 L214 40 L186 40Z" fill="#dbe7ef" stroke="#7c8f9c" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M190 40 L210 40 L210 96 L204 112 L196 112 L190 96Z" fill="#eef4f8" stroke="#7c8f9c" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M193 62 L207 62 L207 96 L202.5 108 L197.5 108 L193 96Z" fill="#8ec9ea"/>' +
+      '<path d="M200 120 C206 129 211 134 211 139 A11 11 0 0 1 189 139 C189 134 194 129 200 120Z" fill="#8ec9ea" stroke="#3f88b5" stroke-width="2"/>' +
+      '<path d="M196 140 C194 135 196 131 199 128" fill="none" stroke="#eaf6fd" stroke-width="2.6" stroke-linecap="round"/>' +
+      /* 先猜 / 实际：这一页所有实验都要求先写预测，首屏就把这件事画出来 */
+      '<path d="M26 24 L172 24 A10 10 0 0 1 182 34 L182 100 A10 10 0 0 1 172 110 L26 110 A10 10 0 0 1 16 100 L16 34 A10 10 0 0 1 26 24Z" fill="#fffdf8" stroke="#bdd2c4" stroke-width="2"/>' +
+      '<text x="30" y="46" font-size="11" font-weight="700" fill="#667a72">先猜</text>' +
+      '<text x="30" y="70" font-size="21" font-weight="800" fill="#405b51">15 滴</text>' +
+      '<text x="108" y="46" font-size="11" font-weight="700" fill="#667a72">实际</text>' +
+      '<text x="108" y="70" font-size="21" font-weight="800" fill="#2f6f5c">24 滴</text>' +
+      '<path d="M30 82 L168 82" stroke="#e2e8e1" stroke-width="1.6"/>' +
+      '<text x="30" y="99" font-size="11" fill="#667a72">猜少了 9 滴，把它记下来</text>' +
+      /* 名词标注：中文说人话，术语保留英文 */
+      '<path d="M292 158 L270 166" stroke="#93621f" stroke-width="1.8" stroke-linecap="round"/>' +
+      '<circle cx="270" cy="166" r="3" fill="#93621f"/>' +
+      '<text x="296" y="126" font-size="14" font-weight="800" fill="#7a5417">表面张力</text>' +
+      '<text x="296" y="142" font-size="11" font-weight="700" fill="#93621f">surface tension</text>' +
+      '<text x="296" y="162" font-size="11" fill="#5c6b64">水分子手拉手，</text>' +
+      '<text x="296" y="176" font-size="11" fill="#5c6b64">把水面兜成一个包</text>' +
+      '<text x="296" y="196" font-size="11" fill="#8a9a92">虚线 = 硬币边缘</text>' +
+      '<text x="200" y="228" font-size="11" fill="#667a72" text-anchor="middle">桌面垫一条毛巾，溢出来也不怕</text>'
+  });
+
+  /* ---------------- 离线时顶替远程照片的星空图 ---------------- 
      太空页的「今天的天文图」和照片墙都要联网才有内容，断网时原来只剩一行
      「未联网」的灰字或一个 emoji。这张星云是内置的，离线打开也有东西可看。 */
   def("space/nebula", {
