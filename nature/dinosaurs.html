@@ -389,7 +389,8 @@
     </div>
     <div class="mission-grid kid-story-steps">
       <div class="mission-step"><h3>先猜一猜</h3><p>脚印之间隔得很远，更像哪一种？</p><div class="quick-picks" data-fill="dinoPredict"><button class="kid-choice" type="button" data-value="我猜它可能走得快，因为相邻脚印隔得很远。" aria-pressed="false">🏃 可能较快</button><button class="kid-choice" type="button" data-value="我猜还不能确定，要先把脚印和步幅量出来。" aria-pressed="false">📏 先量再说</button></div><label class="visually-hidden" for="dinoPredict">预测记录</label><textarea class="input" id="dinoPredict" data-audience="parent" placeholder="也可以补充自己的理由"></textarea></div>
-      <div class="mission-step"><h3>量一量</h3><label for="footLen">脚印长度（厘米）</label><input class="input" id="footLen" type="number" min="5" max="150" value="30"><label for="strideLen">相邻同脚步幅（厘米）</label><input class="input" id="strideLen" type="number" min="10" max="800" value="150"><label for="dinoClaim">要检验的说法</label><select class="input" id="dinoClaim"><option value="run">“它一定在高速奔跑”</option><option value="size">“脚印能精确告诉我们体重”</option><option value="group">“多条平行足迹可能表示成群行动”</option></select><button class="btn btn-primary" type="button" id="dinoTest">测量并推理</button></div>
+      <div class="mission-step"><h3>量一量</h3><label for="footLen">脚印长度（厘米）</label><input class="input" id="footLen" type="number" min="5" max="150" value="30"><label for="strideLen">相邻同脚步幅（厘米）</label><input class="input" id="strideLen" type="number" min="10" max="800" value="150" aria-describedby="strideHint"><!-- 量错这一段，后面的比值和速度会整整差一倍：左右相邻的两个脚印是「步」，
+             同一只脚前后两个脚印才是公式要的「步幅」。 --><p id="strideHint">量同一只脚前后两个脚印的距离；左右相邻的那两个只有它的一半。</p><label for="dinoClaim">要检验的说法</label><select class="input" id="dinoClaim"><option value="run">“它一定在高速奔跑”</option><option value="size">“脚印能精确告诉我们体重”</option><option value="group">“多条平行足迹可能表示成群行动”</option></select><button class="btn btn-primary" type="button" id="dinoTest">测量并推理</button></div>
       <div class="mission-step"><h3>分清两件事</h3><output id="dinoOutput" class="text-result kid-result-card" aria-live="polite">等待测量。结果会同时给出数字和文字。</output><p>哪句话最像科学记录？</p><div class="quick-picks" data-fill="dinoResult"><button class="kid-choice" type="button" data-value="我直接量到脚印和步幅；走路快慢与身体大小是根据数字作出的推断。" aria-pressed="false">🔎 量到 + 推断</button><button class="kid-choice" type="button" data-value="我看到的是脚印；恐龙当时做什么仍有不确定，需要更多证据。" aria-pressed="false">❓ 保留问号</button></div><label class="visually-hidden" for="dinoResult">结果记录</label><textarea class="input" id="dinoResult" data-audience="parent" placeholder="也可以用自己的话补充"></textarea></div>
       <div class="mission-step"><h3>再找一件证据</h3><p>哪一种能让结论更可靠？</p><div class="quick-picks" data-fill="dinoReflect"><button class="kid-choice" type="button" data-value="我还想找骨骼，比较腿骨大小和脚印估算是否接近。" aria-pressed="false">🦴 腿骨</button><button class="kid-choice" type="button" data-value="我还想找更多连续脚印，看看方向和步幅是否一直相同。" aria-pressed="false">🐾 更多脚印</button><button class="kid-choice" type="button" data-value="我还想看牙齿，但牙齿更适合帮助判断食物，不直接证明跑多快。" aria-pressed="false">🦷 牙齿</button></div><label class="visually-hidden" for="dinoReflect">反思记录</label><textarea class="input" id="dinoReflect" data-audience="parent" placeholder="也可以写下另一种证据"></textarea></div>
     </div>
@@ -1028,12 +1029,29 @@
     if (!isFinite(foot) || !isFinite(stride) || foot <= 0 || stride <= 0) {
       output.textContent = "请输入有效的脚印长度和步幅。"; return;
     }
+    /* 分界线是 2.0 和 2.9：Alexander(1976) 与 Thulborn(1984) 数了 267 条兽脚类
+       足迹，步幅/臀高小于 2.0 判走、大于 2.9 判跑，中间那段是过渡。
+       原来写的是 1 和 2，于是默认那组数（脚印 30、步幅 150，比值 1.25）被判成
+       「较快行走」——可 1.25 恰好落在真实足迹最常见的慢走区间里（统计均值 1.3）。
+       这一页教的就是「怎么知道的」，判据本身不能是随手定的。 */
     var hip = foot * 4, ratio = stride / hip;
-    var gait = ratio < 1 ? "更像慢走" : ratio < 2 ? "可能是较快行走" : "可能在奔跑";
+    var gait = ratio < 2 ? "更像慢走" : ratio <= 2.9 ? "介于走和跑之间" : "可能在奔跑";
+    /* 只报一个比值，孩子没法判断这是快还是慢。换算成 km/h 才能跟自己走路比：
+       走用 Alexander 的 v = 0.25·√g·λ^1.67·h^-1.17，跑用 Thulborn & Wade 的
+       v = √(g·h·(λ/1.8h)^2.56)，中间那段取两者平均，跟文献里的用法一致。 */
+    var L = stride / 100, H = hip / 100;
+    var vWalk = 0.25 * Math.sqrt(9.8) * Math.pow(L, 1.67) * Math.pow(H, -1.17);
+    var vRun = Math.sqrt(9.8 * H * Math.pow(L / (1.8 * H), 2.56));
+    var kmh = (ratio < 2 ? vWalk : ratio > 2.9 ? vRun : (vWalk + vRun) / 2) * 3.6;
     var claim = document.getElementById("dinoClaim").value;
     var caution = claim === "run" ? "步幅支持步态推断，但一枚足迹不能证明“一定高速奔跑”。" :
       claim === "size" ? "脚印可粗估臀高，却不能单独精确推出体重。" : "多条同向平行足迹支持群行假说，但也可能是不同时刻留下。";
-    output.textContent = "直接测量：脚印 " + foot + " cm、步幅 " + stride + " cm。估算臀高约 " + hip + " cm，步幅/臀高=" + ratio.toFixed(2) + "，" + gait + "。" + caution;
+    /* 真实足迹的比值几乎都在 4 以内（跑的那批均值 3.7）。填出 10 这种数字时，
+       公式还是会算出一个速度，但那个数已经没有依据了，得说出来。 */
+    var range = ratio > 4 ? "（真实足迹的比值几乎都在 4 以内，这组数字已经超出公式的适用范围，速度只当算式演示看。）" : "";
+    output.textContent = "直接测量：脚印 " + foot + " cm、步幅 " + stride + " cm。估算臀高约 " + hip +
+      " cm，步幅/臀高=" + ratio.toFixed(2) + "，" + gait + "，速度约 " + kmh.toFixed(1) +
+      " km/h（人散步约 5 km/h，跑起来约 15 km/h）。" + range + caution;
     operated = true;
   });
   document.getElementById("dinoComplete").addEventListener("click", function () {
