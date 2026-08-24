@@ -549,8 +549,12 @@
   // ---------- Canvas 缩放（retina） ----------
   function fit(canvas, cssH) {
     var dpr = window.devicePixelRatio || 1;
-    var cssW = canvas.parentNode.clientWidth || canvas.clientWidth || 300;
     canvas.style.width = '100%';
+    /* 先量自己那一格的真实宽度（父容器可能有内边距），再按 CSS 的 max-height 收一次高度。
+       两者任何一项对不上，位图都会被拉伸或压扁，圆饼就不再是正圆。 */
+    var cssW = Math.round(canvas.clientWidth) || canvas.parentNode.clientWidth || 300;
+    var cap = parseFloat(getComputedStyle(canvas).maxHeight);
+    if (isFinite(cap) && cap > 0) cssH = Math.min(cssH, Math.round(cap));
     canvas.style.height = cssH + 'px';
     canvas.width = Math.max(1, Math.round(cssW * dpr));
     canvas.height = Math.max(1, Math.round(cssH * dpr));

@@ -409,11 +409,25 @@
     });
     if (global.document.documentElement) {
       global.document.documentElement.setAttribute("data-playful-age", getPreference("ageGroup") || "all");
-      global.document.documentElement.setAttribute("data-mode", getPreference("mode") || "kid");
+      var mode = getPreference("mode") || "kid";
+      var before = global.document.documentElement.getAttribute("data-mode");
+      global.document.documentElement.setAttribute("data-mode", mode);
+      if (before && before !== mode) announceLayoutChange();
     }
     nodes(global.document, "[data-playful-companion]").forEach(renderCompanion);
     syncMotion();
     return true;
+  }
+  /* 切换孩子/家长模式会改字号、内边距和画布的 max-height，也就是真的改了可用尺寸。
+     各页的画布本来只在 window resize 时重新按 devicePixelRatio 定尺寸，
+     不补这一下，切完模式画布会一直按旧尺寸拉伸显示。等一帧是为了让新样式先生效。 */
+  function announceLayoutChange() {
+    if (typeof global.dispatchEvent !== "function" || typeof global.Event !== "function") return;
+    var fire = function () {
+      try { global.dispatchEvent(new global.Event("resize")); } catch (err) { /* 环境不支持就算了 */ }
+    };
+    if (typeof global.requestAnimationFrame === "function") global.requestAnimationFrame(fire);
+    else fire();
   }
   function enhance(root) {
     if (!global.document || !config()) return false;

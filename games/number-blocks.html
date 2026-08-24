@@ -149,6 +149,9 @@
   html[data-mode="kid"] .stage-ribbon { margin-bottom:8px; }
   html[data-mode="kid"] .lab { display:block; }
   html[data-mode="kid"] .lab-stage { width:100%; }
+  /* .kid-hero-scene 默认是「图 + 文」两列，这里只有一块画布，
+     留着第二列会让画布被 max-width:100% 压成原来的一半宽（十格阵会变形）。 */
+  #blocksWrap { grid-template-columns: minmax(0,1fr); }
   html[data-mode="kid"] #blocksWrap { max-width:760px; margin-inline:auto; }
   html[data-mode="kid"] #numline,
   html[data-mode="kid"] .three-ways { display:none; }
@@ -440,7 +443,11 @@
     ink: cv('--ink', '#eef2ff'), inkMid: cv('--ink-mid', '#b6c0e0'),
     inkDim: cv('--ink-dim', '#7d88ab'),
     line: cv('--line', '#2a3355'), soft: cv('--line-soft', '#202844'),
-    surf: cv('--surface', '#161d33'), surf2: cv('--surface-2', '#1d2540')
+    surf: cv('--surface', '#161d33'), surf2: cv('--surface-2', '#1d2540'),
+    /* 散块用固定的木色，不跟主题变量走：--ink-mid 在家长模式是浅字色、在孩子模式是深字色，
+       同一个值画出来一次太亮一次太暗，散块会看不清或者像一排电池。木色在两种底色上都成立，
+       也和「已放 = 蓝」「满十 = 黄」三种状态区分得开。 */
+    loose: '#8a93ab'
   };
   var FONT = '-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif';
   var MONO = 'ui-monospace, Menlo, monospace';
@@ -502,17 +509,26 @@
   var uid = 0;
 
   function layout() {
-    var w = Math.max(260, wrap.clientWidth || 320);
+    /* base.css 给 .lab-stage canvas 加了 max-width:100%，画布真正能占的宽度是它自己那一格，
+       未必等于外层容器。先把宽度交回 CSS 量一次，量到多少就照多少画，位图和显示尺寸才一致，
+       否则位图会被横向压扁。 */
+    blocks.style.width = '100%';
+    var w = Math.max(260, Math.round(blocks.clientWidth) || wrap.clientWidth || 320);
     G.W = w;
     G.rows = Math.ceil(S.max / 10);
-    G.labelW = w < 360 ? 24 : 34;
+    G.labelW = w < 360 ? 30 : 42;
     var avail = w - G.pad * 2 - G.labelW - 9 * G.gap - G.gGap;
     G.cell = clamp(Math.floor(avail / 10), 14, 46);
     G.rowGap = G.cell > 34 ? 8 : 5;
     G.frameW = G.cell * 10 + 9 * G.gap + G.gGap;
     G.frameH = G.rows * G.cell + (G.rows - 1) * G.rowGap;
-    G.trayTop = G.frameTop + G.frameH + 20;
-    G.trayH = Math.max(74, G.cell * 2 + 34);
+    G.trayTop = G.frameTop + G.frameH + 26;
+    /* 散块托盘按真正要摆几行来定高：宽屏一行就够，原来固定按两行留高度，
+       画布下方会空出一大块灰地，看着像没画完。 */
+    var looseSize = Math.max(14, G.cell * 0.86);
+    var perRow = Math.min(10, Math.max(4, Math.floor((w - G.pad * 2) / (looseSize + 8))));
+    var looseRows = Math.ceil(10 / perRow);
+    G.trayH = 26 + (looseRows - 1) * looseSize * 0.55 + looseSize + 14;
     G.H = G.trayTop + G.trayH + 6;
     fit(blocks, bctx, w, G.H);
     fit(lineC, lctx, w, w < 420 ? 92 : 104);
@@ -815,7 +831,7 @@
   /* ---------- 绘制：积木区 ---------- */
   function drawBlock(ctx, b, kind, idx, now) {
     var s = b.s, x = b.x, y = b.y;
-    var main = kind === 'placed' ? C.math : C.inkMid;
+    var main = kind === 'placed' ? C.math : C.loose;
     var full = kind === 'placed' && Math.floor(idx / 10) < Math.floor(count() / 10);
     if (full) main = C.warn;
 
@@ -888,8 +904,10 @@
         ctx.save();
         ctx.setLineDash([3, 3]);
         rr(ctx, p.x + .5, p.y + .5, G.cell - 1, G.cell - 1, Math.max(3, G.cell * .22));
-        ctx.strokeStyle = inCurrent ? alpha(C.math, .55) : C.soft;
-        ctx.lineWidth = 1;
+        /* 空格子本身就是教具（空几格 = 还差几），--line-soft 在两种模式下都太淡，
+           这里改用带透明度的正文线色，浅底深底都还看得见。 */
+        ctx.strokeStyle = inCurrent ? alpha(C.math, .6) : alpha(C.inkDim, .45);
+        ctx.lineWidth = inCurrent ? 1.4 : 1;
         ctx.stroke();
         if (inCurrent) { ctx.fillStyle = alpha(C.math, .06); ctx.fill(); }
         ctx.restore();
@@ -910,11 +928,13 @@
         ctx.lineWidth = 1 + flash * 2;
         ctx.stroke();
       }
-      ctx.font = '700 ' + Math.max(9, Math.min(12, G.cell * .38)) + 'px ' + MONO;
-      ctx.fillStyle = done ? C.warn : C.soft;
+      /* 行尾标记：满十的行写 =10，正在填的行写还差几——这个数字就是这一行剩下的空格数。 */
+      var rowNeed = r === fullRows ? 10 - (n % 10) : 0;
+      var mark = done ? '=10' : (rowNeed > 0 ? '差' + rowNeed : '·');
+      ctx.font = '700 ' + Math.max(9, Math.min(12, G.cell * .38)) + 'px ' + (mark === '·' ? MONO : FONT);
+      ctx.fillStyle = done ? C.warn : (mark === '·' ? alpha(C.inkDim, .6) : C.math);
       ctx.textAlign = 'left';
-      ctx.fillText(done ? '=10' : '·', q.x + G.frameW + 7, q.y + G.cell * .68);
-      ctx.textAlign = 'left';
+      ctx.fillText(mark, q.x + G.frameW + 7, q.y + G.cell * .68);
     }
 
     // 已放积木
