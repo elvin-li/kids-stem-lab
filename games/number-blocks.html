@@ -1095,6 +1095,7 @@
   }
 
   /* ---------- 动画 ---------- */
+  var gate = ILLUSTRATIONS.redrawGate();
   function tick(now) {
     var moving = false;
     var all = S.placed.concat(S.loose);
@@ -1111,7 +1112,16 @@
       if (pt.life <= 0 || pt.y > G.H + 20) S.parts.splice(p, 1);
     }
     S.rowFlash = S.rowFlash.filter(function (f) { return now - f.t < 900; });
-    drawStage(now);
+    /* 积木都归位、彩纸落完以后画面就定住了，没必要继续每秒重绘 60 次。
+       busy 覆盖所有随时间变的东西：归位补间、彩纸、整行闪光、刚落下的方块
+       那 240ms 的弹跳；其余变化（多一块、少一块、换任务、改尺寸）由签名兜住。 */
+    var busy = moving || S.parts.length > 0 || S.rowFlash.length > 0;
+    for (var q = 0; q < all.length && !busy; q++) {
+      if (all[q].drag || now - all[q].born < 280) busy = true;
+    }
+    if (gate(all.length + '|' + count() + '|' + S.mode + '|' + S.target + '|' + G.W + 'x' + G.H, busy)) {
+      drawStage(now);
+    }
     requestAnimationFrame(tick);
     return moving;
   }

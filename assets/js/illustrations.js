@@ -11,6 +11,8 @@
       shadeHex / fadeHex           把主题色推亮推暗、或配一个半透明版本。
 
    2. Canvas 绘制助手（第一个参数一律是 ctx，坐标用 CSS 像素）
+      redrawGate()                 状态签名没变就跳过这一帧的重绘。
+      reducedMotion(onChange)      合并系统设置与偏好面板的「减少动效」结论。
       roundRect / canvasLabel      圆角路径；带底色的读数标签（画布上所有图注都用它）。
       drawKid / drawFeather / drawBall / drawHammer
                                    自由落体、斜坡那几页的实物。
@@ -613,6 +615,56 @@ window.ILLUSTRATIONS = (function () {
     roundRect(ctx, x - r * 0.82, headTop + headH * 0.16, r * 1.1, Math.max(1.6, headH * 0.2), 1);
     ctx.fill();
     ctx.restore();
+  }
+
+  /** 该不该减少动效。
+      playful.js 把结论写在 <html data-playful-motion="reduced|full"> 上，它已经
+      把系统设置和家长在偏好面板里的强制选择合并过了。各页原先只查
+      matchMedia，于是在偏好面板里点「减少动效」时，页面动效照跑不误。
+      传 onChange 就会在偏好或系统设置变化时回调，参数是新的布尔值。
+      返回一个函数，随时调用取当前值。 */
+  function reducedMotion(onChange) {
+    var root = document.documentElement;
+    var mq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+    function read() {
+      var attr = root.getAttribute("data-playful-motion");
+      if (attr === "reduced") return true;
+      if (attr === "full") return false;
+      return !!(mq && mq.matches);
+    }
+    if (onChange) {
+      var cur = read();
+      var fire = function () {
+        var next = read();
+        if (next !== cur) { cur = next; onChange(next); }
+      };
+      if (window.MutationObserver) {
+        new MutationObserver(fire).observe(root, {
+          attributes: true, attributeFilter: ["data-playful-motion"]
+        });
+      }
+      if (mq) {
+        if (mq.addEventListener) mq.addEventListener("change", fire);
+        else if (mq.addListener) mq.addListener(fire);
+      }
+    }
+    return read;
+  }
+
+  /** 重绘闸门。画面没变就别重画。
+      这些实验页大多挂着一个 requestAnimationFrame 长循环，可它们大部分时间
+      是静止的——没人拖滑块的时候，每秒 60 次整幅重绘纯属白烧电。
+      用法：每帧把所有影响画面的量拼成一个字符串交给它；和上一帧一样就返回
+      false，跳过绘制。动画确实在跑的那些帧传 force=true 直接放行。
+      比在几十个改状态的地方逐个补 invalidate() 稳：漏一处就是一块不刷新的
+      画布，而签名是从状态本身算出来的，漏不了。 */
+  function redrawGate() {
+    var last = null;
+    return function (sig, force) {
+      if (sig === last && !force) return false;
+      last = sig;
+      return true;
+    };
   }
 
   /** Canvas：圆角矩形路径。只建路径，填充和描边留给调用方。 */
@@ -3899,6 +3951,8 @@ window.ILLUSTRATIONS = (function () {
     drawDoodleStarter: drawDoodleStarter,
     roundRect: roundRect,
     canvasLabel: canvasLabel,
+    redrawGate: redrawGate,
+    reducedMotion: reducedMotion,
     tileIcon: tileIcon,
     dietColor: dietColor,
     shadeHex: shadeHex,
