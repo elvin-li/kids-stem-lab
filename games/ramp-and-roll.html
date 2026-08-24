@@ -30,7 +30,9 @@
   /* 序号徽章由 base.css 的 .kid-story-steps 自动编号，这里只调栏数和字重。 */
   .kid-story-steps { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0; }
   .kid-story-steps li { font-weight:750; }
-  .kid-visual-stage { position:relative; min-width:0; padding:10px; border:2px solid rgba(167,139,250,.35); border-radius:20px; background:rgba(11,15,26,.28); overflow:hidden; }
+  /* 舞台底色原先是一层 28% 的深蓝，压在浅色页面上变成一块灰板：上面的「准备 A 轮」
+     只有 4.1:1、下面那行提示 2.6:1，而画布的天空是半透明的，也跟着一起发灰。 */
+  .kid-visual-stage { position:relative; min-width:0; padding:10px; border:2px solid color-mix(in srgb,var(--phys) 34%,var(--line)); border-radius:20px; background:color-mix(in srgb,var(--phys) 6%,var(--surface)); overflow:hidden; }
   .stage-sign { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; color:var(--ink-mid); font-size:.88rem; }
   .stage-sign b { color:var(--ink); }
   #scene { display:block; width:100%; max-width:100%; border-radius:14px; touch-action:none; }
@@ -40,13 +42,15 @@
   .kid-result-card { min-width:0; padding:12px; border:2px solid var(--line-soft); border-radius:16px; background:var(--surface-2); }
   .kid-result-card[data-state="done"] { border-color:rgba(74,222,128,.55); }
   .result-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:9px; }
-  .result-letter { display:grid; place-items:center; width:32px; height:32px; border-radius:10px; background:var(--math); color:#0b0f1a; font-size:1.08rem; font-weight:900; }
+  /* A/B 徽章的底色是学科蓝，浅色主题下那是深蓝：字得用 --on-accent（正是「强调色上的字」）
+     而不是写死的深墨色，否则 3.4:1。 */
+  .result-letter { display:grid; place-items:center; width:32px; height:32px; border-radius:10px; background:var(--math); color:var(--on-accent); font-size:1.08rem; font-weight:900; }
   .result-head strong { overflow:hidden; color:var(--ink-mid); font-size:.8rem; text-overflow:ellipsis; white-space:nowrap; }
   .result-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:0; }
   .result-stats div { min-width:0; }
   .result-stats dt { color:var(--ink-dim); font-size:.72rem; font-weight:750; }
   .result-stats dd { margin:2px 0 0; color:var(--ink); font-family:var(--mono); font-size:clamp(.82rem,2.5vw,1rem); font-weight:850; white-space:nowrap; }
-  .distance-track { position:relative; height:13px; margin-top:11px; border:1px solid var(--line-soft); border-radius:99px; background:rgba(255,255,255,.05); overflow:hidden; }
+  .distance-track { position:relative; height:13px; margin-top:11px; border:1px solid var(--line-soft); border-radius:99px; background:var(--surface-2); overflow:hidden; }
   .distance-fill { display:block; width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--math),var(--sci)); transition:width .25s ease; }
   .distance-marker { position:absolute; top:-2px; left:0; width:3px; height:17px; background:var(--warn); transform:translateX(-1px); transition:left .25s ease; }
   .change-callout { display:flex; align-items:center; justify-content:center; gap:7px; min-height:44px; margin-top:10px; padding:8px 12px; border-radius:13px; background:rgba(251,191,36,.1); color:var(--ink-mid); text-align:center; }
@@ -163,13 +167,12 @@
       <div class="stage-sign"><b>试车舞台</b><span id="roundLabel">准备 A 轮</span></div>
       <canvas id="scene" tabindex="0" aria-label="斜坡实验画面：小球从斜坡顶端滚下，滑过地面后停下。点击地面可以移动预测旗。"></canvas>
       <p id="live" class="sr-only" aria-live="polite"></p>
-      <p class="hint stage-hint">点跑道插旗；空格键可放球或暂停。</p>
+      <p class="hint stage-hint">点跑道插旗；下面的按钮或空格键都能放球和暂停。</p>
     </div>
 
     <div class="kid-action-strip" aria-label="试车操作">
       <button class="btn btn-primary" id="check" type="button">插旗并放球</button>
       <button class="btn btn-ghost" id="reset" type="button">重来</button>
-      <button id="go" type="button" hidden>放球出发</button>
     </div>
 
     <div class="kid-choice" aria-label="斜坡与预测设置">
@@ -332,6 +335,9 @@
   var MAX_STEPS = 400;
   var RUNWAY = 6;          // 平地长度（米）
   var BALL_R = 0.09;       // 球半径（米，仅用于画图与滚动动画）
+  /* 画在深棕地层上的字和线只能用这一族浅沙色：主题墨色（连孩子模式的棕色在内）
+     压在土上都读不出来。 */
+  var SOIL_INK = '#f2e6d3';
 
   var S = {
     ang: 30, h: 1.2, mu: 0.25, m: 0.5, timeScale: 1,
@@ -360,11 +366,19 @@
     S.phase = 'ready'; S.s = 0; S.d = 0; S.v = 0; S.t = 0; S.heat = 0; S.spin = 0;
     S.stopAt = null;
     if (!keepPred) S.predLocked = false;
-    btnGo.textContent = '放球出发';
     actV.textContent = '—';
     if (!keepPred) { errV.textContent = '—'; }
+    updateABDisplay();
     invalidate();
   }
+
+  /* 预测滑块只在球正在跑、或这一轮的预测已锁定时才该锁上。
+     原先在 start() 里写死 disabled = true 却没有任何地方解开：第一轮跑完，
+     这个滑块就永久停在禁用态，键盘用户再也改不了 B 轮要猜的位置。 */
+  function syncPredControl() {
+    predEl.disabled = running || S.predLocked;
+  }
+  function midRun() { return S.phase === 'ramp' || S.phase === 'floor'; }
 
   // ---------- 物理 ----------
   function step(dt) {
@@ -423,7 +437,6 @@
 
   function finish(stuckOnRamp, hitWall) {
     running = false;
-    btnGo.textContent = '再来一次';
     if (stuckOnRamp) {
       S.predLocked = false;
       actV.textContent = '没动';
@@ -443,6 +456,7 @@
       announce('球停在离坡底 ' + S.d.toFixed(2) + ' 米，你的预测差 ' + err.toFixed(2) + ' 米。');
       recordFairTrial(err, hitWall);
       S.predLocked = false;
+      syncPredControl();
     } else {
       announce('球停在离坡底 ' + S.d.toFixed(2) + ' 米。');
       updateABDisplay();
@@ -623,7 +637,7 @@
       var mxp = wx(base + mk);
       ctx.strokeStyle = 'rgba(255,246,230,.42)';
       ctx.beginPath(); ctx.moveTo(mxp, view.floorY); ctx.lineTo(mxp, view.floorY + 6); ctx.stroke();
-      ctx.fillStyle = '#f2e6d3';
+      ctx.fillStyle = SOIL_INK;
       ctx.fillText(mk + 'm', mxp, view.floorY + 9);
     }
 
@@ -758,14 +772,11 @@
          短，本身就是要看的结论。 */
       // 向下那一根不能戳出画布，地层只有几十像素厚
       var LF = Math.min(L_FLOOR(), Math.max(22, view.groundH - 8));
-      arrow(bx, by, 0, 1, LF, C.dim, 2, '');
+      /* 重力这一根整根埋在深棕地层里，原先用主题的 --ink-dim 画，压在土上只有 1.5:1，
+         等于没画出来（名字还得单独挪回地面线上方才读得出）。整支改用跑道刻度同一族的
+         浅沙色，名字就能留在箭头旁边，只是药丸换成土色。 */
+      arrow(bx, by, 0, 1, LF, SOIL_INK, 2, '重力', { bg: 'rgba(35,24,15,.85)' });
       arrow(bx, by, 0, -1, LF, C.phys, 2, '支持力');
-      // 重力箭头整根埋在泥土里，标签只能挂回地面线上方，不然棕字压棕底
-      ctx.save();
-      ctx.font = '700 9px ' + C.mono; ctx.fillStyle = C.dim;
-      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.fillText('重力', Math.min(bx + rpx + 5, W - 26), by + rpx * 0.5);
-      ctx.restore();
       if (S.v > 0.05) arrow(bx - rpx, by + rpx, -1, 0, LF * S.mu, C.code, 2.4, '摩擦');
     }
 
@@ -800,7 +811,7 @@
   /* 带箭头和小标签的力矢量。dx/dy 是屏幕方向单位向量。
      箭头尖按长度缩放，摩擦这种按真实比例算出来只有几像素的力才不会变成一坨三角形。
      标签会被夹回画布内，靠边的分力箭头写字才不会跑到画面外。 */
-  function arrow(x, y, dx, dy, len, color, width, label) {
+  function arrow(x, y, dx, dy, len, color, width, label, labelStyle) {
     if (!(len > 3)) return;
     var head = Math.min(8, Math.max(3, len * 0.42));
     var ex = x + dx * len, ey = y + dy * len;
@@ -821,9 +832,10 @@
        并按箭头方向往外让一档，彼此不叠。 */
     if (label && len > 9) {
       var pad = 8;
+      var style = labelStyle || {};
       ILLUSTRATIONS.canvasLabel(ctx, label, ex + dx * pad, ey + dy * pad, {
-        size: 9, font: C.mono, color: color,
-        bg: alpha(C.surf, 0.86), border: alpha(color, 0.5), borderWidth: 1,
+        size: 9, font: C.mono, color: style.color || color,
+        bg: style.bg || alpha(C.surf, 0.86), border: alpha(style.color || color, 0.5), borderWidth: 1,
         align: Math.abs(dx) < 0.2 ? 'left' : (dx < 0 ? 'right' : 'left'),
         padX: 4, padY: 3, radius: 5, clampW: W, clampH: H
       });
@@ -932,19 +944,25 @@
     paintTrial(1, S.trials[1]);
     var changed = changedKeysFromA();
     if (!S.trials.length) {
-      roundLabel.textContent = running ? 'A 轮试车中' : '准备 A 轮';
+      roundLabel.textContent = running ? 'A 轮试车中' : (midRun() ? 'A 轮已暂停' : '准备 A 轮');
       changedVariable.textContent = '先完成 A 轮';
-      checkButton.textContent = running ? '试车中…' : '插旗并放球';
+      checkButton.textContent = '插旗并放球';
     } else if (!S.trials[1]) {
-      roundLabel.textContent = running ? 'B 轮试车中' : (changed.length === 1 ? '可以开始 B 轮' : '准备 B 轮');
+      roundLabel.textContent = running ? 'B 轮试车中' : (midRun() ? 'B 轮已暂停' : (changed.length === 1 ? '可以开始 B 轮' : '准备 B 轮'));
       changedVariable.textContent = changed.length ? changed.map(function (key) { return VAR_LABELS[key]; }).join('、') : '请改一项';
-      checkButton.textContent = running ? '试车中…' : '插旗并放球';
+      checkButton.textContent = '插旗并放球';
     } else {
       roundLabel.textContent = fairPassed ? 'A/B 完成' : '需要重来';
       changedVariable.textContent = fairPassed ? fairChanged : '不符合一项';
       checkButton.textContent = fairPassed ? (progressSaved ? '已记录完成' : '记录完成') : '重来再试';
     }
-    checkButton.disabled = running || progressSaved || (S.trials.length >= 2 && !fairPassed);
+    /* 球在跑的时候这颗按钮原先只是禁用的「试车中…」，暂停和继续都只有空格键能做：
+       用手指或鼠标的孩子根本没有暂停的入口（慢放到 0.15× 时一轮要十几秒）。
+       跑动中就让它当暂停／继续用。 */
+    if (running) checkButton.textContent = '暂停';
+    else if (midRun()) checkButton.textContent = '继续';
+    checkButton.disabled = !running && (progressSaved || (S.trials.length >= 2 && !fairPassed));
+    syncPredControl();
   }
   function recordFairTrial(err, hitWall) {
     if (S.trials.length >= 2 || !S.predLocked) return;
@@ -1043,23 +1061,19 @@
     if (Progress.complete("games/ramp-and-roll.html", evidence)) {
       progressSaved = true;
       updateRampTask();
+      /* 主按钮的字是在这里算的：不刷新它就一直停在「记录完成」，
+         已经记好了还在请人再点一次。 */
+      updateABDisplay();
       announce('公平斜坡实验已完成并保存在本机。');
     }
   });
 
-  var btnGo = document.getElementById('go');
   function start() {
     if (S.phase === 'stopped') reset(true);
     if (S.phase === 'ready') { S.phase = 'ramp'; }
     running = true;
-    predEl.disabled = true;
-    btnGo.textContent = '暂停';
     updateABDisplay();
   }
-  btnGo.addEventListener('click', function () {
-    if (running) { running = false; btnGo.textContent = '继续'; updateABDisplay(); return; }
-    start();
-  });
   document.getElementById('reset').addEventListener('click', function () {
     running = false;
     S.trials = [];
@@ -1127,7 +1141,14 @@
     setPred(parseFloat(predEl.value) || 0, true);
   });
   checkButton.addEventListener('click', function () {
-    if (running || progressSaved) return;
+    if (running) {
+      running = false;
+      updateABDisplay();
+      announce('已暂停。再按一次继续。');
+      return;
+    }
+    if (midRun()) { start(); announce('继续试车。'); return; }
+    if (progressSaved) return;
     if (fairPassed && S.trials.length === 2) {
       rampComplete.click();
       return;
@@ -1170,8 +1191,7 @@
   document.addEventListener('keydown', function (e) {
     if (e.code === 'Space' && !/INPUT|BUTTON|SELECT|TEXTAREA/.test(e.target.tagName)) {
       e.preventDefault();
-      if (running) btnGo.click();
-      else checkButton.click();
+      checkButton.click();
     }
   });
 
