@@ -136,15 +136,40 @@
 
   /* ---------- 一亿年有多长 ---------- */
   .deep { margin: 30px 0; padding: 20px; }
-  .ruler { position: relative; height: 30px; border-radius: 6px; overflow: hidden; background: var(--surface-2); margin: 16px 0 30px; }
-  .ruler-fill { position: absolute; top: 0; bottom: 0; left: 0; }
+  /* 五个刻度标签是用 ::after 画在 bottom:-20px 的，而 .ruler 带着 overflow:hidden——
+     于是「恐龙灭绝」「今天」这些字全被裁掉了，尺子只剩一条没刻度的彩条。
+     圆角改由 .ruler-fill 自己兜，标签才有地方待。 */
+  .ruler { position: relative; height: 30px; border-radius: 6px; background: var(--surface-2); margin: 30px 0 40px; }
+  .ruler-fill { position: absolute; inset: 0; border-radius: inherit; }
   .ruler-tick {
-    position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,.28);
+    position: absolute; top: 0; bottom: 0; width: 1.5px; background: rgba(255,255,255,.7);
   }
   .ruler-tick::after {
     content: attr(data-l); position: absolute; left: 50%; transform: translateX(-50%);
-    bottom: -20px; font-size: .66rem; color: var(--ink-dim); white-space: nowrap;
+    bottom: -19px; font-size: .66rem; color: var(--ink-mid); white-space: nowrap;
     font-family: var(--mono);
+  }
+  /* 头尾两个标签居中会有一半挂到卡片外面，各自贴边。 */
+  .ruler-tick[data-align="start"]::after { left: 0; transform: none; }
+  .ruler-tick[data-align="end"]::after { left: auto; right: 0; transform: none; }
+  /* 窄屏放不下五个标签：「恐龙灭绝 5000万年前」会挤成一串，「500万年前」
+     还会把「今天」压掉。中间两个只留刻度线，字让给两端和 2500 万年前。 */
+  @media (max-width: 560px) {
+    .ruler-tick[data-dense]::after { content: ""; }
+  }
+  /* 问的是「智人出现会落在哪里」，那就得在尺子上真画出来：
+     30 万 / 6600 万 ＝ 0.45%，按比例就是贴在最右端的一条细线。 */
+  .ruler-human {
+    position: absolute; top: -5px; bottom: -5px; border-radius: 2px;
+    background: var(--ink); box-shadow: 0 0 0 1.5px var(--surface);
+  }
+  .ruler-flag {
+    position: absolute; bottom: calc(100% + 10px); right: 0;
+    font-size: .7rem; font-weight: 750; color: var(--ink); white-space: nowrap;
+  }
+  .ruler-flag::after {
+    content: ""; position: absolute; top: calc(100% + 1px); right: 3px;
+    width: 1.5px; height: 9px; background: var(--ink);
   }
   .qa { margin-top: 14px; }
   .qa summary {
@@ -637,22 +662,44 @@
     f.style.background = "linear-gradient(90deg, var(--warn), var(--kit) 62%, var(--math))";
     r.appendChild(f);
 
-    [[66, "恐龙灭绝"], [50, "5000万年前"], [25, "2500万年前"], [5, "500万年前"], [0, "今天"]]
-      .forEach(function (t) {
-        var d = document.createElement("div");
-        d.className = "ruler-tick";
-        d.style.left = ((66 - t[0]) / 66 * 100) + "%";
-        d.setAttribute("data-l", t[1]);
-        r.appendChild(d);
-      });
+    var TICKS = [[66, "恐龙灭绝"], [50, "5000万年前", 1], [25, "2500万年前"], [5, "500万年前", 1], [0, "今天"]];
+    TICKS.forEach(function (t, i) {
+      var d = document.createElement("div");
+      d.className = "ruler-tick";
+      d.style.left = ((66 - t[0]) / 66 * 100) + "%";
+      d.setAttribute("data-l", t[1]);
+      if (t[2]) d.setAttribute("data-dense", "");
+      if (i === 0) d.setAttribute("data-align", "start");
+      if (i === TICKS.length - 1) d.setAttribute("data-align", "end");
+      r.appendChild(d);
+    });
 
-    // 人类历史在这把尺子上的宽度
-    var W = 900; // 假定尺子约 900px
-    var humanPx = 0.3 / 66 * W;
+    /* 智人：30 万年在 6600 万年里占 0.45%。这条线细得像根头发，
+       而这正是这一节要让人看见的事，所以不给它设最小宽度。 */
+    var SPAN_MA = 66, HUMAN_MA = 0.3, RULER_MM = 900;
+    var humanFrac = HUMAN_MA / SPAN_MA;
+    var band = document.createElement("div");
+    band.className = "ruler-human";
+    band.style.right = "0";
+    band.style.width = (humanFrac * 100).toFixed(3) + "%";
+    r.appendChild(band);
+
+    var humanMm = RULER_MM * humanFrac;
+    var flag = document.createElement("span");
+    flag.className = "ruler-flag";
+    flag.textContent = "智人 30 万年 ≈ " + humanMm.toFixed(1) + " 毫米";
+    r.appendChild(flag);
+
+    r.setAttribute("role", "img");
+    r.setAttribute("aria-label",
+      "深时尺：整条尺代表恐龙灭绝到今天的 6600 万年。左端是恐龙灭绝，" +
+      "往右依次是 5000 万年前、2500 万年前、500 万年前，右端是今天。" +
+      "智人存在的 30 万年只是贴在最右端的一条细线，占全长的 0.45%。");
+
     document.getElementById("rulerNote").innerHTML =
-      "如果这把尺子有 90 厘米长，智人约 30 万年的存在时间只占 <b>" +
-      (humanPx / W * 900).toFixed(1) + " 毫米</b>。有文字记载的约 5000 年只占约 0.07 毫米，" +
-      "通常很难在这把尺上单独画出来。";
+      "如果这把尺子有 90 厘米长，智人约 30 万年的存在时间只占最右端 <b>" +
+      humanMm.toFixed(1) + " 毫米</b>——就是那条细黑线。有文字记载的约 5000 年只占约 " +
+      (RULER_MM * 0.005 / SPAN_MA).toFixed(2) + " 毫米，通常很难在这把尺上单独画出来。";
   })();
 
   /* ---------- 剪影 ----------

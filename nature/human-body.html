@@ -256,8 +256,11 @@
     font-family: var(--mono); font-size: .72rem; color: var(--ink-dim);
   }
 
+  /* minmax(190px) 在 1176px 宽的容器里排出 5 列，六格于是成了 5＋1，
+     第二行孤零零挂一张卡。放宽到 300px：1280 下 3＋3，768 下 2＋2＋2。
+     min(100%,…) 是为了窄屏也绝不会被 300px 撑出横向滚动。 */
   .fact-strip {
-    display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   }
   .fstat {
     background: var(--surface); border: 1px solid var(--line);
@@ -1066,6 +1069,7 @@
   var bodyScene = document.querySelector(".body-scene");
   var bodyCaption = document.getElementById("bodyDiagramCaption");
   var bodyDiagramDesc = document.getElementById("bodyDiagramDesc");
+  var SWITCH_HINT = "点下方按钮可分别高亮循环、呼吸、消化或大脑系统。";
   var systemCopy = {
     all: "全部系统：大脑指挥、肺吸氧、心脏泵血、胃和肠道消化食物。",
     circulation: "循环系统 Circulatory system：心脏像一台泵。含氧较多的血（红）被送到全身，含氧较少的血（蓝）回到心脏，再送去肺里换气。真人的心脏在胸腔正中偏左，所以图上看起来是偏右边。",
@@ -1124,7 +1128,9 @@
       });
       bodyScene.setAttribute("data-body-system", sys);
       bodyCaption.textContent = systemCopy[sys];
-      if (bodyDiagramDesc) bodyDiagramDesc.textContent = systemCopy[sys];
+      /* 换系统时把 desc 整段替换掉，会顺手删掉「点下方按钮可分别高亮……」
+         那句唯一告诉读屏这图能切换的话，而且删了就再也回不来。 */
+      if (bodyDiagramDesc) bodyDiagramDesc.textContent = systemCopy[sys] + SWITCH_HINT;
       paintLegend(sys);
     });
   });
