@@ -31,7 +31,9 @@
     transition: all .16s var(--ease);
   }
   .tabs button:hover { color: var(--ink); }
-  .tabs button[aria-pressed="true"] { background: var(--accent); color: #08101f; }
+  /* 选中标签是深蓝底，配 #08101f 的近黑字只有 3.3:1。强调色上的文字色共享层
+     已经定好了（--on-accent），这里跟着用就有 5.7:1。 */
+  .tabs button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
 
   .pair { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
   @media (max-width: 620px) { .pair { grid-template-columns: 1fr; } }
@@ -40,14 +42,16 @@
     background: var(--surface); border: 1px solid var(--line-soft);
     border-radius: var(--r); padding: 12px;
   }
-  .frac-cell.a { border-color: rgba(110,168,254,.4); }
-  .frac-cell.b { border-color: rgba(244,114,182,.4); }
+  /* 卡片边框认的是 A / B 的身份色，得跟着主题走；写死的两个 rgba 是深色主题
+     留下来的，孩子模式换成暖色卡以后它们既不是蓝也不是粉。 */
+  .frac-cell.a { border-color: color-mix(in srgb, var(--math) 45%, var(--line)); }
+  .frac-cell.b { border-color: color-mix(in srgb, var(--kit) 45%, var(--line)); }
   .frac-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
   .who {
     display: inline-flex; align-items: center; gap: 6px;
     font-weight: 800; font-size: .9rem;
   }
-  .swatch { width: 13px; height: 13px; border-radius: 4px; flex: none; border: 1px solid rgba(255,255,255,.25); }
+  .swatch { width: 13px; height: 13px; border-radius: 4px; flex: none; border: 1px solid rgba(8,16,31,.25); }
   .swatch.a { background: var(--math); }
   .swatch.b { background: var(--kit); }
 
@@ -149,7 +153,9 @@
   .fraction-strip { display:grid; gap:3px; min-height:48px; padding:4px; border:2px solid var(--line); border-radius:12px; background:var(--surface-2); }
   .fraction-strip.a { border-color:color-mix(in srgb,var(--math) 62%,var(--line)); }
   .fraction-strip.b { border-color:color-mix(in srgb,var(--kit) 62%,var(--line)); }
-  .fraction-strip span { min-width:0; border-radius:5px; background:rgba(255,255,255,.04); border:1px dashed var(--line); }
+  /* 空格要能数（「A 涂了 1 格、B 涂了 2 格」全靠数格子），--line 在奶油底上
+     只有 1.4:1，整条长条看着像一块没切过的板。 */
+  .fraction-strip span { min-width:0; border-radius:5px; border:1px dashed color-mix(in srgb, var(--ink-dim) 80%, transparent); }
   .fraction-strip.a span.on { background:var(--math); border-style:solid; border-color:var(--math); }
   .fraction-strip.b span.on { background:repeating-linear-gradient(135deg,var(--kit) 0 7px,color-mix(in srgb,var(--kit) 65%,#08101f) 7px 12px); border-style:solid; border-color:var(--kit); }
   .fraction-kid-conclusion { margin:0; color:var(--ink); font-size:clamp(1rem,4vw,1.25rem); font-weight:800; text-align:center; }
@@ -664,7 +670,10 @@
         ctx.strokeStyle = 'rgba(255,255,255,.55)';
       } else {
         ctx.fillStyle = C.surf2; ctx.fill();
-        ctx.strokeStyle = C.line;
+        /* 没涂的那几份之间的刀口就是「一共切了几份」的全部证据，必须数得出来。
+           --line 是卡片描边那一档，压在同色系的卡底上只有 1.4:1，
+           半个圆看着像一块没切过的饼。 */
+        ctx.strokeStyle = ILLUSTRATIONS.fadeHex(C.dim, .75);
       }
       ctx.lineWidth = 1.5;
       ctx.stroke();
@@ -1057,7 +1066,7 @@
         ctx.strokeStyle = 'rgba(255,255,255,.45)';
       } else {
         ctx.fillStyle = C.surf2; ctx.fill();
-        ctx.strokeStyle = C.line;
+        ctx.strokeStyle = ILLUSTRATIONS.fadeHex(C.dim, .7);
       }
       ctx.lineWidth = 1; ctx.stroke();
     }
