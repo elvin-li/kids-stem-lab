@@ -36,7 +36,11 @@ html[data-mode="kid"] .kid-count{margin:0 0 12px;font-weight:800;color:var(--ink
 function sceneName(x){return "card/nature-"+x.file.replace(/\.html$/,"");}
 /* 首屏故事图也走共享插图库，和卡片图位、guide/fox 头像用同一套画法。 */
 if(window.ILLUSTRATIONS&&ILLUSTRATIONS.hasArt("scene/nature-trail")){document.getElementById("heroScene").insertAdjacentHTML("afterbegin",ILLUSTRATIONS.art("scene/nature-trail"));}
-function ages(t){var n=String(t).match(/\d+/g)||[];return[Number(n[0]||0),Number(n[1]||n[0]||99)];}function mode(x){return x.id.indexOf("human-body")>=0?"offline":"live";}function status(id){var d=Progress.all();return{visited:!!d.pages[id],completed:!!d.completions[id],discovery:!!d.notes[id]};}
+function ages(t){var n=String(t).match(/\d+/g)||[];return[Number(n[0]||0),Number(n[1]||n[0]||99)];}
+/* 「数据模式」按详情页的真实行为分类：天气工坊和人体机器不请求任何远程数据
+   （页面自己就写着「完全离线可用」），其余五个专题才有公开数据加离线回退。 */
+var OFFLINE_TOPICS={"nature/weather.html":1,"nature/human-body.html":1};
+function mode(x){return OFFLINE_TOPICS[x.id]?"offline":"live";}function status(id){var d=Progress.all();return{visited:!!d.pages[id],completed:!!d.completions[id],discovery:!!d.notes[id]};}
 /* 切模式时 kids-stem:progress 比 <html data-mode> 先落地，读属性会拿到上一轮的值，
    所以这里问偏好本身。 */
 function kidMode(){var m=window.Progress&&Progress.getPreference?Progress.getPreference("mode"):null;return (m||document.documentElement.getAttribute("data-mode"))==="kid";}
