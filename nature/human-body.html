@@ -47,6 +47,14 @@
   .body-scene[data-body-system="lung"] .sys-lung,
   .body-scene[data-body-system="digest"] .sys-digest,
   .body-scene[data-body-system="brain"] .sys-brain { opacity: 1; }
+  /* 循环图里从心脏往上伸的那四根管子是通向肺的。肺跟着其他系统一起暗到 .18 时，
+     四个箭头就指进一片空白，可图注还在说「再送去肺里换气」。肺留半透明，
+     标签仍旧压暗——它们不是这一屏要读的东西。 */
+  .body-scene[data-body-system="circulation"] .sys-lung { opacity: .5; }
+  .body-scene[data-body-system="circulation"] .sys-lung .sys-tag { opacity: .32; }
+  /* 吸气时横膈往下拉的箭头只在「呼吸」视图出现，免得全部视图里凭空多两根箭头。 */
+  .body-system-svg .lung-breath { opacity: 0; transition: opacity .2s var(--ease); }
+  .body-scene[data-body-system="lung"] .lung-breath { opacity: .85; }
   .body-system-switch { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 4px; }
   .body-system-switch button { min-height: 44px; min-width: 56px; padding: 6px 12px; border: 2px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 750 .76rem/1.2 var(--font); cursor: pointer; }
   .body-system-switch button[aria-pressed="true"] { border-color: var(--kit); background: color-mix(in srgb,var(--kit) 14%,var(--surface)); }
@@ -312,10 +320,18 @@
           <g class="sys-layer sys-brain">
             <path d="M146 40 C143 30 152 23 160 24 C164 20 172 22 175 28 C182 30 183 36 179 41 C182 47 177 52 171 50 L154 50 C148 50 144 46 146 40 Z" fill="#c4b5fd" stroke="#6d31d4" stroke-width="2.2" stroke-linejoin="round"/>
             <path d="M150 32 Q158 27 165 32 M149 38 Q159 34 168 38 M152 45 Q160 41 169 45" fill="none" stroke="#6d31d4" stroke-width="1.5" opacity=".55"/>
-            <path d="M169 49 C176 47 179 51 178 55 C177 58 171 60 167 57 Z" fill="#c4b5fd" stroke="#6d31d4" stroke-width="1.8"/>
+            <!-- 小脑：原来这块的右下角伸到 x=179，可颅骨在那个高度只到 x=177，
+                 于是小脑从头盖骨外面鼓出来一块。收进圆里，并换一档深紫好上图例。 -->
+            <path d="M168 48 C174 46 177 50 176 54 C175 57 170 58 166 55 Z" fill="#a78bfa" stroke="#6d31d4" stroke-width="1.8"/>
+            <path d="M168 51 H175 M167 54 H174" stroke="#6d31d4" stroke-width="1.1" opacity=".5"/>
             <path d="M160 52 L160 64" stroke="#6d31d4" stroke-width="4" stroke-linecap="round" opacity=".8"/>
             <path class="lead" d="M216 30 L186 36"/>
             <text class="lbl" x="220" y="34" fill="var(--phys)">大脑 <tspan>Brain</tspan></text>
+          </g>
+          <!-- 食管：真人的食管紧贴在气管后面、心脏后面下行，所以先画。
+               后面画的气管和心脏会把它挡住，这正是正面看到的样子。 -->
+          <g class="sys-layer sys-digest">
+            <path d="M160 66 C160 102 163 150 159 199" fill="none" stroke="#b45309" stroke-width="4.5" stroke-linecap="round" opacity=".6"/>
           </g>
           <!-- 气管 + 肺 + 横膈 -->
           <g class="sys-layer sys-lung">
@@ -324,45 +340,64 @@
             <path d="M152 112 C138 104 124 112 121 132 C117 156 120 182 131 190 C140 196 150 192 152 183 Z" fill="#a5e9f7" fill-opacity=".85" stroke="#0a6f85" stroke-width="2.4" stroke-linejoin="round"/>
             <path d="M168 112 C182 104 196 112 199 132 C203 156 200 182 189 190 C180 196 170 192 168 183 Z" fill="#a5e9f7" fill-opacity=".85" stroke="#0a6f85" stroke-width="2.4" stroke-linejoin="round"/>
             <path d="M146 120 C140 134 137 152 136 170 M142 138 L130 146 M139 158 L128 164 M174 120 C180 134 183 152 184 170 M178 138 L190 146 M181 158 L192 164" fill="none" stroke="#0a6f85" stroke-width="1.8" opacity=".55" stroke-linecap="round"/>
-            <path d="M126 196 Q160 184 194 196" fill="none" stroke="#0a6f85" stroke-width="2.6" stroke-dasharray="7 5" opacity=".7"/>
-            <path class="lead" d="M104 84 L152 82"/>
-            <text class="lbl" x="100" y="88" text-anchor="end" fill="var(--video)">气管 <tspan>Trachea</tspan></text>
-            <path class="lead" d="M104 142 L124 148"/>
-            <text class="lbl" x="100" y="146" text-anchor="end" fill="var(--video)">肺 <tspan>Lungs</tspan></text>
-            <path class="lead" d="M104 196 L129 194"/>
-            <text class="lbl" x="100" y="200" text-anchor="end" fill="var(--video)">横膈 <tspan>Diaphragm</tspan></text>
+            <!-- 横膈：这条弧线原来画在 y=190，正压在两片肺的下缘上，
+                 标签指过去看到的其实是肺的轮廓。挪到肺以下、胃以上才看得见。 -->
+            <path d="M124 202 Q160 190 196 202" fill="none" stroke="#0a6f85" stroke-width="2.6" stroke-dasharray="7 5" opacity=".8"/>
+            <g class="lung-breath">
+              <path d="M134 206 L134 218" fill="none" stroke="#0a6f85" stroke-width="2.4" stroke-linecap="round" marker-end="url(#blueArrow)"/>
+              <path d="M186 206 L186 218" fill="none" stroke="#0a6f85" stroke-width="2.4" stroke-linecap="round" marker-end="url(#blueArrow)"/>
+            </g>
+            <g class="sys-tag">
+              <path class="lead" d="M104 84 L152 82"/>
+              <text class="lbl" x="100" y="88" text-anchor="end" fill="var(--video)">气管 <tspan>Trachea</tspan></text>
+              <path class="lead" d="M104 142 L124 148"/>
+              <text class="lbl" x="100" y="146" text-anchor="end" fill="var(--video)">肺 <tspan>Lungs</tspan></text>
+              <path class="lead" d="M104 200 L132 197"/>
+              <text class="lbl" x="100" y="204" text-anchor="end" fill="var(--video)">横膈 <tspan>Diaphragm</tspan></text>
+            </g>
           </g>
-          <!-- 胃 + 肠道（画在循环层之前，主动脉本来就走在胃的后面） -->
+          <!-- 心脏 + 循环 -->
+          <g class="sys-layer sys-circulation">
+            <!-- 主动脉起点藏在心脏里：血从心脏后方出来往下走，画在心脏之前才不会
+                 变成一根搭在心脏上的红线。 -->
+            <path d="M170 152 C178 172 180 214 178 262" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round"/>
+            <!-- 去肺换气：含氧少的血（蓝）从心脏出发，箭头落在两片肺里 -->
+            <path d="M155 144 C147 134 139 126 132 122" fill="none" stroke="#0a6f85" stroke-width="4" stroke-linecap="round" marker-end="url(#blueArrow)"/>
+            <path d="M176 144 C184 134 191 126 197 122" fill="none" stroke="#0a6f85" stroke-width="4" stroke-linecap="round" marker-end="url(#blueArrow)"/>
+            <!-- 心脏本体：心尖落在 y=185，横膈在 y=190。旧版心尖画到 y=204，
+                 越过横膈跑进了肚子里，还压在胃上面；而且宽到 42，占了大半个胸腔。 -->
+            <path d="M154 140 C148 146 147 158 151 168 C155 178 163 185 169 184 C173 184 176 181 177 177 C180 165 181 151 179 143 C176 137 170 136 165 140 C162 137 157 137 154 140 Z" fill="#d1495b" stroke="#7f1029" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M162 140 C161 154 162 167 167 180" fill="none" stroke="#7f1029" stroke-width="1.6" opacity=".5"/>
+            <path d="M156 148 C161 154 165 163 166 172 M171 145 C176 150 179 156 180 163" fill="none" stroke="#7f1029" stroke-width="1.5" opacity=".35"/>
+            <!-- 换完气回来：含氧多的血（红）从肺进心脏，箭头收在心脏边上 -->
+            <path d="M130 146 C136 152 142 156 149 160" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round" marker-end="url(#redArrow)"/>
+            <path d="M197 146 C191 152 185 156 179 160" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round" marker-end="url(#redArrow)"/>
+            <!-- 下半身：主动脉分叉去两条腿，静脉从腿回到心脏 -->
+            <path d="M178 262 C181 292 183 318 183 340" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round" marker-end="url(#redArrow)"/>
+            <path d="M178 262 C168 290 152 314 149 340" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round" marker-end="url(#redArrow)"/>
+            <path d="M138 340 C141 314 146 288 151 264 M172 340 C170 314 158 288 151 264" fill="none" stroke="#0a6f85" stroke-width="4" stroke-linecap="round"/>
+            <path d="M151 264 C147 232 146 202 152 180" fill="none" stroke="#0a6f85" stroke-width="4" stroke-linecap="round" marker-end="url(#blueArrow)"/>
+            <path class="lead" d="M216 158 L184 155"/>
+            <text class="lbl" x="220" y="162" fill="var(--kit)">心脏 <tspan>Heart</tspan></text>
+            <path class="lead" d="M104 340 L144 338"/>
+            <text class="lbl" x="100" y="344" text-anchor="end" fill="var(--kit)">全身 <tspan>Body</tspan></text>
+          </g>
+          <!-- 胃 + 肠道：画在循环之后，胃本来就挡在主动脉前面。 -->
           <g class="sys-layer sys-digest">
-            <path d="M160 62 C160 112 157 162 158 200" fill="none" stroke="#b45309" stroke-width="4.5" stroke-linecap="round" opacity=".42"/>
             <path d="M158 200 C176 198 189 210 188 228 C187 244 174 252 162 247 C151 242 148 228 153 219 C157 211 158 205 158 200 Z" fill="#f5c14e" stroke="#b45309" stroke-width="2.4" stroke-linejoin="round"/>
             <path d="M166 206 C172 212 176 220 176 228 M160 212 C164 218 166 226 166 234" fill="none" stroke="#b45309" stroke-width="1.6" opacity=".45"/>
-            <path d="M162 247 C154 251 149 254 146 252" fill="none" stroke="#b45309" stroke-width="4.5" stroke-linecap="round"/>
-            <path d="M139 278 L139 259 C139 250 145 245 154 245 L171 245 C180 245 185 250 185 259 L185 273 C185 281 179 285 171 285 L161 285" fill="none" stroke="#e0a33f" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M168 253 C152 255 147 262 155 266 C164 270 175 267 172 273 C169 279 156 277 151 274" fill="none" stroke="#b45309" stroke-width="4.5" stroke-linecap="round"/>
+            <!-- 十二指肠：胃的出口接到小肠第一圈。旧版这一段停在 (146,252)，
+                 小肠却从 (168,253) 起笔，两根管子中间空着一大截。 -->
+            <path d="M162 247 C155 250 151 252 149 253" fill="none" stroke="#a8480a" stroke-width="4" stroke-linecap="round"/>
+            <!-- 大肠：升（图左＝人的右侧）→ 横 → 降 → 乙状 -->
+            <path d="M139 278 L139 259 C139 250 145 245 153 245 C159 249 166 250 172 245 C180 245 185 250 185 259 L185 273 C185 281 179 285 171 285 L161 285" fill="none" stroke="#d99a3c" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- 小肠：盘成好几折填满大肠围出来的这块地方，末端回到左下的盲肠。
+                 旧版只有三笔，画出来是一个端端正正的字母 S。 -->
+            <path d="M149 253 C162 250 174 251 176 256 C178 261 167 262 156 261 C146 260 142 264 147 268 C153 272 170 269 175 273 C179 277 167 281 155 279 C148 278 143 277 140 276" fill="none" stroke="#a8480a" stroke-width="4.2" stroke-linecap="round"/>
             <path class="lead" d="M216 218 L189 224"/>
             <text class="lbl" x="220" y="222" fill="var(--warn)">胃 <tspan>Stomach</tspan></text>
             <path class="lead" d="M104 264 L137 268"/>
             <text class="lbl" x="100" y="268" text-anchor="end" fill="var(--warn)">肠道 <tspan>Intestines</tspan></text>
-          </g>
-          <!-- 心脏 + 循环 -->
-          <g class="sys-layer sys-circulation">
-            <path d="M152 158 C143 150 135 142 130 137" fill="none" stroke="#0a6f85" stroke-width="4" stroke-linecap="round" marker-end="url(#blueArrow)"/>
-            <path d="M177 158 C186 150 193 142 197 137" fill="none" stroke="#0a6f85" stroke-width="4" stroke-linecap="round" marker-end="url(#blueArrow)"/>
-            <path d="M131 147 C136 154 141 160 146 165" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round" marker-end="url(#redArrow)"/>
-            <path d="M195 147 C190 153 186 159 182 164" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round" marker-end="url(#redArrow)"/>
-            <path d="M151 155 C143 160 141 173 147 184 C152 196 164 204 172 203 C175 203 178 201 179 197 C183 184 185 169 183 160 C180 152 172 149 166 154 C162 150 156 151 151 155 Z" fill="#d1495b" stroke="#7f1029" stroke-width="2.2" stroke-linejoin="round"/>
-            <path d="M160 156 C159 171 160 186 167 197" fill="none" stroke="#7f1029" stroke-width="1.6" opacity=".5"/>
-            <path d="M154 163 C160 169 165 179 166 189 M169 160 C175 165 179 171 180 178" fill="none" stroke="#7f1029" stroke-width="1.5" opacity=".35"/>
-            <path d="M175 198 C180 218 179 242 177 262" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round"/>
-            <path d="M177 262 C180 292 182 318 182 340" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round" marker-end="url(#redArrow)"/>
-            <path d="M177 262 C167 290 152 314 149 340" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round" marker-end="url(#redArrow)"/>
-            <path d="M138 340 C141 314 146 288 151 264 M172 340 C170 314 158 288 151 264" fill="none" stroke="#0a6f85" stroke-width="4" stroke-linecap="round"/>
-            <path d="M151 264 C149 240 150 220 153 202" fill="none" stroke="#0a6f85" stroke-width="4" stroke-linecap="round" marker-end="url(#blueArrow)"/>
-            <path class="lead" d="M216 168 L189 174"/>
-            <text class="lbl" x="220" y="172" fill="var(--kit)">心脏 <tspan>Heart</tspan></text>
-            <path class="lead" d="M104 340 L144 338"/>
-            <text class="lbl" x="100" y="344" text-anchor="end" fill="var(--kit)">全身 <tspan>Body</tspan></text>
           </g>
         </svg>
         <figcaption id="bodyDiagramCaption" role="status" aria-live="polite">全部系统：大脑指挥、肺吸氧、心脏泵血、胃和肠道消化食物。</figcaption>
@@ -941,8 +976,8 @@
     all: "全部系统：大脑指挥、肺吸氧、心脏泵血、胃和肠道消化食物。",
     circulation: "循环系统 Circulatory system：心脏像一台泵。含氧较多的血（红）被送到全身，含氧较少的血（蓝）回到心脏，再送去肺里换气。真人的心脏在胸腔正中偏左，所以图上看起来是偏右边。",
     lung: "呼吸系统 Respiratory system：气管 trachea 把空气送进两侧肺，再分成越来越细的支气管；肺像海绵，在这里换氧气和二氧化碳。横膈 diaphragm 往下拉，空气就被吸进来。",
-    digest: "消化系统 Digestive system：食物顺着食管落进胃里，被酸和酶搅碎；接着进入小肠吸收营养，大肠再回收水分。",
-    brain: "大脑 Brain：住在头颅里，负责思考、记忆和协调动作。它只占体重约 2%，却要用掉全身约 20% 的氧气。"
+    digest: "消化系统 Digestive system：食物顺着食管落进胃里，被酸和酶搅碎；接着挤过盘成好几折的小肠吸收营养，最后沿着外面那圈粗管子——大肠——回收水分。",
+    brain: "大脑 Brain：住在头颅里，负责思考、记忆和协调动作。后下方那一小块深紫色是小脑 cerebellum，管平衡和动作的分寸；往下连出去的是脑干 brain stem。大脑只占体重约 2%，却要用掉全身约 20% 的氧气。"
   };
   /* 图例跟着当前系统换：只看消化时，红蓝血流图例反而是干扰。 */
   var systemLegend = {
@@ -963,12 +998,13 @@
     ],
     digest: [
       { color: "#f5c14e", label: "胃 Stomach" },
-      { color: "#b45309", label: "小肠 Small intestine", shape: "line" },
-      { color: "#c98a2e", label: "大肠 Large intestine", shape: "line" }
+      { color: "#a8480a", label: "小肠 Small intestine", shape: "line" },
+      { color: "#d99a3c", label: "大肠 Large intestine", shape: "line" }
     ],
     brain: [
       { color: "#c4b5fd", label: "大脑 Cerebrum" },
-      { color: "#6d31d4", label: "沟回 Gyri", shape: "line" }
+      { color: "#a78bfa", label: "小脑 Cerebellum" },
+      { color: "#6d31d4", label: "脑干 Brain stem", shape: "line" }
     ]
   };
   var legendBox = document.getElementById("bodyLegend");
