@@ -737,8 +737,13 @@
       var sxp = wx(base + S.stopAt);
       ctx.strokeStyle = C.sci; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(sxp, view.floorY + 2); ctx.lineTo(sxp, view.floorY - 20); ctx.stroke();
-      ctx.fillStyle = C.sci; ctx.font = '700 10px ' + C.mono; ctx.textAlign = 'center';
-      ctx.fillText((S.hitWall ? '≥' : '') + S.stopAt.toFixed(2) + 'm', sxp, view.floorY - 22);
+      /* 停在跑道尽头时，这个数正好落在「支持力」那根竖箭头的杆子上，
+         裸着写数字会被杆子劈开。按 CONTRACT 的约定，画布上的读数一律垫药丸。 */
+      ILLUSTRATIONS.canvasLabel(ctx, (S.hitWall ? '≥' : '') + S.stopAt.toFixed(2) + 'm', sxp, view.floorY - 29, {
+        size: 10, font: C.mono, color: C.sci, bg: alpha(C.surf, 0.9),
+        border: alpha(C.sci, 0.5), borderWidth: 1,
+        align: 'center', padX: 4, padY: 3, radius: 5, clampW: W, clampH: H
+      });
       /* 猜的位置和真停的位置之间画一根带箭头的量尺，误差有多大一眼就看到，
          不用回头去表格里读那个「差 x m」。 */
       var gap = Math.abs(S.stopAt - S.pred);
@@ -751,9 +756,13 @@
         ctx.setLineDash([]);
         ctx.beginPath(); ctx.moveTo(pfx, gy - 4); ctx.lineTo(pfx, gy + 4); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(sxp, gy - 4); ctx.lineTo(sxp, gy + 4); ctx.stroke();
-        ctx.font = '700 10px ' + C.mono; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-        ctx.fillText('差 ' + gap.toFixed(2) + 'm', (pfx + sxp) / 2, gy - 3);
         ctx.restore();
+        // 停在坡脚附近时这个数会压到斜坡填色上，同样垫一层药丸
+        ILLUSTRATIONS.canvasLabel(ctx, '差 ' + gap.toFixed(2) + 'm', (pfx + sxp) / 2, gy - 11, {
+          size: 10, font: C.mono, color: C.warn, bg: alpha(C.surf, 0.9),
+          border: alpha(C.warn, 0.5), borderWidth: 1,
+          align: 'center', padX: 4, padY: 3, radius: 5, clampW: W, clampH: H
+        });
       }
     }
 
