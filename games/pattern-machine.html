@@ -116,8 +116,13 @@
          background: var(--surface); color: var(--ink);
          border: 1px solid var(--line); text-align: left;
          transition: all .16s var(--ease); }
-  .opt:hover:not(:disabled) { border-color: rgba(110,168,254,.6); background: var(--surface-2); }
-  .opt:disabled { cursor: default; }
+  .opt:hover:not([aria-disabled="true"]) { border-color: var(--accent); background: var(--surface-2); }
+  /* 挡住的选项必须自己说出来。原先只换了鼠标指针，四个选项在「还没喂够数」时
+     和能按的时候长得一模一样，孩子按下去没有任何变化。 */
+  .opt[aria-disabled="true"] { cursor: default; }
+  .opt[aria-disabled="true"]:not(.right):not(.wrong) {
+    border-style: dashed; color: var(--ink-dim); background: var(--bg-soft);
+  }
   .opt .mk { width: 20px; flex: none; text-align: center; font-size: .95rem; }
   .opt.right { border-color: rgba(74,222,128,.7); background: rgba(74,222,128,.12); }
   .opt.right .mk { color: var(--sci); }
@@ -848,7 +853,11 @@
     var enough = G.log.length >= 2;
     var btns = el.opts.querySelectorAll('.opt');
     for (var i = 0; i < btns.length; i++) {
-      btns[i].disabled = G.answered || !enough;
+      /* 用 aria-disabled 而不是 disabled 属性：这一句每次喂数后都会重算，原先无条件
+         写回 disabled，刚被标上 ✕ 的那条又被点亮，同一个错答案能反复按；而真 disabled
+         又会让「还没喂够数」时的点击彻底没有回应。挡住判定，同时留一句话解释。 */
+      btns[i].setAttribute('aria-disabled',
+        (G.answered || !enough || btns[i].classList.contains('wrong')) ? 'true' : 'false');
     }
     if (G.answered) {
       el.guessHint.textContent = G.revealed
@@ -878,7 +887,14 @@
   }
 
   function chooseOption(opt, btn, mk) {
-    if (G.answered) return;
+    if (btn.getAttribute('aria-disabled') === 'true') {
+      var why = G.answered ? '这台机器已经破解了，按「换一台新机器」再玩。'
+        : btn.classList.contains('wrong') ? '这一条刚才已经排除掉了，换一条试试。'
+        : '还差 ' + (2 - G.log.length) + ' 个数：先喂进去，再猜才不是瞎猜。';
+      toast(why);
+      say(why);
+      return;
+    }
     var ok = sameRule(opt, G.rule);
     if (ok) {
       G.answered = true;
@@ -894,7 +910,6 @@
       say('猜对了，规则是 输出等于 ' + ruleText(G.rule));
     } else {
       btn.classList.add('wrong'); mk.textContent = '✕';
-      btn.disabled = true;
       // 找一个反例，帮孩子看到"为什么不对"
       var cx = counterExample(opt, G.rule);
       if (cx !== null) {
