@@ -228,12 +228,13 @@
       <section class="panel" aria-labelledby="moreControlsTitle">
         <h2 id="moreControlsTitle" style="font-size:1.15rem">详细设置</h2>
         <div class="ctrl">
-          <div class="ctrl-head"><label for="mu">跑道摩擦</label><b id="muOut">0.10</b></div>
-          <input class="input" type="range" id="mu" min="0" max="0.5" step="0.01" value="0.1" aria-describedby="muHint">
-          <div class="hint" id="muHint">冰面 0.02 · 木板 0.15 · 地毯 0.35</div>
+          <div class="ctrl-head"><label for="mu">跑道摩擦</label><b id="muOut">0.25</b></div>
+          <input class="input" type="range" id="mu" min="0" max="0.5" step="0.01" value="0.25" aria-describedby="muHint">
+          <div class="hint" id="muHint">冰面 0.02 · 木板 0.15 · 沙地 0.25 · 地毯 0.35</div>
           <div class="seg" style="margin-top:8px" role="group" aria-label="常见表面">
             <button class="chip btn-sm" type="button" data-mu="0.02" aria-pressed="false">冰面</button>
             <button class="chip btn-sm" type="button" data-mu="0.15" aria-pressed="false">木板</button>
+            <button class="chip btn-sm" type="button" data-mu="0.25" aria-pressed="false">沙地</button>
             <button class="chip btn-sm" type="button" data-mu="0.35" aria-pressed="false">地毯</button>
           </div>
         </div>
@@ -310,15 +311,20 @@
 (function () {
   'use strict';
 
-  var css = getComputedStyle(document.documentElement);
-  function V(n, fb) { var v = css.getPropertyValue(n); return (v && v.trim()) || fb; }
-  var C = {
-    ink: V('--ink', '#eef2ff'), mid: V('--ink-mid', '#b6c0e0'), dim: V('--ink-dim', '#7d88ab'),
-    line: V('--line', '#2a3355'), soft: V('--line-soft', '#202844'), surf: V('--surface-2', '#1d2540'),
-    math: V('--math', '#6ea8fe'), sci: V('--sci', '#4ade80'), phys: V('--phys', '#a78bfa'),
-    code: V('--code', '#fb923c'), warn: V('--warn', '#fbbf24'), danger: V('--danger', '#f87171'),
-    kit: V('--kit', '#f472b6'), mono: V('--mono', 'monospace'), font: V('--font', 'sans-serif')
-  };
+  /* 这张画布没有自己的深色底，天空是半透明的，页面底色直接透上来。
+     所以颜色必须跟着主题走；孩子模式是 playful.js 加载后才切的，
+     取值只能放进函数里，每次 resize（含切换模式时补发的那次）重新读一遍。 */
+  var C = {};
+  function readTheme() {
+    var css = getComputedStyle(document.documentElement);
+    function V(n, fb) { var v = css.getPropertyValue(n); return (v && v.trim()) || fb; }
+    C.ink = V('--ink', '#eef2ff'); C.mid = V('--ink-mid', '#b6c0e0'); C.dim = V('--ink-dim', '#7d88ab');
+    C.line = V('--line', '#2a3355'); C.soft = V('--line-soft', '#202844'); C.surf = V('--surface-2', '#1d2540');
+    C.math = V('--math', '#6ea8fe'); C.sci = V('--sci', '#4ade80'); C.phys = V('--phys', '#a78bfa');
+    C.code = V('--code', '#fb923c'); C.warn = V('--warn', '#fbbf24'); C.danger = V('--danger', '#f87171');
+    C.kit = V('--kit', '#f472b6'); C.mono = V('--mono', 'monospace'); C.font = V('--font', 'sans-serif');
+  }
+  readTheme();
 
   var G = 9.81;
   var DT = 1 / 480;
@@ -327,7 +333,7 @@
   var BALL_R = 0.09;       // 球半径（米，仅用于画图与滚动动画）
 
   var S = {
-    ang: 30, h: 1.2, mu: 0.1, m: 0.5, timeScale: 1,
+    ang: 30, h: 1.2, mu: 0.25, m: 0.5, timeScale: 1,
     phase: 'ready',        // ready | ramp | floor | stopped
     s: 0,                  // 沿斜坡走过的距离
     d: 0,                  // 平地上走过的距离
@@ -451,10 +457,16 @@
   var view = { scale: 60, ox: 34, floorY: 320 };
 
   function resize() {
+    readTheme();
     var cssW = Math.max(260, stage.clientWidth - 28);
-    var cssH = Math.round(Math.min(520, Math.max(300, cssW * 0.60)));
+    /* 世界又宽又扁：6 米跑道配上最多 2.85 米高，宽高比在 3.6:1 到 6:1 之间。
+       画布再高也只是多铺一层土，所以高度按一个扁比例取，上面留给能量条。 */
+    var cssH = Math.round(Math.min(330, Math.max(205, cssW * 0.32)));
     dpr = Math.min(3, window.devicePixelRatio || 1);
     cv.style.height = cssH + 'px';
+    // 窄屏的孩子模式用 !important 改写了高度，位图要按真实渲染高度做，否则整张画面被压扁
+    var shown = cv.clientHeight;
+    if (shown > 0) cssH = shown;
     cv.width = Math.round(cssW * dpr);
     cv.height = Math.round(cssH * dpr);
     W = cssW; H = cssH;
@@ -463,19 +475,17 @@
   }
 
   function computeView() {
-    var padL = 30, padR = 16, padT = 26, padB = 46;
+    var padL = 30, padR = 16, padT = 26;
+    /* 地层只是给跑道一个「踩在地上」的语义，厚度固定成刚好放下刻度和摩擦标签，
+       多出来的竖直空间全部留给斜坡本身。 */
+    view.groundH = Math.min(56, Math.max(38, Math.round(H * 0.16)));
+    view.floorY = H - view.groundH;
     var worldW = rampBase() + RUNWAY;
     var worldH = S.h + 0.35;
     var sx = (W - padL - padR) / worldW;
-    var sy = (H - padT - padB) / worldH;
+    var sy = (view.floorY - padT) / worldH;
     view.scale = Math.max(8, Math.min(sx, sy));
     view.ox = padL;
-    view.floorY = padT + worldH * view.scale;
-    if (view.floorY > H - padB) view.floorY = H - padB;
-    /* 比例几乎总是被宽度卡住，场景就只用掉画布上半部分，剩下的全成了地面色块。
-       把场景整体下压到竖直居中，天空和地层各占一半。 */
-    var slack = (H - padB) - view.floorY;
-    if (slack > 0) view.floorY += slack * 0.5;
   }
 
   // 世界坐标（米，原点在斜坡顶的正下方地面）→ 屏幕
@@ -522,11 +532,12 @@
     // 表层压实的一条亮土，地面线才不会像是直接切在深色块上
     ctx.fillStyle = 'rgba(255,232,196,.16)';
     ctx.fillRect(0, view.floorY, W, 3);
-    /* 碎石位置用固定公式算，避免每帧重绘时抖动。深浅各一层才有颗粒感。 */
-    for (var g = 0; g < 52; g++) {
+    /* 碎石位置用固定公式算，避免每帧重绘时抖动。深浅各一层才有颗粒感。
+       地层只有几十像素高，碎石压在刻度文字下面那一条窄带里。 */
+    for (var g = 0; g < 34; g++) {
       var gx = ((g * 137) % 101) / 100 * W;
-      var gy = view.floorY + 20 + ((g * 61) % 97) / 97 * Math.max(0, groundH - 28);
-      var gr = 1.2 + ((g * 29) % 7) * 0.34;
+      var gy = view.floorY + 22 + ((g * 61) % 97) / 97 * Math.max(2, groundH - 26);
+      var gr = 1.1 + ((g * 29) % 7) * 0.26;
       ctx.fillStyle = g % 3 ? 'rgba(255,246,230,.13)' : 'rgba(23,16,10,.28)';
       ctx.beginPath(); ctx.ellipse(gx, gy, gr * 1.7, gr, 0, 0, Math.PI * 2); ctx.fill();
     }
@@ -635,6 +646,22 @@
       ctx.beginPath(); ctx.moveTo(sxp, view.floorY + 2); ctx.lineTo(sxp, view.floorY - 20); ctx.stroke();
       ctx.fillStyle = C.sci; ctx.font = '700 10px ' + C.mono; ctx.textAlign = 'center';
       ctx.fillText(S.stopAt.toFixed(2) + 'm', sxp, view.floorY - 22);
+      /* 猜的位置和真停的位置之间画一根带箭头的量尺，误差有多大一眼就看到，
+         不用回头去表格里读那个「差 x m」。 */
+      var gap = Math.abs(S.stopAt - S.pred);
+      if (Math.abs(sxp - pfx) > 14) {
+        var gy = view.floorY - 12;
+        ctx.save();
+        ctx.strokeStyle = C.warn; ctx.fillStyle = C.warn; ctx.lineWidth = 1.4;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(pfx, gy); ctx.lineTo(sxp, gy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(pfx, gy - 4); ctx.lineTo(pfx, gy + 4); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(sxp, gy - 4); ctx.lineTo(sxp, gy + 4); ctx.stroke();
+        ctx.font = '700 10px ' + C.mono; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+        ctx.fillText('差 ' + gap.toFixed(2) + 'm', (pfx + sxp) / 2, gy - 3);
+        ctx.restore();
+      }
     }
 
     // 小球
@@ -689,29 +716,47 @@
       ctx.fillText(S.v.toFixed(2) + ' m/s', ex + 6, ey - 2);
     }
 
-    // 斜面受力分解：重力被拆成「压住坡面」和「沿坡往下拉」两份，
-    // 坡越陡，沿坡的那一份越长——这就是斜面这一课要看见的东西。
+    /* 斜面受力分解。重力那一根竖直向下，长度代表 mg；它被拆成互相垂直的两份：
+       沿坡面往下的 mg·sinθ（球被这一份推着走）和压进坡面的 mg·cosθ
+       （坡把它顶回来，同时决定摩擦有多大）。两条虚线补成一个矩形，
+       孩子能直接看出坡越陡，绿色那根越长、青色那根越短。 */
     if (W >= 420 && p.onRamp) {
       var L = Math.min(66, Math.max(30, view.scale * 0.52), Math.max(0, view.floorY - by - 6));
       var sin = Math.sin(th), cos = Math.cos(th);
-      var gTipX = bx, gTipY = by + L;
-      var slopeLen = L * sin;
+      var slopeLen = L * sin, normLen = L * cos;
+      // 沿坡向下 (cos, sin)，压进坡面就是它顺时针转 90° 的 (-sin, cos)
       var slTipX = bx + cos * slopeLen, slTipY = by + sin * slopeLen;
-      // 分解辅助线：从重力箭头尖连到沿坡分量的尖，补全那个直角三角形
+      var nmTipX = bx - sin * normLen, nmTipY = by + cos * normLen;
       ctx.save();
       ctx.setLineDash([3, 3]);
-      ctx.strokeStyle = 'rgba(148,163,184,.6)';
+      ctx.strokeStyle = alpha(C.dim, .55);
       ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(gTipX, gTipY); ctx.lineTo(slTipX, slTipY); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(slTipX, slTipY); ctx.lineTo(bx, by + L); ctx.lineTo(nmTipX, nmTipY);
+      ctx.stroke();
       ctx.restore();
+      arrow(bx, by, -sin, cos, normLen, C.phys, 2, '压坡');
       arrow(bx, by, 0, 1, L, C.dim, 2, '重力');
       arrow(bx, by, cos, sin, slopeLen, C.sci, 2.6, '下滑力');
       /* 摩擦发生在接触点，从球心画会整根埋在球里；挪到贴着坡面的那一点，
          沿坡面切线走，正好从球边缘伸出来。 */
-      var fricLen = L * S.mu * cos;
+      var fricLen = normLen * S.mu;
       if (fricLen > 7) arrow(bx - sin * rpx, by + cos * rpx, -cos, -sin, fricLen, C.code, 2.4, '摩擦');
-    } else if (W >= 420 && !p.onRamp && S.v > 0.05 && S.mu > 0.001) {
-      arrow(bx, by + rpx, -1, 0, Math.min(60, L_FLOOR() * S.mu), C.code, 2.4, '摩擦');
+    } else if (W >= 420 && !p.onRamp) {
+      /* 平地上重力和支持力一样长、方向相反，正好抵消，唯一还在做事的就是摩擦。
+         摩擦这一根按 μ·mg 的真实比例画，冰面上短得几乎看不见，地毯上就明显——
+         短，本身就是要看的结论。 */
+      // 向下那一根不能戳出画布，地层只有几十像素厚
+      var LF = Math.min(L_FLOOR(), Math.max(22, view.groundH - 8));
+      arrow(bx, by, 0, 1, LF, C.dim, 2, '');
+      arrow(bx, by, 0, -1, LF, C.phys, 2, '支持力');
+      // 重力箭头整根埋在泥土里，标签只能挂回地面线上方，不然棕字压棕底
+      ctx.save();
+      ctx.font = '700 9px ' + C.mono; ctx.fillStyle = C.dim;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText('重力', Math.min(bx + rpx + 5, W - 26), by + rpx * 0.5);
+      ctx.restore();
+      if (S.v > 0.05) arrow(bx - rpx, by + rpx, -1, 0, LF * S.mu, C.code, 2.4, '摩擦');
     }
 
     // 能量条：势能→动能→摩擦热三段拼起来永远一样长，能量守恒就看这一条
@@ -724,38 +769,70 @@
     ctx.fillText(label, 6, 6);
     ctx.font = '600 11px ' + C.mono; ctx.fillStyle = C.dim;
     ctx.fillText('t=' + S.t.toFixed(2) + 's  μ=' + S.mu.toFixed(2) + '  m=' + S.m.toFixed(2) + 'kg', 6, 22);
+    /* 箭头上只写名字，真正的算式和牛顿读数放这里：
+       箭头旁边塞不下这么长的字，而「下滑力随角度变、压坡力随角度反着变」
+       恰恰要有数字才看得出来。 */
+    if (W >= 420) {
+      var mg = S.m * G;
+      var formula = p.onRamp
+        ? '下滑 mg·sin' + S.ang + '° = ' + (mg * Math.sin(th)).toFixed(2) + ' N　压坡 mg·cos' + S.ang + '° = ' + (mg * Math.cos(th)).toFixed(2) + ' N'
+        : '平地：重力和支持力抵消，只剩摩擦 μmg = ' + (mg * S.mu).toFixed(2) + ' N';
+      ctx.font = '600 11px ' + C.mono; ctx.fillStyle = C.mid;
+      ctx.fillText(formula, 6, 38);
+    }
   }
 
   function L_FLOOR() { return Math.min(66, Math.max(30, view.scale * 0.52)); }
 
-  /* 带箭头和小标签的力矢量。dx/dy 是屏幕方向单位向量，len 太短就不画。 */
+  /* 把主题色（十六进制或 rgb()）换成半透明版本，用来画淡辅助线。 */
+  function alpha(color, a) {
+    var hex = /^#([0-9a-f]{6})$/i.exec(String(color).trim());
+    if (hex) {
+      var n = parseInt(hex[1], 16);
+      return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')';
+    }
+    var rgb = /rgba?\(([^)]+)\)/.exec(String(color));
+    if (rgb) { var parts = rgb[1].split(','); return 'rgba(' + parts[0] + ',' + parts[1] + ',' + parts[2] + ',' + a + ')'; }
+    return color;
+  }
+
+  /* 带箭头和小标签的力矢量。dx/dy 是屏幕方向单位向量。
+     箭头尖按长度缩放，摩擦这种按真实比例算出来只有几像素的力才不会变成一坨三角形。
+     标签会被夹回画布内，靠边的分力箭头写字才不会跑到画面外。 */
   function arrow(x, y, dx, dy, len, color, width, label) {
-    if (!(len > 7)) return;
+    if (!(len > 3)) return;
+    var head = Math.min(8, Math.max(3, len * 0.42));
     var ex = x + dx * len, ey = y + dy * len;
     ctx.save();
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
     ctx.lineWidth = width;
     ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex - dx * 6, ey - dy * 6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex - dx * head * 0.75, ey - dy * head * 0.75); ctx.stroke();
     ctx.translate(ex, ey);
     ctx.rotate(Math.atan2(dy, dx));
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-8, -4.6); ctx.lineTo(-8, 4.6); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-head, -head * 0.58); ctx.lineTo(-head, head * 0.58); ctx.closePath(); ctx.fill();
     ctx.restore();
-    if (label && len > 22) {
+    if (label && len > 20) {
       ctx.save();
       ctx.font = '700 9px ' + C.mono;
       ctx.fillStyle = color;
+      var tw = ctx.measureText(label).width;
+      var tx, align;
       if (Math.abs(dx) < 0.2) {
         /* 竖直箭头把标签写在正下方会压住旁边的高度标注，挂到箭尖右侧 */
-        ctx.textAlign = 'left';
+        align = 'left'; tx = ex + 6;
         ctx.textBaseline = 'middle';
-        ctx.fillText(label, ex + 6, ey);
       } else {
-        ctx.textAlign = dx < 0 ? 'right' : 'left';
+        align = dx < 0 ? 'right' : 'left';
+        tx = ex + dx * 5;
         ctx.textBaseline = dy > 0.2 ? 'top' : 'bottom';
-        ctx.fillText(label, ex + dx * 5, ey + dy * 5);
       }
+      var leftEdge = align === 'right' ? tx - tw : tx;
+      if (leftEdge < 3) { align = 'left'; tx = 3; }
+      else if (leftEdge + tw > W - 3) { align = 'right'; tx = W - 3; }
+      ctx.textAlign = align;
+      ctx.fillText(label, tx, ctx.textBaseline === 'middle' ? ey : ey + dy * 5);
       ctx.restore();
     }
   }
