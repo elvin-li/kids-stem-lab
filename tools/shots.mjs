@@ -7,6 +7,7 @@
  *   node tools/shots.mjs --sel="#stage" games/wave-maker.html
  *   node tools/shots.mjs --click="#btn-run" --wait=1500 games/ramp-and-roll.html
  *   node tools/shots.mjs --print pages/why.html                # 打印样式下的效果
+ *   node tools/shots.mjs --kid --fold --w=390 nature/ocean.html # 只看首屏那一块
  *
  * 输出写到 /tmp/shots/<page>-<mode>-<width>.png，只用于开发期人工核对视觉。
  */
@@ -141,6 +142,9 @@ try {
     }
 
     let clip;
+    /* 「首屏够不够用」是整页截图看不出来的：图缩到能塞进对话框时，
+       一屏和十屏长得差不多。--fold 只截视口那一块，按原尺寸看。 */
+    if (flags.fold) clip = { x: 0, y: 0, width, height, scale: Number(flags.scale || 1) };
     if (flags.sel) {
       const box = await browser.send('Runtime.evaluate', {
         expression: `(() => { const el = document.querySelector(${JSON.stringify(flags.sel)});
@@ -154,7 +158,7 @@ try {
       clip ? { format: 'png', clip, captureBeyondViewport: true }
            : { format: 'png', captureBeyondViewport: true }, sessionId);
     const tag = page.replace(/[\/.]/g, '_');
-    const file = join(OUT, `${tag}-${mode}-${width}${flags.print ? '-print' : ''}${flags.sel ? '-sel' : ''}.png`);
+    const file = join(OUT, `${tag}-${mode}-${width}${flags.print ? '-print' : ''}${flags.sel ? '-sel' : flags.fold ? '-fold' : ''}.png`);
     await writeFile(file, Buffer.from(shot.data, 'base64'));
     console.log(file);
     await browser.send('Target.closeTarget', { targetId });
