@@ -214,6 +214,8 @@
   .mission ol { margin: 8px 0 14px; padding-left: 1.3rem; color: var(--ink-mid); }
   .mission-grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); align-items:end; }
   .mission textarea { min-height:72px; resize:vertical; }
+  .kid-picks { display:flex; flex-wrap:wrap; gap:8px; }
+  .kid-picks .kid-choice { min-height:44px; }
 
   .playful-quest {
     margin-top: 16px; padding: 16px; overflow: hidden;
@@ -623,7 +625,11 @@
       <div><label for="nonlinearGuess">1，4，9，16 是</label><select class="input" id="nonlinearGuess"><option value="">请选择</option><option value="linear">线性（固定差）</option><option value="nonlinear">非线性（差在变）</option></select><label for="nonlinearNext" style="margin-top:6px">下一项</label><input class="input" id="nonlinearNext" type="number" inputmode="numeric"></div>
       <button class="btn btn-sm" id="checkSequences" type="button">提交侦探推理</button>
       <button class="btn btn-sm" id="testCounterexample" type="button" disabled>派新数字找反例</button>
-      <div><label for="patternReflect">我的发现</label><textarea class="input" id="patternReflect" placeholder="例如：前两点符合，不代表后面的点也符合。"></textarea></div>
+      <!-- 孩子模式下 kid.css 会收起「我的发现」文本域和它的 label，可完成键还留在页面上：
+           孩子按下去只得到一句读屏播报和一个落不到的 focus()。给孩子一排点选的发现句，
+           点一下就替他把那个（隐藏的）文本域填好——和数感积木、对称工作室同一套做法。 -->
+      <div data-audience="kid-only"><p style="margin:0 0 6px;font-weight:700">我发现……</p><div class="kid-picks" id="patternReflectChoices" role="group" aria-label="选一句我的发现"><button class="kid-choice" type="button" aria-pressed="false" data-pattern-reflect="前两条线索符合，不代表后面每一条都符合。">前两条对不代表全对</button><button class="kid-choice" type="button" aria-pressed="false" data-pattern-reflect="差都一样是一次规律，差自己还在变就藏着平方。">先看差是不是一样</button><button class="kid-choice" type="button" aria-pressed="false" data-pattern-reflect="派一个新数字去找反例，规则才算检验过。">派新数字找反例</button></div></div>
+      <div data-audience="parent"><label for="patternReflect">我的发现</label><textarea class="input" id="patternReflect" placeholder="例如：前两点符合，不代表后面的点也符合。"></textarea></div>
       <button class="btn btn-primary" id="patternComplete" type="button" disabled>把破案记录存进足迹</button>
     </div>
     <p class="task-status status" id="patternMissionStatus" role="status" aria-live="polite">尚未完成：先提交两个数列假设。</p>
@@ -1675,7 +1681,10 @@
     var aKind = el.linearGuess.value, bKind = el.nonlinearGuess.value;
     var aNext = Number(el.linearNext.value), bNext = Number(el.nonlinearNext.value);
     if (!aKind || !bKind || el.linearNext.value.trim() === '' || el.nonlinearNext.value.trim() === '') {
-      say('请完成两个分类和下一项预测'); return;
+      /* 这句不能只进 sr-only 的 live 区域：孩子看着按钮按下去毫无反应。 */
+      toast('请完成两个分类和下一项预测');
+      say('请完成两个分类和下一项预测');
+      return;
     }
     var ok = aKind === 'linear' && aNext === 14 && bKind === 'nonlinear' && bNext === 25;
     if (ok) {
@@ -1694,9 +1703,26 @@
     say(el.patternMissionStatus.textContent);
   });
 
+  /* 点选的发现句填进同一个文本域，保存路径不变；家长模式仍可自己打字覆盖。 */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pattern-reflect]'), function (btn) {
+    btn.addEventListener('click', function () {
+      el.patternReflect.value = btn.getAttribute('data-pattern-reflect');
+      document.querySelectorAll('[data-pattern-reflect]').forEach(function (choice) {
+        choice.setAttribute('aria-pressed', String(choice === btn));
+      });
+      say('已选发现：' + btn.textContent);
+    });
+  });
+
   el.patternComplete.addEventListener('click', function () {
     var reflection = el.patternReflect.value.trim();
-    if (!reflection) { say('请先写一句反思'); el.patternReflect.focus(); return; }
+    if (!reflection) {
+      /* 提示必须看得见；文本域在孩子模式是 display:none，focus() 只在它真的在页面上时才有意义。 */
+      var msg = '请先点一句「我发现……」，或写下你的发现';
+      toast(msg); say(msg);
+      if (el.patternReflect.offsetParent) el.patternReflect.focus();
+      return;
+    }
     var evidence = '正确区分固定差数列与平方数列，并用 x=3 找到 y=2x 对 y=x² 的反例。反思：' + reflection;
     var saved = window.Progress && Progress.complete('games/pattern-machine.html', evidence);
     el.patternMissionStatus.textContent = saved ? '✓ 任务已完成并记录：' + evidence : '✓ 任务已完成；本机存储不可用，未能保存足迹。';
