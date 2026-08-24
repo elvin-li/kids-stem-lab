@@ -696,6 +696,13 @@
      「一格 = 25 步」这种孩子数得清的数。 */
   var PPS_CHOICES = [0.25, 0.5, 1, 2, 2.5, 5];
   var PPS = 1;
+  /* 「回到起点了吗」的容差按步数算，不按像素。缩放是跟着图形大小自动挑的：
+     同样 8 像素，画大图时是 32 步的缺口也算闭合，画小图时 2 步的缺口就判不闭合。 */
+  var CLOSE_STEPS = 3;
+  function gapSteps() {
+    var h = homeState();
+    return Math.hypot(turtle.x - h.x, turtle.y - h.y) / PPS;
+  }
   var TG_FONT = '-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif';
 
   function fade(hex, a) { return ILLUSTRATIONS.fadeHex(hex, a); }
@@ -986,9 +993,9 @@
      合上了给一枚绿钩，没合上就把缺口连成一条红线并写明差多少步。 */
   function drawClosure() {
     if (!finished || !actions.length || done < actions.length) return;
-    var home = homeState(), gap = Math.hypot(turtle.x - home.x, turtle.y - home.y);
+    var home = homeState(), gap = gapSteps();
     ctx.save();
-    if (gap <= 8) {
+    if (gap <= CLOSE_STEPS) {
       ctx.strokeStyle = TP.sci;
       ctx.lineWidth = 2.5;
       ctx.beginPath();
@@ -1004,8 +1011,7 @@
       ctx.lineTo(home.x, home.y);
       ctx.stroke();
       ctx.setLineDash([]);
-      // gap 是像素，写给孩子看的必须换回步数，不然缩放一变数字就跟着变
-      tag("离起点还差 " + Math.round(gap / PPS) + " 步", (turtle.x + home.x) / 2, (turtle.y + home.y) / 2 - 18, TP.kit, "center");
+      tag("离起点还差 " + Math.round(gap) + " 步", (turtle.x + home.x) / 2, (turtle.y + home.y) / 2 - 18, TP.kit, "center");
     }
     ctx.restore();
   }
@@ -1121,8 +1127,7 @@
   }
 
   function assessTask() {
-    var h = homeState();
-    var closed = Math.hypot(turtle.x - h.x, turtle.y - h.y) <= 8;
+    var closed = gapSteps() <= CLOSE_STEPS;
     var facing = Math.abs((((turtle.dir % 360) + 540) % 360) - 180) <= 5;
     var moves = actions.filter(function (a) { return a.t === "move" && Math.abs(a.v) > 0.01; }).length;
     var turns = actions.filter(function (a) { return a.t === "turn" && Math.abs(a.v) > 0.01; }).length;
@@ -1146,7 +1151,11 @@
 
   function updateReadout() {
     var heading = dirName(turtle.dir);
-    oPos.textContent = Math.round(turtle.x - W / 2) + ", " + Math.round(H / 2 + 40 - turtle.y);
+    /* 换回步数再报。画布按路线大小自动挑缩放（PPS），读数却一直报的是像素：
+       「前进 100」显示 0,250，「前进 300」反而显示 0,150——走得越远数字越小，
+       和孩子刚写下的那个数字正好对着干。 */
+    var hp = homeState();
+    oPos.textContent = Math.round((turtle.x - hp.x) / PPS) + ", " + Math.round((hp.y - turtle.y) / PPS);
     oDir.textContent = heading;
     oPen.textContent = turtle.pen ? "落笔" : "抬笔";
     oStep.textContent = done + " / " + actions.length;
