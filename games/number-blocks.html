@@ -506,7 +506,7 @@
     splitBase: 0, carryAdd: 0, prediction: null,
     levelSolved: { ten: false, split: false, carry: false }, lastResult: ''
   };
-  var G = { W: 320, H: 400, cell: 30, gap: 5, gGap: 12, pad: 14, frameTop: 34, rowGap: 6, rows: 10, trayTop: 300, trayH: 92, labelW: 30 };
+  var G = { W: 320, H: 400, cell: 30, gap: 5, gGap: 12, pad: 14, frameTop: 34, rowGap: 6, rows: 10, trayTop: 300, trayH: 92, trayLead: 26, labelW: 30 };
   var uid = 0;
 
   /* wrap.clientWidth 含内边距，直接拿它当画布宽度会超出内容区一截，
@@ -524,19 +524,46 @@
     var w = Math.max(260, Math.round(blocks.clientWidth) || wrap.clientWidth || 320);
     G.W = w;
     G.rows = Math.ceil(S.max / 10);
-    G.labelW = w < 360 ? 30 : 42;
-    var avail = w - G.pad * 2 - G.labelW - 9 * G.gap - G.gGap;
-    G.cell = clamp(Math.floor(avail / 10), 14, 46);
+    /* 行尾要写下「差10」「=10」，这段宽度得留够，否则读数会顶到画布边上被切。 */
+    G.labelW = w < 360 ? 34 : 46;
+    /* 宽度预算固定按最小边距算。G.pad 下面会为了居中变大，拿变过的值再算一遍可用宽度，
+       格子就会每重排一次缩一点。 */
+    var edge = 14;
+    var avail = w - edge * 2 - G.labelW - 9 * G.gap - G.gGap;
+    /* 格子上限从 46 提到 58：这是给 4–8 岁孩子拖的积木，宽屏上宁可画得大一点，
+       也别把十格阵缩在中间、两边各空一大块。 */
+    G.cell = clamp(Math.floor(avail / 10), 14, 58);
     G.rowGap = G.cell > 34 ? 8 : 5;
     G.frameW = G.cell * 10 + 9 * G.gap + G.gGap;
+    /* 格子有上限，宽屏上十格阵铺不满整块画布。左边钉死内边距会让整幅图
+       贴在左侧、右边空出一大片，所以把「十格阵 + 行尾读数」当成一整块居中。 */
+    G.pad = Math.max(edge, Math.round((w - G.frameW - G.labelW) / 2));
     G.frameH = G.rows * G.cell + (G.rows - 1) * G.rowGap;
-    G.trayTop = G.frameTop + G.frameH + 26;
     /* 散块托盘按真正要摆几行来定高：宽屏一行就够，原来固定按两行留高度，
        画布下方会空出一大块灰地，看着像没画完。 */
     var looseSize = Math.max(14, G.cell * 0.86);
     var perRow = looseCols(looseSize);
     var looseRows = Math.ceil(10 / perRow);
-    G.trayH = 26 + (looseRows - 1) * looseSize * 0.55 + looseSize + 14;
+    G.trayLead = 26;
+    G.trayH = G.trayLead + (looseRows - 1) * looseSize * 0.55 + looseSize + 14;
+
+    /* 孩子模式给舞台设了 min-height，画布按内容算出来的高度往往矮一截——
+       矮下去的那段就是卡片底下那块空白。把差额分给上边距、两块之间的间隔和托盘，
+       画布就填满舞台，而不是浮在中间。窄屏上十格阵的格子受宽度所限长不大，
+       能改善的只有这份呼吸空间。 */
+    G.frameTop = 34;
+    var gapBelow = 26;
+    var box = getComputedStyle(wrap);
+    var frame = (parseFloat(box.paddingTop) || 0) + (parseFloat(box.paddingBottom) || 0) +
+      (parseFloat(box.borderTopWidth) || 0) + (parseFloat(box.borderBottomWidth) || 0);
+    var room = (parseFloat(box.minHeight) || 0) - frame;
+    var extra = clamp(room - (G.frameTop + G.frameH + gapBelow + G.trayH + 6), 0, 170);
+    G.frameTop += Math.round(extra * 0.10);
+    gapBelow += Math.round(extra * 0.48);
+    G.trayLead += Math.round(extra * 0.18);
+    G.trayH += Math.round(extra * 0.42);
+
+    G.trayTop = G.frameTop + G.frameH + gapBelow;
     G.H = G.trayTop + G.trayH + 6;
     fit(blocks, bctx, w, G.H);
     fit(lineC, lctx, w, w < 420 ? 92 : 104);
@@ -562,7 +589,7 @@
     var step = spread ? (G.W - G.pad * 2 - size) / (per - 1) : size + 8;
     return {
       x: G.pad + col * step,
-      y: G.trayTop + 26 + row * (size * 0.55),
+      y: G.trayTop + G.trayLead + row * (size * 0.55),
       s: size
     };
   }
@@ -898,15 +925,30 @@
     ctx.font = '700 12px ' + FONT;
     ctx.fillStyle = C.inkDim;
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText('十格阵 ten-frame（每行 10 格，5 + 5）', G.pad, 20);
+    ctx.fillText('十格阵 ten-frame（每行 10 格，5 + 5）', G.pad, G.frameTop - 14);
     ctx.save();
-    rr(ctx, G.pad - 8, 28, G.frameW + 16, G.rows * G.cell + (G.rows - 1) * G.gap + 16, 14);
+    /* 外框要包住真实的两行。行距用的是 rowGap 不是 gap，早先照抄 gap 算高度，
+       框底就从第二行方块中间穿过去；上沿也曾钉死在 28，frameTop 一变就对不上。 */
+    rr(ctx, G.pad - 8, G.frameTop - 8, G.frameW + 16, G.frameH + 16, 14);
     ctx.strokeStyle = alpha(C.math, 0.35);
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.restore();
 
     var n = count(), fullRows = Math.floor(n / 10);
+
+    /* 中间那道分隔线：ten-frame 的一行是「5 + 5」，只靠一段空隙不够明显，
+       画一条竖虚线才能让孩子一眼看出「满 5 了」，也就不必逐格去数。 */
+    var splitX = G.pad + 5 * G.cell + 4.5 * G.gap + G.gGap / 2;
+    ctx.save();
+    ctx.setLineDash([4, 5]);
+    ctx.strokeStyle = alpha(C.inkDim, .5);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(splitX, G.frameTop - 5);
+    ctx.lineTo(splitX, G.frameTop + G.frameH + 5);
+    ctx.stroke();
+    ctx.restore();
 
     // 空格子
     for (var i = 0; i < S.max; i++) {
@@ -941,13 +983,16 @@
         ctx.lineWidth = 1 + flash * 2;
         ctx.stroke();
       }
-      /* 行尾标记：满十的行写 =10，正在填的行写还差几——这个数字就是这一行剩下的空格数。 */
+      /* 行尾标记：满十的行写 =10，正在填的行写还差几——这个数字就是这一行剩下的空格数。
+         还没轮到的行不写，原先那个「·」看着像画错的墨点。 */
       var rowNeed = r === fullRows ? 10 - (n % 10) : 0;
-      var mark = done ? '=10' : (rowNeed > 0 ? '差' + rowNeed : '·');
-      ctx.font = '700 ' + Math.max(9, Math.min(12, G.cell * .38)) + 'px ' + (mark === '·' ? MONO : FONT);
-      ctx.fillStyle = done ? C.warn : (mark === '·' ? alpha(C.inkDim, .6) : C.math);
+      var mark = done ? '=10' : (rowNeed > 0 ? '差' + rowNeed : '');
+      if (!mark) continue;
+      ctx.font = '700 ' + Math.max(9, Math.min(13, G.cell * .32)) + 'px ' + FONT;
+      ctx.fillStyle = done ? C.warn : C.math;
       ctx.textAlign = 'left';
-      ctx.fillText(mark, q.x + G.frameW + 7, q.y + G.cell * .68);
+      /* 行尾读数要落在外框外面。贴着 frameW+7 写会压在框线上，数字和框线糊成一团。 */
+      ctx.fillText(mark, q.x + G.frameW + 15, q.y + G.cell * .68);
     }
 
     // 已放积木
