@@ -298,25 +298,26 @@ window.ILLUSTRATIONS = (function () {
     ctx.restore();
   }
 
-  /** Canvas：锤子 */
+  /** Canvas：锤子。y 是物体底部；总高保持在 2r，和皮球一致，
+      否则在起始高度上锤头会被画布顶边切掉，只剩一根橙色木棍。 */
   function drawHammer(ctx, x, y, r, color, alpha) {
     ctx.save();
     ctx.globalAlpha = alpha == null ? 1 : alpha;
-    var handleGrad = ctx.createLinearGradient(x - 3, y, x + 3, y - r * 2.2);
+    var handleGrad = ctx.createLinearGradient(x - 3, y, x + 3, y - r * 1.55);
     handleGrad.addColorStop(0, "#92400e");
     handleGrad.addColorStop(1, "#d97706");
     ctx.fillStyle = handleGrad;
-    roundRect(ctx, x - 2.5, y - r * 2.2, 5, r * 2.2, 2);
+    roundRect(ctx, x - Math.max(1.8, r * 0.16), y - r * 1.55, Math.max(3.6, r * 0.32), r * 1.55, 2);
     ctx.fill();
-    var headGrad = ctx.createLinearGradient(x - r, y - r * 2.9, x + r, y - r * 2);
+    var headGrad = ctx.createLinearGradient(x - r * 0.9, y - r * 2, x + r * 0.9, y - r * 1.38);
     headGrad.addColorStop(0, color || "#71717a");
     headGrad.addColorStop(0.5, "#a1a1aa");
     headGrad.addColorStop(1, "#52525b");
     ctx.fillStyle = headGrad;
-    roundRect(ctx, x - r, y - r * 2.9, r * 2, r * 0.85, 3);
+    roundRect(ctx, x - r * 0.9, y - r * 2, r * 1.8, r * 0.62, 3);
     ctx.fill();
     ctx.fillStyle = "rgba(255,255,255,0.25)";
-    roundRect(ctx, x - r * 0.7, y - r * 2.75, r * 0.5, r * 0.25, 1);
+    roundRect(ctx, x - r * 0.62, y - r * 1.9, r * 0.45, r * 0.18, 1);
     ctx.fill();
     ctx.restore();
   }
@@ -583,6 +584,8 @@ window.ILLUSTRATIONS = (function () {
     ctx.setLineDash([8, 6]);
     ctx.strokeRect(w * 0.08, h * 0.12, w * 0.84, h * 0.76);
     ctx.setLineDash([]);
+    /* 提示语跟着虚线框用 0.22 的话只剩一团灰影，反而像画脏了。 */
+    ctx.globalAlpha = 0.55;
     ctx.font = "700 14px sans-serif";
     ctx.fillStyle = "#7d6b52";
     ctx.textAlign = "center";
@@ -592,7 +595,8 @@ window.ILLUSTRATIONS = (function () {
       ctx.globalAlpha = 0.35;
       ctx.fillStyle = col;
       ctx.beginPath();
-      ctx.arc(cx + i * 22, cy, 9, 0, Math.PI * 2);
+      /* 间距 22、半径 9 时三个点几乎相切，缩略下来只剩一道彩色横条。 */
+      ctx.arc(cx + i * 28, cy, 9, 0, Math.PI * 2);
       ctx.fill();
     });
     ctx.globalAlpha = 0.18;
@@ -614,7 +618,8 @@ window.ILLUSTRATIONS = (function () {
     "pattern-machine": '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="8" y="28" width="10" height="10" rx="2" fill="#6ea8fe"/><rect x="18" y="20" width="10" height="10" rx="2" fill="#6ea8fe"/><rect x="28" y="12" width="10" height="10" rx="2" fill="#6ea8fe"/><circle cx="38" cy="10" r="6" fill="#fbbf24" stroke="#b45309" stroke-width="1.5"/></svg>',
     "symmetry-studio": '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="16" fill="none" stroke="#6ea8fe" stroke-width="1.5" stroke-dasharray="3 3"/><path d="M24 8 L24 40 M8 24 L40 24" stroke="#94a3b8" stroke-width="1"/><path d="M24 14 L30 24 L24 34 L18 24 Z" fill="#a78bfa" opacity=".85"/></svg>',
     "estimation-station": '<svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="14" cy="28" rx="6" ry="5" fill="#f472b6"/><ellipse cx="26" cy="22" rx="6" ry="5" fill="#38bdf8"/><ellipse cx="34" cy="30" rx="6" ry="5" fill="#fbbf24"/><rect x="6" y="34" width="36" height="6" rx="2" fill="#64748b" opacity=".5"/></svg>',
-    "turtle-geometry": '<svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="26" rx="14" ry="11" fill="#059669"/><ellipse cx="34" cy="24" rx="6" ry="5" fill="#34d399"/><circle cx="36" cy="22" r="1.5" fill="#0f172a"/><path d="M10 26 Q6 24 8 20" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round"/></svg>',
+    /* 只有壳和头时这个图标会被看成一条鱼，四条腿是海龟的辨识点。 */
+    "turtle-geometry": '<svg viewBox="0 0 48 48" aria-hidden="true"><g fill="#10b981"><ellipse cx="12" cy="18" rx="5" ry="3.2" transform="rotate(-30 12 18)"/><ellipse cx="12" cy="34" rx="5" ry="3.2" transform="rotate(30 12 34)"/><ellipse cx="32" cy="17" rx="4.6" ry="3" transform="rotate(30 32 17)"/><ellipse cx="32" cy="35" rx="4.6" ry="3" transform="rotate(-30 32 35)"/></g><ellipse cx="22" cy="26" rx="14" ry="11" fill="#059669"/><circle cx="22" cy="26" r="6.5" fill="none" stroke="#047857" stroke-width="1.4"/><ellipse cx="37" cy="24" rx="5.5" ry="4.4" fill="#34d399"/><circle cx="39" cy="22.5" r="1.4" fill="#0f172a"/><path d="M8 28 Q4 26 6 22" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round"/></svg>',
     "doodle-pad": '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="10" width="36" height="28" rx="4" fill="#fffdf8" stroke="#d68a00"/><circle cx="16" cy="22" r="4" fill="#1f6fd0"/><circle cx="26" cy="18" r="4" fill="#d81b73"/><path d="M14 32 Q24 22 34 30" fill="none" stroke="#6b4f36" stroke-width="3" stroke-linecap="round"/></svg>',
     "ramp-and-roll": '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 38 L38 38 L8 14 Z" fill="#a78bfa" opacity=".45" stroke="#7c3aed" stroke-width="2"/><circle cx="32" cy="32" r="6" fill="#6ea8fe" stroke="#1e40af"/><path d="M32 26 L32 20" stroke="#fbbf24" stroke-width="2" marker-end="url(#a)"/></svg>',
     "light-and-shadow": '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 28 L8 38 L12 38" stroke="#64748b" stroke-width="2"/><path d="M8 28 Q8 18 16 16 L22 28 Z" fill="#fbbf24"/><rect x="26" y="20" width="6" height="18" fill="#5b6b95"/><rect x="34" y="12" width="8" height="26" fill="#334155" opacity=".6"/></svg>',
