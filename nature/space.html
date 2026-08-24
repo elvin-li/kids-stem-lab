@@ -743,12 +743,16 @@
     pWow.appendChild(document.createTextNode(p.wow));
 
     pFacts.textContent = "";
+    /* 三格数据都是拿地球当尺子量出来的，选中地球时就成了「地球是地球的 1.00 倍」
+       「一天有 1.00 地球日」这种废话。重力那格早就写「基准」了，这三格补上：
+       直径说明它就是基准，昼长和年长直接给绝对值。 */
+    var isEarth = p.id === "earth";
     pFacts.appendChild(fact("直径", p.dkm.toLocaleString() + " km",
-      (p.dkm / 12756).toFixed(2) + " × 地球"));
+      isEarth ? "其他行星都拿它当基准" : (p.dkm / 12756).toFixed(2) + " × 地球"));
     pFacts.appendChild(fact("离太阳", p.au.toFixed(2) + " AU",
       Math.round(p.au * AU_KM / 1e6) + " 百万 km"));
-    pFacts.appendChild(fact("一天有多长", fmtDay(p.day), "自转一圈"));
-    pFacts.appendChild(fact("一年有多长", fmtYear(p.year), "绕太阳一圈"));
+    pFacts.appendChild(fact("一天有多长", isEarth ? "24 小时" : fmtDay(p.day), "自转一圈"));
+    pFacts.appendChild(fact("一年有多长", isEarth ? "365 天" : fmtYear(p.year), "绕太阳一圈"));
     pFacts.appendChild(fact("表面重力", p.g.toFixed(2) + " g",
       p.g > 1 ? "比地球大" : p.g === 1 ? "基准" : "比地球小"));
     pFacts.appendChild(fact("平均温度", p.tempC + " ℃",
@@ -1020,11 +1024,20 @@
             encodeURIComponent(p.q) + "&media_type=image&page_size=8")
       .then(function (d) {
         var items = (d && d.collection && d.collection.items) || [];
+        var seen = {};
         var out = items.map(function (it) {
           var ln = (it.links || [])[0] || {};
           var dt = (it.data || [])[0] || {};
           return { src: ln.href, cap: dt.title || "" };
-        }).filter(function (x) { return x.src; }).slice(0, 8);
+        }).filter(function (x) {
+          if (!x.src) return false;
+          /* NASA 接口经常把同一张图返回好几条记录，八宫格里于是并排出现
+             两三张一模一样、标题也一模一样的照片。按标题去一次重。 */
+          var key = x.cap || x.src;
+          if (seen[key]) return false;
+          seen[key] = 1;
+          return true;
+        }).slice(0, 8);
         if (!out.length) throw new Error("empty");
         paintShots(out);
         mark(true);
@@ -1032,16 +1045,21 @@
       })
       .catch(function () {
         mark(false);
-        shots.textContent = "";
-        var d = document.createElement("p");
-        d.style.cssText = "color:var(--ink-dim);font-size:.84rem;grid-column:1/-1";
-        d.textContent = "照片需要联网才能显示。上面的行星数据是内置的，不受影响。";
-        shots.appendChild(d);
+        shotsNote("照片需要联网才能显示。上面的行星数据是内置的，不受影响。");
       });
+  }
+
+  function shotsNote(text) {
+    shots.textContent = "";
+    var d = document.createElement("p");
+    d.style.cssText = "color:var(--ink-dim);font-size:.84rem;grid-column:1/-1";
+    d.textContent = text;
+    shots.appendChild(d);
   }
 
   function paintShots(list) {
     shots.textContent = "";
+    var alive = list.length;
     list.forEach(function (o) {
       var d = document.createElement("div");
       d.className = "shot";
@@ -1049,7 +1067,13 @@
       img.loading = "lazy";
       img.alt = o.cap || "NASA 照片";
       img.src = o.src;
-      img.onerror = function () { d.remove(); };
+      img.onerror = function () {
+        d.remove();
+        /* 接口通了、图床没通（或者缓存里的旧链接失效了）时，八张图会一张张
+           自己消失，最后剩一格空网格，而联网徽章还挂着「已联网」。
+           掉光了就得说一句，不能让孩子对着一片空白。 */
+        if (--alive <= 0) shotsNote("照片这次没能加载。上面的行星数据是内置的，不受影响。");
+      };
       var cap = document.createElement("span");
       cap.className = "cap";
       cap.textContent = o.cap.length > 46 ? o.cap.slice(0, 46) + "…" : o.cap;
