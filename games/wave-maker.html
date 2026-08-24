@@ -858,7 +858,7 @@
     // 波节线（破坏性干涉位置）标注：只在同频同波长时才是稳定的
     var stable = Math.abs(s0.f - s1.f) < 0.001 && Math.abs(s0.lam - s1.lam) < 0.001 && s0.A > 0.02 && s1.A > 0.02;
     if (stable) {
-      drawNodalLines(s0, s1);
+      drawNodalLines(s0, s1, ph0 - ph1);
     }
 
     // 波源
@@ -935,12 +935,22 @@
     ctx.fillText('t = ' + t.toFixed(2) + ' s', W - 10, midY);
   }
 
-  // 波节线：|r1 - r0| = (m + 1/2) λ  → 双曲线，逐行求解
-  function drawNodalLines(s0, s1) {
+  /* 波节线：两列波在这一点上正好反相，所以水面一直不动。
+     令 δ = r1 - r0、Δφ = φ₀ - φ₁，反相条件是
+       (2π/λ)·δ = Δφ - (2m+1)π   →   δ = (Δφ/2π)·λ + (m + 1/2)·λ
+     Δφ=0 时退化成课本上的 δ = (m+1/2)λ，是一族双曲线。
+
+     原先直接写死 δ = (m+1/2)λ，把 Δφ 漏掉了。可这一页的两个招牌预设之一
+     就是「反相」（p2=180°），那时真正的波节线在 δ = mλ ——
+     整整错开半个波长，于是这些虚线正好画在水面摆得最厉害的波腹上，
+     旁边还标着「水面不动」。 */
+  function drawNodalLines(s0, s1, dPhi) {
     var lam = s0.lam * PPM;
     if (lam < 6) return;
     var d = Math.abs(s1.x - s0.x);
-    var mMax = Math.floor(d / lam + 0.5);
+    var shift = ((dPhi || 0) / (Math.PI * 2)) * lam;
+    // 相位差把整族曲线平移了，两端各多算一条才不会漏掉刚进画面的那一条
+    var mMax = Math.floor(d / lam + 0.5) + 1;
     ctx.save();
     ctx.strokeStyle = 'rgba(255,255,255,.35)';
     ctx.setLineDash([5, 5]);
@@ -949,7 +959,7 @@
     var a2 = d / 2;
     var labelled = false, labelX = 0, labelY = 0;
     for (var m = -mMax; m <= mMax; m++) {
-      var delta = (m + 0.5) * lam;           // r1 - r0
+      var delta = (m + 0.5) * lam + shift;   // r1 - r0
       var a = delta / 2;
       if (Math.abs(a) >= a2 - 0.5) continue;
       var b2 = a2 * a2 - a * a;
