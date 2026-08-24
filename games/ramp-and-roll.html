@@ -639,26 +639,46 @@
       ctx.stroke();
     }
     /* 贴在跑道起点会正好压住 0m 刻度，挪到跑道尾端、刻度文字下面一行。
-       文字压在泥土色上，颜色只能用固定的浅色，跟着主题走会在孩子模式变成棕字压棕底。 */
-    ctx.font = '700 10px ' + C.mono;
-    ctx.fillStyle = '#ffd9a8';
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'top';
-    ctx.fillText('摩擦 μ=' + S.mu.toFixed(2), wx(base + RUNWAY), view.floorY + 24);
+       文字压在泥土色上，颜色只能用固定的浅色，跟着主题走会在孩子模式变成棕字压棕底。
+
+       地层只有四五十像素厚，却要同时放刻度、这行字、还有平地上那支埋进土里的重力箭头
+       （连「重力」药丸一起）。球停在跑道尽头时三者正好挤在一处，字被药丸切成两半。
+       μ 在左上读数里和「只剩摩擦 μmg=… N」那行里都写着，
+       所以球压过来的时候这行让位，别硬挤。 */
+    var fricRight = wx(base + RUNWAY);
+    var ballFloorX = S.phase === 'ready' || S.phase === 'ramp' ? -1e9 : wx(base + S.d);
+    if (ballFloorX < fricRight - 92) {
+      ctx.font = '700 10px ' + C.mono;
+      ctx.fillStyle = '#ffd9a8';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'top';
+      ctx.fillText('摩擦 μ=' + S.mu.toFixed(2), fricRight, view.floorY + 24);
+    }
 
     // 地面线
     ctx.strokeStyle = C.line; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0, view.floorY + .5); ctx.lineTo(W, view.floorY + .5); ctx.stroke();
 
-    // 高度标注
+    /* 高度标注。原先尺寸线和三角形的竖直边完全重合，数字又横着写在三角形内部，
+       于是和角顶那个角度数字抢同一块地方：坡越陡坡底越短，三角形越窄，
+       45° 时两个数字直接叠成一团。现在尺寸线挪到坡外侧、两端加小横杠，
+       数字竖排贴着它写，两个标注各占一边，任何角度都不会再撞上。 */
+    var hx = wx(0) - 5;
+    ctx.strokeStyle = 'rgba(167,139,250,.75)';
+    ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = 'rgba(167,139,250,.55)';
-    ctx.beginPath(); ctx.moveTo(wx(0), wy(S.h)); ctx.lineTo(wx(0), wy(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hx, wy(S.h)); ctx.lineTo(hx, wy(0)); ctx.stroke();
     ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(hx - 3, wy(S.h) + .5); ctx.lineTo(hx + 3, wy(S.h) + .5);
+    ctx.moveTo(hx - 3, wy(0) - .5); ctx.lineTo(hx + 3, wy(0) - .5);
+    ctx.stroke();
     ctx.save();
+    ctx.translate(hx - 9, wy(0) - 4);
+    ctx.rotate(-Math.PI / 2);
     ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.phys;
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText('h=' + S.h.toFixed(2) + 'm', wx(0) + 5, wy(S.h * 0.18));
+    ctx.fillText('h=' + S.h.toFixed(2) + 'm', 0, 0);
     ctx.restore();
 
     // 角度弧。数字放在扇形正中间，贴着角顶写会被斜边压住。
