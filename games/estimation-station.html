@@ -34,8 +34,13 @@
   .veil h2 { font-size: 1.25rem; margin-bottom: .4em; }
   .veil p { max-width: 40ch; margin: 0 auto 1em; }
 
-  .flash-timer { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin-top: 10px; }
+  /* 闪现时压在画布下沿的倒计时。这条原本挂在遮罩里，而闪现阶段遮罩正是隐藏的，
+     等于孩子从头到尾看不到还剩多久，只能被突然盖住。 */
+  .flash-timer { position: absolute; left: 22px; right: 22px; bottom: 5px; z-index: 2;
+    height: 8px; border-radius: 99px; overflow: hidden;
+    background: rgba(11,15,26,.66); box-shadow: 0 0 0 1px rgba(125,136,171,.35); }
   .flash-timer > i { display: block; height: 100%; background: linear-gradient(90deg, var(--warn), var(--danger)); width: 100%; }
+  .flash-timer[hidden] { display: none; }
 
   .guessbar { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-top: 14px; }
   .guessbar .f { flex: 1 1 130px; min-width: 120px; }
@@ -468,6 +473,9 @@
   var cv = document.getElementById("cv");
   var ctx = cv.getContext("2d");
   var CSS_W = 800, CSS_H = 520, dpr = 1;
+  /* 托盘底色写死成深色，画布上的字号和颜色也跟着写死；只有字体名从主题变量取，
+     这样两种模式下画面一致，又不会在没有 --mono 的环境里退化成衬线体。 */
+  var MONO = (getComputedStyle(document.documentElement).getPropertyValue("--mono") || "").trim() || "monospace";
 
   var LEVELS = { easy: [10, 40], mid: [40, 150], hard: [150, 600] };
   var PALETTE = ["#6ea8fe", "#a78bfa", "#4ade80", "#fbbf24", "#f472b6", "#22d3ee", "#fb923c"];
@@ -476,7 +484,7 @@
   var history = [];
   var STRATEGY_NAMES = { whole: "整体", quarter: "四分区", sample: "样方抽样" };
   var LAYOUT_NAMES = { scatter: "散点", cluster: "聚类", grid: "网格" };
-  var flashEndsAt = 0, rafId = 0;
+  var flashEndsAt = 0, flashMs = 1, rafId = 0;
 
   function fit() {
     dpr = Math.min(window.devicePixelRatio || 1, 3);
@@ -500,36 +508,72 @@
 
   function rnd(a, b) { return a + Math.random() * (b - a); }
 
+  /* 托盘的外框和内沿。糖豆和策略框统统按内沿摆：
+     原先糖豆是按整块画布留 26px 边距铺的，于是会压在托盘描边和「估算托盘」这几个字上，
+     而四分区的十字线又画满整块画布、跑到托盘外面去。 */
+  function tray() {
+    var x = 8, y = CSS_H * 0.04, w = CSS_W - 16, h = CSS_H * 0.92, pad = 16, head = 26, foot = 30;
+    // 底部那条 foot 是给策略说明留的：说明压着糖豆，闪现时会遮掉本轮真正要数的东西
+    return { x: x, y: y, w: w, h: h, r: 16,
+      ix: x + pad, iy: y + head, iw: w - pad * 2, ih: h - head - foot };
+  }
+
+  /* 每种策略把托盘切成几块。样方特意用 4×3＝12 格而不是原来那个占 8.96% 面积的框：
+     倍数是整数，孩子才能真的把「数一格 × 12」算出来。 */
+  var GRIDS = { whole: null, quarter: { cols: 2, rows: 2 }, sample: { cols: 4, rows: 3 } };
+
   function makeItems() {
     var range = LEVELS[document.getElementById("level").value];
     var mode = document.getElementById("layout-mode").value;
     truth = Math.round(rnd(range[0], range[1]));
     items = [];
-    var pad = 26, r = truth > 260 ? 5.5 : truth > 120 ? 7.5 : 11;
-    var centers = [[.24,.28],[.70,.27],[.35,.72],[.76,.70]];
-    var cols = Math.ceil(Math.sqrt(truth * CSS_W / CSS_H));
+    var r = truth > 260 ? 5.5 : truth > 120 ? 7.5 : 11;
+    var t = tray();
+    // 半个糖豆的归一化边距：贴边的豆子不会有一半露在托盘外
+    var mx = (r * 1.2) / t.iw, my = (r * 1.2) / t.ih;
+    var centers = [[.22,.24],[.72,.22],[.30,.74],[.78,.72]];
+    /* 一团糖豆应该是圆的。抖动直接按归一化坐标取同一个值时，
+       托盘宽是高的两三倍，四「团」就被拉成了四条横带。改成先定一个像素半径再折回归一化。 */
+    var blob = Math.min(t.iw, t.ih) * 0.26;
+    var jx = blob / t.iw, jy = blob / t.ih;
+    var cols = Math.ceil(Math.sqrt(truth * t.iw / t.ih));
     var rows = Math.ceil(truth / cols);
+    function keep(v, m) { return Math.max(m, Math.min(1 - m, v)); }
     for (var i = 0; i < truth; i++) {
       var nx, ny;
       if (mode === "cluster") {
         var center = centers[i % centers.length];
-        nx = Math.max(.04, Math.min(.96, center[0] + rnd(-.12,.12)));
-        ny = Math.max(.06, Math.min(.94, center[1] + rnd(-.14,.14)));
+        nx = keep(center[0] + rnd(-jx, jx), mx);
+        ny = keep(center[1] + rnd(-jy, jy), my);
       } else if (mode === "grid") {
-        var col = i % cols, row = Math.floor(i / cols);
-        nx = .05 + (col + .5) / cols * .90 + rnd(-.006,.006);
-        ny = .06 + (row + .5) / rows * .88 + rnd(-.008,.008);
+        nx = keep(((i % cols) + .5) / cols + rnd(-.006, .006), mx);
+        ny = keep((Math.floor(i / cols) + .5) / rows + rnd(-.008, .008), my);
       } else {
-        nx = rnd(pad, CSS_W - pad) / CSS_W;
-        ny = rnd(pad, CSS_H - pad) / CSS_H;
+        nx = rnd(mx, 1 - mx);
+        ny = rnd(my, 1 - my);
       }
-      items.push({ x:nx, y:ny, r:r * rnd(0.86,1.16),
-        c:PALETTE[(Math.random() * PALETTE.length) | 0], a:rnd(0,Math.PI) });
+      items.push({ x: nx, y: ny, r: r * rnd(0.86, 1.16),
+        c: PALETTE[(Math.random() * PALETTE.length) | 0], a: rnd(0, Math.PI) });
     }
+    // 猜之前不能把答案写进 aria-label，否则读屏用户一上来就听见了正确数量
     cv.setAttribute("aria-label", LAYOUT_NAMES[mode] + "分布，共有若干糖豆，用于估算数量");
   }
 
+  /* 按策略的网格数一遍每一格里真有几颗。位置都在手上，这个数是精确的，
+     所以揭晓时可以拿它当「策略到底准不准」的证据，而不是只报一个总数。 */
+  function countPerCell(grid) {
+    var counts = [], i;
+    for (i = 0; i < grid.cols * grid.rows; i++) counts.push(0);
+    for (i = 0; i < items.length; i++) {
+      var c = Math.min(grid.cols - 1, Math.floor(items[i].x * grid.cols));
+      var r = Math.min(grid.rows - 1, Math.floor(items[i].y * grid.rows));
+      counts[r * grid.cols + c]++;
+    }
+    return counts;
+  }
+
   function draw(showItems) {
+    var t = tray();
     ctx.clearRect(0, 0, CSS_W, CSS_H);
     var g = ctx.createLinearGradient(0, 0, 0, CSS_H);
     g.addColorStop(0, "#0d1424"); g.addColorStop(1, "#121829");
@@ -541,62 +585,146 @@
     ctx.fillStyle = "rgba(29,37,64,.55)";
     ctx.strokeStyle = "rgba(125,136,171,.45)";
     ctx.lineWidth = 2;
-    var trayX = 8, trayY = CSS_H * 0.04, trayW = CSS_W - 16, trayH = CSS_H * 0.92, trayR = 16;
     ctx.beginPath();
-    ctx.moveTo(trayX + trayR, trayY);
-    ctx.arcTo(trayX + trayW, trayY, trayX + trayW, trayY + trayH, trayR);
-    ctx.arcTo(trayX + trayW, trayY + trayH, trayX, trayY + trayH, trayR);
-    ctx.arcTo(trayX, trayY + trayH, trayX, trayY, trayR);
-    ctx.arcTo(trayX, trayY, trayX + trayW, trayY, trayR);
+    ctx.moveTo(t.x + t.r, t.y);
+    ctx.arcTo(t.x + t.w, t.y, t.x + t.w, t.y + t.h, t.r);
+    ctx.arcTo(t.x + t.w, t.y + t.h, t.x, t.y + t.h, t.r);
+    ctx.arcTo(t.x, t.y + t.h, t.x, t.y, t.r);
+    ctx.arcTo(t.x, t.y, t.x + t.w, t.y, t.r);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
     ctx.font = "700 11px sans-serif";
     ctx.fillStyle = "rgba(182,192,224,.65)";
-    ctx.textAlign = "left";
-    ctx.fillText("估算托盘", 18, CSS_H * 0.04 + 16);
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    ctx.fillText("估算托盘", t.x + 10, t.y + 16);
     ctx.restore();
 
-    /* 当前策略的视觉抓手 */
     var strategy = document.getElementById("estimate-strategy").value;
-    if (phase === "idle" && !showItems) { drawIntro(strategy, trayX, trayY, trayW, trayH); return; }
-    ctx.strokeStyle = "rgba(125,136,171,.65)";
+    if (phase === "idle" && !showItems) { drawIntro(strategy, t); return; }
+
+    if (showItems) {
+      for (var i = 0; i < items.length; i++) {
+        var it = items[i], x = t.ix + it.x * t.iw, y = t.iy + it.y * t.ih;
+        if (window.ILLUSTRATIONS && ILLUSTRATIONS.drawCandyBean) {
+          ILLUSTRATIONS.drawCandyBean(ctx, x, y, it.r, it.c, it.a);
+        } else {
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(it.a);
+          ctx.fillStyle = it.c;
+          ctx.globalAlpha = 0.92;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, it.r, it.r * 0.78, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 0.5;
+          ctx.fillStyle = "rgba(255,255,255,.75)";
+          ctx.beginPath();
+          ctx.ellipse(-it.r * 0.28, -it.r * 0.28, it.r * 0.26, it.r * 0.2, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+    }
+
+    /* 策略的抓手画在糖豆之上。原先画在下面，糖豆一铺开就把虚线框和说明字盖掉了，
+       正好挡住的是这一轮该照着做的那件事。 */
+    drawStrategy(strategy, t, showItems);
+
+    if (phase === "done" && showItems) {
+      var grid = GRIDS[strategy];
+      cv.setAttribute("aria-label", "揭晓：托盘里一共 " + truth + " 颗糖豆" +
+        (grid ? "，按" + STRATEGY_NAMES[strategy] + "分块后每块分别是 " + countPerCell(grid).join("、") + " 颗" : ""));
+    }
+  }
+
+  function cellRect(t, grid, col, row) {
+    var cw = t.iw / grid.cols, ch = t.ih / grid.rows;
+    return { x: t.ix + col * cw, y: t.iy + row * ch, w: cw, h: ch };
+  }
+
+  function stageNote(t, text, done) {
+    ctx.save();
+    ctx.font = "700 13px sans-serif";
+    ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    var by = t.y + t.h - 17;
+    ctx.fillStyle = "rgba(11,15,26,.72)";
+    ctx.fillRect(t.ix - 6, by - 11, ctx.measureText(text).width + 16, 22);
+    ctx.fillStyle = done ? "rgba(238,242,255,.96)" : "rgba(251,191,36,.95)";
+    ctx.fillText(text, t.ix + 2, by);
+    ctx.restore();
+  }
+
+  function drawStrategy(strategy, t, showItems) {
+    var done = phase === "done" && showItems;
+    var grid = GRIDS[strategy];
+    if (!grid) {
+      stageNote(t, done ? "整盘一共 " + truth + " 颗" : "整体感觉：别一颗颗数，扫一眼说个大概", done);
+      return;
+    }
+    var counts = done ? countPerCell(grid) : null;
+    var cw = t.iw / grid.cols, ch = t.ih / grid.rows;
+    var total = grid.cols * grid.rows;
+
+    ctx.save();
+    ctx.strokeStyle = "rgba(182,192,224,.55)";
     ctx.lineWidth = 1;
-    if (strategy === "quarter") {
-      ctx.beginPath();
-      ctx.moveTo(CSS_W / 2, 0); ctx.lineTo(CSS_W / 2, CSS_H);
-      ctx.moveTo(0, CSS_H / 2); ctx.lineTo(CSS_W, CSS_H / 2);
-      ctx.stroke();
-    } else if (strategy === "sample") {
-      ctx.save(); ctx.setLineDash([6,5]); ctx.lineWidth = 2;
-      ctx.strokeStyle = "rgba(251,191,36,.9)";
-      ctx.strokeRect(CSS_W * .08, CSS_H * .10, CSS_W * .28, CSS_H * .32);
-      ctx.fillStyle = "rgba(251,191,36,.9)"; ctx.font = "700 12px sans-serif";
-      ctx.fillText("样方：估这里，再按面积放大", CSS_W * .08 + 5, CSS_H * .10 + 18);
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    for (var c = 1; c < grid.cols; c++) { ctx.moveTo(t.ix + c * cw, t.iy); ctx.lineTo(t.ix + c * cw, t.iy + t.ih); }
+    for (var r = 1; r < grid.rows; r++) { ctx.moveTo(t.ix, t.iy + r * ch); ctx.lineTo(t.ix + t.iw, t.iy + r * ch); }
+    ctx.stroke();
+    ctx.restore();
+
+    // 样方模式只框其中一格，四分区模式四格都要估，所以整块都算「重点格」
+    var focus = strategy === "sample" ? cellRect(t, grid, 0, 0) : null;
+    if (focus) {
+      ctx.save();
+      ctx.fillStyle = "rgba(251,191,36,.10)";
+      ctx.fillRect(focus.x, focus.y, focus.w, focus.h);
+      ctx.setLineDash([7, 5]);
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = "rgba(251,191,36,.95)";
+      ctx.strokeRect(focus.x, focus.y, focus.w, focus.h);
       ctx.restore();
     }
 
-    if (!showItems) return;
-    for (var i = 0; i < items.length; i++) {
-      var it = items[i], x = it.x * CSS_W, y = it.y * CSS_H;
-      if (window.ILLUSTRATIONS && ILLUSTRATIONS.drawCandyBean) {
-        ILLUSTRATIONS.drawCandyBean(ctx, x, y, it.r, it.c, it.a);
-      } else {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(it.a);
-        ctx.fillStyle = it.c;
-        ctx.globalAlpha = 0.92;
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    if (done) {
+      // 每一格真有几颗：策略算出来的和实际数出来的摆在一起才看得出准不准
+      ctx.font = "800 21px " + MONO;
+      for (var k = 0; k < total; k++) {
+        var rc = cellRect(t, grid, k % grid.cols, Math.floor(k / grid.cols));
+        var cx = rc.x + rc.w / 2, cy = rc.y + rc.h / 2;
+        var txt = String(counts[k]);
+        // 垫一颗深色药丸：读数直接压在糖豆上，光靠描边还是会和底下的颜色搅在一起
+        var pw = ctx.measureText(txt).width + 18;
+        ctx.fillStyle = "rgba(11,15,26,.72)";
         ctx.beginPath();
-        ctx.ellipse(0, 0, it.r, it.r * 0.78, 0, 0, Math.PI * 2);
+        if (ctx.roundRect) ctx.roundRect(cx - pw / 2, cy - 15, pw, 30, 15);
+        else ctx.rect(cx - pw / 2, cy - 15, pw, 30);
         ctx.fill();
-        ctx.globalAlpha = 0.5;
-        ctx.fillStyle = "rgba(255,255,255,.75)";
-        ctx.beginPath();
-        ctx.ellipse(-it.r * 0.28, -it.r * 0.28, it.r * 0.26, it.r * 0.2, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
+        ctx.strokeStyle = focus && k === 0 ? "rgba(251,191,36,.85)" : "rgba(182,192,224,.4)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = focus && k === 0 ? "#fbbf24" : "rgba(238,242,255,.96)";
+        ctx.fillText(txt, cx, cy);
       }
+    }
+    ctx.restore();
+
+    /* 底部一行：闪现时说这一轮该怎么算，揭晓后把同一个算式算给你看。
+       样方那句会露出「× 12 的估计」和「实际」两个数，抽样误差就摆在明处。 */
+    if (strategy === "quarter") {
+      stageNote(t, done
+        ? counts.join(" + ") + " = " + truth + " 颗（四块加起来就是全部）"
+        : "四分区：先估左上这一块，再乘 4", done);
+    } else {
+      stageNote(t, done
+        ? "样方 " + counts[0] + " 颗 × 12 ≈ " + (counts[0] * 12) + " 颗，实际 " + truth + " 颗"
+        : "样方：只估黄框这一格，整盘是它的 12 倍", done);
     }
   }
 
@@ -606,9 +734,9 @@
      数量写死成能整除的 48，标注里的乘法才对得上眼前的糖豆。 */
   var INTRO_COLS = 8, INTRO_ROWS = 6;
 
-  function drawIntro(strategy, trayX, trayY, trayW, trayH) {
-    var left = trayX + 20, top = trayY + 34;
-    var w = trayW - 40, h = trayH - 74;
+  function drawIntro(strategy, t) {
+    var left = t.ix + 4, top = t.iy + 8;
+    var w = t.iw - 8, h = t.ih - 34;
     var cw = w / INTRO_COLS, ch = h / INTRO_ROWS;
     var r = Math.max(4, Math.min(cw, ch) * 0.3);
 
@@ -697,11 +825,14 @@
   var verdict = document.getElementById("verdict");
   var liveCount = document.getElementById("live-count");
 
+  /* 倒计时条挂在舞台上而不是遮罩里：闪现阶段遮罩是隐藏的，
+     挂在里面等于永远看不见，孩子会被突然盖住而不知道时间到了。 */
   var timerWrap = document.createElement("div");
   timerWrap.className = "flash-timer";
+  timerWrap.setAttribute("aria-hidden", "true");
   timerWrap.innerHTML = '<i></i>';
   timerWrap.hidden = true;
-  veil.firstElementChild.appendChild(timerWrap);
+  cv.parentElement.appendChild(timerWrap);
   var timerFill = timerWrap.querySelector("i");
 
   /* 开局遮罩要透出后面的示例盘，猜数阶段的遮罩必须是实心的。 */
@@ -725,7 +856,10 @@
     phase = "flash";
     veil.hidden = true;
     draw(true);
-    flashEndsAt = performance.now() + peekSeconds() * 1000;
+    flashMs = peekSeconds() * 1000;
+    flashEndsAt = performance.now() + flashMs;
+    timerWrap.hidden = false;
+    timerFill.style.width = "100%";
     cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(tickFlash);
   }
@@ -733,6 +867,8 @@
   function tickFlash(now) {
     var left = flashEndsAt - now;
     if (left <= 0) { endFlash(); return; }
+    // 只改一条 DOM 进度条的宽度，画布不用跟着每帧重画整盘糖豆
+    timerFill.style.width = (left / flashMs * 100).toFixed(1) + "%";
     rafId = requestAnimationFrame(tickFlash);
   }
 
