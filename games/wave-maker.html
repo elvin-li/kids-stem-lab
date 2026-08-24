@@ -1079,11 +1079,18 @@
     }
     rSum.textContent = (isFinite(maxSum) ? maxSum : 0).toFixed(2);
 
+    /* 「建设性 / 破坏性 / 部分干涉」这三档只看相位差，而相位差要能代表整条波，
+       前提是两列波的频率和波长都一样。原先只挡掉了频率不同的那一种，
+       于是「同频率、不同波长」漏了过去：λ₂ 拉到 λ₁ 的两倍时两列波速度差一倍
+       （旁边 rV1/rV2 两个读数就差一倍），叠加出来是一条随位置忽大忽小的波，
+       读数却照旧写「建设性（加倍）」。补一档，让相位差的判定只在真正同波时才用。 */
     var type;
     if (S.a1 < 0.02 || S.a2 < 0.02) type = '只有一列波';
     else if (MODE === 'wave' && dir2 === -1 && sameWave) type = '驻波（波 2 反向）';
-    else if (!sameWave && Math.abs(S.f1 - S.f2) > 0.001) {
+    else if (Math.abs(S.f1 - S.f2) > 0.001) {
       type = '拍频 Δf=' + Math.abs(S.f1 - S.f2).toFixed(2) + ' Hz';
+    } else if (Math.abs(S.w1 - S.w2) > 0.001) {
+      type = '波长不同（波速差 ' + Math.abs(S.f1 * S.w1 - S.f2 * S.w2).toFixed(2) + ' m/s）';
     } else if (dphi < 25 || dphi > 335) type = '建设性（加倍）';
     else if (dphi > 155 && dphi < 205) type = (Math.abs(S.a1 - S.a2) < 0.03 ? '破坏性（完全抵消）' : '破坏性（部分抵消）');
     else type = '部分干涉';
