@@ -898,16 +898,25 @@
   // ---------------------------------------------------------------
   var badge = document.getElementById("netBadge");
   var netTxt = document.getElementById("netTxt");
-  var netState = { ok: 0, fail: 0 };
+  var netState = { ok: 0, cache: 0, fail: 0 };
 
+  /* 徽章得分清「真联上了」和「只是本机有缓存」：断网重访时 APOD 和图片墙
+     都从 localStorage 直出，旧写法把缓存命中也报成功，徽章亮起「已连上
+     NASA 图片」——其实一个字节也没传。缓存命中单独计数：全是缓存就说缓存，
+     出现过一次真失败就老实说离线。 */
   function mark(ok) {
-    if (ok) netState.ok++; else netState.fail++;
+    if (ok === "cache") netState.cache++;
+    else if (ok) netState.ok++;
+    else netState.fail++;
     if (netState.ok > 0) {
       badge.className = "badge-live on";
       netTxt.textContent = "已连上 NASA 图片";
-    } else if (netState.fail >= 2) {
+    } else if (netState.fail >= 2 || (netState.fail > 0 && netState.cache > 0)) {
       badge.className = "badge-live off";
-      netTxt.textContent = "离线模式 · 显示内置数据";
+      netTxt.textContent = netState.cache > 0 ? "未联网 · 显示上次缓存的 NASA 图片" : "离线模式 · 显示内置数据";
+    } else if (netState.cache >= 2) {
+      badge.className = "badge-live";
+      netTxt.textContent = "NASA 图片来自本机缓存";
     }
   }
 
@@ -1005,7 +1014,7 @@
     var ck = "apod:" + today;
     try {
       var c = localStorage.getItem(ck);
-      if (c) { renderApod(JSON.parse(c)); mark(true); return; }
+      if (c) { renderApod(JSON.parse(c)); mark("cache"); return; }
     } catch (e) {}
 
     getJSON("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY")
@@ -1032,7 +1041,7 @@
     var ck = "shots:" + p.id;
     try {
       var c = localStorage.getItem(ck);
-      if (c) { paintShots(JSON.parse(c)); mark(true); return; }
+      if (c) { paintShots(JSON.parse(c)); mark("cache"); return; }
     } catch (e) {}
 
     getJSON("https://images-api.nasa.gov/search?q=" +
