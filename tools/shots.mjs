@@ -26,7 +26,8 @@ const args = process.argv.slice(2);
 const flags = {};
 const list = [];
 for (const arg of args) {
-  const match = /^--([a-z]+)(?:=(.*))?$/.exec(arg);
+  // 值可能是一整段多行 JS（--eval），所以不能用 . 来吃。
+  const match = /^--([a-z]+)(?:=([\s\S]*))?$/.exec(arg);
   if (match) flags[match[1]] = match[2] === undefined ? true : match[2];
   else list.push(arg);
 }
