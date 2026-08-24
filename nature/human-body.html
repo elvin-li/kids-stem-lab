@@ -745,7 +745,7 @@
   var zi = [].slice.call(zone.children);
 
   var times = [], records = [];
-  var NEED = 10;
+  var NEED = 10, MIN_TAPS = 4;
 
   function bpmOf(ts) {
     if (ts.length < 2) return null;
@@ -775,12 +775,24 @@
     tapBtn.classList.add("armed");
     paintZone(Math.min(times.length, NEED));
 
+    /* 上面写的是「点 10 次就能算出每分钟多少下」，可原来第 2 下就把大号数字
+       打出来了：那是一个间隔算出来的数，手一抖点快两下就显示 600。
+       攒到 4 下（3 个间隔）再给数，判语等 10 下齐了再说——一个间隔判不出节奏。 */
     var b = bpmOf(times);
-    if (b) {
-      bpmEl.textContent = b;
-      heart.classList.add("beating");
-      heart.style.setProperty("--bd", (60 / b).toFixed(2) + "s");
-      verdict.textContent = judge(b);
+    if (b && times.length >= MIN_TAPS) {
+      /* 连着乱按能算出「600 次/分」这种数，而它会顶在大号读数那一格里，
+         看着像一次测量结果。人的心率上不过 220 上下，超出去的只能是点法问题。 */
+      if (b > 240) {
+        bpmEl.textContent = "—";
+        heart.classList.remove("beating");
+        verdict.textContent = "点得比任何心跳都快：先在手腕上摸到脉搏，再跟着那个节奏点。";
+      } else {
+        bpmEl.textContent = b;
+        heart.classList.add("beating");
+        /* 心形的节拍也夹一下：太快的闪动既不像心跳，对光敏感的人也不友好。 */
+        heart.style.setProperty("--bd", Math.min(2, Math.max(0.3, 60 / b)).toFixed(2) + "s");
+        if (times.length >= NEED) verdict.textContent = judge(b);
+      }
     }
     tapsEl.textContent = times.length < NEED
       ? "已点 " + times.length + " 次，还要 " + (NEED - times.length) + " 次"
@@ -798,7 +810,9 @@
 
   document.getElementById("tapCompare").addEventListener("click", function () {
     var b = bpmOf(times);
-    if (!b) { tapsEl.textContent = "先点几次才有数据可记。"; return; }
+    if (!b || times.length < MIN_TAPS) {
+      tapsEl.textContent = "至少点 " + MIN_TAPS + " 次才有数据可记。"; return;
+    }
     records.push(b);
     logEl.textContent = "记录：" + records.join(" → ") + " 次/分" +
       (records.length > 1
