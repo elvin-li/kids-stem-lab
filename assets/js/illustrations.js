@@ -2781,8 +2781,13 @@ window.ILLUSTRATIONS = (function () {
 
   defCard("fraction-lab", {
     title: "分数实验台插图",
-    desc: "左边的饼图涂了二分之一，右边的饼图涂了四分之二，中间一个等号说明它们一样大。",
+    desc: "左边的饼图涂了二分之一，右边的饼图把同样的半边切成两个四分之一，中间一个等号说明它们一样大。",
     bg: cardSky("#fff1f4", "#ffdde5"),
+    /* 右边那两个四分之一必须挨在一起、并且落在和左图同一侧的半边上：
+       涂成对角的两块面积虽然也是 2/4，但看上去和左边的半圆对不上，
+       这张卡要讲的恰恰是「它们是同一块地方」。
+       扇形一定要把圆心写进路径里。只写「弧 + Z」封出来的是弓形，
+       直边是弦不是半径，涂出来是两个尖角三角形，四分之一就不成立了。 */
     art:
       '<circle cx="42" cy="50" r="27" fill="#fff8f9" stroke="#c02a52" stroke-width="2.6"/>' +
       '<path d="M42 23 A27 27 0 0 1 42 77 Z" fill="#e8567f"/>' +
@@ -2790,8 +2795,8 @@ window.ILLUSTRATIONS = (function () {
       '<text x="30" y="99" font-size="15" font-weight="700" fill="#a51b42">1/2</text>' +
       '<text x="72" y="58" font-size="18" font-weight="700" fill="#8a5a10">=</text>' +
       '<circle cx="120" cy="50" r="27" fill="#fff8f9" stroke="#c02a52" stroke-width="2.6"/>' +
-      '<path d="M120 23 A27 27 0 0 1 147 50 Z" fill="#e8567f"/>' +
-      '<path d="M120 77 A27 27 0 0 1 93 50 Z" fill="#e8567f"/>' +
+      '<path d="M120 50 L120 23 A27 27 0 0 1 147 50 Z" fill="#e8567f"/>' +
+      '<path d="M120 50 L147 50 A27 27 0 0 1 120 77 Z" fill="#e8567f"/>' +
       '<path d="M120 23 L120 77 M93 50 L147 50" stroke="#c02a52" stroke-width="2.2"/>' +
       '<text x="106" y="99" font-size="15" font-weight="700" fill="#a51b42">2/4</text>'
   });
@@ -2912,76 +2917,111 @@ window.ILLUSTRATIONS = (function () {
     desc: "抽掉空气的玻璃管里，锤子和羽毛并排下落，三条虚线说明同一时刻它们始终在同一高度。",
     bg: cardSky("#e9edfb", "#ccd6f4"),
     art: (function () {
-      /* 三个时刻的位置：每一刻锤子和羽毛都在同一条虚线上（一起落），
-         而相邻两条虚线的间距越来越大（越落越快）。 */
-      function hammer(y, op) {
+      /* 三个时刻的位置：每一刻锤子和羽毛的中心都压在同一条虚线上（一起落），
+         而相邻两条虚线的间距按 3 : 5 拉开，也就是落的距离正比于时间的平方。
+         两个形状原先各自从传入的 y 开始画，锤子重心偏上、羽毛偏下，
+         明明该齐平的两样东西差了小十个像素，这张卡最要紧的一句话就废了。
+         所以改成传中心高度，两边各自从中心往外排。 */
+      var HALF = 12.5;                       // 两个形状都做成 25 高，中心在正中
+      function hammer(cy, op) {
+        var y = cy - HALF;
         return '<g opacity="' + op + '"><rect x="47" y="' + y + '" width="18" height="8" rx="2.4" fill="#6b7280"/>' +
-          '<rect x="53.5" y="' + (y + 6) + '" width="5" height="17" rx="2" fill="#a2703c"/></g>';
+          '<rect x="53.5" y="' + (y + 6) + '" width="5" height="19" rx="2" fill="#a2703c"/></g>';
       }
-      function feather(y, op) {
-        return '<g opacity="' + op + '"><path d="M105 ' + y + " C96 " + (y + 12) + " 99 " + (y + 21) + " 105 " + (y + 25) +
-          " C112 " + (y + 19) + " 114 " + (y + 9) + " 105 " + y + 'Z" fill="#f2f6fd" stroke="#7b8bb8" stroke-width="1.6"/>' +
-          '<path d="M105 ' + (y + 3) + " L105 " + (y + 23) + '" stroke="#7b8bb8" stroke-width="1.3"/></g>';
+      function feather(cy, op) {
+        var y = cy - HALF;
+        var out = '<g opacity="' + op + '"><path d="M105 ' + y + " C96 " + (y + 12) + " 99 " + (y + 21) +
+          " 105 " + (y + 25) + " C112 " + (y + 19) + " 114 " + (y + 9) + " 105 " + y +
+          'Z" fill="#f2f6fd" stroke="#7b8bb8" stroke-width="1.6"/>' +
+          '<path d="M105 ' + (y + 3) + " L105 " + (y + 23) + '" stroke="#7b8bb8" stroke-width="1.3"/>';
+        // 几根羽枝：没有它们这个轮廓更像一片叶子
+        for (var b = 0; b < 3; b++) {
+          var by = y + 8 + b * 5;
+          out += '<path d="M105 ' + by + " L100.5 " + (by + 3.4) + " M105 " + by + " L109.5 " + (by + 3.4) +
+            '" stroke="#7b8bb8" stroke-width="1"/>';
+        }
+        return out + "</g>";
       }
-      return '<text x="34" y="19" font-size="12" font-weight="700" fill="#c2410c">抽掉空气以后</text>' +
-        '<rect x="34" y="24" width="94" height="74" rx="8" fill="#dbe6fb" opacity=".75" stroke="#7b8bb8" stroke-width="2.4"/>' +
-        '<g stroke="#c2410c" stroke-width="1.5" stroke-dasharray="5 4">' +
-        '<path d="M36 34 L126 34"/><path d="M36 52 L126 52"/><path d="M36 80 L126 80"/>' +
-        "</g>" +
-        '<g fill="#c2410c" font-size="9" font-weight="700">' +
-        '<text x="118" y="32">1</text><text x="118" y="50">2</text><text x="118" y="78">3</text>' +
-        "</g>" +
-        hammer(28, ".3") + feather(28, ".3") +
-        hammer(46, ".55") + feather(46, ".55") +
-        hammer(74, "1") + feather(74, "1");
+      var levels = [35, 54.5, 87];           // 中心高度：间距 19.5 : 32.5 = 3 : 5
+      var out = '<text x="34" y="17" font-size="12" font-weight="700" fill="#c2410c">抽掉空气以后</text>' +
+        '<rect x="34" y="22" width="90" height="78" rx="8" fill="#dbe6fb" opacity=".75" stroke="#7b8bb8" stroke-width="2.4"/>';
+      out += '<g stroke="#c2410c" stroke-width="1.5" stroke-dasharray="5 4">';
+      for (var i = 0; i < levels.length; i++) {
+        out += '<path d="M37 ' + levels[i] + " L121 " + levels[i] + '"/>';
+      }
+      // 第几秒的标号挪到管子外面：压在管壁上时和玻璃边框糊成一团
+      out += "</g>" + '<g fill="#c2410c" font-size="10" font-weight="700" text-anchor="middle">';
+      for (var j = 0; j < levels.length; j++) {
+        out += '<text x="133" y="' + (levels[j] + 3.5) + '">' + (j + 1) + "</text>";
+      }
+      out += "</g>";
+      var ops = [".32", ".58", "1"];
+      for (var k = 0; k < levels.length; k++) {
+        out += hammer(levels[k], ops[k]) + feather(levels[k], ops[k]);
+      }
+      return out;
     })()
   });
 
   defCard("ramp-and-roll", {
     title: "斜坡滚球插图",
-    desc: "小球从斜坡顶端滚下，斜坡底角标着角度，地面上的等距刻度显示球越滚越快。",
+    desc: "小球从斜坡顶端滚下，坡脚标着 27 度，地面刻度标出第 1 到第 4 秒的位置，间隔一格比一格宽，说明球越滚越快。",
     bg: cardSky("#f2eeff", "#ddd4fa"),
     art: (function () {
       var out = '<path d="M22 78 L126 78 L22 26Z" fill="#a08bea" opacity=".45" stroke="#6b4fd0" stroke-width="2.6" stroke-linejoin="round"/>';
       out += '<path d="M22 78 L140 78" stroke="#4b3a86" stroke-width="2.6"/>';
-      /* 底角的弧线 + 度数，是「坡越陡越快」这条结论的自变量。 */
-      out += '<path d="M46 78 A24 24 0 0 0 46 66" fill="none" stroke="#c2410c" stroke-width="2"/>';
-      out += '<text x="48" y="74" font-size="11" font-weight="700" fill="#c2410c">27°</text>';
-      out += '<g fill="none" stroke="#6b4fd0" stroke-width="2" stroke-dasharray="4 4"><path d="M34 37 L96 68"/></g>';
+      /* 坡度角在坡脚，也就是斜边和地面相交的那个顶点（126,78）；左下角是直角。
+         弧从地面上的 (100,78) 起，逆着地面转到斜边上，正好把这个锐角圈出来。
+         斜边从 (126,78) 指向 (22,26)，斜率 52/104，反正切 26.6°，就是标的 27°。 */
+      out += '<path d="M100 78 A26 26 0 0 1 102.7 66.4" fill="none" stroke="#c2410c" stroke-width="2"/>';
+      out += '<text x="97" y="76" text-anchor="end" font-size="10" font-weight="700" fill="#c2410c">27°</text>';
+      /* 虚线是球心走过的路：坡面上的点沿法线抬高一个球半径（8.5×(0.447,−0.894)
+         ≈ 右 3.8、上 7.6），不能直接拿坡面上的点当球心，那样球是埋在坡里的。 */
+      out += '<g fill="none" stroke="#6b4fd0" stroke-width="2" stroke-dasharray="4 4"><path d="M39.8 25.4 L107.8 59.4"/></g>';
       /* 刻度间距越来越大 = 每秒走得越来越远，也就是在加速。 */
       var xs = [36, 52, 76, 108];
       for (var i = 0; i < xs.length; i++) {
         out += '<path d="M' + xs[i] + ' 78 L' + xs[i] + ' 86" stroke="#4b3a86" stroke-width="2"/>';
       }
-      out += '<text x="32" y="99" font-size="11" font-weight="700" fill="#4b3a86">1</text>' +
-        '<text x="48" y="99" font-size="11" font-weight="700" fill="#4b3a86">2</text>' +
-        '<text x="72" y="99" font-size="11" font-weight="700" fill="#4b3a86">3</text>' +
-        '<text x="102" y="99" font-size="11" font-weight="700" fill="#4b3a86">4 秒</text>';
-      out += '<circle cx="32" cy="33" r="8.5" fill="#4d86d6" stroke="#1e3f80" stroke-width="2"/>' +
-        '<circle cx="29" cy="30" r="2.6" fill="#ffffff" opacity=".7"/>';
-      out += '<circle cx="100" cy="70" r="8.5" fill="#4d86d6" opacity=".35"/>';
+      // 数字压在各自的刻度线正上方，左对齐时会整体偏到刻度左边去
+      out += '<g font-size="11" font-weight="700" fill="#4b3a86" text-anchor="middle">';
+      for (var n = 0; n < xs.length; n++) {
+        out += '<text x="' + xs[n] + '" y="99">' + (n + 1) + "</text>";
+      }
+      out += '</g><text x="122" y="99" font-size="11" font-weight="700" fill="#4b3a86">秒</text>';
+      // 两个球都坐在坡面上，球心按法线抬高一个半径，见上面那条虚线的说明
+      out += '<circle cx="107.8" cy="59.4" r="8.5" fill="#4d86d6" opacity=".35"/>';
+      out += '<circle cx="39.8" cy="25.4" r="8.5" fill="#4d86d6" stroke="#1e3f80" stroke-width="2"/>' +
+        '<circle cx="36.8" cy="22.4" r="2.6" fill="#ffffff" opacity=".7"/>';
       return out;
     })()
   });
 
   defCard("light-and-shadow", {
     title: "光与影插图",
-    desc: "台灯照向一根立柱，两条光线画出影子的边界，灯越近影子越长。",
+    desc: "台灯照向一根小柱子，两条光线分别擦过柱顶和柱脚，正好圈出地上那块影子的两端。",
     bg: cardSky("#fff8e4", "#ffe9b8"),
+    /* 这张图的几何是真的：灯泡在 (46,26)，柱子占 x 88–94、顶端 y=58、脚落在地面 y=82。
+       从灯泡穿过柱顶远角 (94,58) 的那条光线，延长下去正好在 (130,82) 落地——
+       影子就从柱脚 94 铺到 130，一格不多。原先灯泡比柱顶还低，按那个位置光线
+       只会往上跑、影子该爬到墙上去，地上那块影子是凭空画的。 */
     art:
+      // 被照亮的那片光锥，先铺底
+      '<path d="M46 26 L154 44 L154 82 L66 82Z" fill="#ffd24a" opacity=".45"/>' +
       '<path d="M0 82 L160 82" stroke="#b98a2e" stroke-width="2.4"/>' +
-      /* 两条从灯泡出发、擦过物体顶端和底端的光线，正好圈出影子的长度。 */
-      '<path d="M40 44 L92 30 L142 68 L92 46Z" fill="#ffd24a" opacity=".5"/>' +
-      '<path d="M40 44 L142 68" stroke="#e0a33c" stroke-width="1.5" stroke-dasharray="4 4"/>' +
-      '<path d="M92 30 L138 82" stroke="#c98a3e" stroke-width="1.5" stroke-dasharray="4 4"/>' +
-      '<path d="M92 30 L138 82 L92 82Z" fill="#6b5a33" opacity=".5"/>' +
-      '<rect x="86" y="30" width="10" height="52" rx="3" fill="#5b6b95"/>' +
-      '<path d="M30 82 L30 50" stroke="#6b7280" stroke-width="3.4"/>' +
+      // 影子：柱脚到落地点，上界就是擦过柱顶的那条光线
+      '<path d="M94 82 L130 82 L94 58Z" fill="#6b5a33" opacity=".5"/>' +
+      '<g stroke="#c98a3e" stroke-width="1.5" stroke-dasharray="4 4">' +
+      '<path d="M46 26 L130 82"/><path d="M46 26 L94 82"/>' +
+      "</g>" +
+      '<rect x="88" y="58" width="6" height="24" rx="2" fill="#5b6b95"/>' +
+      '<text x="91" y="52" text-anchor="middle" font-size="9" font-weight="700" fill="#8a5a10">挡光的</text>' +
+      '<path d="M30 82 L30 34" stroke="#6b7280" stroke-width="3.4"/>' +
       '<path d="M22 82 L38 82" stroke="#6b7280" stroke-width="3.4" stroke-linecap="round"/>' +
-      '<path d="M30 50 Q30 34 46 32 L54 48 Q40 54 30 50Z" fill="#ffc233" stroke="#b98a2e" stroke-width="2"/>' +
-      '<circle cx="46" cy="42" r="4" fill="#fff6cf"/>' +
+      '<path d="M30 34 Q30 18 46 16 L54 32 Q40 38 30 34Z" fill="#ffc233" stroke="#b98a2e" stroke-width="2"/>' +
+      '<circle cx="46" cy="26" r="4" fill="#fff6cf"/>' +
       '<text x="20" y="98" font-size="12" font-weight="700" fill="#8a5a10">灯</text>' +
-      '<text x="94" y="98" font-size="12" font-weight="700" fill="#8a5a10">影子</text>'
+      '<text x="100" y="98" font-size="12" font-weight="700" fill="#8a5a10">影子</text>'
   });
 
   defCard("wave-maker", {
