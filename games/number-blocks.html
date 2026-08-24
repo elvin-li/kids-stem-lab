@@ -128,7 +128,9 @@
   .mission-grid, .mission-actions, .work-card-fields { min-width:0; }
   .ten-result { display:grid; gap:14px; grid-template-columns:minmax(180px,260px) minmax(0,1fr); align-items:center; margin-top:14px; }
   .ten-mini { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; padding:10px; border:2px solid var(--warn); border-radius:var(--r); background:var(--surface-2); }
-  .ten-mini span { aspect-ratio:1; border:2px dashed var(--line); border-radius:8px; background:transparent; }
+  /* 空格是要被数的（「到 10 还差 9 颗」就是数出来的），不能用 --line 那档
+     只有 1.4:1 的描边；改成正文注解色，浅底上稳在 4.9:1。 */
+  .ten-mini span { aspect-ratio:1; border:2px dashed var(--ink-dim); border-radius:8px; background:transparent; }
   .ten-mini span.on { border-style:solid; border-color:var(--math); background:linear-gradient(145deg,var(--math),color-mix(in srgb,var(--math) 65%,#08101f)); }
   .ten-result-copy { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
   .ten-result-copy b { display:block; margin-top:3px; color:var(--ink); font:800 clamp(1.5rem,6vw,2.4rem)/1 var(--mono); }
@@ -597,7 +599,7 @@
     G.trayTop = G.frameTop + G.frameH + gapBelow;
     G.H = G.trayTop + G.trayH + 6;
     fit(blocks, bctx, w, G.H);
-    fit(lineC, lctx, w, w < 420 ? 92 : 104);
+    fit(lineC, lctx, w, w < 420 ? 80 : 88);
     reposition(true);
   }
 
@@ -716,6 +718,33 @@
     document.getElementById('lockPredict').click();
   }
 
+  /* 自由搭和搭目标数没有「还要放几颗」这个问题，按钮就一个也生成不出来。
+     标题底下空着一片会让孩子以为没加载出来，所以这时改写一句该做什么。 */
+  function renderPredictChoices() {
+    var choices = document.getElementById('numPredictChoices');
+    choices.textContent = '';
+    if (S.mode !== 'ten' && S.mode !== 'split' && S.mode !== 'carry') {
+      var hint = document.createElement('p');
+      hint.className = 'status';
+      hint.style.margin = '0';
+      hint.textContent = '先在上面选一关，这里就会出现可以猜的数字。';
+      choices.appendChild(hint);
+      return;
+    }
+    var expected = S.target - (S.mode === 'split' ? S.splitBase : S.tenBase);
+    var values = [expected, Math.max(0, expected - 1), expected + 1].filter(function (v, index, arr) {
+      return v <= S.max && arr.indexOf(v) === index;
+    }).sort(function () { return Math.random() - .5; });
+    values.forEach(function (value) {
+      var choice = document.createElement('button');
+      choice.className = 'kid-choice'; choice.type = 'button';
+      choice.setAttribute('data-number-predict', String(value));
+      choice.textContent = value + ' 颗';
+      choice.addEventListener('click', chooseKidPrediction);
+      choices.appendChild(choice);
+    });
+  }
+
   function newTask() {
     S.rowFlash.length = 0;
     if (S.mode === 'target') {
@@ -750,24 +779,10 @@
     document.getElementById('numPredict').value = '';
     document.getElementById('numPredict').disabled = false;
     document.getElementById('lockPredict').disabled = false;
-    var choices = document.getElementById('numPredictChoices');
-    choices.textContent = '';
-    if (S.mode === 'ten' || S.mode === 'split' || S.mode === 'carry') {
-      var expected = S.target - (S.mode === 'split' ? S.splitBase : S.tenBase);
-      var values = [expected, Math.max(0, expected - 1), expected + 1].filter(function (v, index, arr) {
-        return v <= S.max && arr.indexOf(v) === index;
-      }).sort(function () { return Math.random() - .5; });
-      values.forEach(function (value) {
-        var choice = document.createElement('button');
-        choice.className = 'kid-choice'; choice.type = 'button';
-        choice.setAttribute('data-number-predict', String(value));
-        choice.textContent = value + ' 颗';
-        choice.addEventListener('click', chooseKidPrediction);
-        choices.appendChild(choice);
-      });
-    }
+    renderPredictChoices();
     refillLoose();
     update();
+    updateMission();
   }
 
   function check() {
@@ -999,9 +1014,9 @@
         ctx.save();
         ctx.setLineDash([3, 3]);
         rr(ctx, p.x + .5, p.y + .5, G.cell - 1, G.cell - 1, Math.max(3, G.cell * .22));
-        /* 空格子本身就是教具（空几格 = 还差几），--line-soft 在两种模式下都太淡，
-           这里改用带透明度的正文线色，浅底深底都还看得见。 */
-        ctx.strokeStyle = inCurrent ? alpha(C.math, .6) : alpha(C.inkDim, .45);
+        /* 空格子本身就是教具（空几格 = 还差几），是要被数的图形，不是装饰：
+           原来两档虚线在奶油底上只有 2.5 和 1.9，这里各推到 3:1 以上。 */
+        ctx.strokeStyle = inCurrent ? alpha(C.math, .8) : alpha(C.inkDim, .8);
         ctx.lineWidth = inCurrent ? 1.4 : 1;
         ctx.stroke();
         if (inCurrent) { ctx.fillStyle = alpha(C.math, .06); ctx.fill(); }
@@ -1077,12 +1092,13 @@
     var ctx = lctx;
     ctx.clearRect(0, 0, w, h);
     var padL = 18, padR = 18;
-    var x0 = padL, x1 = w - padR, y = h - 34;
+    var x0 = padL, x1 = w - padR, y = h - 30;
     var n = count(), max = S.max;
     function px(v) { return x0 + (x1 - x0) * (v / max); }
 
-    // 轴
-    ctx.strokeStyle = C.line; ctx.lineWidth = 2;
+    /* 轴和刻度都是要读的图形，不是分隔线：原来轴用 --line、小刻度用 --line-soft，
+       在浅底上只有 1.2 和 1.1，整条数轴看着像一片空白。 */
+    ctx.strokeStyle = alpha(C.inkDim, .8); ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
 
     // 已走过的部分
@@ -1097,13 +1113,13 @@
     var majorStep = max <= 20 ? 5 : 10;
     for (var v = 0; v <= max; v += minorStep) {
       var major = v % majorStep === 0;
-      ctx.strokeStyle = major ? C.inkDim : C.soft;
+      ctx.strokeStyle = major ? C.inkDim : alpha(C.inkDim, .55);
       ctx.beginPath();
       ctx.moveTo(px(v), y);
       ctx.lineTo(px(v), y + (major ? 9 : 4));
       ctx.stroke();
       if (major && (max <= 50 || v % 20 === 0 || v === max)) {
-        ctx.font = '600 10px ' + MONO;
+        ctx.font = '600 11px ' + MONO;
         ctx.fillStyle = C.inkDim;
         ctx.textAlign = 'center';
         ctx.fillText(String(v), px(v), y + 22);
@@ -1125,7 +1141,7 @@
     var cx = px(n);
     ctx.beginPath(); ctx.arc(cx, y, 7, 0, 6.2832);
     ctx.fillStyle = C.math; ctx.fill();
-    ctx.strokeStyle = '#08101f'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = ILLUSTRATIONS.shadeHex(C.math, -.5); ctx.lineWidth = 2; ctx.stroke();
     ctx.font = '700 13px ' + MONO;
     ctx.fillStyle = C.ink; ctx.textAlign = 'center';
     ctx.fillText(String(n), cx, y - 13);
@@ -1290,15 +1306,8 @@
       say('开始' + btn.textContent);
     });
   });
-  Array.prototype.forEach.call(document.querySelectorAll('[data-number-predict]'), function (btn) {
-    btn.addEventListener('click', function () {
-      document.getElementById('numPredict').value = btn.getAttribute('data-number-predict');
-      document.querySelectorAll('[data-number-predict]').forEach(function (choice) {
-        choice.setAttribute('aria-pressed', String(choice === btn));
-      });
-      document.getElementById('lockPredict').click();
-    });
-  });
+  /* 预测按钮是 newTask() 按当前关卡现生成的，绑定也在那里（chooseKidPrediction）；
+     这里再扫一遍 [data-number-predict] 永远扫到 0 个。 */
   Array.prototype.forEach.call(document.querySelectorAll('[data-number-reflect]'), function (btn) {
     btn.addEventListener('click', function () {
       document.getElementById('numReflect').value = btn.getAttribute('data-number-reflect');
@@ -1317,7 +1326,11 @@
   function updateMission() {
     var done = ['ten','split','carry'].filter(function (k) { return S.levelSolved[k]; });
     var names = {ten:'凑十',split:'拆分',carry:'进位'};
-    var status = done.length ? '已计入：' + done.map(function(k){return names[k];}).join('、') + '。' : '尚无计入结果。';
+    var levels = {ten:'第 1 关 · 凑十',split:'第 2 关 · 拆分',carry:'第 3 关 · 进位'};
+    /* 换关只改了画面，状态行却停在上一次的句子上，读屏和家长都看不出现在在第几关。 */
+    var status = (levels[S.mode] ? '当前 ' + levels[S.mode] + '：先锁定预测，再把积木搭到目标。'
+      : '当前是自由搭：选一关才会计入分级任务。') + ' ';
+    status += done.length ? '已计入：' + done.map(function(k){return names[k];}).join('、') + '。' : '尚无计入结果。';
     if (S.prediction !== null && !S.solved) status += ' 已锁定预测 ' + S.prediction + '，现在请操作积木。';
     if (S.lastResult) status += ' 最近结果：' + S.lastResult;
     document.getElementById('numMissionStatus').textContent = status;
@@ -1345,6 +1358,7 @@
   layout();
   refillLoose();
   update();
+  renderPredictChoices();
   renderChallengeLog();
   requestAnimationFrame(tick);
 })();
