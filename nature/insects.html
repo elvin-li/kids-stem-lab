@@ -118,9 +118,11 @@
   }
   .bug .ph-slot {
     height: 134px; display: flex; align-items: center; justify-content: center;
-    background: var(--surface-2); font-size: 2.6rem;
+    background: var(--surface-2); font-size: 2.6rem; overflow: hidden;
   }
   .bug .ph-slot img { width: 100%; height: 134px; object-fit: cover; display: block; }
+  /* 离线插图占满整个图位；联网照片替换时同样是 134px 高。 */
+  .bug .ph-slot svg { width: 100%; height: 100%; display: block; }
   .bug-in { padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
   .bug-in h3 { margin: 0; font-size: 1.04rem; }
   .bug-in .sci { margin: 0; font-family: var(--mono); font-size: .72rem; color: var(--ink-dim); }
@@ -510,6 +512,7 @@
   </footer>
 </main>
 
+<script src="../assets/js/illustrations.js?v=14"></script>
 <script>
 (function () {
   "use strict";
@@ -613,25 +616,25 @@
 
   /* ---------- 虫子数据（内置，联网后补照片）---------- */
   var BUGS = [
-    { n: "西方蜜蜂", sci: "Apis mellifera", mm: 13, em: "🐝",
+    { n: "西方蜜蜂", sci: "Apis mellifera", mm: 13, em: "🐝", art: "insects/honeybee",
       f: "找到花蜜后回巢跳「8 字摆尾舞」：摆尾持续 1 秒约代表 1 公里，舞蹈方向相对重力的角度就是相对太阳的角度。一只虫子在用<b>角度和时间编码地图</b>。" },
-    { n: "帝王蝶", sci: "Danaus plexippus", mm: 100, em: "🦋",
+    { n: "帝王蝶", sci: "Danaus plexippus", mm: 100, em: "🦋", art: "insects/monarch",
       f: "每年从加拿大飞到墨西哥同一片树林，全程约 4000 公里。没有一只蝴蝶活着走完往返——认路的本事完全靠<b>遗传</b>，不是学来的。" },
-    { n: "蚂蚁", sci: "Formica", mm: 5, em: "🐜",
+    { n: "蚂蚁", sci: "Formica", mm: 5, em: "🐜", art: "insects/ant",
       f: "能扛起约 50 倍体重。回家不靠记路，靠沿途留下的<b>信息素</b>浓度——最短的路来回快，气味最浓，于是整个蚁群自动收敛到最短路径。" },
-    { n: "瓢虫", sci: "Coccinellidae", mm: 6, em: "🐞",
+    { n: "瓢虫", sci: "Coccinellidae", mm: 6, em: "🐞", art: "insects/ladybug",
       f: "一生能吃掉五千只蚜虫，是农业上重要的天敌昆虫。鲜红带黑点不是为了好看，是<b>警戒色</b>：告诉鸟「我很难吃」。" },
-    { n: "蟋蟀", sci: "Gryllus", mm: 25, em: "🦗",
+    { n: "蟋蟀", sci: "Gryllus", mm: 25, em: "🦗", art: "insects/cricket",
       f: "叫声不是嘴发出的，是<b>两片翅膀互相摩擦</b>——一边像锉刀，一边像刮片。气温越高叫得越快，所以能当温度计。" },
-    { n: "萤火虫", sci: "Lampyridae", mm: 12, em: "✨",
+    { n: "萤火虫", sci: "Lampyridae", mm: 12, em: "✨", art: "insects/firefly",
       f: "发的是<b>冷光</b>，几乎 100% 的能量变成光，一点不发热。家里的灯泡远远做不到。每种萤火虫的闪光节奏都不一样，那是它们的求偶密码。" },
-    { n: "螳螂", sci: "Mantodea", mm: 60, em: "🦟",
+    { n: "螳螂", sci: "Mantodea", mm: 60, em: "🦟", art: "insects/mantis",
       f: "唯一能<b>转头 180 度</b>的昆虫。前腿弹出抓捕只用 50–70 毫秒，比人眨眼快五倍以上。眼睛上那个跟着你转的小黑点其实是伪瞳孔。" },
-    { n: "蜘蛛", sci: "Araneae", mm: 10, em: "🕷",
+    { n: "蜘蛛", sci: "Araneae", mm: 10, em: "🕷", art: "insects/spider",
       f: "严格说不是昆虫（八条腿、两段身体）。蛛丝按同等重量比<b>钢还结实</b>，能拉伸到原长四成不断。织一张网通常不到一小时。" },
-    { n: "欧洲深山锹甲", sci: "Lucanus cervus", mm: 75, em: "🪲",
+    { n: "欧洲深山锹甲", sci: "Lucanus cervus", mm: 75, em: "🪲", art: "insects/stag-beetle",
       f: "那对「大角」其实是放大的<b>上颚</b>，雄虫用它互相摔跤争地盘。幼虫要在腐木里啃三到五年才变成虫，成虫却只活几周。" },
-    { n: "熊蜂", sci: "Bombus", mm: 20, em: "🐝",
+    { n: "熊蜂", sci: "Bombus", mm: 20, em: "🐝", art: "insects/bumblebee",
       f: "会<b>抱住花朵高频振动</b>把花粉抖出来（声振传粉），番茄和蓝莓特别依赖这招，蜜蜂反而不会。它比蜜蜂耐冷，早春就出来干活。" }
   ];
 
@@ -642,7 +645,10 @@
 
     var ph = document.createElement("div");
     ph.className = "ph-slot";
-    ph.textContent = b.em;
+    /* 离线默认是共享插图；插图库缺席时退回 emoji，联网照片仍会覆盖上来。 */
+    if (!(window.ILLUSTRATIONS && ILLUSTRATIONS.renderArt(ph, b.art, { label: b.n + "插图" }))) {
+      ph.textContent = b.em;
+    }
     ph.setAttribute("data-inat", b.sci);
 
     var inr = document.createElement("div");
@@ -725,7 +731,7 @@
       var img = document.createElement("img");
       img.alt = rec.name || q;
       // 不能用 loading="lazy" + display:none：浏览器判定图片不可见会无限推迟加载，
-      // onload 永不触发，图片就永远停在 emoji 占位上。用 visibility 保留布局占位。
+      // onload 永不触发，图片就永远停在离线插图上。用 visibility 保留布局占位。
       img.style.visibility = "hidden";
       slot.appendChild(img);
       img.onload = function () {
@@ -737,7 +743,7 @@
         if (tried === total) report();
       };
       img.onerror = function () {
-        img.remove();               // 失败保留 emoji
+        img.remove();               // 失败保留离线插图
         tried++; if (tried === total) report();
       };
       img.src = rec.url;

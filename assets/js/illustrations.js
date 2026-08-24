@@ -628,6 +628,903 @@ window.ILLUSTRATIONS = (function () {
     return TILE_ICONS[id] || "";
   }
 
+  /* ================= 卡片插图目录 =================
+     上面那些是给 Canvas 用的绘制助手；这一段是成品内联 SVG 插图，
+     供专题页的图位在离线 / file:// 下代替单个 emoji 占位。 */
+
+  var CATALOG = {};
+  var seq = 0;
+
+  function esc(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function def(name, spec) { CATALOG[name] = spec; }
+
+  /* ---------------- 场景底色 ---------------- */
+
+  /* 海水：上层底色 + 一条起伏的深色水体，给卡片一点纵深。 */
+  function sea(top, deep, extra) {
+    return '<rect width="160" height="90" fill="' + top + '"/>' +
+      '<path d="M0 50 C26 42 48 56 76 49 C106 41 134 55 160 47 L160 90 L0 90Z" fill="' + deep + '"/>' +
+      (extra || "");
+  }
+
+  /* 阳光层的斜射光柱。 */
+  var SUNRAYS =
+    '<g fill="#ffffff" opacity=".16">' +
+    '<path d="M26 -4 L44 -4 L16 94 L-4 94Z"/>' +
+    '<path d="M70 -4 L82 -4 L58 94 L46 94Z"/>' +
+    '<path d="M124 -4 L144 -4 L114 94 L94 94Z"/>' +
+    '</g>';
+
+  function bubbles(list, fill) {
+    var out = '<g fill="' + (fill || "#ffffff") + '" opacity=".38">';
+    for (var i = 0; i < list.length; i++) {
+      out += '<circle cx="' + list[i][0] + '" cy="' + list[i][1] + '" r="' + list[i][2] + '"/>';
+    }
+    return out + "</g>";
+  }
+
+  /* 花园：天空 + 草地，配一片叶子。 */
+  function garden(sky, ground, extra) {
+    return '<rect width="160" height="90" fill="' + sky + '"/>' +
+      '<path d="M0 64 C28 56 52 72 82 65 C112 58 138 72 160 64 L160 90 L0 90Z" fill="' + ground + '"/>' +
+      (extra || "");
+  }
+
+  var LEAF =
+    '<g opacity=".55">' +
+    '<path d="M-6 78 C14 58 40 56 54 66 C40 82 14 88 -6 78Z" fill="#8dc06a"/>' +
+    '<path d="M-6 78 C16 72 38 70 54 66" stroke="#6fa64f" stroke-width="1.6" fill="none"/>' +
+    '<path d="M150 20 C132 10 116 16 112 28 C126 34 144 32 150 20Z" fill="#9ecb78"/>' +
+    "</g>";
+
+  /* ---------------- 海洋生物 ---------------- */
+
+  def("ocean/blue-whale", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "蓝鲸插图",
+    desc: "一头蓝灰色的蓝鲸在阳光层游动，背上喷出水柱，腹部有一道道褶沟。",
+    bg: sea("#a9dcf3", "#7cc4e4", SUNRAYS + bubbles([[132, 20, 3], [142, 32, 2], [126, 40, 2.2]])),
+    art:
+      '<g fill="#ffffff" opacity=".75">' +
+      '<path d="M22 28 C17 19 21 10 26 5 C26 14 26 21 29 28Z"/>' +
+      '<path d="M31 28 C31 20 35 13 40 9 C36 17 35 22 36 28Z"/>' +
+      "</g>" +
+      '<path d="M10 50 C12 33 42 25 80 29 C106 32 124 40 136 48 C124 56 106 64 80 67 C42 71 12 67 10 50Z" fill="#4a86bd"/>' +
+      '<path d="M136 48 C144 41 152 33 157 28 C152 40 152 56 157 69 C152 64 144 56 136 48Z" fill="#3a6d9e"/>' +
+      '<path d="M100 32 L110 21 L115 35Z" fill="#3a6d9e"/>' +
+      '<path d="M13 55 C36 67 70 69 102 60 C72 70 36 69 13 58Z" fill="#d6ebf6"/>' +
+      '<g stroke="#8fbdda" stroke-width="1.5" stroke-linecap="round" fill="none">' +
+      '<path d="M24 57 L26 65"/><path d="M32 59 L34 67"/><path d="M40 60 L42 68"/>' +
+      '<path d="M48 61 L50 69"/><path d="M56 61 L58 69"/><path d="M64 61 L66 69"/>' +
+      "</g>" +
+      '<path d="M48 62 C52 74 62 79 70 77 C61 74 54 68 52 61Z" fill="#3a6d9e"/>' +
+      '<path d="M10 53 C22 58 38 61 54 62" stroke="#2f5f8a" stroke-width="1.8" stroke-linecap="round" fill="none"/>' +
+      '<circle cx="24" cy="45" r="2.6" fill="#12303f"/>'
+  });
+
+  def("ocean/clownfish", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "小丑鱼插图",
+    desc: "橙色的小丑鱼身上有三条带黑边的白色条纹，身下是紫红色的海葵触手。",
+    bg: sea("#9fd9f2", "#74c0e2", SUNRAYS + bubbles([[20, 18, 2.4], [30, 30, 1.8]])),
+    art:
+      '<g fill="#d081b8" opacity=".9">' +
+      '<path d="M6 90 C4 74 10 66 18 66 C26 66 30 76 28 90Z"/>' +
+      '<path d="M28 90 C26 72 34 62 43 63 C52 64 54 76 52 90Z"/>' +
+      '<path d="M52 90 C52 76 58 68 66 69 C74 70 76 80 74 90Z"/>' +
+      '<path d="M112 90 C110 74 118 66 126 67 C134 68 136 78 134 90Z"/>' +
+      '<path d="M134 90 C134 78 140 71 148 72 C156 73 158 82 156 90Z"/>' +
+      "</g>" +
+      '<path d="M74 24 C86 15 102 15 110 22 C99 22 87 24 79 28Z" fill="#e8761c"/>' +
+      '<path d="M72 62 C76 72 86 76 93 73 C84 71 78 67 76 61Z" fill="#e8761c"/>' +
+      '<ellipse cx="78" cy="45" rx="44" ry="20" fill="#f2892b"/>' +
+      '<path d="M118 45 C130 36 142 29 150 26 C144 38 144 52 150 64 C142 61 130 54 118 45Z" fill="#ea7a1c"/>' +
+      '<g fill="#fdf6ec" stroke="#2b2118" stroke-width="2.4" stroke-linejoin="round">' +
+      '<path d="M56 29 C51 38 51 52 56 61 C61 62 65 62 69 61 C64 51 64 39 69 30 C65 28 60 28 56 29Z"/>' +
+      '<path d="M88 26 C84 37 84 53 88 64 C93 65 97 64 101 63 C96 52 96 38 101 27 C97 26 92 25 88 26Z"/>' +
+      '<path d="M114 34 C112 41 112 49 114 56 L120 55 C118 48 118 42 120 35Z"/>' +
+      "</g>" +
+      '<circle cx="45" cy="42" r="5" fill="#fdf6ec"/>' +
+      '<circle cx="44" cy="42" r="2.8" fill="#241a12"/>' +
+      '<path d="M36 49 C40 52 44 53 48 53" stroke="#c2611a" stroke-width="2" stroke-linecap="round" fill="none"/>'
+  });
+
+  def("ocean/sea-turtle", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "绿海龟插图",
+    desc: "一只绿海龟从上方看去，背甲上有一块块盾片，四只桨状的脚在划水。",
+    bg: sea("#93d2ee", "#63b6dc", SUNRAYS + bubbles([[136, 22, 2.6], [146, 34, 1.8]])),
+    art:
+      '<path d="M52 24 C40 10 22 6 14 13 C23 20 36 28 47 33Z" fill="#4f9c79"/>' +
+      '<path d="M52 66 C40 80 22 84 14 77 C23 70 36 62 47 57Z" fill="#4f9c79"/>' +
+      '<path d="M112 28 C122 18 136 16 141 22 C133 27 123 33 116 37Z" fill="#4f9c79"/>' +
+      '<path d="M112 62 C122 72 136 74 141 68 C133 63 123 57 116 53Z" fill="#4f9c79"/>' +
+      '<path d="M40 45 C30 39 20 40 15 46 C20 52 30 53 40 48Z" fill="#59a984"/>' +
+      '<circle cx="24" cy="43" r="2.4" fill="#123528"/>' +
+      '<ellipse cx="82" cy="45" rx="42" ry="30" fill="#3f8f6d"/>' +
+      '<g fill="none" stroke="#2d6a51" stroke-width="2.4" stroke-linejoin="round">' +
+      '<path d="M82 17 L96 26 L96 44 L82 53 L68 44 L68 26Z"/>' +
+      '<path d="M82 53 L96 62 L82 73 L68 62Z"/>' +
+      '<path d="M68 26 L52 22 L46 38 L54 47 L68 44Z"/>' +
+      '<path d="M96 26 L112 22 L118 38 L110 47 L96 44Z"/>' +
+      '<path d="M54 47 L52 62 L68 62"/><path d="M110 47 L112 62 L96 62"/>' +
+      "</g>" +
+      '<ellipse cx="82" cy="45" rx="42" ry="30" fill="none" stroke="#2d6a51" stroke-width="3"/>'
+  });
+
+  def("ocean/whale-shark", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "鲸鲨插图",
+    desc: "灰蓝色的鲸鲨张着又宽又扁的嘴，背上排着一格格白色斑点。",
+    bg: sea("#7fc4e6", "#4e9fca", SUNRAYS + bubbles([[18, 22, 2.2], [26, 12, 1.6]])),
+    art:
+      '<path d="M8 44 C8 30 30 21 62 23 C92 25 116 33 133 44 C116 55 92 63 62 65 C30 67 8 58 8 44Z" fill="#54798f"/>' +
+      '<path d="M133 44 C142 37 151 29 157 25 C151 37 151 51 157 64 C151 60 142 52 133 44Z" fill="#456678"/>' +
+      '<path d="M92 26 L103 12 L110 30Z" fill="#456678"/>' +
+      '<path d="M56 60 C58 74 70 80 79 78 C69 74 62 68 60 59Z" fill="#456678"/>' +
+      '<path d="M8 38 C18 40 30 42 44 44 C30 47 18 49 8 51Z" fill="#2c4756"/>' +
+      '<g fill="#e9f3f7">' +
+      '<circle cx="46" cy="32" r="2.2"/><circle cx="62" cy="29" r="2.2"/><circle cx="78" cy="30" r="2.2"/>' +
+      '<circle cx="94" cy="33" r="2.2"/><circle cx="110" cy="38" r="2.2"/>' +
+      '<circle cx="54" cy="42" r="2.2"/><circle cx="70" cy="40" r="2.2"/><circle cx="86" cy="41" r="2.2"/>' +
+      '<circle cx="102" cy="45" r="2.2"/><circle cx="118" cy="47" r="2.2"/>' +
+      '<circle cx="46" cy="53" r="2.2"/><circle cx="62" cy="52" r="2.2"/><circle cx="78" cy="53" r="2.2"/>' +
+      '<circle cx="94" cy="55" r="2.2"/><circle cx="110" cy="55" r="2.2"/>' +
+      "</g>" +
+      '<g stroke="#3c5b6c" stroke-width="1.6" stroke-linecap="round" fill="none">' +
+      '<path d="M30 48 L28 58"/><path d="M37 50 L35 60"/><path d="M44 51 L42 61"/>' +
+      "</g>" +
+      '<circle cx="22" cy="36" r="2.6" fill="#16303e"/>'
+  });
+
+  def("ocean/moon-jelly", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "月亮水母插图",
+    desc: "半透明的月亮水母，圆钟形伞体上有四个粉色马蹄形环，下面拖着细长触手。",
+    bg: sea("#63a9cf", "#39749c", bubbles([[24, 66, 2.4], [136, 58, 2], [30, 30, 1.6]])),
+    art:
+      '<g stroke="#dcecf7" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".85">' +
+      '<path d="M58 48 C54 62 58 76 52 88"/><path d="M68 50 C66 64 70 78 64 90"/>' +
+      '<path d="M80 51 C80 66 82 78 78 90"/><path d="M92 50 C94 64 90 78 96 90"/>' +
+      '<path d="M102 48 C106 62 102 76 108 88"/>' +
+      "</g>" +
+      '<g fill="#eaf5fb" opacity=".92">' +
+      '<path d="M70 46 C64 62 68 76 62 86 C74 80 76 62 78 47Z"/>' +
+      '<path d="M90 46 C96 62 92 76 98 86 C86 80 84 62 82 47Z"/>' +
+      "</g>" +
+      '<path d="M34 50 C34 28 54 14 80 14 C106 14 126 28 126 50 C114 46 106 52 96 50 C88 48 84 54 76 52 C66 49 50 46 34 50Z" fill="#e4f1fa" opacity=".93"/>' +
+      '<path d="M34 50 C34 28 54 14 80 14 C106 14 126 28 126 50" fill="none" stroke="#b9d8ec" stroke-width="2.4"/>' +
+      '<g fill="none" stroke="#eda8c6" stroke-width="4" stroke-linecap="round">' +
+      '<path d="M62 34 C56 40 56 48 62 52"/><path d="M98 34 C104 40 104 48 98 52"/>' +
+      '<path d="M74 26 C68 30 66 36 68 42"/><path d="M86 26 C92 30 94 36 92 42"/>' +
+      "</g>" +
+      '<g fill="#ffffff" opacity=".6">' +
+      '<path d="M48 34 C54 26 62 21 70 19 C60 24 52 30 48 34Z"/>' +
+      "</g>"
+  });
+
+  def("ocean/sperm-whale", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "抹香鲸插图",
+    desc: "抹香鲸有一颗又大又方的头，下颌又细又长，正朝着黑暗的深处下潜。",
+    bg: sea("#2e5f85", "#173d5c", bubbles([[130, 18, 2.6], [140, 30, 1.8], [122, 34, 1.6]])),
+    art:
+      '<path d="M6 32 C6 23 15 19 27 19 C49 19 71 26 93 34 C113 41 129 46 141 50 C127 57 109 63 89 67 C67 71 44 73 26 71 C13 69 6 62 6 52Z" fill="#5c5d66"/>' +
+      '<path d="M141 50 C148 43 155 35 158 30 C154 42 154 58 158 71 C154 66 148 58 141 50Z" fill="#4a4b53"/>' +
+      '<path d="M97 36 C103 27 112 28 116 37 C121 31 128 33 131 41 C135 37 139 39 141 44 L141 50 C126 45 111 40 97 38Z" fill="#4a4b53"/>' +
+      '<path d="M9 58 C31 63 55 66 79 66" stroke="#3a3b43" stroke-width="2.6" stroke-linecap="round" fill="none"/>' +
+      '<path d="M52 66 C56 78 68 84 77 82 C66 78 58 72 56 65Z" fill="#4a4b53"/>' +
+      '<g stroke="#70717a" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".55">' +
+      '<path d="M14 34 C20 36 26 37 32 37"/><path d="M13 42 C20 44 27 45 34 45"/><path d="M14 50 C21 52 28 53 35 53"/>' +
+      "</g>" +
+      '<circle cx="28" cy="54" r="2.6" fill="#1e1f26"/>' +
+      '<g fill="#eaf2f8" opacity=".8">' +
+      '<path d="M14 21 C8 14 2 9 -5 6 C3 8 10 13 17 19Z"/>' +
+      '<path d="M17 19 C13 11 11 4 11 -3 C16 4 19 11 21 18Z"/>' +
+      "</g>"
+  });
+
+  def("ocean/giant-squid", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "大王乌贼插图",
+    desc: "暗红色的大王乌贼睁着一只很大的眼睛，八条腕和两条更长的触手向下张开。",
+    bg: sea("#123a56", "#08202f", bubbles([[24, 20, 2.2], [136, 26, 1.8]])),
+    art:
+      '<g stroke="#b8443d" stroke-width="5" fill="none" stroke-linecap="round">' +
+      '<path d="M78 62 C64 70 46 74 28 72"/><path d="M80 64 C70 76 54 84 36 86"/>' +
+      '<path d="M84 66 C80 78 72 88 62 90"/><path d="M90 66 C92 78 90 86 86 90"/>' +
+      '<path d="M96 64 C104 74 116 82 130 84"/><path d="M98 61 C110 66 126 68 142 66"/>' +
+      "</g>" +
+      '<g stroke="#a03c36" stroke-width="3" fill="none" stroke-linecap="round">' +
+      '<path d="M82 64 C66 80 40 88 12 86"/><path d="M94 64 C112 78 136 86 158 84"/>' +
+      "</g>" +
+      '<g fill="#a03c36">' +
+      '<ellipse cx="14" cy="85" rx="8" ry="4.5" transform="rotate(-12 14 85)"/>' +
+      '<ellipse cx="156" cy="83" rx="8" ry="4.5" transform="rotate(12 156 83)"/>' +
+      "</g>" +
+      '<path d="M88 6 C104 10 114 18 111 26 C104 21 95 16 88 13Z" fill="#c04c44"/>' +
+      '<path d="M88 6 C72 10 62 18 65 26 C72 21 81 16 88 13Z" fill="#c04c44"/>' +
+      '<path d="M88 8 C104 22 110 40 105 53 C97 62 79 62 71 53 C66 40 72 22 88 8Z" fill="#c0453f"/>' +
+      '<ellipse cx="88" cy="58" rx="18" ry="11" fill="#cf5a4e"/>' +
+      '<circle cx="75" cy="56" r="7" fill="#f4e3c9"/>' +
+      '<circle cx="74" cy="56" r="3.8" fill="#1d120e"/>' +
+      '<g fill="#e07d6f" opacity=".5">' +
+      '<ellipse cx="88" cy="26" rx="7" ry="12"/>' +
+      "</g>"
+  });
+
+  def("ocean/anglerfish", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "鮟鱇鱼插图",
+    desc: "深海鮟鱇鱼张着满是尖牙的大嘴，头顶垂下一盏发光的小灯笼照亮周围。",
+    bg: sea("#0a1f30", "#04121d", ""),
+    art:
+      '<circle cx="28" cy="16" r="26" fill="#ffe89a" opacity=".13"/>' +
+      '<circle cx="28" cy="16" r="15" fill="#ffe89a" opacity=".22"/>' +
+      '<path d="M98 46 C112 38 128 31 142 27 C136 40 136 54 142 69 C128 63 112 55 98 48Z" fill="#241b2f"/>' +
+      '<path d="M30 26 L78 46 L30 66Z" fill="#0f0a17"/>' +
+      '<path d="M104 46 C104 23 86 10 64 12 C50 13 39 19 33 27 L78 46 L33 65 C39 73 50 79 64 80 C86 82 104 69 104 46Z" fill="#2b2137"/>' +
+      '<g fill="#f4ecd8">' +
+      '<path d="M36 28 L43 31 L37 40Z"/><path d="M45 32 L52 35 L46 44Z"/>' +
+      '<path d="M54 36 L61 39 L55 47Z"/><path d="M63 40 L70 43 L64 49Z"/>' +
+      '<path d="M36 64 L43 61 L37 52Z"/><path d="M45 60 L52 57 L46 48Z"/>' +
+      '<path d="M54 56 L61 53 L55 45Z"/><path d="M63 52 L70 49 L64 43Z"/>' +
+      "</g>" +
+      '<path d="M88 15 C97 11 105 14 108 21 C101 18 94 16 88 19Z" fill="#241b2f"/>' +
+      '<path d="M80 74 C83 84 91 89 98 87 C90 83 85 79 83 73Z" fill="#241b2f"/>' +
+      '<path d="M66 16 C56 3 40 3 30 12" stroke="#4b4054" stroke-width="3.4" stroke-linecap="round" fill="none"/>' +
+      '<circle cx="28" cy="14" r="7" fill="#ffe89a"/>' +
+      '<circle cx="26" cy="12" r="2.4" fill="#fffdf2"/>' +
+      '<circle cx="55" cy="25" r="4.4" fill="#f2ead6"/>' +
+      '<circle cx="54" cy="25" r="2.2" fill="#161020"/>' +
+      '<path d="M70 22 C80 20 90 22 97 27" stroke="#453a55" stroke-width="2.4" stroke-linecap="round" fill="none"/>'
+  });
+
+  def("ocean/colossal-squid", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "大王酸浆鱿插图",
+    desc: "大王酸浆鱿身体粗壮，触手上带着能转动的钩子，眼睛比拳头还大。",
+    bg: sea("#132a44", "#071626", bubbles([[136, 18, 2], [20, 28, 1.8]])),
+    art:
+      '<g stroke="#9c5b8e" stroke-width="6" fill="none" stroke-linecap="round">' +
+      '<path d="M76 64 C60 72 42 76 24 74"/><path d="M80 66 C70 78 54 86 38 88"/>' +
+      '<path d="M86 68 C82 80 74 88 66 90"/><path d="M92 68 C94 80 92 88 90 90"/>' +
+      '<path d="M98 66 C106 76 118 84 132 86"/><path d="M100 62 C112 68 128 70 144 68"/>' +
+      "</g>" +
+      '<g stroke="#84497a" stroke-width="4" fill="none" stroke-linecap="round">' +
+      '<path d="M82 66 C64 82 38 90 10 88"/><path d="M96 66 C114 80 138 88 158 86"/>' +
+      "</g>" +
+      '<g stroke="#f0dcc4" stroke-width="1.8" fill="none" stroke-linecap="round">' +
+      '<path d="M16 84 L12 80"/><path d="M22 86 L18 82"/><path d="M28 88 L24 84"/>' +
+      '<path d="M144 82 L148 78"/><path d="M150 84 L154 80"/>' +
+      "</g>" +
+      '<path d="M88 4 C106 8 118 18 114 27 C106 21 96 15 88 12Z" fill="#a95c9b"/>' +
+      '<path d="M88 4 C70 8 58 18 62 27 C70 21 80 15 88 12Z" fill="#a95c9b"/>' +
+      '<path d="M88 6 C108 22 116 42 110 55 C101 65 79 65 70 55 C64 42 70 22 88 6Z" fill="#8e5286"/>' +
+      '<ellipse cx="88" cy="60" rx="20" ry="12" fill="#a1618f"/>' +
+      '<circle cx="72" cy="58" r="9" fill="#f6e9d2"/>' +
+      '<circle cx="71" cy="58" r="5" fill="#1b0f18"/>' +
+      '<circle cx="69" cy="55" r="1.6" fill="#ffffff"/>' +
+      '<g fill="#a1618f" opacity=".55"><ellipse cx="88" cy="28" rx="8" ry="14"/></g>'
+  });
+
+  def("ocean/snailfish", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "深海狮子鱼插图",
+    desc: "淡粉色的深海狮子鱼身体像果冻一样半透明，尾巴细细地拖在最深的海沟里。",
+    bg: sea("#08161f", "#030b12", bubbles([[26, 22, 1.6], [34, 14, 1.2]], "#9fd9ea")),
+    art:
+      '<path d="M14 46 C14 32 29 24 47 25 C65 26 81 35 97 45 C111 53 127 59 141 62 C127 64 110 62 96 57 C82 63 64 66 46 64 C28 62 14 56 14 46Z" fill="#f0d3da" opacity=".9"/>' +
+      '<path d="M14 46 C14 32 29 24 47 25 C65 26 81 35 97 45 C111 53 127 59 141 62 C127 64 110 62 96 57 C82 63 64 66 46 64 C28 62 14 56 14 46Z" fill="none" stroke="#ffffff" stroke-width="1.6" opacity=".45"/>' +
+      '<path d="M40 30 C56 28 74 36 92 47 C74 42 56 36 40 34Z" fill="#ffffff" opacity=".28"/>' +
+      '<ellipse cx="40" cy="50" rx="14" ry="8" fill="#d9adb8" opacity=".65"/>' +
+      '<path d="M30 40 C34 36 40 35 45 37" stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none" opacity=".6"/>' +
+      '<circle cx="26" cy="44" r="3" fill="#7d5a63"/>' +
+      '<circle cx="25" cy="43" r="1.1" fill="#ffffff" opacity=".8"/>' +
+      '<path d="M14 50 C20 54 28 56 36 56" stroke="#cfa2ae" stroke-width="1.8" stroke-linecap="round" fill="none"/>' +
+      '<path d="M44 62 C48 70 56 74 62 73 C54 70 49 66 47 61Z" fill="#e7c3cc" opacity=".85"/>'
+  });
+
+  /* ---------------- 昆虫与近亲 ---------------- */
+
+  def("insects/honeybee", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "西方蜜蜂插图",
+    desc: "一只蜜蜂张着透明的翅膀，黄黑相间的腹部和毛茸茸的胸部都看得很清楚。",
+    bg: garden("#eaf6dc", "#cfe8b4", LEAF),
+    art:
+      '<defs><clipPath id="beeAbd{{U}}"><ellipse cx="99" cy="50" rx="28" ry="18"/></clipPath></defs>' +
+      '<g fill="#e4f0f8" opacity=".85" stroke="#b6d0e2" stroke-width="1.4">' +
+      '<ellipse cx="82" cy="24" rx="23" ry="10" transform="rotate(-20 82 24)"/>' +
+      '<ellipse cx="99" cy="28" rx="17" ry="8" transform="rotate(-8 99 28)"/>' +
+      "</g>" +
+      '<g clip-path="url(#beeAbd{{U}})">' +
+      '<ellipse cx="99" cy="50" rx="28" ry="18" fill="#f0b429"/>' +
+      '<rect x="86" y="30" width="9" height="40" fill="#33261a"/>' +
+      '<rect x="104" y="30" width="9" height="40" fill="#33261a"/>' +
+      '<rect x="120" y="30" width="8" height="40" fill="#33261a"/>' +
+      "</g>" +
+      '<path d="M127 50 L138 50" stroke="#33261a" stroke-width="3" stroke-linecap="round"/>' +
+      '<ellipse cx="64" cy="48" rx="18" ry="16" fill="#8a5a2b"/>' +
+      '<ellipse cx="64" cy="48" rx="18" ry="16" fill="none" stroke="#b58248" stroke-width="3" stroke-dasharray="2 3"/>' +
+      '<g stroke="#33261a" stroke-width="2.8" fill="none" stroke-linecap="round">' +
+      '<path d="M56 62 C54 71 50 77 44 81"/><path d="M68 63 C68 73 66 79 62 83"/><path d="M82 62 C85 72 85 78 83 83"/>' +
+      "</g>" +
+      '<circle cx="42" cy="46" r="12.5" fill="#33261a"/>' +
+      '<ellipse cx="37" cy="44" rx="4.2" ry="6.2" fill="#6f5e48"/>' +
+      '<g stroke="#33261a" stroke-width="2.4" fill="none" stroke-linecap="round">' +
+      '<path d="M35 36 C29 28 25 24 18 22"/><path d="M44 34 C42 25 40 21 36 15"/>' +
+      "</g>"
+  });
+
+  def("insects/monarch", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "帝王蝶插图",
+    desc: "帝王蝶展开橙色的翅膀，翅脉是黑色的，边缘排着一圈白色小点。",
+    bg: garden("#f2f7e2", "#d8ecba", LEAF),
+    art: (function () {
+      var wing =
+        '<path d="M78 42 C66 20 46 8 30 12 C17 15 14 32 24 43 C35 54 60 51 78 42Z" fill="#e8761f" stroke="#2b1a10" stroke-width="3" stroke-linejoin="round"/>' +
+        '<path d="M78 48 C64 58 46 70 33 68 C22 66 20 53 30 47 C43 40 63 41 78 48Z" fill="#dd6318" stroke="#2b1a10" stroke-width="3" stroke-linejoin="round"/>' +
+        '<g stroke="#2b1a10" stroke-width="2" fill="none" stroke-linecap="round">' +
+        '<path d="M76 42 L34 20"/><path d="M76 43 L26 30"/><path d="M76 45 L24 42"/>' +
+        '<path d="M76 50 L32 54"/><path d="M76 51 L36 64"/>' +
+        "</g>" +
+        '<g fill="#fdf7e8">' +
+        '<circle cx="27" cy="17" r="2.2"/><circle cx="19" cy="25" r="2.2"/><circle cx="17" cy="35" r="2.2"/>' +
+        '<circle cx="22" cy="44" r="2.2"/><circle cx="26" cy="52" r="2.2"/><circle cx="30" cy="62" r="2.2"/>' +
+        '<circle cx="40" cy="68" r="2.2"/>' +
+        "</g>";
+      return "<g>" + wing + "</g>" +
+        '<g transform="translate(160,0) scale(-1,1)">' + wing + "</g>" +
+        '<ellipse cx="80" cy="50" rx="5" ry="21" fill="#2b1a10"/>' +
+        '<g fill="#fdf7e8"><circle cx="80" cy="42" r="1.6"/><circle cx="80" cy="52" r="1.6"/><circle cx="80" cy="62" r="1.6"/></g>' +
+        '<circle cx="80" cy="27" r="6" fill="#2b1a10"/>' +
+        '<g stroke="#2b1a10" stroke-width="2.4" fill="none" stroke-linecap="round">' +
+        '<path d="M77 23 C72 15 68 11 63 9"/><path d="M83 23 C88 15 92 11 97 9"/>' +
+        "</g>" +
+        '<g fill="#2b1a10"><circle cx="62" cy="8" r="3"/><circle cx="98" cy="8" r="3"/></g>';
+    })()
+  });
+
+  def("insects/ant", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "蚂蚁插图",
+    desc: "一只蚂蚁的头、胸、腹三段分得很清楚，六条腿撑在地上，触角是折弯的。",
+    bg: garden("#f4f2e0", "#ddd9b6",
+      '<g fill="#c9c39a" opacity=".7"><ellipse cx="30" cy="80" rx="20" ry="5"/><ellipse cx="130" cy="84" rx="24" ry="6"/></g>'),
+    art:
+      '<g stroke="#5d2c15" stroke-width="2.8" fill="none" stroke-linecap="round">' +
+      '<path d="M58 44 C50 32 44 26 34 22"/><path d="M62 52 C56 64 50 72 40 78"/>' +
+      '<path d="M72 42 C70 30 68 24 62 18"/><path d="M74 54 C74 66 72 74 66 80"/>' +
+      '<path d="M84 44 C90 33 96 27 106 23"/><path d="M84 53 C90 65 96 73 106 79"/>' +
+      "</g>" +
+      '<ellipse cx="108" cy="47" rx="24" ry="17" fill="#6e3319"/>' +
+      '<ellipse cx="102" cy="42" rx="10" ry="6" fill="#8c4626" opacity=".7"/>' +
+      '<rect x="78" y="43" width="10" height="7" rx="3.5" fill="#8a4523"/>' +
+      '<ellipse cx="68" cy="46" rx="14" ry="11" fill="#8a4523"/>' +
+      '<ellipse cx="36" cy="43" rx="15" ry="13" fill="#7a3b1f"/>' +
+      '<circle cx="30" cy="39" r="3.4" fill="#241009"/>' +
+      '<g stroke="#7a3b1f" stroke-width="2.8" fill="none" stroke-linecap="round">' +
+      '<path d="M28 34 L18 26 L20 14"/><path d="M38 31 L34 20 L42 11"/>' +
+      "</g>" +
+      '<g stroke="#5d2c15" stroke-width="2.6" fill="none" stroke-linecap="round">' +
+      '<path d="M24 46 C18 48 14 47 11 44"/><path d="M25 50 C19 54 15 55 11 53"/>' +
+      "</g>"
+  });
+
+  def("insects/ladybug", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "瓢虫插图",
+    desc: "红色的瓢虫从上面看是一个圆顶，鞘翅中间有一道缝，两边各有几个黑点。",
+    bg: garden("#e8f6d8", "#c6e5a6", LEAF),
+    art:
+      '<g stroke="#241713" stroke-width="2.8" fill="none" stroke-linecap="round">' +
+      '<path d="M62 26 C56 16 48 12 40 12"/><path d="M60 46 C50 44 42 44 34 46"/><path d="M62 66 C56 76 48 80 40 80"/>' +
+      '<path d="M104 24 C110 14 118 10 126 10"/><path d="M110 46 C120 44 128 44 136 46"/><path d="M104 68 C110 78 118 82 126 82"/>' +
+      "</g>" +
+      '<circle cx="86" cy="46" r="31" fill="#d93a2b"/>' +
+      '<path d="M56 40 C56 30 64 24 72 24 L74 68 C64 68 56 60 56 50Z" fill="#241713"/>' +
+      '<g fill="#f6efe4"><circle cx="62" cy="38" r="3.4"/><circle cx="62" cy="54" r="3.4"/></g>' +
+      '<path d="M86 15 L86 77" stroke="#241713" stroke-width="3.4"/>' +
+      '<g fill="#241713">' +
+      '<circle cx="74" cy="32" r="5.6"/><circle cx="72" cy="52" r="5"/><circle cx="80" cy="66" r="4.4"/>' +
+      '<circle cx="98" cy="32" r="5.6"/><circle cx="100" cy="52" r="5"/><circle cx="92" cy="66" r="4.4"/>' +
+      "</g>" +
+      '<path d="M66 28 C74 22 84 19 94 20" stroke="#f28b7d" stroke-width="3" stroke-linecap="round" fill="none" opacity=".6"/>' +
+      '<g stroke="#241713" stroke-width="2.4" fill="none" stroke-linecap="round">' +
+      '<path d="M60 30 C54 22 50 18 44 16"/><path d="M60 62 C54 70 50 74 44 76"/>' +
+      "</g>"
+  });
+
+  def("insects/cricket", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "蟋蟀插图",
+    desc: "蟋蟀有很长的触角和一对粗壮的后腿，背上折着两片会互相摩擦发声的翅膀。",
+    bg: garden("#eef4dd", "#cfe3ad",
+      '<g stroke="#9dc078" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".8">' +
+      '<path d="M18 90 C16 74 20 62 26 54"/><path d="M140 90 C142 74 138 62 132 54"/>' +
+      "</g>"),
+    art:
+      '<g stroke="#5b4a22" stroke-width="2.6" fill="none" stroke-linecap="round">' +
+      '<path d="M56 58 C52 70 46 78 38 82"/><path d="M74 60 C74 72 70 80 64 84"/>' +
+      "</g>" +
+      '<path d="M92 44 C108 38 122 48 120 62 C116 72 102 73 94 64Z" fill="#6b5a2f"/>' +
+      '<path d="M118 60 C128 66 138 72 146 80" stroke="#6b5a2f" stroke-width="5" stroke-linecap="round" fill="none"/>' +
+      '<g stroke="#6b5a2f" stroke-width="2.6" fill="none" stroke-linecap="round">' +
+      '<path d="M146 80 L156 78"/><path d="M146 80 L152 88"/>' +
+      "</g>" +
+      '<ellipse cx="80" cy="48" rx="34" ry="15" fill="#7d6b3a"/>' +
+      '<path d="M56 39 C78 32 102 37 112 48 C100 57 74 59 56 52Z" fill="#907c46"/>' +
+      '<g stroke="#6b5a2f" stroke-width="1.6" fill="none" stroke-linecap="round">' +
+      '<path d="M62 41 C78 38 96 41 106 47"/><path d="M62 46 C78 44 96 46 108 50"/><path d="M64 51 C80 50 96 51 106 53"/>' +
+      "</g>" +
+      '<path d="M108 44 C118 42 126 44 130 48 C124 50 116 50 110 49Z" fill="#6b5a2f"/>' +
+      '<ellipse cx="42" cy="44" rx="13" ry="12" fill="#6b5a2f"/>' +
+      '<circle cx="36" cy="40" r="3.2" fill="#231b09"/>' +
+      '<g stroke="#4f411d" stroke-width="2" fill="none" stroke-linecap="round">' +
+      '<path d="M34 36 C24 26 16 18 4 12"/><path d="M36 46 C24 44 14 40 2 32"/>' +
+      "</g>"
+  });
+
+  def("insects/firefly", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "萤火虫插图",
+    desc: "夜色里一只萤火虫的腹部发出黄绿色的冷光，把周围照亮了一小圈。",
+    bg: '<rect width="160" height="90" fill="#1c2a3f"/>' +
+      '<path d="M0 62 C28 54 52 70 82 63 C112 56 138 70 160 62 L160 90 L0 90Z" fill="#14202f"/>' +
+      '<g fill="#f6f0b8" opacity=".55"><circle cx="26" cy="18" r="1.6"/><circle cx="48" cy="10" r="1.2"/><circle cx="140" cy="16" r="1.4"/><circle cx="120" cy="8" r="1"/></g>',
+    art:
+      '<circle cx="126" cy="50" r="32" fill="#f7e58a" opacity=".15"/>' +
+      '<circle cx="126" cy="50" r="21" fill="#f7e58a" opacity=".25"/>' +
+      '<g fill="#dfe9f2" opacity=".4" stroke="#b9cfe2" stroke-width="1.2">' +
+      '<ellipse cx="86" cy="28" rx="26" ry="9" transform="rotate(-14 86 28)"/>' +
+      "</g>" +
+      '<ellipse cx="124" cy="50" rx="16" ry="11" fill="#f6e37c"/>' +
+      '<ellipse cx="128" cy="50" rx="9" ry="7" fill="#fdf8cf"/>' +
+      '<g stroke="#3a2418" stroke-width="2.6" fill="none" stroke-linecap="round">' +
+      '<path d="M62 58 C58 68 52 75 44 79"/><path d="M80 61 C80 71 77 78 71 82"/>' +
+      '<path d="M98 60 C100 70 99 77 95 82"/>' +
+      "</g>" +
+      '<path d="M62 34 C90 28 114 34 122 46 C114 58 90 62 62 56Z" fill="#4a3b2a"/>' +
+      '<path d="M62 45 L121 45" stroke="#2f251a" stroke-width="2.2"/>' +
+      '<g stroke="#5f4c36" stroke-width="1.6" fill="none" stroke-linecap="round">' +
+      '<path d="M70 38 C88 34 104 37 114 43"/><path d="M70 52 C88 55 104 52 114 47"/>' +
+      "</g>" +
+      '<path d="M46 32 C60 29 70 33 70 45 C70 57 60 61 46 58 C37 54 37 36 46 32Z" fill="#d4602f"/>' +
+      '<ellipse cx="55" cy="45" rx="4.5" ry="7" fill="#3a2418"/>' +
+      '<ellipse cx="36" cy="45" rx="9" ry="8" fill="#3a2418"/>' +
+      '<circle cx="31" cy="42" r="2.2" fill="#7c6a52"/>' +
+      '<g stroke="#3a2418" stroke-width="2.2" fill="none" stroke-linecap="round">' +
+      '<path d="M30 39 C22 32 16 28 8 26"/><path d="M31 51 C24 56 19 61 15 68"/>' +
+      "</g>"
+  });
+
+  def("insects/mantis", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "螳螂插图",
+    desc: "绿色的螳螂立起一对带刺的前足，三角形的头转过来正看着你。",
+    bg: garden("#e9f6db", "#c8e5a5", LEAF),
+    art:
+      '<path d="M96 50 C112 55 124 64 130 76" stroke="#6fae4a" stroke-width="17" stroke-linecap="round" fill="none"/>' +
+      '<path d="M52 44 C68 42 84 46 96 52" stroke="#5f9c3e" stroke-width="13" stroke-linecap="round" fill="none"/>' +
+      '<path d="M90 42 C110 42 126 54 132 68 C116 64 100 56 90 50Z" fill="#83c25b" opacity=".92"/>' +
+      '<path d="M92 44 C110 46 124 56 130 66" stroke="#6aa845" stroke-width="1.8" fill="none"/>' +
+      '<g stroke="#5f9c3e" stroke-width="3" fill="none" stroke-linecap="round">' +
+      '<path d="M74 52 C72 64 68 72 60 78"/><path d="M88 54 C90 66 88 74 82 80"/>' +
+      "</g>" +
+      '<g fill="none" stroke="#5f9c3e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M56 48 L42 62"/><path d="M56 44 L44 58"/>' +
+      "</g>" +
+      '<g fill="none" stroke="#5f9c3e" stroke-width="6" stroke-linecap="round">' +
+      '<path d="M42 62 L64 70"/><path d="M44 58 L64 66"/>' +
+      "</g>" +
+      '<g stroke="#3f7a26" stroke-width="1.8" stroke-linecap="round">' +
+      '<path d="M48 64 L46 70"/><path d="M54 66 L52 72"/><path d="M60 68 L58 74"/>' +
+      "</g>" +
+      '<path d="M28 30 C40 26 52 30 52 40 C52 50 40 54 28 50 C21 46 21 34 28 30Z" fill="#6fae4a"/>' +
+      '<circle cx="30" cy="35" r="6.5" fill="#9ed67a"/>' +
+      '<circle cx="30" cy="35" r="2.2" fill="#20340f"/>' +
+      '<circle cx="34" cy="47" r="5" fill="#9ed67a"/>' +
+      '<circle cx="34" cy="47" r="1.8" fill="#20340f"/>' +
+      '<g stroke="#5f9c3e" stroke-width="2.2" fill="none" stroke-linecap="round">' +
+      '<path d="M28 28 C22 18 18 12 10 8"/><path d="M38 26 C36 16 34 10 30 4"/>' +
+      "</g>"
+  });
+
+  def("insects/spider", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "蜘蛛插图",
+    desc: "蜘蛛有八条腿和前后两段身体，背景是一张放射状的蛛网。",
+    bg: garden("#e7efd9", "#cbdcb0",
+      '<g stroke="#ffffff" stroke-width="1.3" fill="none" opacity=".75">' +
+      '<path d="M80 46 L10 -6"/><path d="M80 46 L80 -10"/><path d="M80 46 L150 -6"/>' +
+      '<path d="M80 46 L4 32"/><path d="M80 46 L156 32"/>' +
+      '<path d="M22 6 C50 18 110 18 138 6"/><path d="M14 20 C46 34 114 34 146 20"/>' +
+      '<path d="M8 34 C44 50 116 50 152 34"/>' +
+      "</g>"),
+    art:
+      '<g stroke="#3f3126" stroke-width="3.4" fill="none" stroke-linecap="round">' +
+      '<path d="M62 42 C48 30 34 22 18 18"/><path d="M62 46 C46 40 30 36 12 34"/>' +
+      '<path d="M62 52 C46 54 30 58 14 64"/><path d="M64 56 C50 64 38 72 26 82"/>' +
+      '<path d="M76 40 C82 28 92 18 106 12"/><path d="M80 44 C92 36 108 30 126 28"/>' +
+      '<path d="M80 54 C94 56 110 60 126 66"/><path d="M78 58 C88 68 100 76 114 82"/>' +
+      "</g>" +
+      '<ellipse cx="96" cy="49" rx="25" ry="21" fill="#4b3a2e"/>' +
+      '<g fill="#c9b28c" opacity=".85">' +
+      '<path d="M96 32 L102 42 L96 50 L90 42Z"/>' +
+      '<path d="M96 54 L101 61 L96 67 L91 61Z"/>' +
+      '<circle cx="80" cy="46" r="3"/><circle cx="112" cy="46" r="3"/>' +
+      "</g>" +
+      '<ellipse cx="66" cy="47" rx="15" ry="13" fill="#5c4838"/>' +
+      '<g fill="#241a12">' +
+      '<circle cx="57" cy="42" r="2.6"/><circle cx="63" cy="40" r="2"/>' +
+      '<circle cx="56" cy="49" r="2.2"/><circle cx="62" cy="51" r="1.8"/>' +
+      "</g>" +
+      '<g stroke="#3f3126" stroke-width="2.4" fill="none" stroke-linecap="round">' +
+      '<path d="M53 46 C48 48 44 50 41 54"/>' +
+      "</g>"
+  });
+
+  def("insects/stag-beetle", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "欧洲深山锹甲插图",
+    desc: "锹甲有一对像鹿角一样的大上颚，背上是一层发亮的深褐色鞘翅。",
+    bg: garden("#f0eddb", "#d7cfa8",
+      '<g fill="#bfb489" opacity=".7"><rect x="0" y="72" width="160" height="6" rx="3"/><rect x="20" y="82" width="120" height="5" rx="2.5"/></g>'),
+    art:
+      '<g fill="none" stroke="#6b3f21" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M40 38 C26 26 16 26 8 34"/><path d="M40 58 C26 70 16 70 8 62"/>' +
+      "</g>" +
+      '<g fill="none" stroke="#6b3f21" stroke-width="3.4" stroke-linecap="round">' +
+      '<path d="M26 30 L24 20"/><path d="M18 30 L12 22"/>' +
+      '<path d="M26 66 L24 76"/><path d="M18 66 L12 74"/>' +
+      "</g>" +
+      '<g stroke="#4a2b16" stroke-width="3" fill="none" stroke-linecap="round">' +
+      '<path d="M58 62 C54 72 48 78 40 82"/><path d="M74 64 C72 74 68 80 62 84"/><path d="M92 64 C94 74 94 80 90 84"/>' +
+      '<path d="M58 34 C54 24 48 18 40 14"/><path d="M74 32 C72 22 68 16 62 12"/>' +
+      "</g>" +
+      '<rect x="36" y="38" width="20" height="20" rx="6" fill="#6b3f21"/>' +
+      '<rect x="52" y="31" width="24" height="34" rx="9" fill="#7a4826"/>' +
+      '<path d="M74 30 C104 30 126 39 132 48 C126 57 104 66 74 66Z" fill="#5d3418"/>' +
+      '<path d="M74 47 L131 47" stroke="#3d2110" stroke-width="2.6"/>' +
+      '<path d="M84 36 C102 34 116 38 124 43" stroke="#8b5b34" stroke-width="3" stroke-linecap="round" fill="none" opacity=".8"/>' +
+      '<path d="M84 60 C102 62 116 58 124 53" stroke="#8b5b34" stroke-width="2.4" stroke-linecap="round" fill="none" opacity=".55"/>' +
+      '<g fill="#2c1809"><circle cx="41" cy="42" r="2.4"/><circle cx="41" cy="54" r="2.4"/></g>'
+  });
+
+  def("insects/bumblebee", {
+    viewBox: "0 0 160 90", fit: "xMidYMid slice",
+    title: "熊蜂插图",
+    desc: "圆滚滚的熊蜂身上有黑黄相间的绒毛，抱着一朵花高频振动抖花粉。",
+    bg: garden("#f3f7de", "#d6ebb4",
+      '<g><path d="M18 90 C16 76 20 66 26 60" stroke="#8fb96b" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '<g fill="#f0a8c4"><circle cx="20" cy="52" r="7"/><circle cx="32" cy="54" r="7"/><circle cx="26" cy="44" r="7"/><circle cx="26" cy="62" r="7"/></g>' +
+      '<circle cx="26" cy="53" r="4.6" fill="#f6d564"/></g>'),
+    art:
+      '<defs><clipPath id="bumbleAbd{{U}}"><ellipse cx="100" cy="50" rx="30" ry="24"/></clipPath></defs>' +
+      '<g fill="#e6f0f8" opacity=".8" stroke="#bcd4e6" stroke-width="1.4">' +
+      '<ellipse cx="86" cy="22" rx="22" ry="9" transform="rotate(-22 86 22)"/>' +
+      '<ellipse cx="102" cy="26" rx="16" ry="7" transform="rotate(-10 102 26)"/>' +
+      "</g>" +
+      '<g clip-path="url(#bumbleAbd{{U}})">' +
+      '<ellipse cx="100" cy="50" rx="30" ry="24" fill="#f5c53c"/>' +
+      '<rect x="88" y="22" width="14" height="56" fill="#2e2419"/>' +
+      '<rect x="112" y="22" width="14" height="56" fill="#2e2419"/>' +
+      "</g>" +
+      '<ellipse cx="100" cy="50" rx="30" ry="24" fill="none" stroke="#fff3c4" stroke-width="3" stroke-dasharray="1 4" stroke-linecap="round" opacity=".8"/>' +
+      '<ellipse cx="66" cy="48" rx="21" ry="20" fill="#2e2419"/>' +
+      '<ellipse cx="66" cy="48" rx="21" ry="20" fill="none" stroke="#6b5a44" stroke-width="3.4" stroke-dasharray="1 4" stroke-linecap="round"/>' +
+      '<ellipse cx="62" cy="40" rx="14" ry="7" fill="#f5c53c" opacity=".9"/>' +
+      '<circle cx="44" cy="48" r="13" fill="#2e2419"/>' +
+      '<ellipse cx="39" cy="46" rx="4" ry="6" fill="#6b5a44"/>' +
+      '<g stroke="#2e2419" stroke-width="2.6" fill="none" stroke-linecap="round">' +
+      '<path d="M37 39 C31 32 27 28 20 26"/><path d="M46 36 C44 28 43 24 40 18"/>' +
+      "</g>" +
+      '<g stroke="#2e2419" stroke-width="3" fill="none" stroke-linecap="round">' +
+      '<path d="M56 65 C52 74 46 80 38 83"/><path d="M72 68 C72 78 70 84 66 88"/><path d="M88 70 C90 78 90 84 88 88"/>' +
+      "</g>"
+  });
+
+  /* ---------------- 行星 ---------------- */
+
+  /* 统一的行星画法：圆面 + 被裁进圆里的表面特征 + 右侧晨昏线阴影。 */
+  function planet(base, features, options) {
+    var opt = options || {};
+    var r = opt.r || 44;
+    return '<defs><clipPath id="pl{{U}}"><circle cx="60" cy="60" r="' + r + '"/></clipPath></defs>' +
+      (opt.behind || "") +
+      '<circle cx="60" cy="60" r="' + r + '" fill="' + base + '"/>' +
+      '<g clip-path="url(#pl{{U}})">' + features + "</g>" +
+      (opt.front || "") +
+      '<path d="M60 ' + (60 - r) + " A" + r + " " + r + " 0 0 1 60 " + (60 + r) +
+      " A" + (r * 0.5) + " " + r + ' 0 0 0 60 ' + (60 - r) + 'Z" fill="#0a1122" opacity=".17"/>';
+  }
+
+  function defPlanet(name, spec) {
+    def("planets/" + name, {
+      viewBox: "0 0 120 120", fit: "xMidYMid meet",
+      title: spec.title, desc: spec.desc, bg: "", art: spec.art
+    });
+  }
+
+  defPlanet("mercury", {
+    title: "水星示意图",
+    desc: "灰褐色的水星表面布满大大小小的陨石坑。",
+    art: planet("#9a9186",
+      '<g fill="#837b71">' +
+      '<circle cx="40" cy="42" r="11"/><circle cx="72" cy="36" r="7"/><circle cx="84" cy="66" r="9"/>' +
+      '<circle cx="46" cy="80" r="8"/><circle cx="62" cy="58" r="5"/><circle cx="26" cy="64" r="6"/>' +
+      "</g>" +
+      '<g fill="#b0a89d">' +
+      '<circle cx="40" cy="40" r="8"/><circle cx="84" cy="64" r="6"/><circle cx="46" cy="78" r="5"/>' +
+      "</g>")
+  });
+
+  defPlanet("venus", {
+    title: "金星示意图",
+    desc: "金星被浓厚的黄白色云层整个裹住，看不到地面。",
+    art: planet("#e0bb74",
+      '<g fill="#f3ddb0" opacity=".85">' +
+      '<path d="M6 34 C34 26 62 40 88 32 C104 27 114 30 120 34 L120 44 C104 50 80 42 58 48 C36 54 16 48 6 44Z"/>' +
+      '<path d="M0 66 C24 58 48 72 74 66 C96 61 110 66 120 70 L120 78 C104 84 82 76 60 82 C38 88 14 82 0 76Z"/>' +
+      "</g>" +
+      '<g fill="#cda257" opacity=".55">' +
+      '<path d="M0 54 C28 48 54 60 82 54 C102 50 114 54 120 58 L120 62 C106 58 96 56 78 60 C52 66 24 58 0 62Z"/>' +
+      "</g>")
+  });
+
+  defPlanet("earth", {
+    title: "地球示意图",
+    desc: "蓝色的海洋、绿色的大陆和白色的云带，两极是白色的冰盖。",
+    art: planet("#3d7fc0",
+      '<g fill="#4f9a55">' +
+      '<path d="M20 44 C30 32 46 30 55 37 C64 44 59 56 48 60 C36 64 23 57 20 44Z"/>' +
+      '<path d="M60 72 C68 63 84 63 90 72 C97 82 90 96 77 96 C64 96 55 83 60 72Z"/>' +
+      '<path d="M76 24 C91 20 106 29 106 41 C106 52 93 56 85 50 C76 43 70 30 76 24Z"/>' +
+      '<path d="M96 66 C106 62 116 66 118 74 C112 78 102 76 96 72Z"/>' +
+      "</g>" +
+      '<g fill="#eaf4f8" opacity=".9">' +
+      '<ellipse cx="60" cy="16" rx="34" ry="9"/><ellipse cx="60" cy="104" rx="28" ry="8"/>' +
+      "</g>" +
+      '<g stroke="#e6f2f9" stroke-width="5" fill="none" stroke-linecap="round" opacity=".55">' +
+      '<path d="M12 62 C28 56 42 66 56 62"/><path d="M70 84 C84 80 96 86 110 82"/>' +
+      "</g>")
+  });
+
+  defPlanet("mars", {
+    title: "火星示意图",
+    desc: "锈红色的火星，表面有深色的沙区和一道长长的峡谷，极地有白色冰帽。",
+    art: planet("#c0603a",
+      '<g fill="#9d4930" opacity=".9">' +
+      '<path d="M18 50 C30 42 46 44 54 52 C48 62 30 64 18 58Z"/>' +
+      '<path d="M74 40 C88 34 102 40 104 50 C94 56 80 52 74 46Z"/>' +
+      '<path d="M50 78 C64 72 82 76 90 84 C78 92 58 90 50 84Z"/>' +
+      "</g>" +
+      '<path d="M14 66 C40 62 70 66 100 62" stroke="#8a3d27" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+      '<g fill="#f2ece2"><ellipse cx="60" cy="18" rx="19" ry="7"/><ellipse cx="60" cy="103" rx="14" ry="6"/></g>' +
+      '<circle cx="36" cy="36" r="6" fill="#a9522f"/>')
+  });
+
+  defPlanet("jupiter", {
+    title: "木星示意图",
+    desc: "木星有一条条深浅相间的云带，右下方是那颗著名的大红斑。",
+    art: planet("#d9a76f",
+      '<g>' +
+      '<rect x="0" y="20" width="120" height="11" fill="#c58f57"/>' +
+      '<rect x="0" y="38" width="120" height="8" fill="#f0d9b3"/>' +
+      '<rect x="0" y="50" width="120" height="10" fill="#c08a52"/>' +
+      '<rect x="0" y="64" width="120" height="9" fill="#ecd2a8"/>' +
+      '<rect x="0" y="78" width="120" height="11" fill="#bb8450"/>' +
+      '<rect x="0" y="94" width="120" height="9" fill="#e4c79c"/>' +
+      '<ellipse cx="78" cy="70" rx="15" ry="8" fill="#b5563a"/>' +
+      '<ellipse cx="78" cy="70" rx="8" ry="4" fill="#c9694a"/>' +
+      '<path d="M0 32 C24 28 40 36 62 33 C84 30 104 36 120 33 L120 38 L0 38Z" fill="#d3a271" opacity=".8"/>' +
+      "</g>")
+  });
+
+  defPlanet("saturn", {
+    title: "土星示意图",
+    desc: "土星被一圈明亮的光环围着，环从行星后面绕到前面来。",
+    art: planet("#e0cd9a",
+      '<g>' +
+      '<rect x="0" y="26" width="120" height="8" fill="#cdb782"/>' +
+      '<rect x="0" y="44" width="120" height="7" fill="#f0e2bd"/>' +
+      '<rect x="0" y="58" width="120" height="9" fill="#cfb984"/>' +
+      '<rect x="0" y="74" width="120" height="7" fill="#eddfb8"/>' +
+      "</g>",
+      {
+        r: 32,
+        behind:
+          '<g fill="none" stroke="#d8c391" stroke-linecap="butt" transform="rotate(-16 60 60)">' +
+          '<path d="M4 60 A56 15 0 0 1 116 60" stroke-width="7"/>' +
+          '<path d="M16 60 A44 11 0 0 1 104 60" stroke-width="4" stroke-opacity=".75"/>' +
+          "</g>",
+        front:
+          '<g fill="none" stroke="#e3d0a4" stroke-linecap="butt" transform="rotate(-16 60 60)">' +
+          '<path d="M4 60 A56 15 0 0 0 116 60" stroke-width="7"/>' +
+          '<path d="M16 60 A44 11 0 0 0 104 60" stroke-width="4" stroke-opacity=".75"/>' +
+          "</g>"
+      })
+  });
+
+  defPlanet("uranus", {
+    title: "天王星示意图",
+    desc: "淡青色的天王星几乎没有花纹，细细的光环几乎是竖着的。",
+    art: planet("#93d3dd",
+      '<g opacity=".55">' +
+      '<rect x="0" y="34" width="120" height="7" fill="#a9dee6"/>' +
+      '<rect x="0" y="56" width="120" height="8" fill="#83c7d3"/>' +
+      '<rect x="0" y="78" width="120" height="7" fill="#a9dee6"/>' +
+      "</g>",
+      {
+        r: 38,
+        behind:
+          '<path d="M60 10 A13 50 0 0 1 60 110" fill="none" stroke="#c6ecf1" stroke-width="3.4" opacity=".8"/>',
+        front:
+          '<path d="M60 10 A13 50 0 0 0 60 110" fill="none" stroke="#d8f2f6" stroke-width="3.4" opacity=".9"/>'
+      })
+  });
+
+  defPlanet("neptune", {
+    title: "海王星示意图",
+    desc: "深蓝色的海王星上有几道白色的高速云带和一个较暗的风暴斑。",
+    art: planet("#3f63c8",
+      '<g>' +
+      '<rect x="0" y="28" width="120" height="8" fill="#3555ab"/>' +
+      '<rect x="0" y="62" width="120" height="10" fill="#33529f"/>' +
+      '<rect x="0" y="88" width="120" height="7" fill="#3a5cb4"/>' +
+      '<ellipse cx="46" cy="50" rx="14" ry="8" fill="#26407f"/>' +
+      '<g stroke="#e9f1ff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".75">' +
+      '<path d="M14 42 C30 38 44 44 58 40"/><path d="M62 78 C76 74 90 80 106 76"/>' +
+      "</g>" +
+      "</g>")
+  });
+
+  /* ---------------- 天气 ---------------- */
+
+  def("weather/sun", {
+    viewBox: "0 0 100 100", fit: "xMidYMid meet",
+    title: "太阳",
+    desc: "一轮带着放射光芒的太阳。",
+    bg: "",
+    art:
+      '<g stroke="#f2b23c" stroke-width="7" stroke-linecap="round">' +
+      '<path d="M50 6 L50 18"/><path d="M50 82 L50 94"/><path d="M6 50 L18 50"/><path d="M82 50 L94 50"/>' +
+      '<path d="M19 19 L28 28"/><path d="M72 72 L81 81"/><path d="M81 19 L72 28"/><path d="M28 72 L19 81"/>' +
+      "</g>" +
+      '<circle cx="50" cy="50" r="25" fill="#f8c455"/>' +
+      '<circle cx="50" cy="50" r="25" fill="none" stroke="#eda92c" stroke-width="3"/>' +
+      '<circle cx="42" cy="42" r="7" fill="#fde59a" opacity=".8"/>'
+  });
+
+  def("weather/cloud", {
+    viewBox: "0 0 100 100", fit: "xMidYMid meet",
+    title: "云",
+    desc: "一朵蓬松的白云。",
+    bg: "",
+    art:
+      '<g fill="#f4f8fc" stroke="#c3d6e6" stroke-width="3" stroke-linejoin="round">' +
+      '<path d="M24 70 C13 70 6 62 8 53 C10 45 18 40 26 42 C28 28 41 20 54 24 C64 27 70 35 71 44 C82 42 90 49 90 58 C90 66 83 70 74 70Z"/>' +
+      "</g>" +
+      '<path d="M26 58 C32 52 42 50 50 53" stroke="#dceaf5" stroke-width="4" stroke-linecap="round" fill="none"/>'
+  });
+
+  def("weather/rain", {
+    viewBox: "0 0 100 100", fit: "xMidYMid meet",
+    title: "下雨的云",
+    desc: "一朵灰色的云下面落着几滴雨。",
+    bg: "",
+    art:
+      '<g fill="#e3ebf3" stroke="#a8bfd2" stroke-width="3" stroke-linejoin="round">' +
+      '<path d="M24 58 C13 58 6 50 8 41 C10 33 18 28 26 30 C28 16 41 8 54 12 C64 15 70 23 71 32 C82 30 90 37 90 46 C90 54 83 58 74 58Z"/>' +
+      "</g>" +
+      '<g fill="#5aa9de">' +
+      '<path d="M30 68 C34 74 36 78 36 81 C36 85 33 88 30 88 C27 88 24 85 24 81 C24 78 26 74 30 68Z"/>' +
+      '<path d="M50 72 C54 78 56 82 56 85 C56 89 53 92 50 92 C47 92 44 89 44 85 C44 82 46 78 50 72Z"/>' +
+      '<path d="M70 68 C74 74 76 78 76 81 C76 85 73 88 70 88 C67 88 64 85 64 81 C64 78 66 74 70 68Z"/>' +
+      "</g>"
+  });
+
+  def("weather/lightning", {
+    viewBox: "0 0 100 100", fit: "xMidYMid meet",
+    title: "闪电",
+    desc: "一朵深色的雷雨云下面劈出一道黄色闪电。",
+    bg: "",
+    art:
+      '<g fill="#b9c7d6" stroke="#8ba0b5" stroke-width="3" stroke-linejoin="round">' +
+      '<path d="M24 56 C13 56 6 48 8 39 C10 31 18 26 26 28 C28 14 41 6 54 10 C64 13 70 21 71 30 C82 28 90 35 90 44 C90 52 83 56 74 56Z"/>' +
+      "</g>" +
+      '<path d="M54 58 L34 84 L48 84 L40 98 L68 70 L52 70 L62 58Z" fill="#f6c445" stroke="#dfa622" stroke-width="2.6" stroke-linejoin="round"/>'
+  });
+
+  def("weather/vapor", {
+    viewBox: "0 0 100 100", fit: "xMidYMid meet",
+    title: "水汽上升",
+    desc: "水面被晒热，水汽顺着弯曲的箭头往上飘。",
+    bg: "",
+    art:
+      '<path d="M4 76 C22 70 38 82 56 76 C74 70 88 80 96 76 L96 96 L4 96Z" fill="#5aa9de"/>' +
+      '<path d="M4 82 C22 76 38 88 56 82 C74 76 88 86 96 82" stroke="#8fcbef" stroke-width="3" fill="none"/>' +
+      '<g stroke="#9fd0ee" stroke-width="6" fill="none" stroke-linecap="round">' +
+      '<path d="M28 66 C20 54 34 46 26 32"/><path d="M52 62 C44 50 58 42 50 26"/><path d="M76 66 C68 54 82 46 74 34"/>' +
+      "</g>" +
+      '<g fill="#9fd0ee">' +
+      '<path d="M26 22 L20 34 L32 34Z"/><path d="M50 16 L44 28 L56 28Z"/><path d="M74 24 L68 36 L80 36Z"/>' +
+      "</g>"
+  });
+
+  /* ---------------- 对外 API ---------------- */
+
+  function cssName(name) { return String(name).replace(/[^a-z0-9]+/gi, "-"); }
+
+  function has(name) { return Object.prototype.hasOwnProperty.call(CATALOG, name); }
+
+  /* 卡片图位的宽高比由布局决定，slice 会裁掉溢出的一边。背景是纯色块，裁掉看不出来；
+     主体一旦贴边，腿、触角、尾鳍就会被切断。这里把主体整体缩到中间的安全区，
+     让任何常见宽高比下都不会切到关键部位。 */
+  function safeArea(art, viewBox, scale) {
+    var box = String(viewBox).split(/\s+/);
+    var cx = (Number(box[0]) + Number(box[2])) / 2;
+    var cy = (Number(box[1]) + Number(box[3])) / 2;
+    return '<g transform="translate(' + cx + " " + cy + ") scale(" + scale +
+      ") translate(" + (-cx) + " " + (-cy) + ')">' + art + "</g>";
+  }
+
+  function markup(name, options) {
+    if (!has(name)) return "";
+    var spec = CATALOG[name];
+    var opts = options || {};
+    var uid = "ix" + (++seq);
+    var fit = spec.fit || "xMidYMid meet";
+    var art = spec.art || "";
+    if (/slice/.test(fit)) art = safeArea(art, spec.viewBox, spec.safe || 0.78);
+    var body = String((spec.bg || "") + art).replace(/\{\{U\}\}/g, uid);
+    var decorative = opts.decorative === true;
+    var cls = "illus illus-" + cssName(name) + (opts.className ? " " + opts.className : "");
+    var open = '<svg xmlns="http://www.w3.org/2000/svg" class="' + esc(cls) +
+      '" viewBox="' + esc(spec.viewBox) +
+      '" preserveAspectRatio="' + esc(fit) + '" focusable="false"';
+    var head;
+    if (decorative) {
+      head = open + ' aria-hidden="true">';
+      return head + body + "</svg>";
+    }
+    var label = opts.label != null ? opts.label : spec.title;
+    var desc = opts.desc != null ? opts.desc : spec.desc;
+    head = open + ' role="img">';
+    return head +
+      "<title>" + esc(label) + "</title>" +
+      (desc ? "<desc>" + esc(desc) + "</desc>" : "") +
+      body + "</svg>";
+  }
+
+  /* 把插图写进容器；容器原有内容（例如 emoji 占位）会被替换掉。 */
+  function render(target, name, options) {
+    var el = typeof target === "string" ? document.querySelector(target) : target;
+    if (!el || !has(name)) return false;
+    var html = markup(name, options);
+    if (!html) return false;
+    el.textContent = "";
+    el.insertAdjacentHTML("beforeend", html);
+    return true;
+  }
+
+  function names() {
+    var out = [];
+    for (var key in CATALOG) {
+      if (Object.prototype.hasOwnProperty.call(CATALOG, key)) out.push(key);
+    }
+    return out.sort();
+  }
+
   return {
     version: 1,
     dinoScaleCompare: dinoScaleCompare,
@@ -646,6 +1543,10 @@ window.ILLUSTRATIONS = (function () {
     roundRect: roundRect,
     tileIcon: tileIcon,
     dietColor: dietColor,
-    shadeHex: shadeHex
+    shadeHex: shadeHex,
+    hasArt: has,
+    art: markup,
+    renderArt: render,
+    artNames: names
   };
 })();
