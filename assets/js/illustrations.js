@@ -727,9 +727,13 @@ window.ILLUSTRATIONS = (function () {
   /** Canvas：规律图形方块（带 3D 高光） */
   function drawPatternCell(ctx, gx, gy, cell, gap, fill, isTarget) {
     var w = cell - gap * 2;
+    /* 顶部高光原来写死成浅蓝／浅黄两种，传进来的 fill 只影响底色。
+       于是把新长出来的方块标成第三种颜色时，上半截还是蓝的。
+       改成从 fill 派生，任何颜色都能得到同一套立体感。 */
+    var base = fill || (isTarget ? "#fbbf24" : "#6ea8fe");
     var grad = ctx.createLinearGradient(gx, gy, gx, gy + w);
-    grad.addColorStop(0, isTarget ? "#fde68a" : "#93c5fd");
-    grad.addColorStop(1, fill || (isTarget ? "#fbbf24" : "#6ea8fe"));
+    grad.addColorStop(0, shadeHex(base, 0.36));
+    grad.addColorStop(1, base);
     ctx.fillStyle = grad;
     ctx.fillRect(gx + gap, gy + gap, w, w);
     ctx.fillStyle = "rgba(255,255,255,0.28)";

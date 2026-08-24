@@ -139,6 +139,15 @@
              margin-top: 7px; font-weight: 700; }
   .fig.target .fig-cap { color: var(--warn); }
   .fig canvas { display: block; border-radius: 8px; }
+  .fig-cap .plus { color: var(--phys); }
+  .fig-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0;
+                list-style: none; font-size: .76rem; font-weight: 700; color: var(--ink-dim); }
+  .fig-legend li { display: flex; align-items: center; gap: 6px; }
+  .fig-legend i { width: 13px; height: 13px; flex: none; border-radius: 3px;
+                  border: 1px solid rgba(11,15,26,.35); }
+  .fig-legend .lg-old { background: var(--math); }
+  .fig-legend .lg-new { background: var(--phys); }
+  .fig-legend .lg-ask { background: var(--warn); }
 
   .grow-q { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
             font-size: .92rem; color: var(--ink-mid); font-weight: 600; }
@@ -437,6 +446,11 @@
 
         <div class="stack">
           <div class="figs" id="figs"></div>
+          <ul class="fig-legend" aria-label="图形配色说明">
+            <li><i class="lg-old"></i>上一个就有的</li>
+            <li><i class="lg-new"></i>这一步新长出来的</li>
+            <li><i class="lg-ask"></i>要猜的那一个</li>
+          </ul>
 
           <div class="grow-q">
             <span>第 <b id="askN" class="kv">5</b> 个图形有几块方块？</span>
@@ -981,6 +995,32 @@
   }
 
   // ---------- 点图 ----------
+  /* 点图和生长图形都画在透明画布上，颜色必须跟着页面主题走。
+     这段脚本比 playful.js 早执行，那时 <html> 上还没有 data-mode，kid.css 的变量都没生效，
+     写死深色主题的蓝／灰压在孩子模式的奶油底上会淡得看不清。 */
+  var PC = ILLUSTRATIONS.themePalette({
+    ink:  ['--ink', '#16202e'],
+    mid:  ['--ink-mid', '#41506a'],
+    dim:  ['--ink-dim', '#5f6d85'],
+    line: ['--line', '#c8d3e4'],
+    soft: ['--line-soft', '#dde4ef'],
+    surf: ['--surface', '#ffffff'],
+    math: ['--math', '#1b64c8'],
+    sci:  ['--sci', '#0b7a45'],
+    phys: ['--phys', '#6d31d4'],
+    warn: ['--warn', '#96650d']
+  }, function () { drawPlot(); if (W && W.pat) renderGrow(); });
+  var PLOT_FONT = (getComputedStyle(document.documentElement).getPropertyValue('--font') || '').trim() || 'sans-serif';
+
+  /* 刻度取 1 / 2 / 5 × 10^k 里第一个够用的。原来把值域四等分直接标出来，
+     于是纵轴会出现 −2、3、7、11、16 这种谁也读不出规律的刻度。 */
+  function niceStep(span, target) {
+    var raw = span / Math.max(1, target);
+    var mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10));
+    var norm = raw / mag;
+    return (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10) * mag;
+  }
+
   var plotCtx = el.cvPlot.getContext('2d');
   function sizeCanvas(cv, ctx, cssW, cssH) {
     var dpr = window.devicePixelRatio || 1;
@@ -1001,7 +1041,7 @@
 
     c.clearRect(0, 0, W2, H2);
 
-    var pad = { l: 34, r: 12, t: 12, b: 24 };
+    var pad = { l: 40, r: 20, t: 18, b: 26 };
     var iw = W2 - pad.l - pad.r, ih = H2 - pad.t - pad.b;
 
     // 数据范围
@@ -1016,57 +1056,63 @@
     }
     if (xmax - xmin < 3) xmax = xmin + 3;
     if (ymax - ymin < 4) ymax = ymin + 4;
-    var padY = (ymax - ymin) * 0.12;
-    ymin -= padY; ymax += padY;
+    /* 上下各留一格好刻度的余量，点就不会正好压在边框上，
+       同时把值域对齐到刻度线，纵轴才能标出 0、5、10 这种读得出来的数。 */
+    var stepY = niceStep(ymax - ymin, 4);
+    ymin = Math.floor(ymin / stepY - 0.35) * stepY;
+    ymax = Math.ceil(ymax / stepY + 0.35) * stepY;
+    var stepX = Math.max(1, niceStep(xmax - xmin, 6));
 
     function X(v) { return pad.l + (v - xmin) / (xmax - xmin) * iw; }
     function Y(v) { return pad.t + ih - (v - ymin) / (ymax - ymin) * ih; }
+    function gridStart(min, step) { return Math.ceil(min / step - 1e-9) * step; }
 
     // 网格
-    c.strokeStyle = 'rgba(42,51,85,.75)';
+    var gx, gy;
+    c.strokeStyle = PC.soft;
     c.lineWidth = 1;
     c.beginPath();
-    var stepX = Math.max(1, Math.ceil((xmax - xmin) / 6));
-    for (var gx = Math.ceil(xmin); gx <= xmax; gx += stepX) {
+    for (gx = gridStart(xmin, stepX); gx <= xmax + 1e-9; gx += stepX) {
       c.moveTo(Math.round(X(gx)) + .5, pad.t);
       c.lineTo(Math.round(X(gx)) + .5, pad.t + ih);
     }
-    for (var k = 0; k <= 4; k++) {
-      var gy = ymin + (ymax - ymin) * k / 4;
+    for (gy = gridStart(ymin, stepY); gy <= ymax + 1e-9; gy += stepY) {
       c.moveTo(pad.l, Math.round(Y(gy)) + .5);
       c.lineTo(pad.l + iw, Math.round(Y(gy)) + .5);
     }
     c.stroke();
 
     // 轴（y=0 / x=0 更亮）
-    c.strokeStyle = 'rgba(125,136,171,.9)';
+    c.strokeStyle = PC.line;
+    c.lineWidth = 1.5;
     c.beginPath();
     if (ymin <= 0 && ymax >= 0) { c.moveTo(pad.l, Math.round(Y(0)) + .5); c.lineTo(pad.l + iw, Math.round(Y(0)) + .5); }
     if (xmin <= 0 && xmax >= 0) { c.moveTo(Math.round(X(0)) + .5, pad.t); c.lineTo(Math.round(X(0)) + .5, pad.t + ih); }
     c.stroke();
 
-    // 轴标签
-    c.fillStyle = '#7d88ab';
-    c.font = '600 10px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif');
+    // 刻度数字
+    c.fillStyle = PC.dim;
+    c.font = '600 10px ' + PLOT_FONT;
     c.textAlign = 'center'; c.textBaseline = 'top';
-    for (var lx = Math.ceil(xmin); lx <= xmax; lx += stepX) {
-      c.fillText(String(lx), X(lx), pad.t + ih + 6);
+    for (gx = gridStart(xmin, stepX); gx <= xmax + 1e-9; gx += stepX) {
+      c.fillText(String(Math.round(gx)), X(gx), pad.t + ih + 6);
     }
     c.textAlign = 'right'; c.textBaseline = 'middle';
-    for (var m = 0; m <= 4; m++) {
-      var vy = ymin + (ymax - ymin) * m / 4;
-      c.fillText(String(Math.round(vy)), pad.l - 6, Y(vy));
+    for (gy = gridStart(ymin, stepY); gy <= ymax + 1e-9; gy += stepY) {
+      c.fillText(String(Math.round(gy)), pad.l - 6, Y(gy));
     }
-    c.textAlign = 'left'; c.textBaseline = 'top';
-    c.fillText('输入 →', pad.l + 2, pad.t + 1);
-    c.save();
-    c.translate(11, pad.t + ih / 2); c.rotate(-Math.PI / 2);
-    c.textAlign = 'center'; c.fillText('输出', 0, 0);
-    c.restore();
+    /* 轴名放在轴的外侧：原来「输入 →」压在左上角的第一个纵轴刻度上，
+       「输出」又转到 x=11 处，正好压住纵轴刻度数字。 */
+    c.fillStyle = PC.mid;
+    c.font = '700 10px ' + PLOT_FONT;
+    c.textAlign = 'right'; c.textBaseline = 'bottom';
+    c.fillText('输入 →', pad.l + iw, pad.t - 4);
+    c.textAlign = 'left';
+    c.fillText('↑ 输出', pad.l - 34, pad.t - 4);
 
     if (!G.log.length) {
-      c.fillStyle = '#7d88ab';
-      c.font = '600 12px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif');
+      c.fillStyle = PC.dim;
+      c.font = '600 12px ' + PLOT_FONT;
       c.textAlign = 'center'; c.textBaseline = 'middle';
       c.fillText('喂几个数，点就会出现在这里', pad.l + iw / 2, pad.t + ih / 2);
       return;
@@ -1074,8 +1120,9 @@
 
     // 答对后画出规则曲线
     if (G.answered) {
-      c.strokeStyle = 'rgba(74,222,128,.55)';
-      c.lineWidth = 2;
+      c.strokeStyle = PC.sci;
+      c.globalAlpha = .65;
+      c.lineWidth = 2.5;
       c.beginPath();
       var first = true;
       for (var t = 0; t <= 60; t++) {
@@ -1086,16 +1133,56 @@
         else c.lineTo(X(vx), Y(vv));
       }
       c.stroke();
+      c.globalAlpha = 1;
     }
 
-    // 点
     var sorted = G.log.slice().sort(function (p, q) { return p.x - q.x; });
+
+    /* 按输入从小到大连一条折线，并在每一段上写出「差」。
+       表格里那一列「差」讲的就是这个：差处处相同，折线就是一条直线，规则是一次的；
+       差自己还在变大，折线就往上弯。这是从数据看出规则形状的关键一步。 */
+    if (sorted.length > 1) {
+      c.strokeStyle = PC.math;
+      c.globalAlpha = .38;
+      c.lineWidth = 2;
+      c.beginPath();
+      sorted.forEach(function (p, i) {
+        if (i) c.lineTo(X(p.x), Y(p.y)); else c.moveTo(X(p.x), Y(p.y));
+      });
+      c.stroke();
+      c.globalAlpha = 1;
+
+      c.font = '700 10px ' + PLOT_FONT;
+      c.textAlign = 'center'; c.textBaseline = 'bottom';
+      for (var i = 1; i < sorted.length; i++) {
+        var a = sorted[i - 1], b = sorted[i];
+        var mx = (X(a.x) + X(b.x)) / 2, my = (Y(a.y) + Y(b.y)) / 2;
+        if (X(b.x) - X(a.x) < 30) continue;
+        var d = b.y - a.y;
+        var label = (d >= 0 ? '+' : '−') + Math.abs(d);
+        var tw = c.measureText(label).width;
+        c.fillStyle = PC.surf;
+        c.globalAlpha = .82;
+        c.fillRect(mx - tw / 2 - 3, my - 17, tw + 6, 13);
+        c.globalAlpha = 1;
+        c.fillStyle = PC.mid;
+        c.fillText(label, mx, my - 5);
+      }
+    }
+
+    // 点。最新喂进去的那一个描一圈，方便对着日记表找位置
+    var newest = G.log[G.log.length - 1];
     sorted.forEach(function (p) {
       var px = X(p.x), py = Y(p.y);
       if (py < pad.t - 2 || py > pad.t + ih + 2) return;
-      c.fillStyle = '#6ea8fe';
+      if (p === newest) {
+        c.strokeStyle = PC.warn;
+        c.lineWidth = 2;
+        c.beginPath(); c.arc(px, py, 8.5, 0, Math.PI * 2); c.stroke();
+      }
+      c.fillStyle = PC.math;
       c.beginPath(); c.arc(px, py, 4.5, 0, Math.PI * 2); c.fill();
-      c.strokeStyle = '#0b0f1a'; c.lineWidth = 1.5; c.stroke();
+      c.strokeStyle = PC.surf; c.lineWidth = 1.5; c.stroke();
     });
   }
 
@@ -1206,6 +1293,21 @@
     }
   };
 
+  /* 第 N 个图形比第 N−1 个多出来的那几块。表格里「差」这一列讲的就是它们；
+     在图上标成另一种颜色，孩子一眼能数出「这次多了几块」，不用两张图来回比。
+     方框那种每一步整圈外扩的图形，上一个的方块并不都留在原地，这时返回 null 不标。 */
+  function grownCells(patKey, n) {
+    if (n < 2) return null;
+    var P = PATTERNS[patKey];
+    var before = P.cells(n - 1), prev = {}, kept = 0, fresh = {};
+    before.forEach(function (p) { prev[p[0] + ',' + p[1]] = true; });
+    P.cells(n).forEach(function (p) {
+      var k = p[0] + ',' + p[1];
+      if (prev[k]) kept++; else fresh[k] = true;
+    });
+    return kept === before.length ? fresh : null;
+  }
+
   function drawFigure(cv, n, patKey, isTarget) {
     var P = PATTERNS[patKey];
     var cells = P.cells(n);
@@ -1229,14 +1331,17 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
 
-    var fill = isTarget ? '#fbbf24' : '#6ea8fe';
+    var fill = isTarget ? PC.warn : PC.math;
+    var fresh = grownCells(patKey, n);
     cells.forEach(function (p) {
       var gx = (p[0] - minX) * cell;
       var gy = (maxY - p[1]) * cell;
+      var isNew = fresh && fresh[p[0] + ',' + p[1]];
+      var paint = isNew ? PC.phys : fill;
       if (window.ILLUSTRATIONS && ILLUSTRATIONS.drawPatternCell) {
-        ILLUSTRATIONS.drawPatternCell(ctx, gx, gy, cell, gap, fill, isTarget);
+        ILLUSTRATIONS.drawPatternCell(ctx, gx, gy, cell, gap, paint, isTarget && !isNew);
       } else {
-        ctx.fillStyle = fill;
+        ctx.fillStyle = paint;
         ctx.globalAlpha = .92;
         ctx.fillRect(gx + gap, gy + gap, cell - gap * 2, cell - gap * 2);
         ctx.globalAlpha = 1;
@@ -1257,10 +1362,18 @@
       var box = ce('div', 'fig');
       var cv = document.createElement('canvas');
       var cnt = P.count(n);
+      var grew = n > 1 && grownCells(W.pat, n) ? cnt - P.count(n - 1) : 0;
       cv.setAttribute('role', 'img');
-      cv.setAttribute('aria-label', '第 ' + n + ' 个图形，' + cnt + ' 块方块');
+      cv.setAttribute('aria-label', '第 ' + n + ' 个图形，' + cnt + ' 块方块' +
+        (grew ? '，比上一个多 ' + grew + ' 块' : ''));
       box.appendChild(cv);
-      box.appendChild(ce('div', 'fig-cap', '第 ' + n + ' 个 · ' + cnt + ' 块'));
+      var cap = ce('div', 'fig-cap', '第 ' + n + ' 个 · ' + cnt + ' 块');
+      if (grew) {
+        // 每一步多几块，写在图注里，扫一行图就能读出这串差
+        var plus = ce('span', 'plus', ' +' + grew);
+        cap.appendChild(plus);
+      }
+      box.appendChild(cap);
       el.figs.appendChild(box);
       drawFigure(cv, n, W.pat, false);
     }
@@ -1272,7 +1385,11 @@
       cvT.setAttribute('role', 'img');
       cvT.setAttribute('aria-label', '第 ' + W.askN + ' 个图形，' + P.count(W.askN) + ' 块方块');
       t.appendChild(cvT);
-      t.appendChild(ce('div', 'fig-cap', '第 ' + W.askN + ' 个 · ' + P.count(W.askN) + ' 块'));
+      var tcap = ce('div', 'fig-cap', '第 ' + W.askN + ' 个 · ' + P.count(W.askN) + ' 块');
+      if (W.askN > 1 && grownCells(W.pat, W.askN)) {
+        tcap.appendChild(ce('span', 'plus', ' +' + (P.count(W.askN) - P.count(W.askN - 1))));
+      }
+      t.appendChild(tcap);
       el.figs.appendChild(t);
       drawFigure(cvT, W.askN, W.pat, true);
     } else {
