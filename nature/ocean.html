@@ -17,10 +17,12 @@
   .hero-invite { display: grid; grid-template-columns: minmax(0,1.08fr) minmax(270px,.92fr); gap: 20px; align-items: stretch; }
   .hero-copy, .ocean-story { min-width: 0; }
   .story-kicker, .section-kicker { margin: 12px 0 6px; color: var(--video); font-weight: 750; }
+  .story-kicker { display: flex; gap: 9px; align-items: center; }
   .big-question, .look-now { display: flex; gap: 11px; align-items: flex-start; padding: 13px 15px; border-radius: var(--r); }
   .big-question { margin-top: 14px; border: 1px solid rgba(110,168,254,.35); background: rgba(110,168,254,.09); }
   .look-now { margin-top: 10px; border: 1px solid rgba(34,211,238,.3); background: rgba(34,211,238,.07); }
-  .big-question > span, .look-now > span { font-size: 1.35rem; line-height: 1.25; }
+  .cue-icon { flex: 0 0 30px; width: 30px; height: 30px; }
+  .cue-icon svg { display: block; width: 100%; height: 100%; }
   .big-question b, .look-now b { color: var(--ink); }
   .big-question p, .look-now p { margin: 3px 0 0; color: var(--ink-mid); font-size: .9rem; }
   .ocean-story { position: relative; min-height: 286px; overflow: hidden; isolation: isolate; border: 1px solid var(--line); border-radius: var(--r-lg); background: linear-gradient(180deg,#7dd3fc 0 18%,#0284c7 18% 40%,#1e3a8a 40% 66%,#07142e 66%); }
@@ -52,6 +54,9 @@
   .species-cards, .qa-strip { display: grid; grid-template-columns: repeat(auto-fit,minmax(210px,1fr)); gap: 11px; }
   .species-cards article, .qa-card { padding: 14px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--bg-soft); }
   .species-cards h3, .qa-card h3 { margin: 0 0 6px; font-size: 1rem; color: var(--video); }
+  .species-cards h3 { display: flex; align-items: center; gap: 9px; }
+  .species-thumb { flex: 0 0 46px; width: 46px; height: 34px; overflow: hidden; border-radius: 9px; }
+  .species-thumb svg { display: block; width: 100%; height: 100%; }
   .species-cards p, .qa-card p { margin: 0; color: var(--ink-mid); font-size: .86rem; }
   .source-card { margin-top: 12px; padding: 12px 14px; border-radius: var(--r); background: rgba(110,168,254,.08); color: var(--ink-mid); font-size: .86rem; }
 
@@ -77,10 +82,18 @@
     font-weight: 700; color: rgba(255,255,255,.82);
   }
   .zone p { margin: 8px 0 0; font-size: .89rem; color: rgba(255,255,255,.76); max-width: 68ch; }
+  /* 光带原来是一条“只有填充、没有轨道”的色块，宽度直接等于光量：
+     无光层以下是 0–4%，在屏幕上就完全消失，看不出是“没有光”还是“漏画了”。
+     改成整条轨道 + 里面一段填充，空着本身就是信息。 */
   .zone .lightbar {
-    height: 5px; border-radius: 3px; margin-top: 12px;
-    border: 1px solid rgba(255,255,255,.14);
+    position: relative; height: 9px; margin-top: 12px; overflow: hidden;
+    border-radius: 999px; border: 1px solid rgba(255,255,255,.2);
+    background: rgba(255,255,255,.12);
   }
+  .zone .lightbar i { display: block; height: 100%; border-radius: 999px; }
+  .zone .lightbar[data-tone="full"] i { background: linear-gradient(90deg,#fde68a,#fbbf24); }
+  .zone .lightbar[data-tone="dim"] i  { background: linear-gradient(90deg,#bfdbfe,#3b82f6); }
+  .zone .lightbar[data-tone="none"] i { background: #64748b; }
   .zone .lightnote {
     font-size: .74rem; color: rgba(255,255,255,.6); margin-top: 5px;
     font-family: var(--mono);
@@ -154,6 +167,7 @@
   }
   /* 离线插图占满整个图位；联网照片替换时同样是 132px 高。 */
   .crit .ph-ph svg { width: 100%; height: 100%; display: block; }
+  .crit .ph-ph.ph-name { font-size: 1.05rem; font-weight: 800; color: var(--ink-mid); }
   .crit-b { padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
   .crit-b h3 { margin: 0; font-size: 1.02rem; }
   .crit-b .sci { margin: 0; font-family: var(--mono); font-size: .71rem; color: var(--ink-dim); font-style: italic; }
@@ -161,6 +175,20 @@
   .crit-meta { display: flex; gap: 6px; flex-wrap: wrap; }
   .crit-meta .pill { font-size: .71rem; }
   .cap { font-size: .68rem; color: var(--ink-dim); font-family: var(--mono); padding: 0 15px 10px; }
+
+  /* 五层海整块标了 data-print="plain"（深底浅字在打印时会只剩看不见的字），
+     但那条光带是本节唯一的量化视觉，不能跟着一起刷白，图例才有对应物。 */
+  @media print {
+    .zone .lightbar { background: #ececec !important; border-color: #999 !important; }
+    .zone .lightbar i {
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .zone .lightbar[data-tone="full"] i { background: #e0a51f !important; }
+    .zone .lightbar[data-tone="dim"] i  { background: #4b86d1 !important; }
+    .zone .lightbar[data-tone="none"] i { background: #5a6675 !important; }
+    /* 舞台上的读数是压在深色插画上的浅字，纸上会变成黑字压深色。 */
+    .depth-tags, .stage-readouts { display: none !important; }
+  }
 
   @media (max-width: 720px) {
     .hero-invite, .press { grid-template-columns: 1fr; }
@@ -236,17 +264,17 @@
   <div class="hero-invite">
     <div class="hero-copy">
       <p class="pill pill-video">4–11 岁 · 室内可探索</p>
-      <p class="story-kicker">🐙 波波船长发来邀请</p>
+      <p class="story-kicker"><span class="guide-portrait" id="oceanGuide" aria-hidden="true"></span><span>波波船长发来邀请</span></p>
       <h1>登上“微光号”，一起往深海出发！</h1>
       <div class="big-question" aria-labelledby="oceanBigQuestion">
-        <span aria-hidden="true">❓</span>
+        <span class="cue-icon" data-icon="ui/question" aria-hidden="true"></span>
         <div><b id="oceanBigQuestion">儿童大问题</b><p>越往海底越黑，海水挤得越用力，那里为什么还有生命？</p></div>
       </div>
       <div class="look-now">
-        <span aria-hidden="true">🥛</span>
+        <span class="cue-icon" data-icon="ui/milk" aria-hidden="true"></span>
         <div><b>现在就观察 30 秒</b><p>透过一杯清水看手指：看得清吗？想一想，如果水有一万米深，光还能走到底吗？</p></div>
       </div>
-      <p style="font-size:.8rem;color:var(--ink-dim)" id="src">照片状态准备中；文字与 emoji 可直接使用。</p>
+      <p style="font-size:.8rem;color:var(--ink-dim)" id="src">照片状态准备中；每种生物都有内置手绘插图，离线也看得到。</p>
     </div>
     <div class="ocean-story kid-visual-stage" role="img" aria-label="深度剖面：微光号从海面下潜，光逐渐消失，温度降低，压力升高">
       <svg class="ocean-scene-svg" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
@@ -339,13 +367,13 @@
   <section class="card parent-deep-dive" data-audience="parent" style="padding:20px">
     <h2>家长深读：离线海洋图鉴</h2>
     <div class="species-cards">
-      <article><h3>🎣 鮟鱇鱼</h3><p><b>住哪？</b>常见于无光层。<br><b>怎么吃饭？</b>用发光诱饵吸引猎物；柔软身体没有大型气腔。</p></article>
-      <article><h3>🐟 深海狮子鱼</h3><p><b>住哪？</b>可生活在 6000 米以下。<br><b>怎么扛压？</b>身体像凝胶，没有鱼鳔，体内外主要都是水。</p></article>
+      <article><h3><span class="species-thumb" data-icon="ocean/anglerfish" aria-hidden="true"></span>鮟鱇鱼</h3><p><b>住哪？</b>常见于无光层。<br><b>怎么吃饭？</b>用发光诱饵吸引猎物；柔软身体没有大型气腔。</p></article>
+      <article><h3><span class="species-thumb" data-icon="ocean/snailfish" aria-hidden="true"></span>深海狮子鱼</h3><p><b>住哪？</b>可生活在 6000 米以下。<br><b>怎么扛压？</b>身体像凝胶，没有鱼鳔，体内外主要都是水。</p></article>
     </div>
     <div class="qa-strip" style="margin-top:12px">
       <div class="qa-card"><h3>每 10 米都正好加 1 个吗？</h3><p>这是方便建立直觉的近似值。真实压力还会受海水密度、盐度和深度影响。</p></div>
       <div class="qa-card"><h3>深海一定都是 2°C 吗？</h3><p>不是。许多深层海水约 2–4°C，但地点、深度和热泉附近都会不同。</p></div>
-      <div class="qa-card"><h3>照片不出现怎么办？</h3><p>图像只是增强信息；物种名称、深度、特征、emoji 和任务文字都保留。</p></div>
+      <div class="qa-card"><h3>照片不出现怎么办？</h3><p>联网照片只是增强信息。每种生物都有一张内置手绘插图，加上名称、深度、特征和任务文字，离线时一样完整。</p></div>
     </div>
     <div class="source-card"><b>一起追问：</b>装水的袋子为什么比装空气的袋子难压？没有阳光，食物从哪里来？怎样只改变一个变量测试光在浑水里能走多远？</div>
   </section>
@@ -358,7 +386,8 @@
       海洋学家按<b>光照</b>把海分成五层。分界线不是随便画的：200 米是光合作用的极限，
       1000 米以下连仪器都测不到阳光。
     </p>
-    <div class="dive" id="dive"></div>
+    <div class="dive" id="dive" data-print="plain"></div>
+    <div id="diveLegend"></div>
   </section>
 
   <!-- 深度标尺 -->
@@ -425,13 +454,24 @@
 <script>
 (function () {
   "use strict";
+  var art = window.ILLUSTRATIONS || null;
+
+  /* 角色头像与提示图标改用共享插图：离线和 file:// 下都画得出来，
+     不再依赖系统里有没有那几个 emoji 字形。 */
+  if (art) {
+    art.renderArt("#oceanGuide", "guide/octopus", { decorative: true });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-icon]"), function (node) {
+      var name = node.getAttribute("data-icon");
+      if (art.hasArt(name)) art.renderArt(node, name, { decorative: true });
+    });
+  }
 
   /* ---------- 五层海 ---------- */
   var ZONES = [
     {
       n: "阳光层", en: "Sunlight / Epipelagic", from: 0, to: 200,
       bg: "linear-gradient(180deg,#38bdf8,#0ea5e9)",
-      light: "linear-gradient(90deg,#fde68a,#fbbf24)", lightPct: "100%",
+      tone: "full", lightPct: "100%",
       lightNote: "阳光充足 · 能进行光合作用",
       say: "海里几乎所有植物都住这一层，因为只有这里的光够强，海藻才能进行光合作用。海洋里 90% 的生物也住在这层——有饭吃的地方才热闹。",
       who: ["海豚", "小丑鱼", "海龟", "鲸鲨", "海藻"]
@@ -439,7 +479,7 @@
     {
       n: "微光层", en: "Twilight / Mesopelagic", from: 200, to: 1000,
       bg: "linear-gradient(180deg,#0ea5e9,#1e40af)",
-      light: "linear-gradient(90deg,#93c5fd,transparent)", lightPct: "30%",
+      tone: "dim", lightPct: "30%",
       lightNote: "只剩微弱蓝光 · 无法光合作用",
       say: "光弱到植物活不下去。很多鱼白天躲在这层，晚上才游到上面吃东西——这是地球上规模最大的每日迁徙。这里的鱼眼睛特别大，为了收集那一点点光。",
       who: ["抹香鲸（下潜）", "灯笼鱼", "巨型乌贼"]
@@ -447,7 +487,7 @@
     {
       n: "无光层", en: "Midnight / Bathypelagic", from: 1000, to: 4000,
       bg: "linear-gradient(180deg,#1e3a8a,#111a3d)",
-      light: "linear-gradient(90deg,#1e3a8a,transparent)", lightPct: "4%",
+      tone: "none", lightPct: "4%",
       lightNote: "完全黑暗 · 唯一的光来自生物自己",
       say: "一丝阳光都没有。这里能看到的光全是动物自己发的——<b>生物发光</b>。有的用来找同伴，有的挂在头前当钓饵。泰坦尼克号就沉在这一层（3,800 米）。",
       who: ["鮟鱇鱼", "吸血乌贼", "深海水母"]
@@ -455,7 +495,7 @@
     {
       n: "深渊层", en: "Abyss / Abyssopelagic", from: 4000, to: 6000,
       bg: "linear-gradient(180deg,#111a3d,#0b1020)",
-      light: "linear-gradient(90deg,#0f172f,transparent)", lightPct: "1%",
+      tone: "none", lightPct: "1%",
       lightNote: "永久黑暗 · 水温接近 2°C",
       say: "水温常年只有 2 度左右，压力是海面的四百多倍。食物极少，大部分靠上层沉下来的碎屑——科学家叫它「海洋雪」。这里的动物普遍动作极慢，为了省能量。",
       who: ["深海海参", "盲虾", "三脚架鱼"]
@@ -463,7 +503,7 @@
     {
       n: "超深渊层", en: "Hadal / Hadopelagic", from: 6000, to: 11034,
       bg: "linear-gradient(180deg,#0b1020,#05070f)",
-      light: "linear-gradient(90deg,#080d1c,transparent)", lightPct: "0%",
+      tone: "none", lightPct: "0%",
       lightNote: "绝对黑暗 · 压力超过 600 个大气压",
       say: "只存在于海沟里，占海洋面积不到 0.25%。人类到这里的次数比登月的人还少。但即使在最深的马里亚纳海沟底部，依然发现了活着的虾状动物和微生物。",
       who: ["狮子鱼", "深渊钩虾", "海沟微生物"]
@@ -495,8 +535,10 @@
 
     var lb = document.createElement("div");
     lb.className = "lightbar";
-    lb.style.background = z.light;
-    lb.style.width = z.lightPct;
+    lb.setAttribute("data-tone", z.tone);
+    var fill = document.createElement("i");
+    fill.style.width = z.lightPct;
+    lb.appendChild(fill);
     d.appendChild(lb);
 
     var ln = document.createElement("div");
@@ -515,6 +557,15 @@
 
     dive.appendChild(d);
   });
+
+  /* 每层下面那条彩色光带只有长度和颜色，不写图例就看不出它在表示什么。 */
+  if (art) {
+    document.getElementById("diveLegend").innerHTML = art.legend([
+      { color: "#fbbf24", label: "阳光", note: "够光合作用" },
+      { color: "#3b82f6", label: "残留的蓝光", note: "看得见、不够长东西" },
+      { color: "#64748b", label: "几乎为零", note: "轨道空着就是没有阳光" }
+    ], { label: "每层光带的含义" });
+  }
 
   /* ---------- 深度标尺 ---------- */
   var MARKS = [
@@ -596,34 +647,34 @@
   /* ---------- 生物 ---------- */
   var CRITS = [
     { n: "蓝鲸", sci: "Balaenoptera musculus", inat: "Balaenoptera musculus",
-      depth: "0–150 m", zone: "阳光层", emo: "🐋", art: "ocean/blue-whale",
+      depth: "0–150 m", zone: "阳光层", art: "ocean/blue-whale",
       fact: "地球上最大的动物，比已知任何恐龙都重。心脏和小汽车差不多大，叫声能传几百公里。" },
     { n: "小丑鱼", sci: "Amphiprion", inat: "Amphiprion",
-      depth: "1–15 m", zone: "阳光层", emo: "🐠", art: "ocean/clownfish",
+      depth: "1–15 m", zone: "阳光层", art: "ocean/clownfish",
       fact: "住在海葵的毒触手里却不被蛰——它身上有层特殊黏液。海葵保护它，它帮海葵赶走天敌。" },
     { n: "绿海龟", sci: "Chelonia mydas", inat: "Chelonia mydas",
-      depth: "0–40 m", zone: "阳光层", emo: "🐢", art: "ocean/sea-turtle",
+      depth: "0–40 m", zone: "阳光层", art: "ocean/sea-turtle",
       fact: "能活到 70 岁以上。小海龟孵化后游进大海，几十年后竟能回到自己出生的那片沙滩产卵。" },
     { n: "鲸鲨", sci: "Rhincodon typus", inat: "Rhincodon typus",
-      depth: "0–1000 m", zone: "阳光层→微光层", emo: "🦈", art: "ocean/whale-shark",
+      depth: "0–1000 m", zone: "阳光层→微光层", art: "ocean/whale-shark",
       fact: "世界上最大的鱼，能长到 12 米。但它只吃浮游生物和小鱼，对人完全无害，嘴张开像个大吸尘器。" },
     { n: "月亮水母", sci: "Aurelia aurita", inat: "Aurelia aurita",
-      depth: "0–1000 m", zone: "阳光层→微光层", emo: "🪼", art: "ocean/moon-jelly",
+      depth: "0–1000 m", zone: "阳光层→微光层", art: "ocean/moon-jelly",
       fact: "身体 95% 是水，没有大脑、没有心脏、没有血液。已经在地球上存在超过五亿年，比恐龙还早得多。" },
     { n: "抹香鲸", sci: "Physeter macrocephalus", inat: "Physeter macrocephalus",
-      depth: "可潜至 2250 m", zone: "微光层→无光层", emo: "🐳", art: "ocean/sperm-whale",
+      depth: "可潜至 2250 m", zone: "微光层→无光层", art: "ocean/sperm-whale",
       fact: "哺乳动物里的下潜冠军，一口气能在水下待九十分钟。靠回声定位在漆黑深海找巨型乌贼。" },
     { n: "大王乌贼", sci: "Architeuthis dux", inat: "Architeuthis dux",
-      depth: "300–1000 m", zone: "微光层", emo: "🦑", art: "ocean/giant-squid",
+      depth: "300–1000 m", zone: "微光层", art: "ocean/giant-squid",
       fact: "眼睛直径可达 27 厘米，是动物界最大的眼睛——在几乎无光的深海，越大的眼睛才能看见越多。" },
     { n: "鮟鱇鱼", sci: "Melanocetus johnsonii", inat: "Melanocetus johnsonii",
-      depth: "1000–4000 m", zone: "无光层", emo: "🎣", art: "ocean/anglerfish",
+      depth: "1000–4000 m", zone: "无光层", art: "ocean/anglerfish",
       fact: "头顶挂着一盏会发光的「钓竿」，光是靠身上的细菌发出来的。小鱼被光吸引过来，就被一口吞掉。" },
     { n: "大王酸浆鱿", sci: "Mesonychoteuthis hamiltoni", inat: "Mesonychoteuthis hamiltoni",
-      depth: "1000–2200 m", zone: "无光层", emo: "🦑", art: "ocean/colossal-squid",
+      depth: "1000–2200 m", zone: "无光层", art: "ocean/colossal-squid",
       fact: "比大王乌贼更重，触手上长着能转动的钩子。抹香鲸胃里常发现它的喙，是两者搏斗的证据。" },
     { n: "深海狮子鱼", sci: "Pseudoliparis", inat: "Pseudoliparis",
-      depth: "6000–8300 m", zone: "超深渊层", emo: "🐟", art: "ocean/snailfish",
+      depth: "6000–8300 m", zone: "超深渊层", art: "ocean/snailfish",
       fact: "目前记录到的最深的鱼。身体像果冻一样软，没有鱼鳞也没有气囊——硬结构在这种压力下反而是负担。" }
   ];
 
@@ -634,9 +685,11 @@
 
     var slot = document.createElement("div");
     slot.className = "ph-ph";
-    /* 离线默认是共享插图；插图库缺席时退回 emoji，联网照片仍会覆盖上来。 */
-    if (!(window.ILLUSTRATIONS && ILLUSTRATIONS.renderArt(slot, c.art, { label: c.n + "插图" }))) {
-      slot.textContent = c.emo;
+    /* 离线默认是共享插图；插图库缺席时退回名字文字，联网照片仍会覆盖上来。
+       这里不再退回 emoji：鮟鱇鱼曾退回成一根钓竿、狮子鱼退回成一条普通的鱼。 */
+    if (!(art && art.renderArt(slot, c.art, { label: c.n + "插图" }))) {
+      slot.textContent = c.n;
+      slot.classList.add("ph-name");
     }
     slot.setAttribute("data-inat", c.inat);
     el.appendChild(slot);
