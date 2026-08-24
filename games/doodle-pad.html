@@ -36,11 +36,16 @@
   .quick-color[aria-pressed="true"]::after { content:"✓"; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.7); }
   .canvas-wrap { position:relative; width:100%; aspect-ratio:4/3; min-height:320px; overflow:hidden; border-radius:calc(var(--r-xl) - 8px); background:#fffdf8; border:2px solid var(--line); touch-action:none; user-select:none; -webkit-user-select:none; }
   #paintCanvas { display:block; width:100%; height:100%; touch-action:none; cursor:crosshair; }
-  .canvas-hint { position:absolute; inset:auto 14px 12px; display:flex; justify-content:space-between; gap:8px; pointer-events:none; color:#7d6b52; font-size:.76rem; font-weight:700; opacity:.78; }
-  .mirror-line { position:absolute; pointer-events:none; display:none; background:rgba(31,111,208,.34); }
-  .mirror-line.v { display:block; top:0; bottom:0; left:50%; width:1px; }
-  .mirror-line.h { display:block; left:0; right:0; top:50%; height:1px; }
-  .canvas-wrap.is-drawing .canvas-hint { opacity:0; }
+  /* 范本画在单独一层：烙进作品位图的话，导出的 PNG 和撤销快照里都会留着虚线。 */
+  #starterLayer { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; transition:opacity .3s var(--ease); }
+  .canvas-wrap.has-art #starterLayer { opacity:0; }
+  .canvas-hint { position:absolute; inset:auto 14px 12px; display:flex; justify-content:space-between; gap:8px; pointer-events:none; color:var(--ink-dim); font-size:.76rem; font-weight:700; opacity:.85; }
+  /* 1px 半透明的镜像轴在浅色画布上几乎看不见，镜像开了也不知道对称在哪 */
+  .mirror-line { position:absolute; pointer-events:none; display:none; background:transparent; }
+  .mirror-line.v { display:block; top:0; bottom:0; left:50%; width:0; border-left:2px dashed color-mix(in srgb,var(--math) 62%,transparent); }
+  .mirror-line.h { display:block; left:0; right:0; top:50%; height:0; border-top:2px dashed color-mix(in srgb,var(--math) 62%,transparent); }
+  .canvas-wrap.is-drawing .canvas-hint,
+  .canvas-wrap.has-art .canvas-hint { opacity:0; }
 
   .toolbox { display:grid; gap:12px; position:sticky; top:76px; }
   .tool-group { padding:13px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); }
@@ -216,9 +221,10 @@
       </div>
       <div class="canvas-wrap kid-visual-stage" id="canvasWrap">
         <canvas id="paintCanvas" aria-label="彩虹小画室画布。用手指或触控笔画至少三笔、使用三种颜色，并盖一个印章。"></canvas>
+        <canvas id="starterLayer" role="presentation" aria-hidden="true" aria-label="描红范本"></canvas>
         <i class="mirror-line" id="mirrorV" aria-hidden="true"></i>
         <i class="mirror-line" id="mirrorH" aria-hidden="true"></i>
-        <div class="canvas-hint" aria-hidden="true"><span>从这里开始画</span><span>支持手指与 Apple Pencil</span></div>
+        <div class="canvas-hint" aria-hidden="true"><span>手指、鼠标或 Apple Pencil 都能画</span><span>虚线只是范本，不会印进作品</span></div>
       </div>
       <div class="quick-tools kid-action-strip no-print" id="quickTools" aria-label="常用画画工具">
         <button class="quick-tool" type="button" data-quick-tool="pen" aria-label="画笔" aria-pressed="true">✎</button>
@@ -319,21 +325,52 @@
   var canvas = document.getElementById("paintCanvas");
   var wrap = document.getElementById("canvasWrap");
   var ctx = canvas.getContext("2d", { alpha: false });
-  var css = getComputedStyle(document.documentElement);
-  function token(name, fallback) { var value = css.getPropertyValue(name).trim(); return value || fallback; }
-  var colors = [
-    { name:"海洋蓝", value:token("--math", "#1f6fd0") },
-    { name:"森林绿", value:token("--sci", "#0f8a4d") },
-    { name:"葡萄紫", value:token("--phys", "#7c3aed") },
-    { name:"太阳橙", value:token("--code", "#d2591a") },
-    { name:"草莓粉", value:token("--kit", "#d81b73") },
-    { name:"天空青", value:token("--video", "#0e7f97") },
-    { name:"蜂蜜黄", value:"#d68a00" },
-    { name:"可可棕", value:"#6b4f36" }
+  var starter = document.getElementById("starterLayer");
+  var sctx = starter.getContext("2d");
+  function token(name, fallback) {
+    var value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+  }
+  /* 内联脚本比 playful.js 早跑，此时还没有 data-mode="kid"。颜色和纸色都交给
+     themePalette 延迟读取；不过画布是不透明位图，纸色一旦画下去就改不了了，
+     所以只在还没落笔时才跟着主题重刷。 */
+  var TC = ILLUSTRATIONS.themePalette({
+    paper:["--canvas-bg", "#fffdf8"], ink:["--canvas-ink", "#402d1c"],
+    math: ["--math", "#1f6fd0"], sci:["--sci", "#0f8a4d"], phys:["--phys", "#7c3aed"],
+    code: ["--code", "#d2591a"], kit:["--kit", "#d81b73"], video:["--video", "#0e7f97"],
+    warn: ["--warn", "#b7791f"]
+  }, function () { if (isBlank()) { syncColors(); fitCanvas(false); } });
+  var COLOR_SPEC = [
+    ["海洋蓝", "math"], ["森林绿", "sci"], ["葡萄紫", "phys"], ["太阳橙", "code"],
+    ["草莓粉", "kit"], ["天空青", "video"], ["蜂蜜黄", null, "#d68a00"], ["可可棕", null, "#6b4f36"]
   ];
+  var colors = COLOR_SPEC.map(function (spec) { return { name: spec[0], key: spec[1], value: spec[2] || TC[spec[1]] }; });
+  var FONT = token("--font", "sans-serif");
   var state = { tool:"pen", color:colors[0].value, size:10, mirror:"none", stamp:null, drawing:false, stampedThisPointer:false, last:null, strokes:0, stamps:0, used:new Set(), clearArmed:false };
   var undo = [], redo = [], maxHistory = 24, logicalWidth = 900, logicalHeight = 675;
-  var bg = token("--canvas-bg", "#fffdf8");
+  var bg = TC.paper;
+
+  function isBlank() { return state.strokes === 0 && state.stamps === 0; }
+  function syncColors() {
+    bg = TC.paper;
+    colors.forEach(function (c) { if (c.key) c.value = TC[c.key]; });
+    state.color = colors[0].value;
+    var boxes = document.querySelectorAll(".swatch");
+    colors.forEach(function (c, i) { if (boxes[i]) boxes[i].style.background = c.value; });
+    if (typeof syncQuickControls === "function") syncQuickControls();
+  }
+
+  function drawStarter() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    starter.width = Math.max(1, Math.round(logicalWidth * dpr));
+    starter.height = Math.max(1, Math.round(logicalHeight * dpr));
+    sctx.setTransform(dpr,0,0,dpr,0,0);
+    sctx.clearRect(0,0,logicalWidth,logicalHeight);
+    ILLUSTRATIONS.drawDoodleStarter(sctx, logicalWidth, logicalHeight, {
+      ink:TC.ink, math:TC.math, sci:TC.sci, kit:TC.kit, warn:TC.warn, font:FONT
+    });
+  }
+  function refreshStarter() { wrap.classList.toggle("has-art", !isBlank()); }
 
   function fitCanvas(preserve) {
     var old = null;
@@ -346,9 +383,8 @@
     ctx.setTransform(dpr,0,0,dpr,0,0);
     ctx.fillStyle=bg; ctx.fillRect(0,0,logicalWidth,logicalHeight);
     if (old) ctx.drawImage(old,0,0,old.width,old.height,0,0,logicalWidth,logicalHeight);
-    else if (window.ILLUSTRATIONS && ILLUSTRATIONS.drawDoodleStarter && state.strokes === 0 && state.stamps === 0) {
-      ILLUSTRATIONS.drawDoodleStarter(ctx, logicalWidth, logicalHeight);
-    }
+    drawStarter();
+    refreshStarter();
     updateHistoryButtons();
   }
   function snapshot() {
@@ -419,10 +455,11 @@
     document.getElementById("strokeCount").textContent=state.strokes;document.getElementById("colorCount").textContent=state.used.size;document.getElementById("stampCount").textContent=state.stamps;
     document.getElementById("strokeCheck").classList.toggle("done",a>=3);document.getElementById("colorCheck").classList.toggle("done",b>=3);document.getElementById("stampCheck").classList.toggle("done",c>=1);
     var ready=a>=3&&b>=3&&c>=1;document.getElementById("completeBtn").disabled=!ready;document.getElementById("missionStatus").textContent=ready?"任务完成条件都满足了，给作品盖章吧！":"还差一点点：3 笔、3 种颜色和 1 个印章。";
+    refreshStarter();
   }
 
   var swatches=document.getElementById("swatches");
-  colors.forEach(function(item,index){var b=document.createElement("button");b.type="button";b.className="swatch";b.style.background=item.value;b.setAttribute("aria-label",item.name);b.setAttribute("aria-pressed",index===0?"true":"false");b.addEventListener("click",function(){state.color=item.value;document.documentElement.style.setProperty("--paint",item.value);document.querySelectorAll(".swatch").forEach(function(n){n.setAttribute("aria-pressed","false");});b.setAttribute("aria-pressed","true");if(state.tool==="eraser"){state.tool="pen";setPressed("#toolGrid [data-tool]","pen");}syncQuickControls();status("选好了“"+item.name+"”。");});swatches.appendChild(b);});
+  colors.forEach(function(item,index){var b=document.createElement("button");b.type="button";b.className="swatch";b.style.background=item.value;b.setAttribute("data-color-name",item.name);b.setAttribute("aria-label",item.name);b.setAttribute("aria-pressed",index===0?"true":"false");b.addEventListener("click",function(){state.color=item.value;document.documentElement.style.setProperty("--paint",item.value);document.querySelectorAll(".swatch").forEach(function(n){n.setAttribute("aria-pressed","false");});b.setAttribute("aria-pressed","true");if(state.tool==="eraser"){state.tool="pen";setPressed("#toolGrid [data-tool]","pen");}syncQuickControls();status("选好了“"+item.name+"”。");});swatches.appendChild(b);});
   function syncQuickControls(){
     document.querySelectorAll("[data-quick-tool]").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.quickTool===state.tool?"true":"false");});
     document.querySelectorAll("[data-quick-color]").forEach(function(b){var item=colors[Number(b.dataset.quickColor)];b.style.background=item.value;b.setAttribute("aria-pressed",item.value===state.color?"true":"false");});

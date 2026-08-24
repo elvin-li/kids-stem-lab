@@ -866,37 +866,109 @@ window.ILLUSTRATIONS = (function () {
   }
 
   /** Canvas：彩虹画室起始提示 */
-  function drawDoodleStarter(ctx, w, h) {
-    ctx.save();
-    ctx.globalAlpha = 0.22;
-    ctx.strokeStyle = "#d68a00";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([8, 6]);
-    ctx.strokeRect(w * 0.08, h * 0.12, w * 0.84, h * 0.76);
-    ctx.setLineDash([]);
-    /* 提示语跟着虚线框用 0.22 的话只剩一团灰影，反而像画脏了。 */
-    ctx.globalAlpha = 0.55;
-    ctx.font = "700 14px sans-serif";
-    ctx.fillStyle = "#7d6b52";
-    ctx.textAlign = "center";
-    ctx.fillText("在这里画", w / 2, h * 0.1);
-    var cx = w * 0.14, cy = h * 0.22;
-    ["#1f6fd0", "#0f8a4d", "#d81b73"].forEach(function (col, i) {
-      ctx.globalAlpha = 0.35;
-      ctx.fillStyle = col;
+  /** Canvas：空画布上的描红范本。
+      画一只虚线怪兽，把「3 笔 + 3 色 + 1 印章」的任务拆成三处可以照着描的轮廓。
+      opts 传主题色（ink/line/math/sci/kit/warn/font），不传就用浅色主题的默认值。
+      注意：这是范本，应当画在覆盖层上，别烙进作品位图里。 */
+  function drawDoodleStarter(ctx, w, h, opts) {
+    opts = opts || {};
+    var ink = opts.ink || "#4a3a28";
+    var font = opts.font || "sans-serif";
+    var hues = [opts.math || "#1f6fd0", opts.sci || "#0f8a4d", opts.kit || "#d81b73"];
+    var accent = opts.warn || "#b7791f";
+    var cx = w / 2, cy = h * 0.56;
+    // 留出上方的标题行、下方的提示条，以及右上角的印章位
+    var R = Math.min(w * 0.23, h * 0.29);
+    var bw = R * 1.7, bh = R * 1.85;
+    var stampX = cx + bw * 0.78, stampY = cy - bh * 0.58, stampR = R * 0.28;
+    /* 图形按画布比例缩放，字号却是绝对值：手机上的方画布只有三百多像素宽，
+       15px 的标题会横穿整块画布，撞上右上角的印章位。让字号跟着宽度走。 */
+    var capFs = Math.max(11, Math.min(15, Math.round(w / 50)));
+    var lblFs = Math.max(9, Math.min(12, Math.round(w / 62)));
+    var badgeR = Math.max(9, Math.min(13, Math.round(w / 70)));
+
+    function dashed(color, width) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width || 3;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.setLineDash([9, 8]);
+    }
+    // 序号牌：这一处该画第几笔。左侧的牌子把字写在圆的左边，免得压到怪兽轮廓
+    function badge(n, x, y, label, color, side) {
+      ctx.save();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
       ctx.beginPath();
-      /* 间距 22、半径 9 时三个点几乎相切，缩略下来只剩一道彩色横条。 */
-      ctx.arc(cx + i * 28, cy, 9, 0, Math.PI * 2);
+      ctx.arc(x, y, badgeR, 0, Math.PI * 2);
+      ctx.fillStyle = color;
       ctx.fill();
-    });
-    ctx.globalAlpha = 0.18;
-    ctx.strokeStyle = "#6b4f36";
-    ctx.lineWidth = 3;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(w * 0.72, h * 0.68);
-    ctx.quadraticCurveTo(w * 0.78, h * 0.55, w * 0.85, h * 0.62);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "800 " + (badgeR + 1) + "px " + font;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(String(n), x, y + 0.5);
+      ctx.fillStyle = color;
+      ctx.font = "800 " + lblFs + "px " + font;
+      ctx.textAlign = side === "left" ? "right" : "left";
+      ctx.fillText(label, x + (side === "left" ? -(badgeR + 5) : badgeR + 5), y);
+      ctx.restore();
+    }
+
+    ctx.save();
+    ctx.textBaseline = "middle";
+    ctx.globalAlpha = 0.75;
+
+    // ① 身体：一个圆角方块 + 两只角
+    dashed(hues[0]);
+    roundRect(ctx, cx - bw / 2, cy - bh / 2, bw, bh, R * 0.55);
     ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - bw * 0.26, cy - bh / 2 + 4);
+    ctx.lineTo(cx - bw * 0.33, cy - bh / 2 - R * 0.4);
+    ctx.lineTo(cx - bw * 0.08, cy - bh / 2 + 2);
+    ctx.moveTo(cx + bw * 0.26, cy - bh / 2 + 4);
+    ctx.lineTo(cx + bw * 0.33, cy - bh / 2 - R * 0.4);
+    ctx.lineTo(cx + bw * 0.08, cy - bh / 2 + 2);
+    ctx.stroke();
+
+    // ② 眼睛
+    dashed(hues[1], 2.6);
+    ctx.beginPath();
+    ctx.arc(cx - R * 0.42, cy - R * 0.34, R * 0.25, 0, Math.PI * 2);
+    ctx.moveTo(cx + R * 0.67, cy - R * 0.34);
+    ctx.arc(cx + R * 0.42, cy - R * 0.34, R * 0.25, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // ③ 锯齿嘴
+    dashed(hues[2], 2.8);
+    ctx.beginPath();
+    var mx = cx - R * 0.55, my = cy + R * 0.42, seg = R * 1.1 / 4, i;
+    ctx.moveTo(mx, my);
+    for (i = 1; i <= 4; i++) ctx.lineTo(mx + seg * i, my + (i % 2 ? R * 0.24 : 0));
+    ctx.stroke();
+
+    // 印章位：任务要求的那一个印章，指明可以盖在哪
+    ctx.globalAlpha = 0.7;
+    dashed(accent, 2.4);
+    ctx.beginPath();
+    ctx.arc(stampX, stampY, stampR, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = accent;
+    ctx.font = "800 " + lblFs + "px " + font;
+    ctx.textAlign = "center";
+    ctx.fillText("★ 盖这里", stampX, stampY - stampR - lblFs);
+
+    badge(1, cx - bw / 2 - badgeR - 3, cy + bh * 0.22, "身体", hues[0], "left");
+    badge(2, cx + bw / 2 + badgeR + 3, cy - R * 0.34, "眼睛", hues[1]);
+    badge(3, cx - bw * 0.40, cy + bh / 2 + badgeR + 9, "嘴巴", hues[2], "left");
+
+    ctx.fillStyle = ink;
+    ctx.font = "800 " + capFs + "px " + font;
+    ctx.textAlign = "center";
+    ctx.fillText("照着虚线描三笔，换三种颜色", cx, Math.max(capFs, cy - bh / 2 - R * 0.62));
     ctx.restore();
   }
 
