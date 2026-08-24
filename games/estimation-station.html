@@ -830,6 +830,7 @@
   var submitBtn = document.getElementById("submit");
   var errEl = document.getElementById("err");
   var verdict = document.getElementById("verdict");
+  var kidResultCard = document.getElementById("kidEstimateResult");
   var liveCount = document.getElementById("live-count");
 
   /* 倒计时条挂在舞台上而不是遮罩里：闪现阶段遮罩是隐藏的，
@@ -854,9 +855,16 @@
     errEl.textContent = msg;
   }
 
+  /* 两张结果卡要一起收。孩子模式的主要结果就是这张卡，
+     只藏 #verdict 的话，下一轮闪现时上一轮的「真实 149」还挂在画面下方。 */
+  function hideResults() {
+    verdict.hidden = true;
+    kidResultCard.hidden = true;
+  }
+
   function startRound() {
     showErr("");
-    verdict.hidden = true;
+    hideResults();
     guessInput.value = "";
     fit();
     makeItems();
@@ -939,7 +947,6 @@
     verdict.hidden = false;
     var difference = Math.abs(g - truth);
     var scaleMax = Math.max(g, truth, 1);
-    var kidResult = document.getElementById("kidEstimateResult");
     document.getElementById("kidGuessValue").textContent = g;
     document.getElementById("kidTruthValue").textContent = truth;
     document.getElementById("kidDiffValue").textContent = difference;
@@ -949,7 +956,7 @@
     document.getElementById("kidEstimateFinding").textContent = g === truth
       ? "刚好猜中！两条一样长。"
       : "这次猜得" + (g > truth ? "偏大" : "偏小") + "，相差 " + difference + " 个。";
-    kidResult.hidden = false;
+    kidResultCard.hidden = false;
     liveCount.textContent = "真实数量 " + truth + " 个，你的相对误差 " + (s.err * 100).toFixed(1) + "%。";
 
     if (s.err <= 0.05) toast("误差 5% 以内，眼睛很准！");
@@ -1038,7 +1045,7 @@
     if (e.key === "Enter") { e.preventDefault(); reveal(); }
   });
   document.getElementById("next").addEventListener("click", function () {
-    verdict.hidden = true;
+    hideResults();
     phase = "idle";
     showVeil(true);
     flashBtn.hidden = false;
@@ -1055,6 +1062,7 @@
   });
   document.getElementById("clear").addEventListener("click", function () {
     history = []; round = 0;
+    hideResults();
     renderHistory(); updateEstimateMission();
     flashBtn.textContent = "开始第 1 轮";
     toast("记录已清空");
