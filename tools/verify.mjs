@@ -234,6 +234,36 @@ try {
           problems.push(`${viewport.width}px 横向溢出 ${layout.overflow}px${layout.offenders.length ? `（${layout.offenders.join(', ')}）` : ''}`);
         }
 
+        /* 画布位图和显示尺寸必须同比，否则整幅画面被拉伸：
+           圆画成椭圆、直角画成钝角，物理和几何页面显示的就是错的。
+           孩子模式单独再查一遍——切模式会改布局宽度，却不触发 window resize，
+           只听 resize 的页面就会停在旧尺寸上。 */
+        for (const mode of [null, 'kid']) {
+          if (mode) {
+            await browser.send('Runtime.evaluate', {
+              expression: `document.documentElement.setAttribute('data-mode', ${JSON.stringify(mode)})`
+            }, sessionId);
+            await wait(450);
+          }
+          const fit = await browser.send('Runtime.evaluate', {
+            expression: `(() => {
+              const out = [];
+              for (const c of document.querySelectorAll('canvas')) {
+                const w = c.clientWidth, h = c.clientHeight;
+                if (w < 4 || h < 4 || !c.width || !c.height) continue;
+                const skew = Math.max((c.width / w) / (c.height / h), (c.height / h) / (c.width / w));
+                if (skew > 1.02) out.push((c.id ? '#' + c.id : 'canvas') +
+                  ' ' + w + 'x' + h + ' 位图 ' + c.width + 'x' + c.height + ' 拉伸 ' + skew.toFixed(2) + ' 倍');
+              }
+              return out.join('；');
+            })()`,
+            returnByValue: true
+          }, sessionId);
+          if (fit.result?.value) {
+            problems.push(`${viewport.width}px${mode ? ' 孩子模式' : ''} 画布比例: ${fit.result.value}`);
+          }
+        }
+
         /* 只需一档做键盘/交互；每档导航仍会捕获该尺寸下的初始化异常和资源失败。 */
         if (viewport.width !== 1280) continue;
 
