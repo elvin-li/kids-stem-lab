@@ -862,6 +862,10 @@
   foldEl.addEventListener("input", function () {
     state.fold = +foldEl.value;
     document.getElementById("foldVal").textContent = state.fold;
+    /* 孩子模式那两颗按钮的点亮条件里有折数（镜像×1 折、旋转×4 折）：
+       家长这边把折数拨走以后不刷它们，切回孩子模式时
+       「沿镜像线翻过去」还亮着，画面上却已经是 6 份镜像。 */
+    syncKidModeButtons();
     redraw(); report();
   });
 
@@ -873,14 +877,17 @@
 
   var mOn = document.getElementById("mirrorOn"), mOff = document.getElementById("mirrorOff");
   var kidMirrorMode = document.getElementById("kidMirrorMode"), kidRotateMode = document.getElementById("kidRotateMode");
+  /* 孩子模式那两颗按钮各自锁定一套折数：只按 mirror 判断的话，
+     开局 6 折镜像也会点亮「沿镜像线翻过去」，可画面上明明还在转。 */
+  function syncKidModeButtons() {
+    kidMirrorMode.setAttribute("aria-pressed", state.mirror && state.fold === 1 ? "true" : "false");
+    kidRotateMode.setAttribute("aria-pressed", !state.mirror && state.fold === 4 ? "true" : "false");
+  }
   function setMirror(on) {
     state.mirror = on;
     mOn.setAttribute("aria-pressed", on ? "true" : "false");
     mOff.setAttribute("aria-pressed", on ? "false" : "true");
-    /* 孩子模式那两颗按钮各自锁定一套折数：只按 mirror 判断的话，
-       开局 6 折镜像也会点亮「沿镜像线翻过去」，可画面上明明还在转。 */
-    kidMirrorMode.setAttribute("aria-pressed", on && state.fold === 1 ? "true" : "false");
-    kidRotateMode.setAttribute("aria-pressed", !on && state.fold === 4 ? "true" : "false");
+    syncKidModeButtons();
     redraw(); report();
   }
   mOn.addEventListener("click", function () { setMirror(true); });
