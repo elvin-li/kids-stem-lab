@@ -542,7 +542,8 @@
           </div>
           <div class="ctrl" style="margin-top:14px">
             <div class="ctrl-head"><label for="askSel">要预测第几个</label><b id="askOut">5</b></div>
-            <input type="range" id="askSel" min="4" max="12" step="1" value="5">
+            <!-- 前四个图形是给出的线索，所以要预测的那一个至少是第 5 个。 -->
+            <input type="range" id="askSel" min="5" max="12" step="1" value="5">
           </div>
           <button class="btn btn-ghost" id="growReset" style="width:100%">重新出题</button>
         </div>
@@ -1569,7 +1570,10 @@
 
   el.patSel.addEventListener('change', function () { resetGrow(el.patSel.value); });
   el.askSel.addEventListener('input', function () {
-    W.askN = Number(el.askSel.value);
+    /* 要猜的图形必须排在已展示的线索之后。滑到第 4 个时，同一张图会带着
+       「10 块 +4」的图注摆在问号旁边，表格里也已经写着答案，等于直接抄。 */
+    W.askN = clamp(Math.round(Number(el.askSel.value)) || W.shown + 1, W.shown + 1, 12);
+    if (String(W.askN) !== el.askSel.value) el.askSel.value = W.askN;
     el.askOut.textContent = W.askN;
     W.solved = false;
     el.growIn.value = '';
