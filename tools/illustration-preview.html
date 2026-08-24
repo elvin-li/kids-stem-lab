@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>共享插图目录预览（开发用）</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #fff8ec; color: #402d1c; margin: 0; padding: 18px; }
+  h1 { font-size: 1.2rem; margin: 0 0 4px; }
+  p { margin: 0 0 16px; color: #6b4f36; font-size: .85rem; }
+  h2 { font-size: .95rem; margin: 22px 0 8px; }
+  .g { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 9px; }
+  figure { margin: 0; padding: 6px; text-align: center; background: #fff; border: 1px solid #e6d7bd; border-radius: 12px; }
+  figure svg { width: 100%; height: 84px; }
+  figcaption { margin-top: 4px; font-size: 10px; color: #6b4f36; word-break: break-all; }
+</style>
+</head>
+<body>
+<h1>共享插图目录预览</h1>
+<p>只给开发用：一次看全 <code>assets/js/illustrations.js</code> 的所有内联 SVG，改完插图先在这里确认能认出来。<code>tools/</code> 不在契约检查和 verify 的扫描范围内。</p>
+<div id="out"></div>
+<script src="../assets/js/illustrations.js"></script>
+<script>
+(function () {
+  "use strict";
+  var out = document.getElementById("out");
+
+  function section(title, entries) {
+    if (!entries.length) return;
+    var h = document.createElement("h2");
+    h.textContent = title + "（" + entries.length + "）";
+    out.appendChild(h);
+    var grid = document.createElement("div");
+    grid.className = "g";
+    entries.forEach(function (entry) {
+      var figure = document.createElement("figure");
+      figure.innerHTML = entry.markup + "<figcaption>" + entry.label + "</figcaption>";
+      grid.appendChild(figure);
+    });
+    out.appendChild(grid);
+  }
+
+  var groups = {};
+  ILLUSTRATIONS.artNames().forEach(function (name) {
+    var group = name.indexOf("/") > 0 ? name.split("/")[0] : "其他";
+    (groups[group] = groups[group] || []).push({
+      label: name,
+      markup: ILLUSTRATIONS.art(name, { decorative: true })
+    });
+  });
+  Object.keys(groups).sort().forEach(function (group) { section(group, groups[group]); });
+
+  section("raindrop(mm)", [0.2, 0.5, 1, 1.5, 2, 3, 4, 5, 5.5, 6].map(function (mm) {
+    return { label: mm + " mm", markup: ILLUSTRATIONS.raindrop(mm, { decorative: true }) };
+  }));
+
+  var legend = document.createElement("div");
+  legend.innerHTML = "<h2>legend()</h2>" + ILLUSTRATIONS.legend([
+    { color: "#3f8fd0", label: "水" },
+    { color: "#e8862c", label: "太阳", shape: "dot" },
+    { color: "#57ab63", label: "地面", shape: "line", note: "示意" }
+  ], { label: "图例示例" });
+  out.appendChild(legend);
+})();
+</script>
+</body>
+</html>

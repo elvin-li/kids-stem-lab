@@ -1537,6 +1537,365 @@ window.ILLUSTRATIONS = (function () {
       "</g>"
   });
 
+  /* ---------------- 向导角色头像 ----------------
+     各专题页的“角色邀请”原来用单个 emoji，字体缺字时会退化成方框，
+     而且同一个角色在不同系统上长相完全不同。这里给每个角色一张固定的头像。 */
+
+  function defGuide(name, spec) {
+    def("guide/" + name, {
+      viewBox: "0 0 64 64", fit: "xMidYMid meet",
+      title: spec.title, desc: spec.desc, bg: "", art: spec.art
+    });
+  }
+
+  /* 两只黑眼珠加高光，所有角色共用一套画法，表情才不会各画各的。 */
+  function eyes(lx, rx, y, r, ink) {
+    var dark = ink || "#22160c";
+    return '<circle cx="' + lx + '" cy="' + y + '" r="' + r + '" fill="' + dark + '"/>' +
+      '<circle cx="' + rx + '" cy="' + y + '" r="' + r + '" fill="' + dark + '"/>' +
+      '<circle cx="' + (lx + r * 0.35) + '" cy="' + (y - r * 0.35) + '" r="' + (r * 0.32) + '" fill="#ffffff"/>' +
+      '<circle cx="' + (rx + r * 0.35) + '" cy="' + (y - r * 0.35) + '" r="' + (r * 0.32) + '" fill="#ffffff"/>';
+  }
+
+  defGuide("fox", {
+    title: "小狐探探",
+    desc: "一只橙色小狐狸探出头，白色的脸颊和黑亮的眼睛正看着你。",
+    art:
+      '<path d="M13 24 L11 5 L27 14Z" fill="#d9752c"/><path d="M51 24 L53 5 L37 14Z" fill="#d9752c"/>' +
+      '<path d="M16.5 21.5 L15.5 11 L24 16Z" fill="#f7cba6"/><path d="M47.5 21.5 L48.5 11 L40 16Z" fill="#f7cba6"/>' +
+      '<path d="M32 11 C46 11 55 21 55 32 C55 45 45 55 32 55 C19 55 9 45 9 32 C9 21 18 11 32 11Z" fill="#ef8b3c"/>' +
+      '<path d="M32 29 C41 29 47 35 47 42 C47 50 40 56 32 56 C24 56 17 50 17 42 C17 35 23 29 32 29Z" fill="#fdf4e8"/>' +
+      eyes(24, 40, 31, 3.4) +
+      '<path d="M32 37 C35 37 37 39 37 41 C37 43.5 34.5 45 32 45 C29.5 45 27 43.5 27 41 C27 39 29 37 32 37Z" fill="#3a2415"/>' +
+      '<path d="M32 45 L32 48 M32 48 C29 48 27 46.5 26 45 M32 48 C35 48 37 46.5 38 45" stroke="#3a2415" stroke-width="1.8" stroke-linecap="round" fill="none"/>' +
+      '<g stroke="#c9773a" stroke-width="1.4" stroke-linecap="round" opacity=".8">' +
+      '<path d="M18 40 L10 38"/><path d="M18 44 L10 45"/><path d="M46 40 L54 38"/><path d="M46 44 L54 45"/></g>'
+  });
+
+  defGuide("cloud-detective", {
+    title: "云朵侦探波波",
+    desc: "一朵白云长着眼睛和笑脸，旁边举着一只放大镜。",
+    art:
+      '<path d="M19 47 C10 47 4 41 5 33 C6 26 13 22 19 24 C21 12 32 6 42 10 C50 13 54 20 55 27 C61 27 64 32 63 38 C62 44 57 47 51 47Z" fill="#f7fbff" stroke="#9db8cd" stroke-width="2.4" stroke-linejoin="round"/>' +
+      eyes(26, 40, 31, 3.6, "#31465a") +
+      '<path d="M26 39 C29 43 37 43 40 39" stroke="#31465a" stroke-width="2.4" stroke-linecap="round" fill="none"/>' +
+      '<g fill="#f0a3b4" opacity=".65"><ellipse cx="19" cy="38" rx="4" ry="2.6"/><ellipse cx="47" cy="38" rx="4" ry="2.6"/></g>' +
+      '<g fill="none" stroke="#4b7ea8" stroke-width="3" stroke-linecap="round">' +
+      '<circle cx="49" cy="49" r="7" fill="#cfe8f8" fill-opacity=".75"/><path d="M54 54 L61 61"/></g>'
+  });
+
+  defGuide("octopus", {
+    title: "章鱼探长",
+    desc: "一只紫色的章鱼鼓着大眼睛，八条触手往下伸展。",
+    art:
+      '<g fill="#8d5bbd">' +
+      '<path d="M13 40 C8 47 6 54 8 59 C11 58 13 53 16 48Z"/><path d="M22 44 C19 52 18 58 20 61 C23 59 24 53 26 48Z"/>' +
+      '<path d="M42 44 C45 52 46 58 44 61 C41 59 40 53 38 48Z"/><path d="M51 40 C56 47 58 54 56 59 C53 58 51 53 48 48Z"/>' +
+      '<path d="M32 46 C31 54 31 59 32 62 C33 59 33 54 34 46Z"/>' +
+      "</g>" +
+      '<path d="M32 8 C45 8 54 18 54 30 C54 41 45 48 32 48 C19 48 10 41 10 30 C10 18 19 8 32 8Z" fill="#a06fd0"/>' +
+      '<path d="M32 10 C42 10 48 16 49 23 C42 19 24 19 15 24 C16 16 22 10 32 10Z" fill="#b98ede" opacity=".8"/>' +
+      '<circle cx="23" cy="29" r="7.5" fill="#fdf7ff"/><circle cx="41" cy="29" r="7.5" fill="#fdf7ff"/>' +
+      eyes(24, 42, 30, 3.6, "#2c1740") +
+      '<path d="M27 40 C30 43 34 43 37 40" stroke="#5c3184" stroke-width="2.2" stroke-linecap="round" fill="none"/>' +
+      '<g fill="#c79ae8" opacity=".8"><circle cx="13" cy="52" r="1.8"/><circle cx="22" cy="55" r="1.8"/><circle cx="42" cy="55" r="1.8"/><circle cx="51" cy="52" r="1.8"/></g>'
+  });
+
+  defGuide("ant", {
+    title: "蚂蚁队长",
+    desc: "一只红褐色的蚂蚁，头、胸、腹三节分明，六条腿撑在地上，头上有两根触角。",
+    art:
+      '<g stroke="#7a3d1c" stroke-width="2.4" stroke-linecap="round" fill="none">' +
+      '<path d="M22 34 L12 28 L7 32"/><path d="M22 38 L11 42 L7 48"/><path d="M26 40 L22 50 L18 55"/>' +
+      '<path d="M40 34 L50 30 L55 34"/><path d="M40 39 L51 43 L55 49"/><path d="M36 41 L40 51 L44 56"/>' +
+      "</g>" +
+      '<g stroke="#8d4720" stroke-width="2.2" stroke-linecap="round" fill="none">' +
+      '<path d="M25 17 C22 10 18 7 14 6"/><path d="M35 17 C38 10 42 7 46 6"/></g>' +
+      '<circle cx="14" cy="6" r="2.4" fill="#8d4720"/><circle cx="46" cy="6" r="2.4" fill="#8d4720"/>' +
+      '<ellipse cx="44" cy="42" rx="14" ry="11" fill="#a8542a"/>' +
+      '<ellipse cx="29" cy="35" rx="8" ry="7.5" fill="#954923"/>' +
+      '<ellipse cx="30" cy="22" rx="11" ry="9.5" fill="#b25c2f"/>' +
+      eyes(26, 35, 21, 2.8, "#2b1408") +
+      '<path d="M27 27 C29 29 32 29 34 27" stroke="#5e2c12" stroke-width="1.8" stroke-linecap="round" fill="none"/>' +
+      '<path d="M36 40 C42 36 50 38 54 44" stroke="#8d4720" stroke-width="1.6" fill="none" opacity=".55"/>'
+  });
+
+  defGuide("dino", {
+    title: "小恐龙化石迷",
+    desc: "一只绿色的长脖子小恐龙侧身站着，背上有一排三角骨板，尾巴伸向身后。",
+    art:
+      '<path d="M2 52 C8 51 14 48 21 44 L25 52Z" fill="#2f8d51"/>' +
+      '<path d="M34 40 C34 28 38 18 45 11 L55 17 C50 24 46 32 45 42Z" fill="#3fa963"/>' +
+      '<ellipse cx="27" cy="42" rx="18" ry="12" fill="#42b168"/>' +
+      '<path d="M11 47 C17 52 37 52 43 46 C40 52 33 55 27 55 C20 55 14 52 11 47Z" fill="#b6e6c6" opacity=".75"/>' +
+      '<g fill="#2f8d51"><path d="M13 34 L10 26 L18 31Z"/><path d="M22 30 L20 21 L28 27Z"/><path d="M31 29 L30 20 L37 26Z"/></g>' +
+      '<rect x="17" y="50" width="9" height="12" rx="4.5" fill="#369055"/><rect x="31" y="50" width="9" height="12" rx="4.5" fill="#3fa963"/>' +
+      '<path d="M43 6 C53 4 62 8 62 14 C62 19 56 22 49 21 C42 20 39 12 43 6Z" fill="#4bbb70"/>' +
+      '<path d="M55 18 C58 19 61 19 62.5 18" stroke="#25733f" stroke-width="1.8" stroke-linecap="round" fill="none"/>' +
+      '<circle cx="53" cy="12" r="4" fill="#fdfdf6"/><circle cx="54" cy="12" r="2.2" fill="#1c3a26"/>' +
+      '<circle cx="55" cy="11" r="0.9" fill="#ffffff"/>' +
+      '<g fill="#2f8d51" opacity=".45"><circle cx="24" cy="40" r="2"/><circle cx="32" cy="43" r="2"/><circle cx="17" cy="43" r="2"/></g>'
+  });
+
+  defGuide("astronaut", {
+    title: "小小宇航员",
+    desc: "戴着白色头盔的宇航员，面罩上映着一颗蓝色的星球。",
+    art:
+      '<circle cx="32" cy="32" r="24" fill="#e8eef6" stroke="#b3c2d4" stroke-width="2.5"/>' +
+      '<path d="M8 34 L2 34 A3 3 0 0 1 2 28 L8 28Z" fill="#c3d0de"/><path d="M56 34 L62 34 A3 3 0 0 0 62 28 L56 28Z" fill="#c3d0de"/>' +
+      '<path d="M32 15 C44 15 52 23 52 32 C52 41 44 47 32 47 C20 47 12 41 12 32 C12 23 20 15 32 15Z" fill="#1d2b46"/>' +
+      '<path d="M32 17 C41 17 47 22 49 27 C40 23 24 23 15 27 C17 22 23 17 32 17Z" fill="#5f7fae" opacity=".55"/>' +
+      '<circle cx="40" cy="36" r="6" fill="#4d94dd"/><ellipse cx="40" cy="36" rx="9" ry="2.6" fill="none" stroke="#a8cff2" stroke-width="1.4"/>' +
+      '<g fill="#ffffff"><circle cx="21" cy="30" r="1.6"/><circle cx="26" cy="38" r="1.2"/><circle cx="47" cy="26" r="1.3"/></g>'
+  });
+
+  defGuide("geologist", {
+    title: "地质小队长",
+    desc: "戴着黄色安全帽的小队长扛着一把地质锤。",
+    art:
+      '<path d="M14 34 C14 22 22 14 32 14 C42 14 50 22 50 34Z" fill="#f2b134"/>' +
+      '<path d="M9 34 L55 34 A3 3 0 0 1 55 39 L9 39 A3 3 0 0 1 9 34Z" fill="#d9982a"/>' +
+      '<path d="M30 14 C31 20 31 28 30 34 L34 34 C35 28 35 20 34 14Z" fill="#ffd784"/>' +
+      '<path d="M32 39 C41 39 48 45 48 55 L16 55 C16 45 23 39 32 39Z" fill="#f6d9bd"/>' +
+      eyes(26, 38, 46, 2.8, "#3b2a1c") +
+      '<path d="M27 51 C29.5 53.5 34.5 53.5 37 51" stroke="#a8663c" stroke-width="2" stroke-linecap="round" fill="none"/>' +
+      '<g><path d="M50 26 L58 52" stroke="#8b5a2b" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="M43 24 L59 20 L60 27 L44 30Z" fill="#7c8894"/></g>'
+  });
+
+  defGuide("heart", {
+    title: "心跳博士",
+    desc: "一颗红色的心脏笑着，旁边是一条心电图折线。",
+    art:
+      '<path d="M32 55 C14 43 6 34 6 24 C6 15 13 9 21 9 C26 9 30 12 32 16 C34 12 38 9 43 9 C51 9 58 15 58 24 C58 34 50 43 32 55Z" fill="#e35d6a"/>' +
+      '<path d="M21 12 C15 12 10 16 10 22 C10 26 12 30 15 34 C11 27 12 17 21 15Z" fill="#f79aa3" opacity=".85"/>' +
+      eyes(24, 40, 26, 3.4, "#5b1620") +
+      '<path d="M25 35 C28 39 36 39 39 35" stroke="#5b1620" stroke-width="2.4" stroke-linecap="round" fill="none"/>' +
+      '<path d="M4 44 L14 44 L18 36 L23 50 L27 44 L34 44" stroke="#fff1f2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".9"/>'
+  });
+
+  /* ---------------- 通用小图标 ----------------
+     句子里、按钮上、小标题前的 emoji 换成这一组。统一 48×48，
+     线条粗细一致，缩到 1em 时还能认出来。 */
+
+  function defIcon(name, title, desc, art) {
+    def("ui/" + name, {
+      viewBox: "0 0 48 48", fit: "xMidYMid meet",
+      title: title, desc: desc, bg: "", art: art
+    });
+  }
+
+  defIcon("question", "问号", "一个圆形徽章里画着问号。",
+    '<circle cx="24" cy="24" r="20" fill="#f7d97e"/><circle cx="24" cy="24" r="20" fill="none" stroke="#d69a1e" stroke-width="2.5"/>' +
+    '<path d="M17 19 A7 7 0 1 1 24 27 L24 31" fill="none" stroke="#6b4708" stroke-width="4.2" stroke-linecap="round"/>' +
+    '<circle cx="24" cy="37" r="2.8" fill="#6b4708"/>');
+
+  defIcon("eye", "观察", "一只睁开的眼睛，瞳孔里有高光。",
+    '<path d="M3 24 C10 13 17 8 24 8 C31 8 38 13 45 24 C38 35 31 40 24 40 C17 40 10 35 3 24Z" fill="#e8f2fb" stroke="#3b6f9e" stroke-width="2.6" stroke-linejoin="round"/>' +
+    '<circle cx="24" cy="24" r="9" fill="#3d7cb8"/><circle cx="24" cy="24" r="4" fill="#16273a"/>' +
+    '<circle cx="27" cy="20.5" r="2.2" fill="#ffffff"/>');
+
+  defIcon("milk", "一杯牛奶", "一只玻璃杯里盛着大半杯牛奶，奶面比杯口低一截。",
+    '<path d="M12 6 L36 6 L33 42 A4 4 0 0 1 29 46 L19 46 A4 4 0 0 1 15 42Z" fill="#dcecf7" stroke="#5f819a" stroke-width="2.6" stroke-linejoin="round"/>' +
+    '<path d="M14.2 18 L33.8 18 L31.4 41.6 A2.6 2.6 0 0 1 28.8 44 L19.2 44 A2.6 2.6 0 0 1 16.6 41.6Z" fill="#f6efdd"/>' +
+    '<path d="M14.2 18 C19 14.6 27 20.4 33.8 18 L33.5 21.8 C27 24.4 19 18.6 13.9 21.8Z" fill="#e4d8bc"/>' +
+    '<path d="M19.5 26 L18.6 40" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" opacity=".85"/>' +
+    '<path d="M17 9 L16 15" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" opacity=".9"/>');
+
+  defIcon("magnifier", "放大镜", "一只带手柄的放大镜。",
+    '<circle cx="21" cy="21" r="13" fill="#d6ecfa" stroke="#3b6f9e" stroke-width="3.4"/>' +
+    '<path d="M15 17 C16 13 18 11 22 10" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" fill="none"/>' +
+    '<path d="M31 31 L42 42" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round"/>');
+
+  defIcon("ruler", "量尺", "一把带刻度的黄色量尺。",
+    '<path d="M4 30 L30 4 L44 18 L18 44Z" fill="#f6d68a" stroke="#c48f22" stroke-width="2.4" stroke-linejoin="round"/>' +
+    '<g stroke="#a8761a" stroke-width="2" stroke-linecap="round">' +
+    '<path d="M11 27 L16 32"/><path d="M17 21 L25 29"/><path d="M23 15 L28 20"/><path d="M29 9 L37 17"/></g>');
+
+  defIcon("footprint", "恐龙脚印", "泥地上一个三趾的恐龙脚印，三根脚趾分开、趾尖有爪痕。",
+    '<g fill="#8b5e3c">' +
+    '<path d="M12 28 L36 28 C38 33 37 41 32 44 C27 47 21 47 16 44 C11 41 10 33 12 28Z"/>' +
+    '<path d="M24 9 C28 9 31 12 31 17 L30 31 L18 31 L17 17 C17 12 20 9 24 9Z"/>' +
+    '<path d="M6 19 C9 16 13 17 15 21 L19 32 L11 35 L7 27 C5 24 4 21 6 19Z"/>' +
+    '<path d="M42 19 C44 21 43 24 41 27 L37 35 L29 32 L33 21 C35 17 39 16 42 19Z"/>' +
+    "</g>" +
+    '<g fill="#5b3a20"><path d="M24 4 L28 12 L20 12Z"/><path d="M3 14 L12 17 L7 23Z"/><path d="M45 14 L41 23 L36 17Z"/></g>' +
+    '<path d="M13 47 C19 45 29 45 35 47" stroke="#c9b08f" stroke-width="3" stroke-linecap="round" fill="none"/>');
+
+  defIcon("tooth", "牙齿", "一颗白色的臼齿，下面有两条牙根。",
+    '<path d="M10 16 C10 8 17 4 24 8 C31 4 38 8 38 16 C38 24 34 28 33 35 C32 41 30 44 28 44 C26 44 25 40 24 34 C23 40 22 44 20 44 C18 44 16 41 15 35 C14 28 10 24 10 16Z" fill="#fdfdf7" stroke="#7f7c6c" stroke-width="2.6" stroke-linejoin="round"/>' +
+    '<path d="M15 20 C19 23 29 23 33 20" stroke="#c8c5b3" stroke-width="2" fill="none"/>' +
+    '<path d="M16 12 C17 9 20 8 23 9" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" fill="none"/>');
+
+  defIcon("bone", "骨头", "一根两端带圆头的骨头。",
+    '<path d="M13 20 A6 6 0 1 1 19 14 L29 24 A6 6 0 1 1 35 30 A6 6 0 1 1 29 36 L19 26 A6 6 0 1 1 13 20Z" fill="#f6f1e2" stroke="#8f8672" stroke-width="2.6" stroke-linejoin="round"/>');
+
+  defIcon("runner", "奔跑", "一个正在奔跑的小人。",
+    '<circle cx="31" cy="10" r="5.5" fill="#3f6fa8"/>' +
+    '<path d="M28 18 L20 27 L11 25" stroke="#3f6fa8" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+    '<path d="M28 18 L34 26 L42 22" stroke="#3f6fa8" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+    '<path d="M27 24 L24 34 L14 41" stroke="#e07a2f" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+    '<path d="M30 27 L36 34 L35 44" stroke="#e07a2f" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>');
+
+  defIcon("telescope", "望远镜", "一台架在三脚架上的望远镜指向天空。",
+    '<path d="M9 33 L34 12 L41 20 L16 41Z" fill="#6f83a4" stroke="#3f4d66" stroke-width="2.2" stroke-linejoin="round"/>' +
+    '<path d="M33 11 L43 19 L39 24 L29 16Z" fill="#9aabc6"/>' +
+    '<path d="M20 33 L20 45 M20 33 L11 45 M20 33 L30 45" stroke="#8b5a2b" stroke-width="3" stroke-linecap="round"/>' +
+    '<g fill="#f6d68a"><circle cx="42" cy="7" r="2.4"/><circle cx="33" cy="4" r="1.6"/></g>');
+
+  defIcon("satellite", "卫星", "一颗带两片太阳能板的卫星。",
+    '<rect x="19" y="18" width="12" height="14" rx="2.5" fill="#c8d3e2" stroke="#5a6b84" stroke-width="2"/>' +
+    '<rect x="2" y="19" width="14" height="11" rx="1.6" fill="#4d7fbe" stroke="#2f5a8e" stroke-width="1.8"/>' +
+    '<rect x="34" y="19" width="14" height="11" rx="1.6" fill="#4d7fbe" stroke="#2f5a8e" stroke-width="1.8"/>' +
+    '<path d="M25 18 L25 10" stroke="#5a6b84" stroke-width="2.4"/>' +
+    '<path d="M17 10 A9 9 0 0 1 33 10Z" fill="#e2e9f3" stroke="#5a6b84" stroke-width="2" stroke-linejoin="round"/>' +
+    '<path d="M25 32 L25 42" stroke="#5a6b84" stroke-width="2.4"/><circle cx="25" cy="43" r="2.6" fill="#f6d68a"/>');
+
+  defIcon("globe", "地球", "一颗画着经纬线和大陆的蓝色地球。",
+    '<circle cx="24" cy="24" r="19" fill="#4d94dd"/>' +
+    '<g fill="#57ab63"><path d="M11 17 C16 11 24 11 28 16 C31 21 26 26 20 26 C14 26 10 22 11 17Z"/>' +
+    '<path d="M28 30 C32 26 39 27 41 32 C43 38 37 43 31 41 C26 39 25 33 28 30Z"/></g>' +
+    '<g fill="none" stroke="#e4f0fa" stroke-width="1.8" opacity=".85">' +
+    '<circle cx="24" cy="24" r="19"/><ellipse cx="24" cy="24" rx="8.5" ry="19"/><path d="M5 24 L43 24"/><path d="M9 14 L39 14"/><path d="M9 34 L39 34"/></g>');
+
+  defIcon("clipboard", "记录板", "一块夹着记录纸的写字板。",
+    '<rect x="9" y="7" width="30" height="37" rx="4" fill="#f6efdd" stroke="#a8956c" stroke-width="2.4"/>' +
+    '<rect x="17" y="3" width="14" height="8" rx="3" fill="#b7a173" stroke="#8a7551" stroke-width="2"/>' +
+    '<g stroke="#a8956c" stroke-width="2.4" stroke-linecap="round"><path d="M16 20 L32 20"/><path d="M16 27 L32 27"/><path d="M16 34 L26 34"/></g>');
+
+  defIcon("thermometer", "温度计", "一支带红色液柱的温度计。",
+    '<path d="M19 10 A5 5 0 0 1 29 10 L29 28 A8 8 0 1 1 19 28Z" fill="#f4f7fa" stroke="#7f8fa3" stroke-width="2.4"/>' +
+    '<circle cx="24" cy="35" r="6" fill="#e05252"/><rect x="21.5" y="18" width="5" height="16" fill="#e05252"/>' +
+    '<g stroke="#7f8fa3" stroke-width="1.8" stroke-linecap="round"><path d="M31 15 L36 15"/><path d="M31 20 L36 20"/><path d="M31 25 L36 25"/></g>');
+
+  defIcon("fishing", "钓竿", "一根钓竿垂着鱼线和鱼钩。",
+    '<path d="M6 42 L34 8" stroke="#8b5a2b" stroke-width="4" stroke-linecap="round"/>' +
+    '<path d="M34 8 L38 26" stroke="#8ba7bd" stroke-width="1.8" fill="none"/>' +
+    '<path d="M38 26 C42 30 40 36 35 36 C31 36 30 32 33 31" fill="none" stroke="#6b7a8c" stroke-width="2.6" stroke-linecap="round"/>' +
+    '<path d="M14 32 C17 30 19 32 18 35" stroke="#8b5a2b" stroke-width="3" stroke-linecap="round" fill="none"/>');
+
+  defIcon("leaf", "叶子", "一片带叶脉的绿叶。",
+    '<path d="M8 40 C8 20 22 7 41 7 C41 26 28 40 8 40Z" fill="#6fae52"/>' +
+    '<path d="M8 40 C18 30 30 18 41 7" stroke="#3f7a30" stroke-width="2.4" stroke-linecap="round" fill="none"/>' +
+    '<g stroke="#3f7a30" stroke-width="1.6" stroke-linecap="round" opacity=".75">' +
+    '<path d="M17 31 L16 22"/><path d="M24 24 L23 15"/><path d="M31 17 L30 10"/>' +
+    '<path d="M17 31 L26 30"/><path d="M24 24 L33 23"/></g>');
+
+  defIcon("sparkle", "亮点", "一颗四角闪光。",
+    '<path d="M24 3 C26 16 32 22 45 24 C32 26 26 32 24 45 C22 32 16 26 3 24 C16 22 22 16 24 3Z" fill="#f6c445"/>' +
+    '<path d="M39 6 C40 11 41 12 46 13 C41 14 40 15 39 20 C38 15 37 14 32 13 C37 12 38 11 39 6Z" fill="#fbe08a"/>');
+
+  /* ---------------- 昆虫变态发育各阶段 ---------------- */
+
+  function defLife(name, title, desc, art) {
+    def("life/" + name, {
+      viewBox: "0 0 48 48", fit: "xMidYMid meet",
+      title: title, desc: desc, bg: "", art: art
+    });
+  }
+
+  defLife("egg", "卵", "叶片上贴着三粒米粒大小的白色虫卵。",
+    '<path d="M3 36 C10 24 26 20 45 24 C38 36 20 42 3 36Z" fill="#6fae52"/>' +
+    '<path d="M3 36 C16 32 32 27 45 24" stroke="#3f7a30" stroke-width="2" fill="none"/>' +
+    '<g fill="#fdf8e6" stroke="#cdbf95" stroke-width="1.4">' +
+    '<ellipse cx="16" cy="28" rx="4" ry="5.2"/><ellipse cx="25" cy="25" rx="4" ry="5.2"/><ellipse cx="34" cy="24" rx="4" ry="5.2"/></g>');
+
+  defLife("larva", "幼虫", "一条绿色的毛毛虫，身体一节一节，正在啃叶子。",
+    '<path d="M2 40 C8 30 22 26 40 30 C34 40 18 44 2 40Z" fill="#6fae52" opacity=".7"/>' +
+    '<g fill="#8fc45c" stroke="#5b8f38" stroke-width="1.6">' +
+    '<circle cx="10" cy="26" r="6"/><circle cx="19" cy="25" r="6.4"/><circle cx="28" cy="26" r="6"/><circle cx="36" cy="28" r="5.2"/></g>' +
+    '<circle cx="41" cy="27" r="5.6" fill="#c9dd6e" stroke="#5b8f38" stroke-width="1.6"/>' +
+    '<circle cx="43" cy="25.5" r="1.6" fill="#233318"/>' +
+    '<g stroke="#5b8f38" stroke-width="1.6" stroke-linecap="round"><path d="M43 21 L46 17"/><path d="M39 21 L38 16"/></g>' +
+    '<g stroke="#5b8f38" stroke-width="1.8" stroke-linecap="round"><path d="M10 32 L9 37"/><path d="M19 32 L19 37"/><path d="M28 32 L29 37"/></g>');
+
+  defLife("pupa", "蛹", "一枚棕色的蛹用丝挂在树枝上，外壳有一圈圈纹路。",
+    '<path d="M6 8 L42 8" stroke="#8b5a2b" stroke-width="3.4" stroke-linecap="round"/>' +
+    '<path d="M24 9 L24 14" stroke="#cdbf95" stroke-width="2"/>' +
+    '<path d="M24 13 C33 13 37 21 36 30 C35 39 30 45 24 45 C18 45 13 39 12 30 C11 21 15 13 24 13Z" fill="#b07b3e" stroke="#7d5324" stroke-width="2"/>' +
+    '<g stroke="#7d5324" stroke-width="1.4" fill="none" opacity=".8">' +
+    '<path d="M14 24 C19 26 29 26 34 24"/><path d="M13 30 C19 32 29 32 35 30"/><path d="M14 36 C19 38 29 38 34 36"/></g>' +
+    '<path d="M18 18 C20 15 24 14 27 15" stroke="#d8a96a" stroke-width="2.4" stroke-linecap="round" fill="none"/>');
+
+  defLife("adult", "成虫", "一只橙黑相间的蝴蝶张开双翅。",
+    '<g fill="#e8862c" stroke="#5a3210" stroke-width="1.8" stroke-linejoin="round">' +
+    '<path d="M23 22 C16 10 6 8 3 14 C0 20 8 26 22 27Z"/><path d="M25 22 C32 10 42 8 45 14 C48 20 40 26 26 27Z"/>' +
+    '<path d="M23 27 C16 32 10 40 14 44 C19 48 23 39 24 30Z"/><path d="M25 27 C32 32 38 40 34 44 C29 48 25 39 24 30Z"/></g>' +
+    '<g fill="#fdf1dc"><circle cx="12" cy="17" r="2.2"/><circle cx="36" cy="17" r="2.2"/><circle cx="17" cy="39" r="1.8"/><circle cx="31" cy="39" r="1.8"/></g>' +
+    '<ellipse cx="24" cy="28" rx="2.6" ry="12" fill="#33251a"/>' +
+    '<g stroke="#33251a" stroke-width="1.8" stroke-linecap="round" fill="none"><path d="M23 17 C21 12 18 9 15 8"/><path d="M25 17 C27 12 30 9 33 8"/></g>');
+
+  defLife("nymph", "若虫", "一只没有翅膀的小若虫，外形已经很像成虫。",
+    '<g stroke="#4d7a3a" stroke-width="2" stroke-linecap="round" fill="none">' +
+    '<path d="M17 28 L8 24 L4 28"/><path d="M17 32 L8 36 L5 41"/><path d="M31 28 L40 24 L44 28"/><path d="M31 33 L40 37 L43 42"/></g>' +
+    '<ellipse cx="24" cy="33" rx="9" ry="11" fill="#7cb35c"/>' +
+    '<ellipse cx="24" cy="20" rx="7.5" ry="6.5" fill="#8fc45c"/>' +
+    '<circle cx="21" cy="19" r="2" fill="#22341a"/><circle cx="27" cy="19" r="2" fill="#22341a"/>' +
+    '<g stroke="#4d7a3a" stroke-width="1.8" stroke-linecap="round" fill="none"><path d="M20 15 C18 10 15 8 12 7"/><path d="M28 15 C30 10 33 8 36 7"/></g>' +
+    '<path d="M18 27 C21 25 27 25 30 27" stroke="#4d7a3a" stroke-width="1.6" fill="none" opacity=".7"/>');
+
+  /* ---------------- 雨滴 ----------------
+     真实雨滴不是眼泪形：小滴接近球形，大滴被下方空气托扁成汉堡形。
+     天气页要按直径实时换形状，所以这里给的是函数而不是固定图。 */
+
+  /* 半椭圆用一段三次贝塞尔近似时，控制点要拉到 4/3 倍半径上。 */
+  function raindropPath(mm) {
+    var d = Math.max(0.1, Math.min(6, Number(mm) || 0.1));
+    /* 0.8 mm 以下基本是球；越往上被下方空气顶得越扁，底面还会凹进去。 */
+    var flat = Math.min(1, Math.max(0, (d - 0.8) / 4.2));
+    var rx = 15 + flat * 12;
+    var ry = 15 - flat * 6;
+    var cy = 24 + flat * 2.5;
+    var dimple = flat * ry * 0.85;
+    var n = function (value) { return Math.round(value * 100) / 100; };
+    return "M" + n(24 - rx) + " " + n(cy) +
+      " C" + n(24 - rx) + " " + n(cy - ry * 1.34) + " " + n(24 + rx) + " " + n(cy - ry * 1.34) + " " + n(24 + rx) + " " + n(cy) +
+      " C" + n(24 + rx) + " " + n(cy + ry * 0.95) + " " + n(24 + rx * 0.5) + " " + n(cy + ry) + " 24 " + n(cy + ry - dimple) +
+      " C" + n(24 - rx * 0.5) + " " + n(cy + ry) + " " + n(24 - rx) + " " + n(cy + ry * 0.95) + " " + n(24 - rx) + " " + n(cy) + "Z";
+  }
+
+  /* 按直径画一颗雨滴；超过 5 mm 时画成正在破碎的两小滴。 */
+  function raindrop(mm, options) {
+    var opts = options || {};
+    var d = Math.max(0.1, Math.min(6, Number(mm) || 0.1));
+    var label = opts.label || ("直径约 " + d.toFixed(1) + " 毫米的雨滴");
+    var flat = Math.min(1, Math.max(0, (d - 0.8) / 4.2));
+    var body = d > 5
+      ? '<g fill="#3f8fd0" stroke="#26638f" stroke-width="2">' +
+        '<ellipse cx="13" cy="27" rx="10" ry="7.5"/><ellipse cx="34" cy="21" rx="8" ry="6"/>' +
+        '<circle cx="27" cy="37" r="3.4"/><circle cx="41" cy="34" r="2.4"/></g>' +
+        '<g fill="#bfe3f8" opacity=".85"><ellipse cx="10" cy="24" rx="3" ry="1.9"/><ellipse cx="32" cy="19" rx="2.4" ry="1.5"/></g>'
+      : '<path d="' + raindropPath(d) + '" fill="#3f8fd0" stroke="#26638f" stroke-width="2"/>' +
+        '<ellipse cx="' + (24 - (15 + flat * 12) * 0.42) + '" cy="' + (24 - (15 - flat * 6) * 0.45) +
+        '" rx="' + (3.2 + flat * 1.6) + '" ry="' + (2.2 - flat * 0.7) +
+        '" fill="#cfeaf9" opacity=".9" transform="rotate(-22 18 18)"/>';
+    var head = '<svg xmlns="http://www.w3.org/2000/svg" class="illus illus-raindrop" viewBox="0 0 48 48" ' +
+      'preserveAspectRatio="xMidYMid meet" focusable="false"';
+    if (opts.decorative === true) return head + ' aria-hidden="true">' + body + "</svg>";
+    return head + ' role="img"><title>' + esc(label) + "</title>" + body + "</svg>";
+  }
+
+  /* ---------------- 图例 ----------------
+     示意图一旦用颜色区分含义，就必须写出每种颜色代表什么。
+     各页原来各写各的 HTML，这里统一成一份结构和 .illus-legend 样式。 */
+
+  function legend(items, options) {
+    var list = Array.isArray(items) ? items : [];
+    if (!list.length) return "";
+    var opts = options || {};
+    var out = '<ul class="illus-legend' + (opts.className ? " " + esc(opts.className) : "") + '"';
+    out += opts.label ? ' aria-label="' + esc(opts.label) + '">' : ">";
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i] || {};
+      var shape = item.shape === "line" || item.shape === "dot" ? item.shape : "block";
+      out += "<li><span class=\"illus-legend-swatch is-" + shape + '" style="background:' + esc(item.color || "currentColor") +
+        '" aria-hidden="true"></span><span class="illus-legend-text">' + esc(item.label || "") + "</span>";
+      if (item.note) out += '<span class="illus-legend-note">' + esc(item.note) + "</span>";
+      out += "</li>";
+    }
+    return out + "</ul>";
+  }
+
   /* ---------------- 对外 API ---------------- */
 
   function cssName(name) { return String(name).replace(/[^a-z0-9]+/gi, "-"); }
@@ -1602,7 +1961,7 @@ window.ILLUSTRATIONS = (function () {
   }
 
   return {
-    version: 1,
+    version: 2,
     stagePalette: stagePalette,
     dinoScaleCompare: dinoScaleCompare,
     drawKid: drawKid,
@@ -1624,6 +1983,9 @@ window.ILLUSTRATIONS = (function () {
     hasArt: has,
     art: markup,
     renderArt: render,
-    artNames: names
+    artNames: names,
+    raindrop: raindrop,
+    raindropPath: raindropPath,
+    legend: legend
   };
 })();
