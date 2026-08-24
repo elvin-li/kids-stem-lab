@@ -199,6 +199,17 @@
   .week-list b, .task-map-step b { display:block; color:var(--ink); }
   .week-list span, .task-map-step span { font-size:.84rem; color:var(--ink-mid); }
   .task-map-step a { overflow-wrap: anywhere; }
+  .task-map-step p { margin:7px 0 0; font-size:.84rem; line-height:1.5; color:var(--ink-mid); }
+  .ts-friend, .ts-sticker { display:flex; align-items:center; gap:8px; }
+  .ts-friend b, .ts-sticker b { color:var(--ink); }
+  .ts-face, .ts-badge { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; }
+  .ts-face { width:30px; height:30px; border-radius:50%; overflow:hidden; background:var(--surface); border:1px solid var(--line-soft); }
+  .ts-badge { width:32px; height:32px; }
+  .ts-face svg, .ts-badge svg { display:block; width:100%; height:100%; }
+  /* .task-map-step b 整体是 display:block（站号要独占一行），
+     但「任务：」是句子的开头，不能把后面的正文挤到下一行。 */
+  .ts-task { border-top:1px dashed var(--line-soft); padding-top:7px; }
+  .ts-task b { display:inline; }
   .map-note { font-size:.84rem; color:var(--ink-dim); }
   @media (max-width: 700px) {
     .hero-head { padding-top: 28px; }
@@ -761,7 +772,16 @@
 (function(){"use strict";var key="kids-stem:weekly-plan:v1",age=document.getElementById("planAge"),time=document.getElementById("planTime"),interest=document.getElementById("planInterest"),device=document.getElementById("planDevice"),out=document.getElementById("planOutput"),msg=document.getElementById("planMsg");
 function read(){try{return JSON.parse(localStorage.getItem(key)||"null");}catch(e){return null;}}function write(v){try{localStorage.setItem(key,JSON.stringify(v));return true;}catch(e){return false;}}
 function range(text){var n=String(text).match(/\d+/g)||[];return[Number(n[0]||0),Number(n[1]||n[0]||99)];}function candidates(){var band=range(age.value),list=(window.EXPLORATIONS||[]).filter(function(x){var r=range(x.age);return x.ready&&r[0]<=band[1]&&r[1]>=band[0];});if(interest.value==="nature")list=list.filter(function(x){return x.type==="nature";});else if(interest.value!=="all")list=list.filter(function(x){return x.subject===interest.value;});if(device.value==="none")list=list.filter(function(x){return x.type==="nature";});return list.length?list:(window.EXPLORATIONS||[]).filter(function(x){return x.ready;});}
-function render(plan){out.textContent="";var h=document.createElement("h3");h.textContent="本周探险地图 · "+plan.age.replace("-","–")+" 岁 · 共约 "+plan.minutes+" 分钟";out.appendChild(h);var ul=document.createElement("ol");ul.className="task-map";plan.items.forEach(function(v,i){var li=document.createElement("li"),b=document.createElement("b"),span=document.createElement("span"),a=document.createElement("a"),cfg=window.PLAYFUL&&PLAYFUL.pages&&PLAYFUL.pages[v.id],friend=window.Playful&&Playful.companion(v.id);li.className="task-map-step";b.textContent="第 "+(i+1)+" 站 · "+v.minutes+" 分钟";a.href="../"+v.id;a.textContent=v.title;span.textContent=(friend?friend.emoji+" "+friend.name+"陪你 · ":"")+"任务："+v.task+(cfg&&cfg.sticker?" · 贴纸预告："+cfg.sticker.emoji+cfg.sticker.label:"");li.appendChild(b);li.appendChild(a);li.appendChild(document.createElement("br"));li.appendChild(span);ul.appendChild(li);});out.appendChild(ul);}
+/* 一站原本是一整段文字：伙伴、任务、贴纸预告用「·」串在一起，
+   伙伴和贴纸还各带一个 emoji。拆成三行、换成共享插图里的头像与徽章后，
+   孩子扫一眼就知道「谁陪我、做什么、能拿到哪张卡」。 */
+function face(cls,slug,fallback){var box=document.createElement("span");box.className=cls;if(!(window.ILLUSTRATIONS&&ILLUSTRATIONS.renderArt(box,slug,{decorative:true})))box.textContent=fallback||"";return box;}
+function line(cls,label,text,badge){var p=document.createElement("p");p.className=cls;if(badge)p.appendChild(badge);var b=document.createElement("b");b.textContent=label;p.appendChild(b);p.appendChild(document.createTextNode(text));return p;}
+function render(plan){out.textContent="";var h=document.createElement("h3");h.textContent="本周探险地图 · "+plan.age.replace("-","–")+" 岁 · 共约 "+plan.minutes+" 分钟";out.appendChild(h);var ul=document.createElement("ol");ul.className="task-map";plan.items.forEach(function(v,i){var li=document.createElement("li"),b=document.createElement("b"),a=document.createElement("a"),cfg=window.PLAYFUL&&PLAYFUL.pages&&PLAYFUL.pages[v.id],friend=window.Playful&&Playful.companion(v.id);li.className="task-map-step";b.textContent="第 "+(i+1)+" 站 · "+v.minutes+" 分钟";a.href="../"+v.id;a.textContent=v.title;li.appendChild(b);li.appendChild(a);
+if(friend)li.appendChild(line("ts-friend",friend.name,"陪你走这一站",face("ts-face","friend/"+friend.id,friend.emoji)));
+li.appendChild(line("ts-task","任务：",v.task));
+if(cfg&&cfg.sticker)li.appendChild(line("ts-sticker","贴纸预告：",cfg.sticker.label,face("ts-badge","sticker/"+cfg.sticker.id,cfg.sticker.emoji)));
+ul.appendChild(li);});out.appendChild(ul);}
 function make(){var list=candidates(),minutes=Number(time.value),sessions=minutes<=60?3:minutes<=120?4:6,each=Math.max(15,Math.round(minutes/sessions)),items=[];for(var i=0;i<sessions;i++){var x=list[i%list.length];items.push({id:x.id,title:x.title,task:x.task,minutes:each});}var plan={minutes:each*sessions,age:age.value,time:time.value,interest:interest.value,device:device.value,items:items,savedAt:new Date().toISOString()};render(plan);msg.textContent=write(plan)?"探险地图已保存在本机；未产生任何完成记录":"地图已生成，但浏览器不允许保存；未产生任何完成记录";}
 Array.prototype.slice.call(document.querySelectorAll("[data-plan-age]")).forEach(function(route){route.addEventListener("click",function(){age.value=route.dataset.planAge;make();});
 /* 年龄卡上原本只有一个 emoji，看不出这一阶段在做什么。换成共享插图里的路线横幅。 */
