@@ -360,6 +360,11 @@
   .mission textarea { min-height: 86px; resize: vertical; }
   .mission output, .text-result { display: block; margin-top: 10px; padding: 10px 12px; border-left: 3px solid var(--sci); background: var(--bg-soft); color: var(--ink); font-size: .87rem; line-height: 1.55; }
   .task-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+  .quick-picks { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin: 8px 0; }
+  .quick-picks .kid-choice { min-width: 0; min-height: 48px; padding: 8px; border: 2px solid var(--line); border-radius: 13px; background: var(--bg-soft); color: var(--ink); font-weight: 800; cursor: pointer; }
+  .quick-picks .kid-choice[aria-pressed="true"] { border-color: var(--video); box-shadow: 0 0 0 2px color-mix(in oklab,var(--video) 26%,transparent); }
+  .mission-step textarea[data-audience="parent"] { min-height: 58px; }
+  @media (max-width: 720px) { .quick-picks { grid-template-columns: 1fr; } }
   .task-status { min-height: 1.5em; color: var(--ink-mid); }
   .principle { border-left: 3px solid var(--phys); padding-left: 12px; color: var(--ink-mid); }
   .parent-q li + li { margin-top: 7px; }
@@ -475,10 +480,10 @@
       <p data-playful-feedback role="status" aria-live="polite">日志等待签收：完成核心任务后会收到贴纸反馈。</p>
     </div>
     <div class="mission-grid">
-      <div class="mission-step"><h3>1 预测</h3><label for="oceanPredict">在你选择的深度，还有阳光吗？压力约是海面的多少倍？</label><textarea class="input" id="oceanPredict"></textarea></div>
+      <div class="mission-step"><h3>1 预测</h3><p>在你选择的深度，还有阳光吗？压力会怎样？</p><div class="quick-picks" data-fill="oceanPredict"><button class="kid-choice" type="button" data-value="我猜越往下阳光越少，深处几乎全黑；压力会比海面大很多倍。" aria-pressed="false">🌑 变黑、压力变大</button><button class="kid-choice" type="button" data-value="我猜深处和海面差不多亮，压力也差不多，下潜后再检查。" aria-pressed="false">☀️ 差不多，先猜再查</button></div><label class="sr-only" for="oceanPredict">预测记录</label><textarea class="input" id="oceanPredict" data-audience="parent" placeholder="也可以写自己的预测"></textarea></div>
       <div class="mission-step"><h3>2 操作</h3><p>主操作就在上方深度剖面旁。至少执行一次下潜，文字结果会留在舞台下方。</p><div class="checks" aria-label="下潜操作状态"><span id="oceanDiveCheck">○ 尚未执行下潜</span></div></div>
-      <div class="mission-step"><h3>3 结果</h3><label for="oceanResult">记录光、温度、压力和生物适应中的两项联系</label><textarea class="input" id="oceanResult"></textarea></div>
-      <div class="mission-step"><h3>4 反思</h3><label for="oceanReflect">为什么深海鱼更怕“快速上浮”，而不是一直待在高压水中？</label><textarea class="input" id="oceanReflect"></textarea></div>
+      <div class="mission-step"><h3>3 结果</h3><p>选一条这次下潜看到的联系。</p><div class="quick-picks" data-fill="oceanResult"><button class="kid-choice" type="button" data-value="下潜时光越来越少、水温越来越低，压力却一直在升高。" aria-pressed="false">📉 光少温低压力大</button><button class="kid-choice" type="button" data-value="深海生物靠发光诱饵或柔软的身体，适应黑暗和高压的环境。" aria-pressed="false">🐟 生物有自己的装备</button></div><label class="sr-only" for="oceanResult">结果记录</label><textarea class="input" id="oceanResult" data-audience="parent" placeholder="也可以记录光、温度、压力和生物适应中的两项联系"></textarea></div>
+      <div class="mission-step"><h3>4 反思</h3><p>为什么深海鱼更怕“快速上浮”，而不是一直待在高压水中？</p><div class="quick-picks" data-fill="oceanReflect"><button class="kid-choice" type="button" data-value="深海鱼的身体已经适应高压；快速上浮时压力骤减，身体里的气体会膨胀，反而受伤。" aria-pressed="false">🎈 上浮时气体会膨胀</button><button class="kid-choice" type="button" data-value="高压是深海鱼平时的家；突然的变化才危险，慢慢改变它们能适应。" aria-pressed="false">⚖️ 突然变化才危险</button></div><label class="sr-only" for="oceanReflect">反思记录</label><textarea class="input" id="oceanReflect" data-audience="parent" placeholder="也可以用自己的话解释"></textarea></div>
     </div><div class="task-actions"><button class="btn btn-primary" id="oceanComplete" type="button">完成任务</button><span class="task-status" id="oceanStatus" role="status" aria-live="polite">尚未完成：请完成一次下潜并写记录。</span></div>
     <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="oceanWorkTitle">
       <h3 class="work-card-title" id="oceanWorkTitle">把这次下潜存进作品册</h3>
@@ -1234,6 +1239,17 @@
     diveCheck.textContent = "✓ 已执行 " + d.toLocaleString() + " 米下潜";
     diveCheck.classList.add("done");
     operated = true;
+  });
+  [].forEach.call(document.querySelectorAll(".quick-picks[data-fill] .kid-choice"), function (button) {
+    button.addEventListener("click", function () {
+      var group = button.parentNode;
+      [].forEach.call(group.querySelectorAll(".kid-choice"), function (other) {
+        other.setAttribute("aria-pressed", other === button ? "true" : "false");
+      });
+      var field = document.getElementById(group.getAttribute("data-fill"));
+      field.value = button.getAttribute("data-value");
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+    });
   });
   document.getElementById("oceanComplete").addEventListener("click", function () {
     if (!predict.value.trim() || !operated || !result.value.trim() || !reflect.value.trim()) {

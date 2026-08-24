@@ -327,6 +327,11 @@
   .mission output, .text-result { display: block; margin-top: 10px; padding: 10px 12px; border-left: 3px solid var(--sci); background: var(--bg-soft); color: var(--ink); font-size: .87rem; line-height: 1.55; }
   .task-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
   .task-status { min-height: 1.5em; color: var(--ink-mid); }
+  .quick-picks { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin: 8px 0; }
+  .quick-picks .kid-choice { min-width: 0; min-height: 48px; padding: 8px; border: 2px solid var(--line); border-radius: 13px; background: var(--bg-soft); color: var(--ink); font-weight: 800; cursor: pointer; }
+  .quick-picks .kid-choice[aria-pressed="true"] { border-color: var(--kit); box-shadow: 0 0 0 2px color-mix(in oklab,var(--kit) 26%,transparent); }
+  .mission-step textarea[data-audience="parent"] { min-height: 58px; }
+  @media (max-width: 720px) { .quick-picks { grid-template-columns: 1fr; } }
   .principle { border-left: 3px solid var(--phys); padding-left: 12px; color: var(--ink-mid); }
   .parent-q li + li { margin-top: 7px; }
   button, input, select, textarea, [role="button"] { min-height: 44px; }
@@ -519,10 +524,10 @@
       <p data-playful-feedback role="status" aria-live="polite">线索仍在本页内：完成核心任务后会收到贴纸反馈。</p>
     </div>
     <div class="mission-grid">
-      <div class="mission-step"><h3>1 预测</h3><label for="bodyPredict">活动 30 秒后，脉搏和呼吸会怎样变化？把同一本书拿远会怎样？</label><textarea class="input" id="bodyPredict"></textarea></div>
+      <div class="mission-step"><h3>1 预测</h3><p>活动 30 秒后，脉搏和呼吸会怎样变化？把同一本书拿远会怎样？</p><div class="quick-picks" data-fill="bodyPredict"><button class="kid-choice" type="button" data-value="我猜活动后脉搏和呼吸都会变快；书拿得越远，胳膊越费力。" aria-pressed="false">💓 变快、更费力</button><button class="kid-choice" type="button" data-value="我猜活动后变化不大；书拿远拿近感觉差不多，测完再检查。" aria-pressed="false">😐 变化不大，先测再说</button></div><label class="sr-only" for="bodyPredict">预测记录</label><textarea class="input" id="bodyPredict" data-audience="parent" placeholder="也可以写自己的预测"></textarea></div>
       <div class="mission-step"><h3>2 操作</h3><p>先安静测量，再做 30 秒安全活动后复测；不适立即停止。</p><label for="pulseRest">安静脉搏（次/分）</label><input class="input" id="pulseRest" type="number" min="30" max="240"><label for="pulseAfter">活动后脉搏（次/分）</label><input class="input" id="pulseAfter" type="number" min="30" max="240"><label for="breathRest">安静呼吸（次/分）</label><input class="input" id="breathRest" type="number" min="5" max="80"><label for="breathAfter">活动后呼吸（次/分）</label><input class="input" id="breathAfter" type="number" min="5" max="80"><label for="leverDistance">书离肘关节距离（厘米）</label><input class="input" id="leverDistance" type="number" min="10" max="70" value="30"><button class="btn btn-primary" id="bodyCompare" type="button">比较本次数据</button></div>
-      <div class="mission-step"><h3>3 结果</h3><output class="text-result" id="bodyOutput" aria-live="polite">数据不会写入 localStorage，刷新页面即清除。</output><label for="bodyResult">写下变化趋势，不必写姓名或健康信息</label><textarea class="input" id="bodyResult"></textarea></div>
-      <div class="mission-step"><h3>4 反思</h3><label for="bodyReflect">怎样让比较更公平（活动时间、姿势、计数时长）？</label><textarea class="input" id="bodyReflect"></textarea></div>
+      <div class="mission-step"><h3>3 结果</h3><output class="text-result" id="bodyOutput" aria-live="polite">数据不会写入 localStorage，刷新页面即清除。</output><p>选一条最像你这次的趋势，只记趋势不记数值。</p><div class="quick-picks" data-fill="bodyResult"><button class="kid-choice" type="button" data-value="活动后我的脉搏和呼吸都比安静时快；书离肘关节越远，胳膊越费力。" aria-pressed="false">📈 都变快、越远越费力</button><button class="kid-choice" type="button" data-value="这次变化不明显；我想延长活动时间或重数一次再比较。" aria-pressed="false">🔍 变化不明显，要再测</button></div><label class="sr-only" for="bodyResult">结果记录</label><textarea class="input" id="bodyResult" data-audience="parent" placeholder="也可以写下变化趋势，不必写姓名或健康信息"></textarea></div>
+      <div class="mission-step"><h3>4 反思</h3><p>怎样让比较更公平（活动时间、姿势、计数时长）？</p><div class="quick-picks" data-fill="bodyReflect"><button class="kid-choice" type="button" data-value="每次活动时间、姿势和计数时长都保持一样，比较才公平。" aria-pressed="false">⏱ 条件保持一样</button><button class="kid-choice" type="button" data-value="多测几次取平均，一次数错就不会影响结论。" aria-pressed="false">🔁 多测几次取平均</button></div><label class="sr-only" for="bodyReflect">反思记录</label><textarea class="input" id="bodyReflect" data-audience="parent" placeholder="也可以写下自己的公平比较方法"></textarea></div>
     </div><div class="task-actions"><button class="btn btn-primary" id="bodyComplete" type="button">完成任务</button><span class="task-status" id="bodyStatus" role="status" aria-live="polite">尚未完成：身体数据仅在当前会话中使用。</span></div>
     <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="bodyWorkTitle">
       <h3 class="work-card-title" id="bodyWorkTitle">把这次调查存进作品册</h3>
@@ -1216,6 +1221,17 @@
     var farther = d * 2 <= 70, lever = farther ? d * 2 : Math.round(d / 2);
     output.textContent = "本次比较：活动后脉搏变化 " + (pa-pr >= 0 ? "+" : "") + (pa-pr) + " 次/分；呼吸变化 " + (ba-br >= 0 ? "+" : "") + (ba-br) + " 次/分。书离肘 " + d + " cm；若移" + (farther ? "远到 " : "近到 ") + lever + " cm，同样重量对肘的力矩约变为 " + (lever/d).toFixed(1) + " 倍。数据只在当前页面内存中使用。";
     operated = true;
+  });
+  [].forEach.call(document.querySelectorAll(".quick-picks[data-fill] .kid-choice"), function (button) {
+    button.addEventListener("click", function () {
+      var group = button.parentNode;
+      [].forEach.call(group.querySelectorAll(".kid-choice"), function (other) {
+        other.setAttribute("aria-pressed", other === button ? "true" : "false");
+      });
+      var field = document.getElementById(group.getAttribute("data-fill"));
+      field.value = button.getAttribute("data-value");
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+    });
   });
   document.getElementById("bodyComplete").addEventListener("click", function () {
     if (!predict.value.trim() || !operated || !result.value.trim() || !reflect.value.trim()) {
