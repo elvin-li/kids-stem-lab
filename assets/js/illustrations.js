@@ -2523,8 +2523,8 @@ window.ILLUSTRATIONS = (function () {
       '<path d="M84 178 L288 178" stroke="#6b8f7f" stroke-width="1.6" stroke-dasharray="7 6"/>' +
       '<path d="M104 150 L104 178" stroke="#2f6f5c" stroke-width="2"/>' +
       '<path d="M100 154 L104 148 L108 154Z" fill="#2f6f5c"/><path d="M100 174 L104 180 L108 174Z" fill="#2f6f5c"/>' +
-      '<text x="98" y="160" font-size="12" font-weight="700" fill="#2f6f5c" text-anchor="end">鼓起</text>' +
-      '<text x="98" y="174" font-size="11" fill="#5c6b64" text-anchor="end">≈5 mm</text>' +
+      '<text x="98" y="157" font-size="13" font-weight="700" fill="#2f6f5c" text-anchor="end">鼓起</text>' +
+      '<text x="98" y="172" font-size="12" fill="#5c6b64" text-anchor="end">≈5 mm</text>' +
       /* 滴管与正在落下的那一滴 */
       '<path d="M186 26 A14 15 0 0 1 214 26 L214 40 L186 40Z" fill="#dbe7ef" stroke="#7c8f9c" stroke-width="2" stroke-linejoin="round"/>' +
       '<path d="M190 40 L210 40 L210 96 L204 112 L196 112 L190 96Z" fill="#eef4f8" stroke="#7c8f9c" stroke-width="2" stroke-linejoin="round"/>' +
@@ -2533,21 +2533,20 @@ window.ILLUSTRATIONS = (function () {
       '<path d="M196 140 C194 135 196 131 199 128" fill="none" stroke="#eaf6fd" stroke-width="2.6" stroke-linecap="round"/>' +
       /* 先猜 / 实际：这一页所有实验都要求先写预测，首屏就把这件事画出来 */
       '<path d="M26 24 L172 24 A10 10 0 0 1 182 34 L182 100 A10 10 0 0 1 172 110 L26 110 A10 10 0 0 1 16 100 L16 34 A10 10 0 0 1 26 24Z" fill="#fffdf8" stroke="#bdd2c4" stroke-width="2"/>' +
-      '<text x="30" y="46" font-size="11" font-weight="700" fill="#667a72">先猜</text>' +
+      '<text x="30" y="46" font-size="12" font-weight="700" fill="#667a72">先猜</text>' +
       '<text x="30" y="70" font-size="21" font-weight="800" fill="#405b51">15 滴</text>' +
-      '<text x="108" y="46" font-size="11" font-weight="700" fill="#667a72">实际</text>' +
+      '<text x="108" y="46" font-size="12" font-weight="700" fill="#667a72">实际</text>' +
       '<text x="108" y="70" font-size="21" font-weight="800" fill="#2f6f5c">24 滴</text>' +
       '<path d="M30 82 L168 82" stroke="#e2e8e1" stroke-width="1.6"/>' +
-      '<text x="30" y="99" font-size="11" fill="#667a72">猜少了 9 滴，把它记下来</text>' +
+      '<text x="30" y="99" font-size="12" fill="#667a72">猜少了 9 滴，把它记下来</text>' +
       /* 名词标注：中文说人话，术语保留英文 */
       '<path d="M292 158 L270 166" stroke="#93621f" stroke-width="1.8" stroke-linecap="round"/>' +
       '<circle cx="270" cy="166" r="3" fill="#93621f"/>' +
-      '<text x="296" y="126" font-size="14" font-weight="800" fill="#7a5417">表面张力</text>' +
-      '<text x="296" y="142" font-size="11" font-weight="700" fill="#93621f">surface tension</text>' +
-      '<text x="296" y="162" font-size="11" fill="#5c6b64">水分子手拉手，</text>' +
-      '<text x="296" y="176" font-size="11" fill="#5c6b64">把水面兜成一个包</text>' +
-      '<text x="296" y="196" font-size="11" fill="#8a9a92">虚线 = 硬币边缘</text>' +
-      '<text x="200" y="228" font-size="11" fill="#667a72" text-anchor="middle">桌面垫一条毛巾，溢出来也不怕</text>'
+      '<text x="296" y="126" font-size="15" font-weight="800" fill="#7a5417">表面张力</text>' +
+      '<text x="296" y="143" font-size="12" font-weight="700" fill="#93621f">surface tension</text>' +
+      '<text x="296" y="164" font-size="12.5" fill="#5c6b64">水分子手拉手，</text>' +
+      '<text x="296" y="181" font-size="12.5" fill="#5c6b64">把水面兜成一个包</text>' +
+            '<text x="200" y="228" font-size="12" fill="#667a72" text-anchor="middle">桌面垫一条毛巾，溢出来也不怕</text>'
   });
 
   /* ---------------- 离线时顶替远程照片的星空图 ---------------- 
