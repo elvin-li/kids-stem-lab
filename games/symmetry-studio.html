@@ -706,18 +706,29 @@
     var m = slots();
     mirrorLeft.className = "mirror-hot";
     mirrorRight.className = "mirror-hot";
-    /* 只旋转时没有镜面，「左边映到右边」就是句假话，热区整块收起来。 */
-    mirrorMap.setAttribute("data-off", state.mirror ? "0" : "1");
+    /* 左右两块热区只有在「一面竖直镜子」时才成立：1 折镜像的那条镜面正好是竖直中线。
+       6 折时镜面有 6 条、扇格有 12 个，左半边里原样格和翻面格各占一半，再说
+       「左边是原笔，右边是镜像」就是假话——而 6 折镜像恰恰是开局的样子。
+       只旋转时更没有镜面。两种情况都把热区收起来，换成按折数说的那句。 */
+    var vertical = state.mirror && state.fold === 1;
+    mirrorMap.setAttribute("data-off", vertical ? "0" : "1");
     if (!state.mirror) {
       mirrorStageResult.textContent = "不翻面：一笔绕中心转 " + state.fold + " 次，变成 " + m + " 笔。";
       mirrorStageSub.textContent = "每转 " + fmtDeg(360 / state.fold) + "° 就和原来重合；紫色转箭头指着旋转中心。";
       return;
     }
+    if (!vertical) {
+      mirrorStageResult.textContent = state.fold + " 条镜面把圆分成 " + m + " 格，一笔变 " + m + " 笔。";
+      mirrorStageSub.textContent = point
+        ? "你落笔那一格是原样，紧挨着的一格就是翻过来的，一路轮流到底；橙色虚线是镜面。"
+        : "橙色虚线就是镜面；蓝格是原样，绿格是翻过来的。";
+      return;
+    }
     if (!point) {
       mirrorLeft.setAttribute("data-label", "左半边");
       mirrorRight.setAttribute("data-label", "右半边");
-      mirrorStageResult.textContent = state.fold + " 条镜面把圆分成 " + m + " 格，一笔变 " + m + " 笔。";
-      mirrorStageSub.textContent = "橙色虚线就是镜面；蓝格是原样，绿格是翻过来的。";
+      mirrorStageResult.textContent = "一面竖直的镜子立在中间，一笔变 2 笔。";
+      mirrorStageSub.textContent = "橙色虚线就是那面镜子；在哪边画，另一边就照出来。";
       return;
     }
     var source = point.x < CSS / 2 ? mirrorLeft : mirrorRight;
