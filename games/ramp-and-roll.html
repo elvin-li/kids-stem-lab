@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>斜坡滚球 · 能量去哪了 | 少儿数理启蒙</title>
 <meta name="description" content="调节斜坡角度、摩擦和球的质量，用实时能量柱看势能怎么变成动能、又怎么被摩擦变成热。还能先猜球停在哪里。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=14">
+<link rel="stylesheet" href="../assets/css/kid.css?v=14">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
@@ -306,6 +306,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="../assets/js/illustrations.js"></script>
 <script>
 (function () {
   'use strict';
@@ -506,10 +507,23 @@
     ctx.lineTo(wx(0), wy(0));
     ctx.closePath();
     var grad = ctx.createLinearGradient(wx(0), wy(S.h), wx(base), wy(0));
-    grad.addColorStop(0, 'rgba(167,139,250,.30)');
+    grad.addColorStop(0, 'rgba(167,139,250,.38)');
+    grad.addColorStop(0.5, 'rgba(139,92,246,.22)');
     grad.addColorStop(1, 'rgba(167,139,250,.10)');
     ctx.fillStyle = grad; ctx.fill();
     ctx.strokeStyle = C.phys; ctx.lineWidth = 2; ctx.stroke();
+    // 木板纹理
+    ctx.save();
+    ctx.strokeStyle = 'rgba(124,58,237,.18)';
+    ctx.lineWidth = 1;
+    for (var plank = 0; plank < 6; plank++) {
+      var t0 = plank / 6, t1 = (plank + 1) / 6;
+      ctx.beginPath();
+      ctx.moveTo(wx(base * t0), wy(S.h * (1 - t0)));
+      ctx.lineTo(wx(base * t1), wy(S.h * (1 - t1)));
+      ctx.stroke();
+    }
+    ctx.restore();
 
     // 摩擦纹理（μ 越大越密）
     var n = Math.round(4 + S.mu * 90);
@@ -522,6 +536,11 @@
       ctx.lineTo(wx(fx) - 4, view.floorY + 9);
       ctx.stroke();
     }
+    ctx.font = '700 10px ' + C.mono;
+    ctx.fillStyle = C.code;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText('摩擦 μ=' + S.mu.toFixed(2), wx(base) + 6, view.floorY + 12);
 
     // 地面线
     ctx.strokeStyle = C.line; ctx.lineWidth = 1;
@@ -591,13 +610,19 @@
     ctx.translate(bx, by);
     ctx.rotate(S.spin);
     var bg = ctx.createRadialGradient(-rpx * 0.3, -rpx * 0.35, rpx * 0.1, 0, 0, rpx);
-    bg.addColorStop(0, '#dbe6ff');
-    bg.addColorStop(1, C.math);
+    bg.addColorStop(0, '#eef4ff');
+    bg.addColorStop(0.45, C.math);
+    bg.addColorStop(1, '#1e3a8a');
     ctx.fillStyle = bg;
     ctx.beginPath(); ctx.arc(0, 0, rpx, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(11,15,26,.55)'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(0, -rpx); ctx.lineTo(0, rpx); ctx.stroke();   // 自转标记
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = Math.max(0.8, rpx * 0.06);
+    ctx.beginPath(); ctx.arc(0, 0, rpx * 0.88, -0.4, Math.PI + 0.4); ctx.stroke();
+    ctx.strokeStyle = 'rgba(11,15,26,.45)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, -rpx); ctx.lineTo(0, rpx); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(-rpx, 0); ctx.lineTo(rpx, 0); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    ctx.beginPath(); ctx.arc(-rpx * 0.28, -rpx * 0.32, rpx * 0.16, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
 
     // 速度箭头
@@ -933,10 +958,10 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=14"></script>
+<script src="../data/playful.js?v=14"></script>
+<script src="../assets/js/playful.js?v=14"></script>
 <script>if (window.Progress) Progress.visit("games/ramp-and-roll.html", "斜坡滚球");</script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script src="../assets/js/pwa.js?v=14"></script>
 </body>
 </html>

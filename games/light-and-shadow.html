@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>光与影 · 光走直线 | 少儿数理启蒙</title>
 <meta name="description" content="拖动灯和物体，看影子怎么变大变小；再用红绿蓝三盏灯玩加色混合。给 5–10 岁小朋友的光学直觉启蒙。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=14">
+<link rel="stylesheet" href="../assets/css/kid.css?v=14">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
@@ -500,6 +500,7 @@
   </footer>
 </main>
 
+<script src="../assets/js/illustrations.js"></script>
 <script>
 (function () {
   'use strict';
@@ -716,16 +717,19 @@
     }
 
     // ---- 遮挡物 ----
-    var objW = 14;
-    ctx.fillStyle = '#5b6b95';
-    ctx.strokeStyle = C.math; ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.rect(g.ox - objW / 2, g.objTopY, objW, floorY - g.objTopY);
-    ctx.fill(); ctx.stroke();
-    // 物体高度标注
-    ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.math;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-    ctx.fillText(S.objH.toFixed(2) + 'm', g.ox, g.objTopY - 5);
+    if (window.ILLUSTRATIONS && ILLUSTRATIONS.drawShadowObject) {
+      ILLUSTRATIONS.drawShadowObject(ctx, g.ox, g.objTopY, floorY, S.objH);
+    } else {
+      var objW = 14;
+      ctx.fillStyle = '#5b6b95';
+      ctx.strokeStyle = C.math; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.rect(g.ox - objW / 2, g.objTopY, objW, floorY - g.objTopY);
+      ctx.fill(); ctx.stroke();
+      ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.math;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText(S.objH.toFixed(2) + 'm', g.ox, g.objTopY - 5);
+    }
 
     // 地面上的投影（物体到墙之间）
     ctx.save();
@@ -739,19 +743,22 @@
     ctx.restore();
 
     // ---- 灯 ----
-    var glow = ctx.createRadialGradient(g.lx, g.ly, 0, g.lx, g.ly, Math.max(26, halfR + 26));
-    glow.addColorStop(0, 'rgba(255,250,220,.95)');
-    glow.addColorStop(1, 'rgba(255,240,180,0)');
-    ctx.fillStyle = glow;
-    ctx.beginPath(); ctx.arc(g.lx, g.ly, Math.max(26, halfR + 26), 0, Math.PI * 2); ctx.fill();
-
-    if (halfR > 2) {
-      ctx.strokeStyle = 'rgba(255,240,180,.85)'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(g.lx, g.ly - halfR); ctx.lineTo(g.lx, g.ly + halfR); ctx.stroke();
+    if (window.ILLUSTRATIONS && ILLUSTRATIONS.drawDeskLamp) {
+      ILLUSTRATIONS.drawDeskLamp(ctx, g.lx, g.ly, halfR);
+    } else {
+      var glow = ctx.createRadialGradient(g.lx, g.ly, 0, g.lx, g.ly, Math.max(26, halfR + 26));
+      glow.addColorStop(0, 'rgba(255,250,220,.95)');
+      glow.addColorStop(1, 'rgba(255,240,180,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(g.lx, g.ly, Math.max(26, halfR + 26), 0, Math.PI * 2); ctx.fill();
+      if (halfR > 2) {
+        ctx.strokeStyle = 'rgba(255,240,180,.85)'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(g.lx, g.ly - halfR); ctx.lineTo(g.lx, g.ly + halfR); ctx.stroke();
+      }
+      ctx.fillStyle = '#fff8d8';
+      ctx.beginPath(); ctx.arc(g.lx, g.ly, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#0b0f1a'; ctx.lineWidth = 1.5; ctx.stroke();
     }
-    ctx.fillStyle = '#fff8d8';
-    ctx.beginPath(); ctx.arc(g.lx, g.ly, 7, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#0b0f1a'; ctx.lineWidth = 1.5; ctx.stroke();
 
     // 额外点光源及各自影子上边界：颜色和编号同时区分，不只依赖颜色。
     var sourceYs = shadowSourceYs();
@@ -901,16 +908,19 @@
     // 灯的标记
     for (var j = 0; j < lamps.length; j++) {
       var Lj = lamps[j];
-      ctx.fillStyle = 'rgba(' + Lj.col.join(',') + ',' + (0.35 + 0.65 * Lj.I).toFixed(2) + ')';
-      ctx.beginPath(); ctx.arc(Lj.x, Lj.y, 9, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = '#0b0f1a'; ctx.lineWidth = 2; ctx.stroke();
-      ctx.font = '800 12px ' + C.font; ctx.fillStyle = '#0b0f1a';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(Lj.name, Lj.x, Lj.y + .5);
-      // 亮度标签
-      ctx.font = '700 10px ' + C.mono; ctx.fillStyle = 'rgba(238,242,255,.9)';
-      ctx.textBaseline = 'top';
-      ctx.fillText(Math.round(Lj.I * 100) + '%', Lj.x, Lj.y + 13);
+      if (window.ILLUSTRATIONS && ILLUSTRATIONS.drawColorLamp) {
+        ILLUSTRATIONS.drawColorLamp(ctx, Lj);
+      } else {
+        ctx.fillStyle = 'rgba(' + Lj.col.join(',') + ',' + (0.35 + 0.65 * Lj.I).toFixed(2) + ')';
+        ctx.beginPath(); ctx.arc(Lj.x, Lj.y, 9, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#0b0f1a'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.font = '800 12px ' + C.font; ctx.fillStyle = '#0b0f1a';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(Lj.name, Lj.x, Lj.y + .5);
+        ctx.font = '700 10px ' + C.mono; ctx.fillStyle = 'rgba(238,242,255,.9)';
+        ctx.textBaseline = 'top';
+        ctx.fillText(Math.round(Lj.I * 100) + '%', Lj.x, Lj.y + 13);
+      }
     }
 
     // 取色器
@@ -1266,10 +1276,10 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=14"></script>
+<script src="../data/playful.js?v=14"></script>
+<script src="../assets/js/playful.js?v=14"></script>
 <script>if (window.Progress) Progress.visit("games/light-and-shadow.html", "光与影");</script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script src="../assets/js/pwa.js?v=14"></script>
 </body>
 </html>

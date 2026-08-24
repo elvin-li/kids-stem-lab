@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>数感积木 · 十格阵与凑十 — 少儿数理启蒙</title>
 <meta name="description" content="拖动单位积木，满十成行。同一个数量同时用积木、数字、数轴三种方式呈现，帮 4–8 岁孩子建立位值与瞬识（subitizing）直觉。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=13" />
-<link rel="stylesheet" href="../assets/css/kid.css?v=13" />
+<link rel="stylesheet" href="../assets/css/base.css?v=14" />
+<link rel="stylesheet" href="../assets/css/kid.css?v=14" />
 <link rel="stylesheet" href="../assets/css/print.css" media="print" />
 <link rel="manifest" href="../manifest.webmanifest" />
 <meta name="theme-color" content="#0b0f1a" />
@@ -425,6 +425,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <p class="sr-only" id="live" aria-live="polite"></p>
 
+<script src="../assets/js/illustrations.js"></script>
 <script>
 (function () {
   'use strict';
@@ -823,20 +824,28 @@
     if (pop < 1) sc = 0.7 + 0.3 * (1 - Math.pow(1 - pop, 3)) + Math.sin(pop * Math.PI) * .06;
     var w = s * sc, off = (s - w) / 2;
 
-    ctx.save();
-    if (b.drag) { ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 5; }
-    var g = ctx.createLinearGradient(x, y, x, y + s);
-    g.addColorStop(0, main);
-    g.addColorStop(1, shade(main, -.32));
-    rr(ctx, x + off, y + off, w, w, Math.max(3, s * .22));
-    ctx.fillStyle = g; ctx.fill();
-    ctx.restore();
-
-    rr(ctx, x + off + 1.5, y + off + 1.5, w - 3, w * .34, Math.max(2, s * .16));
-    ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.fill();
-
-    rr(ctx, x + off + .5, y + off + .5, w - 1, w - 1, Math.max(3, s * .22));
-    ctx.strokeStyle = 'rgba(8,16,31,.55)'; ctx.lineWidth = 1; ctx.stroke();
+    if (window.ILLUSTRATIONS && ILLUSTRATIONS.drawCube) {
+      ILLUSTRATIONS.drawCube(ctx, x + off, y + off, w, main, { shadow: !!b.drag });
+    } else {
+      ctx.save();
+      if (b.drag) { ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 5; }
+      var g = ctx.createLinearGradient(x, y, x, y + s);
+      g.addColorStop(0, main);
+      g.addColorStop(1, shade(main, -.32));
+      rr(ctx, x + off, y + off, w, w, Math.max(3, s * .22));
+      ctx.fillStyle = g; ctx.fill();
+      ctx.restore();
+      rr(ctx, x + off + 1.5, y + off + 1.5, w - 3, w * .34, Math.max(2, s * .16));
+      ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.fill();
+      rr(ctx, x + off + .5, y + off + .5, w - 1, w - 1, Math.max(3, s * .22));
+      ctx.strokeStyle = 'rgba(8,16,31,.55)'; ctx.lineWidth = 1; ctx.stroke();
+    }
+    if (w >= 14) {
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.beginPath();
+      ctx.arc(x + off + w * 0.28, y + off + w * 0.32, Math.max(1.5, w * 0.08), 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   function shade(hex, amt) {
@@ -861,6 +870,12 @@
     ctx.fillStyle = C.inkDim;
     ctx.textBaseline = 'alphabetic';
     ctx.fillText('十格阵 ten-frame（每行 10 格，5 + 5）', G.pad, 20);
+    ctx.save();
+    rr(ctx, G.pad - 8, 28, G.frameW + 16, G.rows * G.cell + (G.rows - 1) * G.gap + 16, 14);
+    ctx.strokeStyle = alpha(C.math, 0.35);
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
 
     var n = count(), fullRows = Math.floor(n / 10);
 
@@ -1204,10 +1219,10 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=14"></script>
+<script src="../data/playful.js?v=14"></script>
+<script src="../assets/js/playful.js?v=14"></script>
 <script>if (window.Progress) Progress.visit("games/number-blocks.html", "数感积木");</script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script src="../assets/js/pwa.js?v=14"></script>
 </body>
 </html>

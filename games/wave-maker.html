@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>造波机 · 振幅、频率与干涉 | 少儿数理启蒙</title>
 <meta name="description" content="调两列波的振幅、频率、波长，看它们相加的样子；再用双点源水波槽看干涉条纹。给 7–12 岁小朋友的波动启蒙。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=13">
-<link rel="stylesheet" href="../assets/css/kid.css?v=13">
+<link rel="stylesheet" href="../assets/css/base.css?v=14">
+<link rel="stylesheet" href="../assets/css/kid.css?v=14">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
@@ -423,6 +423,7 @@
   </footer>
 </main>
 
+<script src="../assets/js/illustrations.js"></script>
 <script>
 (function () {
   'use strict';
@@ -571,13 +572,32 @@
       ctx.lineJoin = 'round';
       ctx.beginPath();
       var step = 1;
+      var crestX = null, crestY = null, troughX = null, troughY = null;
       for (var px = 0; px <= plotW; px += step) {
         var xm = px / PPM;
         var yv = f.get(xm, t);
         var yy = mid - clamp(yv, -maxAmp * 1.2, maxAmp * 1.2) * scale;
         if (px === 0) ctx.moveTo(padL + px, yy); else ctx.lineTo(padL + px, yy);
+        if (r < 2 && px > 4) {
+          var prevXm = (px - step) / PPM;
+          var prevYv = f.get(prevXm, t);
+          if (prevYv <= 0 && yv > 0 && crestX === null) { crestX = padL + px; crestY = yy; }
+          if (prevYv >= 0 && yv < 0 && troughX === null) { troughX = padL + px; troughY = yy; }
+        }
       }
       ctx.stroke();
+      if (r < 2 && crestX !== null) {
+        ctx.fillStyle = f.col;
+        ctx.font = '700 9px ' + C.mono;
+        ctx.textAlign = 'center';
+        ctx.fillText('峰', crestX, crestY - 4);
+      }
+      if (r < 2 && troughX !== null) {
+        ctx.fillStyle = f.col;
+        ctx.font = '700 9px ' + C.mono;
+        ctx.textAlign = 'center';
+        ctx.fillText('谷', troughX, troughY + 12);
+      }
 
       // 叠加波填充
       if (r === 2) {
@@ -735,6 +755,19 @@
     ctx.drawImage(tankCv, 0, 0, tankW, tankH, 0, 0, W, H - 30);
     ctx.restore();
 
+    // 水槽玻璃边框
+    ctx.save();
+    ctx.strokeStyle = 'rgba(126,231,255,.45)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(1.5, 1.5, W - 3, H - 33);
+    ctx.fillStyle = 'rgba(126,231,255,.08)';
+    ctx.fillRect(0, 0, W, 14);
+    ctx.font = '700 11px ' + C.font;
+    ctx.fillStyle = 'rgba(238,242,255,.75)';
+    ctx.textAlign = 'center';
+    ctx.fillText('水波槽 · 两源干涉', W / 2, 11);
+    ctx.restore();
+
     // 波节线（破坏性干涉位置）标注：只在同频同波长时才是稳定的
     var stable = Math.abs(s0.f - s1.f) < 0.001 && Math.abs(s0.lam - s1.lam) < 0.001 && s0.A > 0.02 && s1.A > 0.02;
     if (stable) {
@@ -747,11 +780,16 @@
       ctx.strokeStyle = i === 0 ? C.math : C.kit;
       ctx.lineWidth = 2;
       ctx.fillStyle = '#0b0f1a';
-      ctx.beginPath(); ctx.arc(s.x, s.y, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(s.x, s.y, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = i === 0 ? 'rgba(110,168,254,.55)' : 'rgba(244,114,182,.55)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([2, 4]);
+      ctx.beginPath(); ctx.arc(s.x, s.y, 14 + Math.sin(t * 4 + i) * 2, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
       ctx.font = '800 10px ' + C.font;
       ctx.fillStyle = i === 0 ? C.math : C.kit;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(String(i + 1), s.x, s.y + .5);
+      ctx.fillText('源' + (i + 1), s.x, s.y + .5);
       if (dragSrc === i) {
         ctx.setLineDash([3, 3]); ctx.strokeStyle = 'rgba(255,255,255,.7)';
         ctx.beginPath(); ctx.arc(s.x, s.y, 14, 0, Math.PI * 2); ctx.stroke();
@@ -1170,10 +1208,10 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=13"></script>
-<script src="../data/playful.js?v=13"></script>
-<script src="../assets/js/playful.js?v=13"></script>
+<script src="../assets/js/progress.js?v=14"></script>
+<script src="../data/playful.js?v=14"></script>
+<script src="../assets/js/playful.js?v=14"></script>
 <script>if (window.Progress) Progress.visit("games/wave-maker.html", "造波机");</script>
-<script src="../assets/js/pwa.js?v=13"></script>
+<script src="../assets/js/pwa.js?v=14"></script>
 </body>
 </html>
