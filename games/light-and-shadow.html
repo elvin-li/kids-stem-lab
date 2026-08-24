@@ -331,8 +331,8 @@
             <input class="input" type="range" id="lampX" min="2" max="60" step="1" value="30">
           </div>
           <div class="ctrl">
-            <div class="ctrl-head"><label for="lampY">把灯举高 / 放低</label><b id="lampYOut">30%</b></div>
-            <input class="input" type="range" id="lampY" min="8" max="92" step="1" value="30">
+            <div class="ctrl-head"><label for="lampY">把灯举高 / 放低</label><b id="lampYOut">72%</b></div>
+            <input class="input" type="range" id="lampY" min="8" max="92" step="1" value="72">
           </div>
           <div class="ctrl">
             <div class="ctrl-head"><label for="objX">把道具搬近或搬远</label><b id="objXOut">45%</b></div>
@@ -530,8 +530,11 @@
 
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var S = {
-    // 影子模式（归一化坐标 0..1，相对画面宽/高）
-    lamp: { x: 0.30, y: 0.30, r: 0 },     // r 单位：厘米
+    /* 影子模式（归一化坐标 0..1，相对画面宽/高）。
+       灯默认放在道具顶端稍低的位置：擦过物顶的光于是往上走，影子爬到墙上——
+       故事讲的是「幕布上的影子」，小目标也是「让墙上的影子变大」，开局那一帧
+       就该是墙上的影子。灯抬到物顶以上时影子改为躺在地上，两种都画。 */
+    lamp: { x: 0.30, y: 0.72, r: 0 },     // r 单位：厘米
     objX: 0.45, objH: 0.9,                // objH 单位：米
     rays: true, anim: !reduceMotion, sourceCount: 1, sourceGap: 0.12,
     // 混色模式
@@ -639,12 +642,19 @@
     ctx.restore();
 
     /* 地面。也要被灯照亮：地板一片死黑的话，躺在上面的影子就跟背景一个色，
-       等于没画。铺一层同样的灯光衰减，影子才有东西可以「挖」出来。 */
+       等于没画。铺一层同样的灯光衰减，影子才有东西可以「挖」出来。
+       再压一道地板缝：没有纹理时这条带子看着像页面底边，不像地。 */
     ctx.fillStyle = '#131a2c';
     ctx.fillRect(0, floorY, W, H - floorY);
     ctx.save();
     ctx.beginPath(); ctx.rect(0, floorY, W, H - floorY); ctx.clip();
     ctx.fillStyle = lit; ctx.fillRect(0, floorY, W, H - floorY);
+    ctx.strokeStyle = 'rgba(10,14,25,.30)';
+    ctx.lineWidth = 1;
+    var seam = Math.max(34, W / 14);
+    for (var fx = seam / 2; fx < W; fx += seam) {
+      ctx.beginPath(); ctx.moveTo(fx, floorY); ctx.lineTo(fx - 5, H); ctx.stroke();
+    }
     ctx.restore();
     ctx.strokeStyle = C.line; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0, floorY + .5); ctx.lineTo(W, floorY + .5); ctx.stroke();
@@ -728,7 +738,7 @@
         ctx.beginPath(); ctx.moveTo(g.wx + 12, umbraTop); ctx.lineTo(g.wx + 12, floorY); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(g.wx + 6, umbraTop); ctx.lineTo(g.wx + 18, umbraTop); ctx.stroke();
         pillText(((floorY - umbraTop) * metersPerPx()).toFixed(2) + 'm',
-          g.wx + 22, (umbraTop + floorY) / 2, C.warn, 'left');
+          g.wx + 22, (umbraTop + floorY) / 2, C.warn, 'left', C.warn);
         ctx.restore();
       } else {
         // 地上：影子从物体脚下往右躺，尖端越远影子越长
@@ -737,14 +747,17 @@
         shade = { surface: 'floor', sizePx: umbraEnd - g.ox, penPx: penEnd - umbraEnd };
         floorShade(g.ox, umbraEnd, penEnd, floorY);
 
+        /* 量影子长度的尺画在影子上（琥珀色压深色，读得清），读数挪到地板线
+           以上：影子现在铺满整条地板带，读数留在带子里就把影子盖掉了。 */
         ctx.save();
         ctx.strokeStyle = C.warn; ctx.lineWidth = 2;
-        var dimY = floorY + 22;
+        var dimY = floorY + (H - floorY) * 0.55;
         ctx.beginPath(); ctx.moveTo(g.ox, dimY); ctx.lineTo(umbraEnd, dimY); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(g.ox, dimY - 4); ctx.lineTo(g.ox, dimY + 4); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(umbraEnd, dimY - 4); ctx.lineTo(umbraEnd, dimY + 4); ctx.stroke();
         ctx.restore();
-        pillText(((umbraEnd - g.ox) * metersPerPx()).toFixed(2) + 'm', (g.ox + umbraEnd) / 2, dimY - 12, C.warn, 'center');
+        pillText(((umbraEnd - g.ox) * metersPerPx()).toFixed(2) + 'm',
+          (g.ox + umbraEnd) / 2, floorY - 12, C.warn, 'center', C.warn);
       }
 
       // 关键光线：灯中心擦过物顶，一路走到影子尖端就停——尖端就是这么定出来的
@@ -789,8 +802,10 @@
       ctx.strokeStyle = '#0b0f1a'; ctx.lineWidth = 1.5; ctx.stroke();
     }
 
-    // 额外点光源及各自影子边界：颜色和编号同时区分，不只依赖颜色。
-    var sourceYs = shadowSourceYs();
+    /* 额外点光源及各自影子边界：颜色和编号同时区分，不只依赖颜色。
+       只有一盏灯时整段跳过——那根编号「1」的标尺量的就是主影子，
+       主影子自己已经带了尺和读数，再画一条只会在影子尖端多出个悬空的数字。 */
+    var sourceYs = S.sourceCount > 1 ? shadowSourceYs() : [];
     for (var si = 0; si < sourceYs.length; si++) {
       var sy = sourceYs[si];
       if (Math.abs(sy - g.ly) > 1) {
@@ -839,25 +854,39 @@
      从 x0 到 xUmbra 是全黑的本影，再往外渐隐到 xPen 就是半影。 */
   function floorShade(x0, xUmbra, xPen, floorY) {
     if (!(xUmbra > x0)) return;
-    var band = 11;
+    /* 影子铺满整条地板带，并且越靠近地板线越黑：贴着物体脚下的接触影最实，
+       往观众这边（画面下方）稍微松开。原先只涂 11px 高的一条，在 34px 的
+       地板上看着像一块贴纸，不像躺在地上的影子。 */
+    var depth = H - floorY;
+    var fade = ctx.createLinearGradient(0, floorY, 0, H);
+    fade.addColorStop(0, 'rgba(6,9,18,.90)');
+    fade.addColorStop(0.55, 'rgba(6,9,18,.78)');
+    fade.addColorStop(1, 'rgba(6,9,18,.52)');
     ctx.save();
-    ctx.fillStyle = 'rgba(6,9,18,.88)';
-    ctx.fillRect(x0, floorY, xUmbra - x0, band);
+    ctx.fillStyle = fade;
+    ctx.fillRect(x0, floorY, xUmbra - x0, depth);
     if (xPen > xUmbra + 0.5) {
-      var fg = ctx.createLinearGradient(xUmbra, 0, xPen, 0);
-      fg.addColorStop(0, 'rgba(6,9,18,.88)');
-      fg.addColorStop(1, 'rgba(6,9,18,0)');
-      ctx.fillStyle = fg;
-      ctx.fillRect(xUmbra, floorY, xPen - xUmbra, band);
+      /* 半影：本影尖端往外横向渐隐，宽度就是灯的大小撑出来的那一段。
+         切成三条横带分别做水平渐变，纵向的浓淡就跟着本影一起走。 */
+      var slices = 3;
+      for (var s = 0; s < slices; s++) {
+        var a = 0.90 - 0.38 * ((s + 0.5) / slices);
+        var fg = ctx.createLinearGradient(xUmbra, 0, xPen, 0);
+        fg.addColorStop(0, 'rgba(6,9,18,' + a.toFixed(3) + ')');
+        fg.addColorStop(1, 'rgba(6,9,18,0)');
+        ctx.fillStyle = fg;
+        ctx.fillRect(xUmbra, floorY + depth * s / slices, xPen - xUmbra, depth / slices + 0.6);
+      }
     }
     ctx.restore();
   }
 
   /* 压在亮处的读数：先垫一层深色药丸，再写字，免得白字被灯光吃掉。
      贴着墙写的影高标注很容易被画布右边切掉，clampW 会把它往里收。 */
-  function pillText(text, x, y, color, align) {
+  function pillText(text, x, y, color, align, border) {
     ILLUSTRATIONS.canvasLabel(ctx, text, x, y, {
-      size: 11, font: C.mono, color: color, bg: 'rgba(6,9,18,.8)',
+      size: 11, font: C.mono, color: color, bg: 'rgba(6,9,18,.86)',
+      border: border, borderWidth: 1.2,
       align: align, padX: 5, padY: 3.5, radius: 9, clampW: W
     });
   }
