@@ -99,6 +99,51 @@ window.ILLUSTRATIONS = (function () {
     return out;
   }
 
+  /**
+   * 跟随主题的画布配色。
+   *
+   * 各实验页的内联脚本在 playful.js 之前执行，那一刻 <html> 上还没有 data-mode，
+   * kid.css 的整套变量都还没生效，此时直接读 --ink / --math 只会拿到 base.css 的
+   * 深色值。孩子模式是浅底页面，于是画布上就出现浅色字压浅色底、几乎看不见的情况。
+   *
+   * 这个 helper 把读取推迟到主题稳定之后，并在孩子／家长模式互相切换时自动重读，
+   * 因此适用于「背景透明、颜色应当跟着页面主题走」的画布。
+   * 底色写死成深色的画布请改用 stagePalette()。
+   *
+   * @param {Object} spec     形如 { ink: ["--ink", "#eef2ff"] }：键名 → [CSS 变量, 兜底色]
+   * @param {Function} [onChange]  颜色真的变了之后调用，通常传页面的重绘函数
+   * @returns {Object} 会被就地刷新的配色对象；页面可以一直持有同一个引用
+   */
+  function themePalette(spec, onChange) {
+    var out = {};
+    var keys = Object.keys(spec || {});
+
+    function read() {
+      var cs = getComputedStyle(document.documentElement);
+      var changed = false;
+      keys.forEach(function (k) {
+        var raw = cs.getPropertyValue(spec[k][0]);
+        var value = (raw && raw.trim()) || spec[k][1];
+        if (out[k] !== value) { out[k] = value; changed = true; }
+      });
+      return changed;
+    }
+
+    function refresh() { if (read() && typeof onChange === "function") onChange(); }
+
+    read();
+    // 样式表可能还在路上：等文档就绪后再确认一次
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refresh);
+    window.addEventListener("load", refresh);
+    // playful.js 设置 data-mode、以及用户手动切换模式，都会走到这里
+    if (window.MutationObserver) {
+      new MutationObserver(refresh).observe(document.documentElement, {
+        attributes: true, attributeFilter: ["data-mode"]
+      });
+    }
+    return out;
+  }
+
   function svgEl(name, attrs, text) {
     var el = document.createElementNS(NS, name);
     Object.keys(attrs || {}).forEach(function (k) { el.setAttribute(k, attrs[k]); });
@@ -494,27 +539,45 @@ window.ILLUSTRATIONS = (function () {
   /** Canvas：3D 数感积木 */
   function drawCube(ctx, x, y, s, main, opts) {
     opts = opts || {};
-    var rad = Math.max(3, s * 0.22);
-    var top = shadeHex(main, 0.22);
-    var side = shadeHex(main, -0.32);
+    /* 圆角原来给到边长的 22%，再压一条覆盖上部三分之一的高光条，
+       两下加起来看着像个鼠标而不是积木。收小圆角、把高光改成沿上边的一道窄光，
+       再补一圈内亮外暗的倒角，才有实心方块的厚度感。 */
+    var rad = Math.max(2, s * 0.15);
+    var top = shadeHex(main, 0.26);
+    var side = shadeHex(main, -0.3);
     ctx.save();
     if (opts.shadow) {
       ctx.shadowColor = "rgba(0,0,0,.45)";
       ctx.shadowBlur = 14;
       ctx.shadowOffsetY = 5;
     }
-    var g = ctx.createLinearGradient(x, y, x, y + s);
+    var g = ctx.createLinearGradient(x, y, x + s * 0.35, y + s);
     g.addColorStop(0, top);
+    g.addColorStop(0.55, main);
     g.addColorStop(1, side);
     roundRect(ctx, x, y, s, s, rad);
     ctx.fillStyle = g;
     ctx.fill();
     ctx.restore();
-    roundRect(ctx, x + 1.5, y + 1.5, s - 3, s * 0.34, Math.max(2, s * 0.16));
-    ctx.fillStyle = "rgba(255,255,255,.24)";
-    ctx.fill();
+    // 上边一道窄高光 + 下边一道暗边＝倒角
+    ctx.save();
+    ctx.beginPath();
     roundRect(ctx, x + 0.5, y + 0.5, s - 1, s - 1, rad);
-    ctx.strokeStyle = "rgba(8,16,31,.55)";
+    ctx.clip();
+    ctx.strokeStyle = "rgba(255,255,255,.5)";
+    ctx.lineWidth = Math.max(1, s * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(x + rad, y + ctx.lineWidth / 2);
+    ctx.lineTo(x + s - rad, y + ctx.lineWidth / 2);
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(0,0,0,.22)";
+    ctx.beginPath();
+    ctx.moveTo(x + rad, y + s - ctx.lineWidth / 2);
+    ctx.lineTo(x + s - rad, y + s - ctx.lineWidth / 2);
+    ctx.stroke();
+    ctx.restore();
+    roundRect(ctx, x + 0.5, y + 0.5, s - 1, s - 1, rad);
+    ctx.strokeStyle = "rgba(8,16,31,.42)";
     ctx.lineWidth = 1;
     ctx.stroke();
   }
@@ -2548,6 +2611,7 @@ window.ILLUSTRATIONS = (function () {
   return {
     version: 2,
     stagePalette: stagePalette,
+    themePalette: themePalette,
     dinoScaleCompare: dinoScaleCompare,
     drawKid: drawKid,
     drawFeather: drawFeather,

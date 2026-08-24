@@ -434,21 +434,22 @@
   'use strict';
 
   /* ---------- 工具 ---------- */
-  var root = getComputedStyle(document.documentElement);
-  function cv(name, fb) { var v = root.getPropertyValue(name).trim(); return v || fb; }
-  var C = {
-    math: cv('--math', '#6ea8fe'), sci: cv('--sci', '#4ade80'),
-    warn: cv('--warn', '#fbbf24'), phys: cv('--phys', '#a78bfa'),
-    kit: cv('--kit', '#f472b6'),
-    ink: cv('--ink', '#eef2ff'), inkMid: cv('--ink-mid', '#b6c0e0'),
-    inkDim: cv('--ink-dim', '#7d88ab'),
-    line: cv('--line', '#2a3355'), soft: cv('--line-soft', '#202844'),
-    surf: cv('--surface', '#161d33'), surf2: cv('--surface-2', '#1d2540'),
-    /* 散块用固定的木色，不跟主题变量走：--ink-mid 在家长模式是浅字色、在孩子模式是深字色，
-       同一个值画出来一次太亮一次太暗，散块会看不清或者像一排电池。木色在两种底色上都成立，
-       也和「已放 = 蓝」「满十 = 黄」三种状态区分得开。 */
-    loose: '#8a93ab'
-  };
+  /* 画布背景透明，颜色必须跟着页面主题走。
+     这段脚本比 playful.js 早执行，那时 <html> 上还没有 data-mode，kid.css 整套变量都没生效，
+     直接读只会拿到深色主题的值——孩子模式是浅底页面，画出来就是浅色压浅色。
+     themePalette 会等主题稳定后重读，并在孩子／家长模式切换时重绘。 */
+  var C = ILLUSTRATIONS.themePalette({
+    math: ['--math', '#6ea8fe'], sci: ['--sci', '#4ade80'],
+    warn: ['--warn', '#fbbf24'], phys: ['--phys', '#a78bfa'],
+    kit: ['--kit', '#f472b6'],
+    ink: ['--ink', '#eef2ff'], inkMid: ['--ink-mid', '#b6c0e0'],
+    inkDim: ['--ink-dim', '#7d88ab'],
+    line: ['--line', '#2a3355'], soft: ['--line-soft', '#202844'],
+    surf: ['--surface', '#161d33'], surf2: ['--surface-2', '#1d2540']
+  }, function () { drawLine(); });
+  /* 散块用固定的石板灰，不跟主题变量走：--ink-mid 是文字色，
+     借来涂积木一次太亮一次太暗，而且和「已放 = 蓝」「满十 = 黄」不成一套。 */
+  C.loose = '#8a93ab';
   var FONT = '-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif';
   var MONO = 'ui-monospace, Menlo, monospace';
 
@@ -508,6 +509,13 @@
   var G = { W: 320, H: 400, cell: 30, gap: 5, gGap: 12, pad: 14, frameTop: 34, rowGap: 6, rows: 10, trayTop: 300, trayH: 92, labelW: 30 };
   var uid = 0;
 
+  /* wrap.clientWidth 含内边距，直接拿它当画布宽度会超出内容区一截，
+     画布随后被 max-width:100% 压回去，横竖比例就此对不上。 */
+  /** 散块一行最多摆几个。托盘高度和散块落点都要用，必须是同一个答案。 */
+  function looseCols(size) {
+    return Math.min(10, Math.max(4, Math.floor((G.W - G.pad * 2) / (size + 8))));
+  }
+
   function layout() {
     /* base.css 给 .lab-stage canvas 加了 max-width:100%，画布真正能占的宽度是它自己那一格，
        未必等于外层容器。先把宽度交回 CSS 量一次，量到多少就照多少画，位图和显示尺寸才一致，
@@ -526,7 +534,7 @@
     /* 散块托盘按真正要摆几行来定高：宽屏一行就够，原来固定按两行留高度，
        画布下方会空出一大块灰地，看着像没画完。 */
     var looseSize = Math.max(14, G.cell * 0.86);
-    var perRow = Math.min(10, Math.max(4, Math.floor((w - G.pad * 2) / (looseSize + 8))));
+    var perRow = looseCols(looseSize);
     var looseRows = Math.ceil(10 / perRow);
     G.trayH = 26 + (looseRows - 1) * looseSize * 0.55 + looseSize + 14;
     G.H = G.trayTop + G.trayH + 6;
@@ -544,9 +552,14 @@
   }
   function looseHome(i, n) {
     var size = Math.max(14, G.cell * 0.86);
-    var per = Math.min(n, Math.max(4, Math.floor((G.W - G.pad * 2) / (size + 8))));
+    var fits = looseCols(size);
+    var per = Math.min(Math.max(1, n), fits);
     var col = i % per, row = Math.floor(i / per);
-    var step = (G.W - G.pad * 2 - size) / Math.max(1, per - 1);
+    /* 只剩两三块的时候，原来仍然把它们摊满整行宽，
+       结果画布左右各钉着一块、中间一大片空——那不像一盘散块。
+       排得下就按固定间距靠左挨着放，排不下才压缩间距。 */
+    var spread = n >= fits && per > 1;
+    var step = spread ? (G.W - G.pad * 2 - size) / (per - 1) : size + 8;
     return {
       x: G.pad + col * step,
       y: G.trayTop + 26 + row * (size * 0.55),
