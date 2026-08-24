@@ -1,5 +1,40 @@
 /* 少儿数理启蒙 · 共享插图库
-   Classic script；支持 file://，暴露 window.ILLUSTRATIONS */
+   Classic script；支持 file://，暴露 window.ILLUSTRATIONS
+
+   =========================== 这个文件里有什么 ===========================
+   1. 配色
+      stagePalette(overrides)      深色舞台专用的一份固定配色（光与影、造波池那类
+                                   不跟随主题的画布），overrides 覆盖同名键。
+      themePalette(spec, onChange) 延迟读取 CSS 变量并在换主题时回调。所有内联脚本
+                                   都比 playful.js 早跑，开局快照 getComputedStyle
+                                   会把深色主题的值定死，浅色主题下就看不清了。
+      shadeHex / fadeHex           把主题色推亮推暗、或配一个半透明版本。
+
+   2. Canvas 绘制助手（第一个参数一律是 ctx，坐标用 CSS 像素）
+      roundRect / canvasLabel      圆角路径；带底色的读数标签（画布上所有图注都用它）。
+      drawKid / drawFeather / drawBall / drawHammer
+                                   自由落体、斜坡那几页的实物。
+      drawTurtle / drawCube / drawPatternCell / drawCandyBean
+                                   海龟、数感积木、规律方块、糖豆。
+      drawDeskLamp / drawShadowObject / drawColorLamp
+                                   光与影那页的台灯、遮挡物、RGB 混色灯。
+      drawDoodleStarter            空画布上的描红范本（画在覆盖层，别烙进作品）。
+      gearShape                    齿轮（SVG path 生成）。
+
+   3. SVG 插图目录
+      art(name) / renderArt(root)  按名字取成品内联 SVG；file:// 下代替外部图片。
+      hasArt / artNames            查询目录。
+      tileIcon(id)                 实验目录页的小方图标。
+      dinoSilhouette / dinoScaleCompare / dietColor
+                                   恐龙剪影与等比身高对比。
+      raindrop / raindropPath / legend
+                                   雨滴形状与通用图例。
+
+   约定：
+   - Canvas 助手不改动传入 ctx 的状态（内部 save/restore 成对）。
+   - 颜色尽量从调用页传进来（主题色），写死的十六进制只用于与主题无关的实物固有色。
+   - 教育性标注（刻度、图注、单位）一律走 canvasLabel，保证任何背景上都读得清。
+   ====================================================================== */
 window.ILLUSTRATIONS = (function () {
   "use strict";
 
@@ -580,7 +615,9 @@ window.ILLUSTRATIONS = (function () {
     ctx.restore();
   }
 
+  /** Canvas：圆角矩形路径。只建路径，填充和描边留给调用方。 */
   function roundRect(ctx, x, y, w, h, rad) {
+    rad = Math.max(0, Math.min(rad, w / 2, h / 2));
     ctx.beginPath();
     ctx.moveTo(x + rad, y);
     ctx.arcTo(x + w, y, x + w, y + h, rad);
@@ -588,6 +625,51 @@ window.ILLUSTRATIONS = (function () {
     ctx.arcTo(x, y + h, x, y, rad);
     ctx.arcTo(x, y, x + w, y, rad);
     ctx.closePath();
+  }
+
+  /** Canvas：带底色的小标签，画布上所有读数、图注、刻度说明都走这里。
+      舞台上永远有东西压在字底下——网格线、笔画、光斑、糖豆——裸写文字在某些
+      背景上必然读不清，所以先垫一层药丸再落字。
+      各页原本各写了一份几乎一样的实现（light-and-shadow 的 pillText、
+      turtle-geometry 的 tag、symmetry-studio 的 pill），统一到这里。
+
+      opts:
+        size/weight/font  字号、字重、字族（默认 12 / 700 / sans-serif）
+        color             文字色
+        bg                药丸底色（默认半透明深色）
+        border            描边色，配合 borderWidth
+        align             x 表示左边缘 'left' / 中心 'center' / 右边缘 'right'
+        padX/padY         内边距，决定药丸尺寸
+        radius            圆角，默认取高度一半和 9 里较小的
+        clampW/clampH     给定画布尺寸时把药丸收进边界，避免被裁掉
+      返回实际落笔的方框 {x,y,w,h}，方便调用方接着排下一个标签。 */
+  function canvasLabel(ctx, text, x, y, opts) {
+    opts = opts || {};
+    var size = opts.size || 12;
+    var padX = opts.padX == null ? 7 : opts.padX;
+    var padY = opts.padY == null ? 4 : opts.padY;
+    ctx.save();
+    ctx.font = (opts.weight || 700) + " " + size + "px " + (opts.font || "sans-serif");
+    var w = ctx.measureText(text).width + padX * 2;
+    var h = size + padY * 2;
+    var left = opts.align === "center" ? x - w / 2 : opts.align === "right" ? x - w : x;
+    var top = y - h / 2;
+    if (opts.clampW) left = Math.max(4, Math.min(opts.clampW - w - 4, left));
+    if (opts.clampH) top = Math.max(4, Math.min(opts.clampH - h - 4, top));
+    roundRect(ctx, left, top, w, h, opts.radius == null ? Math.min(h / 2, 9) : opts.radius);
+    ctx.fillStyle = opts.bg || "rgba(8,12,22,.78)";
+    ctx.fill();
+    if (opts.border) {
+      ctx.strokeStyle = opts.border;
+      ctx.lineWidth = opts.borderWidth || 1.4;
+      ctx.stroke();
+    }
+    ctx.fillStyle = opts.color || "#ffffff";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, left + padX, top + h / 2 + 0.5);
+    ctx.restore();
+    return { x: left, y: top, w: w, h: h };
   }
 
   /** Canvas：海龟（壳纹 + 头尾，孩子一眼能认） */
@@ -865,7 +947,6 @@ window.ILLUSTRATIONS = (function () {
     ctx.restore();
   }
 
-  /** Canvas：彩虹画室起始提示 */
   /** Canvas：空画布上的描红范本。
       画一只虚线怪兽，把「3 笔 + 3 色 + 1 印章」的任务拆成三处可以照着描的轮廓。
       opts 传主题色（ink/line/math/sci/kit/warn/font），不传就用浅色主题的默认值。
@@ -3145,6 +3226,7 @@ window.ILLUSTRATIONS = (function () {
     drawColorLamp: drawColorLamp,
     drawDoodleStarter: drawDoodleStarter,
     roundRect: roundRect,
+    canvasLabel: canvasLabel,
     tileIcon: tileIcon,
     dietColor: dietColor,
     shadeHex: shadeHex,

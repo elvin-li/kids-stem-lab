@@ -853,21 +853,13 @@
     ctx.restore();
   }
 
-  /* 压在亮处的读数：先垫一层深色药丸，再写字，免得白字被灯光吃掉。 */
+  /* 压在亮处的读数：先垫一层深色药丸，再写字，免得白字被灯光吃掉。
+     贴着墙写的影高标注很容易被画布右边切掉，clampW 会把它往里收。 */
   function pillText(text, x, y, color, align) {
-    ctx.save();
-    ctx.font = '700 11px ' + C.mono;
-    ctx.textBaseline = 'middle';
-    var w = ctx.measureText(text).width;
-    var left = align === 'center' ? x - w / 2 : x;
-    // 贴着墙写的影高标注很容易被画布右边切掉，统一往里收
-    left = clamp(left, 6, Math.max(6, W - w - 6));
-    ctx.fillStyle = 'rgba(6,9,18,.8)';
-    roundRect(left - 5, y - 9, w + 10, 18, 9); ctx.fill();
-    ctx.fillStyle = color;
-    ctx.textAlign = 'left';
-    ctx.fillText(text, left, y + .5);
-    ctx.restore();
+    ILLUSTRATIONS.canvasLabel(ctx, text, x, y, {
+      size: 11, font: C.mono, color: color, bg: 'rgba(6,9,18,.8)',
+      align: align, padX: 5, padY: 3.5, radius: 9, clampW: W
+    });
   }
 
   function roundRect(x, y, w, h, r) {
