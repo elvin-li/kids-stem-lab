@@ -33,9 +33,16 @@
 
   /* ---------- 机器 ---------- */
   .machine-wrap { display: grid; gap: 14px; }
-  .machine { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px;
-             align-items: center; }
-  @media (max-width: 640px) { .machine { grid-template-columns: 1fr; } }
+  /* 输入 →（机器）→ 输出：三个块之间夹两个方向箭头，数字往哪走一眼看清。
+     窄屏叠成一列后，箭头转成朝下。 */
+  .machine { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto minmax(0,1fr);
+             gap: 10px; align-items: center; }
+  .flow-arrow { font-size: 1.5rem; font-weight: 700; color: var(--accent); text-align: center; }
+  @media (max-width: 640px) {
+    .machine { grid-template-columns: minmax(0,1fr); justify-items: center; }
+    .machine > * { width: 100%; }
+    .flow-arrow { width: auto; rotate: 90deg; }
+  }
 
   .port { background: var(--surface); border: 1px solid var(--line);
           border-radius: var(--r); padding: 14px; text-align: center; }
@@ -47,22 +54,21 @@
   .port-out .port-val { color: var(--sci); }
   .port-out.thinking .port-val { color: var(--ink-dim); }
 
-  .box { position: relative; width: 132px; height: 118px; margin: 0 auto;
+  .box { position: relative; width: 168px; height: 168px; margin: 0 auto;
          border-radius: var(--r-lg);
          background: linear-gradient(160deg, var(--bg-soft), var(--surface-2));
          border: 1px solid var(--line);
          display: grid; place-items: center; box-shadow: var(--shadow); }
   .box.run { border-color: rgba(110,168,254,.75); box-shadow: var(--glow); }
   .box-face { font-size: 2.1rem; line-height: 1; }
+  /* 装上真机器插图后，emoji 的字号规则就不再适用；SVG 自己按机身比例占位，
+     底部留出 14px 给「神秘规则」那行标签。 */
+  .box-face.has-art { display: block; line-height: 0; margin-bottom: 16px; }
+  .box-face svg { display: block; width: 132px; height: auto; }
   .box-tag { position: absolute; bottom: 9px; left: 0; right: 0; text-align: center;
              font-size: .68rem; font-weight: 700; color: var(--ink-dim);
              letter-spacing: .05em; }
-  .gear { position: absolute; top: 9px; right: 11px; width: 16px; height: 16px;
-          border-radius: 50%; border: 2px dashed var(--ink-dim); }
-  .box.run .gear { animation: spin 1s linear infinite; border-color: var(--math); }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .arrow { font-size: 1.3rem; color: var(--ink-dim); text-align: center; }
+  /* 机器插图自带齿轮，运行状态只靠机身发光提示，不再额外转一个虚线圈。 */
 
   .feed { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .feed .input { width: 96px; flex: none; text-align: center; font-family: var(--mono); }
@@ -195,7 +201,10 @@
   .next-piece-icon [data-shape] { display:none; }
   .next-piece-icon[data-piece="circle"] [data-shape="circle"],
   .next-piece-icon[data-piece="square"] [data-shape="square"] { display:block; }
+  /* kid-visual-stage 的 min-height 是给整块画布留的；这里只有一台机器和两个端口，
+     照搬会撑出半屏空白，按内容高度收一收。 */
   .machine-flow { position:relative; }
+  html[data-mode="kid"] .machine.machine-flow { min-height:0; padding-block:22px; }
   .machine-flow::before { content:"变化轨道"; position:absolute; top:-10px; left:50%; translate:-50% 0; z-index:2; padding:2px 9px; border-radius:999px; background:var(--surface); color:var(--ink-dim); font-size:.72rem; font-weight:800; }
   html[data-mode="kid"] .tbl-scroll[data-audience="parent"], html[data-mode="kid"] .plot-wrap[data-audience="parent"] { display:none !important; }
   @media (max-width:640px) {
@@ -372,14 +381,12 @@
               <div class="port-label">输入 IN</div>
               <div class="port-val" id="inVal" aria-live="off">—</div>
             </div>
-            <div>
-              <div class="box" id="box">
-                <span class="gear" aria-hidden="true"></span>
-                <span class="box-face" aria-hidden="true">⚙︎</span>
-                <span class="box-tag">神秘规则</span>
-              </div>
-              <div class="arrow" aria-hidden="true">▼</div>
+            <div class="flow-arrow" aria-hidden="true">→</div>
+            <div class="box" id="box">
+              <span class="box-face" id="boxFace" aria-hidden="true">⚙︎</span>
+              <span class="box-tag">神秘规则</span>
             </div>
+            <div class="flow-arrow" aria-hidden="true">→</div>
             <div class="port port-out" id="portOut">
               <div class="port-label">输出 OUT</div>
               <div class="port-val" id="outVal" aria-live="polite">—</div>
@@ -635,8 +642,16 @@
    'growBody','patSel','askSel','askOut','growReset','roSeq','roDiff','roFormula',
    'roGrowWins','revealF','toast','live','lv1','lv2','lv3','lv4','linearGuess',
    'linearNext','nonlinearGuess','nonlinearNext','checkSequences','testCounterexample',
-   'patternReflect','patternComplete','patternMissionStatus','nextCircle','nextSquare','patternRailResult','patternRailIcon'
+   'patternReflect','patternComplete','patternMissionStatus','nextCircle','nextSquare','patternRailResult','patternRailIcon','boxFace'
   ].forEach(function (id) { el[id] = document.getElementById(id); });
+
+  /* 机器原本只是一个 ⚙︎ 字符，看不出「数字进去、算一遍、再出来」这件事。
+     换成共享插图里的机身：漏斗在上、出料口在下，正好对上左右两个 IN/OUT 端口。 */
+  if (el.boxFace && window.ILLUSTRATIONS && ILLUSTRATIONS.hasArt('machine/function-box')) {
+    if (ILLUSTRATIONS.renderArt(el.boxFace, 'machine/function-box', { decorative: true })) {
+      el.boxFace.classList.add('has-art');
+    }
+  }
 
   function ce(tag, cls, txt) {
     var n = document.createElement(tag);

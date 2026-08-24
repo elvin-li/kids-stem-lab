@@ -2544,6 +2544,62 @@ window.ILLUSTRATIONS = (function () {
       '<path d="M50 66 L52 71 L57 71 L53 74 L55 79 L50 76 L45 79 L47 74 L43 71 L48 71Z" fill="#f6c445"/>'
   });
 
+  /* ================= 装置插图 =================
+     不是「一张卡片」而是页面主体里的一台机器/仪器，所以不套 CARD_BOX 的规格：
+     viewBox 按装置自身比例写，fit 用 meet（宁可留白也不能把机器裁一半）。 */
+
+  /** 齿轮：外圈按 teeth 均分出方齿，中间是轴孔。半径 r 指齿根圆。 */
+  function gearShape(cx, cy, r, teeth, fill, stroke) {
+    var tw = r * 0.34, th = r * 0.48;
+    var out = '<g fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.1" stroke-linejoin="round">';
+    for (var i = 0; i < teeth; i++) {
+      out += '<rect x="' + (cx - tw / 2).toFixed(1) + '" y="' + (cy - r - th * 0.5).toFixed(1) +
+        '" width="' + tw.toFixed(1) + '" height="' + (th * 1.1).toFixed(1) +
+        '" rx="' + (tw * 0.28).toFixed(1) + '" transform="rotate(' +
+        ((360 / teeth) * i).toFixed(1) + " " + cx + " " + cy + ')"/>';
+    }
+    return out + '<circle cx="' + cx + '" cy="' + cy + '" r="' + r.toFixed(1) + '"/></g>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.3).toFixed(1) + '" fill="' + stroke + '"/>';
+  }
+
+  /* 规律机器：数字从上面的漏斗掉进去，机身里的齿轮按藏起来的规则算一遍，
+     再从下面的出料口送出来。窗口里的问号就是这一页要孩子破解的东西。
+     颜色写死成中调金属色，浅色的孩子模式和深色的家长模式下都站得住。 */
+  def("machine/function-box", {
+    viewBox: "0 0 120 106",
+    fit: "xMidYMid meet",
+    title: "神秘规则机器",
+    desc: "一台铁皮机器：顶上的漏斗接住喂进去的数字，机身窗口里是一个问号和两枚咬合的齿轮，底部的出料口把算好的数字送出来。",
+    art:
+      // 漏斗：进料口
+      '<path d="M22 5 L98 5 L76 26 L44 26Z" fill="#8b97b8" stroke="#333c5c" stroke-width="2.2" stroke-linejoin="round"/>' +
+      '<path d="M22 5 L98 5 L92 11 L28 11Z" fill="#a9b4d1"/>' +
+      '<rect x="48" y="24" width="24" height="8" fill="#6d7897" stroke="#333c5c" stroke-width="2"/>' +
+      // 机身
+      '<rect x="8" y="30" width="104" height="54" rx="11" fill="#4c5779" stroke="#333c5c" stroke-width="2.4"/>' +
+      '<rect x="12" y="34" width="96" height="15" rx="7" fill="#5f6c8e"/>' +
+      // 观察窗与问号
+      '<rect x="18" y="42" width="44" height="34" rx="8" fill="#141c33" stroke="#333c5c" stroke-width="2"/>' +
+      '<text x="40" y="68" text-anchor="middle" font-size="27" font-weight="800" fill="#f6bd48">?</text>' +
+      // 咬合的两枚齿轮：大的带小的，说明「一步接一步地算」
+      gearShape(84, 54, 13, 9, "#f0a13a", "#8a5410") +
+      gearShape(98, 72, 8, 8, "#7ec8f0", "#1d5878") +
+      // 指示灯
+      '<g stroke="#333c5c" stroke-width="1.1">' +
+      '<circle cx="70" cy="80" r="3" fill="#4ade80"/>' +
+      '<circle cx="80" cy="80" r="3" fill="#fbbf24"/>' +
+      '<circle cx="90" cy="80" r="3" fill="#f87171"/>' +
+      "</g>" +
+      // 铆钉
+      '<g fill="#8b97b8">' +
+      '<circle cx="15" cy="37" r="1.8"/><circle cx="15" cy="77" r="1.8"/>' +
+      '<circle cx="105" cy="37" r="1.8"/><circle cx="105" cy="77" r="1.8"/>' +
+      "</g>" +
+      // 出料口
+      '<path d="M44 82 L76 82 L69 101 L51 101Z" fill="#6d7897" stroke="#333c5c" stroke-width="2.2" stroke-linejoin="round"/>' +
+      '<path d="M51 101 L69 101 L67 105 L53 105Z" fill="#333c5c"/>'
+  });
+
   /* ---------------- 对外 API ---------------- */
 
   function cssName(name) { return String(name).replace(/[^a-z0-9]+/gi, "-"); }
