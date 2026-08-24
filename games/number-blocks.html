@@ -455,6 +455,11 @@
      这段脚本比 playful.js 早执行，那时 <html> 上还没有 data-mode，kid.css 整套变量都没生效，
      直接读只会拿到深色主题的值——孩子模式是浅底页面，画出来就是浅色压浅色。
      themePalette 会等主题稳定后重读，并在孩子／家长模式切换时重绘。 */
+  /* 换主题时两块画布都得重画。数轴直接画；积木主画布躲在重绘闸门后面，
+     签名（块数/任务/尺寸）在换主题那一刻一个都不变，闸门会照旧拦下这帧——
+     旧主题的浅字浅框就烙在新主题的底色上（孩子模式奶油底压深色主题的
+     #eef2ff 标注，基本隐形）。给签名加一个主题版本号，换一次主题变一次。 */
+  var themeRev = 0;
   var C = ILLUSTRATIONS.themePalette({
     math: ['--math', '#6ea8fe'], sci: ['--sci', '#4ade80'],
     warn: ['--warn', '#fbbf24'], phys: ['--phys', '#a78bfa'],
@@ -463,7 +468,7 @@
     inkDim: ['--ink-dim', '#7d88ab'],
     line: ['--line', '#2a3355'], soft: ['--line-soft', '#202844'],
     surf: ['--surface', '#161d33'], surf2: ['--surface-2', '#1d2540']
-  }, function () { drawLine(); });
+  }, function () { themeRev++; drawLine(); });
   /* 散块用固定的石板灰，不跟主题变量走：--ink-mid 是文字色，
      借来涂积木一次太亮一次太暗，而且和「已放 = 蓝」「满十 = 黄」不成一套。 */
   C.loose = '#8a93ab';
@@ -1219,7 +1224,7 @@
     for (var q = 0; q < all.length && !busy; q++) {
       if (all[q].drag || now - all[q].born < 280) busy = true;
     }
-    if (gate(all.length + '|' + count() + '|' + S.mode + '|' + S.target + '|' + G.W + 'x' + G.H, busy)) {
+    if (gate(all.length + '|' + count() + '|' + S.mode + '|' + S.target + '|' + G.W + 'x' + G.H + '|' + themeRev, busy)) {
       drawStage(now);
     }
     requestAnimationFrame(tick);
