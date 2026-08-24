@@ -173,7 +173,9 @@ try {
   const checks = [];
   const check = (condition, name) => checks.push({ ok: Boolean(condition), name });
 
-  check(await evaluate('return PLAYFUL.characters.length === 4 && Object.keys(PLAYFUL.pages).length === 17;'), '共享资料含 4 个角色和 17 项页面配置');
+  /* 页面数跟着探索目录走：写死数字会在新增专题页时变成假失败。 */
+  const pageCount = await evaluate('return EXPLORATIONS.length;');
+  check(await evaluate(`return PLAYFUL.characters.length === 4 && Object.keys(PLAYFUL.pages).length === ${pageCount};`), `共享资料含 4 个角色和 ${pageCount} 项页面配置`);
   check(await evaluate('return Object.values(PLAYFUL.pages).every(item => item.surprises.length >= 2 && item.surprises.length <= 4);'), '每页含 2–4 项惊喜任务');
   check(await evaluate('return /波波/.test(document.getElementById("companion").textContent);'), '声明式伙伴提示自动增强');
   check(await evaluate('return document.getElementById("sticker").dataset.earned === "false";'), '未完成时贴纸显示为未获得');
@@ -189,7 +191,8 @@ try {
   const earned = await evaluate('return Progress.complete("games/wave-maker.html", "造出增强与抵消");');
   check(Boolean(earned?.evidence), '页面仍由 Progress.complete() 判定完成');
   check(await evaluate('return document.getElementById("sticker").dataset.earned === "true" && /波浪倾听者/.test(document.getElementById("sticker").textContent);'), '完成事件即时解锁派生贴纸');
-  check(await evaluate('const node = document.getElementById("feedback"); return /新贴纸/.test(node.textContent) && !node.querySelector(".playful-confetti");'), '减少动效时保留文字反馈且不生成纸屑');
+  /* 认解锁到的卡名而不是某句固定文案：要守的是“关掉动效后文字反馈还在”。 */
+  check(await evaluate('const node = document.getElementById("feedback"); return /波浪倾听者/.test(node.textContent) && node.textContent.trim().length > 6 && !node.querySelector(".playful-confetti");'), '减少动效时保留文字反馈且不生成纸屑');
 
   check(await evaluate('document.getElementById("work-form").requestSubmit(); return Progress.getWorks("games/wave-maker.html").length === 1;'), '作品表单通过共享辅助保存');
   check(await evaluate('document.querySelector("[name=title]").value = "更新后的波浪发现画"; document.getElementById("work-form").requestSubmit(); const works = Progress.getWorks("games/wave-maker.html"); return works.length === 1 && works[0].title === "更新后的波浪发现画" && Boolean(document.getElementById("work-form").dataset.playfulWorkId);'), '同一表单重复提交更新原作品而不新增副本');

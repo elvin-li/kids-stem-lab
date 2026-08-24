@@ -3,10 +3,10 @@
 ## 文件与共享层
 - 互动实验：`games/<slug>.html`；自然专题：`nature/<slug>.html`。
 - 页面可以且应复用本站共享文件：`assets/css/base.css`、`assets/css/kid.css`、`assets/css/print.css`、`assets/js/progress.js` 以及 `data/explorations.js`。阶段 1 童趣层另提供 `data/playful.js` 与 `assets/js/playful.js`，由页面组渐进接入。共享文件必须是本站相对路径，不得依赖 CDN、远程字体或第三方 JS。
-- 全部 26 个页面必须加载三层样式，顺序固定为 `assets/css/base.css` → `assets/css/kid.css` → `assets/css/print.css`（最后一个带 `media="print"`）。`kid.css` 只覆盖变量与外壳，不改各页自身的互动逻辑；漏加会让孩子模式在该页失效。
-- 全部 26 个页面必须加载 `manifest.webmanifest` 与 `assets/js/pwa.js`（放在页面脚本末尾）。
+- 全部 27 个页面必须加载三层样式，顺序固定为 `assets/css/base.css` → `assets/css/kid.css` → `assets/css/print.css`（最后一个带 `media="print"`）。`kid.css` 只覆盖变量与外壳，不改各页自身的互动逻辑；漏加会让孩子模式在该页失效。
+- 全部 27 个页面必须加载 `manifest.webmanifest` 与 `assets/js/pwa.js`（放在页面脚本末尾）。
 - `data/explorations.js` 与 `data/playful.js` 都是 classic script，分别暴露 `window.EXPLORATIONS` 与 `window.PLAYFUL`；不得改成 module 或通过 `fetch()` 读取本地 JSON。
-- 17 个实验/自然详情页的固定脚本顺序为 `data/explorations.js` → `assets/js/progress.js` → `data/playful.js` → `assets/js/playful.js`；静态契约会强制检查。其他页面一旦加载 `playful.js`，也必须先加载 `progress.js` 与 `data/playful.js`。没有声明式接入点时，童趣层必须静默且不得影响核心互动。
+- 18 个实验/自然详情页的固定脚本顺序为 `data/explorations.js` → `assets/js/progress.js` → `data/playful.js` → `assets/js/playful.js`；静态契约会强制检查。其他页面一旦加载 `playful.js`，也必须先加载 `progress.js` 与 `data/playful.js`。没有声明式接入点时，童趣层必须静默且不得影响核心互动。
 - 页面自身的交互仍使用原生 JS + Canvas/SVG；可保留页面专属的内联样式和脚本。`Playful` 只负责提示、反馈和保存辅助，不接管页面的核心计算或任务完成判定。
 
 ## 固定六项导航
@@ -61,7 +61,7 @@
 ## 页面组渐进接入约定
 - 在页面已有的任务区域按需声明 `data-playful-page="games/...html"`，可加入：`data-playful-companion`、`data-playful-sticker`、`data-playful-feedback`、`data-playful-random-task` 与 `data-playful-task-output`。
 - 作品表单使用 `data-playful-work-form`，必须提供 `name="type"`、`name="title"`、`name="content"` 三个字段和一个 `data-playful-work-status` 状态行；偏好控件使用 `data-playful-preference="soundEnabled|motion|ageGroup|mode"`。
-- 17 个详情页都必须有作品表单接入点：每页恰好一个 `data-playful-work-form`，`type` 的 `option value` 只能取 `observation / prediction / drawing / model / explanation / photo-note`。页面不自己写 submit、保存或大小校验，全部交给 `playful.js` 的 `bindWorkForm()`。状态行用 `role="status"` 加 `aria-live="polite"` 宣告结果。
+- 18 个详情页都必须有作品表单接入点：每页恰好一个 `data-playful-work-form`，`type` 的 `option value` 只能取 `observation / prediction / drawing / model / explanation / photo-note`。页面不自己写 submit、保存或大小校验，全部交给 `playful.js` 的 `bindWorkForm()`。状态行用 `role="status"` 加 `aria-live="polite"` 宣告结果。
 - 页面仍自行判断并调用 `Progress.complete()`；童趣层只监听成功后的共享事件并展示贴纸反馈。随机惊喜任务是开放式提示，不代替目录中的正式任务。
 - 默认静音；`motion=system` 时跟随 `prefers-reduced-motion`。关闭或减少动效时不生成纸屑，完成文字反馈仍必须存在。
 

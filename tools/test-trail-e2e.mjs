@@ -173,7 +173,7 @@ try {
     check(await evaluate('return document.getElementById("stickersTab").tabIndex === 0 && document.getElementById("notesTab").tabIndex === -1 && document.getElementById("collectionPanel").getAttribute("aria-labelledby") === "stickersTab";'), '标签页使用单一可聚焦项并正确标注面板');
     check(await evaluate('document.getElementById("stickersTab").focus(); document.getElementById("stickersTab").dispatchEvent(new KeyboardEvent("keydown", {key:"ArrowLeft", bubbles:true})); return document.activeElement === document.getElementById("notesTab") && document.getElementById("notesTab").getAttribute("aria-selected") === "true" && document.getElementById("viewTitle").textContent === "田野笔记";'), '方向键切换视图并移动焦点');
     check(await evaluate('document.getElementById("stickersTab").click(); return document.querySelectorAll(".album-card").length === 18 && document.querySelectorAll(".album-card[data-unlocked=false]").length === 18 && document.getElementById("milestones").children.length === 4;'), '干净状态显示 18 个锁定卡槽和 4 个里程碑');
-    check(await evaluate('return ["visitedCount","stickerCount","noteCount","workCount"].every(id => document.getElementById(id).textContent === "0") && /0 \/ 18/.test(document.getElementById("albumCount").textContent);'), '四项统计和卡册进度均为 0');
+    check(await evaluate('return ["visitedCount","stickerCount","noteCount","workCount"].every(id => document.getElementById(id).textContent === "0") && /0 \\/ 18/.test(document.getElementById("albumCount").textContent);'), '四项统计和卡册进度均为 0');
     check(await evaluate('return document.getElementById("storageNotice").hidden;'), 'localStorage 可用时不显示降级提示');
 
     step('跨页面访问');
@@ -230,7 +230,7 @@ try {
     step('收藏卡册与里程碑');
     await go('pages/progress.html');
     check(await evaluate('return document.getElementById("visitedCount").textContent === "2";'), '访问过为 2');
-    check(await evaluate('return document.getElementById("stickerCount").textContent === "1" && /1 \/ 18/.test(document.getElementById("albumCount").textContent);'), '正式完成派生 1 张收藏卡');
+    check(await evaluate('return document.getElementById("stickerCount").textContent === "1" && /1 \\/ 18/.test(document.getElementById("albumCount").textContent);'), '正式完成派生 1 张收藏卡');
     check(await evaluate('return document.querySelectorAll(".album-card").length === 18 && document.querySelectorAll(".album-card[data-unlocked=true]").length === 1 && document.querySelectorAll(".album-card[data-unlocked=false]").length === 17;'), '卡册保留全部 18 个锁定与解锁位置');
     check(await evaluate('return [...document.querySelectorAll(".album-card[data-unlocked=true]")].some(card => /波浪倾听者/.test(card.textContent) && /造波机/.test(card.textContent) && /造出增强与抵消两种干涉/.test(card.textContent) && /知识小卡/.test(card.textContent));'), '解锁卡显示来源、发现、知识和完成证据');
     check(await evaluate('return [...document.querySelectorAll(".album-card[data-unlocked=false]")].every(card => !/我的发现|知识小卡|下一次试试/.test(card.textContent));'), '锁定卡不提前揭晓卡片内容');
@@ -243,11 +243,11 @@ try {
       if (dialog && (dialog.open || dialog.dataset.open === 'true')) dialog.querySelector('.reward-close').click();
       return true;
     `);
-    check(await evaluate('return /3 \/ 18/.test(document.getElementById("albumCount").textContent) && document.querySelectorAll(".milestone-card[data-unlocked=true]").length === 1;'), '收集 3 张时点亮首个反思里程碑');
+    check(await evaluate('return /3 \\/ 18/.test(document.getElementById("albumCount").textContent) && document.querySelectorAll(".milestone-card[data-unlocked=true]").length === 1;'), '收集 3 张时点亮首个反思里程碑');
     check(await evaluate(`
       const ok = Progress.importJSON(${JSON.stringify(oneCardBackup)});
       const dialog = document.getElementById('playfulRewardDialog');
-      return ok && /1 \/ 18/.test(document.getElementById('albumCount').textContent) && (!dialog || (!dialog.open && !dialog.hasAttribute('data-open')));
+      return ok && /1 \\/ 18/.test(document.getElementById('albumCount').textContent) && (!dialog || (!dialog.open && !dialog.hasAttribute('data-open')));
     `), '导入既有记录同步卡册但不制造新解锁弹窗');
     check(await evaluate('document.getElementById("worksTab").click(); return [...document.querySelectorAll(".collection-card")].some(card => /干涉记录/.test(card.textContent));'), '作品册显示保存的作品');
 
@@ -316,7 +316,7 @@ try {
     await go('index.html');
     const trailText = await evaluate('return document.getElementById("trail-go").textContent;');
     check(/已访问\s*2\s*\/\s*18/.test(trailText), `首页显示 2 / 18（实际“${trailText}”）`);
-    check(await evaluate('return /已收集 1 \/ 18/.test(document.getElementById("recentCardSummary").textContent) && /波浪倾听者/.test(document.getElementById("recentCards").textContent);'), '首页显示收藏卡总数和最近解锁卡');
+    check(await evaluate('return /已收集 1 \\/ 18/.test(document.getElementById("recentCardSummary").textContent) && /波浪倾听者/.test(document.getElementById("recentCards").textContent);'), '首页显示收藏卡总数和最近解锁卡');
 
     step('18 页儿童首屏');
     await browser.send('Emulation.setDeviceMetricsOverride', {
@@ -327,7 +327,13 @@ try {
       const childView = await evaluate(`
         const root = document.documentElement;
         const stage = document.querySelector('.kid-hero-scene,.kid-visual-stage');
-        const action = document.querySelector('.kid-action-strip');
+        /* 页面可以同时放家长版和孩子版主操作条，孩子模式下只有一条可见。
+           按文档顺序取第一条会取到被隐藏的那条，所以先找真正可见的。 */
+        const strips = [...document.querySelectorAll('.kid-action-strip')];
+        const action = strips.find(el => {
+          const style = getComputedStyle(el);
+          return style.display !== 'none' && style.visibility !== 'hidden';
+        }) || strips[0] || null;
         const deep = document.querySelector('.parent-deep-dive');
         const focusables = [...document.querySelectorAll('a[href],button:not([disabled]),select,textarea,input:not([type=hidden]),[tabindex]:not([tabindex="-1"])')]
           .filter(el => getComputedStyle(el).visibility !== 'hidden' && getComputedStyle(el).display !== 'none');
