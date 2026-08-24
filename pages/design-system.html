@@ -115,6 +115,22 @@
   .specimen-body { padding: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
   .specimen-body.block { display: grid; gap: 12px; align-items: stretch; }
 
+  /* ---- 插图目录 ----
+     每族一段，图位统一 4:3。插图本体宽高比各不相同（恐龙 5:1、行星 1:1、卡片场景 16:9），
+     所以图位只给一个固定的框，靠 preserveAspectRatio 自己居中，不再逐族写尺寸。 */
+  .illus-family { margin-top: 18px; }
+  .illus-family > h3 { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; margin: 0 0 4px; font-size: 1rem; }
+  .illus-family > h3 code { font-size: .82em; }
+  .illus-family > h3 .count { font: 700 .72rem/1 var(--mono); color: var(--ink-dim); }
+  .illus-family > p { margin: 0 0 10px; max-width: 72ch; font-size: .86rem; }
+  .illus-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); margin: 0; padding: 0; list-style: none; }
+  .illus-grid > li { min-width: 0; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); overflow: hidden; }
+  .illus-cell { display: grid; place-items: center; aspect-ratio: 4 / 3; padding: 8px; background: var(--surface-2); }
+  .illus-cell .illus { width: 100%; height: 100%; }
+  .illus-meta { display: grid; gap: 2px; padding: 7px 9px; }
+  .illus-meta code { font-size: .7rem; overflow-wrap: anywhere; }
+  .illus-meta span { font-size: .74rem; color: var(--ink-dim); }
+
   .focus-hint {
     margin-top: 18px; font-size: .86rem; color: var(--ink-mid);
     border-left: 3px solid var(--phys); background: rgba(167,139,250,.07);
@@ -180,6 +196,7 @@
       <a href="#space">圆角与尺度</a>
       <a href="#components">组件</a>
       <a href="#playful">童趣层</a>
+      <a href="#illustrations">插图库</a>
       <a href="#a11y">无障碍约定</a>
     </nav>
   </header>
@@ -469,8 +486,44 @@
     </div>
   </section>
 
+  <section class="sec" id="illustrations">
+    <h2><span class="num">06</span> 插图库</h2>
+    <p class="sec-lede">
+      全站插图只有一个来源：<code>assets/js/illustrations.js</code>。下面这份目录是页面打开时从
+      <code>ILLUSTRATIONS.artNames()</code> 现场读出来的，所以库里加一张、改一张，这里就跟着变——
+      要找现成的图先在这里翻，别再往页面里贴新的 emoji 或一次性 SVG 片段。
+    </p>
+
+    <figure class="specimen">
+      <figcaption>取用方式——两个函数，全站只有这两种用法</figcaption>
+      <div class="specimen-body block">
+        <ul class="rules">
+          <li><code>ILLUSTRATIONS.renderArt(el, "ocean/clownfish")</code>：把插图<b>写进</b>某个容器，替换原有内容。带标题与描述，读屏能念。</li>
+          <li><code>ILLUSTRATIONS.art("ocean/clownfish", { decorative: true })</code>：只<b>返回</b> SVG 字符串，交给自己拼模板。<code>decorative</code> 会加 <code>aria-hidden</code>，用在纯装饰位。</li>
+          <li><code>ILLUSTRATIONS.hasArt(name)</code>：先问再用。插图库没加载成功时页面必须还能读，所以取图一律先判断。</li>
+          <li class="no">不要在页面里内联 SVG 路径数据。同一个对象出现在两页，就该进插图库。</li>
+        </ul>
+      </div>
+    </figure>
+
+    <figure class="specimen">
+      <figcaption>图例 <code>ILLUSTRATIONS.legend()</code>——颜色一旦承载信息，就必须配一份文字图例</figcaption>
+      <div class="specimen-body block" id="legendDemo"></div>
+    </figure>
+
+    <div id="illusCatalog" aria-live="polite">
+      <p class="sec-lede">插图目录需要浏览器执行脚本，本段由 <code>illustrations.js</code> 现场生成。</p>
+    </div>
+
+    <div class="finding">
+      <b>画新图之前先读这三条：</b>视觉主体留在中心安全区（<code>slice</code> 图位会裁掉溢出的一边）；
+      颜色用具体色值而不是 <code>currentColor</code>，因为同一张图会同时出现在浅底和深底上；
+      每张都要写 <code>title</code> 和 <code>desc</code>，那是读屏用户唯一能拿到的画面描述。
+    </div>
+  </section>
+
   <section class="sec" id="a11y">
-    <h2><span class="num">06</span> 无障碍约定</h2>
+    <h2><span class="num">07</span> 无障碍约定</h2>
     <p class="sec-lede">这些不是建议，是 <code>tools/check-contract.mjs</code> 和 <code>tools/verify.mjs</code> 会在真实 Chrome 里逐页检查的硬条件。</p>
     <ul class="rules">
       <li>每页恰好一个 <b>h1</b>，一个 <b>main</b> landmark，一条指向本页真实 id 的<b>跳到主要内容</b>链接。</li>
@@ -495,6 +548,7 @@
   </div>
 </footer>
 
+<script src="../assets/js/illustrations.js?v=15"></script>
 <script>
 (function () {
   "use strict";
@@ -758,6 +812,89 @@
   var range = document.getElementById("dsRange");
   var out = document.getElementById("dsRangeOut");
   range.addEventListener("input", function () { out.textContent = range.value; });
+
+  /* --- 插图目录 ---
+     现场读 ILLUSTRATIONS.artNames()，按 "族/名" 的族名分组。族的顺序和说明写死在这里，
+     库里新增的族即使没登记也会以「未分组」出现在末尾——宁可露出来，也不要静默漏掉。 */
+  var FAMILIES = [
+    ["card", "目录页图位。画的是「这一页在做什么」，不是一个孤立对象，所以恐龙卡里有地层，光影卡里有灯、物体和影子的几何关系。"],
+    ["portal", "孩子首页四张大图卡。比 card 更大更简，远看要能一眼分辨。"],
+    ["route", "学习路径页的年龄段图标。每张都要看得出「在做哪一种数学」。"],
+    ["guide", "四位探索伙伴的头像，固定分配给页面，语气也跟着角色走。"],
+    ["life", "昆虫变态发育的各个虫态，完全变态与不完全变态共用一套。"],
+    ["ocean", "海洋生物，按真实体型比例和特征绘制。"],
+    ["insects", "昆虫，六足三体节的结构必须画对。"],
+    ["planets", "八大行星，颜色与条纹按探测器影像取色。"],
+    ["weather", "天气要素，天气页和图例共用。"],
+    ["space", "太空场景。行星单体在 planets/*，这里放的是星云一类的大画面。"],
+    ["machine", "抽象机器示意，用于规律机器一类的「输入→处理→输出」。"],
+    ["ui", "小尺寸功能图标，替代 emoji 用在按钮和选项里。"]
+  ];
+  var catalog = document.getElementById("illusCatalog");
+  if (window.ILLUSTRATIONS && catalog) {
+    var byFamily = {};
+    ILLUSTRATIONS.artNames().forEach(function (name) {
+      var slash = name.indexOf("/");
+      var family = slash > 0 ? name.slice(0, slash) : "其他";
+      (byFamily[family] || (byFamily[family] = [])).push(name);
+    });
+    var ordered = FAMILIES.filter(function (pair) { return byFamily[pair[0]]; });
+    Object.keys(byFamily).sort().forEach(function (family) {
+      var known = FAMILIES.some(function (pair) { return pair[0] === family; });
+      if (!known) ordered.push([family, "未在本页登记说明的一族；补一句说明，别让它一直挂在这里。"]);
+    });
+
+    catalog.textContent = "";
+    ordered.forEach(function (pair) {
+      var family = pair[0];
+      var list = byFamily[family];
+      var box = document.createElement("div");
+      box.className = "illus-family";
+      var heading = document.createElement("h3");
+      var code = document.createElement("code");
+      code.textContent = family + "/*";
+      var count = document.createElement("span");
+      count.className = "count";
+      count.textContent = list.length + " 张";
+      heading.appendChild(code);
+      heading.appendChild(count);
+      var note = document.createElement("p");
+      note.textContent = pair[1];
+      var grid = document.createElement("ul");
+      grid.className = "illus-grid";
+      list.forEach(function (name) {
+        var item = document.createElement("li");
+        var cell = document.createElement("div");
+        cell.className = "illus-cell";
+        ILLUSTRATIONS.renderArt(cell, name, { decorative: true });
+        var meta = document.createElement("div");
+        meta.className = "illus-meta";
+        var id = document.createElement("code");
+        id.textContent = name;
+        var title = document.createElement("span");
+        /* title 是读屏拿到的名字，这里当成人读的说明列出来，缺了就一眼看得见。 */
+        title.textContent = ILLUSTRATIONS.art(name).replace(/[\s\S]*?<title[^>]*>([\s\S]*?)<\/title>[\s\S]*/, "$1") || "（缺 title）";
+        meta.appendChild(id);
+        meta.appendChild(title);
+        item.appendChild(cell);
+        item.appendChild(meta);
+        grid.appendChild(item);
+      });
+      box.appendChild(heading);
+      box.appendChild(note);
+      box.appendChild(grid);
+      catalog.appendChild(box);
+    });
+
+    var legendDemo = document.getElementById("legendDemo");
+    if (legendDemo) {
+      legendDemo.insertAdjacentHTML("beforeend", ILLUSTRATIONS.legend([
+        { color: "var(--sci)", label: "食草", note: "牙齿平、适合磨碎植物" },
+        { color: "var(--danger)", label: "食肉", shape: "dot", note: "牙齿尖、边缘带锯齿" },
+        { color: "var(--warn)", label: "无阻力参考", shape: "line", note: "虚线是理想情况，不是实测" }
+      ], { label: "图例组件示例" }));
+    }
+  }
 
   /* --- toast 演示 --- */
   var toast = document.createElement("div");
