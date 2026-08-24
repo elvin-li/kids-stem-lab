@@ -672,10 +672,15 @@
       ctx.save();
       ctx.lineWidth = 1;
       var N = 46;
+      /* 淡出距离对所有方向都一样，不再按各自的长度铺满整条渐变。
+         原先每条光线都从「亮」渐到「几乎透明」，于是往左上射进空场的短程可见段最亮，
+         而真正要看的那几条——擦过物顶飞到墙上的——因为路程长，到墙面时已经淡没了，
+         画面读起来像「光只往左上跑」，跟故事正好相反。 */
+      var FADE = Math.max(W, H) * 0.62;
       for (var i = 0; i < N; i++) {
         var a = (i / N) * Math.PI * 2;
         var dx = Math.cos(a), dy = Math.sin(a);
-        // 求与遮挡物 / 墙 / 边界的最近交点
+        // 求与遮挡物 / 墙 / 画布边界的最近交点
         var tEnd = Math.max(W, H) * 1.6;
         // 墙
         if (dx > 0) { var tw = (g.wx - g.lx) / dx; if (tw > 0) tEnd = Math.min(tEnd, tw); }
@@ -689,10 +694,13 @@
         }
         // 地面
         if (dy > 0) { var tf = (floorY - g.ly) / dy; if (tf > 0) tEnd = Math.min(tEnd, tf); }
+        // 画面上沿与左沿：射进空场的那些不必画到一千多像素以外
+        if (dy < 0) { var tt = -g.ly / dy; if (tt > 0) tEnd = Math.min(tEnd, tt); }
+        if (dx < 0) { var tl = -g.lx / dx; if (tl > 0) tEnd = Math.min(tEnd, tl); }
         var ex = g.lx + dx * tEnd, ey = g.ly + dy * tEnd;
-        var grd = ctx.createLinearGradient(g.lx, g.ly, ex, ey);
+        var grd = ctx.createLinearGradient(g.lx, g.ly, g.lx + dx * FADE, g.ly + dy * FADE);
         grd.addColorStop(0, 'rgba(255,236,170,.55)');
-        grd.addColorStop(1, 'rgba(255,236,170,.05)');
+        grd.addColorStop(1, 'rgba(255,236,170,.13)');
         ctx.strokeStyle = grd;
         ctx.beginPath(); ctx.moveTo(g.lx, g.ly); ctx.lineTo(ex, ey); ctx.stroke();
 
