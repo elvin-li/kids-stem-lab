@@ -537,6 +537,7 @@
     placed: [],            // 已入格
     loose: [],             // 散块
     wins: 0,
+    starAwarded: false,    // 这道题是否已经发过星星（防拆一颗再放回刷星）
     rowFlash: [],          // {row, t}
     parts: [],             // 彩屑
     splitBase: 0, carryAdd: 0, prediction: null,
@@ -821,7 +822,7 @@
     } else {
       S.target = null; S.tenBase = 0;
     }
-    S.solved = false; S.prediction = null;
+    S.solved = false; S.prediction = null; S.starAwarded = false;
     document.getElementById('numPredict').value = '';
     document.getElementById('numPredict').disabled = false;
     document.getElementById('lockPredict').disabled = false;
@@ -847,10 +848,16 @@
 
   function win(msg) {
     S.solved = true;
-    S.wins++;
+    /* 解出后拆一颗再放回是允许的（重新给反馈），但星星只发一次：
+       原来每回到目标数就 S.wins++，同一道题来回抖一颗积木，
+       挑战记录一排星和读数窗的「完成次数」全被白白刷上去。 */
+    if (!S.starAwarded) {
+      S.starAwarded = true;
+      S.wins++;
+      burst(G.W / 2, G.frameTop + Math.min(G.frameH, 120), 46);
+    }
     toast(msg);
     say(msg);
-    burst(G.W / 2, G.frameTop + Math.min(G.frameH, 120), 46);
     var expected = S.target - (S.mode === 'split' ? S.splitBase : S.tenBase);
     if ((S.mode === 'ten' || S.mode === 'split' || S.mode === 'carry') && S.prediction === expected) {
       S.levelSolved[S.mode] = true; S.lastResult = msg + ' 预测正确：还要 ' + expected + ' 颗。';
