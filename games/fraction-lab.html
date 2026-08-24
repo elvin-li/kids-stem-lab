@@ -521,8 +521,11 @@
     ok:    ['--sci', '#0b7a45'],
     warn:  ['--warn', '#96650d']
   }, function () { render(); });
-  var MONO = MONO;
-  var FONT = FONT;
+  /* `var MONO = MONO` 靠 var 提升把自己赋成了 undefined，于是全页画布的字体串都是
+     「700 12px undefined」。这在 CSS 里是合法的字体简写（undefined 被当成一个字体名），
+     所以不报错，只是字族静默退回浏览器默认——画布上的字和页面正文一直不是同一套。 */
+  var MONO = cv('--mono', 'ui-monospace, Menlo, monospace');
+  var FONT = cv('--font', '-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif');
 
   // 斜纹图案：不只靠颜色区分 A / B
   function hatch(color) {
@@ -1469,7 +1472,7 @@
 
   el.improperChallenge.addEventListener('click', function () {
     var prediction = el.improperPredict.value;
-    if (!prediction) { say('请先预测七分之四的位置'); el.improperPredict.focus(); return; }
+    if (!prediction) { say('请先预测四分之七（7/4）在数轴上的位置'); el.improperPredict.focus(); return; }
     setMode('add');
     S.a = { n: 3, d: 4 }; S.b = { n: 4, d: 4 }; S.revealed = true; render();
     var ok = prediction === 'between';
