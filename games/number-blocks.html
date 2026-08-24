@@ -745,11 +745,18 @@
   /* ---------- 任务 / 判定 ---------- */
   function chooseKidPrediction() {
     var input = document.getElementById('numPredict');
+    var lock = document.getElementById('lockPredict');
+    /* 锁过一次以后 lockPredict 就 disabled 了，click() 再也不会派发。此时改选别的数字，
+       选中态和输入框都跟着变，S.prediction 却还停在第一次那个——画面写着「我猜 5 颗」，
+       判定用的是 4。家长模式锁定后输入框和按钮一起停用，这排数字也照办；
+       选中的那个留着可聚焦，免得焦点被扔回 body。 */
+    if (lock.disabled) return;
     input.value = this.getAttribute('data-number-predict');
     Array.prototype.forEach.call(document.querySelectorAll('[data-number-predict]'), function (choice) {
       choice.setAttribute('aria-pressed', String(choice === this));
+      choice.disabled = choice !== this;
     }, this);
-    document.getElementById('lockPredict').click();
+    lock.click();
   }
 
   /* 自由搭和搭目标数没有「还要放几颗」这个问题，按钮就一个也生成不出来。
