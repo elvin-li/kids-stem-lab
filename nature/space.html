@@ -55,16 +55,26 @@
     border: 1px solid var(--line); border-radius: var(--r-lg);
     padding: 26px 20px 20px;
   }
+  /* 这块永远是深底（家长模式下页面本身是浅色的），所以行星名不能再用
+     --ink / --ink-mid：那两个在浅色主题里是深墨色，压在 #081126 上
+     对比度只有 1.2 和 2.4，选中的「地球」实际上是看不见的。
+     深底自带一套浅墨，和主题无关。 */
+  .solar { --on-dark: #eaf0ff; --on-dark-mid: #b9c6e8; }
   .solar-track { position: relative; width: 100%; height: 230px; min-width: 0; }
+  /* 太阳原来是一条 46px 宽、和轨道等高的椭圆，看着像一支立着的橙色药丸。
+     真正要画的是「一颗大得多的球的边缘伸进画面」，所以给一个直径 240px 的
+     圆、圆心推到画面左外侧，露出来的那一段才是太阳的边。 */
   .sun-edge {
-    position: absolute; left: 0; top: 0; bottom: 0; width: 46px;
-    background: linear-gradient(90deg, #fbbf24, #f59e0b 40%, transparent);
-    border-radius: 50% / 50%;
-    filter: blur(1px);
+    position: absolute; left: -132px; top: 50%; width: 240px; height: 240px;
+    transform: translateY(-50%); border-radius: 50%;
+    background: radial-gradient(circle at 64% 44%, #fff8dc 0 24%, #fde047 46%, #fbbf24 72%, #f59e0b 100%);
+    box-shadow: 0 0 48px 12px rgba(251,191,36,.32);
   }
+  /* 标签写在太阳身上：原来它贴在轨道底边，浅色的 --warn 压在深底上，
+     还被 .solar 的 overflow:hidden 削掉一半。 */
   .sun-label {
-    position: absolute; left: 4px; bottom: -2px;
-    font-size: .68rem; font-weight: 700; color: var(--warn);
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: .74rem; font-weight: 800; color: #6b3f04;
     font-family: var(--mono);
   }
   .planet {
@@ -72,24 +82,22 @@
     background: none; border: 0; padding: 0; cursor: pointer;
     display: flex; min-width: 44px; min-height: 44px; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
   }
-  .planet .body {
-    border-radius: 50%;
-    box-shadow: inset -3px -3px 8px rgba(0,0,0,.45), 0 0 0 0 rgba(255,255,255,0);
-    transition: box-shadow .18s var(--ease), transform .18s var(--ease);
+  .planet .body { display: grid; place-items: center; transition: transform .18s var(--ease), filter .18s var(--ease); }
+  .planet .body svg { display: block; width: 100%; height: 100%; }
+  .planet:hover .body, .planet:focus-visible .body, .planet[aria-pressed="true"] .body {
+    transform: scale(1.12);
   }
-  .planet:hover .body, .planet[aria-pressed="true"] .body {
-    transform: scale(1.16);
-    box-shadow: inset -3px -3px 8px rgba(0,0,0,.45), 0 0 0 3px rgba(110,168,254,.5);
-  }
+  /* 选中标记不再是套在圆点外的一圈描边：换成共享插图后，土星和天王星的
+     画幅要给光环留位置，球本身并不填满圆点，套上去的圆环会松一大圈。
+     光晕贴着画出来的形状，名字则换成一枚实心药丸——两者都不依赖球的大小。 */
+  .planet[aria-pressed="true"] .body { filter: drop-shadow(0 0 7px rgba(110,168,254,.95)); }
   .planet .nm {
-    font-size: .72rem; color: var(--ink-mid); white-space: nowrap;
-    font-weight: 600;
+    font-size: .72rem; color: var(--on-dark-mid); white-space: nowrap;
+    font-weight: 650; padding: 1px 8px; border: 1px solid transparent; border-radius: 999px;
   }
-  .planet[aria-pressed="true"] .nm { color: var(--ink); }
-  .ring {
-    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
-    border: 1px solid rgba(251,191,36,.55); border-radius: 50%;
-    pointer-events: none;
+  .planet[aria-pressed="true"] .nm {
+    color: #08122a; font-weight: 800;
+    background: #cfe0ff; border-color: #cfe0ff;
   }
   .scale-note {
     font-size: .76rem; color: var(--ink-dim); margin-top: 10px;
@@ -104,6 +112,12 @@
     display: flex; align-items: center; justify-content: center;
   }
   .planet-portrait svg { width: 100%; height: 100%; display: block; }
+  /* 邀请头像与「已实际操作」卡上的图标改用共享插图：离线和 file:// 下都画得出来，
+     不再依赖系统里恰好有 🛰️ 和 🔭 这两个字形。插图库缺席时才退回 emoji，所以保留字号。 */
+  .character-invite .friend svg, .kid-result-card > span svg { display: block; width: 100%; height: 100%; }
+  .kid-result-card > span { flex: 0 0 34px; width: 34px; height: 34px; }
+  /* 「冷知识」那条原来靠一枚 💡 字形开头，字体里没有它就只剩一个方框。 */
+  #pWow b { color: var(--sci); }
   @media (max-width: 780px) { .detail { grid-template-columns: 1fr; } .space-hero { grid-template-columns: 1fr; padding: 16px; } .space-words { grid-template-columns: repeat(2,minmax(0,1fr)); } .space-scene { min-height: 230px; } .solar-track { height: auto; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px 4px; padding: 12px 0; } .solar-track .sun-edge,.solar-track .sun-label { display: none; } .solar-track .planet { position: relative; left: auto !important; top: auto !important; transform: none; justify-self: center; } }
   @media (max-width: 480px) { .space-words,.story-qa,.facts { grid-template-columns: 1fr; } .solar-track { grid-template-columns: repeat(2,minmax(0,1fr)); } .wbar { grid-template-columns: 52px minmax(0,1fr) 70px; gap: 6px; } .task-actions .btn { flex: 1 1 150px; } }
   .facts { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 14px; }
@@ -116,16 +130,25 @@
   .fact .sub { font-size: .72rem; color: var(--ink-mid); margin-top: 2px; }
 
   /* ---------- 体重计 ---------- */
-  .weigh { margin-top: 16px; }
-  .weigh-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .weigh input[type=number] {
-    width: 90px; font-family: var(--mono);
-  }
+  /* 这两条原来挂在 .weigh 上，可页面里根本没有 .weigh 这个容器（只有 .weigh-row），
+     所以 90px 的宽度限制一直没生效：数字框铺满整行，「公斤」被挤到下一行去了。 */
+  .weigh-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+  .weigh-row input[type=number] { width: 96px; font-family: var(--mono); }
   .wbars { margin-top: 14px; display: grid; gap: 7px; }
   .wbar { display: grid; grid-template-columns: 62px 1fr 78px; gap: 10px; align-items: center; }
   .wbar .pl { font-size: .8rem; color: var(--ink-mid); }
-  .wbar .track { height: 20px; background: var(--surface-2); border-radius: 999px; overflow: hidden; border: 1px solid var(--line-soft); }
+  .wbar .track { position: relative; height: 20px; background: var(--surface-2); border-radius: 999px; overflow: hidden; border: 1px solid var(--line-soft); }
   .wbar .fill { height: 100%; border-radius: 999px; transition: width .45s var(--ease); }
+  /* 八条彩色长条只说得出「谁比谁长」。加一条地球线，才看得出「比家里重还是轻」——
+     这一节问的正是这件事。 */
+  /* 白色描边是给木星和海王星用的：那两条的填充已经越过这条线，
+     纯深色虚线压在深棕、深蓝上就看不见了。 */
+  .wbar .at-earth {
+    position: absolute; top: -2px; bottom: -2px; width: 3px; margin-left: -1px;
+    background-image: repeating-linear-gradient(180deg, #111a2e 0 4px, transparent 4px 8px);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.75);
+  }
+  .wbars-note { margin: 9px 0 0; font-size: .78rem; color: var(--ink-dim); }
   .wbar .val { font-family: var(--mono); font-size: .82rem; text-align: right; color: var(--ink); }
   .wbar.me .pl { color: var(--sci); font-weight: 700; }
 
@@ -166,8 +189,20 @@
   .ruler { margin-top: 12px; }
   .rrow { display: grid; grid-template-columns: 66px minmax(0,1fr) 74px; gap: 10px; align-items: center; padding: 4px 0; }
   .rrow .lb { font-size: .78rem; color: var(--ink-mid); }
-  .rrow .bar { height: 15px; border-radius: 999px; background: var(--surface-2); position: relative; border: 1px solid var(--line-soft); overflow: hidden; }
+  /* 轨道槽改成夜空的深色。八条填充用的是行星本色，土星的浅棕（#e0cd9a）、
+     天王星的浅青（#93d3dd）和水星的浅灰压在浅色 --surface-2 上只有 1.3–2:1，
+     等于看不出条子有多长。把槽压暗，最浅的那几条一下到 9:1，
+     最深的海王星蓝也还有 3.3:1——而且这几条本来画的就是穿过太空的航线。 */
+  .rrow .bar { height: 18px; border-radius: 999px; background: #101a34; position: relative; border: 1px solid #2b3a5c; overflow: hidden; }
   .rrow .bar i { display: block; height: 100%; border-radius: 999px; }
+  /* 552 年是个读不出长短的数字。画一条「一辈子」在同一根轴上，
+     木星正好压线，土星以外全都超出去——这才看得出「飞不到」。 */
+  .rrow .life {
+    position: absolute; top: -2px; bottom: -2px; width: 3px; margin-left: -1px;
+    /* 两段都是实色：留透明段的话，这条线在深色槽上和浅棕、浅青的填充上
+       各会有一半消失。 */
+    background-image: repeating-linear-gradient(180deg, #fde68a 0 4px, #0b1324 4px 8px);
+  }
   .rrow .tx { font-size: .74rem; color: var(--ink); font-family: var(--mono); text-align: right; }
   /* 刻度和条共用一个网格，刻度线才对得上条上的位置 */
   .r-axis { display: grid; grid-template-columns: 66px minmax(0,1fr) 74px; gap: 10px; }
@@ -194,6 +229,27 @@
   .parent-q li + li { margin-top: 7px; }
   button, input, select, textarea, [role="button"] { min-height: 44px; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
+
+  /* 八颗行星是 <button>，print.css 会连按钮一起收掉：纸上这一节原本只剩
+     一块两百多像素高的空黑框，标题却还写着「先点一颗行星」。
+     按钮里装的是这一节的全部内容（八张行星画和名字），所以打印时改成
+     四列静态图鉴——和窄屏用的是同一种排法，纸上就成了一张行星对照表。 */
+  @media print {
+    .solar { padding: 10pt !important; }
+    .solar-track {
+      height: auto !important; display: grid !important;
+      grid-template-columns: repeat(4, minmax(0,1fr)) !important; gap: 10pt 4pt !important;
+    }
+    .solar-track .sun-edge, .solar-track .sun-label { display: none !important; }
+    .solar-track .planet {
+      display: flex !important; position: relative !important;
+      left: auto !important; top: auto !important; transform: none !important; justify-self: center;
+    }
+    /* 经济模式会给每个后代补上 #bbb 描边，八个名字于是都变成药丸，
+       看不出选了哪颗；只留选中的那一个有框。 */
+    .planet .nm { border-color: transparent !important; }
+    .planet[aria-pressed="true"] .nm { border-color: #333 !important; font-weight: 800; }
+  }
 
   /* ---------- 儿童首屏：真实操作舞台 ---------- */
   .space-hero { display: block; }
@@ -275,7 +331,7 @@
     <div class="space-intro">
       <div>
         <p class="pill pill-phys">5–11 岁 · 离线也能出发</p>
-        <p class="character-invite"><span class="friend" aria-hidden="true">🛰️</span>星星邀请你挑一颗行星！</p>
+        <p class="character-invite"><span class="friend" data-icon="ui/satellite" aria-hidden="true">🛰️</span>星星邀请你挑一颗行星！</p>
         <h1 id="spaceHeroTitle">太空站</h1>
         <p class="hero-question"><b>大问题：</b>太阳系这么大，怎样把它装进一张小小的图？</p>
       </div>
@@ -284,7 +340,7 @@
 
     <div class="space-stage kid-visual-stage" aria-labelledby="spaceStageTitle">
       <div class="row spread"><h2 id="spaceStageTitle" style="margin:0">先点一颗行星</h2><span class="pill">距离已压缩</span></div>
-      <div class="solar">
+      <div class="solar" data-print="plain">
         <div class="solar-track" id="track" aria-label="可点选的八大行星">
           <div class="sun-edge"></div><span class="sun-label">太阳</span>
         </div>
@@ -346,7 +402,7 @@
       <div class="mission-step">
         <h3>3 收下结果</h3>
         <p>上方每次“换尺看看”都会把真实数字放进护照。</p>
-        <div class="kid-result-card"><span aria-hidden="true">🔭</span><p><b>已实际操作才算完成</b>结果会自动保存到下面的原记录栏。</p></div>
+        <div class="kid-result-card"><span data-icon="ui/telescope" aria-hidden="true">🔭</span><p><b>已实际操作才算完成</b>结果会自动保存到下面的原记录栏。</p></div>
         <div data-audience="parent"><label for="spaceResult">家长层：编辑两个数字与含义</label><textarea class="input" id="spaceResult"></textarea></div>
       </div>
       <div class="mission-step">
@@ -561,6 +617,14 @@
   var AU_KM = 149597870;
   var PLANE_KMH = 900;
 
+  /* 页面里的提示图标统一走共享插图，emoji 只作插图库缺席时的兜底。 */
+  if (window.ILLUSTRATIONS) {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-icon]"), function (node) {
+      var name = node.getAttribute("data-icon");
+      if (ILLUSTRATIONS.hasArt(name)) ILLUSTRATIONS.renderArt(node, name, { decorative: true });
+    });
+  }
+
   // ---------- 轨道图 ----------
   var track = document.getElementById("track");
   var maxD = Math.max.apply(null, PLANETS.map(function (p) { return p.dkm; }));
@@ -577,6 +641,25 @@
     return 7 + t * 88;
   }
 
+  /* 圆点换成共享插图库里的行星画：木星有云带和大红斑，土星的环从背面绕到
+     正面，天王星的环几乎是竖着的（它的自转轴倾斜 98 度，这正是本页想说的
+     「躺着转」）。原来这里是八个纯色渐变球，除了土星外圈那道 CSS 描边之外，
+     八颗长得一模一样，选哪颗都只是换个颜色。
+
+     planets/* 的球体半径不统一——土星取 32、天王星 38，其余 44，多出来的
+     地方留给光环。按「球直径 ÷ 画幅边长」反推 svg 边长，八颗球在图上才是
+     同一把尺量出来的，而不是连环一起被算进直径。 */
+  var ART_BALL = { saturn: 32 / 60, uranus: 38 / 60 };
+  var ART_BALL_DEFAULT = 44 / 60;
+
+  function planetArt(id, ballPx) {
+    if (!(window.ILLUSTRATIONS && ILLUSTRATIONS.hasArt("planets/" + id))) return null;
+    var box = document.createElement("span");
+    box.style.width = box.style.height = (ballPx / (ART_BALL[id] || ART_BALL_DEFAULT)).toFixed(1) + "px";
+    box.innerHTML = ILLUSTRATIONS.art("planets/" + id, { decorative: true });
+    return box;
+  }
+
   PLANETS.forEach(function (p, i) {
     var b = document.createElement("button");
     b.className = "planet";
@@ -589,26 +672,19 @@
     var px = bodyPx(p.dkm);
     var d = document.createElement("span");
     d.className = "body";
-    d.style.width = px + "px";
-    d.style.height = px + "px";
-    d.style.background = "radial-gradient(circle at 32% 30%, " +
-      p.col + ", color-mix(in oklab, " + p.col + " 55%, #000))";
-
-    // 土星环
-    if (p.id === "saturn") {
-      var wrap = document.createElement("span");
-      wrap.style.cssText = "position:relative;display:grid;place-items:center;width:" +
-        (px + 20) + "px;height:" + px + "px";
-      var r = document.createElement("span");
-      r.className = "ring";
-      r.style.width = (px + 18) + "px";
-      r.style.height = Math.max(4, px * 0.30) + "px";
-      wrap.appendChild(r);
-      wrap.appendChild(d);
-      b.appendChild(wrap);
+    var art = planetArt(p.id, px);
+    if (art) {
+      d.style.width = art.style.width;
+      d.style.height = art.style.height;
+      d.appendChild(art.firstElementChild);
     } else {
-      b.appendChild(d);
+      /* 插图库缺席时退回渐变球，图位不会空着。 */
+      d.style.width = d.style.height = px + "px";
+      d.style.borderRadius = "50%";
+      d.style.background = "radial-gradient(circle at 32% 30%, " + p.col +
+        ", color-mix(in oklab, " + p.col + " 55%, #000))";
     }
+    b.appendChild(d);
 
     var nm = document.createElement("span");
     nm.className = "nm";
@@ -660,7 +736,11 @@
       pEmoji.textContent = p.emoji;
     }
     pDesc.textContent = p.desc;
-    pWow.textContent = "💡 " + p.wow;
+    pWow.textContent = "";
+    var wowLabel = document.createElement("b");
+    wowLabel.textContent = "冷知识：";
+    pWow.appendChild(wowLabel);
+    pWow.appendChild(document.createTextNode(p.wow));
 
     pFacts.textContent = "";
     pFacts.appendChild(fact("直径", p.dkm.toLocaleString() + " km",
@@ -703,11 +783,22 @@
       fl.style.width = (p.g / maxG * 100) + "%";
       fl.style.background = "linear-gradient(90deg, " + p.col + ", color-mix(in oklab," + p.col + " 60%, #000))";
       tk.appendChild(fl);
+      /* 每条上都画同一条地球线：只在地球那一行画的话，其他行就没有比较对象。 */
+      var mark = document.createElement("i");
+      mark.className = "at-earth";
+      mark.setAttribute("aria-hidden", "true");
+      mark.style.left = (1 / maxG * 100) + "%";
+      tk.appendChild(mark);
       var v = document.createElement("span"); v.className = "val";
       v.textContent = (kg * p.g).toFixed(1) + " kg";
       row.appendChild(nm); row.appendChild(tk); row.appendChild(v);
+      row.setAttribute("aria-label", p.zh + "：" + (kg * p.g).toFixed(1) + " 公斤，是地球上的 " + p.g.toFixed(2) + " 倍");
       wbars.appendChild(row);
     });
+    var note = document.createElement("p");
+    note.className = "wbars-note";
+    note.textContent = "虚线是地球的 1 倍重力：条子越过虚线的行星（木星、海王星）会把你压得更重，没到虚线的都比家里轻。";
+    wbars.appendChild(note);
   }
   kgEl.addEventListener("input", renderWeigh);
 
@@ -716,6 +807,7 @@
      5.3 年、水星要 11.6 年，点却是金星在右、水星在左——图和数字说的是两件事。
      现在条长就是飞行时间本身，开平方压一下，免得海王星的 551 年把内行星压成零。 */
   var ruler = document.getElementById("ruler");
+  var LIFETIME_YEARS = 80;
   function flightYears(au) { return Math.abs(au - 1) * AU_KM / PLANE_KMH / 24 / 365; }
   (function renderRuler() {
     var max = 0;
@@ -732,6 +824,11 @@
       fill.style.width = Math.max(pct(years), years > 0 ? 1.5 : 0) + "%";
       fill.style.background = p.col;
       bar.appendChild(fill);
+      var life = document.createElement("i");
+      life.className = "life";
+      life.setAttribute("aria-hidden", "true");
+      life.style.left = pct(LIFETIME_YEARS) + "%";
+      bar.appendChild(life);
       var tx = document.createElement("span"); tx.className = "tx";
       tx.textContent = flightTime(p.au);
       row.appendChild(lb); row.appendChild(bar); row.appendChild(tx);
@@ -759,7 +856,9 @@
     cap.className = "r-axis";
     var capText = document.createElement("span");
     capText.className = "cap";
-    capText.textContent = "条越长，飞得越久（刻度按开平方压缩，否则近的几颗会全挤在最左边）";
+    capText.textContent = "条越长，飞得越久。黄色虚线是 " + LIFETIME_YEARS +
+      " 年，大约一个人的一辈子：木星刚好压在线上，土星以外坐飞机一辈子也到不了。" +
+      "（刻度按开平方压缩，否则近的几颗会全挤在最左边）";
     cap.appendChild(document.createElement("span"));
     cap.appendChild(capText);
     ruler.appendChild(cap);
@@ -790,7 +889,7 @@
     if (ok) netState.ok++; else netState.fail++;
     if (netState.ok > 0) {
       badge.className = "badge-live on";
-      netTxt.textContent = "图片来自 NASA · 可能因网络不可用";
+      netTxt.textContent = "已连上 NASA 图片";
     } else if (netState.fail >= 2) {
       badge.className = "badge-live off";
       netTxt.textContent = "离线模式 · 显示内置数据";
@@ -989,56 +1088,49 @@
     if (text) el.textContent = text;
     return el;
   }
-  function planetGrad(id, col, dark) {
-    var g = svgEl("radialGradient", {id: id, cx: "32%", cy: "28%", r: "68%"});
-    g.appendChild(svgEl("stop", {offset: "0%", "stop-color": "#fff", "stop-opacity": ".35"}));
-    g.appendChild(svgEl("stop", {offset: "45%", "stop-color": col}));
-    g.appendChild(svgEl("stop", {offset: "100%", "stop-color": dark || col, "stop-opacity": dark ? "1" : ".88"}));
-    return g;
+  /* 两张对比图里的行星也换成共享插图（和上面轨道图同一批画），
+     原来这里另写了一套渐变球加条纹的画法：同一颗木星在一页上有两种长相。
+     planets/* 的球体半径不统一，多出来的画幅留给土星和天王星的光环。 */
+  var ART_BALL = {saturn: 32 / 60, uranus: 38 / 60};
+  function drawPlanet(parent, pid, cx, cy, r) {
+    if (!(window.ILLUSTRATIONS && ILLUSTRATIONS.hasArt("planets/" + pid))) {
+      parent.appendChild(svgEl("circle", {cx: cx, cy: cy, r: r, fill: (data[pid] || data.earth)[5]}));
+      return;
+    }
+    var box = 2 * r / (ART_BALL[pid] || 44 / 60);
+    /* art() 返回一段 <svg>；用 HTML 解析器建节点，命名空间才对得上。 */
+    var holder = document.createElement("div");
+    holder.innerHTML = ILLUSTRATIONS.art("planets/" + pid, {decorative: true});
+    var node = holder.firstElementChild;
+    node.setAttribute("x", (cx - box / 2).toFixed(2));
+    node.setAttribute("y", (cy - box / 2).toFixed(2));
+    node.setAttribute("width", box.toFixed(2));
+    node.setAttribute("height", box.toFixed(2));
+    node.setAttribute("overflow", "visible");
+    parent.appendChild(node);
   }
-  var PLANET_DARK = {mercury:"#78716c",venus:"#b45309",earth:"#1d4ed8",mars:"#7c2d12",jupiter:"#92400e",saturn:"#a16207",uranus:"#0891b2",neptune:"#1e3a8a"};
-  function drawPlanet(parent, id, cx, cy, r, col, pid) {
-    var defs = parent.querySelector("defs") || parent.insertBefore(svgEl("defs", {}), parent.firstChild);
-    var gid = "pg-" + (pid || id);
-    if (!defs.querySelector("#" + gid)) defs.appendChild(planetGrad(gid, col, PLANET_DARK[pid] || col));
-    var g = svgEl("g", {"data-planet": pid || id});
-    if (pid === "saturn") {
-      g.appendChild(svgEl("ellipse", {cx: cx, cy: cy, rx: r + 16, ry: r * .34, fill: "none", stroke: "#fcd34d", "stroke-width": 1.5, "stroke-opacity": ".45"}));
-      g.appendChild(svgEl("ellipse", {cx: cx, cy: cy, rx: r + 10, ry: r * .28, fill: "none", stroke: "#fde68a", "stroke-width": 3, "stroke-opacity": ".85"}));
-    }
-    if (pid === "uranus") {
-      g.appendChild(svgEl("ellipse", {cx: cx, cy: cy, rx: r + 8, ry: r * .22, fill: "none", stroke: "#a5f3fc", "stroke-width": 2, "stroke-opacity": ".55", transform: "rotate(-20 " + cx + " " + cy + ")"}));
-    }
-    g.appendChild(svgEl("circle", {cx: cx, cy: cy, r: r, fill: "url(#" + gid + ")", stroke: "#fff", "stroke-width": r > 20 ? 2 : 1, "stroke-opacity": ".55"}));
-    if (pid === "earth") {
-      g.appendChild(svgEl("path", {d: "M" + (cx - r * .55) + " " + (cy - r * .1) + " Q" + (cx - r * .2) + " " + (cy + r * .35) + " " + (cx + r * .15) + " " + (cy + r * .25) + " Q" + (cx + r * .5) + " " + (cy - r * .05) + " " + (cx + r * .35) + " " + (cy - r * .35), fill: "#22c55e", "fill-opacity": ".75", stroke: "none"}));
-      g.appendChild(svgEl("path", {d: "M" + (cx - r * .15) + " " + (cy - r * .45) + " Q" + (cx + r * .25) + " " + (cy - r * .5) + " " + (cx + r * .45) + " " + (cy - r * .2), fill: "#22c55e", "fill-opacity": ".6", stroke: "none"}));
-    } else if (pid === "mars") {
-      g.appendChild(svgEl("circle", {cx: cx + r * .2, cy: cy - r * .15, r: r * .18, fill: "#991b1b", "fill-opacity": ".45"}));
-      g.appendChild(svgEl("circle", {cx: cx - r * .25, cy: cy + r * .2, r: r * .12, fill: "#7f1d1d", "fill-opacity": ".35"}));
-    } else if (pid === "jupiter") {
-      g.appendChild(svgEl("path", {d: "M" + (cx - r) + " " + (cy - r * .15) + " H" + (cx + r), stroke: "#d97706", "stroke-width": r * .12, opacity: ".55", fill: "none"}));
-      g.appendChild(svgEl("path", {d: "M" + (cx - r) + " " + (cy + r * .25) + " H" + (cx + r), stroke: "#92400e", "stroke-width": r * .1, opacity: ".45", fill: "none"}));
-      g.appendChild(svgEl("ellipse", {cx: cx + r * .15, cy: cy + r * .05, rx: r * .22, ry: r * .14, fill: "#dc2626", "fill-opacity": ".5", stroke: "none"}));
-    } else if (pid === "venus") {
-      g.appendChild(svgEl("circle", {cx: cx, cy: cy, r: r * 1.05, fill: "none", stroke: "#fef3c7", "stroke-width": 2, "stroke-opacity": ".35"}));
-    } else if (pid === "neptune") {
-      g.appendChild(svgEl("circle", {cx: cx - r * .3, cy: cy + r * .2, r: r * .2, fill: "#1e3a8a", "fill-opacity": ".5"}));
-    } else if (pid === "mercury") {
-      g.appendChild(svgEl("circle", {cx: cx + r * .25, cy: cy - r * .2, r: r * .15, fill: "#57534e", "fill-opacity": ".55"}));
-    }
-    if (pid === "saturn") {
-      g.appendChild(svgEl("ellipse", {cx: cx, cy: cy, rx: r + 10, ry: r * .28, fill: "none", stroke: "#fde68a", "stroke-width": 2.5, "stroke-opacity": ".55"}));
-    }
-    parent.appendChild(g);
-    return g;
+  function label(x, y, text, opts) {
+    var attrs = {x: x, y: y, fill: (opts && opts.fill) || "#dce7ff", "text-anchor": "middle", "font-size": (opts && opts.size) || 13};
+    if (opts && opts.weight) attrs["font-weight"] = opts.weight;
+    return svgEl("text", attrs, text);
   }
   function renderScale(markOperated) {
     var p = data[picker.value] || data.earth;
+    var isEarth = picker.value === "earth";
+    var ratio = p[0] / 12756;
     var scale = document.querySelector('input[name="spaceScale"]:checked').value;
-    var scaleText = scale === "size"
-      ? "地球直径 1 cm 时，" + p[4] + "约 " + (p[0] / 12756).toFixed(2) + " cm。"
-      : "日地距离 1 m 时，" + p[4] + "离太阳约 " + p[2].toFixed(2) + " m。";
+    /* 选中地球时，「地球直径 1 cm 时地球约 1.00 cm」是一句同义反复，
+       而画面上就是两个一模一样的小点。地球是这把尺本身，照这样说才对。 */
+    var scaleText;
+    if (scale === "size") {
+      scaleText = isEarth
+        ? "这把尺的基准：地球直径算 1 cm。换一颗行星，就能看到它在同一把尺下有多大。"
+        : "地球直径 1 cm 时，" + p[4] + "约 " + ratio.toFixed(2) + " cm。";
+    } else {
+      scaleText = isEarth
+        ? "这把尺的基准：地球到太阳的距离算 1 m。换一颗行星，就能看到它离太阳多少米。"
+        : "日地距离 1 m 时，" + p[4] + "离太阳约 " + p[2].toFixed(2) + " m。";
+    }
     output.textContent = scaleText + " 重力是地球的 " + p[1].toFixed(2) + " 倍，公转一圈约 " + p[3] + " 地球年。";
     viz.textContent = "";
     viz.appendChild(svgEl("defs", {}));
@@ -1049,24 +1141,54 @@
     });
     viz.appendChild(svgEl("text", {x: 18, y: 24, fill: "#dce7ff", "font-size": 14, "font-weight": 700}, scale === "size" ? "直径按同一把尺" : "到太阳的距离按同一把尺"));
     if (scale === "size") {
-      var ratio = p[0] / 12756, targetR = Math.max(3, Math.min(65, 6 * ratio));
-      drawPlanet(viz, "earth-ref", 105, 100, 6, data.earth[5], "earth");
-      drawPlanet(viz, "target", 300, 100, targetR, p[5], picker.value);
-      viz.appendChild(svgEl("text", {x: 105, y: 165, fill: "#dce7ff", "text-anchor": "middle", "font-size": 13}, "地球 1 cm"));
-      viz.appendChild(svgEl("text", {x: 300, y: Math.min(180, 118 + targetR + 14), fill: "#dce7ff", "text-anchor": "middle", "font-size": 13}, p[4] + " " + ratio.toFixed(2) + " cm"));
+      /* 每 cm 折多少像素随所选行星变：大的那颗顶到 118px 直径为止，
+         这样水星和火星才画得出来。原来地球固定 12px 直径，
+         水星只剩 4.6px、火星 6.4px——比背景星点还小，看不出在比什么。
+         尺子本身画在下面那条 1 cm 标尺上，所以像素比例可以变。 */
+      var unit = Math.min(68, 104 / Math.max(ratio, 1));
+      var earthR = unit / 2;
+      var targetR = unit * ratio / 2;
+      var cy = 88;
+      /* 两行字都钉在固定的 y 上：跟着球的半径走的话，木星那一档会掉到
+         最下面，正好压在 1 cm 标尺上。 */
+      if (isEarth) {
+        drawPlanet(viz, "earth", 210, cy, earthR);
+        viz.appendChild(label(210, 158, "地球 = 1 cm（基准）", {weight: 700}));
+      } else {
+        drawPlanet(viz, "earth", 96, cy, earthR);
+        drawPlanet(viz, picker.value, 288, cy, targetR);
+        viz.appendChild(label(96, 158, "地球 1 cm"));
+        viz.appendChild(label(288, 158, p[4] + " " + ratio.toFixed(2) + " cm", {weight: 700}));
+      }
+      /* 1 cm 到底是图上多长，画一根标尺说清楚。 */
+      var barY = 180, barX = 18;
+      viz.appendChild(svgEl("path", {
+        d: "M" + barX + " " + (barY - 4) + " V" + barY + " H" + (barX + unit) + " V" + (barY - 4),
+        fill: "none", stroke: "#93a4cc", "stroke-width": 1.4
+      }));
+      viz.appendChild(svgEl("text", {x: barX + unit + 7, y: barY + 1, fill: "#93a4cc", "font-size": 11, "font-family": "monospace"}, "= 1 cm"));
     } else {
       var end = 48 + Math.pow(p[2] / 30.1, .42) * 330;
+      var earthX = 48 + Math.pow(1 / 30.1, .42) * 330;
       var sunG = svgEl("radialGradient", {id: "pg-sun", cx: "40%", cy: "35%", r: "65%"});
       sunG.appendChild(svgEl("stop", {offset: "0%", "stop-color": "#fef08a"}));
       sunG.appendChild(svgEl("stop", {offset: "55%", "stop-color": "#fbbf24"}));
       sunG.appendChild(svgEl("stop", {offset: "100%", "stop-color": "#ea580c"}));
       viz.querySelector("defs").appendChild(sunG);
-      viz.appendChild(svgEl("circle", {cx: 38, cy: 100, r: 18, fill: "url(#pg-sun)"}));
-      viz.appendChild(svgEl("circle", {cx: 38, cy: 100, r: 24, fill: "none", stroke: "#fbbf24", "stroke-width": 1, opacity: ".35"}));
-      viz.appendChild(svgEl("line", {x1: 58, y1: 100, x2: end, y2: 100, stroke: "#6ea8fe", "stroke-width": 6, "stroke-linecap": "round", "stroke-dasharray": "4 8", opacity: ".65"}));
-      drawPlanet(viz, "orbit", end, 100, Math.max(8, Math.min(14, 6 + p[0] / 20000)), p[5], picker.value);
-      viz.appendChild(svgEl("text", {x: 38, y: 145, fill: "#dce7ff", "text-anchor": "middle", "font-size": 13}, "太阳"));
-      viz.appendChild(svgEl("text", {x: end, y: 145, fill: "#dce7ff", "text-anchor": "middle", "font-size": 13}, p[4] + " " + p[2].toFixed(2) + " AU"));
+      viz.appendChild(svgEl("circle", {cx: 38, cy: 96, r: 18, fill: "url(#pg-sun)"}));
+      viz.appendChild(svgEl("circle", {cx: 38, cy: 96, r: 24, fill: "none", stroke: "#fbbf24", "stroke-width": 1, opacity: ".35"}));
+      viz.appendChild(svgEl("line", {x1: 58, y1: 96, x2: Math.max(end, earthX), y2: 96, stroke: "#6ea8fe", "stroke-width": 6, "stroke-linecap": "round", "stroke-dasharray": "4 8", opacity: ".65"}));
+      /* 地球那一格永远画出来：只画目标行星的话，「30.1 AU」旁边没有
+         任何 1 AU 可比，海王星看起来只是「线上更靠右的一点」。 */
+      if (!isEarth) {
+        viz.appendChild(svgEl("line", {x1: earthX, y1: 74, x2: earthX, y2: 118, stroke: "#9fb4e6", "stroke-width": 1, "stroke-dasharray": "3 3"}));
+        drawPlanet(viz, "earth", earthX, 96, 7);
+        viz.appendChild(label(earthX, 134, "地球 1 m", {fill: "#9fb4e6", size: 11}));
+      }
+      drawPlanet(viz, picker.value, end, 96, Math.max(8, Math.min(14, 6 + p[0] / 20000)));
+      viz.appendChild(label(38, 141, "太阳"));
+      viz.appendChild(label(end, isEarth ? 141 : 156, p[4] + " " + p[2].toFixed(2) + " AU", {weight: 700}));
+      viz.appendChild(svgEl("text", {x: 18, y: 180, fill: "#93a4cc", "font-size": 11}, "横向已压缩：图上的间隔不等于真实距离"));
     }
     viz.setAttribute("aria-label", scaleText);
     if (markOperated) {
