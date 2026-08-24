@@ -611,7 +611,9 @@
                   "表面 × <b>" + (L * L) + "</b>（能进气的皮）";
     var r = document.createElement("span");
     r.className = "rat";
-    r.textContent = "缺口 " + L + " 倍";
+    /* 边长 ×1 是起点：体积和表面积都还是 1 倍，缺口根本没出现。
+       原来照公式写「缺口 1 倍」，第一张卡就在宣布一个不存在的差距。 */
+    r.textContent = L === 1 ? "还没有缺口" : "缺口 " + L + " 倍";
     c.appendChild(box); c.appendChild(h); c.appendChild(p); c.appendChild(r);
     cubes.appendChild(c);
   });
@@ -862,7 +864,10 @@
   slider.addEventListener("input", function () { scaleText.textContent = slider.value; });
   document.getElementById("insectRun").addEventListener("click", function () {
     var k = Number(slider.value), area = k * k, volume = area * k, stage = document.getElementById("lifeStage").value;
-    output.textContent = "边长 ×" + k + " 后，表面积 ×" + area + "，体积 ×" + volume + "，体积相对表面积多增长 " + k + " 倍。记录阶段：" + stage + "。生命周期阶段应按身体特征判断，不能只凭地点或颜色。";
+    /* 「多增长 k 倍」在中文里是 (k+1) 倍的意思：k=5 时体积 ×125 恰是表面积 ×25 的
+       5 倍而不是 6 倍；滑到 k=1 更是两者相等，却说「多增长 1 倍」。按倍数之比来说。 */
+    var ratioText = k === 1 ? "边长不放大时，两者都不变" : "体积的放大倍数是表面积的 " + k + " 倍";
+    output.textContent = "边长 ×" + k + " 后，表面积 ×" + area + "，体积 ×" + volume + "，" + ratioText + "。记录阶段：" + stage + "。生命周期阶段应按身体特征判断，不能只凭地点或颜色。";
     operated = true;
   });
   document.getElementById("insectComplete").addEventListener("click", function () {
