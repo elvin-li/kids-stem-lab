@@ -814,7 +814,12 @@
     var kind = state.mirror
       ? "反射 + 旋转（二面体群 D" + state.fold + "，像雪花）"
       : "只有旋转（循环群 C" + state.fold + "，像风车）";
-    var strokes = state.strokes.length + (state.current ? 1 : 0);
+    /* 每一笔都把当时的折数存在自己身上（paintStroke 按 s.fold 复制），改了滑块也不会重排。
+       所以总线数得一笔一笔加自己的份数：原先拿当前折数乘笔数，6 折画完再切到 1 折，
+       屏幕上明明还摆着 12 条线，读数却报「一共 2 条」——而这页问的正是这个数。 */
+    var strokes = 0, lines = 0, all = state.strokes.concat(state.current ? [state.current] : []);
+    all.forEach(function (s) { strokes++; lines += s.fold * (s.mirror ? 2 : 1); });
+    var mixed = all.some(function (s) { return s.fold * (s.mirror ? 2 : 1) !== copies; });
     var latest = state.current || state.strokes[state.strokes.length - 1];
     updateMirrorMap(latest && latest.pts.length ? latest.pts[0] : null);
     document.getElementById("readout").innerHTML =
@@ -822,7 +827,8 @@
       "现在是 <b>" + kind + "</b>：绕中心每转 <span class='n'>" + fmtDeg(360 / state.fold) + "°</span> 重合" +
       (state.mirror ? "，另有 <span class='n'>" + state.fold + "</span> 条镜面。" : "，没有镜面。") + "<br>" +
       "已经画了 <span class='n'>" + strokes + "</span> 笔，" +
-      "屏幕上一共 <span class='n'>" + (strokes * copies) + "</span> 条线。";
+      "屏幕上一共 <span class='n'>" + lines + "</span> 条线。" +
+      (mixed ? "<br>其中有几笔是在别的折数下画的，还按当时的份数留在画面上。" : "");
   }
 
   /* ---------- controls ---------- */
