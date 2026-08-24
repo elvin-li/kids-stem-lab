@@ -1896,6 +1896,510 @@ window.ILLUSTRATIONS = (function () {
     return out + "</ul>";
   }
 
+  /* ================= 目录卡片场景 =================
+     `card/<slug>` 是目录页图位专用的一族插图，和上面按物种画的 `ocean/*`、`insects/*`
+     不同：每张都画「这一页在干什么」，而不是一个孤立的对象，所以恐龙卡里有地层和化石，
+     光影卡里有灯、物体和影子三者的几何关系。
+
+     统一规格（改动或新增时必须照做，否则会在窄卡片里被裁到）：
+     - viewBox 固定 `0 0 160 110`，fit 为 slice，safe 取 0.86；
+     - 关键内容画在 x∈[16,144]、y∈[10,100] 之内，`safeArea()` 会把它压进各种宽高比都可见的范围；
+     - 背景铺满整块 160×110，被裁掉也看不出来；
+     - 渐变、clipPath 等需要 id 的地方一律写 `{{U}}` 占位，`markup()` 会替换成本次渲染唯一的后缀。 */
+
+  var CARD_BOX = "0 0 160 110";
+
+  function defCard(slug, spec) {
+    def("card/" + slug, {
+      viewBox: CARD_BOX,
+      fit: "xMidYMid slice",
+      safe: 0.86,
+      title: spec.title,
+      desc: spec.desc,
+      bg: spec.bg,
+      art: spec.art
+    });
+  }
+
+  /** 卡片天空：从上到下的两段渐变，铺满整个 160×110。 */
+  function cardSky(top, bottom) {
+    return '<defs><linearGradient id="sky{{U}}" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="' + top + '"/><stop offset="1" stop-color="' + bottom + '"/>' +
+      "</linearGradient></defs>" +
+      '<rect width="160" height="110" fill="url(#sky{{U}})"/>';
+  }
+
+  /** 卡片地面：一条起伏的地平线，y 为地平线高度。 */
+  function cardGround(color, y) {
+    return '<path d="M0 ' + y + " C30 " + (y - 6) + " 58 " + (y + 5) + " 86 " + y +
+      " C114 " + (y - 5) + " 138 " + (y + 4) + " 160 " + (y - 2) +
+      ' L160 110 L0 110Z" fill="' + color + '"/>';
+  }
+
+  /* ---------------- 互动实验卡 ---------------- */
+
+  defCard("number-blocks", {
+    title: "数感积木插图",
+    desc: "十格阵里放了 7 块方积木，还空着 3 格；右边立着一根十连条，说明 7 再加 3 就是一个十。",
+    bg: cardSky("#fff6e2", "#ffe6bd"),
+    art: (function () {
+      var out = '<rect x="16" y="26" width="98" height="60" rx="9" fill="#fffdf6" stroke="#e0a33c" stroke-width="2.4"/>';
+      for (var i = 0; i < 10; i++) {
+        var col = i % 5, row = i < 5 ? 0 : 1;
+        var x = 21 + col * 18.5, y = 33 + row * 24;
+        if (i < 7) {
+          out += '<rect x="' + x + '" y="' + y + '" width="16" height="18" rx="3.4" fill="#4d86d6"/>' +
+            '<rect x="' + x + '" y="' + y + '" width="16" height="6" rx="3" fill="#7fb0ef"/>';
+        } else {
+          out += '<rect x="' + (x + 1) + '" y="' + (y + 1) + '" width="14" height="16" rx="3" fill="#fdf0d6" stroke="#e0a33c" stroke-width="1.6" stroke-dasharray="3 3"/>';
+        }
+      }
+      /* 中线把 10 格分成 5 + 5，这是十格阵最核心的结构提示。 */
+      out += '<path d="M65 30 L65 82" stroke="#c8862a" stroke-width="1.8" stroke-dasharray="4 3"/>';
+      out += '<text x="18" y="20" font-size="12" font-weight="700" fill="#8a5a10">已有 7</text>';
+      out += '<text x="66" y="20" font-size="12" font-weight="700" fill="#c2410c">还差 3</text>';
+      /* 右侧十连条：10 个一摞起来就是「一个十」。 */
+      out += '<rect x="120" y="26" width="17" height="60" rx="4" fill="#f0a02a" stroke="#a35f0d" stroke-width="2"/>';
+      for (var s = 1; s < 10; s++) {
+        out += '<path d="M120 ' + (26 + s * 6) + ' L137 ' + (26 + s * 6) + '" stroke="#a35f0d" stroke-width="1.1"/>';
+      }
+      out += '<text x="120" y="20" font-size="12" font-weight="700" fill="#8a5a10">10</text>';
+      out += '<text x="40" y="100" font-size="11" font-weight="700" fill="#8a5a10">满十换一条</text>';
+      return out;
+    })()
+  });
+
+  defCard("fraction-lab", {
+    title: "分数实验台插图",
+    desc: "左边的饼图涂了二分之一，右边的饼图涂了四分之二，中间一个等号说明它们一样大。",
+    bg: cardSky("#fff1f4", "#ffdde5"),
+    art:
+      '<circle cx="42" cy="50" r="27" fill="#fff8f9" stroke="#c02a52" stroke-width="2.6"/>' +
+      '<path d="M42 23 A27 27 0 0 1 42 77 Z" fill="#e8567f"/>' +
+      '<path d="M42 23 L42 77" stroke="#c02a52" stroke-width="2.2"/>' +
+      '<text x="30" y="99" font-size="15" font-weight="700" fill="#a51b42">1/2</text>' +
+      '<text x="72" y="58" font-size="18" font-weight="700" fill="#8a5a10">=</text>' +
+      '<circle cx="120" cy="50" r="27" fill="#fff8f9" stroke="#c02a52" stroke-width="2.6"/>' +
+      '<path d="M120 23 A27 27 0 0 1 147 50 Z" fill="#e8567f"/>' +
+      '<path d="M120 77 A27 27 0 0 1 93 50 Z" fill="#e8567f"/>' +
+      '<path d="M120 23 L120 77 M93 50 L147 50" stroke="#c02a52" stroke-width="2.2"/>' +
+      '<text x="106" y="99" font-size="15" font-weight="700" fill="#a51b42">2/4</text>'
+  });
+
+  defCard("pattern-machine", {
+    title: "规律机器插图",
+    desc: "四根柱子一根比一根高，高度依次是 1、2、3、4 格，虚线的第五根打着问号，等着被预测。",
+    bg: cardSky("#eef3ff", "#dbe6ff"),
+    art: (function () {
+      var out = '<path d="M14 92 L150 92" stroke="#7b8bb8" stroke-width="2"/>';
+      var heights = [16, 30, 44, 58];
+      for (var i = 0; i < heights.length; i++) {
+        var x = 22 + i * 24, h = heights[i];
+        out += '<rect x="' + x + '" y="' + (92 - h) + '" width="17" height="' + h + '" rx="3" fill="#4d86d6"/>' +
+          '<rect x="' + x + '" y="' + (92 - h) + '" width="17" height="5" rx="2.5" fill="#7fb0ef"/>';
+      }
+      out += '<rect x="118" y="20" width="17" height="72" rx="3" fill="none" stroke="#4d86d6" stroke-width="2.2" stroke-dasharray="5 4"/>' +
+        '<text x="121" y="15" font-size="15" font-weight="700" fill="#2b56a8">?</text>';
+      /* 顶点连成的直线就是「每次加同样多」的可视化。 */
+      out += '<path d="M30 76 L54 62 L78 48 L102 34 L126 20" fill="none" stroke="#e07b1f" stroke-width="2.4" stroke-dasharray="6 4" stroke-linecap="round"/>';
+      out += '<g fill="#e07b1f"><circle cx="30" cy="76" r="3"/><circle cx="54" cy="62" r="3"/><circle cx="78" cy="48" r="3"/><circle cx="102" cy="34" r="3"/></g>';
+      out += '<text x="24" y="20" font-size="12" font-weight="700" fill="#2b56a8">每次都多 1 格</text>';
+      return out;
+    })()
+  });
+
+  defCard("symmetry-studio", {
+    title: "对称工作室插图",
+    desc: "一条竖直虚线是对称轴，左右两边的图案完全镜像，连三个彩色圆点的位置都一一对应。",
+    bg: cardSky("#f4efff", "#e2d8fb"),
+    art: (function () {
+      /* 半只蝴蝶镜像成整只：对称轴两侧每个花纹到轴的距离相同。 */
+      var half =
+        '<path d="M78 46 C68 22 48 14 36 20 C24 26 26 42 40 48 C28 54 26 70 38 76 C50 82 70 68 78 52Z" fill="#8b6de0" stroke="#4b3a86" stroke-width="2.2" stroke-linejoin="round"/>' +
+        '<circle cx="48" cy="32" r="5.6" fill="#ffd24a"/>' +
+        '<circle cx="42" cy="62" r="4.4" fill="#41c7a4"/>' +
+        '<circle cx="60" cy="54" r="3.6" fill="#ff7aa8"/>';
+      return half +
+        '<g transform="translate(160,0) scale(-1,1)">' + half + "</g>" +
+        '<ellipse cx="80" cy="52" rx="4.6" ry="22" fill="#3a2c68"/>' +
+        '<circle cx="80" cy="26" r="5.4" fill="#3a2c68"/>' +
+        '<path d="M77 22 C72 14 68 11 63 10 M83 22 C88 14 92 11 97 10" fill="none" stroke="#3a2c68" stroke-width="2.2" stroke-linecap="round"/>' +
+        '<path d="M80 16 L80 92" stroke="#4b3a86" stroke-width="2.2" stroke-dasharray="6 5"/>' +
+        '<g stroke="#4b3a86" stroke-width="1.4" stroke-dasharray="3 3">' +
+        '<path d="M48 32 L112 32"/><path d="M42 62 L118 62"/>' +
+        "</g>" +
+        '<text x="50" y="103" font-size="12" font-weight="700" fill="#4b3a86">对折能重合</text>';
+    })()
+  });
+
+  defCard("estimation-station", {
+    title: "估算站插图",
+    desc: "玻璃罐里装着一堆彩色糖豆，其中十颗被一个虚线圈单独框出来，作为估算整罐数量的参照。",
+    bg: cardSky("#fffaf0", "#ffeccd"),
+    art: (function () {
+      var jar = '<path d="M44 34 L116 34 L112 96 Q80 102 48 96Z" fill="#eaf6fb" opacity=".85" stroke="#7fa8bd" stroke-width="2.4"/>' +
+        '<rect x="40" y="26" width="80" height="9" rx="4" fill="#c98a3e"/>';
+      var beans = "";
+      var spots = [
+        [58, 48, "#ff7aa8"], [76, 44, "#4d86d6"], [94, 49, "#ffc233"], [106, 58, "#41c7a4"],
+        [56, 62, "#8b6de0"], [72, 60, "#ff9147"], [90, 65, "#ff7aa8"], [104, 74, "#4d86d6"],
+        [54, 76, "#ffc233"], [70, 76, "#41c7a4"], [86, 80, "#8b6de0"], [100, 88, "#ff9147"],
+        [60, 90, "#4d86d6"], [76, 92, "#ffc233"], [92, 92, "#41c7a4"]
+      ];
+      for (var i = 0; i < spots.length; i++) {
+        beans += '<ellipse cx="' + spots[i][0] + '" cy="' + spots[i][1] + '" rx="6.4" ry="5" fill="' + spots[i][2] + '"/>' +
+          '<ellipse cx="' + (spots[i][0] - 1.8) + '" cy="' + (spots[i][1] - 1.6) + '" rx="2.2" ry="1.5" fill="#ffffff" opacity=".55"/>';
+      }
+      /* 先框出一小撮当「一份」，再看整罐是几份，这就是估算的分块策略。 */
+      var group = '<ellipse cx="76" cy="53" rx="30" ry="17" fill="none" stroke="#c2410c" stroke-width="2.2" stroke-dasharray="5 4"/>' +
+        '<text x="42" y="20" font-size="12" font-weight="700" fill="#c2410c">先数一圈 10 颗</text>';
+      return jar + beans + group;
+    })()
+  });
+
+  defCard("turtle-geometry", {
+    title: "海龟几何插图",
+    desc: "一只小海龟沿着方形路径爬行，走过的边是实线，没走的是虚线，拐角上标着 90 度。",
+    bg: cardSky("#eafaf1", "#cdeedd"),
+    art: (function () {
+      var grid = '<g stroke="#a9d9c1" stroke-width="1">';
+      for (var i = 1; i < 8; i++) grid += '<path d="M' + (i * 20) + ' 0 L' + (i * 20) + ' 110"/>';
+      for (var j = 1; j < 6; j++) grid += '<path d="M0 ' + (j * 20) + ' L160 ' + (j * 20) + '"/>';
+      grid += "</g>";
+      return grid +
+        '<path d="M44 84 L44 30 L116 30" fill="none" stroke="#1a8f66" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<path d="M116 30 L116 84 L44 84" fill="none" stroke="#1a8f66" stroke-width="3" stroke-dasharray="6 5" stroke-linecap="round"/>' +
+        '<path d="M44 44 A14 14 0 0 1 58 30" fill="none" stroke="#c2410c" stroke-width="2.2"/>' +
+        '<text x="49" y="26" font-size="11" font-weight="700" fill="#c2410c">90°</text>' +
+        '<g><ellipse cx="112" cy="16" rx="7" ry="5.5" fill="#37c98f"/>' +
+        '<ellipse cx="116" cy="30" rx="15" ry="12" fill="#1a8f66"/>' +
+        '<circle cx="116" cy="30" r="6.5" fill="none" stroke="#0f6c4c" stroke-width="1.6"/>' +
+        '<ellipse cx="131" cy="27" rx="6.5" ry="5" fill="#37c98f"/>' +
+        '<circle cx="133" cy="25.6" r="1.6" fill="#0b2b20"/>' +
+        '<path d="M102 34 Q96 32 97 27" fill="none" stroke="#37c98f" stroke-width="3" stroke-linecap="round"/></g>' +
+        '<text x="34" y="102" font-size="12" font-weight="700" fill="#0f6c4c">前进 · 右转 · 重复</text>';
+    })()
+  });
+
+  defCard("doodle-pad", {
+    title: "彩虹小画室插图",
+    desc: "一张画纸上有三道不同颜色的笔触，旁边摆着一排颜料点和一支画笔。",
+    bg: cardSky("#fff7ec", "#ffe8cf"),
+    art:
+      '<rect x="20" y="12" width="120" height="70" rx="8" fill="#fffdf7" stroke="#d68a00" stroke-width="2.4"/>' +
+      '<path d="M32 66 C44 38 60 38 70 56 C80 74 96 72 108 48" fill="none" stroke="#1f6fd0" stroke-width="6" stroke-linecap="round"/>' +
+      '<path d="M38 34 C56 24 78 26 96 32" fill="none" stroke="#d81b73" stroke-width="5" stroke-linecap="round"/>' +
+      '<path d="M104 66 C114 58 122 60 128 68" fill="none" stroke="#0f8a4d" stroke-width="5" stroke-linecap="round"/>' +
+      '<g><circle cx="34" cy="94" r="6.4" fill="#e11d48"/><circle cx="52" cy="94" r="6.4" fill="#f59e0b"/>' +
+      '<circle cx="70" cy="94" r="6.4" fill="#16a34a"/><circle cx="88" cy="94" r="6.4" fill="#2563eb"/>' +
+      '<circle cx="106" cy="94" r="6.4" fill="#7c3aed"/></g>' +
+      '<g transform="rotate(26 128 88)"><rect x="124" y="70" width="8" height="24" rx="3" fill="#8a5a2b"/>' +
+      '<path d="M124 94 L132 94 L128 104Z" fill="#d81b73"/></g>'
+  });
+
+  defCard("gravity-drop", {
+    title: "自由落体插图",
+    desc: "抽掉空气的玻璃管里，锤子和羽毛并排下落，三条虚线说明同一时刻它们始终在同一高度。",
+    bg: cardSky("#e9edfb", "#ccd6f4"),
+    art: (function () {
+      /* 三个时刻的位置：每一刻锤子和羽毛都在同一条虚线上（一起落），
+         而相邻两条虚线的间距越来越大（越落越快）。 */
+      function hammer(y, op) {
+        return '<g opacity="' + op + '"><rect x="47" y="' + y + '" width="18" height="8" rx="2.4" fill="#6b7280"/>' +
+          '<rect x="53.5" y="' + (y + 6) + '" width="5" height="17" rx="2" fill="#a2703c"/></g>';
+      }
+      function feather(y, op) {
+        return '<g opacity="' + op + '"><path d="M105 ' + y + " C96 " + (y + 12) + " 99 " + (y + 21) + " 105 " + (y + 25) +
+          " C112 " + (y + 19) + " 114 " + (y + 9) + " 105 " + y + 'Z" fill="#f2f6fd" stroke="#7b8bb8" stroke-width="1.6"/>' +
+          '<path d="M105 ' + (y + 3) + " L105 " + (y + 23) + '" stroke="#7b8bb8" stroke-width="1.3"/></g>';
+      }
+      return '<text x="34" y="19" font-size="12" font-weight="700" fill="#c2410c">抽掉空气以后</text>' +
+        '<rect x="34" y="24" width="94" height="74" rx="8" fill="#dbe6fb" opacity=".75" stroke="#7b8bb8" stroke-width="2.4"/>' +
+        '<g stroke="#c2410c" stroke-width="1.5" stroke-dasharray="5 4">' +
+        '<path d="M36 34 L126 34"/><path d="M36 52 L126 52"/><path d="M36 80 L126 80"/>' +
+        "</g>" +
+        '<g fill="#c2410c" font-size="9" font-weight="700">' +
+        '<text x="118" y="32">1</text><text x="118" y="50">2</text><text x="118" y="78">3</text>' +
+        "</g>" +
+        hammer(28, ".3") + feather(28, ".3") +
+        hammer(46, ".55") + feather(46, ".55") +
+        hammer(74, "1") + feather(74, "1");
+    })()
+  });
+
+  defCard("ramp-and-roll", {
+    title: "斜坡滚球插图",
+    desc: "小球从斜坡顶端滚下，斜坡底角标着角度，地面上的等距刻度显示球越滚越快。",
+    bg: cardSky("#f2eeff", "#ddd4fa"),
+    art: (function () {
+      var out = '<path d="M22 78 L126 78 L22 26Z" fill="#a08bea" opacity=".45" stroke="#6b4fd0" stroke-width="2.6" stroke-linejoin="round"/>';
+      out += '<path d="M22 78 L140 78" stroke="#4b3a86" stroke-width="2.6"/>';
+      /* 底角的弧线 + 度数，是「坡越陡越快」这条结论的自变量。 */
+      out += '<path d="M46 78 A24 24 0 0 0 46 66" fill="none" stroke="#c2410c" stroke-width="2"/>';
+      out += '<text x="48" y="74" font-size="11" font-weight="700" fill="#c2410c">27°</text>';
+      out += '<g fill="none" stroke="#6b4fd0" stroke-width="2" stroke-dasharray="4 4"><path d="M34 37 L96 68"/></g>';
+      /* 刻度间距越来越大 = 每秒走得越来越远，也就是在加速。 */
+      var xs = [36, 52, 76, 108];
+      for (var i = 0; i < xs.length; i++) {
+        out += '<path d="M' + xs[i] + ' 78 L' + xs[i] + ' 86" stroke="#4b3a86" stroke-width="2"/>';
+      }
+      out += '<text x="32" y="99" font-size="11" font-weight="700" fill="#4b3a86">1</text>' +
+        '<text x="48" y="99" font-size="11" font-weight="700" fill="#4b3a86">2</text>' +
+        '<text x="72" y="99" font-size="11" font-weight="700" fill="#4b3a86">3</text>' +
+        '<text x="102" y="99" font-size="11" font-weight="700" fill="#4b3a86">4 秒</text>';
+      out += '<circle cx="32" cy="33" r="8.5" fill="#4d86d6" stroke="#1e3f80" stroke-width="2"/>' +
+        '<circle cx="29" cy="30" r="2.6" fill="#ffffff" opacity=".7"/>';
+      out += '<circle cx="100" cy="70" r="8.5" fill="#4d86d6" opacity=".35"/>';
+      return out;
+    })()
+  });
+
+  defCard("light-and-shadow", {
+    title: "光与影插图",
+    desc: "台灯照向一根立柱，两条光线画出影子的边界，灯越近影子越长。",
+    bg: cardSky("#fff8e4", "#ffe9b8"),
+    art:
+      '<path d="M0 82 L160 82" stroke="#b98a2e" stroke-width="2.4"/>' +
+      /* 两条从灯泡出发、擦过物体顶端和底端的光线，正好圈出影子的长度。 */
+      '<path d="M40 44 L92 30 L142 68 L92 46Z" fill="#ffd24a" opacity=".5"/>' +
+      '<path d="M40 44 L142 68" stroke="#e0a33c" stroke-width="1.5" stroke-dasharray="4 4"/>' +
+      '<path d="M92 30 L138 82" stroke="#c98a3e" stroke-width="1.5" stroke-dasharray="4 4"/>' +
+      '<path d="M92 30 L138 82 L92 82Z" fill="#6b5a33" opacity=".5"/>' +
+      '<rect x="86" y="30" width="10" height="52" rx="3" fill="#5b6b95"/>' +
+      '<path d="M30 82 L30 50" stroke="#6b7280" stroke-width="3.4"/>' +
+      '<path d="M22 82 L38 82" stroke="#6b7280" stroke-width="3.4" stroke-linecap="round"/>' +
+      '<path d="M30 50 Q30 34 46 32 L54 48 Q40 54 30 50Z" fill="#ffc233" stroke="#b98a2e" stroke-width="2"/>' +
+      '<circle cx="46" cy="42" r="4" fill="#fff6cf"/>' +
+      '<text x="20" y="98" font-size="12" font-weight="700" fill="#8a5a10">灯</text>' +
+      '<text x="94" y="98" font-size="12" font-weight="700" fill="#8a5a10">影子</text>'
+  });
+
+  defCard("wave-maker", {
+    title: "造波机插图",
+    desc: "一条蓝色的波浪，双箭头分别标出一个波长和振幅，下面还有一条更密的浅色波做对比。",
+    bg: cardSky("#e8f6ff", "#c8e6fb"),
+    art:
+      '<path d="M12 50 L148 50" stroke="#5b7fae" stroke-width="1.4" stroke-dasharray="4 4"/>' +
+      '<path d="M12 50 C24 18 40 18 52 50 C64 82 80 82 92 50 C104 18 120 18 132 50" fill="none" stroke="#1f6fd0" stroke-width="5" stroke-linecap="round"/>' +
+      '<path d="M12 88 C20 76 28 76 36 88 C44 100 52 100 60 88 C68 76 76 76 84 88 C92 100 100 100 108 88 C116 76 124 76 132 88" fill="none" stroke="#7ec8f0" stroke-width="3" stroke-linecap="round"/>' +
+      '<g stroke="#c2410c" stroke-width="2">' +
+      '<path d="M32 22 L32 12"/><path d="M112 22 L112 12"/><path d="M32 17 L112 17"/>' +
+      '<path d="M32 17 L38 13 M32 17 L38 21 M112 17 L106 13 M112 17 L106 21"/>' +
+      "</g>" +
+      '<text x="52" y="10" font-size="11" font-weight="700" fill="#c2410c">一个波长</text>' +
+      '<g stroke="#0f8a4d" stroke-width="2">' +
+      '<path d="M142 22 L142 50"/><path d="M142 22 L138 28 M142 22 L146 28 M142 50 L138 44 M142 50 L146 44"/>' +
+      "</g>" +
+      '<text x="112" y="62" font-size="11" font-weight="700" fill="#0f8a4d">振幅</text>'
+  });
+
+  /* ---------------- 自然专题卡 ---------------- */
+
+  defCard("nature-dinosaurs", {
+    title: "恐龙与化石插图",
+    desc: "一只霸王龙站在长着蕨类的地面上，脚下的岩层里埋着一具白色的骨骼化石，远处有火山。",
+    bg: cardSky("#ffe7c4", "#ffd39a") +
+      '<path d="M0 62 L26 34 L44 50 L60 30 L84 62Z" fill="#c98a63" opacity=".55"/>' +
+      cardGround("#9fbe74", 64),
+    art: (function () {
+      /* 地层：从上到下三层沉积岩，化石埋在中间那层，说明「越深越老」。 */
+      var strata = '<path d="M0 78 L160 74 L160 110 L0 110Z" fill="#c9a878"/>' +
+        '<path d="M0 90 L160 86 L160 110 L0 110Z" fill="#ab8a5e"/>' +
+        '<path d="M0 100 L160 97 L160 110 L0 110Z" fill="#8d7049"/>' +
+        '<g stroke="#f4ead8" stroke-width="2.6" stroke-linecap="round" fill="none">' +
+        '<path d="M96 92 L128 90"/><path d="M100 92 L98 98"/><path d="M108 91 L107 98"/>' +
+        '<path d="M116 91 L116 98"/><path d="M124 90 L126 97"/>' +
+        "</g>" +
+        '<circle cx="132" cy="89" r="4" fill="#f4ead8"/>';
+      /* 霸王龙用双足直立的姿态：粗后腿承重、长尾巴在身后配平、前肢很短。 */
+      var rex =
+        '<path d="M96 44 C104 36 118 34 128 40 C136 45 134 55 126 57 L112 57 C104 56 98 51 96 44Z" fill="#3f8f4e"/>' +
+        '<path d="M112 52 C118 55 126 55 132 53 L132 56 C124 58 116 57 112 56Z" fill="#f4ead8"/>' +
+        '<circle cx="120" cy="43" r="2.2" fill="#0d2a15"/>' +
+        '<path d="M60 40 C74 34 90 36 100 46 C104 52 100 60 92 62 C80 64 68 60 60 52Z" fill="#3f8f4e"/>' +
+        '<path d="M62 46 C46 50 30 58 18 70 L24 74 C36 64 50 58 64 56Z" fill="#347a42"/>' +
+        '<path d="M92 60 L86 68 L80 66" fill="none" stroke="#2c6636" stroke-width="2.6" stroke-linecap="round"/>' +
+        '<path d="M82 60 C84 70 82 78 76 84 L70 82 C74 76 76 68 74 60Z" fill="#2c6636"/>' +
+        '<path d="M76 84 L64 86" stroke="#2c6636" stroke-width="4" stroke-linecap="round"/>' +
+        '<path d="M70 58 C74 68 74 76 70 82 L64 80 C66 74 66 66 64 58Z" fill="#3f8f4e"/>' +
+        '<path d="M70 82 L58 84" stroke="#3f8f4e" stroke-width="4" stroke-linecap="round"/>';
+      var fern = '<g stroke="#2f6b3c" stroke-width="2.4" fill="none" stroke-linecap="round">' +
+        '<path d="M28 76 C24 66 26 58 32 52"/><path d="M28 68 L22 64 M29 62 L23 58 M31 56 L26 52"/>' +
+        '<path d="M28 68 L34 64 M29 62 L35 58 M31 56 L36 52"/>' +
+        "</g>";
+      return strata + fern + rex;
+    })()
+  });
+
+  defCard("nature-space", {
+    title: "太空站插图",
+    desc: "星空里从左到右排着太阳、地球和月亮、带光环的土星，一枚小火箭正飞过。",
+    bg: '<rect width="160" height="110" fill="#141a3a"/>' +
+      '<g fill="#ffffff">' +
+      '<circle cx="18" cy="18" r="1.3"/><circle cx="52" cy="12" r="1"/><circle cx="88" cy="20" r="1.4"/>' +
+      '<circle cx="126" cy="14" r="1"/><circle cx="150" cy="34" r="1.2"/><circle cx="12" cy="60" r="1"/>' +
+      '<circle cx="70" cy="96" r="1.2"/><circle cx="104" cy="102" r="1"/><circle cx="142" cy="88" r="1.3"/>' +
+      "</g>",
+    art:
+      '<defs><radialGradient id="sun{{U}}"><stop offset="0" stop-color="#fff3c4"/><stop offset="1" stop-color="#f59e0b"/></radialGradient>' +
+      '<clipPath id="terra{{U}}"><circle cx="74" cy="54" r="17"/></clipPath></defs>' +
+      '<circle cx="16" cy="56" r="24" fill="url(#sun{{U}})"/>' +
+      '<circle cx="74" cy="54" r="17" fill="#2b6fc0"/>' +
+      '<g clip-path="url(#terra{{U}})" fill="#4aa96c">' +
+      '<path d="M60 44 C66 40 74 42 76 48 C70 54 62 52 60 44Z"/>' +
+      '<path d="M72 62 C78 56 88 58 90 66 C84 72 74 70 72 62Z"/>' +
+      "</g>" +
+      '<circle cx="74" cy="54" r="17" fill="none" stroke="#9ed0f5" stroke-width="1.6" opacity=".8"/>' +
+      '<circle cx="100" cy="34" r="5.5" fill="#cfd6e6"/>' +
+      '<circle cx="98" cy="32.5" r="1.6" fill="#a7b1c6"/><circle cx="102" cy="36" r="1.2" fill="#a7b1c6"/>' +
+      '<path d="M74 54 m-26 0 a26 26 0 0 1 26 -26" fill="none" stroke="#7f8bb0" stroke-width="1.2" stroke-dasharray="3 4"/>' +
+      '<g transform="rotate(-18 130 62)">' +
+      '<ellipse cx="130" cy="62" rx="15" ry="14" fill="#e0b167"/>' +
+      '<ellipse cx="130" cy="62" rx="27" ry="7" fill="none" stroke="#f3d9a4" stroke-width="4"/>' +
+      "</g>" +
+      '<g transform="rotate(28 54 84)">' +
+      '<path d="M48 84 L60 84 L66 90 L60 96 L48 96Z" fill="#e6ecf6"/>' +
+      '<path d="M48 84 L42 78 L42 102 L48 96Z" fill="#d1495b"/>' +
+      '<circle cx="57" cy="90" r="3" fill="#4d86d6"/>' +
+      "</g>"
+  });
+
+  defCard("nature-ocean", {
+    title: "海底世界插图",
+    desc: "海水从上到下分成三层：阳光层有小鱼，中层游着一头鲸，漆黑的深层里鮟鱇鱼提着会发光的小灯。",
+    bg: '<rect width="160" height="110" fill="#63c1e8"/>' +
+      '<rect y="38" width="160" height="34" fill="#2a7fb8"/>' +
+      '<rect y="72" width="160" height="38" fill="#0d2f52"/>' +
+      '<g fill="#ffffff" opacity=".16"><path d="M20 0 L36 0 L14 38 L0 38Z"/><path d="M78 0 L88 0 L66 38 L56 38Z"/><path d="M130 0 L148 0 L122 38 L106 38Z"/></g>',
+    art:
+      '<g fill="#ffd24a"><path d="M26 20 C32 14 42 14 48 20 C42 26 32 26 26 20Z"/><path d="M26 20 L20 15 L20 25Z"/></g>' +
+      '<g fill="#ff9147"><path d="M108 16 C114 11 122 11 128 16 C122 21 114 21 108 16Z"/><path d="M108 16 L103 12 L103 20Z"/></g>' +
+      '<path d="M22 56 C28 44 52 40 78 44 C96 47 110 52 120 58 C110 64 96 68 78 70 C52 73 28 68 22 56Z" fill="#123c66"/>' +
+      '<path d="M120 58 C128 52 136 46 141 42 C136 52 136 64 141 74 C136 70 128 64 120 58Z" fill="#0e3157"/>' +
+      '<path d="M78 44 L88 34 L92 46Z" fill="#0e3157"/>' +
+      '<circle cx="34" cy="54" r="1.8" fill="#e6f4ff"/>' +
+      '<g stroke="#1a4e7d" stroke-width="1.4" fill="none"><path d="M34 62 L70 66"/><path d="M36 66 L70 69"/></g>' +
+      '<g><ellipse cx="96" cy="92" rx="17" ry="13" fill="#12283f"/>' +
+      '<path d="M79 92 L86 84 L86 100Z" fill="#0b1d2e"/>' +
+      '<path d="M96 79 C92 72 96 68 100 66" fill="none" stroke="#12283f" stroke-width="2.4"/>' +
+      '<circle cx="100" cy="64" r="4.6" fill="#ffe58a"/>' +
+      '<circle cx="100" cy="64" r="9" fill="#ffe58a" opacity=".28"/>' +
+      '<path d="M84 92 L92 88 L92 96Z" fill="#fdf6e3"/>' +
+      '<circle cx="102" cy="88" r="1.8" fill="#fdf6e3"/></g>' +
+      '<text x="24" y="20" font-size="11" font-weight="700" fill="#0d3a5c">阳光层</text>' +
+      '<text x="24" y="100" font-size="11" font-weight="700" fill="#9fc6e2">深海</text>'
+  });
+
+  defCard("nature-insects", {
+    title: "虫子放大镜插图",
+    desc: "放大镜下的一朵花上停着蜜蜂，六条腿和两对翅膀都数得清，旁边还有一只瓢虫。",
+    bg: cardSky("#f0f9df", "#d6edb6") + cardGround("#a8ce7a", 82),
+    art:
+      '<g stroke="#4f8f3a" stroke-width="3" fill="none" stroke-linecap="round"><path d="M52 88 L52 58"/></g>' +
+      '<g fill="#ff8fb0"><circle cx="44" cy="52" r="8"/><circle cx="60" cy="52" r="8"/><circle cx="52" cy="44" r="8"/><circle cx="52" cy="60" r="8"/></g>' +
+      '<circle cx="52" cy="52" r="5.4" fill="#ffd24a"/>' +
+      '<g><ellipse cx="52" cy="36" rx="11" ry="6" fill="#e4f0f8" opacity=".85" stroke="#b6d0e2" stroke-width="1.2" transform="rotate(-22 52 36)"/>' +
+      '<ellipse cx="60" cy="36" rx="9" ry="5" fill="#e4f0f8" opacity=".85" stroke="#b6d0e2" stroke-width="1.2" transform="rotate(-6 60 36)"/>' +
+      '<ellipse cx="58" cy="44" rx="10" ry="7" fill="#f0b429"/>' +
+      '<rect x="53" y="37" width="3.4" height="14" fill="#33261a" transform="rotate(-8 55 44)"/>' +
+      '<rect x="60" y="37" width="3.4" height="14" fill="#33261a" transform="rotate(-8 62 44)"/>' +
+      '<circle cx="45" cy="42" r="4.6" fill="#33261a"/>' +
+      '<g stroke="#33261a" stroke-width="1.6" fill="none" stroke-linecap="round">' +
+      '<path d="M42 38 C38 33 36 31 33 30"/><path d="M46 37 C45 32 44 30 42 27"/>' +
+      '<path d="M50 48 L47 54"/><path d="M56 49 L55 56"/><path d="M62 48 L64 55"/></g></g>' +
+      '<circle cx="52" cy="48" r="34" fill="none" stroke="#7b6a4f" stroke-width="4"/>' +
+      '<circle cx="52" cy="48" r="34" fill="#ffffff" opacity=".08"/>' +
+      '<path d="M76 72 L96 94" stroke="#7b6a4f" stroke-width="8" stroke-linecap="round"/>' +
+      '<g transform="translate(118 66)">' +
+      '<ellipse cx="0" cy="0" rx="13" ry="11" fill="#d1495b"/>' +
+      '<path d="M0 -11 L0 11" stroke="#2b1a10" stroke-width="1.8"/>' +
+      '<g fill="#2b1a10"><circle cx="-6" cy="-4" r="2.2"/><circle cx="6" cy="-3" r="2.2"/><circle cx="-5" cy="5" r="2"/><circle cx="6" cy="5" r="2"/></g>' +
+      '<ellipse cx="-13" cy="-4" rx="5" ry="4.4" fill="#2b1a10"/>' +
+      "</g>"
+  });
+
+  defCard("nature-earth", {
+    title: "地球与地震插图",
+    desc: "切开的地球露出地壳、地幔、外核和内核四层，右边一条断层裂开，地震波一圈圈传出去。",
+    bg: cardSky("#e8eefc", "#cfd9f2"),
+    art:
+      '<defs><clipPath id="half{{U}}"><rect x="0" y="0" width="98" height="110"/></clipPath></defs>' +
+      '<g><circle cx="98" cy="56" r="34" fill="#3f7b46"/>' +
+      '<g clip-path="url(#half{{U}})">' +
+      '<circle cx="98" cy="56" r="34" fill="#8d6b45"/>' +
+      '<circle cx="98" cy="56" r="28" fill="#d1603c"/>' +
+      '<circle cx="98" cy="56" r="17" fill="#f0913a"/>' +
+      '<circle cx="98" cy="56" r="8" fill="#ffe17a"/>' +
+      "</g>" +
+      '<circle cx="98" cy="56" r="34" fill="none" stroke="#2c4a6e" stroke-width="2"/>' +
+      '<path d="M98 22 L98 90" stroke="#2c4a6e" stroke-width="1.6" stroke-dasharray="4 3"/>' +
+      "</g>" +
+      /* 四条引线沿同一条半径依次落在地壳、地幔、外核、内核四层上，
+         终点到球心的距离分别取 31 / 22 / 12 / 4，正好落在各层色带的中间。 */
+      '<g stroke="#2c4a6e" stroke-width="1.2" fill="none">' +
+      '<path d="M67 56 L48 24"/><path d="M76 56 L48 44"/><path d="M86 56 L48 62"/><path d="M94 56 L48 80"/>' +
+      "</g>" +
+      '<g fill="#2c4a6e"><circle cx="67" cy="56" r="2"/><circle cx="76" cy="56" r="2"/><circle cx="86" cy="56" r="2"/><circle cx="94" cy="56" r="2"/></g>' +
+      '<g font-size="11" font-weight="700" fill="#2c4a6e">' +
+      '<text x="20" y="24">地壳</text><text x="20" y="46">地幔</text><text x="20" y="66">外核</text><text x="20" y="84">内核</text>' +
+      "</g>" +
+      '<g fill="none" stroke="#c2410c" stroke-width="2.2">' +
+      '<path d="M118 34 m-8 0 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0"/>' +
+      '<path d="M118 34 m-14 0 a14 14 0 1 0 28 0 a14 14 0 1 0 -28 0" opacity=".6"/>' +
+      '<path d="M118 34 m-20 0 a20 20 0 1 0 40 0 a20 20 0 1 0 -40 0" opacity=".32"/>' +
+      "</g>" +
+      '<path d="M112 28 L118 36 L114 40 L122 46" fill="none" stroke="#7a1f0f" stroke-width="3" stroke-linecap="round"/>' +
+      '<text x="46" y="102" font-size="11" font-weight="700" fill="#c2410c">震波一圈圈传开</text>'
+  });
+
+  defCard("nature-weather", {
+    title: "天气工坊插图",
+    desc: "水循环：太阳晒热海面，水汽上升变成云，云在山上下雨，雨水又流回海里。",
+    bg: cardSky("#bfe4fa", "#e7f4fd"),
+    art:
+      '<circle cx="34" cy="26" r="13" fill="#ffc233"/>' +
+      '<g stroke="#ffc233" stroke-width="2.6" stroke-linecap="round">' +
+      '<path d="M34 8 L34 3"/><path d="M16 26 L11 26"/><path d="M20 12 L17 9"/><path d="M48 12 L51 9"/><path d="M20 40 L17 43"/>' +
+      "</g>" +
+      '<path d="M0 86 C24 80 46 92 70 86 C94 80 118 92 160 84 L160 110 L0 110Z" fill="#3f8fc4"/>' +
+      '<path d="M118 88 L146 42 L160 66 L160 88Z" fill="#8a9a6d"/>' +
+      '<path d="M146 42 L152 52 L140 52Z" fill="#f2f6f8"/>' +
+      '<g fill="#f7fbfe" stroke="#a9c3d6" stroke-width="1.6">' +
+      '<ellipse cx="82" cy="30" rx="24" ry="14"/><ellipse cx="62" cy="36" rx="16" ry="10"/><ellipse cx="104" cy="36" rx="15" ry="10"/>' +
+      "</g>" +
+      '<g fill="#4a9fd6"><path d="M70 50 L67 60 L73 58Z"/><path d="M84 52 L81 63 L87 61Z"/><path d="M98 50 L95 60 L101 58Z"/></g>' +
+      '<g stroke="#2f7fb5" stroke-width="2.4" fill="none" stroke-linecap="round">' +
+      '<path d="M52 80 C46 66 56 58 52 48"/><path d="M52 48 L48 54 M52 48 L57 53"/>' +
+      "</g>" +
+      '<text x="18" y="72" font-size="11" font-weight="700" fill="#1e5f8c">蒸发</text>' +
+      '<text x="76" y="74" font-size="11" font-weight="700" fill="#1e5f8c">降水</text>' +
+      '<g stroke="#2f7fb5" stroke-width="2.2" fill="none" stroke-linecap="round">' +
+      '<path d="M132 74 C120 78 112 82 104 84"/><path d="M104 84 L110 82 M104 84 L110 87"/>' +
+      "</g>"
+  });
+
+  defCard("nature-human-body", {
+    title: "人体机器插图",
+    desc: "胸腔里画着一颗心脏和左右两片肺，旁边一条心电图线在跳动。",
+    bg: cardSky("#fff0f2", "#ffdde3"),
+    art:
+      '<path d="M56 16 C42 22 36 40 38 60 C40 78 48 92 60 98 L96 98 C108 92 116 78 118 60 C120 40 114 22 100 16Z" fill="#ffd9c9" opacity=".7"/>' +
+      '<g fill="#bfe3f4" stroke="#6ea9c9" stroke-width="1.8">' +
+      '<path d="M70 34 C58 36 50 48 50 62 C50 74 56 82 64 84 C70 80 72 66 72 52Z"/>' +
+      '<path d="M86 34 C98 36 106 48 106 62 C106 74 100 82 92 84 C86 80 84 66 84 52Z"/>' +
+      "</g>" +
+      '<g stroke="#6ea9c9" stroke-width="1.4" fill="none">' +
+      '<path d="M64 46 L58 52 M64 56 L56 62 M92 46 L98 52 M92 56 L100 62"/>' +
+      "</g>" +
+      '<path d="M78 30 L78 42 M78 34 L70 40 M78 34 L86 40" stroke="#c96a8a" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
+      '<path d="M78 76 C68 68 62 60 62 52 C62 45 68 41 74 44 C76 45 77 47 78 49 C79 47 80 45 82 44 C88 41 94 45 94 52 C94 60 88 68 78 76Z" fill="#e0455f"/>' +
+      '<path d="M70 52 C74 56 78 58 84 56" fill="none" stroke="#ffb1bd" stroke-width="2" stroke-linecap="round"/>' +
+      '<g stroke="#c02a52" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M18 96 L34 96 L39 86 L45 104 L50 96 L112 96 L117 86 L123 104 L128 96 L142 96"/>' +
+      "</g>" +
+      '<text x="104" y="26" font-size="12" font-weight="700" fill="#a51b42">心 · 肺</text>'
+  });
+
   /* ---------------- 对外 API ---------------- */
 
   function cssName(name) { return String(name).replace(/[^a-z0-9]+/gi, "-"); }
