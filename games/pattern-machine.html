@@ -72,6 +72,24 @@
              letter-spacing: .05em; }
   /* 机器插图自带齿轮，运行状态只靠机身发光提示，不再额外转一个虚线圈。 */
 
+  /* 孩子模式看不到机器日记和点图，线索必须自己留在画面上，
+     否则「至少喂 2 个数再猜」等于让孩子凭记性答题。 */
+  .clue-strip { display: flex; gap: 10px; flex-wrap: wrap; align-items: stretch;
+                margin: 0; padding: 0; list-style: none; }
+  .clue {
+    flex: 0 0 auto; min-width: 92px; padding: 8px 12px; text-align: center;
+    display: flex; flex-direction: column; justify-content: center;
+    border: 2px solid var(--line); border-radius: var(--r-sm); background: var(--surface);
+  }
+  .clue-pair { font-family: var(--mono); font-size: 1.12rem; font-weight: 800; line-height: 1.2; }
+  .clue-pair .clue-in  { color: var(--math); }
+  .clue-pair .clue-out { color: var(--sci); }
+  .clue-pair .clue-arrow { color: var(--ink-dim); margin: 0 4px; }
+  .clue-diff { display: block; margin-top: 2px; font-size: .74rem; font-weight: 700; color: var(--ink-mid); }
+  .clue.fresh { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+  .clue-empty { flex: 1 1 100%; min-width: 0; text-align: left; border-style: dashed;
+                font-size: .9rem; font-weight: 600; color: var(--ink-mid); }
+
   .feed { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .feed .input { width: 96px; flex: none; text-align: center; font-family: var(--mono); }
   .feed-hint {
@@ -422,6 +440,8 @@
             </div>
           </div>
 
+          <ul class="clue-strip" id="clueStrip" role="list" data-audience="kid-only" aria-label="已经收集到的线索"></ul>
+
           <div class="feed" data-audience="parent">
             <label for="feedIn" class="sr-only">要喂给机器的数字</label>
             <input class="input" id="feedIn" type="number" value="1" step="1" min="-20" max="99"
@@ -680,7 +700,7 @@
    'growBody','patSel','askSel','askOut','growReset','roSeq','roDiff','roFormula',
    'roGrowWins','revealF','toast','live','lv1','lv2','lv3','lv4','linearGuess',
    'linearNext','nonlinearGuess','nonlinearNext','checkSequences','testCounterexample',
-   'patternReflect','patternComplete','patternMissionStatus','nextCircle','nextSquare','patternRailResult','patternRailIcon','boxFace'
+   'patternReflect','patternComplete','patternMissionStatus','nextCircle','nextSquare','patternRailResult','patternRailIcon','boxFace','clueStrip'
   ].forEach(function (id) { el[id] = document.getElementById(id); });
 
   /* 机器原本只是一个 ⚙︎ 字符，看不出「数字进去、算一遍、再出来」这件事。
@@ -862,8 +882,39 @@
     });
 
     el.roFed.textContent = G.log.length;
+    renderClues(rows);
     drawPlot();
     updateGuessAvailability();
+  }
+
+  /* 孩子模式的线索卡：日记表和点图都只给家长看，孩子这边原本什么都不剩，
+     只有两个端口显示最后一次的进／出。差这一列是猜规则的关键，一并写在卡上。 */
+  function renderClues(rows) {
+    el.clueStrip.textContent = '';
+    if (!rows.length) {
+      el.clueStrip.appendChild(ce('li', 'clue clue-empty', '还没有线索。选一块轨道，机器就会算一个数给你。'));
+      return;
+    }
+    var newest = G.log[G.log.length - 1];
+    rows.forEach(function (row, i) {
+      var li = ce('li', 'clue' + (row === newest ? ' fresh' : ''));
+      var pair = ce('span', 'clue-pair');
+      pair.setAttribute('aria-hidden', 'true');
+      pair.appendChild(ce('b', 'clue-in', row.x));
+      pair.appendChild(ce('span', 'clue-arrow', '→'));
+      pair.appendChild(ce('b', 'clue-out', row.y));
+      li.appendChild(pair);
+      var spoken = '喂 ' + row.x + '，出来 ' + row.y;
+      if (i > 0 && row.x - rows[i - 1].x === 1) {
+        var d = row.y - rows[i - 1].y;
+        var word = (d >= 0 ? '多 ' + d : '少 ' + Math.abs(d));
+        li.appendChild(ce('span', 'clue-diff', '比上一个' + word));
+        li.lastChild.setAttribute('aria-hidden', 'true');
+        spoken += '，比上一个' + word;
+      }
+      li.appendChild(ce('span', 'sr-only', spoken));
+      el.clueStrip.appendChild(li);
+    });
   }
 
   function updateGuessAvailability() {
