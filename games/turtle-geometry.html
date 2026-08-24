@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>海龟几何 · 互动实验室</title>
 <meta name="description" content="写几行中文命令，让海龟在画布上画出正方形、星星、螺旋和花。用重复和转角理解角度、迭代与分解。适合 8-12 岁。">
-<link rel="stylesheet" href="../assets/css/base.css?v=20">
-<link rel="stylesheet" href="../assets/css/kid.css?v=20">
+<link rel="stylesheet" href="../assets/css/base.css?v=21">
+<link rel="stylesheet" href="../assets/css/kid.css?v=21">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
@@ -359,7 +359,7 @@
   <p style="margin:0">互动实验室 · 纯前端实现。<a href="index.html">回到实验目录</a></p>
 </div></footer>
 
-<script src="../assets/js/illustrations.js?v=20"></script>
+<script src="../assets/js/illustrations.js?v=21"></script>
 <script>
 (function () {
   "use strict";
@@ -1270,7 +1270,17 @@
     runBtn.textContent = actions.length && done > 0 ? "让海龟接着画" : "让海龟画起来";
     if (done < actions.length) {
       var a = actions[done];
-      if (a.t === "move") moveBy(a.v); else applyInstant(a);
+      /* 动画里暂停时 prog 记着当前动作已经走掉的部分（移动是步数、转向是度数）。
+         这里若再执行完整的 a.v，就是在已走的 60 步上又叠 100 步：线段比命令长出一截，
+         明明闭合的图形也会报「离起点还差 xx 步」。只补走剩下的那一段。 */
+      if (a.t === "move") {
+        var mvSign = a.v < 0 ? -1 : 1;
+        moveBy(mvSign * (Math.abs(a.v) - prog));
+      } else if (a.t === "turn") {
+        var tsg = a.v < 0 ? -1 : 1;
+        turtle.dir += tsg * (Math.abs(a.v) - prog);
+        dirty = true;
+      } else applyInstant(a);
       prog = 0; done++;
       var label = a.t === "move" ? (a.v >= 0 ? "前进 " : "后退 ") + Math.abs(Math.round(a.v * 10) / 10)
         : a.t === "turn" ? (a.v >= 0 ? "右转 " : "左转 ") + Math.abs(Math.round(a.v * 10) / 10) + "°"
@@ -1404,10 +1414,10 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=20"></script>
-<script src="../data/playful.js?v=20"></script>
-<script src="../assets/js/playful.js?v=20"></script>
+<script src="../assets/js/progress.js?v=21"></script>
+<script src="../data/playful.js?v=21"></script>
+<script src="../assets/js/playful.js?v=21"></script>
 <script>if (window.Progress) Progress.visit("games/turtle-geometry.html", "海龟几何");</script>
-<script src="../assets/js/pwa.js?v=20"></script>
+<script src="../assets/js/pwa.js?v=21"></script>
 </body>
 </html>
