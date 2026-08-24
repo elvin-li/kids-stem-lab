@@ -357,6 +357,9 @@
           <thead><tr><th scope="col">题</th><th scope="col">你猜</th><th scope="col">参考</th><th scope="col">差</th></tr></thead>
           <tbody id="f-hist-body"></tbody>
         </table>
+        <!-- 答完第 8 题后提交和下一题都会藏起来、滑块也停用，页面上原本没有任何
+             重来的入口，只能刷新。模式一有「清空记录」，这里补一个对应的。 -->
+        <button class="btn btn-ghost btn-sm" type="button" id="f-clear" style="margin-top:12px">清空记录，重来八题</button>
       </div>
 
       <div class="panel">
@@ -1185,11 +1188,20 @@
     fLog.push({ n: fIdx + 1, mine: mine, real: item.value, dec: decades });
     renderFermiStats();
     if (decades <= 1) toast("落在 10 倍以内，这就是好估算！");
-    if (fIdx >= FERMI.length - 1) toast("八题都答完了，可以清空重来或换模式一");
+    if (fIdx >= FERMI.length - 1) toast("八题都答完了，按「清空记录，重来八题」或换模式一");
   });
 
   document.getElementById("f-next").addEventListener("click", function () {
     if (fIdx < FERMI.length - 1) { fIdx++; loadFermi(); slider.focus(); }
+  });
+
+  document.getElementById("f-clear").addEventListener("click", function () {
+    fIdx = 0;
+    fLog = [];
+    loadFermi();
+    renderFermiStats();
+    toast("费米题已清空，从第 1 题重来");
+    slider.focus();
   });
 
   function renderFermiStats() {
