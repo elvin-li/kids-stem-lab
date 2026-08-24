@@ -66,36 +66,41 @@
     border: 1px solid var(--line); border-radius: var(--r-lg);
     overflow: hidden; margin: 22px 0;
   }
+  /* 五层的底色从亮蓝一路暗到近黑，一套文字颜色在两端不可能都读得清。
+     每层自带一个墨色：亮蓝的阳光层用深墨，往下四层用浅墨。
+     （原来层名一直是默认的深墨色，最深两层里对比度只有 1.5，几乎看不见。） */
   .zone {
     position: relative; padding: 18px 20px 20px;
     border-bottom: 1px solid rgba(255,255,255,.06);
+    --zone-ink: 255,255,255;
   }
+  .zone[data-ink="dark"] { --zone-ink: 8,32,54; }
   .zone:last-child { border-bottom: 0; }
   .zone-hd { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .zone-hd h3 { margin: 0; font-size: 1.08rem; }
+  .zone-hd h3 { margin: 0; font-size: 1.08rem; color: rgb(var(--zone-ink)); }
   .zone-hd .en {
     font-family: var(--mono); font-size: .7rem; letter-spacing: .06em;
-    color: rgba(255,255,255,.5); text-transform: uppercase;
+    color: rgba(var(--zone-ink),.8); text-transform: uppercase;
   }
   .zone-depth {
     margin-left: auto; font-family: var(--mono); font-size: .78rem;
-    font-weight: 700; color: rgba(255,255,255,.82);
+    font-weight: 700; color: rgba(var(--zone-ink),.9);
   }
-  .zone p { margin: 8px 0 0; font-size: .89rem; color: rgba(255,255,255,.76); max-width: 68ch; }
+  .zone p { margin: 8px 0 0; font-size: .89rem; color: rgba(var(--zone-ink),.88); max-width: 68ch; }
   /* 光带原来是一条“只有填充、没有轨道”的色块，宽度直接等于光量：
      无光层以下是 0–4%，在屏幕上就完全消失，看不出是“没有光”还是“漏画了”。
      改成整条轨道 + 里面一段填充，空着本身就是信息。 */
   .zone .lightbar {
     position: relative; height: 9px; margin-top: 12px; overflow: hidden;
-    border-radius: 999px; border: 1px solid rgba(255,255,255,.2);
-    background: rgba(255,255,255,.12);
+    border-radius: 999px; border: 1px solid rgba(var(--zone-ink),.28);
+    background: rgba(var(--zone-ink),.16);
   }
   .zone .lightbar i { display: block; height: 100%; border-radius: 999px; }
   .zone .lightbar[data-tone="full"] i { background: linear-gradient(90deg,#fde68a,#fbbf24); }
   .zone .lightbar[data-tone="dim"] i  { background: linear-gradient(90deg,#bfdbfe,#3b82f6); }
   .zone .lightbar[data-tone="none"] i { background: #64748b; }
   .zone .lightnote {
-    font-size: .74rem; color: rgba(255,255,255,.6); margin-top: 5px;
+    font-size: .74rem; color: rgba(var(--zone-ink),.82); margin-top: 5px;
     font-family: var(--mono);
   }
   .zone .who {
@@ -103,8 +108,8 @@
   }
   .zone .who span {
     font-size: .74rem; padding: 3px 9px; border-radius: 999px;
-    background: rgba(255,255,255,.1); color: rgba(255,255,255,.85);
-    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(var(--zone-ink),.14); color: rgba(var(--zone-ink),.94);
+    border: 1px solid rgba(var(--zone-ink),.24);
   }
 
   /* ---------- 深度标尺 ----------
@@ -518,7 +523,7 @@
   var ZONES = [
     {
       n: "阳光层", en: "Sunlight / Epipelagic", from: 0, to: 200,
-      bg: "linear-gradient(180deg,#38bdf8,#0ea5e9)",
+      bg: "linear-gradient(180deg,#38bdf8,#0ea5e9)", ink: "dark",
       tone: "full", lightPct: "100%",
       lightNote: "阳光充足 · 能进行光合作用",
       say: "海里几乎所有植物都住这一层，因为只有这里的光够强，海藻才能进行光合作用。海洋里 90% 的生物也住在这层——有饭吃的地方才热闹。",
@@ -526,7 +531,9 @@
     },
     {
       n: "微光层", en: "Twilight / Mesopelagic", from: 200, to: 1000,
-      bg: "linear-gradient(180deg,#0ea5e9,#1e40af)",
+      /* 顶端比阳光层的底端明显暗一档：这一层要走浅字，蓝得太亮字就浮起来了。
+         接缝看得出来反而对——微光层本来就是光量掉下去的那一档。 */
+      bg: "linear-gradient(180deg,#0a5f8f,#1e3a8a)",
       tone: "dim", lightPct: "30%",
       lightNote: "只剩微弱蓝光 · 无法光合作用",
       say: "光弱到植物活不下去。很多鱼白天躲在这层，晚上才游到上面吃东西——这是地球上规模最大的每日迁徙。这里的鱼眼睛特别大，为了收集那一点点光。",
@@ -563,6 +570,7 @@
     var d = document.createElement("div");
     d.className = "zone";
     d.style.background = z.bg;
+    if (z.ink) d.setAttribute("data-ink", z.ink);
 
     var hd = document.createElement("div");
     hd.className = "zone-hd";
