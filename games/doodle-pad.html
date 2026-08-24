@@ -346,7 +346,7 @@
   ];
   var colors = COLOR_SPEC.map(function (spec) { return { name: spec[0], key: spec[1], value: spec[2] || TC[spec[1]] }; });
   var FONT = token("--font", "sans-serif");
-  var state = { tool:"pen", color:colors[0].value, size:10, mirror:"none", stamp:null, drawing:false, stampedThisPointer:false, last:null, strokes:0, stamps:0, used:new Set(), clearArmed:false };
+  var state = { tool:"pen", color:colors[0].value, colorIndex:0, size:10, mirror:"none", stamp:null, drawing:false, stampedThisPointer:false, last:null, strokes:0, stamps:0, used:new Set(), clearArmed:false };
   var undo = [], redo = [], maxHistory = 24, logicalWidth = 900, logicalHeight = 675;
   var bg = TC.paper;
 
@@ -354,7 +354,10 @@
   function syncColors() {
     bg = TC.paper;
     colors.forEach(function (c) { if (c.key) c.value = TC[c.key]; });
-    state.color = colors[0].value;
+    /* 跟着当前选中的那格换新值，不能写死第 0 格：空画布上先点了「草莓粉」
+       再切孩子模式的话，色板上粉色还亮着按下态，画笔却被悄悄换回海洋蓝。 */
+    state.color = colors[state.colorIndex].value;
+    document.documentElement.style.setProperty("--paint", state.color);
     var boxes = document.querySelectorAll(".swatch");
     colors.forEach(function (c, i) { if (boxes[i]) boxes[i].style.background = c.value; });
     if (typeof syncQuickControls === "function") syncQuickControls();
@@ -461,7 +464,7 @@
   }
 
   var swatches=document.getElementById("swatches");
-  colors.forEach(function(item,index){var b=document.createElement("button");b.type="button";b.className="swatch";b.style.background=item.value;b.setAttribute("data-color-name",item.name);b.setAttribute("aria-label",item.name);b.setAttribute("aria-pressed",index===0?"true":"false");b.addEventListener("click",function(){state.color=item.value;document.documentElement.style.setProperty("--paint",item.value);document.querySelectorAll(".swatch").forEach(function(n){n.setAttribute("aria-pressed","false");});b.setAttribute("aria-pressed","true");if(state.tool==="eraser"){state.tool="pen";setPressed("#toolGrid [data-tool]","pen");}syncQuickControls();status("选好了“"+item.name+"”。");});swatches.appendChild(b);});
+  colors.forEach(function(item,index){var b=document.createElement("button");b.type="button";b.className="swatch";b.style.background=item.value;b.setAttribute("data-color-name",item.name);b.setAttribute("aria-label",item.name);b.setAttribute("aria-pressed",index===0?"true":"false");b.addEventListener("click",function(){state.color=item.value;state.colorIndex=index;document.documentElement.style.setProperty("--paint",item.value);document.querySelectorAll(".swatch").forEach(function(n){n.setAttribute("aria-pressed","false");});b.setAttribute("aria-pressed","true");if(state.tool==="eraser"){state.tool="pen";setPressed("#toolGrid [data-tool]","pen");}syncQuickControls();status("选好了“"+item.name+"”。");});swatches.appendChild(b);});
   function syncQuickControls(){
     document.querySelectorAll("[data-quick-tool]").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.quickTool===state.tool?"true":"false");});
     document.querySelectorAll("[data-quick-color]").forEach(function(b){var item=colors[Number(b.dataset.quickColor)];b.style.background=item.value;b.setAttribute("aria-pressed",item.value===state.color?"true":"false");});
