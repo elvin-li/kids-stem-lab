@@ -2400,6 +2400,87 @@ window.ILLUSTRATIONS = (function () {
       '<text x="104" y="26" font-size="12" font-weight="700" fill="#a51b42">心 · 肺</text>'
   });
 
+  /* ================= 首页大入口 =================
+     `portal/<slug>` 给孩子首页那四张大图卡用。和 `card/*` 不同，这四块图位又宽又扁，
+     用 slice 会把主体裁掉大半，所以统一 `meet` + 透明底：卡片自己的底色就是背景，
+     插画只负责主体，viewBox 固定 `0 0 120 90`。 */
+
+  function defPortal(slug, spec) {
+    def("portal/" + slug, {
+      viewBox: "0 0 120 90", fit: "xMidYMid meet",
+      title: spec.title, desc: spec.desc, bg: "", art: spec.art
+    });
+  }
+
+  defPortal("continue", {
+    title: "继续上次的探索",
+    desc: "一枚小火箭沿着虚线轨迹往上飞，尾巴喷着火焰。",
+    art:
+      '<path d="M14 82 C30 74 40 58 46 42" fill="none" stroke="#9db6e8" stroke-width="4" stroke-dasharray="7 7" stroke-linecap="round"/>' +
+      '<g transform="rotate(38 66 44)">' +
+      '<path d="M66 16 C78 26 82 42 82 56 L50 56 C50 42 54 26 66 16Z" fill="#eef3fc" stroke="#5b7fae" stroke-width="2.6" stroke-linejoin="round"/>' +
+      '<circle cx="66" cy="38" r="8" fill="#6ea8fe" stroke="#2b56a8" stroke-width="2.6"/>' +
+      '<path d="M50 50 L38 68 L50 64Z" fill="#d1495b"/><path d="M82 50 L94 68 L82 64Z" fill="#d1495b"/>' +
+      '<path d="M50 56 L82 56 L78 66 L54 66Z" fill="#c9d6ea" stroke="#5b7fae" stroke-width="2.2" stroke-linejoin="round"/>' +
+      '<path d="M60 66 C60 78 64 84 66 88 C68 84 72 78 72 66Z" fill="#f6a623"/>' +
+      '<path d="M63 68 C63 76 65 80 66 83 C67 80 69 76 69 68Z" fill="#f4d35e"/>' +
+      "</g>" +
+      '<g fill="#ffd24a"><circle cx="100" cy="20" r="3.4"/><circle cx="108" cy="36" r="2.2"/><circle cx="24" cy="26" r="2.6"/></g>'
+  });
+
+  defPortal("experiments", {
+    title: "互动实验",
+    desc: "一个冒着气泡的锥形瓶，旁边放着一把量尺和一个齿轮。",
+    art:
+      '<path d="M52 12 L74 12 L74 34 L92 74 C94 80 90 84 84 84 L42 84 C36 84 32 80 34 74 L52 34Z" fill="#e7f3fb" stroke="#3f6f96" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="M42 58 L84 58 L90 74 C92 79 88 82 83 82 L43 82 C38 82 34 79 36 74Z" fill="#3ec9a7"/>' +
+      '<g fill="#ffffff" opacity=".75"><circle cx="52" cy="70" r="4"/><circle cx="66" cy="66" r="3"/><circle cx="76" cy="72" r="2.4"/></g>' +
+      '<rect x="48" y="8" width="30" height="7" rx="3.5" fill="#9fb4c9"/>' +
+      '<g fill="#3ec9a7"><circle cx="84" cy="30" r="4"/><circle cx="94" cy="44" r="3"/><circle cx="88" cy="16" r="2.4"/></g>' +
+      '<g transform="rotate(-16 20 62)">' +
+      '<rect x="6" y="52" width="28" height="30" rx="4" fill="#f6c445" stroke="#b98a2e" stroke-width="2.4"/>' +
+      '<g stroke="#b98a2e" stroke-width="2"><path d="M12 52 L12 60"/><path d="M20 52 L20 64"/><path d="M28 52 L28 60"/></g>' +
+      "</g>"
+  });
+
+  defPortal("nature", {
+    title: "去自然里看看",
+    desc: "一片带叶脉的绿叶上停着一只瓢虫，旁边冒出一株小苗。",
+    art:
+      '<path d="M20 76 C20 42 46 18 84 16 C88 52 66 78 32 80Z" fill="#5aa64f"/>' +
+      '<path d="M20 76 C40 58 62 40 84 16" fill="none" stroke="#eaf6dc" stroke-width="3" stroke-linecap="round"/>' +
+      '<g stroke="#eaf6dc" stroke-width="2.2" fill="none" stroke-linecap="round">' +
+      '<path d="M38 60 C42 52 44 44 44 36"/><path d="M52 48 C56 42 58 34 58 26"/><path d="M30 68 C32 62 32 56 30 50"/>' +
+      "</g>" +
+      '<path d="M14 84 C14 70 18 60 26 54" fill="none" stroke="#3f7b46" stroke-width="4" stroke-linecap="round"/>' +
+      '<g transform="translate(84 58)">' +
+      '<ellipse cx="0" cy="0" rx="15" ry="13" fill="#d1495b"/>' +
+      '<path d="M0 -13 L0 13" stroke="#2b1a10" stroke-width="2"/>' +
+      '<g fill="#2b1a10"><circle cx="-7" cy="-5" r="2.6"/><circle cx="7" cy="-4" r="2.6"/><circle cx="-6" cy="6" r="2.4"/><circle cx="7" cy="6" r="2.4"/></g>' +
+      '<ellipse cx="-15" cy="-5" rx="6" ry="5" fill="#2b1a10"/>' +
+      '<g stroke="#2b1a10" stroke-width="1.8" fill="none" stroke-linecap="round"><path d="M-19 -10 L-24 -15"/><path d="M-16 -11 L-18 -18"/></g>' +
+      "</g>"
+  });
+
+  defPortal("album", {
+    title: "我的卡册",
+    desc: "三张叠在一起的收集卡，最上面那张画着一只小章鱼和一颗星星。",
+    art:
+      '<g transform="rotate(-12 40 50)"><rect x="18" y="20" width="46" height="62" rx="7" fill="#fdf1f6" stroke="#c2477e" stroke-width="2.6"/></g>' +
+      '<g transform="rotate(-4 52 48)"><rect x="30" y="16" width="46" height="62" rx="7" fill="#fef6fa" stroke="#c2477e" stroke-width="2.6"/></g>' +
+      '<rect x="42" y="12" width="50" height="66" rx="8" fill="#ffffff" stroke="#c2477e" stroke-width="3"/>' +
+      '<g transform="translate(67 44)">' +
+      '<ellipse cx="0" cy="-6" rx="15" ry="14" fill="#a06ce0"/>' +
+      '<g fill="#2b1a10"><circle cx="-5" cy="-8" r="2.6"/><circle cx="5" cy="-8" r="2.6"/></g>' +
+      '<path d="M-4 -1 Q0 3 4 -1" fill="none" stroke="#2b1a10" stroke-width="1.8" stroke-linecap="round"/>' +
+      '<g stroke="#a06ce0" stroke-width="4" fill="none" stroke-linecap="round">' +
+      '<path d="M-11 6 C-13 12 -14 16 -12 20"/><path d="M-4 8 C-5 14 -5 18 -3 22"/>' +
+      '<path d="M4 8 C5 14 5 18 3 22"/><path d="M11 6 C13 12 14 16 12 20"/>' +
+      "</g></g>" +
+      '<path d="M84 20 L86 26 L92 26 L87 30 L89 36 L84 32 L79 36 L81 30 L76 26 L82 26Z" fill="#f6c445"/>' +
+      '<path d="M50 66 L52 71 L57 71 L53 74 L55 79 L50 76 L45 79 L47 74 L43 71 L48 71Z" fill="#f6c445"/>'
+  });
+
   /* ---------------- 对外 API ---------------- */
 
   function cssName(name) { return String(name).replace(/[^a-z0-9]+/gi, "-"); }

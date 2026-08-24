@@ -166,6 +166,10 @@
   .kid-portal:hover { text-decoration: none; transform: translateY(-2px); }
   .kid-portal:active { transform: translateY(2px); }
   .kid-portal-art { display: grid; place-items: center; min-height: 130px; font-size: clamp(4.5rem, 13vw, 7rem); line-height: 1; }
+  /* 插图库可用时换成 SVG 场景；库缺席（例如脚本被拦）时仍保留上面的 emoji 兜底。 */
+  .kid-portal-art.has-scene { font-size: 0; }
+  .kid-portal-art.has-scene::before, .kid-portal-art.has-scene::after { display: none; }
+  .kid-portal-art.has-scene svg { position: relative; z-index: 1; width: min(78%, 230px); height: 100%; max-height: 152px; filter: drop-shadow(0 6px 5px rgba(0,0,0,.14)); }
   .kid-portal-art::before, .kid-portal-art::after { content: ""; position: absolute; border-radius: 50%; background: color-mix(in srgb, var(--portal) 18%, transparent); }
   .kid-portal-art::before { width: 92px; height: 92px; top: 18px; left: 9%; }
   .kid-portal-art::after { width: 54px; height: 54px; top: 42%; right: 10%; }
@@ -236,10 +240,10 @@
   <section class="kid-home" data-audience="kid-only" aria-labelledby="kidHomeTitle">
     <p>选一张大图，出发！</p>
     <div class="kid-portals">
-      <a class="kid-portal continue" id="kidContinue" href="games/index.html"><span class="kid-portal-art" aria-hidden="true">🚀</span><span class="kid-portal-copy"><strong>继续</strong><span>出发 →</span></span></a>
-      <a class="kid-portal experiments" href="games/index.html"><span class="kid-portal-art" aria-hidden="true">🧪</span><span class="kid-portal-copy"><strong>实验</strong><span>去玩 →</span></span></a>
-      <a class="kid-portal nature" href="nature/index.html"><span class="kid-portal-art" aria-hidden="true">🌿</span><span class="kid-portal-copy"><strong>自然</strong><span>去看 →</span></span></a>
-      <a class="kid-portal album" href="pages/progress.html?view=cards#collectionPanel"><span class="kid-portal-art" aria-hidden="true">🃏</span><span class="kid-portal-copy"><strong>卡册</strong><span>翻开 →</span></span></a>
+      <a class="kid-portal continue" id="kidContinue" href="games/index.html"><span class="kid-portal-art" data-portal-art="continue" aria-hidden="true">🚀</span><span class="kid-portal-copy"><strong>继续</strong><span>出发 →</span></span></a>
+      <a class="kid-portal experiments" href="games/index.html"><span class="kid-portal-art" data-portal-art="experiments" aria-hidden="true">🧪</span><span class="kid-portal-copy"><strong>实验</strong><span>去玩 →</span></span></a>
+      <a class="kid-portal nature" href="nature/index.html"><span class="kid-portal-art" data-portal-art="nature" aria-hidden="true">🌿</span><span class="kid-portal-copy"><strong>自然</strong><span>去看 →</span></span></a>
+      <a class="kid-portal album" href="pages/progress.html?view=cards#collectionPanel"><span class="kid-portal-art" data-portal-art="album" aria-hidden="true">🃏</span><span class="kid-portal-copy"><strong>卡册</strong><span>翻开 →</span></span></a>
     </div>
   </section>
 
@@ -372,6 +376,7 @@
 
 <script src="data/resources.js"></script>
 <script src="data/explorations.js"></script>
+<script src="assets/js/illustrations.js?v=15"></script>
 <script src="data/playful.js?v=15"></script>
 <script src="assets/js/progress.js?v=15"></script>
 <script src="assets/js/playful.js?v=15"></script>
@@ -380,6 +385,14 @@
   "use strict";
 
   var ALL = window.RESOURCES || [];
+
+  /* 孩子首页的四张大图卡：插图库在就换成 SVG 场景，不在就保留 emoji。 */
+  Array.prototype.forEach.call(document.querySelectorAll("[data-portal-art]"), function (slot) {
+    var name = "portal/" + slot.getAttribute("data-portal-art");
+    if (!window.ILLUSTRATIONS || !ILLUSTRATIONS.hasArt(name)) return;
+    slot.classList.add("has-scene");
+    ILLUSTRATIONS.renderArt(slot, name, { decorative: true });
+  });
 
   var CATS = [
     { id: "math",    zh: "数学",        en: "Mathematics" },
