@@ -52,6 +52,10 @@
      标签仍旧压暗——它们不是这一屏要读的东西。 */
   .body-scene[data-body-system="circulation"] .sys-lung { opacity: .5; }
   .body-scene[data-body-system="circulation"] .sys-lung .sys-tag { opacity: .32; }
+  /* 脑的放大镜只在「大脑」视图出现：其他视图里躯干右下那片空地要留给别的东西，
+     而且那时脑本来就是被压暗的背景。 */
+  .body-system-svg .brain-inset { opacity: 0; transition: opacity .2s var(--ease); }
+  .body-scene[data-body-system="brain"] .brain-inset { opacity: 1; }
   /* 吸气时横膈往下拉的箭头只在「呼吸」视图出现，免得全部视图里凭空多两根箭头。 */
   .body-system-svg .lung-breath { opacity: 0; transition: opacity .2s var(--ease); }
   .body-scene[data-body-system="lung"] .lung-breath { opacity: .85; }
@@ -349,6 +353,7 @@
             <marker id="redArrow" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" refX="8.5" refY="5.5" orient="auto"><path d="M0.5,0.8 L10,5.5 L0.5,10.2 Z" fill="#c02a1d"/></marker>
             <marker id="blueArrow" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" refX="8.5" refY="5.5" orient="auto"><path d="M0.5,0.8 L10,5.5 L0.5,10.2 Z" fill="#0a6f85"/></marker>
             <linearGradient id="bodySkin" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity=".05"/><stop offset="100%" stop-color="currentColor" stop-opacity=".13"/></linearGradient>
+            <clipPath id="brainZoomClip"><circle cx="259" cy="290" r="50"/></clipPath>
           </defs>
           <!-- 身体轮廓：躯干一直画到 y=288 的髋部，器官才有地方待。
                旧版躯干在 y=211 就收口，胃和肠子被画到了两条腿之间。 -->
@@ -360,15 +365,28 @@
           </g>
           <!-- 大脑 -->
           <g class="sys-layer sys-brain">
-            <path d="M146 40 C143 30 152 23 160 24 C164 20 172 22 175 28 C182 30 183 36 179 41 C182 47 177 52 171 50 L154 50 C148 50 144 46 146 40 Z" fill="#c4b5fd" stroke="#6d31d4" stroke-width="2.2" stroke-linejoin="round"/>
-            <path d="M150 32 Q158 27 165 32 M149 38 Q159 34 168 38 M152 45 Q160 41 169 45" fill="none" stroke="#6d31d4" stroke-width="1.5" opacity=".55"/>
-            <!-- 小脑：原来这块的右下角伸到 x=179，可颅骨在那个高度只到 x=177，
-                 于是小脑从头盖骨外面鼓出来一块。收进圆里，并换一档深紫好上图例。 -->
-            <path d="M168 48 C174 46 177 50 176 54 C175 57 170 58 166 55 Z" fill="#a78bfa" stroke="#6d31d4" stroke-width="1.8"/>
-            <path d="M168 51 H175 M167 54 H174" stroke="#6d31d4" stroke-width="1.1" opacity=".5"/>
-            <path d="M160 52 L160 64" stroke="#6d31d4" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+            <g id="brainArt">
+              <path d="M146 40 C143 30 152 23 160 24 C164 20 172 22 175 28 C182 30 183 36 179 41 C182 47 177 52 171 50 L154 50 C148 50 144 46 146 40 Z" fill="#c4b5fd" stroke="#6d31d4" stroke-width="2.2" stroke-linejoin="round"/>
+              <path d="M150 32 Q158 27 165 32 M149 38 Q159 34 168 38 M152 45 Q160 41 169 45" fill="none" stroke="#6d31d4" stroke-width="1.5" opacity=".55"/>
+              <!-- 小脑：原来这块的右下角伸到 x=179，可颅骨在那个高度只到 x=177，
+                   于是小脑从头盖骨外面鼓出来一块。收进圆里，并换一档深紫好上图例。 -->
+              <path d="M168 48 C174 46 177 50 176 54 C175 57 170 58 166 55 Z" fill="#a78bfa" stroke="#6d31d4" stroke-width="1.8"/>
+              <path d="M168 51 H175 M167 54 H174" stroke="#6d31d4" stroke-width="1.1" opacity=".5"/>
+              <path d="M160 52 L160 64" stroke="#6d31d4" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+            </g>
             <path class="lead" d="M216 30 L186 36"/>
             <text class="lbl" x="220" y="34" fill="var(--phys)">大脑 <tspan>Brain</tspan></text>
+            <!-- 放大镜：整个脑在这张图里只有 40 px 宽，小脑那一块不到 10 px。
+                 图例分了大脑／小脑／脑干三种颜色，可在原尺寸下它们区分不开。
+                 躯干右下那片空地正好放一个放大 2 倍的圆，同一张 path 用 use 引一次，
+                 不复制坐标——改了上面那几笔，圆里跟着变。 -->
+            <g class="brain-inset">
+              <path class="lead" d="M180 52 L221 253 M184 46 L296 262" stroke-dasharray="4 4"/>
+              <circle cx="259" cy="290" r="50" fill="var(--surface)" stroke="#6d31d4" stroke-opacity=".45" stroke-width="1.6"/>
+              <g clip-path="url(#brainZoomClip)"><use href="#brainArt" transform="translate(259 290) scale(2) translate(-162 -42)"/></g>
+              <circle cx="259" cy="290" r="50" fill="none" stroke="#6d31d4" stroke-opacity=".45" stroke-width="1.6"/>
+              <text class="lbl" x="259" y="356" text-anchor="middle" fill="var(--phys)">放大 2 倍</text>
+            </g>
           </g>
           <!-- 食管：真人的食管紧贴在气管后面、心脏后面下行，所以先画。
                后面画的气管和心脏会把它挡住，这正是正面看到的样子。 -->
@@ -1075,7 +1093,7 @@
     circulation: "循环系统 Circulatory system：心脏像一台泵。含氧较多的血（红）被送到全身，含氧较少的血（蓝）回到心脏，再送去肺里换气。真人的心脏在胸腔正中偏左，所以图上看起来是偏右边。",
     lung: "呼吸系统 Respiratory system：气管 trachea 把空气送进两侧肺，再分成越来越细的支气管；肺像海绵，在这里换氧气和二氧化碳。横膈 diaphragm 往下拉，空气就被吸进来。",
     digest: "消化系统 Digestive system：食物顺着食管落进胃里，被酸和酶搅碎；接着挤过盘成好几折的小肠吸收营养，最后沿着外面那圈粗管子——大肠——回收水分。",
-    brain: "大脑 Brain：住在头颅里，负责思考、记忆和协调动作。后下方那一小块深紫色是小脑 cerebellum，管平衡和动作的分寸；往下连出去的是脑干 brain stem。大脑只占体重约 2%，却要用掉全身约 20% 的氧气。"
+    brain: "大脑 Brain：住在头颅里，负责思考、记忆和协调动作。后下方那一小块深紫色是小脑 cerebellum，管平衡和动作的分寸；往下连出去的是脑干 brain stem。整个脑在图上只有指甲盖那么大，所以右边放了一个放大 2 倍的圆。大脑只占体重约 2%，却要用掉全身约 20% 的氧气。"
   };
   /* 图例跟着当前系统换：只看消化时，红蓝血流图例反而是干扰。 */
   var systemLegend = {
