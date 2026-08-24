@@ -49,170 +49,255 @@ window.ILLUSTRATIONS = (function () {
      才能让孩子和恐龙落在同一把尺子上——旧版是把每一属都塞进同一个 200×100
      的框里，梁龙和甲龙于是画得一样长，臀高倍数也对不上图。 */
   var DINO_ART = {
+    /* 霸王龙的招牌是「大头 + 粗脖子 + 两指小手」。旧图把尾巴到吻端削成一整根
+       楔子，没有脖子也没有下颌，认出来的多半是鳄鱼；现在头、颈、躯干各自成形。
+       高度按 1 m ≈ 20.4 单位：臀部背线 3.7 m（y=24），腹线 2.2 m，髋关节 2.4 m。 */
     "Tyrannosaurus rex": {
       w: 250, hipY: 24, diet: "carn",
       leg: [
-        { d: "M104 42 L128 60", w: 14, back: true },
-        { d: "M128 60 L114 78", w: 9, back: true },
-        { d: "M114 78 L138 92", w: 7, back: true },
-        { d: "M116 42 L142 62", w: 17 },
-        { d: "M142 62 L126 82", w: 11 },
-        { d: "M126 82 L152 96", w: 8 }
+        { d: "M140 46 L157 66", w: 15, back: true },
+        { d: "M157 66 L142 84", w: 10, back: true },
+        { d: "M142 84 L161 95", w: 7, back: true },
+        { d: "M150 47 L169 68", w: 18 },
+        { d: "M169 68 L153 86", w: 12 },
+        { d: "M153 86 L174 97", w: 8 }
       ],
-      body: "M2 60 C24 57 48 50 72 41 C94 33 112 28 128 25 C150 20 172 12 190 7 C200 2 214 0 226 3 C238 6 246 11 249 17 C250 20 247 23 242 23 L224 24 C219 29 212 32 204 33 C194 36 184 39 176 42 C156 50 132 55 108 57 C78 59 38 63 4 66 Z",
-      arm: "M180 41 L192 53 L202 56",
-      eye: [222, 14, 2.8],
-      mouth: "M223 24 L243 20"
+      /* 尾巴两条边收到同一点：断成一截平口会看着像被截肢 */
+      tail: "M4 38 C34 31 70 26 104 25 L106 53 C72 49 34 43 4 38 Z",
+      body: "M96 27 C120 20 150 19 176 24 C188 26 196 29 202 33 L199 46 C187 52 170 56 148 56 C124 56 104 50 94 42 C88 37 89 30 96 27 Z",
+      neck: "M187 30 C191 19 199 9 211 4 L228 17 C217 22 207 30 201 42 Z",
+      head: "M205 17 C211 6 226 1 240 4 C248 6 251 12 249 19 C247 25 240 30 228 31 C216 31 206 26 203 21 Z",
+      teeth: "M212 25 l2.6 6 2.4-5 M221 28 l2.6 6.4 2.4-5.4 M230 29 l2.6 6.4 2.4-5.4 M239 28 l2.4 5.6 2.4-5",
+      arm: "M197 39 L205 49 L211 51",
+      claw: "M211 51 L218 52 M211 52 L216 57",
+      foot: "M164 96 L182 96 M154 95 L146 98",
+      eye: [230, 15, 3],
+      mouth: "M207 23 C218 27 232 29 246 25"
     },
-    /* 三角龙近三成的体长都是那颗带颈盾的头骨，所以头要画得够大；
-       肩部有明显的隆起，背线从肩往臀微微下斜。 */
+    /* 三角龙的看点是颈盾、两支眉角和鹦鹉一样的喙。旧图把颈盾画成一只压在头上的
+       浅色气球，角还从盾上横穿过去，整只像顶着篮球的乌龟。
+       现在颈盾是立在头骨后方的盾牌，头骨从盾前伸出来，两支眉角朝前上方。 */
     "Triceratops horridus": {
       w: 273, hipY: 12, diet: "herb",
       leg: [
-        { d: "M86 56 L82 100", w: 18, back: true },
-        { d: "M170 54 L174 100", w: 16, back: true },
-        { d: "M60 58 L52 100", w: 22 },
-        { d: "M152 56 L154 100", w: 19 }
+        { d: "M96 56 L92 100", w: 17, back: true },
+        { d: "M174 54 L178 100", w: 15, back: true },
+        { d: "M70 58 L62 100", w: 21 },
+        { d: "M156 56 L158 100", w: 18 }
       ],
-      tail: "M40 42 C26 44 12 50 0 58 L4 68 C16 62 28 58 42 56 Z",
-      frill: "M178 34 C174 8 198 -3 226 -1 C252 1 270 14 270 33 C270 51 250 59 226 55 C202 51 184 46 178 34 Z",
-      body: "M20 40 C22 24 48 14 96 12 C144 10 180 18 192 34 C202 48 196 61 176 67 C140 77 72 77 40 67 C22 61 16 50 20 40 Z",
-      head: "M196 40 C220 38 250 46 266 60 C274 68 266 78 252 75 C232 71 208 58 196 50 Z",
-      horn: "M218 40 C236 30 256 20 268 16 M226 50 C242 42 260 34 270 30 M248 62 C252 52 258 48 264 50",
-      eye: [218, 50, 2.8]
+      tail: "M4 43 C18 38 38 33 58 30 L60 54 C38 52 18 48 4 43 Z",
+      frill: "M204 45 C195 24 206 6 227 3 C245 1 255 12 253 27 C251 41 240 51 228 53 Z",
+      /* 三角龙的肩比臀略高（那颗两米半的头骨要有支撑），背线因此从尾往肩缓缓抬，
+         不是一整条平顶面包 */
+      body: "M46 40 C52 20 80 13 110 13 C140 13 166 8 186 8 C202 9 210 18 212 30 C216 42 206 52 186 57 C152 64 90 63 58 55 C44 51 41 47 46 40 Z",
+      neck: "M198 26 C206 28 213 32 219 37 L214 49 C207 45 200 41 194 39 Z",
+      head: "M223 31 C242 31 260 37 270 45 C273 48 270 53 264 53 C250 53 232 48 223 43 Z",
+      horn: "M234 33 C248 26 262 17 271 11 M240 41 C252 34 264 26 272 20 M262 45 C264 39 266 35 269 32",
+      beak: "M266 44 C272 44 274 48 271 52 C268 54 264 52 263 49 Z",
+      foot: "M52 99 L74 99 M148 99 L168 99",
+      eye: [232, 39, 2.8]
     },
+    /* 剑龙背上两排骨板是最该认出来的东西。旧图把它们画成六个悬空的橙色三角，
+       像一排火苗；而且腿短到肚子贴地，整只像一只穿刺的西瓜。
+       现在骨板是风筝形、两排交错，最高一枚 20 单位≈0.68 m（正文说「超过 60 厘米」），
+       背线在臀部拱到最高，后腿 1.1 m 明显长过前腿 0.9 m。 */
     "Stegosaurus stenops": {
-      w: 175, hipY: 32, diet: "herb",
+      w: 205, hipY: 21, diet: "herb",
       leg: [
-        { d: "M86 86 L84 100", w: 14, back: true },
-        { d: "M142 78 L146 100", w: 11, back: true },
-        { d: "M64 84 L60 100", w: 17 },
-        { d: "M132 80 L134 100", w: 13 }
+        { d: "M98 66 L94 100", w: 13, back: true },
+        { d: "M148 72 L152 100", w: 9, back: true },
+        { d: "M78 68 L70 100", w: 16 },
+        { d: "M136 74 L136 100", w: 11 }
       ],
-      tail: "M30 66 C20 62 10 60 2 60 L0 68 C10 70 20 72 30 74 Z",
-      body: "M28 68 C32 52 48 36 76 30 C104 25 132 33 152 47 C162 55 165 67 159 77 C146 89 116 93 86 91 C58 89 34 80 28 72 Z",
-      head: "M148 56 C158 58 168 64 172 72 C175 78 169 84 161 82 C152 80 144 73 141 66 Z",
-      plates: "M36 44 L40 28 L48 43 Z M52 34 L58 12 L68 32 Z M72 28 L80 4 L90 27 Z M94 30 L102 6 L112 30 Z M116 38 L124 18 L132 40 Z M136 48 L142 32 L149 50 Z",
-      spike: "M12 60 L0 50 M18 60 L8 48 M10 70 L0 72 M16 72 L6 80",
-      eye: [158, 68, 2.4]
+      tail: "M4 42 C20 42 42 43 66 46 L68 70 C44 64 20 53 4 42 Z",
+      body: "M60 56 C64 30 86 20 110 21 C136 22 152 34 158 52 C163 66 152 76 128 80 C100 84 74 78 62 70 C56 65 56 60 60 56 Z",
+      neck: "M150 42 C158 51 167 59 176 63 L172 76 C161 71 154 63 148 55 Z",
+      head: "M171 62 C181 60 193 64 199 70 C202 74 198 79 192 78 C183 76 174 71 170 67 Z",
+      /* [中心x, 底边y, 半宽, 高]：底边压进背线 2 单位，骨板才像长在背上而不是飘着 */
+      plates: [
+        [52, 47, 5, 10], [66, 44, 6, 13],
+        [80, 30, 8, 17], [94, 24, 9, 19], [108, 22, 10, 20],
+        [122, 23, 9, 18], [136, 30, 8, 15], [148, 40, 6, 11]
+      ],
+      /* 四支尾刺长在尾巴末端而不是臀部，前后错开成两对 */
+      spike: "M12 44 L2 22 L20 42 Z M22 46 L12 21 L30 44 Z M6 47 L1 31 L14 45 Z M32 48 L22 25 L40 46 Z",
+      foot: "M62 99 L80 99 M128 99 L144 99",
+      eye: [186, 68, 2.4]
     },
-    /* 腕龙的看点全在那条抬高的脖子：前肢比后肢长，肩比臀高，
-       头顶到地面约 12 米，臀高 4.4 米只占四成——盒子必须留出上半截给脖子。 */
+    /* 腕龙的看点是「前肢比后肢长、肩比臀高」，正文也这么写。
+       所以前腿 2.8 m、后腿 2.2 m，肩部背线 y=43、臀部背线 y=55，
+       背整体朝头的方向抬起来；脖子从肩前方陡起，头顶到 9.5 m 左右。 */
     "Brachiosaurus altithorax": {
       w: 215, hipY: 55, diet: "herb",
       leg: [
-        { d: "M84 66 L86 100", w: 7, back: true },
-        { d: "M128 54 L132 100", w: 7, back: true },
-        { d: "M70 68 L65 100", w: 8 },
-        { d: "M118 56 L116 100", w: 9 }
+        { d: "M124 70 L128 100", w: 8, back: true },
+        { d: "M96 76 L98 100", w: 7, back: true },
+        { d: "M112 71 L108 100", w: 9 },
+        { d: "M82 77 L78 100", w: 8 }
       ],
-      tail: "M57 48 C40 44 19 40 0 36 L0 47 C19 51 40 55 57 60 Z",
-      neck: "M128 46 C138 30 156 14 176 5 C184 1 194 5 193 13 C192 19 185 22 178 26 C162 35 150 46 143 60 Z",
-      body: "M48 56 C50 42 66 32 92 31 C118 30 133 36 138 48 C143 59 137 69 119 73 C93 79 62 77 52 69 C48 65 47 60 48 56 Z",
-      head: "M184 4 C198 0 208 5 207 13 C206 19 196 21 189 17 L181 10 Z",
-      eye: [195, 10, 2.6]
+      tail: "M4 66 C24 61 46 59 70 59 L72 75 C48 73 24 70 4 66 Z",
+      neck: "M131 51 C145 37 165 20 189 10 L198 23 C176 33 158 47 146 63 Z",
+      body: "M70 60 C74 52 92 46 114 44 C132 43 142 47 144 55 C146 64 138 70 120 74 C98 79 78 76 72 70 C68 66 68 63 70 60 Z",
+      head: "M187 13 C195 4 208 4 212 11 C215 16 210 21 202 21 C195 21 189 17 187 14 Z",
+      crown: "M197 6 C201 2 206 3 207 7 C204 6 200 6 197 8 Z",
+      foot: "M72 99 L88 99 M102 99 L118 99",
+      eye: [203, 13, 2.6]
     },
+    /* 梁龙的尾巴（约 14 m）比脖子（约 6.5 m）长一倍多，臀比肩高，
+       躯干因此坐在偏右侧。旧图的腿只有 14 单位≈0.67 m，肚子几乎拖在地上；
+       现在后腿 2.5 m、前腿 2.2 m，躯干只留 1.8 m 深，才是真正的柱腿体型。 */
     "Diplodocus carnegii": {
       w: 540, hipY: 12, diet: "herb",
       leg: [
-        { d: "M348 86 L346 100", w: 17, back: true },
-        { d: "M398 80 L402 100", w: 15, back: true },
-        { d: "M320 84 L316 100", w: 20 },
-        { d: "M382 82 L386 100", w: 18 }
+        { d: "M330 48 L334 100", w: 16, back: true },
+        { d: "M398 54 L402 100", w: 14, back: true },
+        { d: "M306 50 L300 100", w: 19 },
+        { d: "M378 55 L380 100", w: 17 }
       ],
-      /* 梁龙的尾巴比脖子长一倍多（约 14 米对 6.5 米），躯干因此要坐在偏右侧。 */
-      tail: "M300 52 C240 46 150 48 70 56 C36 60 10 64 0 66 L1 72 C16 70 40 68 66 66 C146 60 236 62 302 70 Z",
-      neck: "M402 32 C428 20 464 14 498 17 C516 19 528 22 534 26 L536 36 C526 33 512 31 496 31 C464 29 430 36 408 50 Z",
-      body: "M292 48 C300 26 322 16 348 15 C376 14 398 24 408 44 C414 58 410 72 396 78 C372 88 316 88 296 76 C282 69 284 60 292 48 Z",
-      head: "M526 22 C538 20 540 26 539 32 C538 38 530 42 522 38 L520 32 Z",
-      eye: [531, 28, 3.4]
+      /* 梁龙的尾巴离地举着，不是拖在地上：尾端停在 y=50（约 2.4 m 高），
+         从臀部到尾尖两条边收成一根鞭子。 */
+      tail: "M4 50 C70 46 160 38 240 32 C275 30 295 30 303 31 L303 57 C292 55 272 53 240 52 C160 50 70 52 4 50 Z",
+      neck: "M404 20 C438 10 478 3 518 4 L520 18 C484 18 448 26 414 42 Z",
+      body: "M290 38 C296 20 320 12 350 12 C382 12 404 20 411 34 C416 44 407 50 386 52 C354 55 312 54 296 48 C288 44 287 42 290 38 Z",
+      head: "M510 7 C522 2 535 4 538 11 C540 16 535 20 527 20 C518 20 512 15 510 12 Z",
+      foot: "M292 99 L316 99 M370 99 L392 99",
+      eye: [529, 10, 3]
     },
+    /* 异特龙和霸王龙旧图是同一条楔子，孩子分不出来。真正的差别：
+       异特龙头骨只有 0.9 m（霸王龙 1.5 m）、眼睛上方有一对泪骨角冠、
+       前肢长得多且有三只钩爪、整体更瘦。这三处都画出来才认得出。 */
     "Allosaurus fragilis": {
       w: 250, hipY: 21, diet: "carn",
       leg: [
-        { d: "M98 40 L122 58", w: 12, back: true },
-        { d: "M122 58 L108 76", w: 8, back: true },
-        { d: "M108 76 L132 91", w: 6, back: true },
-        { d: "M110 40 L136 60", w: 15 },
-        { d: "M136 60 L120 80", w: 10 },
-        { d: "M120 80 L146 95", w: 7 }
+        { d: "M138 45 L155 65", w: 12, back: true },
+        { d: "M155 65 L140 83", w: 8, back: true },
+        { d: "M140 83 L158 94", w: 6, back: true },
+        { d: "M148 47 L166 67", w: 15 },
+        { d: "M166 67 L150 85", w: 10 },
+        { d: "M150 85 L170 96", w: 7 }
       ],
-      body: "M2 58 C24 55 48 48 72 39 C96 30 116 25 134 21 C156 16 176 9 192 5 C202 1 216 0 227 3 C238 6 246 11 249 17 C250 20 247 23 242 23 L224 24 C219 29 213 32 205 33 C195 36 186 39 178 42 C158 50 132 55 108 57 C78 59 36 62 2 65 Z",
-      arm: "M176 42 L192 56 L206 60",
-      horn: "M211 7 L214 1 L218 7 M221 7 L225 2 L229 8",
-      eye: [218, 14, 2.8],
-      mouth: "M223 24 L243 20"
+      tail: "M4 35 C33 28 66 24 100 22 L102 50 C68 46 34 41 4 35 Z",
+      body: "M94 25 C118 17 148 16 174 20 C186 22 194 25 200 29 L197 43 C185 49 168 52 146 52 C122 52 102 47 92 39 C86 34 87 29 94 25 Z",
+      neck: "M186 27 C190 15 201 6 215 3 L227 18 C214 22 204 30 199 43 Z",
+      head: "M211 15 C219 7 233 4 244 9 C250 12 251 17 248 21 C244 26 233 29 223 28 C214 27 209 22 209 18 Z",
+      teeth: "M216 22 l2.2 5 2-4.4 M224 25 l2.2 5.4 2-4.6 M232 26 l2.2 5.4 2-4.6 M240 25 l2 4.8 2-4.2",
+      horn: "M226 10 L229 4 L233 10 M236 10 L240 5 L243 11",
+      arm: "M194 38 L206 50 L215 56",
+      claw: "M215 56 L224 58 M215 57 L222 63 M214 58 L219 65",
+      foot: "M160 95 L178 95 M150 94 L143 97",
+      eye: [232, 16, 2.8],
+      mouth: "M212 21 C222 25 234 27 246 23"
     },
+    /* 棘龙的三个标志：背上近 2 m 高的帆、又长又窄的鳄鱼吻、又深又扁的尾。
+       旧图的吻短而圆，帆是半透明的粉色扇贝；现在帆里画出一根根神经棘，
+       吻拉长到 1.7 m 只有 0.7 m 深，尾巴做成竖立的桨状鳍。 */
     "Spinosaurus aegyptiacus": {
       w: 260, hipY: 31, diet: "carn",
       leg: [
-        { d: "M84 64 L94 78", w: 10, back: true },
-        { d: "M94 78 L86 88", w: 7, back: true },
-        { d: "M86 88 L100 96", w: 6, back: true },
-        { d: "M96 64 L108 78", w: 12 },
-        { d: "M108 78 L98 90", w: 9 },
-        { d: "M98 90 L114 98", w: 7 }
+        { d: "M100 60 L111 74", w: 10, back: true },
+        { d: "M111 74 L103 86", w: 7, back: true },
+        { d: "M103 86 L115 95", w: 6, back: true },
+        { d: "M110 62 L122 77", w: 12 },
+        { d: "M122 77 L112 89", w: 9 },
+        { d: "M112 89 L126 97", w: 7 }
       ],
-      sail: "M62 48 C70 14 96 2 126 3 C158 4 182 18 193 43 C160 34 126 33 96 38 C80 41 70 45 62 48 Z",
-      spike: "M84 42 L88 16 M104 37 L106 10 M126 34 L126 6 M148 34 L150 10 M168 37 L172 18",
-      body: "M2 70 C24 62 50 52 82 44 C114 36 148 34 176 39 C192 42 206 47 216 52 L214 62 C198 57 180 55 162 57 C134 59 106 67 78 75 C48 83 18 82 2 76 Z",
-      head: "M208 48 C226 47 250 52 258 59 C263 64 258 71 250 70 C234 68 214 61 205 55 Z",
-      arm: "M186 56 L198 68 L208 72",
-      eye: [216, 52, 2.6],
-      mouth: "M214 59 L254 63"
+      /* 又深又扁的桨状尾：2020 年报道的尾部化石又高又扁，所以侧视是一整片桨，
+         中间不该收成鱼那样的分叉尾鳍。 */
+      tail: "M10 44 C10 36 20 36 28 44 C46 60 82 70 124 74 L126 90 C84 90 44 84 22 74 C12 69 10 56 10 44 Z",
+      sail: "M70 60 C74 26 96 6 130 4 C166 2 190 20 198 44 C176 34 148 30 118 33 C96 36 78 46 70 60 Z",
+      spine: "M84 50 L91 20 M104 41 L108 13 M126 35 L128 8 M148 33 L152 9 M170 36 L177 15",
+      body: "M56 66 C70 48 100 34 140 31 C176 28 204 33 218 42 L215 57 C200 51 176 49 150 52 C118 56 84 67 60 78 C50 82 48 74 56 66 Z",
+      neck: "M196 37 C204 33 213 35 219 41 L215 54 C207 49 200 47 195 48 Z",
+      head: "M212 40 C230 37 249 42 258 48 C261 51 259 56 253 56 C239 55 222 50 212 46 Z",
+      teeth: "M220 47 l1.8 4.6 1.8-4 M228 49 l1.8 4.8 1.8-4.2 M236 51 l1.8 4.8 1.8-4.2 M244 52 l1.8 4.6 1.8-4",
+      crest: "M220 40 C223 35 227 34 229 36 C226 37 223 39 221 42 Z",
+      arm: "M200 51 L212 63 L221 68",
+      claw: "M221 68 L230 70 M221 69 L228 75",
+      foot: "M116 96 L134 96 M106 95 L99 98",
+      eye: [220, 42, 2.6],
+      mouth: "M214 47 C228 51 244 55 256 53"
     },
     /* 甲龙是一辆低趴的装甲车：躯干只占体长一半，剩下的一半是尾巴和尾锤。
-       背上一排骨突、体侧一排尖刺，腿短到几乎缩在裙边里。 */
+       背上一排骨突、体侧一排尖刺，腿短到几乎缩在裙边里。
+       尖刺改成实心三角——旧版的细线在卡片尺寸下细到看不见。 */
     "Ankylosaurus magniventris": {
       w: 433, hipY: 8, diet: "herb",
       leg: [
-        { d: "M212 60 L208 100", w: 20, back: true },
-        { d: "M330 58 L334 100", w: 20, back: true },
-        { d: "M184 62 L178 100", w: 24 },
-        { d: "M356 58 L360 100", w: 24 }
+        { d: "M232 62 L228 100", w: 20, back: true },
+        { d: "M336 60 L340 100", w: 20, back: true },
+        { d: "M204 64 L198 100", w: 24 },
+        { d: "M358 60 L362 100", w: 23 }
       ],
-      club: "M46 44 C22 40 2 52 2 66 C2 81 22 91 46 86 C61 83 63 48 46 44 Z",
-      tail: "M158 52 C120 52 84 57 48 61 L48 73 C84 78 120 80 158 78 Z",
-      body: "M150 56 C152 34 176 18 220 12 C270 5 330 8 366 22 C388 31 396 44 392 58 C388 72 368 80 330 83 C270 88 200 86 172 78 C156 73 148 66 150 56 Z",
-      head: "M378 54 C402 48 424 55 429 66 C432 76 421 84 405 82 C391 80 380 70 378 62 Z",
-      armor: "M186 40 q11 -11 22 -1 M228 26 q11 -11 22 -1 M274 20 q11 -11 22 -1 M320 24 q11 -11 22 -1 M360 36 q11 -11 22 -1",
-      horn: "M398 56 C408 48 416 44 422 44 M392 62 C400 56 408 53 414 53",
-      spike: "M154 60 L134 56 M170 76 L160 90 M232 84 L228 96 M300 86 L302 98 M372 74 L386 84",
-      eye: [404, 64, 3.2]
+      club: "M14 50 C14 40 26 34 38 38 C52 42 60 52 58 62 C56 73 40 77 26 73 C16 69 14 60 14 50 Z",
+      /* 尾巴从臀部往尾锤逐渐收细，末端才像一根握把接着一颗锤头；
+         握把要伸进锤头里，否则锤头看着是一颗掉在地上的球 */
+      tail: "M44 52 C88 48 132 50 176 52 L178 76 C132 74 88 70 44 66 Z",
+      body: "M166 44 C170 24 200 11 250 8 C310 5 356 11 383 24 C398 32 402 44 394 52 C384 60 356 64 306 65 C240 66 190 60 172 52 C164 48 163 47 166 44 Z",
+      head: "M378 35 C396 29 416 33 425 43 C430 50 425 59 415 60 C401 61 384 53 378 45 Z",
+      armor: "M196 38 q12 -12 24 -1 M238 24 q12 -12 24 -1 M284 17 q12 -12 24 -1 M330 20 q12 -12 24 -1 M368 30 q11 -11 22 -1",
+      horn: "M390 35 C394 29 398 26 403 26 M386 47 C391 43 397 41 402 42",
+      /* 体侧甲片贴在裙边上，不悬在肚子底下——垂到腹线以下会被看成一排短腿 */
+      scute: "M198 54 L180 64 L202 62 Z M252 58 L238 70 L258 65 Z M308 58 L300 72 L322 64 Z M352 56 L364 70 L368 60 Z",
+      foot: "M186 99 L216 99 M348 99 L376 99",
+      eye: [400, 45, 3]
     },
+    /* 伶盗龙那一整张卡都在讲「它有羽毛，不是鳞片皮肤」，旧图却只在背上插了
+       一排细线，看起来像刺猬。现在两处羽毛都用实心羽片画：前肢一排飞羽组成翅，
+       尾端一把扇形尾羽；第二趾抬起来带一枚镰刀爪，姿势是蹲伏的鸟形。 */
     "Velociraptor mongoliensis": {
       w: 308, hipY: 23, diet: "carn",
       leg: [
-        { d: "M136 66 L156 78", w: 7, back: true },
-        { d: "M156 78 L142 88", w: 5, back: true },
-        { d: "M142 88 L164 96", w: 4, back: true },
-        { d: "M148 66 L170 80", w: 9 },
-        { d: "M170 80 L154 90", w: 6 },
-        { d: "M154 90 L178 99", w: 5 }
+        { d: "M154 46 L172 63", w: 7, back: true },
+        { d: "M172 63 L157 80", w: 5, back: true },
+        { d: "M157 80 L176 94", w: 4, back: true },
+        { d: "M164 47 L184 65", w: 9 },
+        { d: "M184 65 L167 82", w: 6 },
+        { d: "M167 82 L188 96", w: 5 }
       ],
-      tail: "M120 56 C88 54 46 54 8 58 L4 68 C42 66 86 65 122 67 Z",
-      neck: "M212 40 C226 30 244 20 262 18 L270 36 C252 40 236 46 226 54 Z",
-      body: "M118 48 C130 34 156 26 184 28 C206 30 222 38 228 50 C232 62 222 72 204 74 C178 78 146 72 126 63 C114 57 112 54 118 48 Z",
-      head: "M256 16 C276 12 296 20 300 30 C303 40 291 46 278 43 L258 34 Z",
-      arm: "M200 60 L216 70 L230 72",
-      feathers: "M150 30 L144 15 M170 27 L166 12 M192 29 L190 14 M212 34 L212 19 M240 68 L254 79 M232 72 L246 85 M224 73 L236 87 M60 56 L54 45 M90 55 L86 44 M30 58 L26 48",
-      eye: [284, 27, 3]
+      tail: "M4 34 C34 32 78 34 126 38 L128 56 C80 52 34 46 4 42 Z",
+      body: "M120 34 C136 25 160 23 182 27 C200 30 210 34 214 38 L211 51 C200 56 184 59 164 58 C142 57 124 50 118 44 C114 40 115 37 120 34 Z",
+      neck: "M205 35 C209 22 226 11 244 7 L253 22 C236 26 222 35 214 47 Z",
+      head: "M240 13 C252 5 272 3 288 8 C298 11 302 16 299 21 C295 26 280 28 266 26 C252 24 242 19 240 16 Z",
+      /* [根x, 根y, 尖x, 尖y, 羽片宽]：翅是一排飞羽，尾端是一把扇形尾羽 */
+      wing: [
+        [234, 55, 190, 82, 7], [235, 55, 202, 88, 7], [234, 53, 214, 91, 7],
+        [231, 51, 226, 90, 6], [227, 49, 237, 85, 6]
+      ],
+      fan: [
+        [26, 38, 6, 26, 7], [24, 39, 4, 33, 7], [22, 41, 3, 41, 7],
+        [22, 44, 4, 50, 7], [24, 46, 7, 58, 7]
+      ],
+      /* 背上的绒羽是柔软的一层，不是刺：短、宽、彼此叠着 */
+      ruff: [
+        [152, 32, 146, 21, 6], [168, 29, 163, 18, 6], [184, 28, 180, 17, 6],
+        [200, 30, 199, 19, 6], [214, 34, 216, 23, 5]
+      ],
+      arm: "M206 40 L222 51 L235 56",
+      claw: "M188 95 C196 91 200 85 198 78",
+      foot: "M180 95 L196 95",
+      eye: [278, 14, 3],
+      mouth: "M246 19 C260 23 276 25 296 22"
     },
-    /* 副栉龙的头冠是一根向后上方伸出的空心管，比头骨本身还长；
-       尾巴又深又长，占去将近一半体长，后肢明显比前肢粗壮。 */
+    /* 副栉龙的头冠是一根向后上方伸出的空心管，比头骨本身还长；旧图把它画成
+       一团压在头顶的浅色圆块，和三角龙的颈盾长得一样。现在冠是一根锥形管，
+       从眼睛上方一直伸到脖子后面，还画出鸭子一样的宽扁喙。
+       w 从 293 收到 278：按 全长 9.5 m ÷ 全高 3.41 m，原来横向被拉宽了 5%。 */
     "Parasaurolophus walkeri": {
-      w: 293, hipY: 18, diet: "herb",
+      w: 278, hipY: 18, diet: "herb",
       leg: [
-        { d: "M124 56 L118 100", w: 16, back: true },
-        { d: "M210 62 L214 100", w: 10, back: true },
-        { d: "M100 58 L92 100", w: 19 },
-        { d: "M196 64 L198 100", w: 12 }
+        { d: "M142 56 L138 100", w: 15, back: true },
+        { d: "M212 60 L216 100", w: 9, back: true },
+        { d: "M122 58 L114 100", w: 18 },
+        { d: "M198 62 L200 100", w: 11 }
       ],
-      tail: "M110 36 C82 38 46 48 4 66 L12 82 C50 70 82 62 112 62 Z",
-      crest: "M242 26 C222 8 200 -2 186 4 C176 8 180 20 194 28 C210 37 228 42 242 44 Z",
-      body: "M96 52 C100 32 126 20 164 18 C200 16 226 24 238 40 C246 51 244 62 230 70 C208 82 162 86 126 80 C102 76 92 66 96 52 Z",
-      head: "M234 38 C252 34 272 40 282 50 C288 57 282 66 270 64 C254 61 238 52 232 44 Z",
-      eye: [248, 45, 2.6]
+      tail: "M4 48 C30 40 66 33 100 31 L104 64 C68 62 32 56 4 48 Z",
+      crest: "M238 30 C220 18 200 8 182 5 C174 4 170 12 178 18 C194 28 214 38 230 43 Z",
+      body: "M96 34 C104 20 130 15 164 16 C194 17 214 23 222 34 C228 44 220 53 202 57 C170 63 124 60 106 51 C98 46 92 42 96 34 Z",
+      neck: "M214 28 C222 30 230 34 238 38 L234 50 C226 46 218 42 210 40 Z",
+      head: "M230 34 C244 32 256 36 262 42 C266 46 262 51 256 51 C246 51 234 45 228 40 Z",
+      beak: "M254 39 C264 38 269 43 266 49 C262 52 254 50 252 46 Z",
+      foot: "M106 99 L128 99 M192 99 L210 99",
+      eye: [240, 38, 2.6]
     }
   };
 
@@ -294,6 +379,31 @@ window.ILLUSTRATIONS = (function () {
     return diet === "carn" ? "#bf2c1c" : diet === "herb" ? "#137a4a" : "#a86612";
   }
 
+  function round1(n) { return Math.round(n * 10) / 10; }
+
+  /** 一枚羽片：从 (bx,by) 长到 (tx,ty)。
+      两侧弧度故意不对称——真羽毛的羽片一边宽一边窄，画成对称的尖椭圆会被看成叶子。 */
+  function featherPath(bx, by, tx, ty, wid) {
+    var dx = tx - bx, dy = ty - by;
+    var len = Math.sqrt(dx * dx + dy * dy) || 1;
+    var nx = -dy / len, ny = dx / len;
+    return "M" + round1(bx) + " " + round1(by) +
+      " Q" + round1(bx + dx * 0.44 + nx * wid) + " " + round1(by + dy * 0.44 + ny * wid) +
+      " " + round1(tx) + " " + round1(ty) +
+      " Q" + round1(bx + dx * 0.52 - nx * wid * 0.6) + " " + round1(by + dy * 0.52 - ny * wid * 0.6) +
+      " " + round1(bx) + " " + round1(by) + "Z";
+  }
+
+  /** 一枚风筝形骨板：底边贴着背线，往上收成圆钝的尖。 */
+  function platePath(cx, baseY, halfW, h) {
+    return "M" + (cx - halfW) + " " + baseY +
+      " C" + round1(cx - halfW * 0.92) + " " + round1(baseY - h * 0.52) +
+      " " + round1(cx - halfW * 0.44) + " " + (baseY - h) + " " + cx + " " + (baseY - h) +
+      " C" + round1(cx + halfW * 0.5) + " " + (baseY - h) +
+      " " + round1(cx + halfW * 0.96) + " " + round1(baseY - h * 0.46) +
+      " " + (cx + halfW) + " " + baseY + "Z";
+  }
+
   /** 画一属恐龙的剪影到 `0 0 w 100` 的局部坐标里。 */
   function dinoSilhouette(art, col) {
     var g = svgEl("g", {
@@ -307,6 +417,20 @@ window.ILLUSTRATIONS = (function () {
         "stroke-opacity": o == null ? "1" : o
       });
     }
+    /* 帆、颈盾、头冠、骨板都长在体廓之外，统一用「同色调浅一档」的语言：
+       孩子一眼能看出这是身体上多出来的结构，而不是另一只动物。 */
+    var tint = shadeHex(col, 0.5);
+    var edge = shadeHex(col, -0.2);
+    function tinted(d) {
+      return svgEl("path", { d: d, fill: tint, "fill-opacity": "0.96", stroke: edge, "stroke-width": 1.2 });
+    }
+    function feathers(list, opacity) {
+      var fan = svgEl("g", { fill: tint, "fill-opacity": String(opacity), stroke: edge, "stroke-width": 1 });
+      list.forEach(function (f) {
+        fan.appendChild(svgEl("path", { d: featherPath(f[0], f[1], f[2], f[3], f[4]) }));
+      });
+      return fan;
+    }
     /* 远侧的腿先画、压暗一档：剪影里唯一能表达前后关系的就是明度。 */
     var far = shadeHex(col, -0.34);
     (art.leg || []).forEach(function (leg) {
@@ -316,33 +440,49 @@ window.ILLUSTRATIONS = (function () {
         "stroke-linecap": "round", "stroke-linejoin": "round"
       }));
     });
-    if (art.sail) g.appendChild(svgEl("path", { d: art.sail, fill: shadeHex(col, 0.5), "fill-opacity": "0.96" }));
-    if (art.frill) g.appendChild(svgEl("path", { d: art.frill, fill: shadeHex(col, 0.52), "fill-opacity": "0.96" }));
-    if (art.crest) g.appendChild(svgEl("path", { d: art.crest, fill: shadeHex(col, 0.48), "fill-opacity": "0.96" }));
+    /* 体廓之外的结构先画，底边随后被躯干盖住，才像长在身上。 */
+    if (art.sail) g.appendChild(tinted(art.sail));
+    if (art.frill) g.appendChild(tinted(art.frill));
+    if (art.crest) g.appendChild(tinted(art.crest));
+    if (art.plates) art.plates.forEach(function (p) { g.appendChild(tinted(platePath(p[0], p[1], p[2], p[3]))); });
+    if (art.fan) g.appendChild(feathers(art.fan, 0.9));
+    if (art.ruff) g.appendChild(feathers(art.ruff, 0.75));
+    if (art.spine) {
+      g.appendChild(svgEl("path", {
+        d: art.spine, fill: "none", stroke: edge,
+        "stroke-width": 2.6, "stroke-linecap": "round", "stroke-opacity": ".8"
+      }));
+    }
     if (art.tail) g.appendChild(svgEl("path", { d: art.tail }));
     if (art.neck) g.appendChild(svgEl("path", { d: art.neck }));
     if (art.club) g.appendChild(svgEl("path", { d: art.club }));
     if (art.body) g.appendChild(svgEl("path", { d: art.body }));
     if (art.head) g.appendChild(svgEl("path", { d: art.head }));
-    if (art.plates) {
-      art.plates.split(" M").forEach(function (seg, i) {
-        g.appendChild(svgEl("path", { d: i === 0 ? seg : "M" + seg, fill: "#c2870c", "fill-opacity": "0.95", stroke: "#8a5f08" }));
-      });
-    }
+    if (art.beak) g.appendChild(svgEl("path", { d: art.beak, fill: tint, stroke: edge, "stroke-width": 1.2 }));
+    if (art.crown) g.appendChild(svgEl("path", { d: art.crown, fill: tint, stroke: edge, "stroke-width": 1 }));
     if (art.armor) {
       g.appendChild(svgEl("path", {
-        d: art.armor, fill: "none", stroke: shadeHex(col, 0.45),
+        d: art.armor, fill: "none", stroke: tint,
         "stroke-width": 4, "stroke-linecap": "round"
       }));
     }
-    if (art.spike) g.appendChild(stroked(art.spike, 3.4, 0.85));
+    /* spike 是长在体廓之外、看得出是「武器」的骨刺（剑龙尾刺），用浅一档的骨色；
+       scute 是嵌在皮肤里的甲片（甲龙体侧），必须和身体同色，否则会被看成
+       另外贴上去的叶子。 */
+    if (art.spike) g.appendChild(svgEl("path", { d: art.spike, fill: tint, stroke: edge, "stroke-width": 1.2 }));
+    if (art.scute) g.appendChild(svgEl("path", { d: art.scute, fill: col, "fill-opacity": "0.9", stroke: edge, "stroke-width": 1.2 }));
     if (art.horn) g.appendChild(stroked(art.horn, 4, 1));
     if (art.arm) g.appendChild(stroked(art.arm, 4, 1));
-    if (art.feathers) g.appendChild(stroked(art.feathers, 2.6, 0.75));
+    if (art.claw) g.appendChild(stroked(art.claw, 2, 1));
+    if (art.wing) g.appendChild(feathers(art.wing, 0.92));
     (art.leg || []).forEach(function (leg) {
       if (!leg.back) g.appendChild(stroked(leg.d, leg.w, 1));
     });
+    if (art.foot) g.appendChild(stroked(art.foot, 5, 1));
     if (art.mouth) g.appendChild(stroked(art.mouth, 1.6, 0.45));
+    if (art.teeth) {
+      g.appendChild(svgEl("path", { d: art.teeth, fill: "#fdf6e6", stroke: edge, "stroke-width": 0.6 }));
+    }
     if (art.eye) {
       g.appendChild(svgEl("circle", { cx: art.eye[0], cy: art.eye[1], r: art.eye[2], fill: "#fdf8ef", stroke: "none" }));
       g.appendChild(svgEl("circle", { cx: art.eye[0], cy: art.eye[1], r: art.eye[2] * 0.45, fill: "#1b1208", stroke: "none" }));
@@ -368,10 +508,16 @@ window.ILLUSTRATIONS = (function () {
     var sceneW = pad + kidW + gap + beastL + pad;
     var sceneH = Math.max(kidCm, beastH) * 1.05;
     var ground = sceneH;
-    var hair = sceneH * 0.006;                    /* 细线宽度，按场景大小走 */
+    /* 虚线的疏密按场景宽度走，梁龙那种 27 米宽的场景才不会糊成实线；
+       线宽交给 non-scaling-stroke——同样的 hair 值在梁龙卡上只有 0.3 像素，
+       地面线和身高线会整条消失。 */
+    var dash = sceneW / 70;
 
     var wrap = document.createElement("div");
     wrap.className = "silo";
+
+    /* 恐龙有几个孩子高：整数倍身高各画一道横线，数横线就是答案 */
+    var rungs = Math.min(6, Math.floor(beastH / kidCm));
 
     var svg = svgEl("svg", {
       class: "silo-svg",
@@ -379,32 +525,40 @@ window.ILLUSTRATIONS = (function () {
       preserveAspectRatio: "xMidYMax meet",
       role: "img",
       "aria-label": d.n + " 与 " + kidCm + " 厘米高的孩子等比对比：臀高约 " +
-        d.hip + " 米（孩子身高的 " + (hipCm / kidCm).toFixed(1) + " 倍），全长约 " + d.len + " 米"
+        d.hip + " 米（孩子身高的 " + (hipCm / kidCm).toFixed(1) + " 倍），全长约 " + d.len + " 米" +
+        (rungs >= 1 ? "。横向虚线每一道等于一个孩子的身高，共 " + rungs + " 道" : "")
     });
 
     /* 孩子身高参考线：横穿整个场景，一眼能数出恐龙有几个孩子高 */
-    svg.appendChild(svgEl("line", {
-      x1: 0, y1: ground - kidCm, x2: sceneW, y2: ground - kidCm,
-      stroke: "currentColor", "stroke-opacity": ".28",
-      "stroke-width": hair, "stroke-dasharray": hair * 5 + " " + hair * 4
-    }));
+    for (var k = 1; k <= Math.max(1, rungs); k++) {
+      svg.appendChild(svgEl("line", {
+        x1: 0, y1: ground - k * kidCm, x2: sceneW, y2: ground - k * kidCm,
+        stroke: "currentColor", "stroke-opacity": k === 1 ? ".3" : ".17",
+        "stroke-width": k === 1 ? 1.4 : 1, "vector-effect": "non-scaling-stroke",
+        "stroke-dasharray": round1(dash * 1.4) + " " + round1(dash)
+      }));
+    }
     /* 臀高线只画在恐龙身上那一段 */
     var beastX = pad + kidW + gap;
     svg.appendChild(svgEl("line", {
       x1: beastX, y1: ground - hipCm, x2: beastX + beastL, y2: ground - hipCm,
-      stroke: col, "stroke-opacity": ".5",
-      "stroke-width": hair, "stroke-dasharray": hair * 3 + " " + hair * 3
+      stroke: col, "stroke-opacity": ".55",
+      "stroke-width": 1.4, "vector-effect": "non-scaling-stroke",
+      "stroke-dasharray": round1(dash * 0.8) + " " + round1(dash * 0.8)
     }));
 
+    /* 孩子的图形画在 0..32 × 0..100 的盒子里，横竖用同一个比例。
+       旧版横向按 kidW/40、纵向按 kidCm/100 缩放，两者差 20%，
+       圆脑袋于是被压成鸡蛋，四肢线宽还跟着方向变。 */
     var kid = svgEl("g", {
       transform: "translate(" + pad + "," + ground + ") scale(" +
-        (kidW / 40) + "," + (kidCm / 100) + ") translate(0,-100)"
+        (kidCm / 100) + ") translate(0,-100)"
     });
     kid.innerHTML =
-      '<circle cx="20" cy="12" r="10" fill="#5f6d85"/>' +
-      '<path d="M12 24 Q20 20 28 24 L26 68 Q20 72 14 68 Z" fill="#41506a"/>' +
-      '<path d="M14 68 L10 98 M26 68 L30 98" stroke="#41506a" stroke-width="6" stroke-linecap="round"/>' +
-      '<path d="M12 38 L6 54 M28 38 L34 50" stroke="#41506a" stroke-width="5" stroke-linecap="round"/>';
+      '<circle cx="16" cy="11" r="10" fill="#5f6d85"/>' +
+      '<path d="M8 24 Q16 19 24 24 L22 62 Q16 66 10 62 Z" fill="#41506a"/>' +
+      '<path d="M10 61 L7 99 M22 61 L25 99" stroke="#41506a" stroke-width="6" stroke-linecap="round"/>' +
+      '<path d="M9 34 L3 52 M23 34 L29 48" stroke="#41506a" stroke-width="5" stroke-linecap="round"/>';
     svg.appendChild(kid);
 
     var beast = svgEl("g", {
@@ -415,8 +569,9 @@ window.ILLUSTRATIONS = (function () {
     svg.appendChild(beast);
 
     svg.appendChild(svgEl("line", {
-      x1: 0, y1: ground - hair, x2: sceneW, y2: ground - hair,
-      stroke: "currentColor", "stroke-opacity": ".45", "stroke-width": hair * 2
+      x1: 0, y1: ground - 1, x2: sceneW, y2: ground - 1,
+      stroke: "currentColor", "stroke-opacity": ".5",
+      "stroke-width": 2, "vector-effect": "non-scaling-stroke"
     }));
 
     wrap.appendChild(svg);

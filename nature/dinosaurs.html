@@ -298,16 +298,43 @@
       <div class="board-top"><span>离线案发现场</span><span aria-hidden="true">🦕 化石侦探</span></div>
       <svg viewBox="0 0 420 240" role="img" aria-labelledby="fossilSvgTitle fossilSvgDesc">
         <title id="fossilSvgTitle">岩层中的三类化石证据</title>
-        <desc id="fossilSvgDesc">左边是一串三趾脚印，中间是带锯齿的牙齿，右边是相连的腿骨。选中证据时它会变亮。</desc>
-        <g class="fossil-mark fossil-track" fill="#493226" stroke="#fff1cf" stroke-width="5">
-          <path d="M55 62 l14 22 14-22 5 26-19 20-19-20z"/><path d="M92 120 l14 22 14-22 5 26-19 20-19-20z"/><path d="M47 172 l14 22 14-22 5 26-19 18-19-18z"/>
+        <desc id="fossilSvgDesc">左边是一串三趾脚印，每一枚都有三根朝前的趾头和一块脚掌；中间是一颗向后弯、后缘带锯齿的牙，上端较深的一截是埋在颌骨里的齿根；右边是一根股骨和一根胫骨在膝关节处相接。选中证据时它会变亮。</desc>
+        <defs>
+          <!-- 一枚兽脚类足迹：三根朝前的趾头（带爪尖）加一块脚掌。
+               旧版画的是一个双叉的箭头形，和文字里的「三趾脚印」对不上。 -->
+          <g id="dinoTrack">
+            <ellipse cx="0" cy="1" rx="9" ry="7"/>
+            <path d="M-5 0 L-4 -24 L0 -34 L4 -24 L5 0 Z"/>
+            <path d="M-4.5 0 L-4 -18 L0 -26 L4 -18 L4.5 0 Z" transform="rotate(-31)"/>
+            <path d="M-4.5 0 L-4 -18 L0 -26 L4 -18 L4.5 0 Z" transform="rotate(31)"/>
+          </g>
+        </defs>
+        <!-- 两脚走路的动物留下的足迹在中线两边交替出现，所以三枚不在一条直线上；
+             中趾比两侧的趾头长，这也是兽脚类足迹最容易认的一点。 -->
+        <g class="fossil-mark fossil-track" fill="#493226" stroke="#fff1cf" stroke-width="3" stroke-linejoin="round">
+          <use href="#dinoTrack" transform="translate(48 202) rotate(17) scale(1.3)"/>
+          <use href="#dinoTrack" transform="translate(96 140) rotate(20) scale(1.3)"/>
+          <use href="#dinoTrack" transform="translate(92 68) rotate(15) scale(1.3)"/>
         </g>
-        <g class="fossil-mark fossil-tooth" transform="translate(181 40)">
-          <path d="M18 7 C52 22 73 60 47 142 C33 119 9 86 10 45 Z" fill="#fff0c7" stroke="#5d3b2b" stroke-width="7"/>
-          <path d="M18 41 l9 6-8 8 10 7-8 9 10 7-7 9" fill="none" stroke="#9b4f35" stroke-width="4"/>
+        <g class="fossil-mark fossil-tooth">
+          <path d="M180 18 C208 28 228 68 212 154 C200 124 182 94 178 56 C177 40 177 26 180 18 Z" fill="#fff0c7" stroke="#5d3b2b" stroke-width="6.5"/>
+          <!-- 齿根：埋在颌骨里的那一截，没有釉质，颜色压深一档 -->
+          <path d="M180 18 C196 24 208 36 215 52 C203 48 190 45 179 45 Z" fill="#d9b487" stroke="none"/>
+          <!-- 锯齿长在后缘那条棱上，不在牙齿中间 -->
+          <path d="M207 70 l8 6 -8 6 8 6 -8 6 8 6 -8 6 8 6 -8 6 7 5" fill="none" stroke="#9b4f35" stroke-width="4" stroke-linejoin="round"/>
         </g>
-        <g class="fossil-mark fossil-bone" fill="none" stroke="#f6e4bd" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M298 74 L349 116 L316 177"/><circle cx="292" cy="68" r="14"/><circle cx="354" cy="120" r="14"/><circle cx="312" cy="185" r="14"/>
+        <!-- 股骨（球状头 + 两枚膝关节面）与胫骨在膝盖处相接。
+             同色无描边地拼在一起，接缝才不会把一根骨头切成三段。 -->
+        <g class="fossil-mark fossil-bone" fill="#f6e4bd">
+          <circle cx="298" cy="62" r="16"/>
+          <path d="M306 74 L348 126" stroke="#f6e4bd" stroke-width="21" stroke-linecap="round"/>
+          <circle cx="357" cy="127" r="14"/>
+          <circle cx="347" cy="142" r="13"/>
+          <circle cx="353" cy="158" r="13"/>
+          <path d="M349 164 L327 202" stroke="#f6e4bd" stroke-width="16" stroke-linecap="round"/>
+          <circle cx="325" cy="204" r="11"/>
+          <!-- 膝关节的缝：看得出这是相连的两块骨头，不是一整根 -->
+          <path d="M336 150 L367 139" stroke="#8b5d43" stroke-width="4" stroke-linecap="round" opacity=".6"/>
         </g>
       </svg>
       <p class="board-prompt">点一件证据：它最能告诉我们什么？</p>
@@ -670,10 +697,11 @@
 
     c.appendChild(silhouette(d));
 
+    /* 图里每一道横虚线正好是一个孩子的身高，所以「几倍」这个数在图上能数出来。 */
     var sn = document.createElement("p");
     sn.className = "scale-note";
     var ratio = (d.hip * 100 / state.kh);
-    sn.textContent = "臀部高度是孩子身高的 " + ratio.toFixed(1) + " 倍";
+    sn.textContent = "臀部高度是孩子身高的 " + ratio.toFixed(1) + " 倍（图中每道横虚线＝一个孩子的身高）";
     c.appendChild(sn);
 
     var body = document.createElement("div");
