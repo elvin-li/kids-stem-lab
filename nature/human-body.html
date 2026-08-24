@@ -33,13 +33,20 @@
   .body-demo { min-width: 0; display: grid; align-content: start; gap: 10px; }
   .body-scene { min-width: 0; display: grid; place-items: center; gap: 10px; padding: 8px; overflow: hidden; }
   .body-system-figure { width: min(100%, 330px); margin: 0; }
-  .body-system-svg { display: block; width: 100%; max-height: 345px; filter: drop-shadow(0 18px 26px rgba(0,0,0,.2)); }
-  .body-system-svg .sys-layer { opacity: .22; transition: opacity .2s var(--ease), filter .2s var(--ease); }
+  .body-system-svg { display: block; width: 100%; max-height: 345px; }
+  /* 图注：白色描边先画、文字后画，任何器官颜色压在下面都还读得出来。 */
+  .body-system-svg .lbl {
+    font-size: 13px; font-weight: 800; paint-order: stroke;
+    stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round;
+  }
+  .body-system-svg .lbl tspan { font-size: 9.5px; font-weight: 700; }
+  .body-system-svg .lead { fill: none; stroke: currentColor; stroke-opacity: .45; stroke-width: 1.3; }
+  .body-system-svg .sys-layer { opacity: .18; transition: opacity .2s var(--ease); }
   .body-scene[data-body-system="all"] .sys-layer,
   .body-scene[data-body-system="circulation"] .sys-circulation,
   .body-scene[data-body-system="lung"] .sys-lung,
   .body-scene[data-body-system="digest"] .sys-digest,
-  .body-scene[data-body-system="brain"] .sys-brain { opacity: 1; filter: drop-shadow(0 0 4px rgba(255,255,255,.35)); }
+  .body-scene[data-body-system="brain"] .sys-brain { opacity: 1; }
   .body-system-switch { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 4px; }
   .body-system-switch button { min-height: 40px; padding: 6px 10px; border: 2px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 750 .76rem/1.2 var(--font); cursor: pointer; }
   .body-system-switch button[aria-pressed="true"] { border-color: var(--kit); background: color-mix(in srgb,var(--kit) 14%,var(--surface)); }
@@ -47,6 +54,7 @@
   .circulation-legend { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
   .circulation-legend span { display: inline-flex; gap: 5px; align-items: center; color: var(--ink-mid); font-size: .72rem; }
   .circulation-legend i { width: 10px; height: 10px; border-radius: 50%; }
+  .circulation-legend .illus-legend { justify-content: center; margin: 0; }
   .hero-start { width: 100%; text-align: center; }
   .kid-action-strip { scroll-margin-top: 18px; }
   .body-quick { min-width: 0; display: grid; gap: 9px; }
@@ -171,7 +179,7 @@
     background: var(--bg-soft); border: 1px solid var(--line-soft);
     border-radius: 999px; padding: 3px 10px; color: var(--ink-mid);
   }
-  .rt-list span.best { border-color: var(--sci); color: #86efac; }
+  .rt-list span.best { border-color: var(--sci); color: var(--sci); font-weight: 700; }
 
   /* ---------- 实验卡片 ---------- */
   .bgrid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); }
@@ -181,11 +189,14 @@
     display: inline-block; font-size: .66rem; font-weight: 700; letter-spacing: .1em;
     text-transform: uppercase; padding: 2px 8px; border-radius: 999px; margin-bottom: 8px;
   }
-  .s-heart { background: rgba(244,114,182,.16); color: #f9a8d4; }
-  .s-lung  { background: rgba(34,211,238,.16); color: #67e8f9; }
-  .s-brain { background: rgba(167,139,250,.16); color: #c4b5fd; }
-  .s-bone  { background: rgba(251,191,36,.16); color: #fcd34d; }
-  .s-sense { background: rgba(74,222,128,.16); color: #86efac; }
+  /* 这五个系统标签原来用的是深色主题的浅粉／浅青／浅紫。全站现在是浅色底，
+     浅字压在同色浅底上只有 1.5:1 左右的对比度，几乎读不出来。
+     改用共享变量里已经为浅底调好的学科色。 */
+  .s-heart { background: rgba(192,23,100,.12); color: var(--kit); }
+  .s-lung  { background: rgba(10,111,133,.12); color: var(--video); }
+  .s-brain { background: rgba(109,49,212,.12); color: var(--phys); }
+  .s-bone  { background: rgba(150,101,13,.14); color: var(--warn); }
+  .s-sense { background: rgba(11,122,69,.12); color: var(--sci); }
   .bcard-h h3 { margin: 0; font-size: 1.06rem; }
   .bcard-b { padding: 13px 17px 16px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
   .bcard-b .how { margin: 0; font-size: .88rem; color: var(--ink-mid); flex: 1; }
@@ -274,56 +285,80 @@
         <figure class="body-system-figure">
         <svg class="body-system-svg" viewBox="0 0 320 380" role="img" aria-labelledby="bodyDiagramTitle bodyDiagramDesc">
           <title id="bodyDiagramTitle">人体主要器官示意图</title>
-          <desc id="bodyDiagramDesc">示意图标注大脑、肺、心脏、胃和血流方向。点下方按钮可分别高亮循环、呼吸、消化或大脑系统。</desc>
+          <desc id="bodyDiagramDesc">示意图标注大脑、气管、肺、横膈、心脏、胃、肠道和血流方向。点下方按钮可分别高亮循环、呼吸、消化或大脑系统。</desc>
           <defs>
-            <marker id="redArrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#fb7185"/></marker>
-            <marker id="blueArrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#38bdf8"/></marker>
-            <linearGradient id="bodySkin" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity=".06"/><stop offset="100%" stop-color="currentColor" stop-opacity=".12"/></linearGradient>
+            <!-- markerUnits 必须写死成 userSpaceOnUse：默认的 strokeWidth 单位会把
+                 箭头放大到线宽的好几倍，在 320 宽的图里变成盖住器官的大三角。 -->
+            <marker id="redArrow" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" refX="8.5" refY="5.5" orient="auto"><path d="M0.5,0.8 L10,5.5 L0.5,10.2 Z" fill="#c02a1d"/></marker>
+            <marker id="blueArrow" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" refX="8.5" refY="5.5" orient="auto"><path d="M0.5,0.8 L10,5.5 L0.5,10.2 Z" fill="#0a6f85"/></marker>
+            <linearGradient id="bodySkin" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity=".05"/><stop offset="100%" stop-color="currentColor" stop-opacity=".13"/></linearGradient>
           </defs>
-          <!-- 身体轮廓 -->
-          <circle cx="160" cy="42" r="28" fill="none" stroke="currentColor" stroke-opacity=".42" stroke-width="4"/>
-          <path d="M128 72 Q96 80 87 120 L70 230 M192 72 Q224 80 233 120 L250 230 M126 74 Q116 158 123 228 L105 335 M194 74 Q204 158 197 228 L215 335" fill="none" stroke="currentColor" stroke-opacity=".42" stroke-linecap="round" stroke-width="16"/>
-          <path d="M128 69 Q160 83 192 69 L201 211 Q160 230 119 211 Z" fill="url(#bodySkin)" stroke="currentColor" stroke-opacity=".28" stroke-width="2"/>
+          <!-- 身体轮廓：躯干一直画到 y=288 的髋部，器官才有地方待。
+               旧版躯干在 y=211 就收口，胃和肠子被画到了两条腿之间。 -->
+          <g>
+            <path d="M126 92 C108 104 102 140 104 176 L110 236 M194 92 C212 104 218 140 216 176 L210 236" fill="none" stroke="currentColor" stroke-opacity=".28" stroke-linecap="round" stroke-width="15"/>
+            <path d="M144 288 L140 358 M176 288 L180 358" fill="none" stroke="currentColor" stroke-opacity=".28" stroke-linecap="round" stroke-width="17"/>
+            <path d="M152 58 L152 70 C138 73 126 80 123 92 L120 128 L127 152 C132 182 134 208 134 236 C134 258 131 274 130 288 L190 288 C189 274 186 258 186 236 C186 208 188 182 193 152 L200 128 L197 92 C194 80 182 73 168 70 L168 58 Z" fill="url(#bodySkin)" stroke="currentColor" stroke-opacity=".3" stroke-width="2"/>
+            <circle cx="160" cy="40" r="24" fill="url(#bodySkin)" stroke="currentColor" stroke-opacity=".3" stroke-width="2.5"/>
+          </g>
           <!-- 大脑 -->
           <g class="sys-layer sys-brain">
-            <!-- 头颅圆心在 (160,42)、半径 28；大脑整体下移到圆内，否则会像顶了个帽子。 -->
-            <path d="M142 30 Q160 18 178 30 Q188 36 186 46 Q182 56 160 58 Q138 56 134 46 Q132 36 142 30 Z" fill="#c4b5fd" stroke="#a78bfa" stroke-width="2.5"/>
-            <path d="M148 34 Q160 28 172 34 M150 42 Q160 38 170 42 M152 50 Q160 46 168 50" fill="none" stroke="#7c3aed" stroke-width="1.5" opacity=".55"/>
-            <text x="160" y="8" text-anchor="middle" font-size="11" font-weight="800" fill="var(--kit)">大脑</text>
+            <path d="M146 40 C143 30 152 23 160 24 C164 20 172 22 175 28 C182 30 183 36 179 41 C182 47 177 52 171 50 L154 50 C148 50 144 46 146 40 Z" fill="#c4b5fd" stroke="#6d31d4" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M150 32 Q158 27 165 32 M149 38 Q159 34 168 38 M152 45 Q160 41 169 45" fill="none" stroke="#6d31d4" stroke-width="1.5" opacity=".55"/>
+            <path d="M169 49 C176 47 179 51 178 55 C177 58 171 60 167 57 Z" fill="#c4b5fd" stroke="#6d31d4" stroke-width="1.8"/>
+            <path d="M160 52 L160 64" stroke="#6d31d4" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+            <path class="lead" d="M216 30 L186 36"/>
+            <text class="lbl" x="220" y="34" fill="var(--phys)">大脑 <tspan>Brain</tspan></text>
           </g>
-          <!-- 气管 + 肺 -->
+          <!-- 气管 + 肺 + 横膈 -->
           <g class="sys-layer sys-lung">
-            <path d="M160 67 L160 112 M148 99 L133 116 M172 99 L187 116" fill="none" stroke="#a5f3fc" stroke-linecap="round" stroke-width="7"/>
-            <path d="M154 90 C133 82 108 103 108 144 C108 178 126 193 151 184 L151 111 C145 106 145 98 154 90Z" fill="#67e8f9" fill-opacity=".55" stroke="#22d3ee" stroke-width="3"/>
-            <path d="M166 90 C187 82 212 103 212 144 C212 178 194 193 169 184 L169 111 C175 106 175 98 166 90Z" fill="#67e8f9" fill-opacity=".55" stroke="#22d3ee" stroke-width="3"/>
-            <path d="M133 116 Q108 118 102 132 Q98 142 104 152" fill="none" stroke="#22d3ee" stroke-width="2" opacity=".5"/>
-            <path d="M187 116 Q212 118 218 132 Q222 142 216 152" fill="none" stroke="#22d3ee" stroke-width="2" opacity=".5"/>
-            <text x="38" y="132" font-size="12" font-weight="800" fill="var(--sci)">肺</text>
-            <path d="M56 128 L105 137" stroke="currentColor" stroke-opacity=".45" fill="none"/>
+            <path d="M160 64 L160 106 M160 104 L146 120 M160 104 L174 120" fill="none" stroke="#7dd3fc" stroke-linecap="round" stroke-width="8"/>
+            <path d="M154 74 H166 M154 82 H166 M154 90 H166 M154 98 H166" stroke="#0a6f85" stroke-width="1.6" opacity=".5"/>
+            <path d="M152 112 C138 104 124 112 121 132 C117 156 120 182 131 190 C140 196 150 192 152 183 Z" fill="#a5e9f7" fill-opacity=".85" stroke="#0a6f85" stroke-width="2.4" stroke-linejoin="round"/>
+            <path d="M168 112 C182 104 196 112 199 132 C203 156 200 182 189 190 C180 196 170 192 168 183 Z" fill="#a5e9f7" fill-opacity=".85" stroke="#0a6f85" stroke-width="2.4" stroke-linejoin="round"/>
+            <path d="M146 120 C140 134 137 152 136 170 M142 138 L130 146 M139 158 L128 164 M174 120 C180 134 183 152 184 170 M178 138 L190 146 M181 158 L192 164" fill="none" stroke="#0a6f85" stroke-width="1.8" opacity=".55" stroke-linecap="round"/>
+            <path d="M126 196 Q160 184 194 196" fill="none" stroke="#0a6f85" stroke-width="2.6" stroke-dasharray="7 5" opacity=".7"/>
+            <path class="lead" d="M104 84 L152 82"/>
+            <text class="lbl" x="100" y="88" text-anchor="end" fill="var(--video)">气管 <tspan>Trachea</tspan></text>
+            <path class="lead" d="M104 142 L124 148"/>
+            <text class="lbl" x="100" y="146" text-anchor="end" fill="var(--video)">肺 <tspan>Lungs</tspan></text>
+            <path class="lead" d="M104 196 L129 194"/>
+            <text class="lbl" x="100" y="200" text-anchor="end" fill="var(--video)">横膈 <tspan>Diaphragm</tspan></text>
+          </g>
+          <!-- 胃 + 肠道（画在循环层之前，主动脉本来就走在胃的后面） -->
+          <g class="sys-layer sys-digest">
+            <path d="M160 62 C160 112 157 162 158 200" fill="none" stroke="#b45309" stroke-width="4.5" stroke-linecap="round" opacity=".42"/>
+            <path d="M158 200 C176 198 189 210 188 228 C187 244 174 252 162 247 C151 242 148 228 153 219 C157 211 158 205 158 200 Z" fill="#f5c14e" stroke="#b45309" stroke-width="2.4" stroke-linejoin="round"/>
+            <path d="M166 206 C172 212 176 220 176 228 M160 212 C164 218 166 226 166 234" fill="none" stroke="#b45309" stroke-width="1.6" opacity=".45"/>
+            <path d="M162 247 C154 251 149 254 146 252" fill="none" stroke="#b45309" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M139 278 L139 259 C139 250 145 245 154 245 L171 245 C180 245 185 250 185 259 L185 273 C185 281 179 285 171 285 L161 285" fill="none" stroke="#e0a33f" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M168 253 C152 255 147 262 155 266 C164 270 175 267 172 273 C169 279 156 277 151 274" fill="none" stroke="#b45309" stroke-width="4.5" stroke-linecap="round"/>
+            <path class="lead" d="M216 218 L189 224"/>
+            <text class="lbl" x="220" y="222" fill="var(--warn)">胃 <tspan>Stomach</tspan></text>
+            <path class="lead" d="M104 264 L137 268"/>
+            <text class="lbl" x="100" y="268" text-anchor="end" fill="var(--warn)">肠道 <tspan>Intestines</tspan></text>
           </g>
           <!-- 心脏 + 循环 -->
           <g class="sys-layer sys-circulation">
-            <path d="M160 181 C145 164 123 176 125 196 C127 216 160 235 160 235 C160 235 193 216 195 196 C197 176 175 164 160 181Z" fill="#fb7185" stroke="#fecdd3" stroke-width="3"/>
-            <path d="M152 192 L148 204 M168 192 L172 204" stroke="#fda4af" stroke-width="2" stroke-linecap="round"/>
-            <path d="M151 187 C135 175 125 163 121 148" fill="none" stroke="#38bdf8" stroke-width="5" marker-end="url(#blueArrow)"/>
-            <path d="M169 187 C185 175 195 163 199 148" fill="none" stroke="#fb7185" stroke-width="5" marker-end="url(#redArrow)"/>
-            <path d="M151 207 C126 229 114 258 110 306 M169 207 C194 229 206 258 210 306" fill="none" stroke="#fb7185" stroke-linecap="round" stroke-width="5" marker-end="url(#redArrow)"/>
-            <path d="M101 303 C102 261 117 220 145 201 M219 303 C218 261 203 220 175 201" fill="none" stroke="#38bdf8" stroke-linecap="round" stroke-width="5" marker-end="url(#blueArrow)"/>
-            <text x="224" y="202" font-size="12" font-weight="800" fill="#fb7185">心脏</text>
-            <path d="M221 198 L193 198" stroke="currentColor" stroke-opacity=".45" fill="none"/>
-            <text x="16" y="293" font-size="12" font-weight="800" fill="#38bdf8">全身</text>
-            <path d="M52 289 L100 285" stroke="currentColor" stroke-opacity=".45" fill="none"/>
-          </g>
-          <!-- 胃 + 消化 -->
-          <g class="sys-layer sys-digest">
-            <path d="M158 228 C142 224 132 238 134 254 C136 270 152 282 162 278 C172 272 178 256 174 242 C170 232 164 228 158 228 Z" fill="#fcd34d" fill-opacity=".75" stroke="#f59e0b" stroke-width="2.5"/>
-            <path d="M162 278 C168 292 174 308 170 322 C166 334 152 338 144 328" fill="none" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
-            <path d="M156 282 C148 296 140 312 136 328" fill="none" stroke="#d97706" stroke-width="3.5" stroke-linecap="round" opacity=".75"/>
-            <text x="248" y="262" font-size="12" font-weight="800" fill="var(--warn)">胃</text>
-            <path d="M238 258 L182 252" stroke="currentColor" stroke-opacity=".45" fill="none"/>
+            <path d="M152 158 C143 150 135 142 130 137" fill="none" stroke="#0a6f85" stroke-width="4" stroke-linecap="round" marker-end="url(#blueArrow)"/>
+            <path d="M177 158 C186 150 193 142 197 137" fill="none" stroke="#0a6f85" stroke-width="4" stroke-linecap="round" marker-end="url(#blueArrow)"/>
+            <path d="M131 147 C136 154 141 160 146 165" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round" marker-end="url(#redArrow)"/>
+            <path d="M195 147 C190 153 186 159 182 164" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round" marker-end="url(#redArrow)"/>
+            <path d="M151 155 C143 160 141 173 147 184 C152 196 164 204 172 203 C175 203 178 201 179 197 C183 184 185 169 183 160 C180 152 172 149 166 154 C162 150 156 151 151 155 Z" fill="#d1495b" stroke="#7f1029" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M160 156 C159 171 160 186 167 197" fill="none" stroke="#7f1029" stroke-width="1.6" opacity=".5"/>
+            <path d="M154 163 C160 169 165 179 166 189 M169 160 C175 165 179 171 180 178" fill="none" stroke="#7f1029" stroke-width="1.5" opacity=".35"/>
+            <path d="M175 198 C180 218 179 242 177 262" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round"/>
+            <path d="M177 262 C180 292 182 318 182 340" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round" marker-end="url(#redArrow)"/>
+            <path d="M177 262 C167 290 152 314 149 340" fill="none" stroke="#c02a1d" stroke-width="4" stroke-linecap="round" marker-end="url(#redArrow)"/>
+            <path d="M138 340 C141 314 146 288 151 264 M172 340 C170 314 158 288 151 264" fill="none" stroke="#0a6f85" stroke-width="4" stroke-linecap="round"/>
+            <path d="M151 264 C149 240 150 220 153 202" fill="none" stroke="#0a6f85" stroke-width="4" stroke-linecap="round" marker-end="url(#blueArrow)"/>
+            <path class="lead" d="M216 168 L189 174"/>
+            <text class="lbl" x="220" y="172" fill="var(--kit)">心脏 <tspan>Heart</tspan></text>
+            <path class="lead" d="M104 340 L144 338"/>
+            <text class="lbl" x="100" y="344" text-anchor="end" fill="var(--kit)">全身 <tspan>Body</tspan></text>
           </g>
         </svg>
-        <figcaption id="bodyDiagramCaption">空气把氧带进肺；心脏推动血液在肺和全身之间循环。</figcaption>
+        <figcaption id="bodyDiagramCaption" role="status" aria-live="polite">全部系统：大脑指挥、肺吸氧、心脏泵血、胃和肠道消化食物。</figcaption>
       </figure>
       <div class="body-system-switch" role="group" aria-label="选择要查看的身体系统">
         <button type="button" data-body-system="all" aria-pressed="true">全部</button>
@@ -332,7 +367,7 @@
         <button type="button" data-body-system="digest" aria-pressed="false">消化</button>
         <button type="button" data-body-system="brain" aria-pressed="false">大脑</button>
       </div>
-      <div class="circulation-legend" aria-label="血流图例"><span><i style="background:#fb7185"></i>含氧较多</span><span><i style="background:#38bdf8"></i>含氧较少</span></div>
+      <div class="circulation-legend" id="bodyLegend" aria-label="图例"><span><i style="background:#c02a1d"></i>含氧较多</span><span><i style="background:#0a6f85"></i>含氧较少</span></div>
       </div>
       <div class="body-quick kid-action-strip" aria-labelledby="bodyQuickTitle">
         <h2 id="bodyQuickTitle">安全比较</h2>
@@ -884,6 +919,7 @@
 <script src="../assets/js/progress.js?v=15"></script>
 <script src="../data/playful.js?v=15"></script>
 <script src="../assets/js/playful.js?v=15"></script>
+<script src="../assets/js/illustrations.js?v=15"></script>
 <script>
 (function () {
   "use strict";
@@ -895,12 +931,47 @@
   var bodyCaption = document.getElementById("bodyDiagramCaption");
   var bodyDiagramDesc = document.getElementById("bodyDiagramDesc");
   var systemCopy = {
-    all: "全部系统：大脑指挥、肺吸氧、心脏泵血、胃消化食物。",
-    circulation: "循环系统：心脏像泵，把含氧血液（红色）送到全身，再把缺氧血液（蓝色）送回肺。",
-    lung: "呼吸系统：气管把空气送进两侧肺；肺像海绵，负责交换氧气和二氧化碳。",
-    digest: "消化系统：胃像袋子，用酸和酶把食物搅碎；小肠继续吸收营养。",
-    brain: "大脑：在头颅里，负责思考、记忆和协调运动；它消耗全身约 20% 的氧气。"
+    all: "全部系统：大脑指挥、肺吸氧、心脏泵血、胃和肠道消化食物。",
+    circulation: "循环系统 Circulatory system：心脏像一台泵。含氧较多的血（红）被送到全身，含氧较少的血（蓝）回到心脏，再送去肺里换气。真人的心脏在胸腔正中偏左，所以图上看起来是偏右边。",
+    lung: "呼吸系统 Respiratory system：气管 trachea 把空气送进两侧肺，再分成越来越细的支气管；肺像海绵，在这里换氧气和二氧化碳。横膈 diaphragm 往下拉，空气就被吸进来。",
+    digest: "消化系统 Digestive system：食物顺着食管落进胃里，被酸和酶搅碎；接着进入小肠吸收营养，大肠再回收水分。",
+    brain: "大脑 Brain：住在头颅里，负责思考、记忆和协调动作。它只占体重约 2%，却要用掉全身约 20% 的氧气。"
   };
+  /* 图例跟着当前系统换：只看消化时，红蓝血流图例反而是干扰。 */
+  var systemLegend = {
+    all: [
+      { color: "#c4b5fd", label: "大脑 Brain" },
+      { color: "#a5e9f7", label: "肺 Lungs" },
+      { color: "#d1495b", label: "心脏 Heart" },
+      { color: "#f5c14e", label: "胃与肠 Gut" }
+    ],
+    circulation: [
+      { color: "#c02a1d", label: "含氧较多", note: "Oxygen-rich" },
+      { color: "#0a6f85", label: "含氧较少", note: "Oxygen-poor" }
+    ],
+    lung: [
+      { color: "#7dd3fc", label: "气管 Trachea" },
+      { color: "#a5e9f7", label: "肺 Lungs" },
+      { color: "#0a6f85", label: "横膈 Diaphragm", shape: "line" }
+    ],
+    digest: [
+      { color: "#f5c14e", label: "胃 Stomach" },
+      { color: "#b45309", label: "小肠 Small intestine", shape: "line" },
+      { color: "#c98a2e", label: "大肠 Large intestine", shape: "line" }
+    ],
+    brain: [
+      { color: "#c4b5fd", label: "大脑 Cerebrum" },
+      { color: "#6d31d4", label: "沟回 Gyri", shape: "line" }
+    ]
+  };
+  var legendBox = document.getElementById("bodyLegend");
+  var art = window.ILLUSTRATIONS || null;
+  function paintLegend(sys) {
+    if (!legendBox || !art || typeof art.legend !== "function") return;
+    var html = art.legend(systemLegend[sys] || systemLegend.all, { label: "当前系统的图例" });
+    if (html) legendBox.innerHTML = html;
+  }
+  paintLegend("all");
   document.querySelectorAll("[data-body-system]").forEach(function (button) {
     button.addEventListener("click", function () {
       var sys = button.getAttribute("data-body-system");
@@ -910,6 +981,7 @@
       bodyScene.setAttribute("data-body-system", sys);
       bodyCaption.textContent = systemCopy[sys];
       if (bodyDiagramDesc) bodyDiagramDesc.textContent = systemCopy[sys];
+      paintLegend(sys);
     });
   });
   var quickCopy = {
