@@ -45,7 +45,7 @@
 - 作品卡与作品表单共用一套 `.work-card` 家族：`.work-card .work-card-title .work-card-meta .work-card-content .work-card-form .work-card-fields .work-card-status`。表单外观完全由 `.work-card` 提供，`.work-card-form` 只负责表单专属间距。已废弃 `.playful-work-form` / `.playful-work-fields` / `.playful-work-status`，页面和样式表都不得再出现这三个类名，也不得在页面 `<style>` 里重复定义 `.work-card*`。
 
 ## 孩子模式（data-mode）
-- 孩子模式由 `<html data-mode>` 单独驱动：`playful.js` 的 `syncPreferences()` 把 `mode` 偏好写到该属性，`kid.css` 里所有规则都挂在 `html[data-mode="kid"]` 下。Progress 缺席时兜底写 `parent`，属性不会出现空值。
+- 孩子模式由 `<html data-mode>` 单独驱动：`playful.js` 的 `syncPreferences()` 把 `mode` 偏好写到该属性，`kid.css` 里所有规则都挂在 `html[data-mode="kid"]` 下。Progress 缺席时兜底写 `kid`，属性不会出现空值。
 - 只写给家长看的内容用 `data-audience="parent"` 标记，孩子模式下由 `kid.css` 隐藏；只给孩子看的用 `data-audience="kid-only"`，家长模式下隐藏。隐藏是纯展示层行为，不得移除节点，也不得让页面脚本因找不到节点而报错。
 - 切换控件用 `data-playful-preference="mode"`，由 `playful.js` 自动接管，页面不需要写绑定逻辑。切换后立即刷新 `<html data-mode>`，并且偏好随 Progress v3 一起导入导出。
 - 孩子模式只改字号、配色、触控尺寸与信息密度，不得删掉任务文字、完成状态或无障碍名称。
@@ -56,7 +56,7 @@
 - 既有 API：`visit / get / all / count / note / getNote / complete / getCompletion / exportText / exportJSON / importJSON / reset / available`。
 - 新增 API：`getStickers([pageId])`、`validateWork(pageId, work)`、`saveWork(pageId, work)`（后三者也支持单个含 `pageId` 的对象）、`getWorks([pageId])`、`deleteWork(workId)`、`getPreference(name)`、`setPreference(name, value)`。`validateWork()` 只读返回清洗后的真实 UTF-8 字节、总量、数量与失败代码，页面不得另写一套大小规则。
 - 作品仅保存受限文本元数据，不保存图片二进制：类型为 `observation / prediction / drawing / model / explanation / photo-note`；最多 60 项，单项 UTF-8 JSON 不超过 12 KiB，合计不超过 96 KiB。标题、正文、ID、页面、日期和导入数据都必须严格清洗。
-- 偏好固定为 4 项：`soundEnabled`（默认 `false`）、`motion`（`system/full/reduced`，默认 `system`）、`ageGroup`（`all/4-6/7-9/10-12`，默认 `all`）、`mode`（`parent/kid`，默认 `parent`）。非法值一律回退到默认值，`setPreference()` 对非法值返回 `false` 且不改动已存值。所有读取结果均为防御性副本，存储失败不得伪报成功。
+- 偏好固定为 4 项：`soundEnabled`（默认 `false`）、`motion`（`system/full/reduced`，默认 `system`）、`ageGroup`（`all/4-6/7-9/10-12`，默认 `all`）、`mode`（`parent/kid`，默认 `kid`，新设备孩子优先）。非法值一律回退到默认值，`setPreference()` 对非法值返回 `false` 且不改动已存值。所有读取结果均为防御性副本，存储失败不得伪报成功。
 
 ## 页面组渐进接入约定
 - 在页面已有的任务区域按需声明 `data-playful-page="games/...html"`，可加入：`data-playful-companion`、`data-playful-sticker`、`data-playful-feedback`、`data-playful-random-task` 与 `data-playful-task-output`。
