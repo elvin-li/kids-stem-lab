@@ -31,14 +31,21 @@
   body::before { display: none !important; }
 
   /* 只隐藏交互外壳；说明、提问、任务和完成文字继续打印。 */
+  /* 这些容器里只有按钮和滑块；按钮被隐藏后剩下的是一条带底色的空条，
+     所以整块一起收掉。 */
   .nav, .foot, .skip-link, .toast, .filters, .actions, .tools,
   .ctrl, .task-actions, .note-actions, .playful-confetti,
+  .kid-action-strip, .kid-choice, .kid-picks, .quick, .seg, .playful-tools,
   button, input, select, textarea, video, iframe, canvas,
   svg.interactive, [role="dialog"], [data-print="hide"] {
     display: none !important;
   }
 
   main, header, section, article { position: static !important; }
+  /* 画布不打印。只包着画布的深色外壳会在纸上留下一条空色带，整块收掉；
+     舞台本身还装着标题和图例，只清掉为画布预留的 min-height。 */
+  .canvas-shell { display: none !important; }
+  .kid-visual-stage, .lab-stage, .stage-wrap { min-height: 0 !important; }
   .wrap, .wrap-narrow { width: auto !important; max-width: none !important; padding: 0 !important; }
   .lab, .grid, .grid-2, .catalog, .tgrid, .tiles, .path, .summary {
     display: block !important;
@@ -46,6 +53,23 @@
   .lab > * + *, .grid > * + *, .grid-2 > * + *,
   .catalog > * + *, .tgrid > * + *, .tiles > * + *, .path > * + * {
     margin-top: 8pt !important;
+  }
+
+  /* 步骤条和任务地图在屏幕上是横排网格；纸上每格只剩两三个字宽，
+     竖着排下来根本读不了，一律改成从上往下的块。 */
+  .kid-story-steps, .task-map, .machine { display: block !important; }
+  .kid-story-steps > * + *, .task-map > * + * { margin-top: 8pt !important; }
+  /* 屏幕上徽章在正上方，所以留了 54px 顶部内边距；纸上改成挂在左边，省掉整整一行空白。 */
+  .kid-story-steps > *, .task-map-step { min-height: 0 !important; padding: 6pt 0 6pt 30pt !important; }
+  /* 序号徽章是内容的一部分（这是第几步），底色被 economy 丢掉后要靠描边留住。 */
+  .kid-story-steps > *::before, .task-map-step::before {
+    top: 6pt !important;
+    left: 0 !important;
+    width: 20pt !important;
+    height: 20pt !important;
+    background: none !important;
+    color: #111 !important;
+    border: 1px solid #666 !important;
   }
 
   .card, .note, .task, .panel, .panel-keep, .playful-companion,
