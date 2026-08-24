@@ -22,16 +22,12 @@
       radial-gradient(circle at 88% 18%, rgba(110,168,254,.18), transparent 28%),
       linear-gradient(145deg, var(--surface), var(--bg-soft));
   }
-  .story-kicker { margin: 0 0 8px; color: var(--sci); font-weight: 750; }
+  .story-kicker { display: flex; gap: 9px; align-items: center; margin: 0 0 8px; color: var(--sci); font-weight: 750; }
   .big-question { margin: 0 0 12px; max-width: 22ch; font-size: clamp(1.65rem, 5vw, 3rem); line-height: 1.12; }
   .story-copy { margin: 0; color: var(--ink-mid); line-height: 1.65; }
   .quick-look { margin-top: 16px; padding: 14px 16px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--surface-2); }
   .quick-look b { display: block; margin-bottom: 4px; color: var(--warn); }
   .quick-look p { margin: 0; color: var(--ink-mid); }
-  .earth-scene { min-height: 250px; display: grid; place-items: center; position: relative; isolation: isolate; }
-  .earth-scene::before { content: "✦  ·  ✧  ·  ✦"; position: absolute; top: 8px; right: 8px; color: var(--ink-dim); letter-spacing: .45em; }
-  .earth-orbit { width: min(100%, 280px); height: auto; filter: drop-shadow(0 18px 26px rgba(0,0,0,.24)); }
-  .earth-guide { position: absolute; right: 4px; bottom: 4px; max-width: 150px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 18px 18px 4px 18px; background: var(--surface); font-size: .82rem; color: var(--ink-mid); }
   .term-atlas { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 14px; }
   .term-card { min-width: 0; padding: 12px 13px; border: 1px solid var(--line-soft); border-radius: var(--r); background: var(--surface); color: var(--ink-mid); font-size: .84rem; line-height: 1.55; }
   .term-card dfn { display: block; margin-bottom: 3px; color: var(--ink); font-style: normal; font-weight: 750; }
@@ -44,9 +40,16 @@
     grid-template-columns: minmax(240px, 320px) 1fr;
   }
   .core-svg { width: 100%; height: auto; display: block; }
-  .core-svg .seg { cursor: pointer; transition: opacity .18s var(--ease); }
-  .core-svg .seg:hover { opacity: .82; }
-  .core-svg .seg.on { stroke: #fff; stroke-width: 2.5; }
+  .seg { cursor: pointer; transition: opacity .18s var(--ease); }
+  .seg:hover { opacity: .82; }
+  .core-svg .seg.on { stroke: #fff; stroke-width: 3; }
+  /* 深度尺按真实厚度排开五层，地壳在这里只剩一根发丝——这正是要看到的事。 */
+  .depth-ruler { display: block; width: 100%; max-width: 620px; height: auto; margin: 10px auto 0; }
+  .depth-ruler .ruler-seg.on { stroke: var(--ink); stroke-width: 2.5; }
+  .depth-ruler .r-tick { font-family: var(--mono); font-size: 9px; fill: var(--ink-dim); }
+  .depth-ruler .r-name { font-size: 10px; font-weight: 700; fill: #fff; paint-order: stroke; stroke: rgba(0,0,0,.35); stroke-width: 2.5px; }
+  .depth-ruler .r-call { font-size: 10px; font-weight: 700; fill: var(--ink); }
+  .depth-ruler .r-lead { stroke: var(--ink-dim); stroke-width: 1; fill: none; }
 
   .layer-list { display: flex; flex-direction: column; gap: 8px; }
   .layer-btn {
@@ -62,9 +65,12 @@
   .layer-btn small { display: block; color: var(--ink-dim); font-size: .78rem; font-family: var(--mono); }
 
   .layer-detail {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 13px; align-items: start;
     background: var(--surface); border: 1px solid var(--line);
     border-radius: var(--r); padding: 15px 17px; margin-top: 4px;
   }
+  .layer-icon .mini-core { display: block; width: 48px; height: 48px; }
+  html[data-mode="kid"] .layer-icon .mini-core { width: 64px; height: 64px; }
   .layer-detail h3 { margin: 0 0 4px; font-size: 1.1rem; }
   .layer-detail .lmeta {
     display: flex; gap: 14px; flex-wrap: wrap; margin: 8px 0 10px;
@@ -109,9 +115,10 @@
     font-family: var(--mono); font-weight: 700; font-size: 1.05rem;
     text-align: center; padding: 4px 0; border-radius: var(--r-sm);
   }
-  .qm-s { background: rgba(74,222,128,.16); color: #86efac; }
-  .qm-m { background: rgba(251,191,36,.18); color: #fcd34d; }
-  .qm-l { background: rgba(248,113,113,.18); color: #fca5a5; }
+  /* 这三块底色是浅色的，配浅色字只有 2:1 上下。文字统一压深到能读的程度。 */
+  .qm-s { background: rgba(74,222,128,.16); color: #14663c; }
+  .qm-m { background: rgba(251,191,36,.18); color: #8a5a06; }
+  .qm-l { background: rgba(248,113,113,.18); color: #9c2318; }
   .qplace { font-size: .88rem; color: var(--ink); }
   .qmeta { font-size: .74rem; color: var(--ink-dim); font-family: var(--mono); }
   .qdepth { font-size: .76rem; color: var(--ink-mid); font-family: var(--mono); text-align: right; }
@@ -188,7 +195,12 @@
   .earth-stage { min-width: 0; min-height: 280px; display: grid; place-items: center; padding: 10px; border: 2px solid var(--line); border-radius: var(--r); overflow: hidden; }
   .earth-stage .core-svg { width: min(100%,300px); max-height: 300px; }
   .earth-layer-info { display: grid; grid-template-columns: minmax(220px,.75fr) minmax(0,1.25fr); gap: 12px; margin-top: 12px; }
-  html[data-mode="kid"] .earth-layer-info { display: none; }
+  /* 剖面图里的地壳只有几个像素宽，鼠标都难点中，更别说手指。
+     这排按钮才是真正能按的入口，所以孩子模式一定要留着，只是排成大色块。 */
+  html[data-mode="kid"] .earth-layer-info { grid-template-columns: minmax(0,1fr); }
+  html[data-mode="kid"] .layer-list { flex-direction: row; flex-wrap: wrap; }
+  html[data-mode="kid"] .layer-btn { flex: 1 1 145px; min-height: 56px; }
+  html[data-mode="kid"] .layer-detail .lmeta { display: none; }
   html[data-mode="kid"] .mission > p:not(.pill),
   html[data-mode="kid"] .mission > .work-card { display: none; }
   .earth-tabs button { min-height: 50px; padding: 9px; border: 2px solid var(--line); border-radius: var(--r); background: var(--surface); color: var(--ink); font: 800 .92rem/1.25 var(--font); cursor: pointer; }
@@ -199,7 +211,17 @@
   .earth-panel .earth-wrap { grid-template-columns: minmax(220px,300px) minmax(0,1fr); }
   .core-svg .seg:focus { outline: none; stroke: var(--sci); stroke-width: 4; }
   .plate-layout, .wave-layout { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(210px,.8fr); gap: 12px; align-items: stretch; }
-  .plate-viz, .wave-viz, #triMap { width: 100%; min-height: 190px; border: 2px solid var(--line); border-radius: var(--r); background: #0b1630; }
+  .plate-viz, .wave-viz { width: 100%; min-height: 190px; border: 2px solid var(--line); border-radius: var(--r); background: #0b1630; }
+  /* 定位图是一张地图，不是夜空：浅底才印得出来，也才和旁边的浅色面板搭得上。 */
+  #triMap { width: 100%; min-height: 190px; border: 2px solid var(--line); border-radius: var(--r); background: #fbf6ea; }
+  #triMap .tm-grid { stroke: #d9cdb4; stroke-width: .5; }
+  #triMap .tm-ring { fill: none; stroke-width: 1.4; stroke-dasharray: 4 3; }
+  #triMap .tm-radius { stroke-width: .8; stroke-dasharray: 2 2; opacity: .8; }
+  #triMap .tm-st { font-size: 7px; font-weight: 700; fill: #2f2a22; }
+  /* 半径虚线正好从数字底下穿过，白描边是让数字还读得出来的唯一办法。 */
+  #triMap .tm-km { font-size: 5.4px; font-family: var(--mono); paint-order: stroke; stroke: #fbf6ea; stroke-width: 2.4px; stroke-linejoin: round; }
+  #triMap .tm-hint { font-size: 6.4px; fill: #6b5f4b; }
+  #triMap .tm-epi { font-size: 7px; font-weight: 700; fill: #a32014; paint-order: stroke; stroke: #fbf6ea; stroke-width: 2.6px; stroke-linejoin: round; }
   .visual-buttons { display: grid; align-content: start; gap: 8px; }
   .visual-buttons button { min-height: 48px; padding: 9px 12px; border: 2px solid var(--line); border-radius: var(--r); background: var(--surface); color: var(--ink); font: 800 .9rem/1.3 var(--font); cursor: pointer; }
   .visual-buttons button[aria-pressed="true"] { border-color: var(--warn); background: color-mix(in srgb,var(--warn) 13%,var(--surface)); }
@@ -216,8 +238,8 @@
   .locate-strip { display: grid; grid-template-columns: minmax(0,.7fr) minmax(260px,1.3fr); gap: 12px; align-items: center; padding: 14px; border: 2px solid color-mix(in srgb,var(--warn) 30%,var(--line)); border-radius: var(--r); background: color-mix(in srgb,var(--warn) 7%,var(--surface)); }
   .locate-controls { display: grid; gap: 9px; }
   .locate-controls input[type="range"] { width: 100%; min-height: 44px; }
-  .locate-result { display: grid; grid-template-columns: minmax(150px,.8fr) minmax(0,1.2fr); gap: 10px; align-items: center; }
-  .locate-result #triMap { min-height: 160px; max-height: 190px; }
+  .locate-result { display: grid; grid-template-columns: minmax(190px,1fr) minmax(0,1fr); gap: 10px; align-items: center; }
+  .locate-result #triMap { min-height: 170px; max-height: 220px; }
   .locate-result .text-result { margin: 0; }
   .kid-answer-group { display: flex; flex-wrap: wrap; gap: 8px; }
   .kid-answer-group button { min-height: 48px; flex: 1 1 160px; padding: 9px 12px; border: 2px solid var(--line); border-radius: var(--r); background: var(--surface); color: var(--ink); font: 750 .9rem/1.35 var(--font); cursor: pointer; }
@@ -256,7 +278,7 @@
 <header class="hero wrap">
   <section class="hero-story" aria-labelledby="earthQuestion">
     <div class="earth-intro">
-      <div><p class="story-kicker">🌍 岩岩队长邀请你加入地心侦察队</p><h1 class="big-question" id="earthQuestion">我们没钻进地心，怎么知道脚下藏着什么？</h1><p class="story-copy">点一层、推一推板块、再放出两种波，马上看见线索。</p></div>
+      <div><p class="story-kicker"><span class="guide-portrait" id="earthGuide" aria-hidden="true"></span>岩岩队长邀请你加入地心侦察队</p><h1 class="big-question" id="earthQuestion">我们没钻进地心，怎么知道脚下藏着什么？</h1><p class="story-copy">点一层、推一推板块、再放出两种波，马上看见线索。</p></div>
       <span class="pill pill-phys">离线实验室</span>
     </div>
 
@@ -271,7 +293,12 @@
       <section class="earth-panel" id="earthPanelLayer" role="tabpanel" aria-labelledby="earthTabLayer">
         <h2>点一层：它是硬的、软的，还是液体？</h2>
         <div class="earth-stage kid-visual-stage">
-          <svg class="core-svg" id="coreSvg" viewBox="0 0 260 260" role="img" aria-label="可点选的地球内部分层剖面图">
+          <!-- 圈层半径按 6371 km 等比换算：下地幔 112、外核 69、内核 24 都是真值。
+               只有地壳被画粗到 5 个单位——按真比例它只有 0.7 个单位，屏幕上根本不存在。
+               下面的深度尺不作这个夸张，专门用来把「薄」这件事还回去。 -->
+          <svg class="core-svg" id="coreSvg" viewBox="0 0 300 292" role="img" aria-labelledby="coreSvgTitle coreSvgDesc">
+            <title id="coreSvgTitle">地球内部分层剖面图</title>
+            <desc id="coreSvgDesc">一个切开的地球，从外往内依次是地壳、上地幔、下地幔、外核和内核，每一圈都可以点选。我们住在最外面那层薄壳上。</desc>
             <defs>
               <radialGradient id="coreInner" cx="40%" cy="35%"><stop offset="0%" stop-color="#fef9c3"/><stop offset="100%" stop-color="#fde68a"/></radialGradient>
               <radialGradient id="coreOuter" cx="35%" cy="30%"><stop offset="0%" stop-color="#fcd34d"/><stop offset="100%" stop-color="#f59e0b"/></radialGradient>
@@ -279,27 +306,39 @@
               <radialGradient id="coreMantleU" cx="28%" cy="22%"><stop offset="0%" stop-color="#fdba74"/><stop offset="100%" stop-color="#c2703d"/></radialGradient>
               <radialGradient id="coreCrust" cx="25%" cy="20%"><stop offset="0%" stop-color="#a8a29e"/><stop offset="55%" stop-color="#8b6f47"/><stop offset="100%" stop-color="#57534e"/></radialGradient>
             </defs>
-            <circle class="seg" data-l="crust" tabindex="0" role="button" aria-label="地壳" cx="130" cy="130" r="126" fill="url(#coreCrust)"></circle>
-            <path fill="#22c55e" fill-opacity=".55" stroke="none" pointer-events="none" d="M28 118 Q68 88 118 78 Q168 72 208 92 Q228 102 232 118 Q200 108 160 104 Q100 100 48 128 Q36 134 28 118 Z"/>
-            <path fill="#0284c7" fill-opacity=".65" stroke="none" pointer-events="none" d="M32 148 Q90 168 148 172 Q196 174 228 158 Q218 178 168 188 Q98 192 42 162 Q30 154 32 148 Z"/>
-            <circle class="seg" data-l="upper" tabindex="0" role="button" aria-label="上地幔" cx="130" cy="130" r="122" fill="url(#coreMantleU)"></circle>
-            <circle class="seg" data-l="lower" tabindex="0" role="button" aria-label="下地幔" cx="130" cy="130" r="100" fill="url(#coreMantleL)"></circle>
-            <circle class="seg" data-l="outer" tabindex="0" role="button" aria-label="外核（液态铁）" cx="130" cy="130" r="58" fill="url(#coreOuter)"></circle>
-            <circle class="seg" data-l="inner" tabindex="0" role="button" aria-label="内核（固态铁球）" cx="130" cy="130" r="26" fill="url(#coreInner)"></circle>
-            <path d="M130 4v252M4 130h252" stroke="#fff" stroke-opacity=".16" stroke-dasharray="3 5" pointer-events="none"/>
-            <g font-family="system-ui,sans-serif" font-size="9" fill="#fff" font-weight="700" pointer-events="none" opacity=".85">
-              <text x="130" y="22" text-anchor="middle">地壳</text>
-              <text x="222" y="132">上地幔</text>
-              <text x="130" y="222" text-anchor="middle">下地幔</text>
-              <text x="38" y="132" text-anchor="end">外核</text>
-              <!-- 内核是唯一的浅色圈层，白字会糊在淡黄底上，这里单独换成深棕。 -->
-              <text x="130" y="134" text-anchor="middle" font-size="8" fill="#78350f">内核</text>
+            <circle class="seg" data-l="crust" tabindex="0" role="button" aria-label="地壳" cx="150" cy="138" r="126" fill="url(#coreCrust)"></circle>
+            <circle class="seg" data-l="upper" tabindex="0" role="button" aria-label="上地幔" cx="150" cy="138" r="121" fill="url(#coreMantleU)"></circle>
+            <circle class="seg" data-l="lower" tabindex="0" role="button" aria-label="下地幔" cx="150" cy="138" r="112" fill="url(#coreMantleL)"></circle>
+            <circle class="seg" data-l="outer" tabindex="0" role="button" aria-label="外核（液态铁）" cx="150" cy="138" r="69" fill="url(#coreOuter)"></circle>
+            <circle class="seg" data-l="inner" tabindex="0" role="button" aria-label="内核（固态铁球）" cx="150" cy="138" r="24" fill="url(#coreInner)"></circle>
+            <!-- 海和陆画在最外那圈上。旧版把它们压在上地幔圆下面，整整两条路径从来没露过面。 -->
+            <g pointer-events="none" fill="none" stroke-linecap="round">
+              <circle cx="150" cy="138" r="123.5" stroke="#2e7bab" stroke-width="5"/>
+              <g stroke="#3f9d5c" stroke-width="5">
+                <path d="M266 95.8 A123.5 123.5 0 0 0 251.2 67.2"/>
+                <path d="M211.8 31 A123.5 123.5 0 0 0 70.6 43.4"/>
+                <path d="M33.9 95.8 A123.5 123.5 0 0 0 38.1 190.2"/>
+                <path d="M107.8 254 A123.5 123.5 0 0 0 211.8 245"/>
+              </g>
             </g>
-            <!-- 这行落在球体外的浅色背景上，用浅蓝会几乎看不见；圈层标签在深色球面上才用白色。 -->
-            <text x="130" y="252" text-anchor="middle" font-size="9" fill="#5b4a33" font-family="monospace" pointer-events="none">半径 6,371 km（按比例）</text>
+            <!-- 「我们在这里」：把孩子放回图上，薄壳才有实感 -->
+            <g pointer-events="none">
+              <circle cx="150" cy="6.5" r="3.4" fill="#41506a"/>
+              <path d="M150 10 L150 15 M150 11.5 L146 14 M150 11.5 L154 14" stroke="#41506a" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+              <path d="M158 10 L176 10" stroke="#41506a" stroke-width="1.2"/>
+              <text x="179" y="13" font-size="10" font-weight="700" fill="#41506a">我们在这里</text>
+            </g>
+            <!-- 选中哪一层，名字就用引线指到那一圈上；一次只出现一个，图面才不会糊成一团 -->
+            <g id="coreTag" pointer-events="none">
+              <path id="coreTagLead" d="" stroke="#3a2f22" stroke-width="1.4" fill="none"/>
+              <text id="coreTagText" x="8" y="34" font-size="12" font-weight="700" fill="#3a2f22"></text>
+            </g>
+            <text x="150" y="284" text-anchor="middle" font-size="10" fill="#5b4a33" font-family="monospace" pointer-events="none">半径 6,371 km · 圈层按真实比例</text>
           </svg>
         </div>
-        <div class="earth-layer-info"><div class="layer-list" id="layerList" aria-label="地球层按钮"></div><div class="layer-detail kid-result-card single-column" id="layerDetail" aria-live="polite"></div></div>
+        <svg class="depth-ruler" id="depthRuler" viewBox="0 0 320 104" role="img" aria-label="地球深度尺：从地表 0 公里到地心 6371 公里，五层按真实厚度排开，地壳只占最左边一根发丝那么宽"></svg>
+        <!-- 不加 single-column：这张卡左栏确实有东西——剖面缩略图，两栏才是对的 -->
+        <div class="earth-layer-info"><div class="layer-list" id="layerList" aria-label="地球层按钮"></div><div class="layer-detail kid-result-card" id="layerDetail" aria-live="polite"></div></div>
       </section>
 
       <section class="earth-panel" id="earthPanelPlate" role="tabpanel" aria-labelledby="earthTabPlate" hidden>
@@ -362,7 +401,7 @@
 
       <div class="locate-strip kid-action-strip" aria-labelledby="locateTitle">
         <div class="locate-controls"><h2 id="locateTitle" style="margin:0">主操作：画三个距离圆</h2><label for="plateType">你看到的板块移动</label><select class="input" id="plateType"><option value="convergent">汇聚边界</option><option value="divergent">离散边界</option><option value="transform">转换边界</option></select><label for="earthMag">震级 M <output id="earthMagValue">7</output></label><input id="earthMag" type="range" min="4" max="9" step="1" value="7"><button class="btn btn-primary" id="earthLocate" type="button">画圆，找红点</button></div>
-        <div class="locate-result"><svg id="triMap" viewBox="0 0 120 100" role="img" aria-label="等待画出三个地震台距离圆"></svg><output class="text-result" id="earthOutput" aria-live="polite">先选板块和震级，再画三个圆。</output></div>
+        <div class="locate-result"><svg id="triMap" viewBox="0 0 140 112" role="img" aria-label="地图上有 A、B、C 三个地震台，还没有画出距离圆"></svg><output class="text-result" id="earthOutput" aria-live="polite">先选板块和震级，再画三个圆。</output></div>
       </div>
     </div>
 
@@ -537,37 +576,113 @@
   "use strict";
 
   /* ---------- 地球分层（深度 km，PREM 常用取值）---------- */
+  /* c 是色块用色，tc 是同一层拿去写字时用的深一档版本：
+     外核的 #f2a33c、内核的 #fde68a 当填充很好看，写在白底上只有 1–2:1，几乎读不出来。 */
   var LAYERS = [
-    { id: "crust", n: "地壳", en: "Crust", from: 0, to: 35, c: "#8b6f47",
+    { id: "crust", n: "地壳", en: "Crust", from: 0, to: 35, c: "#8b6f47", tc: "#6b5433",
       temp: "0–600 °C", state: "固体岩石",
       d: "我们生活的这层，薄得不成比例——如果地球是个鸡蛋，地壳比蛋壳还薄。海洋下面只有 5–10 公里厚，大陆下面 30–50 公里。所有的山、海沟、火山、地震都发生在这层和它下面一点。" },
-    { id: "upper", n: "上地幔", en: "Upper mantle", from: 35, to: 660, c: "#c2703d",
+    { id: "upper", n: "上地幔", en: "Upper mantle", from: 35, to: 660, c: "#c2703d", tc: "#9a5228",
       temp: "600–1900 °C", state: "固体，但会极慢地流动",
       d: "这里的岩石是固体，却能像沥青一样以每年几厘米的速度缓慢流动。正是这种流动推着上面的板块移动——大陆漂移、喜马拉雅山的抬升、地震，动力都在这一层。" },
-    { id: "lower", n: "下地幔", en: "Lower mantle", from: 660, to: 2890, c: "#e0762f",
+    { id: "lower", n: "下地幔", en: "Lower mantle", from: 660, to: 2890, c: "#e0762f", tc: "#a8501a",
       temp: "1900–3700 °C", state: "固体，高压致密",
       d: "地球体积最大的一层，占了一半以上。压力大到让矿物结构被压成完全不同的形态。热量从这里往上传，像一锅极慢的浓汤在对流。" },
-    { id: "outer", n: "外核", en: "Outer core", from: 2890, to: 5150, c: "#f2a33c",
+    { id: "outer", n: "外核", en: "Outer core", from: 2890, to: 5150, c: "#f2a33c", tc: "#8a5a06",
       temp: "3700–4500 °C", state: "液态铁和镍",
       d: "液态的铁在这里流动，产生电流，电流产生磁场——这就是<b>地球磁场的来源</b>，指南针指北、极光出现、候鸟辨向，全靠这层液态铁在转。没有它，太阳风会把大气吹跑。" },
-    { id: "inner", n: "内核", en: "Inner core", from: 5150, to: 6371, c: "#fde68a",
+    { id: "inner", n: "内核", en: "Inner core", from: 5150, to: 6371, c: "#fde68a", tc: "#7a5a10",
       temp: "约 5200 °C", state: "固态铁球",
       d: "温度和太阳表面差不多（约 5500 °C），却是固体——因为压力实在太大，铁原子挤得动不了。它还在慢慢变大：外核的铁不断在它表面凝固，每年长约 1 毫米。" }
   ];
 
+  var NS = "http://www.w3.org/2000/svg";
   var svg = document.getElementById("coreSvg");
+  var ruler = document.getElementById("depthRuler");
   var listEl = document.getElementById("layerList");
   var detEl = document.getElementById("layerDetail");
   var cur = "crust";
+
+  function segs() {
+    return [].slice.call(svg.querySelectorAll(".seg"))
+      .concat([].slice.call(ruler.querySelectorAll(".seg")));
+  }
+
+  /* ---------- 深度尺：0 → 6371 km，按真实厚度排开 ----------
+     剖面图为了让地壳看得见把它画粗了 7 倍，这把尺子不作弊：
+     地壳在这里就是最左边一根一像素的线，孩子一眼能看出「薄得离谱」。 */
+  function buildRuler() {
+    var X0 = 16, X1 = 304, Y = 40, H = 24, MAX = 6371;
+    function rx(km) { return X0 + (X1 - X0) * km / MAX; }
+    function add(name, attrs, text) {
+      var el = document.createElementNS(NS, name);
+      Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+      if (text != null) el.textContent = text;
+      ruler.appendChild(el);
+      return el;
+    }
+    while (ruler.firstChild) ruler.removeChild(ruler.firstChild);
+
+    LAYERS.forEach(function (L) {
+      var x = rx(L.from), w = rx(L.to) - rx(L.from);
+      var seg = add("rect", {
+        x: x, y: Y, width: Math.max(w, 1), height: H, fill: L.c,
+        class: "seg ruler-seg", "data-l": L.id
+      });
+      seg.addEventListener("click", function () { cur = L.id; paintDetail(); });
+      /* 只有放得下名字的层才写在条上；地壳和上地幔太窄，改用引线标注。 */
+      if (w > 34) add("text", { x: x + w / 2, y: Y + 16, "text-anchor": "middle", class: "r-name" }, L.n);
+    });
+
+    /* 最窄的两层放不下条上的名字，改用引线拉到条外；两条引线分两行，免得撞在一起。 */
+    add("path", { d: "M17 " + Y + " V10 H30", class: "r-lead" });
+    add("text", { x: 33, y: 13, class: "r-call" }, "地壳 0–35 km（细得只剩一根线）");
+    add("path", { d: "M" + rx(350).toFixed(1) + " " + Y + " V26 H54", class: "r-lead" });
+    add("text", { x: 57, y: 29, class: "r-call" }, "上地幔 35–660 km");
+
+    [0, 660, 2890, 5150, 6371].forEach(function (km) {
+      add("path", { d: "M" + rx(km).toFixed(1) + " " + (Y + H) + " v4", class: "r-lead" });
+      add("text", { x: rx(km), y: Y + H + 15, "text-anchor": "middle", class: "r-tick" }, km.toLocaleString());
+    });
+    add("text", { x: 160, y: Y + H + 32, "text-anchor": "middle", class: "r-tick" }, "地表 ← 深度 km → 地心");
+  }
+
+  /* 把颜色往米白里调，做剖面缩略图的「未选中」色。用不透明色而不是降透明度，
+     否则一层层叠上去底下的颜色会透出来，五个圈会糊成一片。 */
+  function mute(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    function m(v) { return Math.round(v + (232 - v) * 0.62); }
+    return "rgb(" + m((n >> 16) & 255) + "," + m((n >> 8) & 255) + "," + m(n & 255) + ")";
+  }
+
+  /* 结果卡左栏的剖面缩略图：这里的半径只为分得清而画，真实厚度看下面那把尺。 */
+  var MINI_R = { crust: 23, upper: 20, lower: 12, outer: 4.5, inner: 0 };
+  function miniDisc(id) {
+    var out = '<svg viewBox="0 0 48 48" class="mini-core" role="img" aria-label="剖面缩略图，高亮当前选中的' +
+      (LAYERS.filter(function (x) { return x.id === id; })[0] || {}).n + '">';
+    var prev = 24;
+    LAYERS.forEach(function (L) {
+      var on = L.id === id;
+      out += '<circle cx="24" cy="24" r="' + prev + '" fill="' + (on ? L.c : mute(L.c)) + '"' +
+        (on ? ' stroke="#3a2f22" stroke-width="1.6"' : "") + "/>";
+      prev = MINI_R[L.id];
+    });
+    return out + "</svg>";
+  }
 
   function paintDetail() {
     var L = null;
     for (var i = 0; i < LAYERS.length; i++) if (LAYERS[i].id === cur) L = LAYERS[i];
     if (!L) return;
     detEl.innerHTML = "";
+    /* .kid-result-card 是「图标 + 文字」两栏格；文字要包成一栏，否则标题和正文会被拆到左右两边。 */
+    var icon = document.createElement("div");
+    icon.className = "layer-icon";
+    icon.innerHTML = miniDisc(L.id);
+    var body = document.createElement("div");
     var h = document.createElement("h3");
     h.textContent = L.n + " · " + L.en;
-    h.style.color = L.c;
+    h.style.color = L.tc;
     var meta = document.createElement("div");
     meta.className = "lmeta";
     [["深度", L.from.toLocaleString() + "–" + L.to.toLocaleString() + " km"],
@@ -580,15 +695,20 @@
     });
     var pd = document.createElement("p");
     pd.innerHTML = L.d;
-    detEl.appendChild(h); detEl.appendChild(meta); detEl.appendChild(pd);
+    body.appendChild(h); body.appendChild(meta); body.appendChild(pd);
+    detEl.appendChild(icon); detEl.appendChild(body);
 
     [].slice.call(listEl.children).forEach(function (b) {
       b.setAttribute("aria-pressed", b.dataset.l === cur ? "true" : "false");
-      b.style.color = b.dataset.l === cur ? L.c : "";
+      b.style.color = b.dataset.l === cur ? L.tc : "";
     });
-    [].slice.call(svg.querySelectorAll(".seg")).forEach(function (s) {
-      s.classList.toggle("on", s.dataset.l === cur);
-    });
+    segs().forEach(function (s) { s.classList.toggle("on", s.dataset.l === cur); });
+
+    /* 引线指向该圈层的中线，角度固定在左上方 150°，那一带图面是空的。 */
+    var midR = { crust: 123.5, upper: 116.5, lower: 90.5, outer: 46.5, inner: 12 }[cur] || 123.5;
+    var tx = (150 - 0.866 * midR).toFixed(1), ty = (138 - 0.5 * midR).toFixed(1);
+    document.getElementById("coreTagLead").setAttribute("d", "M78 30 L" + tx + " " + ty);
+    document.getElementById("coreTagText").textContent = L.n;
   }
 
   LAYERS.forEach(function (L) {
@@ -613,6 +733,7 @@
       if (event.key === "Enter" || event.key === " ") { event.preventDefault(); chooseLayer(); }
     });
   });
+  buildRuler();
   paintDetail();
 
   /* ---------- 震级 ---------- */
@@ -838,6 +959,14 @@
   })();
 })();
 </script>
+<script src="../assets/js/illustrations.js?v=15"></script>
+<script>
+(function () {
+  "use strict";
+  if (!window.ILLUSTRATIONS) return;
+  ILLUSTRATIONS.renderArt("#earthGuide", "guide/geologist", { decorative: true });
+})();
+</script>
 <script src="../data/explorations.js"></script>
 <script src="../assets/js/progress.js?v=15"></script>
 <script src="../data/playful.js?v=15"></script>
@@ -925,19 +1054,75 @@
 
   magInput.addEventListener("input", function () { document.getElementById("earthMagValue").textContent = magInput.value; });
   if (window.Progress) Progress.visit("nature/earth.html", "地球与地震");
-  document.getElementById("earthLocate").addEventListener("click", function () {
-    var map = document.getElementById("triMap"), ns = "http://www.w3.org/2000/svg";
+
+  /* ---------- 三台站定位地图 ----------
+     半径直接由「台站到震中」的距离算出来，所以三个圆必定同时穿过那个红点。
+     旧版把半径写死成 25、25、22.4，三个圆其实谁也没经过标出来的震中——
+     这一页教的正是三边定位，图不能自己先算错。 */
+  var NSVG = "http://www.w3.org/2000/svg";
+  var EPI = { x: 70, y: 52 };
+  var KM_PER_UNIT = 8;
+  var STATIONS = [
+    { n: "A", x: 22, y: 26, c: "#1f6fb2" },
+    { n: "B", x: 116, y: 24, c: "#2f7d4f" },
+    { n: "C", x: 66, y: 98, c: "#9a5228" }
+  ];
+  STATIONS.forEach(function (s) {
+    s.r = Math.sqrt((s.x - EPI.x) * (s.x - EPI.x) + (s.y - EPI.y) * (s.y - EPI.y));
+  });
+
+  function drawTriMap(withCircles) {
+    var map = document.getElementById("triMap");
     while (map.firstChild) map.removeChild(map.firstChild);
-    [[25,25,25,"A"],[95,25,25,"B"],[60,78,22.4,"C"]].forEach(function (v) {
-      var c = document.createElementNS(ns,"circle"); c.setAttribute("cx",v[0]); c.setAttribute("cy",v[1]); c.setAttribute("r",v[2]); c.setAttribute("fill","none"); c.setAttribute("stroke","#6ea8fe"); c.setAttribute("stroke-width","2"); map.appendChild(c);
-      var t = document.createElementNS(ns,"text"); t.setAttribute("x",v[0]); t.setAttribute("y",v[1]); t.setAttribute("fill","#fff"); t.setAttribute("font-size","8"); t.textContent=v[3]; map.appendChild(t);
+    function add(name, attrs, text) {
+      var el = document.createElementNS(NSVG, name);
+      Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+      if (text != null) el.textContent = text;
+      map.appendChild(el);
+      return el;
+    }
+    for (var g = 14; g < 140; g += 14) {
+      add("path", { d: "M" + g + " 0 V112", class: "tm-grid" });
+      add("path", { d: "M0 " + g + " H140", class: "tm-grid" });
+    }
+    if (withCircles) {
+      STATIONS.forEach(function (s) {
+        add("circle", { cx: s.x, cy: s.y, r: s.r.toFixed(1), class: "tm-ring", stroke: s.c });
+        add("path", { d: "M" + s.x + " " + s.y + " L" + EPI.x + " " + EPI.y, class: "tm-radius", stroke: s.c, fill: "none" });
+        add("text", {
+          x: ((s.x + EPI.x) / 2).toFixed(1), y: ((s.y + EPI.y) / 2 - 1.5).toFixed(1),
+          "text-anchor": "middle", class: "tm-km", fill: s.c
+        }, Math.round(s.r * KM_PER_UNIT) + " km");
+      });
+      add("circle", { cx: EPI.x, cy: EPI.y, r: 3.6, fill: "#d1281a" });
+      add("circle", { cx: EPI.x, cy: EPI.y, r: 6.4, fill: "none", stroke: "#d1281a", "stroke-width": 1 });
+      /* 左下角是唯一没有半径虚线穿过的方向 */
+      add("text", { x: EPI.x - 8, y: EPI.y + 12, "text-anchor": "end", class: "tm-epi" }, "震中");
+    } else {
+      add("text", { x: 70, y: 56, "text-anchor": "middle", class: "tm-hint" }, "三个台站都记录到了这次地震");
+      add("text", { x: 70, y: 65, "text-anchor": "middle", class: "tm-hint" }, "按下按钮，各画一个距离圆");
+    }
+    STATIONS.forEach(function (s) {
+      add("path", { d: "M" + s.x + " " + (s.y - 5) + " L" + (s.x + 4.6) + " " + (s.y + 3) + " H" + (s.x - 4.6) + " Z", fill: s.c });
+      add("text", { x: s.x, y: s.y + 11, "text-anchor": "middle", class: "tm-st" }, s.n);
     });
-    var point = document.createElementNS(ns,"circle"); point.setAttribute("cx","60"); point.setAttribute("cy","25"); point.setAttribute("r","4"); point.setAttribute("fill","#f87171"); map.appendChild(point);
+    map.setAttribute("aria-label", withCircles
+      ? "三个台站各画出一个距离圆：A 台 " + Math.round(STATIONS[0].r * KM_PER_UNIT) +
+        " 公里、B 台 " + Math.round(STATIONS[1].r * KM_PER_UNIT) +
+        " 公里、C 台 " + Math.round(STATIONS[2].r * KM_PER_UNIT) + " 公里，三个圆同时穿过标着震中的红点"
+      : "地图上有 A、B、C 三个地震台，还没有画出距离圆");
+  }
+  drawTriMap(false);
+
+  document.getElementById("earthLocate").addEventListener("click", function () {
+    drawTriMap(true);
     var m = Number(magInput.value), energy = Math.pow(31.62, m - 4);
-    var evidence = "三个距离圆最接近红点；M" + m + " 相对 M4 的能量约 " + Math.round(energy).toLocaleString() + " 倍；板块判断为" + plateLabels[plateSelect.value] + "。";
+    var evidence = "三个距离圆交在同一个红点上（A " + Math.round(STATIONS[0].r * KM_PER_UNIT) +
+      " km、B " + Math.round(STATIONS[1].r * KM_PER_UNIT) + " km、C " + Math.round(STATIONS[2].r * KM_PER_UNIT) +
+      " km）；M" + m + " 相对 M4 的能量约 " + Math.round(energy).toLocaleString() +
+      " 倍；板块判断为" + plateLabels[plateSelect.value] + "。";
     output.textContent = evidence + "这是内置教学模拟，不是 USGS 实时事件。";
     result.value = evidence;
-    map.setAttribute("aria-label", "三个台站距离圆在红点附近最接近");
     operated = true;
     status.textContent = "红点找到了！再完成预测和反思就能保存。";
   });
