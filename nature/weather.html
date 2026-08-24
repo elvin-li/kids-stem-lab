@@ -24,7 +24,7 @@
   .step{padding:14px;border:1px solid var(--line-soft);border-radius:var(--r);background:var(--surface-2)}.step h3,.module h2{margin-top:0}.step textarea{width:100%;min-height:88px;resize:vertical}
   .module{display:flex;flex-direction:column}.module p{color:var(--ink-mid)}.controls{display:grid;gap:10px}.controls label{display:block;font-size:.86rem;font-weight:650}.controls input,.controls select{width:100%}
   button,input,select,textarea{min-height:44px}.output{display:block;min-height:4.6em;margin-top:12px;padding:11px 13px;border-left:3px solid var(--sci);background:var(--bg-soft);color:var(--ink);line-height:1.55}
-  .visual{min-height:126px;border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(#78bff0,#d8edf9);display:grid;place-items:center;position:relative;overflow:hidden;margin:10px 0 14px;color:#132238}.cloud{font-size:3.5rem;filter:grayscale(var(--dry,1));transform:scale(var(--cloud-scale,1))}.visual .drops{position:absolute;inset:auto 0 6px;display:flex;justify-content:center;gap:10px}.visual .drops svg{width:22px;height:22px}.drop-figure{display:grid;place-items:center;width:72px;height:72px}.drop-figure svg{width:100%;height:100%}.gauge{width:84%;height:16px;border:1px solid rgba(0,0,0,.25);border-radius:999px;background:rgba(255,255,255,.65);overflow:hidden}.gauge i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6ea8fe,#fbbf24,#f87171)}
+  .visual{min-height:126px;border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(#78bff0,#d8edf9);display:grid;place-items:center;position:relative;overflow:hidden;margin:10px 0 14px;color:#132238}.cloud{font-size:3.5rem;filter:grayscale(var(--dry,1));transform:scale(var(--cloud-scale,1))}.visual .drops{position:absolute;inset:auto 0 6px;display:flex;justify-content:center;gap:10px}.visual .drops svg{width:22px;height:22px}.drop-figure{display:grid;place-items:center;width:72px;height:72px}.drop-figure svg{width:100%;height:100%}.thunder-visual{padding:6px 8px}.thunder-visual svg{display:block;width:100%;height:auto}.gauge{width:84%;height:16px;border:1px solid rgba(0,0,0,.25);border-radius:999px;background:rgba(255,255,255,.65);overflow:hidden}.gauge i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6ea8fe,#fbbf24,#f87171)}
   .station-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.station-grid .wide{grid-column:1/-1}.task-actions,.row-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}.task-status{min-height:1.5em;color:var(--ink-mid)}
   .principle{border-left:3px solid var(--phys);padding-left:12px;color:var(--ink-mid)}.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:12px 0}.checks span{padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-sm);font-size:.82rem}.checks span.done{border-color:var(--sci)}
   .parent-q li+li{margin-top:7px}.privacy{font-size:.78rem;color:var(--ink-dim)}
@@ -171,7 +171,34 @@
     <section class="card module" aria-labelledby="thunderTitle">
       <h2 id="thunderTitle">③ 雷声测距：光先到、声后到</h2>
       <p>闪电的光几乎立刻到达，声音在空气中约每秒走 343 米。闪光到雷声每隔约 3 秒，距离大约 1 千米。</p>
-      <div class="visual" aria-hidden="true"><svg viewBox="0 0 120 80" width="120" height="80" aria-hidden="true"><polygon points="60,8 68,32 96,36 74,52 80,78 60,64 40,78 46,52 24,36 52,32" fill="#fde047" stroke="#ca8a04" stroke-width="2"/><rect x="54" y="36" width="12" height="28" fill="#fef08a" rx="2"/></svg><div class="gauge"><i id="thunderGauge"></i></div></div>
+      <!-- 原先这里只有一颗黄色十角星，看着像星星不像闪电，也没画出「距离」这件事。
+           改成一幅带刻度的场景：左边打雷，右边站着孩子，中间那把尺按 343 m/s 分格，
+           每一格正好 1 千米——数格子就是在数「几个 3 秒」。 -->
+      <div class="visual thunder-visual">
+        <svg id="thunderScene" viewBox="0 0 260 126" role="img" aria-labelledby="thunderSceneLabel">
+          <title id="thunderSceneLabel">雷声测距示意图：左边云里劈下闪电，右边站着观察的孩子，中间一把尺按每 3 秒 1 千米分格</title>
+          <rect x="0" y="100" width="260" height="26" fill="#4e7c53"/>
+          <path d="M0 100 H260" stroke="#2f5a3a" stroke-width="2"/>
+          <!-- 雷雨云与闪电：形状与共享插图 weather/lightning 一致 -->
+          <g transform="translate(2,30) scale(.62)">
+            <path d="M24 56 C13 56 6 48 8 39 C10 31 18 26 26 28 C28 14 41 6 54 10 C64 13 70 21 71 30 C82 28 90 35 90 44 C90 52 83 56 74 56Z"
+                  fill="#7c8ea1" stroke="#5b6c7e" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M54 58 L34 84 L48 84 L40 98 L68 70 L52 70 L62 58Z"
+                  fill="#f6c445" stroke="#dfa622" stroke-width="2.6" stroke-linejoin="round"/>
+          </g>
+          <!-- 观察的孩子 -->
+          <g transform="translate(240,100)">
+            <circle cx="0" cy="-26" r="6" fill="#41506a"/>
+            <path d="M-5 -19 Q0 -22 5 -19 L4 -8 Q0 -6 -4 -8Z" fill="#41506a"/>
+            <path d="M-4 -8 L-6 0 M4 -8 L6 0" stroke="#41506a" stroke-width="3.4" stroke-linecap="round"/>
+          </g>
+          <!-- 光：一条直线，几乎不花时间 -->
+          <path d="M62 42 H230" stroke="#e0a520" stroke-width="2" stroke-dasharray="7 4"/>
+          <text x="146" y="35" text-anchor="middle" font-size="10" font-weight="700" fill="#7a5c0d">光 · 几乎同时就到</text>
+          <!-- 声音走过的那把尺：分格数量随时间差变化 -->
+          <g id="thunderRuler"></g>
+        </svg>
+      </div>
       <div class="controls">
         <label for="thunderSeconds">闪光到雷声：<b id="thunderText">6.0 秒</b></label><input id="thunderSeconds" type="range" min="0" max="90" step="0.5" value="6">
         <div class="row-actions"><button class="btn" type="button" id="timerButton">开始计时</button><button class="btn btn-primary" type="button" id="calcThunder">计算距离</button></div>
@@ -291,13 +318,52 @@
   });
 
   var sec=document.getElementById("thunderSeconds"),timerStart=null,timerButton=document.getElementById("timerButton");setText(sec,document.getElementById("thunderText")," 秒",1);
+
+  /* 场景里那把尺：左端在闪电脚下，右端在孩子脚下，中间按 1 千米分格。
+     格子数就是距离的千米数，也正好是「数了几个 3 秒」，孩子不用先会乘法。
+     远到十几千米时格子会挤成一团，那时只画两端和一个总数。 */
+  var RULER_X0=44,RULER_X1=228,RULER_Y=90,SVG_NS="http://www.w3.org/2000/svg";
+  function rulerNode(name,attrs,text){
+    var el=document.createElementNS(SVG_NS,name);
+    Object.keys(attrs).forEach(function(k){el.setAttribute(k,attrs[k]);});
+    if(text!=null) el.textContent=text;
+    return el;
+  }
+  function paintThunderRuler(){
+    var g=document.getElementById("thunderRuler");
+    if(!g) return;
+    while(g.firstChild) g.removeChild(g.firstChild);
+    var s=Number(sec.value),km=s*343/1000,span=RULER_X1-RULER_X0;
+    g.appendChild(rulerNode("path",{d:"M"+RULER_X0+" "+RULER_Y+" H"+RULER_X1,stroke:"#1f4c73","stroke-width":2.4,"stroke-linecap":"round"}));
+    [RULER_X0,RULER_X1].forEach(function(x){
+      g.appendChild(rulerNode("path",{d:"M"+x+" "+(RULER_Y-5)+" v10",stroke:"#1f4c73","stroke-width":2.4,"stroke-linecap":"round"}));
+    });
+    var whole=Math.floor(km+1e-9);
+    if(km>0.05&&whole<=12){
+      for(var i=1;i<=whole;i++){
+        var x=RULER_X0+span*(i/Math.max(km,1e-6));
+        if(x>RULER_X1-1) break;
+        g.appendChild(rulerNode("path",{d:"M"+x.toFixed(1)+" "+(RULER_Y-4)+" v8",stroke:"#1f4c73","stroke-opacity":".6","stroke-width":1.6}));
+      }
+    }
+    var caption=km<0.05?"雷声几乎和闪电同时到，就在头顶"
+      :whole<=12?"每格 1 km · 一格约 3 秒"
+      :"格子太密，只标总数";
+    g.appendChild(rulerNode("text",{x:(RULER_X0+RULER_X1)/2,y:RULER_Y-9,"text-anchor":"middle","font-size":11,"font-weight":700,fill:"#0f3556"},
+      "声 343 m/s · " + s.toFixed(1) + " 秒 ≈ " + km.toFixed(2) + " km"));
+    /* 说明写在草地那条带子上，用浅色字；写在天空里会撞上上面的距离读数。 */
+    g.appendChild(rulerNode("text",{x:(RULER_X0+RULER_X1)/2,y:116,"text-anchor":"middle","font-size":10,"font-weight":600,fill:"#e6f3e8"},caption));
+  }
+  sec.addEventListener("input",paintThunderRuler);
+  paintThunderRuler();
+
   timerButton.addEventListener("click",function(){
     if(timerStart===null){timerStart=performance.now();timerButton.textContent="听到雷声：停止";document.getElementById("thunderOutput").textContent="正在计时。请在安全室内操作。"}
     else{var elapsed=Math.min(90,(performance.now()-timerStart)/1000);sec.value=(Math.round(elapsed*2)/2).toFixed(1);sec.dispatchEvent(new Event("input"));timerStart=null;timerButton.textContent="开始计时"}
   });
   document.getElementById("calcThunder").addEventListener("click",function(){
     var s=Number(sec.value),km=s*343/1000;
-    document.getElementById("thunderGauge").style.width=Math.min(100,s/90*100)+"%";
+    paintThunderRuler();
     document.getElementById("thunderOutput").textContent="时间差 "+s.toFixed(1)+" 秒，对应距离约 "+km.toFixed(2)+" 千米（约 "+Math.round(s/3)+" 个“3 秒”）。这是声源距离近似，不代表雷暴安全边界；听到雷声就应留在安全室内。";
     mark("thunder");
   });
