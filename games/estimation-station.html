@@ -401,7 +401,7 @@
     </ol>
     <div class="mission-grid" data-print="hide">
       <div data-audience="parent"><label for="estimateReflect">我的发现</label><textarea class="input" id="estimateReflect" placeholder="例如：聚类时先估每团，再把几团相加。"></textarea></div>
-      <div data-audience="kid-only"><p style="margin:0 0 6px;font-weight:700">我发现……</p><div class="kid-picks" id="estimateReflectChoices"><button class="kid-choice" type="button" data-estimate-reflect="分成四块，先估一块再乘四更容易。">分四块再乘 4</button><button class="kid-choice" type="button" data-estimate-reflect="先看是几十还是几百，再猜具体数量。">先判断几十还是几百</button><button class="kid-choice" type="button" data-estimate-reflect="看过差多少后，下一轮可以把猜测调大或调小。">看差值再调整</button></div></div>
+      <div data-audience="kid-only"><p style="margin:0 0 6px;font-weight:700">我发现……</p><div class="kid-picks" id="estimateReflectChoices" role="group" aria-label="选一句我的发现"><button class="kid-choice" type="button" aria-pressed="false" data-estimate-reflect="分成四块，先估一块再乘四更容易。">分四块再乘 4</button><button class="kid-choice" type="button" aria-pressed="false" data-estimate-reflect="先看是几十还是几百，再猜具体数量。">先判断几十还是几百</button><button class="kid-choice" type="button" aria-pressed="false" data-estimate-reflect="看过差多少后，下一轮可以把猜测调大或调小。">看差值再调整</button></div></div>
       <button class="btn btn-primary" id="estimateComplete" type="button" disabled>把装箱经验记进足迹</button>
     </div>
     <p class="task-status status" id="estimateStatus" role="status" aria-live="polite">尚未完成：需要三轮估算，并至少使用两种策略。</p>
@@ -1032,7 +1032,7 @@
     var ready = history.length >= 3 && names.length >= 2;
     document.getElementById("estimateComplete").disabled = !ready;
     document.getElementById("estimateStatus").textContent = ready
-      ? "✓ 已完成 " + history.length + " 轮，使用了 " + names.join("、") + "。请写反思并记录。"
+      ? "✓ 已完成 " + history.length + " 轮，使用了 " + names.join("、") + "。选一句或写一句发现，再记录。"
       : "进度：" + history.length + "/3 轮；已用策略：" + (names.join("、") || "尚无") + "。至少需要两种策略。";
   }
 
@@ -1048,7 +1048,14 @@
 
   document.getElementById("estimateComplete").addEventListener("click", function () {
     var reflection = document.getElementById("estimateReflect").value.trim();
-    if (!reflection) { document.getElementById("estimateStatus").textContent = "请先写下哪种方法更接近。"; document.getElementById("estimateReflect").focus(); return; }
+    /* 孩子模式里这句发现是点出来的，没有可写的输入框，所以措辞要同时说得通。 */
+    if (!reflection) {
+      document.getElementById("estimateStatus").textContent = "还差一句发现：选一句，或自己写一句哪种方法更接近。";
+      var reflectBox = document.getElementById("estimateReflect");
+      var firstPick = document.querySelector("[data-estimate-reflect]");
+      (reflectBox.offsetParent || !firstPick ? reflectBox : firstPick).focus();
+      return;
+    }
     var sum = 0, best = Infinity, strategies = {};
     history.forEach(function (h) { sum += h.err; best = Math.min(best, h.err); strategies[h.strategy] = true; });
     var evidence = "完成 " + history.length + " 轮；策略：" + Object.keys(strategies).map(function(k){return STRATEGY_NAMES[k];}).join("、") +
