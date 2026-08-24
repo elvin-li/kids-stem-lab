@@ -975,11 +975,27 @@ window.ILLUSTRATIONS = (function () {
       ctx.lineJoin = "round";
       ctx.setLineDash([9, 8]);
     }
-    // 序号牌：这一处该画第几笔。左侧的牌子把字写在圆的左边，免得压到怪兽轮廓
-    function badge(n, x, y, label, color, side) {
+    /* 序号牌：这一处该画第几笔。左侧的牌子把字写在圆的左边，免得压到怪兽轮廓。
+       lead 给出要指的那个点：牌子放不到轮廓边上时（嘴巴在身体里，牌子只能挂到
+       身体外面），补一根引线，不然孩子不知道「3」说的是哪一笔。 */
+    function badge(n, x, y, label, color, side, lead) {
       ctx.save();
       ctx.setLineDash([]);
       ctx.globalAlpha = 1;
+      if (lead) {
+        var dx = lead[0] - x, dy = lead[1] - y;
+        var len = Math.sqrt(dx * dx + dy * dy) || 1;
+        ctx.beginPath();
+        ctx.moveTo(x + dx / len * (badgeR + 2), y + dy / len * (badgeR + 2));
+        ctx.lineTo(lead[0], lead[1]);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.4;
+        ctx.setLineDash([3, 3]);
+        ctx.globalAlpha = 0.7;
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 1;
+      }
       ctx.beginPath();
       ctx.arc(x, y, badgeR, 0, Math.PI * 2);
       ctx.fillStyle = color;
@@ -1044,7 +1060,8 @@ window.ILLUSTRATIONS = (function () {
 
     badge(1, cx - bw / 2 - badgeR - 3, cy + bh * 0.22, "身体", hues[0], "left");
     badge(2, cx + bw / 2 + badgeR + 3, cy - R * 0.34, "眼睛", hues[1]);
-    badge(3, cx - bw * 0.40, cy + bh / 2 + badgeR + 9, "嘴巴", hues[2], "left");
+    badge(3, cx - bw * 0.40, cy + bh / 2 + badgeR + 9, "嘴巴", hues[2], "left",
+      [mx + seg * 0.5, my + R * 0.12]);
 
     ctx.fillStyle = ink;
     ctx.font = "800 " + capFs + "px " + font;

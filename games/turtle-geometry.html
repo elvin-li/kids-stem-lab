@@ -660,8 +660,8 @@
 
   function moveBy(dist) {
     var rad = turtle.dir * Math.PI / 180;
-    var nx = turtle.x + Math.sin(rad) * dist;
-    var ny = turtle.y - Math.cos(rad) * dist;
+    var nx = turtle.x + Math.sin(rad) * dist * PPS;
+    var ny = turtle.y - Math.cos(rad) * dist * PPS;
     if (turtle.pen) segment(turtle.x, turtle.y, nx, ny);
     turtle.x = nx; turtle.y = ny;
     dirty = true;
@@ -688,6 +688,14 @@
   /* 50 而不是 40：预设里的 100 / 150 / 200 正好落在整格上，
      「前进 100」= 走 2 格，孩子数得出来；40 会让每个预设都停在半格中间。 */
   var GRID_STEP = 50;
+
+  /* 一步画多少像素。固定成 1 的时候，「正方形 100」在七百像素宽的图纸上只占
+     一小块，孩子看到的是一张几乎空白的纸；而螺旋那种预设又会冲出画布。
+     所以按当前这段代码的实际范围挑一个缩放，让路线正好铺满图纸。
+     只从这几档里挑：GRID_STEP / PPS 必须是整十的步数，比例尺才写得出
+     「一格 = 25 步」这种孩子数得清的数。 */
+  var PPS_CHOICES = [0.25, 0.5, 1, 2, 2.5, 5];
+  var PPS = 1;
   var TG_FONT = '-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif';
 
   function fade(hex, a) { return ILLUSTRATIONS.fadeHex(hex, a); }
@@ -741,15 +749,17 @@
     ctx.fillStyle = fade(TP.dim, 0.85);
     ctx.textBaseline = "top";
     ctx.textAlign = "center";
+    // 刻度写的是步数，不是像素：缩放变了以后两者不再相等
+    var bigSteps = Math.round(big / PPS);
     for (k = -20; k <= 20; k++) {
       i = home.x + k * big;
-      if (k !== 0 && i > 24 && i < W - 24) ctx.fillText(String(k * big), i, home.y + 6);
+      if (k !== 0 && i > 24 && i < W - 24) ctx.fillText(String(k * bigSteps), i, home.y + 6);
     }
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     for (k = -20; k <= 20; k++) {
       i = home.y - k * big;
-      if (k !== 0 && i > 14 && i < H - 26) ctx.fillText(String(k * big), home.x + 6, i);
+      if (k !== 0 && i > 14 && i < H - 26) ctx.fillText(String(k * bigSteps), home.x + 6, i);
     }
 
     /* 起点标记：跑完一圈能不能回到这里，是判断图形闭合的依据。 */
@@ -776,7 +786,7 @@
     ctx.moveTo(sx, sy - 5); ctx.lineTo(sx, sy + 5);
     ctx.moveTo(sx + g, sy - 5); ctx.lineTo(sx + g, sy + 5);
     ctx.stroke();
-    tag("一格 = " + GRID_STEP + " 步", sx - 6, sy, fade(TP.dim, 0.95), "right");
+    tag("一格 = " + Math.round(GRID_STEP / PPS) + " 步", sx - 6, sy, fade(TP.dim, 0.95), "right");
     ctx.restore();
   }
 
@@ -846,17 +856,69 @@
      动画一跑就是每秒 60 遍。改成写代码时算一次、缓存住。 */
   var previewCache = null;
   function invalidatePreview() { previewCache = null; }
-  function previewGeometry() {
-    if (previewCache) return previewCache;
-    var acts = pathPreviewActions();
-    var p = homeState(), pen = true, segs = [], corners = [];
-    var cur = pen ? [{ x: p.x, y: p.y }] : null;
+
+  /* 按路线的实际范围选缩放。走一遍命令拿到以「步」为单位的包围盒，再看从起点
+     往四个方向各还剩多少像素，取最紧的那一边。跑动画的时候不改：画布上已经
+     画下的笔迹是按旧比例落的，中途换比例会在路线中间接出一个拐点。 */
+  function fitScale(acts) {
+    if (running || !acts.length) return;
+    var p = { x: 0, y: 0, dir: 0 };
+    var minX = 0, maxX = 0, minY = 0, maxY = 0;
     for (var i = 0; i < acts.length && i < 2500; i++) {
       var a = acts[i];
       if (a.t === "move") {
         var rad = p.dir * Math.PI / 180;
         p.x += Math.sin(rad) * a.v;
         p.y -= Math.cos(rad) * a.v;
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      } else if (a.t === "turn") p.dir += a.v;
+      else if (a.t === "home") { p.x = 0; p.y = 0; p.dir = 0; }
+    }
+    var home = homeState(), m = 34, eps = 1e-6;
+    var room = Math.min(
+      (home.x - m) / Math.max(-minX, eps),
+      (W - home.x - m) / Math.max(maxX, eps),
+      (home.y - m) / Math.max(-minY, eps),
+      (H - home.y - m) / Math.max(maxY, eps)
+    );
+    /* 右上角浮着「海龟头朝向」那张卡。放大到刚好铺满图纸时路线正好钻到卡底下，
+       所以候选比例还要通过一次「包围盒不碰卡片」的检查，碰上就退一档。 */
+    var card = obstacleRect();
+    var pick = PPS_CHOICES[0];
+    for (var k = 0; k < PPS_CHOICES.length; k++) {
+      var s = PPS_CHOICES[k];
+      if (s > room) continue;
+      if (card && home.x + maxX * s > card.x && home.x + minX * s < card.x + card.w &&
+          home.y + maxY * s > card.y && home.y + minY * s < card.y + card.h) continue;
+      pick = s;
+    }
+    PPS = pick;
+  }
+
+  /* 悬浮在画布上的朝向卡在画布坐标里的位置。DOM 还没排版好时返回 null。 */
+  function obstacleRect() {
+    var card = document.querySelector(".turtle-heading-card");
+    if (!card) return null;
+    var a = card.getBoundingClientRect(), b = cv.getBoundingClientRect();
+    if (!a.width || !b.width) return null;
+    return { x: a.left - b.left - 6, y: a.top - b.top - 6, w: a.width + 12, h: a.height + 12 };
+  }
+
+  function previewGeometry() {
+    if (previewCache) return previewCache;
+    var acts = pathPreviewActions();
+    fitScale(acts);
+    var p = homeState(), pen = true, segs = [], corners = [];
+    var cur = pen ? [{ x: p.x, y: p.y }] : null;
+    for (var i = 0; i < acts.length && i < 2500; i++) {
+      var a = acts[i];
+      if (a.t === "move") {
+        var rad = p.dir * Math.PI / 180;
+        p.x += Math.sin(rad) * a.v * PPS;
+        p.y -= Math.cos(rad) * a.v * PPS;
         if (pen) { if (!cur) cur = [{ x: p.x, y: p.y }]; else cur.push({ x: p.x, y: p.y }); }
         else { if (cur) { segs.push(cur); cur = null; } }
       } else if (a.t === "turn") {
@@ -942,7 +1004,8 @@
       ctx.lineTo(home.x, home.y);
       ctx.stroke();
       ctx.setLineDash([]);
-      tag("离起点还差 " + Math.round(gap) + " 步", (turtle.x + home.x) / 2, (turtle.y + home.y) / 2 - 18, TP.kit, "center");
+      // gap 是像素，写给孩子看的必须换回步数，不然缩放一变数字就跟着变
+      tag("离起点还差 " + Math.round(gap / PPS) + " 步", (turtle.x + home.x) / 2, (turtle.y + home.y) / 2 - 18, TP.kit, "center");
     }
     ctx.restore();
   }
@@ -965,7 +1028,8 @@
   var TURN_COST = 0.62;
 
   function advance(dt) {
-    var budget = SPEEDS[speedIdx] * dt;
+    // budget 换算成「步」，除以 PPS 之后不论缩放多少，屏幕上的行走速度都一样
+    var budget = SPEEDS[speedIdx] * dt / PPS;
     var guard = 0;
     while (budget > 0 && done < actions.length && guard++ < 8000) {
       var a = actions[done];
