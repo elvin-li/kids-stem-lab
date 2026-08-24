@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>分数实验室 · 面积与数轴上的分数 — 少儿数理启蒙</title>
 <meta name="description" content="把分数同时看成「一块面积」和「数轴上的一个点」：自由切分 2–12 份、涂色、比较大小、发现等值分数，并用公分母图形做分数加法。">
-<link rel="stylesheet" href="../assets/css/base.css?v=22">
-<link rel="stylesheet" href="../assets/css/kid.css?v=22">
+<link rel="stylesheet" href="../assets/css/base.css?v=23">
+<link rel="stylesheet" href="../assets/css/kid.css?v=23">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
@@ -497,7 +497,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="sr-only" id="live" aria-live="polite"></div>
 
-<script src="../assets/js/illustrations.js?v=22"></script>
+<script src="../assets/js/illustrations.js?v=23"></script>
 <script>
 (function () {
   'use strict';
@@ -813,7 +813,9 @@
       var want = idx + 1;
       // 再点同一块 → 取消这一块（可以涂到 0）
       if (!painting && frac.n === want) want = idx;
+      var before = frac.n;
       frac.n = clamp(want, 0, frac.d);
+      if (frac.n !== before) voidGuess();
       S.guess = null;
       render();
     }
@@ -842,6 +844,7 @@
       next = clamp(next, 0, frac.d);
       if (next === frac.n) return;
       frac.n = next;
+      voidGuess();
       S.guess = null;
       render();
       say((key === 'a' ? '分数 A' : '分数 B') + '：' + frac.d + ' 份里涂了 ' + next + ' 份');
@@ -1382,24 +1385,35 @@
     S.a.d = parseInt(this.value, 10);
     // 尽量保持涂色比例，让孩子看见「等值」
     S.a.n = clamp(Math.round(S.a.n * S.a.d / old), 0, S.a.d);
+    if (S.a.d !== old) voidGuess();
     S.guess = null; render();
   });
   el.denB.addEventListener('input', function () {
     var old = S.b.d;
     S.b.d = parseInt(this.value, 10);
     S.b.n = clamp(Math.round(S.b.n * S.b.d / old), 0, S.b.d);
+    if (S.b.d !== old) voidGuess();
     S.guess = null; render();
   });
 
   el.shapeSel.addEventListener('change', function () { S.shape = this.value; render(); });
 
-  el.aPlus.addEventListener('click', function () { S.a.n = clamp(S.a.n + 1, 0, S.a.d); render(); });
-  el.aMinus.addEventListener('click', function () { S.a.n = clamp(S.a.n - 1, 0, S.a.d); render(); });
-  el.bPlus.addEventListener('click', function () { S.b.n = clamp(S.b.n + 1, 0, S.b.d); render(); });
-  el.bMinus.addEventListener('click', function () { S.b.n = clamp(S.b.n - 1, 0, S.b.d); render(); });
+  function stepFrac(frac, delta) {
+    var v = clamp(frac.n + delta, 0, frac.d);
+    if (v === frac.n) return;
+    frac.n = v;
+    voidGuess();
+    render();
+  }
+  el.aPlus.addEventListener('click', function () { stepFrac(S.a, 1); });
+  el.aMinus.addEventListener('click', function () { stepFrac(S.a, -1); });
+  el.bPlus.addEventListener('click', function () { stepFrac(S.b, 1); });
+  el.bMinus.addEventListener('click', function () { stepFrac(S.b, -1); });
 
   el.swap.addEventListener('click', function () {
     var t = S.a; S.a = S.b; S.b = t;
+    // 交换会把「A 大」的正确答案原地翻成「B 大」，正在猜的题同样作废
+    voidGuess();
     render(); say('已交换 A 和 B');
   });
 
@@ -1451,6 +1465,19 @@
     var va = S.a.n / S.a.d, vb = S.b.n / S.b.d;
     if (Math.abs(va - vb) < 1e-12) return 'eq';
     return va > vb ? 'a' : 'b';
+  }
+
+  /* 出题之后台面并没有锁：加减按钮、直接涂格子、分母滑块、交换 A/B 都还改得动分数。
+     出题时报的是「A 是 3/4，B 是 2/5」，判分用的却是改过的数——把 A 涂满、把 B 清空
+     再答「A 大」，一分稳拿。台面是这页的主要探索工具，锁住它反而挡住正常玩法，
+     所以按「题目一改就作废」处理：收起猜测按钮、恢复判定区，这一题不计分。 */
+  function voidGuess() {
+    if (S.revealed) return;
+    S.revealed = true;
+    el.guessBtns.hidden = true;
+    el.reveal.disabled = true;
+    toast('分数改动了，这一题不计分；点「出一题」再猜');
+    say('分数被改动，本题作废不计分；点「出一题」再来一题');
   }
 
   el.reveal.addEventListener('click', function () {
@@ -1573,10 +1600,10 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=22"></script>
-<script src="../data/playful.js?v=22"></script>
-<script src="../assets/js/playful.js?v=22"></script>
+<script src="../assets/js/progress.js?v=23"></script>
+<script src="../data/playful.js?v=23"></script>
+<script src="../assets/js/playful.js?v=23"></script>
 <script>if (window.Progress) Progress.visit("games/fraction-lab.html", "分数实验台");</script>
-<script src="../assets/js/pwa.js?v=22"></script>
+<script src="../assets/js/pwa.js?v=23"></script>
 </body>
 </html>
