@@ -1020,6 +1020,17 @@
   // ---------- 喂数 ----------
   var FEED_HELP_SR = '输入一个整数，然后按喂进去，机器会算出结果';
   var feeding = false;
+  var feedGen = 0;
+  /* 换机器、清日记要作废还在天上飞的喂数动画：单喂的 y 在点击那刻就按旧规则
+     算好了，420ms 后落进新机器的日记就是一条假数据，照着它猜规则永远猜不中；
+     「喂 0～5」的定时器链也会把刚清空的日记自己再填满。作废时顺手把「思考中」
+     的样子收掉、松开锁，别让机器卡在转圈里。 */
+  function cancelFeeds() {
+    feedGen++;
+    feeding = false;
+    el.box.classList.remove('run');
+    el.portOut.classList.remove('thinking');
+  }
   function feed(x) {
     if (feeding) return;
     x = Math.round(x);
@@ -1044,10 +1055,12 @@
     }
 
     feeding = true;
+    var gen = feedGen;
     el.portOut.classList.add('thinking');
     el.outVal.textContent = '···';
     el.box.classList.add('run');
     setTimeout(function () {
+      if (gen !== feedGen) return;
       el.box.classList.remove('run');
       el.portOut.classList.remove('thinking');
       el.outVal.textContent = y;
@@ -1068,10 +1081,14 @@
   }
 
   function feedSeries() {
+    /* 连喂期间要占住 feeding 锁：原来只查不占，快速连点「喂 0～5」会同时跑起
+       好几条定时器链，输入输出窗和日记被几条链来回改，闪成一团。 */
     if (feeding) return;
-    var xs = [0, 1, 2, 3, 4, 5], k = 0;
+    var xs = [0, 1, 2, 3, 4, 5], k = 0, gen = feedGen;
+    feeding = true;
     (function next() {
-      if (k >= xs.length) return;
+      if (gen !== feedGen) return;
+      if (k >= xs.length) { feeding = false; return; }
       var x = xs[k++];
       var y = apply(G.rule, x);
       el.inVal.textContent = x;
@@ -1277,6 +1294,7 @@
 
   // ---------- 新机器 ----------
   function newMachine(keepLevel) {
+    cancelFeeds();
     G.rule = makeRule(keepLevel ? G.level : G.level);
     G.log = [];
     G.answered = false;
@@ -1623,6 +1641,7 @@
 
   el.newRule.addEventListener('click', function () { newMachine(true); toast('换了一台新机器'); });
   el.clearLog.addEventListener('click', function () {
+    cancelFeeds();
     G.log = [];
     el.inVal.textContent = '—';
     el.outVal.textContent = '—';
