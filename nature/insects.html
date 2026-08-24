@@ -747,20 +747,22 @@
     var q = slot.getAttribute("data-inat");
     var ck = "inat-bug:" + q;
 
-    // 先插入文档再设 src；游离节点不会加载。lazy 只推迟加载，onload 照样会来。
+    // 先插入文档再设 src；游离节点不会加载。
     function paint(rec) {
       if (!rec || !rec.url) { tried++; if (tried === total) report(); return; }
       var img = document.createElement("img");
       img.alt = rec.name || q;
-      // 不能用 loading="lazy" + display:none：浏览器判定图片不可见会无限推迟加载，
-      // onload 永不触发，图片就永远停在离线插图上。用 visibility 保留布局占位。
-      img.style.visibility = "hidden";
+      // 不能加 loading="lazy"：隐藏的图片会被判定永不接近视口，加载被无限推迟，
+      // onload 永不触发。默认的急切加载不看可见性，隐藏着也照样下载。
+      // 也不能用 visibility:hidden 占位：图位是 flex 行，隐藏的 img 会占走一半宽度，
+      // 照片下载期间离线插图被挤成半格。display:none 不占布局（海底世界页同款写法）。
+      img.style.display = "none";
       slot.appendChild(img);
       img.onload = function () {
         [].slice.call(slot.childNodes).forEach(function (n) {
           if (n !== img) slot.removeChild(n);
         });
-        img.style.visibility = "";
+        img.style.display = "";
         got++; tried++;
         if (tried === total) report();
       };
