@@ -188,15 +188,54 @@
     border-radius: 999px; padding: 3px 10px; color: var(--ink-mid);
   }
   .rt-list span.best { border-color: var(--sci); color: var(--sci); font-weight: 700; }
+  .rt-scale { margin-top: 12px; }
+  .rt-track {
+    position: relative; height: 34px; overflow: hidden;
+    border: 1px solid var(--line-soft); border-radius: var(--r-sm); background: var(--bg-soft);
+  }
+  .rt-track > i { position: absolute; top: 0; bottom: 0; }
+  /* 0–100 ms 这段是神经传导本身就来不及的区间：斜纹＋右侧一道实线边界。 */
+  .rt-track .floor {
+    left: 0; width: 16.667%;
+    background: repeating-linear-gradient(135deg, rgba(192,23,100,.2) 0 5px, transparent 5px 10px);
+    border-right: 1px solid rgba(192,23,100,.45);
+  }
+  .rt-track .adult {
+    left: 33.333%; width: 16.667%;
+    background: color-mix(in srgb, var(--sci) 12%, transparent);
+    border-left: 1px dashed color-mix(in srgb, var(--sci) 55%, transparent);
+    border-right: 1px dashed color-mix(in srgb, var(--sci) 55%, transparent);
+  }
+  .rt-track .hit {
+    top: 4px; bottom: 4px; width: 3px; margin-left: -1.5px;
+    border-radius: 2px; background: var(--ink-dim);
+  }
+  .rt-track .hit.best { width: 5px; margin-left: -2.5px; background: var(--sci); }
+  .rt-ticks { position: relative; height: 15px; margin-top: 3px; font-family: var(--mono); font-size: .68rem; color: var(--ink-dim); }
+  .rt-ticks span { position: absolute; white-space: nowrap; transform: translateX(-50%); }
+  .rt-ticks span:first-child { transform: none; }
+  .rt-ticks span:last-child { transform: translateX(-100%); }
+  .rt-key { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; font-size: .72rem; color: var(--ink-mid); }
+  .rt-key span { display: inline-flex; align-items: center; gap: 5px; }
+  .rt-key i { width: 15px; height: 11px; border-radius: 2px; flex: none; }
+  .rt-key .k-floor { background: repeating-linear-gradient(135deg, rgba(192,23,100,.35) 0 4px, transparent 4px 8px); border: 1px solid rgba(192,23,100,.45); }
+  .rt-key .k-adult { background: color-mix(in srgb, var(--sci) 18%, transparent); border: 1px dashed color-mix(in srgb, var(--sci) 60%, transparent); }
+  .rt-key .k-best { background: var(--sci); }
 
   /* ---------- 实验卡片 ---------- */
   .bgrid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); }
   .bcard { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
   .bcard-h { padding: 15px 17px 12px; border-bottom: 1px solid var(--line-soft); }
   .bcard-h .sys {
-    display: inline-block; font-size: .66rem; font-weight: 700; letter-spacing: .1em;
-    text-transform: uppercase; padding: 2px 8px; border-radius: 999px; margin-bottom: 8px;
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: .66rem; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; padding: 3px 9px 3px 6px; border-radius: 999px; margin-bottom: 8px;
   }
+  /* 十四张卡片只靠一枚形状一样的色块区分系统，扫一遍得逐个读字。
+     色块里放一枚共享插图库的小图标，和上面「身体里的大数字」同一个路子。 */
+  .bcard-h .sys-ic { display: block; width: 16px; height: 16px; flex: none; }
+  .bcard-h .sys-ic:empty { display: none; }
+  .bcard-h .sys-ic .illus { display: block; width: 100%; height: 100%; }
   /* 这五个系统标签原来用的是深色主题的浅粉／浅青／浅紫。全站现在是浅色底，
      浅字压在同色浅底上只有 1.5:1 左右的对比度，几乎读不出来。
      改用共享变量里已经为浅底调好的学科色。 */
@@ -545,6 +584,20 @@
     </p>
     <div class="rtarget" id="rt" role="button" tabindex="0">点这里开始</div>
     <div class="rt-list" id="rtList"></div>
+    <!-- 光给一串「312 ms」，孩子没法知道这算快还是慢，也看不出为什么再练也快不过
+         大约 100 毫秒。把每次的落点画到同一条尺上，那道斜纹就是练不进去的地方。 -->
+    <div class="rt-scale" id="rtScale" hidden>
+      <div class="rt-track" id="rtTrack" role="img" aria-label="反应时间尺：还没有数据。">
+        <i class="floor"></i>
+        <i class="adult"></i>
+      </div>
+      <div class="rt-ticks" aria-hidden="true"><span style="left:0">0</span><span style="left:33.33%">200</span><span style="left:66.67%">400</span><span style="left:100%">600 ms</span></div>
+      <div class="rt-key" aria-hidden="true">
+        <span><i class="k-floor"></i>100 毫秒以内：神经传导本身就来不及</span>
+        <span><i class="k-adult"></i>200–300 毫秒：成年人常见范围</span>
+        <span><i class="k-best"></i>你最快的一次</span>
+      </div>
+    </div>
     <p style="font-size:.82rem;color:var(--ink-mid);margin-bottom:0" id="rtNote">
       信号要从眼睛到大脑、再到手指，这一路要过好多个神经接头，每个接头都要花时间。
     </p>
@@ -557,7 +610,7 @@
       <div class="fstat"><span class="fstat-icon" data-icon="ui/bone" aria-hidden="true"></span><b>206</b><span>成人骨头数。<b>新生儿约 270 块</b>，长大过程中一部分融合在了一起。</span></div>
       <div class="fstat"><span class="fstat-icon" data-icon="ui/runner" aria-hidden="true"></span><b>600+</b><span>骨骼肌数量。光是说一句话，就要用上上百块肌肉配合。</span></div>
       <div class="fstat"><span class="fstat-icon" data-icon="ui/globe" aria-hidden="true"></span><b>10 万公里</b><span>全身血管接起来的长度，能绕地球赤道<b>两圈半</b>。</span></div>
-      <div class="fstat"><span class="fstat-icon" data-icon="ui/lungs" aria-hidden="true"></span><b>2 万次</b><span>一天呼吸的次数，平均每分钟约 14 次，你几乎从不需要去想它。</span></div>
+      <div class="fstat"><span class="fstat-icon" data-icon="ui/lungs" aria-hidden="true"></span><b>2 万次</b><span>一天呼吸的次数。<b>成人</b>静息约每分钟 14 次，孩子更快一些，你却几乎从不需要去想它。</span></div>
       <div class="fstat"><span class="fstat-icon" data-icon="ui/brain" aria-hidden="true"></span><b>2% / 20%</b><span>大脑只占体重 2%，却要消耗全身约 20% 的氧气。</span></div>
       <div class="fstat"><span class="fstat-icon" data-icon="ui/blood-cell" aria-hidden="true"></span><b>120 天</b><span>一颗红细胞的寿命，之后就会被替换掉。你身体一直在重建自己。</span></div>
     </div>
@@ -643,11 +696,11 @@
     meOut.appendChild(cell("我的血液大约", fmt(blood), " mL",
       "约占体重的 7%。差不多是 " + (blood / 250).toFixed(1) + " 个大纸杯。"));
     meOut.appendChild(cell("静息心跳（估）", hr, " 次/分",
-      "一天约跳 " + fmt(perDay) + " 次，一年 " + (perDay * 365 / 1e8).toFixed(1) + " 亿次。"));
+      "一天约跳 " + fmt(perDay) + " 次，一年约 " + fmt(Math.round(perDay * 365 / 1e4)) + " 万次。"));
     meOut.appendChild(cell("皮肤面积", bsa.toFixed(2), " m²",
       "皮肤是人体最大的器官，比你想的大。"));
     meOut.appendChild(cell("每天呼吸空气", fmt(airDay), " 升",
-      "每次约 " + tidal + " mL，一天两万多次。"));
+      "按每次约 " + tidal + " mL、静息 16 次/分算，一天两万多次。"));
     meOut.appendChild(cell("走 1 公里要", fmt(steps1km), " 步",
       "按你的身高，一步约 " + Math.round(step) + " 厘米。"));
     meOut.appendChild(cell("身高 ≈ 几个头", headRatio, " 个头",
@@ -775,6 +828,31 @@
     }
   }
 
+  var rtScale = document.getElementById("rtScale"),
+      rtTrack = document.getElementById("rtTrack");
+  var RT_MAX = 600;
+
+  /* 尺子只到 600 ms：再慢的落点压在最右端，具体数字上面那排药丸里有。 */
+  function rtPct(ms) { return Math.max(0, Math.min(100, ms / RT_MAX * 100)); }
+
+  function paintRtScale(best) {
+    Array.prototype.forEach.call(rtTrack.querySelectorAll(".hit"), function (n) {
+      rtTrack.removeChild(n);
+    });
+    results.forEach(function (m) {
+      var mark = document.createElement("i");
+      mark.className = m === best ? "hit best" : "hit";
+      mark.style.left = rtPct(m) + "%";
+      rtTrack.appendChild(mark);
+    });
+    /* 落点是纯视觉的，读屏得从 aria-label 里拿到同样的信息。 */
+    rtTrack.setAttribute("aria-label",
+      "反应时间尺，0 到 600 毫秒。你测了 " + results.length + " 次：" +
+      results.join("、") + " 毫秒，最快 " + best + " 毫秒。" +
+      "100 毫秒以内是神经传导本身来不及的区间；成年人常见 200 到 300 毫秒。");
+    rtScale.hidden = false;
+  }
+
   function paintRT() {
     rtList.textContent = "";
     var best = Math.min.apply(null, results);
@@ -784,6 +862,7 @@
       if (m === best) s.className = "best";
       rtList.appendChild(s);
     });
+    paintRtScale(best);
     if (results.length >= 3) {
       var avg = Math.round(results.reduce(function (a, b) { return a + b; }, 0) / results.length);
       rtNote.innerHTML = "你的平均 <b>" + avg + " 毫秒</b>，最快 <b>" + best +
@@ -892,9 +971,11 @@
   ];
 
   var expBox = document.getElementById("exp");
-  var SYS = { heart: ["心肺", "s-heart"], lung: ["呼吸", "s-lung"],
-              brain: ["大脑", "s-brain"], bone: ["骨骼肌肉", "s-bone"],
-              sense: ["感官", "s-sense"] };
+  /* 标签文字要和上面那排筛选按钮逐字对上：卡上写「心肺」、按钮写「心脏血液」，
+     筛完了对不上号，还和隔壁的「呼吸」重了一半。 */
+  var SYS = { heart: ["心脏血液", "s-heart", "ui/blood-cell"], lung: ["呼吸", "s-lung", "ui/lungs"],
+              brain: ["大脑", "s-brain", "ui/brain"], bone: ["骨骼肌肉", "s-bone", "ui/bone"],
+              sense: ["感官", "s-sense", "ui/eye"] };
   var sState = "all";
 
   function expCard(e) {
@@ -903,10 +984,23 @@
 
     var h = document.createElement("div");
     h.className = "bcard-h";
-    var meta = SYS[e.sys] || ["其他", ""];
+    var meta = SYS[e.sys] || ["其他", "", ""];
     var s = document.createElement("span");
     s.className = "sys " + meta[1];
-    s.textContent = meta[0];
+    if (meta[2]) {
+      /* 这批卡片是在 illustrations.js 之前那个脚本里生成的，首屏这会儿图库还没到。
+         先留一个带 data-icon 的空槽，等图库脚本里那轮统一渲染补上；
+         点筛选按钮重画时图库已经在了，就地渲染。空槽自己 display:none，
+         图库万一没加载也不会在药丸里留一个 16px 的白洞。 */
+      var ic = document.createElement("span");
+      ic.className = "sys-ic";
+      ic.setAttribute("data-icon", meta[2]);
+      ic.setAttribute("aria-hidden", "true");
+      var lib = window.ILLUSTRATIONS;
+      if (lib && lib.hasArt(meta[2])) lib.renderArt(ic, meta[2], { decorative: true });
+      s.appendChild(ic);
+    }
+    s.appendChild(document.createTextNode(meta[0]));
     var t = document.createElement("h3");
     t.textContent = e.t;
     h.appendChild(s); h.appendChild(t);
