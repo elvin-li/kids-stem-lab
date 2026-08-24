@@ -43,6 +43,14 @@
   .canvas-label { position:absolute; z-index:1; top:9px; right:10px; padding:4px 8px; border-radius:99px; background:rgba(11,15,26,.78); color:var(--ink-mid); font-size:.72rem; font-weight:800; pointer-events:none; }
   #scene { display:block; width:100%; max-width:100%; height:auto; }
 
+  .scene-legend { display:flex; flex-wrap:wrap; gap:6px 14px; margin:8px 0 0; padding:0; list-style:none; color:var(--ink-dim); font-size:.74rem; font-weight:700; }
+  .scene-legend li { display:flex; align-items:center; gap:6px; }
+  .scene-legend i { flex:none; width:16px; height:10px; }
+  .lg-dash { border-top:2px dashed var(--warn); }
+  .lg-down, .lg-up { width:0; height:0; border-inline:5px solid transparent; }
+  .lg-down { border-top:9px solid var(--math); }
+  .lg-up { border-bottom:9px solid var(--warn); }
+
   .stage-results { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px; }
   .kid-result-card { min-width:0; display:grid; grid-template-columns:72px minmax(0,1fr); gap:10px; align-items:center; padding:12px; border:2px solid var(--line-soft); border-radius:17px; background:rgba(29,37,64,.72); }
   .kid-result-card[data-state="done"] { border-color:rgba(74,222,128,.62); background:linear-gradient(135deg,rgba(74,222,128,.1),rgba(29,37,64,.82)); }
@@ -168,9 +176,14 @@
     <div class="canvas-shell">
       <span class="canvas-label">当前轨迹</span>
       <canvas id="scene" role="img" tabindex="0"
-        aria-label="下落实验画面：羽毛、皮球、锤子从同一高度落下，画面突出显示运动轨迹与落地结果。聚焦画面后按空格键可开始或暂停。"></canvas>
+        aria-label="下落实验画面：羽毛、皮球、锤子从同一高度落下，黄色虚线标出没有空气阻力时应到的位置，箭头标出速度与空气阻力。聚焦画面后按空格键可开始或暂停。"></canvas>
       <p id="live" class="sr-only" aria-live="polite"></p>
     </div>
+    <ul class="scene-legend" aria-label="画面标注说明">
+      <li><i class="lg-dash"></i>黄虚线：没有空气时该到的位置</li>
+      <li><i class="lg-down"></i>向下箭头：现在的速度</li>
+      <li><i class="lg-up"></i>向上箭头：空气拖住的力</li>
+    </ul>
 
     <div class="stage-results" aria-labelledby="gravityCompareTitle">
       <h3 class="sr-only" id="gravityCompareTitle">有空气和真空的实验结果</h3>
@@ -254,8 +267,10 @@
             <div class="vbar"><i data-bar style="background:var(--code)"></i></div>
             <div class="obj-sub">质量 1300 g · <span data-t>未落地</span></div>
           </div>
-          <div class="readout" style="margin-top:10px"><span>已经过了</span><b id="clock">0.00 s</b></div>
-          <div class="readout"><span>最先与最后相差</span><b id="gap">—</b></div>
+            <div class="readout" style="margin-top:10px"><span>已经过了</span><b id="clock">0.00 s</b></div>
+            <div class="readout"><span>最先与最后相差</span><b id="gap">—</b></div>
+            <div class="readout"><span>理论自由落体 √(2h/g)</span><b id="tIdeal">—</b></div>
+            <div class="readout"><span>羽毛的终端速度</span><b id="vTerm">—</b></div>
         </section>
       </div>
     </div>
@@ -308,8 +323,12 @@
     <section class="card why">
       <h2 style="font-size:1.15rem">科学原理</h2>
       <p><b>重力加速度与质量无关。</b>物体受到的重力是 <code>F = m·g</code>，加速度是 <code>a = F / m</code>，所以没有其他力时 <code>a = g</code>。</p>
+      <h3>画面上的黄色虚线</h3>
+      <p>虚线画的是 <code>s = ½ · g · t²</code>，也就是完全没有空气时，此刻任何物体都应该到达的位置。切成真空，三个物体会一直贴着虚线走；留着空气，羽毛很快就落在虚线后面——空气阻力就这样被画了出来。</p>
       <h3>空气做了什么？</h3>
       <p>空气阻力约为 <code>F_d = ½ · ρ · C_d · A · v²</code>。羽毛面积大、质量小，阻力对它的影响特别明显；真空中没有空气阻力，三种物体会一起落地。</p>
+      <h3>两支箭头一样长的时候</h3>
+      <p>向下的箭头是速度，向上的箭头是空气阻力（按占自身重力的比例画）。速度越大阻力越大，当阻力增长到和重力相等时加速度变成 0，物体从此匀速下落，这个速度叫<b>终端速度</b> <code>v_t = √(2mg / (ρ·C_d·A))</code>。羽毛很快就到，锤子在这个高度里远远到不了。</p>
       <h3>Apollo 15</h3>
       <p>1971 年，航天员 David Scott 在月球同时松开地质锤和猎鹰羽毛，两样东西并排落地。</p>
       <p class="obj-sub">本模拟使用固定步长 1/480 秒积分；物体画面大小经过夸张，便于观察。</p>
@@ -328,27 +347,27 @@
 (function () {
   'use strict';
 
-  // ---------- 调色板（只取 base.css 里的变量） ----------
+  // ---------- 调色板 ----------
+  // 画布底色写死成深色（.canvas-shell），孩子模式会把主题变量整套翻成浅色，
+  // 所以场景颜色取共享的固定深底配色，只有字体族仍跟随主题。
   var css = getComputedStyle(document.documentElement);
   function V(n, fb) { var v = css.getPropertyValue(n); return (v && v.trim()) || fb; }
-  var C = {
-    ink:   V('--ink', '#eef2ff'),
-    mid:   V('--ink-mid', '#b6c0e0'),
-    dim:   V('--ink-dim', '#7d88ab'),
-    line:  V('--line', '#2a3355'),
-    soft:  V('--line-soft', '#202844'),
-    surf:  V('--surface-2', '#1d2540'),
-    sci:   V('--sci', '#4ade80'),
-    math:  V('--math', '#6ea8fe'),
-    code:  V('--code', '#fb923c'),
-    phys:  V('--phys', '#a78bfa'),
-    warn:  V('--warn', '#fbbf24')
-  };
+  var C = window.ILLUSTRATIONS && ILLUSTRATIONS.stagePalette
+    ? ILLUSTRATIONS.stagePalette()
+    : {
+      ink: '#eef2ff', mid: '#b6c0e0', dim: '#8e99bd',
+      line: '#3a456e', soft: '#293252', surface: '#1d2540',
+      sci: '#4ade80', math: '#6ea8fe', code: '#fb923c', phys: '#a78bfa', warn: '#fbbf24'
+    };
+  var MONO = V('--mono', 'monospace');
+  var FONT = V('--font', 'sans-serif');
 
   // ---------- 物体定义 ----------
-  // m: kg, area: m^2 迎风面积, cd: 阻力系数, draw: 画法
+  // m: kg, area: m^2 迎风面积, cd: 阻力系数, kind: 画法
+  // color 是这一行的身份色（轨迹、箭头、读数条都用它）；
+  // paint 只用于画物体本身——羽毛染成学科绿会被看成一片树叶，所以单独给一个近白色。
   var BODIES = [
-    { name: '羽毛', m: 0.005, area: 0.020, cd: 1.10, color: C.sci,  kind: 'feather', r: 15 },
+    { name: '羽毛', m: 0.005, area: 0.020, cd: 1.10, color: C.sci,  paint: '#dbe7e1', kind: 'feather', r: 15 },
     { name: '皮球', m: 0.150, area: 0.0079, cd: 0.47, color: C.math, kind: 'ball',    r: 14 },
     { name: '锤子', m: 1.300, area: 0.0060, cd: 1.00, color: C.code, kind: 'hammer',  r: 15 }
   ];
@@ -374,6 +393,7 @@
     });
     S.t = 0;
     S.running = false;
+    invalidate();
     announce('已重置。高度 ' + S.height.toFixed(1) + ' 米，重力 ' + S.g.toFixed(2) + '。');
   }
 
@@ -442,7 +462,7 @@
     cv.height = Math.round(cssH * dpr);
     W = cssW; H = cssH;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    draw();
+    invalidate();
   }
 
   function roundRect(x, y, w, h, r) {
@@ -501,16 +521,66 @@
     ctx.restore();
   }
 
+  /* 稳定的伪随机：同一个 i 每帧都给同一个 [0,1)，散点才不会一帧一跳。 */
+  function hash01(n) {
+    var s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+    return s - Math.floor(s);
+  }
+
+  /* 羽毛在空气里会左右打晃。晃动量写成 s 的确定函数，轨迹点才能和实物对齐。 */
+  function swayFor(d, s) {
+    return (S.air && d.kind === 'feather') ? Math.sin(s * 2.4) * 5 : 0;
+  }
+
+  /* 竖直箭头：dir = 1 向下，dir = -1 向上；太短就不画，免得只剩一个箭头尖。 */
+  function drawVArrow(x, y, len, dir, color, alpha) {
+    if (!(len > 6)) return;
+    ctx.save();
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    var tip = y + dir * len;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, tip - dir * 5);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, tip);
+    ctx.lineTo(x - 4.5, tip - dir * 6);
+    ctx.lineTo(x + 4.5, tip - dir * 6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /* 当前空气条件下的阻力大小（N）。真空里恒为 0。 */
+  function dragForce(d, v) {
+    return S.air ? 0.5 * RHO_AIR * d.cd * d.area * v * v : 0;
+  }
+
+  /* 终端速度：阻力恰好等于重力时的速度，真空里不存在。 */
+  function terminalSpeed(d) {
+    if (!S.air) return Infinity;
+    return Math.sqrt(2 * d.m * S.g / (RHO_AIR * d.cd * d.area));
+  }
+
   function draw() {
     ctx.clearRect(0, 0, W, H);
 
-    var padT = 30, padB = 44, rulerX = 46;
+    // 起点线标的是物体「底边」的高度，所以物体在 t=0 时整个挂在线以上。
+    // 顶部要同时留出两行状态文字和最高物体的身高（2r），否则 HUD 会被物体压住。
+    var padT = 34 + 2 * 15, padB = 44, rulerX = 46;
     var y0 = padT, y1 = H - padB;
     var scale = (y1 - y0) / S.height;      // px per meter
-    var lanes = [0.38, 0.60, 0.82].map(function (f) { return rulerX + (W - rulerX) * (f - 0.2) / 0.8; });
-    // 简化：均匀分布在标尺右侧
+    // 三条轨道均匀分布在标尺右侧
     var usable = W - rulerX - 16;
-    lanes = [0, 1, 2].map(function (i) { return rulerX + usable * (0.22 + 0.29 * i); });
+    var lanes = [0, 1, 2].map(function (i) { return rulerX + usable * (0.22 + 0.29 * i); });
+    // 窄画面放不下受力箭头和文字标注，只留虚线参考，避免糊成一团
+    var wide = usable >= 380;
+    var vRef = Math.sqrt(2 * S.g * S.height) || 1;
+    var arrowMax = Math.min(46, (y1 - y0) * 0.16);
 
     // 天空渐变（真空更暗）
     var sky = ctx.createLinearGradient(0, y0 - 18, 0, y1);
@@ -524,25 +594,32 @@
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, W, y1);
 
-    // 空气「颗粒」提示（只在有空气时）
+    // 空气「颗粒」提示（只在有空气时）。位置用哈希打散：
+    // 取模的写法会排成整齐的斜线，看起来像画错了的网格而不是空气。
     if (S.air) {
-      ctx.fillStyle = 'rgba(182,192,224,.20)';
-      for (var i = 0; i < 46; i++) {
-        var px = ((i * 97) % 100) / 100 * (W - rulerX - 10) + rulerX + 5;
-        var py = ((i * 53) % 100) / 100 * (y1 - y0 - 6) + y0 + 3;
-        ctx.beginPath(); ctx.arc(px, py, 1.2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(182,192,224,.22)';
+      for (var i = 0; i < 54; i++) {
+        var px = rulerX + 5 + hash01(i) * (W - rulerX - 10);
+        var py = y0 - 24 + hash01(i + 991) * (y1 - y0 + 24);
+        ctx.beginPath(); ctx.arc(px, py, 1.1 + hash01(i + 17) * 0.8, 0, Math.PI * 2); ctx.fill();
       }
     }
 
-    // 标尺
+    // 标尺：整米刻度带数字，半米刻度只在标尺上留短线
     ctx.strokeStyle = C.line;
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(rulerX, y0); ctx.lineTo(rulerX, y1); ctx.stroke();
     var stepM = S.height <= 6 ? 1 : (S.height <= 12 ? 2 : 4);
-    ctx.font = '600 10px ' + (css.getPropertyValue('--mono') || 'monospace');
+    ctx.font = '600 10px ' + MONO;
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
-    for (var m = 0; m <= S.height + 0.001; m += stepM) {
+    var m;
+    for (m = stepM / 2; m <= S.height - 0.001; m += stepM) {
+      var ym = y1 - m * scale;
+      ctx.strokeStyle = C.soft;
+      ctx.beginPath(); ctx.moveTo(rulerX - 3, ym); ctx.lineTo(rulerX + 3, ym); ctx.stroke();
+    }
+    for (m = 0; m <= S.height + 0.001; m += stepM) {
       var yy = y1 - m * scale;
       ctx.strokeStyle = C.soft;
       ctx.beginPath(); ctx.moveTo(rulerX - 5, yy); ctx.lineTo(W - 8, yy); ctx.stroke();
@@ -550,14 +627,52 @@
       ctx.fillText(m.toFixed(0) + 'm', rulerX - 8, yy);
     }
 
-    // 地面
+    // 地面：一条实线 + 斜纹，让「落地」这件事看得出来
     ctx.fillStyle = 'rgba(29,37,64,.9)';
     ctx.fillRect(0, y1, W, H - y1);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, y1, W, H - y1); ctx.clip();
+    ctx.strokeStyle = 'rgba(125,136,171,.16)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (var hx = -14; hx < W + 14; hx += 14) {
+      ctx.moveTo(hx, y1 + 14); ctx.lineTo(hx + 14, y1);
+    }
+    ctx.stroke();
+    ctx.restore();
     ctx.strokeStyle = C.line;
+    ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0, y1 + .5); ctx.lineTo(W, y1 + .5); ctx.stroke();
+
+    // 理想自由落体参考线：真空里三个物体此刻都应该正好落在这条线上，
+    // 有空气时羽毛会明显掉队——空气阻力就这样被画了出来。
+    if (S.t > 0.0001) {
+      var yIdeal = Math.min(y1, y0 + Math.min(S.height, 0.5 * S.g * S.t * S.t) * scale);
+      ctx.save();
+      ctx.setLineDash([7, 5]);
+      ctx.strokeStyle = 'rgba(251,191,36,.8)';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(rulerX, yIdeal); ctx.lineTo(W - 8, yIdeal); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = C.warn;
+      ctx.beginPath();
+      ctx.moveTo(rulerX - 1, yIdeal - 4.5);
+      ctx.lineTo(rulerX + 6, yIdeal);
+      ctx.lineTo(rulerX - 1, yIdeal + 4.5);
+      ctx.closePath();
+      ctx.fill();
+      if (wide) {
+        ctx.font = '700 10px ' + MONO;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText('无阻力应到这里', rulerX + 9, Math.max(y0 + 11, yIdeal - 4));
+      }
+      ctx.restore();
+    }
 
     // 物体 + 轨迹
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
     for (var k = 0; k < S.bodies.length; k++) {
       var o = S.bodies[k], d = o.def, x = lanes[k];
 
@@ -573,12 +688,24 @@
         ctx.globalAlpha = 0.06 + 0.34 * (1 - age);
         ctx.fillStyle = d.color;
         ctx.beginPath();
-        ctx.arc(x, y1 - (S.height - o.trail[j]) * scale - d.r * 0.6, 2.6, 0, Math.PI * 2);
+        ctx.arc(x + swayFor(d, o.trail[j]), y0 + o.trail[j] * scale - d.r, 2.6, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
 
       var yb = y0 + o.s * scale;   // 物体底部
+      var bx = x + swayFor(d, o.s);
+      var yc = yb - d.r;           // 物体中心附近，箭头从这里出发
+
+      // 地面投影：越靠近地面越小越实，给画面一点纵深
+      var k2 = 1 - Math.min(1, Math.max(0, y1 - yb) / (y1 - y0));
+      ctx.save();
+      ctx.globalAlpha = 0.1 + 0.26 * k2;
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.ellipse(bx, y1 + 3, d.r * (1.15 - 0.5 * k2), 3.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
 
       // 落地小烟尘
       if (o.puff > 0) {
@@ -586,30 +713,42 @@
         ctx.strokeStyle = d.color;
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(x, y1, 10 + (1 - o.puff) * 22, Math.PI, Math.PI * 2);
+        ctx.arc(bx, y1, 10 + (1 - o.puff) * 22, Math.PI, Math.PI * 2);
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
 
-      drawShape(d.kind, x, yb, d.r, d.color, 1);
+      drawShape(d.kind, bx, yb, d.r, d.paint || d.color, 1);
+
+      // 速度箭头（向下）与空气阻力箭头（向上）。
+      // 阻力按「占自身重力的几分之几」画，两支一样长就说明达到了终端速度。
+      if (wide && !o.landed && S.t > 0.0001) {
+        var vLen = Math.min(Math.min(1, o.v / vRef) * arrowMax, y1 - yc - 3);
+        drawVArrow(bx + d.r + 13, yc, vLen, 1, d.color, 0.95);
+        var frac = dragForce(d, o.v) / (d.m * S.g);
+        if (frac > 0.03) {
+          var dLen = Math.min(Math.min(1, frac) * arrowMax, yc - 4);
+          drawVArrow(bx - d.r - 13, yc, dLen, -1, C.warn, 0.95);
+        }
+      }
 
       // 名字 + 落地时间
-      ctx.font = '700 11px ' + V('--font', 'sans-serif');
+      ctx.font = '700 11px ' + FONT;
       ctx.fillStyle = o.landed ? d.color : C.mid;
       ctx.fillText(d.name, x, H - 26);
-      ctx.font = '600 10px ' + (css.getPropertyValue('--mono') || 'monospace');
+      ctx.font = '600 10px ' + MONO;
       ctx.fillStyle = C.dim;
       ctx.fillText(o.landed ? o.tLand.toFixed(2) + 's' : '—', x, H - 12);
     }
 
     // 左上状态
     ctx.textAlign = 'left';
-    ctx.font = '700 12px ' + V('--font', 'sans-serif');
+    ctx.font = '700 12px ' + FONT;
     ctx.fillStyle = S.air ? C.math : C.phys;
-    ctx.fillText(S.air ? '有空气' : '真空', 8, 14);
+    ctx.fillText(S.air ? '有空气' : '真空', 8, 15);
     ctx.fillStyle = C.dim;
-    ctx.font = '600 11px ' + (css.getPropertyValue('--mono') || 'monospace');
-    ctx.fillText('g = ' + S.g.toFixed(2) + ' m/s²   t = ' + S.t.toFixed(2) + ' s', 8, 28);
+    ctx.font = '600 11px ' + MONO;
+    ctx.fillText('g = ' + S.g.toFixed(2) + ' m/s²   t = ' + S.t.toFixed(2) + ' s', 8, 31);
   }
 
   // ---------- 面板刷新 ----------
@@ -619,6 +758,8 @@
   });
   var clockEl = document.getElementById('clock');
   var gapEl = document.getElementById('gap');
+  var tIdealEl = document.getElementById('tIdeal');
+  var vTermEl = document.getElementById('vTerm');
   var airResultEl = document.getElementById('airResult');
   var vacuumResultEl = document.getElementById('vacuumResult');
   var airResultCard = document.getElementById('airResultCard');
@@ -681,6 +822,9 @@
       rows[i].t.textContent = o.landed ? ('落地 ' + o.tLand.toFixed(2) + ' s') : (S.running ? '正在下落' : '未落地');
     });
     clockEl.textContent = S.t.toFixed(2) + ' s';
+    tIdealEl.textContent = Math.sqrt(2 * S.height / S.g).toFixed(2) + ' s';
+    var vt = terminalSpeed(BODIES[0]);
+    vTermEl.textContent = isFinite(vt) ? vt.toFixed(2) + ' m/s' : '真空里没有终端速度';
     var done = S.bodies.filter(function (o) { return o.landed; });
     if (done.length === S.bodies.length) {
       var ts = S.bodies.map(function (o) { return o.tLand; });
@@ -691,7 +835,8 @@
   }
 
   // ---------- 主循环 ----------
-  var last = 0, acc = 0;
+  var last = 0, acc = 0, needsDraw = true;
+  function invalidate() { needsDraw = true; }
   function loop(now) {
     if (!last) last = now;
     var real = Math.min(0.05, (now - last) / 1000);
@@ -701,11 +846,19 @@
       var n = 0;
       while (acc >= DT && n < MAX_STEPS) { step(DT); acc -= DT; n++; }
       if (n >= MAX_STEPS) acc = 0;
+      needsDraw = true;
     } else {
       acc = 0;
+      // 全部落地后模拟已停表，剩下的落地烟尘按真实时间自己散开
+      for (var i = 0; i < S.bodies.length; i++) {
+        if (S.bodies[i].puff > 0) {
+          S.bodies[i].puff = Math.max(0, S.bodies[i].puff - real * 1.6);
+          needsDraw = true;
+        }
+      }
     }
-    draw();
-    refreshPanel();
+    // 画面静止时不再每帧重绘整张画布，省掉一直空转的绘制开销
+    if (needsDraw) { needsDraw = false; draw(); refreshPanel(); }
     requestAnimationFrame(loop);
   }
 

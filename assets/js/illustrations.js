@@ -79,6 +79,26 @@ window.ILLUSTRATIONS = (function () {
     }
   };
 
+  /* 固定深色画布的配色。
+     kid.css 会把 --ink / --line / 学科色整套翻成浅色主题，但少数画布（例如落体舞台）
+     的底色是写死的深色，直接读主题变量会在孩子模式下画出浅线浅字，几乎看不见。
+     这类画布统一取这份与主题无关的深底配色。 */
+  var STAGE_DARK = {
+    bg: "#0b0f1a", surface: "#1d2540",
+    ink: "#eef2ff", mid: "#b6c0e0", dim: "#8e99bd",
+    line: "#3a456e", soft: "#293252",
+    math: "#6ea8fe", sci: "#4ade80", phys: "#a78bfa", code: "#fb923c",
+    warn: "#fbbf24", danger: "#f87171", kit: "#f472b6"
+  };
+
+  /** 取一份深色画布配色的副本；overrides 里的键会覆盖同名颜色。 */
+  function stagePalette(overrides) {
+    var out = {};
+    Object.keys(STAGE_DARK).forEach(function (k) { out[k] = STAGE_DARK[k]; });
+    Object.keys(overrides || {}).forEach(function (k) { out[k] = overrides[k]; });
+    return out;
+  }
+
   function svgEl(name, attrs, text) {
     var el = document.createElementNS(NS, name);
     Object.keys(attrs || {}).forEach(function (k) { el.setAttribute(k, attrs[k]); });
@@ -229,37 +249,66 @@ window.ILLUSTRATIONS = (function () {
     ctx.restore();
   }
 
-  /** Canvas：羽毛 */
+  /** Canvas：羽毛。
+      y 是物体底部、总高约 2r，和 drawBall / drawHammer 对齐，同一组物体落地时底边才会齐平。
+      color 只给羽片上一点淡色：羽片主体必须接近白色，否则一片纯色的尖椭圆会被看成树叶。
+      两侧羽片一宽一窄（真羽毛就是不对称的），加上羽枝斜纹和底部光秃的羽根，
+      这三样是让孩子一眼认出「羽毛」的关键。 */
   function drawFeather(ctx, x, y, r, color, alpha) {
+    var tint = color || "#cbd5e1";
+    var pale = shadeHex(tint, 0.78);
+    var deep = shadeHex(tint, 0.42);
+    var tipY = -r * 1.02, quillY = r * 1.12, vaneEnd = r * 0.52;
+    var wide = 0.42, narrow = 0.27;   // 后缘宽、前缘窄
+
+    function vane(side, w) {
+      ctx.beginPath();
+      ctx.moveTo(0, tipY);
+      ctx.bezierCurveTo(side * w * r * 0.72, -r * 0.5, side * w * r, r * 0.02, side * w * r * 0.66, r * 0.36);
+      ctx.quadraticCurveTo(side * w * r * 0.34, vaneEnd, 0, vaneEnd);
+      ctx.closePath();
+    }
+
     ctx.save();
     ctx.globalAlpha = alpha == null ? 1 : alpha;
-    ctx.translate(x, y);
-    ctx.rotate(-0.45);
-    var grad = ctx.createLinearGradient(-r * 0.3, -r, r * 0.3, r);
-    grad.addColorStop(0, color || "#e2e8f0");
-    grad.addColorStop(0.5, "#f8fafc");
-    grad.addColorStop(1, color || "#cbd5e1");
+    ctx.translate(x, y - r);
+    ctx.rotate(-0.42);
+
+    var grad = ctx.createLinearGradient(0, tipY, 0, vaneEnd);
+    grad.addColorStop(0, "#ffffff");
+    grad.addColorStop(0.5, pale);
+    grad.addColorStop(1, deep);
     ctx.fillStyle = grad;
+    vane(1, wide); ctx.fill();
+    ctx.fillStyle = pale;
+    vane(-1, narrow); ctx.fill();
+
+    // 羽枝：从羽轴斜着指向羽尖，越靠近根部越短
+    ctx.strokeStyle = "rgba(71,85,105,.42)";
+    ctx.lineWidth = Math.max(0.6, r * 0.045);
     ctx.beginPath();
-    ctx.moveTo(0, -r * 1.1);
-    ctx.quadraticCurveTo(r * 0.55, -r * 0.2, r * 0.35, r * 0.9);
-    ctx.quadraticCurveTo(0, r * 1.15, -r * 0.35, r * 0.9);
-    ctx.quadraticCurveTo(-r * 0.55, -r * 0.2, 0, -r * 1.1);
-    ctx.fill();
-    for (var i = -0.8; i <= 0.9; i += 0.25) {
-      ctx.strokeStyle = "rgba(100,116,139," + (0.15 + Math.abs(i) * 0.08) + ")";
-      ctx.lineWidth = 0.8;
-      ctx.beginPath();
-      ctx.moveTo(0, -r * 0.9 + i * r * 0.5);
-      ctx.lineTo(r * 0.28 * (1 - Math.abs(i) * 0.3), -r * 0.3 + i * r * 0.35);
-      ctx.stroke();
+    for (var t = -0.86; t < 0.46; t += 0.13) {
+      var reach = 1 - Math.abs(t) * 0.28;
+      ctx.moveTo(0, t * r);
+      ctx.lineTo(wide * r * 0.82 * reach, (t - 0.17) * r);
+      ctx.moveTo(0, t * r);
+      ctx.lineTo(-narrow * r * 0.82 * reach, (t - 0.15) * r);
     }
-    ctx.strokeStyle = "#475569";
-    ctx.lineWidth = 1.4;
-    ctx.globalAlpha = (alpha == null ? 1 : alpha) * 0.7;
+    ctx.stroke();
+
+    // 羽轴 + 底部光秃的羽根
+    ctx.strokeStyle = "#64748b";
+    ctx.lineCap = "round";
+    ctx.lineWidth = Math.max(1, r * 0.09);
     ctx.beginPath();
-    ctx.moveTo(0, -r * 1.05);
-    ctx.lineTo(0, r * 1.1);
+    ctx.moveTo(0, tipY);
+    ctx.lineTo(0, quillY);
+    ctx.stroke();
+    ctx.strokeStyle = "#f8fafc";
+    ctx.lineWidth = Math.max(0.6, r * 0.05);
+    ctx.beginPath();
+    ctx.moveTo(0, tipY + r * 0.06);
+    ctx.lineTo(0, vaneEnd);
     ctx.stroke();
     ctx.restore();
   }
@@ -269,10 +318,11 @@ window.ILLUSTRATIONS = (function () {
     ctx.save();
     ctx.globalAlpha = alpha == null ? 1 : alpha;
     var cy = y - r;
+    /* 暗边由传入的球色推导，不能写死成深橙：换成蓝球时会套上一圈橙边。 */
     var grad = ctx.createRadialGradient(x - r * 0.35, cy - r * 0.35, r * 0.08, x, cy, r);
     grad.addColorStop(0, "#fffef8");
     grad.addColorStop(0.22, color || "#f97316");
-    grad.addColorStop(1, "#9a3412");
+    grad.addColorStop(1, shadeHex(color || "#f97316", -0.48));
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(x, cy, r, 0, Math.PI * 2);
@@ -298,26 +348,47 @@ window.ILLUSTRATIONS = (function () {
     ctx.restore();
   }
 
-  /** Canvas：锤子。y 是物体底部；总高保持在 2r，和皮球一致，
-      否则在起始高度上锤头会被画布顶边切掉，只剩一根橙色木棍。 */
+  /** Canvas：地质锤（Apollo 15 落体实验里用的就是这一把）。
+      y 是物体底部；总高保持在 2r，和皮球一致，否则在起始高度上锤头会被画布顶边切掉，
+      只剩一根光杆。color 给手柄——锤头必须是钢灰色，染成学科色就不像金属了。
+      一头方、一头收成凿刃，是让它区别于「圆头槌」的关键。 */
   function drawHammer(ctx, x, y, r, color, alpha) {
+    var grip = color || "#d97706";
+    var headTop = y - r * 2, headH = r * 0.66;
     ctx.save();
     ctx.globalAlpha = alpha == null ? 1 : alpha;
-    var handleGrad = ctx.createLinearGradient(x - 3, y, x + 3, y - r * 1.55);
-    handleGrad.addColorStop(0, "#92400e");
-    handleGrad.addColorStop(1, "#d97706");
+
+    var handleGrad = ctx.createLinearGradient(x - r * 0.2, 0, x + r * 0.2, 0);
+    handleGrad.addColorStop(0, shadeHex(grip, -0.4));
+    handleGrad.addColorStop(0.45, grip);
+    handleGrad.addColorStop(1, shadeHex(grip, -0.28));
     ctx.fillStyle = handleGrad;
-    roundRect(ctx, x - Math.max(1.8, r * 0.16), y - r * 1.55, Math.max(3.6, r * 0.32), r * 1.55, 2);
+    roundRect(ctx, x - Math.max(1.9, r * 0.17), headTop + headH * 0.5, Math.max(3.8, r * 0.34), r * 1.5, 2);
     ctx.fill();
-    var headGrad = ctx.createLinearGradient(x - r * 0.9, y - r * 2, x + r * 0.9, y - r * 1.38);
-    headGrad.addColorStop(0, color || "#71717a");
-    headGrad.addColorStop(0.5, "#a1a1aa");
+    // 握把处的防滑环
+    ctx.fillStyle = "rgba(15,23,42,.35)";
+    ctx.fillRect(x - Math.max(1.9, r * 0.17), y - r * 0.5, Math.max(3.8, r * 0.34), Math.max(1.4, r * 0.09));
+    ctx.fillRect(x - Math.max(1.9, r * 0.17), y - r * 0.28, Math.max(3.8, r * 0.34), Math.max(1.4, r * 0.09));
+
+    var headGrad = ctx.createLinearGradient(0, headTop, 0, headTop + headH);
+    headGrad.addColorStop(0, "#d4d4d8");
+    headGrad.addColorStop(0.45, "#9ca3af");
     headGrad.addColorStop(1, "#52525b");
     ctx.fillStyle = headGrad;
-    roundRect(ctx, x - r * 0.9, y - r * 2, r * 1.8, r * 0.62, 3);
+    ctx.beginPath();
+    ctx.moveTo(x - r * 0.95, headTop);
+    ctx.lineTo(x + r * 0.55, headTop);
+    ctx.lineTo(x + r * 1.0, headTop + headH * 0.32);   // 凿刃：收窄成一条边
+    ctx.lineTo(x + r * 1.0, headTop + headH * 0.68);
+    ctx.lineTo(x + r * 0.55, headTop + headH);
+    ctx.lineTo(x - r * 0.95, headTop + headH);
+    ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.25)";
-    roundRect(ctx, x - r * 0.62, y - r * 1.9, r * 0.45, r * 0.18, 1);
+    ctx.strokeStyle = "rgba(15,23,42,.45)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.32)";
+    roundRect(ctx, x - r * 0.82, headTop + headH * 0.16, r * 1.1, Math.max(1.6, headH * 0.2), 1);
     ctx.fill();
     ctx.restore();
   }
@@ -1532,6 +1603,7 @@ window.ILLUSTRATIONS = (function () {
 
   return {
     version: 1,
+    stagePalette: stagePalette,
     dinoScaleCompare: dinoScaleCompare,
     drawKid: drawKid,
     drawFeather: drawFeather,
