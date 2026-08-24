@@ -922,21 +922,24 @@
 
   function renderApod(d) {
     var box = document.getElementById("apodBox");
-    box.textContent = "";
     if (d.media_type === "image" && d.url) {
+      /* 这一格此刻显示的是内置星云图。NASA 的原图往往有好几 MB，先把 box
+         清空再等它，画面就从「有图」退成一个 16:10 的空灰框，越等越难看。
+         图放在文档外面先下载，onload 了才换进来；下载失败就换成说明。 */
       var img = document.createElement("img");
       img.className = "apod-media";
-      img.loading = "lazy";
       img.alt = d.title || "NASA 每日天文图";
-      img.src = d.hdurl || d.url;
+      img.onload = function () { box.textContent = ""; box.appendChild(img); };
       img.onerror = function () {
+        box.textContent = "";
         var ph = document.createElement("div");
         ph.className = "apod-media"; ph.dataset.ph = "1";
-        ph.textContent = "图片加载失败";
-        box.replaceChild(ph, img);
+        ph.textContent = "今天这张图没能加载；下面的说明文字仍是今天的。";
+        box.appendChild(ph);
       };
-      box.appendChild(img);
+      img.src = d.hdurl || d.url;
     } else if (d.media_type === "video" && d.url) {
+      box.textContent = "";
       var fr = document.createElement("iframe");
       fr.className = "apod-media";
       fr.src = d.url;
@@ -946,6 +949,7 @@
       fr.style.border = "0";
       box.appendChild(fr);
     } else {
+      box.textContent = "";
       /* 断网时不再只留一个 emoji 和一行灰字：内置星云图让这一格永远有内容。 */
       var p = document.createElement("div");
       p.className = "apod-media apod-offline";
