@@ -1025,7 +1025,14 @@
         if (!d || !d.title) throw new Error("bad payload");
         renderApod(d);
         mark(true);
-        try { localStorage.setItem(ck, JSON.stringify(d)); } catch (e) {}
+        try {
+          /* apod:<日期> 一天写一个新键，昨天以前的从来没人删，localStorage
+             会一天天涨下去。存今天的之前，把往日的都清掉。 */
+          Object.keys(localStorage).forEach(function (k) {
+            if (k.indexOf("apod:") === 0 && k !== ck) localStorage.removeItem(k);
+          });
+          localStorage.setItem(ck, JSON.stringify(d));
+        } catch (e) {}
       })
       .catch(function () { mark(false); });
   })();
