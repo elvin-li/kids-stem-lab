@@ -481,8 +481,10 @@
        宽度也不等于「舞台减 28」。按请求值做位图，整片水面会被压扁四成多。 */
     if (cv.clientWidth > 0) cssW = cv.clientWidth;
     if (cv.clientHeight > 0) cssH = cv.clientHeight;
-    cv.width = Math.round(cssW * dpr);
-    cv.height = Math.round(cssH * dpr);
+    /* 尺寸没变就别重建位图。除了省一次分配，更要紧的是重绘闸门会按状态签名
+       跳过没变化的帧：位图被清空而签名没变，画布就会一直空着。 */
+    var bw = Math.round(cssW * dpr), bh = Math.round(cssH * dpr);
+    if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
     W = cssW; H = cssH;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     PPM = clamp(W / 4.6, 55, 150);   // 画面宽约 4.6 米

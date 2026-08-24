@@ -485,8 +485,10 @@
 
   function fit(cnv, ctx, w, h) {
     var dpr = Math.min(window.devicePixelRatio || 1, 3);
-    cnv.width = Math.max(1, Math.round(w * dpr));
-    cnv.height = Math.max(1, Math.round(h * dpr));
+    var bw = Math.max(1, Math.round(w * dpr)), bh = Math.max(1, Math.round(h * dpr));
+    /* 尺寸没变就别重建位图。除了省一次分配，更要紧的是主循环会按状态签名跳过
+       没变化的帧：位图被清空而签名没变，画布就会一直空着。 */
+    if (cnv.width !== bw || cnv.height !== bh) { cnv.width = bw; cnv.height = bh; }
     cnv.style.width = w + 'px';
     cnv.style.height = h + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

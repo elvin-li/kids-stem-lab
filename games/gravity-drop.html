@@ -462,8 +462,11 @@
        否则位图比显示宽度宽出十几像素，整幅画面被横向压扁。 */
     if (cv.clientWidth > 0) cssW = cv.clientWidth;
     if (cv.clientHeight > 0) cssH = cv.clientHeight;
-    cv.width = Math.round(cssW * dpr);
-    cv.height = Math.round(cssH * dpr);
+    /* ResizeObserver 会为很多与画布无关的布局变动触发（切换孩子/家长模式、面板
+       展开、滚动条出现）。给 width/height 赋值即使值没变也会重建位图并丢掉整份
+       绘图状态，是这里最贵的一步，所以尺寸真变了才动。 */
+    var bw = Math.round(cssW * dpr), bh = Math.round(cssH * dpr);
+    if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
     W = cssW; H = cssH;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     invalidate();
