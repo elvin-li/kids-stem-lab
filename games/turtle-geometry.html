@@ -1386,6 +1386,12 @@
       invalidatePreview();   // 起点跟着画布尺寸走，预览的几何要重算
       resetAll(true);
       actions = acts;
+      /* 重放之前先按新画布挑一次缩放。原来直接用旧 PPS 重放，而下一帧渲染时
+         previewGeometry 会按新尺寸另选一档：笔迹是旧比例、虚线路线和比例尺是
+         新比例，同一段代码在画布上摆出两个大小不同的图形；缩小窗口时旧比例的
+         笔迹还会冲出画布，白白把 outOfBounds 标成 true，任务判定跟着挂掉。
+         resetAll 刚把 running 置 false，fitScale 不会被跑动闸门挡住。 */
+      fitScale(actions);
       var i;
       for (i = 0; i < upto && i < actions.length; i++) {
         var a = actions[i];
