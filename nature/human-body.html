@@ -977,12 +977,9 @@
       how: "先测静息心率。原地跳 30 下后立刻测，然后<b>每隔一分钟测一次</b>，直到回到静息值。把数据画成折线图。全家一起做，比一比谁的曲线降得快。",
       why: "这条曲线只记录<b>这一次</b>活动后的变化。活动强度、休息、情绪和测量方法都会影响曲线；它适合练习观察与画图，不能单独判断心肺能力或健康。"
     },
-    {
-      sys: "heart", t: "肺容量有多大",
-      need: "气球、卷尺",
-      how: "深吸一口气，一次性全部吹进气球，捏住口不让漏。量气球的<b>周长</b>，用 V = (周长/π)³ × π/6 估算体积。全家各吹一个，比大小。",
-      why: "成人肺活量约 3–5 升，孩子按体型小一些。这个实验把「看不见的呼吸」变成了可以<b>测量和比较</b>的东西。顺便还用上了球体体积公式——数学在这里是真的有用，不是练习题。"
-    },
+    /* 吹气球量肺活量的实验只保留呼吸分类里的「一口气有多大」那张：
+       同一个实验曾在这里以「肺容量有多大」重复出现过一次，还被挂在
+       「心脏血液」筛选下——列表因此变成 15 张，而页面说明写的是 14 个。 */
     {
       sys: "bone", t: "手上的肌腱在动",
       need: "什么都不用",
@@ -1201,7 +1198,10 @@
     var br = Number(document.getElementById("breathRest").value), ba = Number(document.getElementById("breathAfter").value);
     var d = Number(document.getElementById("leverDistance").value);
     if (![pr,pa,br,ba,d].every(function (n) { return isFinite(n) && n > 0; })) { output.textContent = "请先填完五个本次测量值。"; return; }
-    output.textContent = "本次比较：活动后脉搏变化 " + (pa-pr >= 0 ? "+" : "") + (pa-pr) + " 次/分；呼吸变化 " + (ba-br >= 0 ? "+" : "") + (ba-br) + " 次/分。书离肘 " + d + " cm；若移到 " + Math.min(70,d*2) + " cm，同样重量对肘的力矩约变为 " + (Math.min(70,d*2)/d).toFixed(1) + " 倍。数据只在当前页面内存中使用。";
+    /* 对照点向外翻倍；翻倍超出 70 cm（手臂放不下）就改成向里减半。
+       旧写法把翻倍封顶在 70：填 70 时会说「若移到 70 cm，力矩约变为 1.0 倍」。 */
+    var farther = d * 2 <= 70, lever = farther ? d * 2 : Math.round(d / 2);
+    output.textContent = "本次比较：活动后脉搏变化 " + (pa-pr >= 0 ? "+" : "") + (pa-pr) + " 次/分；呼吸变化 " + (ba-br >= 0 ? "+" : "") + (ba-br) + " 次/分。书离肘 " + d + " cm；若移" + (farther ? "远到 " : "近到 ") + lever + " cm，同样重量对肘的力矩约变为 " + (lever/d).toFixed(1) + " 倍。数据只在当前页面内存中使用。";
     operated = true;
   });
   document.getElementById("bodyComplete").addEventListener("click", function () {
