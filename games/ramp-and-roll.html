@@ -256,6 +256,7 @@
         <div class="ebar"><div class="ebar-top"><span><i class="sw" style="background:var(--phys)"></i>势能 PE</span><span class="val" id="peV">5.89 J</span></div><div class="ebar-track"><i id="peB" style="background:var(--phys)"></i></div></div>
         <div class="ebar"><div class="ebar-top"><span><i class="sw" style="background:var(--math)"></i>动能 KE</span><span class="val" id="keV">0.00 J</span></div><div class="ebar-track"><i id="keB" style="background:var(--math)"></i></div></div>
         <div class="ebar"><div class="ebar-top"><span><i class="sw" style="background:var(--code)"></i>摩擦热 Q</span><span class="val" id="qV">0.00 J</span></div><div class="ebar-track"><i id="qB" style="background:var(--code)"></i></div></div>
+        <div class="readout"><span>冲出跑道带走</span><b id="carriedV">—</b></div>
         <div class="readout"><span>总能量</span><b id="sumV">5.89 J</b></div>
         <div class="readout"><span>速度</span><b id="vV">0.00 m/s</b></div>
         <div class="readout"><span>总路程</span><b id="dV">0.00 m</b></div>
@@ -345,6 +346,7 @@
     s: 0,                  // 沿斜坡走过的距离
     d: 0,                  // 平地上走过的距离
     v: 0, t: 0, heat: 0, spin: 0,
+    carried: 0, hitWall: false,
     stopAt: null,
     pred: 1.5, predLocked: false,
     trials: []
@@ -364,6 +366,7 @@
 
   function reset(keepPred) {
     S.phase = 'ready'; S.s = 0; S.d = 0; S.v = 0; S.t = 0; S.heat = 0; S.spin = 0;
+    S.carried = 0; S.hitWall = false;
     S.stopAt = null;
     if (!keepPred) S.predLocked = false;
     actV.textContent = '—';
@@ -420,6 +423,10 @@
       S.heat += af * S.m * dd;
       S.spin += dd / BALL_R;
       if (S.d >= RUNWAY) {
+        /* 球不是停下了，是带着速度离开了这条 6 米跑道。那一份动能要记下来：
+           不然能量条会凭空少掉一截，而「冰面 μ=0.02」按下去几乎每次都冲出去。 */
+        S.carried = 0.5 * S.m * S.v * S.v;
+        S.hitWall = true;
         S.d = RUNWAY; S.v = 0; S.phase = 'stopped'; S.stopAt = RUNWAY; finish(false, true);
         return;
       }
@@ -662,7 +669,7 @@
       ctx.strokeStyle = C.sci; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(sxp, view.floorY + 2); ctx.lineTo(sxp, view.floorY - 20); ctx.stroke();
       ctx.fillStyle = C.sci; ctx.font = '700 10px ' + C.mono; ctx.textAlign = 'center';
-      ctx.fillText(S.stopAt.toFixed(2) + 'm', sxp, view.floorY - 22);
+      ctx.fillText((S.hitWall ? '≥' : '') + S.stopAt.toFixed(2) + 'm', sxp, view.floorY - 22);
       /* 猜的位置和真停的位置之间画一根带箭头的量尺，误差有多大一眼就看到，
          不用回头去表格里读那个「差 x m」。 */
       var gap = Math.abs(S.stopAt - S.pred);
@@ -786,7 +793,9 @@
     // 左上信息
     ctx.textAlign = 'left'; ctx.textBaseline = 'top';
     ctx.font = '700 12px ' + C.font; ctx.fillStyle = C.mid;
-    var label = S.phase === 'ready' ? '待放手' : (S.phase === 'stopped' ? '已停下' : (S.phase === 'ramp' ? '下坡中' : '平地滑行'));
+    var label = S.phase === 'ready' ? '待放手'
+      : (S.phase === 'stopped' ? (S.hitWall ? '冲出跑道' : '已停下')
+        : (S.phase === 'ramp' ? '下坡中' : '平地滑行'));
     ctx.fillText(label, 6, 6);
     ctx.font = '600 11px ' + C.mono; ctx.fillStyle = C.dim;
     ctx.fillText('t=' + S.t.toFixed(2) + 's  μ=' + S.mu.toFixed(2) + '  m=' + S.m.toFixed(2) + 'kg', 6, 22);
@@ -849,8 +858,9 @@
     var pe = S.m * G * heightNow();
     var ke = 0.5 * S.m * S.v * S.v;
     var q = Math.min(tot, S.heat);
-    var sum = pe + ke + q;
-    if (sum > tot && sum > 0) { var f = tot / sum; pe *= f; ke *= f; q *= f; }
+    var carried = Math.min(tot, S.carried);
+    var sum = pe + ke + q + carried;
+    if (sum > tot && sum > 0) { var f = tot / sum; pe *= f; ke *= f; q *= f; carried *= f; }
 
     var w = Math.min(300, Math.max(190, W * 0.42));
     var x = W - w - 12, y = 12, barH = 15;
@@ -863,11 +873,16 @@
     var top = y + 15;
     ctx.fillStyle = 'rgba(148,163,184,.16)';
     ctx.fillRect(x, top, w, barH);
+    /* 冲出跑道带走的那一份仍是动能，只是不在跑道上了：用淡一档的同色，
+       一眼能看出「同一种能量，被带走了」，而不是凭空消失。 */
+    var carriedColor = alpha(C.math, 0.42);
+    var legend = [['势能', pe, C.phys], ['动能', ke, C.math], ['摩擦热', q, C.code]];
+    if (carried > 0.005) legend.push(['带出跑道', carried, carriedColor]);
     var cut = 0;
-    [[pe, C.phys], [ke, C.math], [q, C.code]].forEach(function (part) {
-      var pw = part[0] / tot * w;
+    legend.forEach(function (part) {
+      var pw = part[1] / tot * w;
       if (pw <= 0) return;
-      ctx.fillStyle = part[1];
+      ctx.fillStyle = part[2];
       ctx.fillRect(x + cut, top, pw, barH);
       cut += pw;
     });
@@ -876,15 +891,17 @@
     ctx.strokeRect(x + .5, top + .5, w - 1, barH - 1);
 
     ctx.font = '700 9px ' + C.mono;
-    var legend = [['势能', pe, C.phys], ['动能', ke, C.math], ['摩擦热', q, C.code]];
-    var lx = x;
+    var lx = x, ly = top + barH + 6;
     for (var i = 0; i < legend.length; i++) {
-      ctx.fillStyle = legend[i][2];
-      ctx.fillRect(lx, top + barH + 6, 8, 8);
-      ctx.fillStyle = C.dim;
       var text = legend[i][0] + ' ' + legend[i][1].toFixed(2);
-      ctx.fillText(text, lx + 11, top + barH + 6);
-      lx += 13 + ctx.measureText(text).width + 10;
+      var itemW = 13 + ctx.measureText(text).width + 10;
+      // 四项排不进一行时换行，否则最后一项会写到画布外
+      if (lx > x && lx + itemW > x + w) { lx = x; ly += 12; }
+      ctx.fillStyle = legend[i][2];
+      ctx.fillRect(lx, ly, 8, 8);
+      ctx.fillStyle = C.dim;
+      ctx.fillText(text, lx + 11, ly);
+      lx += itemW;
     }
     ctx.restore();
   }
@@ -893,6 +910,7 @@
   var peV = document.getElementById('peV'), keV = document.getElementById('keV'), qV = document.getElementById('qV');
   var peB = document.getElementById('peB'), keB = document.getElementById('keB'), qB = document.getElementById('qB');
   var sumV = document.getElementById('sumV'), vV = document.getElementById('vV'), dV = document.getElementById('dV');
+  var carriedV = document.getElementById('carriedV');
   var actV = document.getElementById('actV'), errV = document.getElementById('errV');
   var fairResult = document.getElementById('fairResult');
   var rampFairCardContent = document.getElementById('rampFairCardContent');
@@ -1020,7 +1038,9 @@
     peB.style.width = (pe / tot * 100).toFixed(1) + '%';
     keB.style.width = (ke / tot * 100).toFixed(1) + '%';
     qB.style.width = (q / tot * 100).toFixed(1) + '%';
-    sumV.textContent = (pe + ke + q).toFixed(2) + ' J';
+    var carried = Math.min(tot, S.carried);
+    carriedV.textContent = carried > 0.005 ? carried.toFixed(2) + ' J' : '—';
+    sumV.textContent = (pe + ke + q + carried).toFixed(2) + ' J';
     vV.textContent = S.v.toFixed(2) + ' m/s';
     dV.textContent = (S.s + S.d).toFixed(2) + ' m';
   }
