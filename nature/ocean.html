@@ -1163,6 +1163,12 @@
   });
 
   var species = { sperm:["抹香鲸","用肺呼吸，可闭气深潜，胸腔会在高压下收缩","约 2250 m"], angler:["鮟鱇鱼","用生物发光诱饵在黑暗中捕食，身体柔软且无大型气腔","1000–4000 m"], snail:["深海狮子鱼","凝胶状身体、无鱼鳔，适应极高压力","6000–8300 m"] };
+  /* 上面那台压力计对同一个数写「101 倍」，这里写的是「101.0 倍」。
+     深度是 5 米一档的滑块，压强是个粗略模型，多出来的那一位小数
+     既不多给信息，还让同一页上同一个量看着像两个量。规则跟压力计一致。 */
+  function atmText(atm) {
+    return atm >= 10 ? Math.round(atm).toLocaleString() : String(Math.round(atm * 10) / 10);
+  }
   function stageValues(d) {
     return {
       atm: 1 + d / 10,
@@ -1176,19 +1182,19 @@
     depthText.textContent = d.toLocaleString() + " 米";
     stageLight.textContent = values.lightShort;
     stageTemp.textContent = values.temp.replace("（随地点季节变化）", "");
-    stagePressure.textContent = "约 " + values.atm.toFixed(1) + " 倍";
+    stagePressure.textContent = "约 " + atmText(values.atm) + " 倍";
     stageSub.style.top = depthTop(d);
     stageLine.style.height = "calc(var(--dive-span) * " + depthFrac(d).toFixed(4) + ")";
     /* 舞台是一张 role="img"：里面那三格读数对读屏软件是隐藏的，
        描述必须自己跟着滑块走，否则听到的永远是初始的那一句。 */
     stage.setAttribute("aria-label",
       "深度剖面：微光号已下潜到 " + d.toLocaleString() + " 米，" + values.light +
-      "，水温" + values.temp + "，压力约 " + values.atm.toFixed(1) +
+      "，水温" + values.temp + "，压力约 " + atmText(values.atm) +
       " 个大气压。海面有绿海龟，微光层有大王乌贼，无光层有鮟鱇鱼，海沟底有深海狮子鱼。");
     printKey.textContent =
       "图上从上到下：海面（阳光充足）→ 200 m（只剩微光）→ 1000 m（完全黑暗）→ " +
       "10935 m 马里亚纳海沟底（仍然有生命）。微光号停在 " + d.toLocaleString() + " 米：" +
-      values.light + "，水温" + values.temp + "，压力约 " + values.atm.toFixed(1) + " 个大气压。";
+      values.light + "，水温" + values.temp + "，压力约 " + atmText(values.atm) + " 个大气压。";
   }
   if (window.Progress) Progress.visit("nature/ocean.html", "海底世界");
   slider.addEventListener("input", paintStage);
@@ -1196,7 +1202,7 @@
   document.getElementById("oceanDive").addEventListener("click", function () {
     var d = Number(slider.value), values = stageValues(d);
     var s = species[document.getElementById("oceanSpecies").value];
-    output.textContent = "下潜 " + d.toLocaleString() + " m：" + values.light + "，水温" + values.temp + "，总压力约 " + values.atm.toFixed(1) + " 个大气压。物种卡—" + s[0] + "（常见深度 " + s[2] + "）：" + s[1] + "。";
+    output.textContent = "下潜 " + d.toLocaleString() + " m：" + values.light + "，水温" + values.temp + "，总压力约 " + atmText(values.atm) + " 个大气压。物种卡—" + s[0] + "（常见深度 " + s[2] + "）：" + s[1] + "。";
     diveCheck.textContent = "✓ 已执行 " + d.toLocaleString() + " 米下潜";
     diveCheck.classList.add("done");
     operated = true;
