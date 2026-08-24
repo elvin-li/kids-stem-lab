@@ -6,6 +6,7 @@
  *   node tools/shots.mjs --w=375 nature/ocean.html          # 指定视口宽度
  *   node tools/shots.mjs --sel="#stage" games/wave-maker.html
  *   node tools/shots.mjs --click="#btn-run" --wait=1500 games/ramp-and-roll.html
+ *   node tools/shots.mjs --print pages/why.html                # 打印样式下的效果
  *
  * 输出写到 /tmp/shots/<page>-<mode>-<width>.png，只用于开发期人工核对视觉。
  */
@@ -122,6 +123,11 @@ try {
       })()`
     }, sessionId);
     await wait(400);
+    /* 打印样式只在 print media 下生效，靠肉眼是核对不了的；这里直接让页面进入打印媒体再截图。 */
+    if (flags.print) {
+      await browser.send('Emulation.setEmulatedMedia', { media: 'print' }, sessionId);
+      await wait(300);
+    }
     if (flags.click) {
       await browser.send('Runtime.evaluate', {
         expression: `document.querySelectorAll(${JSON.stringify(flags.click)}).forEach((el) => el.click())`
@@ -148,7 +154,7 @@ try {
       clip ? { format: 'png', clip, captureBeyondViewport: true }
            : { format: 'png', captureBeyondViewport: true }, sessionId);
     const tag = page.replace(/[\/.]/g, '_');
-    const file = join(OUT, `${tag}-${mode}-${width}${flags.sel ? '-sel' : ''}.png`);
+    const file = join(OUT, `${tag}-${mode}-${width}${flags.print ? '-print' : ''}${flags.sel ? '-sel' : ''}.png`);
     await writeFile(file, Buffer.from(shot.data, 'base64'));
     console.log(file);
     await browser.send('Target.closeTarget', { targetId });
