@@ -1994,6 +1994,52 @@ window.ILLUSTRATIONS = (function () {
     '<path d="M24 3 C26 16 32 22 45 24 C32 26 26 32 24 45 C22 32 16 26 3 24 C16 22 22 16 24 3Z" fill="#f6c445"/>' +
     '<path d="M39 6 C40 11 41 12 46 13 C41 14 40 15 39 20 C38 15 37 14 32 13 C37 12 38 11 39 6Z" fill="#fbe08a"/>');
 
+  /* ---------------- 离线时顶替远程照片的星空图 ----------------
+     太空页的「今天的天文图」和照片墙都要联网才有内容，断网时原来只剩一行
+     「未联网」的灰字或一个 emoji。这张星云是内置的，离线打开也有东西可看。 */
+  def("space/nebula", {
+    viewBox: "0 0 160 100", fit: "xMidYMid slice", safe: 1,
+    title: "猎户座大星云示意图",
+    desc: "深蓝色的夜空里有一团粉紫色的发光气体云，云中散布着几颗明亮的新生恒星，周围点缀着远处的星点。",
+    bg: '<defs>' +
+      '<radialGradient id="{{U}}sky" cx="42%" cy="46%" r="78%">' +
+      '<stop offset="0%" stop-color="#1d2a52"/><stop offset="100%" stop-color="#080c1c"/></radialGradient>' +
+      /* 气体没有边界，硬边画出来只会像三个套在一起的椭圆色块 */
+      '<filter id="{{U}}b1" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>' +
+      '<filter id="{{U}}b2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>' +
+      '<filter id="{{U}}b3" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3.4"/></filter>' +
+      '<filter id="{{U}}b4" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="1.8"/></filter>' +
+      "</defs>" +
+      '<rect width="160" height="100" fill="url(#{{U}}sky)"/>',
+    art:
+      /* 星云主体：外层冷紫、中层洋红、内层暖粉，越往核心越亮 */
+      '<path d="M18 66 C14 44 30 24 56 18 C86 11 118 20 134 40 C148 58 142 82 118 90 C92 99 46 94 26 82 C20 78 19 72 18 66Z" fill="#5b3480" opacity=".62" filter="url(#{{U}}b1)"/>' +
+      '<path d="M34 62 C32 46 48 32 70 29 C94 26 116 36 122 52 C127 66 118 79 98 83 C74 88 46 80 36 70 C34 68 34 65 34 62Z" fill="#a63d84" opacity=".62" filter="url(#{{U}}b2)"/>' +
+      '<path d="M50 58 C50 47 60 39 74 38 C90 37 102 44 104 54 C106 64 97 72 82 73 C66 74 52 68 50 58Z" fill="#e0708f" opacity=".66" filter="url(#{{U}}b3)"/>' +
+      '<path d="M64 55 C64 48 71 44 79 44 C88 44 94 49 94 55 C94 62 87 66 79 66 C70 66 64 61 64 55Z" fill="#ffd9c0" opacity=".7" filter="url(#{{U}}b3)"/>' +
+      /* 暗尘带：真星云都有这么一条挡光的尘埃，少了它就只是一团糖果色 */
+      '<path d="M26 84 C52 70 78 74 104 62 C118 56 128 47 136 36 L143 45 C133 57 121 66 107 72 C81 84 54 80 32 92Z" fill="#0c1226" opacity=".62" filter="url(#{{U}}b2)"/>' +
+      /* 云里正在诞生的三颗亮星：十字光芒是望远镜的衍射尖，孩子最认得这个符号 */
+      '<g fill="#ffd9a8" opacity=".8" filter="url(#{{U}}b4)">' +
+      '<circle cx="74" cy="51" r="6"/><circle cx="92" cy="65" r="4"/><circle cx="58" cy="67" r="3.4"/></g>' +
+      '<g stroke="#fff8e6" stroke-linecap="round" fill="none">' +
+      '<g stroke-width="1.5"><path d="M74 42 v18 M65 51 h18"/></g>' +
+      '<g stroke-width="1.1" opacity=".9"><path d="M92 58 v14 M85 65 h14"/><path d="M58 61 v12 M52 67 h12"/></g>' +
+      "</g>" +
+      '<g fill="#fffdf5"><circle cx="74" cy="51" r="2.8"/><circle cx="92" cy="65" r="2"/><circle cx="58" cy="67" r="1.7"/></g>' +
+      /* 背景恒星：大小和亮度都要拉开，一样亮就成了均匀撒开的白点阵 */
+      '<g fill="#eaf1ff">' +
+      '<circle cx="14" cy="18" r="1.5"/><circle cx="112" cy="18" r="1.4"/><circle cx="150" cy="34" r="1.3"/>' +
+      '<circle cx="72" cy="95" r="1.3"/>' +
+      '<g opacity=".7"><circle cx="52" cy="17" r="1.1"/><circle cx="136" cy="10" r="1"/>' +
+      '<circle cx="132" cy="86" r="1.1"/><circle cx="16" cy="78" r="1.1"/></g>' +
+      '<g opacity=".45"><circle cx="34" cy="10" r=".9"/><circle cx="88" cy="12" r=".9"/>' +
+      '<circle cx="146" cy="66" r=".9"/><circle cx="108" cy="94" r=".9"/><circle cx="42" cy="90" r=".9"/>' +
+      '<circle cx="8" cy="48" r=".9"/><circle cx="26" cy="34" r=".8"/><circle cx="120" cy="30" r=".7"/>' +
+      '<circle cx="64" cy="8" r=".7"/><circle cx="98" cy="86" r=".7"/></g>' +
+      "</g>"
+  });
+
   /* ---------------- 昆虫变态发育各阶段 ---------------- */
 
   function defLife(name, title, desc, art) {
