@@ -627,6 +627,19 @@
     }
     ctx.restore();
 
+    /* 跑道得有个看得见的尽头。物理上球跑到 6 米就离开跑道：距离记成「≥6m」、
+       没耗掉的动能记成「带出跑道」。可原先泥土从画布这头铺到那头，
+       哪儿是跑道、哪儿到头全看不出来，「冲出跑道」四个字就没有画面撑着。
+       现在把 0m–6m 压实提亮成一条道，末端切一个断面，右边留着原样的土。 */
+    var runX0 = wx(base), runX1 = wx(base + RUNWAY);
+    ctx.fillStyle = 'rgba(255,246,230,.34)';
+    ctx.fillRect(runX0, view.floorY, runX1 - runX0, 3);
+    // 断面：亮的切口 + 右侧一道暗影，读起来就是「这条道到此为止」
+    ctx.fillStyle = 'rgba(255,246,230,.42)';
+    ctx.fillRect(runX1 - 1, view.floorY, 2, 12);
+    ctx.fillStyle = 'rgba(23,16,10,.34)';
+    ctx.fillRect(runX1 + 1, view.floorY, 5, 10);
+
     // 摩擦纹理（μ 越大越密）
     var n = Math.round(4 + S.mu * 90);
     ctx.strokeStyle = 'rgba(251,146,60,' + (0.15 + S.mu * 0.9).toFixed(3) + ')';
@@ -794,6 +807,23 @@
       ctx.font = '700 10px ' + C.mono; ctx.fillStyle = C.math;
       ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
       ctx.fillText(S.v.toFixed(2) + ' m/s', ex + 6, ey - 2);
+    }
+
+    /* 冲出跑道那一下：速度被归了零（球不再往前算），可它并不是停下来的，
+       是带着剩下的动能离开了跑道。断面外面补一支小箭头，
+       能量条里那截「带出跑道」和读数里的「≥6m」才有画面对得上。
+       只画箭头不写数字：右边只剩一条窄边，数字放这儿必定压到球或者出画。 */
+    if (S.hitWall) {
+      var oxs = runX1 + rpx + 4;
+      var olen = Math.max(8, Math.min(20, W - oxs - 5));
+      var oy = view.floorY - rpx;
+      ctx.save();
+      ctx.strokeStyle = C.math; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(oxs, oy); ctx.lineTo(oxs + olen, oy); ctx.stroke();
+      ctx.fillStyle = C.math;
+      ctx.translate(oxs + olen, oy);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-7, -4); ctx.lineTo(-7, 4); ctx.closePath(); ctx.fill();
+      ctx.restore();
     }
 
     /* 斜面受力分解。重力那一根竖直向下，长度代表 mg；它被拆成互相垂直的两份：
