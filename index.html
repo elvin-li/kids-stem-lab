@@ -642,12 +642,17 @@
      不再手写死（上一版写着 17，而 18 个专题其实都在池子里）。 */
   var routePool=all.filter(function(x){return window.PLAYFUL&&PLAYFUL.pages&&PLAYFUL.pages[x.id];});
   if(routePool.length)document.getElementById("randomRouteText").textContent="会从 "+routePool.length+" 个实验与自然专题中挑一个开放式小任务。";
-  document.getElementById("randomRoute").addEventListener("click",function(){var choices=routePool,x=choices[Math.floor(Math.random()*choices.length)],challenge=x&&Playful.randomTask(x.id),output=document.getElementById("randomRouteText"),link=document.getElementById("randomRouteGo");if(!x||!challenge)return;
+  document.getElementById("randomRoute").addEventListener("click",function(){var choices=routePool,x=choices[Math.floor(Math.random()*choices.length)],output=document.getElementById("randomRouteText"),link=document.getElementById("randomRouteGo");if(!x)return;
+/* 实验目录和专题目录前两轮各补过一次同一道守卫，首页这颗按钮还裸调着 Playful.randomTask：
+   童趣层没加载时它根本不存在，点一下直接抛 TypeError；资料里没有这页的惊喜卡时它返回
+   null，原先的 if(!challenge)return 会静默退出——两种情况按钮都毫无反应，「前往」链接也
+   设不上，看起来就是坏的。照同样的写法补齐：抽不到惊喜卡就退回资料里自带的任务。 */
+var challenge=window.Playful&&Playful.randomTask?Playful.randomTask(x.id):null;
 /* 抽中的实验原来靠一个 emoji 前缀标身份，而这段文字是 aria-live 区域，
    读屏会把 emoji 一起念出来。图标改放在旁边的装饰位，正文只留可读的句子。 */
 var mark=document.getElementById("randomRouteMark"),slug=String(x.id).replace(/^.*\//,"").replace(/\.html$/,""),tile=window.ILLUSTRATIONS&&ILLUSTRATIONS.tileIcon&&ILLUSTRATIONS.tileIcon(slug);
 if(mark){mark.innerHTML=tile||"";if(!tile)mark.textContent=x.icon||"";mark.hidden=!(tile||x.icon);}
-output.textContent=x.title+" · "+challenge.lead+"："+challenge.text;link.href=x.id;link.hidden=false;link.textContent="前往“"+x.title+"” →";});
+output.textContent=x.title+" · "+(challenge?challenge.lead+"："+challenge.text:"任务："+x.task);link.href=x.id;link.hidden=false;link.textContent="前往“"+x.title+"” →";});
   window.addEventListener("kids-stem:progress",renderRecentPlayful);renderRecentPlayful();
 })();
 </script>
