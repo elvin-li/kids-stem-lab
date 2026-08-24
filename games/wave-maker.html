@@ -425,6 +425,7 @@
   </footer>
 </main>
 
+<script src="../assets/js/illustrations.js?v=15"></script>
 <script>
 (function () {
   'use strict';
@@ -435,14 +436,10 @@
      颜色若照常读 --ink 一类的变量，孩子模式下整套会翻成深色，
      于是深字压深底，读数和标签全部消失。所以这里固定用一份深底配色，
      只有字体名从变量取——字体跟明暗无关。
-     同一份配色在 assets/js/illustrations.js 里叫 STAGE_DARK，改色请两边一起改。 */
-  var C = {
-    ink: '#eef2ff', mid: '#b6c0e0', dim: '#8e99bd',
-    line: '#3a456e', soft: '#293252',
-    math: '#6ea8fe', kit: '#f472b6', sci: '#4ade80',
-    warn: '#fbbf24', phys: '#a78bfa',
+     这份配色原先在本页抄了一遍，现在直接用 illustrations.js 里的那份。 */
+  var C = ILLUSTRATIONS.stagePalette({
     mono: V('--mono', 'monospace'), font: V('--font', 'sans-serif')
-  };
+  });
 
   var cv = document.getElementById('scene');
   var ctx = cv.getContext('2d', { alpha: false });
@@ -459,8 +456,13 @@
   var dir2 = 1;
   var S = {};
   for (var k in DEF) if (Object.prototype.hasOwnProperty.call(DEF, k)) S[k] = DEF[k];
-  var motionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
-  var playing = !motionQuery.matches;
+  /* 「减少动效」既可能来自系统设置，也可能来自家长在偏好面板里的强制选择。
+     只查 matchMedia 会漏掉后者：在面板里点了减少动效，波还在这里跑。 */
+  var motionReduced = ILLUSTRATIONS.reducedMotion(function (reduced) {
+    if (reduced) setPlay(false);
+    updateMotionHint();
+  });
+  var playing = !motionReduced();
   var probeX = 1;
   var t = 0;                      // 模拟时间（秒）
 
@@ -1035,6 +1037,7 @@
   var FIXED = 1 / 120;
   var acc = 0, lastT = 0;
 
+  var gate = ILLUSTRATIONS.redrawGate();
   function frame(now) {
     if (!lastT) lastT = now;
     var dt = (now - lastT) / 1000;
@@ -1050,7 +1053,12 @@
       if (t > 1e6) t = 0;
     }
 
-    if (MODE === 'wave') drawWaveMode(); else drawTankMode();
+    /* 暂停（含系统「减少动效」）时画面完全不动，没必要每秒重画 60 次整幅波形。
+       签名里放上所有会改变画面的量，任何一项变了都会照常重画。 */
+    var sig = MODE + '|' + W + 'x' + H + '|' + probeX + '|' + JSON.stringify(S);
+    if (gate(sig, playing)) {
+      if (MODE === 'wave') drawWaveMode(); else drawTankMode();
+    }
     requestAnimationFrame(frame);
   }
 
@@ -1115,7 +1123,11 @@
   playBtn.addEventListener('click', function () { setPlay(!playing); });
   var motionHint = document.getElementById('motionHint');
   function updateMotionHint() {
-    motionHint.textContent = motionQuery.matches ? '已按系统设置暂停动态；可用“前进一步”逐帧观察，或回到静态起点。' : '可随时暂停，并用“前进一步”逐帧观察。';
+    /* 「减少动效」既可能来自系统设置，也可能来自偏好面板里的那一项，
+       提示语不该只提系统。 */
+    motionHint.textContent = motionReduced()
+      ? '已按“减少动效”设置暂停动态；可用“前进一步”逐帧观察，或回到静态起点。'
+      : '可随时暂停，并用“前进一步”逐帧观察。';
   }
   document.getElementById('stepFrameBtn').addEventListener('click', function () {
     setPlay(false);
@@ -1279,10 +1291,8 @@
   syncUI();
   updateWaveTask();
   setMode('wave');
-  setPlay(!motionQuery.matches);
+  setPlay(!motionReduced());
   updateMotionHint();
-  if (motionQuery.addEventListener) motionQuery.addEventListener('change', function (event) { if (event.matches) setPlay(false); updateMotionHint(); });
-  else if (motionQuery.addListener) motionQuery.addListener(function (event) { if (event.matches) setPlay(false); updateMotionHint(); });
   resize();
   requestAnimationFrame(frame);
 })();

@@ -528,7 +528,12 @@
   var MODE = 'shadow';
   var PX_PER_M = 100;   // 影子模式：1 米 = 100 逻辑像素时的基准（实际按画面缩放换算）
 
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* 「减少动效」不只看系统设置：偏好面板里那一项也会写在 <html> 上，而且随时
+     可以改。光点跑动是本页唯一的动效，偏好一变就跟着停/放，按钮状态同步更新。 */
+  var motionReduced = ILLUSTRATIONS.reducedMotion(function (reduced) {
+    S.anim = !reduced;
+    syncAnimBtn();
+  });
   var S = {
     /* 影子模式（归一化坐标 0..1，相对画面宽/高）。
        灯默认放在道具顶端稍低的位置：擦过物顶的光于是往上走，影子爬到墙上——
@@ -536,7 +541,7 @@
        就该是墙上的影子。灯抬到物顶以上时影子改为躺在地上，两种都画。 */
     lamp: { x: 0.30, y: 0.72, r: 0 },     // r 单位：厘米
     objX: 0.45, objH: 0.9,                // objH 单位：米
-    rays: true, anim: !reduceMotion, sourceCount: 1, sourceGap: 0.12,
+    rays: true, anim: !motionReduced(), sourceCount: 1, sourceGap: 0.12,
     // 混色模式
     iR: 1, iG: 1, iB: 1, spread: 0.34, sep: 0.30,
     // 取色器落在三盏灯的重心上：一打开就取到「三色齐全＝白」，又不会压住蓝灯
@@ -1130,12 +1135,20 @@
 
   // ================= 循环 =================
   var lastT = 0;
+  var gate = ILLUSTRATIONS.redrawGate();
   function loop(now) {
     if (!lastT) lastT = now;
     var dt = Math.min(0.05, (now - lastT) / 1000);
     lastT = now;
-    phase = (phase + dt) % 1000;
-    if (MODE === 'shadow') drawShadow(); else drawColor();
+    /* 会自己动的只有光线上那串跑动的小光点，而且只在影子模式里。混色模式是
+       完全静止的一幅图，关掉动效以后影子模式也是。静止的时候整幅重绘 60 次
+       每秒毫无意义，用状态签名把这些帧挡掉。 */
+    var moving = MODE === 'shadow' && S.anim && S.rays;
+    if (moving) phase = (phase + dt) % 1000;
+    var sig = MODE + '|' + W + 'x' + H + '|' + drag + '|' + hover + '|' + JSON.stringify(S);
+    if (gate(sig, moving)) {
+      if (MODE === 'shadow') drawShadow(); else drawColor();
+    }
     requestAnimationFrame(loop);
   }
 
@@ -1289,13 +1302,19 @@
   });
 
   var rayBtn = document.getElementById('rayToggle'), animBtn = document.getElementById('animToggle');
+  /* 按钮的按下态原先写死在 HTML 里，开着「减少动效」进来时光点根本没跑，
+     按钮却还显示「已按下」。状态统一由这里写。 */
+  function syncAnimBtn() {
+    if (animBtn) animBtn.setAttribute('aria-pressed', S.anim ? 'true' : 'false');
+  }
   rayBtn.addEventListener('click', function () {
     S.rays = !S.rays; rayBtn.setAttribute('aria-pressed', S.rays ? 'true' : 'false');
     announce(S.rays ? '已显示光线' : '已隐藏光线');
   });
   animBtn.addEventListener('click', function () {
-    S.anim = !S.anim; animBtn.setAttribute('aria-pressed', S.anim ? 'true' : 'false');
+    S.anim = !S.anim; syncAnimBtn();
   });
+  syncAnimBtn();
 
   var iREl = document.getElementById('iR'), iGEl = document.getElementById('iG'), iBEl = document.getElementById('iB'),
       spreadEl = document.getElementById('spread'), sepEl = document.getElementById('sep'),

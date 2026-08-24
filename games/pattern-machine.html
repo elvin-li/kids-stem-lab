@@ -688,11 +688,9 @@
   }
   function say(msg) { el.live.textContent = msg; }
 
-  // 尊重「减少动态效果」
-  var reduceMotion = false;
-  try {
-    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  } catch (e) { reduceMotion = false; }
+  /* 尊重「减少动态效果」。每次用的时候现读：系统设置和偏好面板里的选择都能
+     中途改，开局记下来的那个布尔值改完就过期了，机器照样抖。 */
+  var motionReduced = ILLUSTRATIONS.reducedMotion();
 
   // ============================================================
   //  规则：内部统一表示 y = a*x + b，或 a*x*x + b
@@ -925,7 +923,7 @@
   }
 
   function boxCelebrate() {
-    if (reduceMotion) return;
+    if (motionReduced()) return;
     el.box.classList.add('run');
     setTimeout(function () { el.box.classList.remove('run'); }, 700);
   }
@@ -950,7 +948,7 @@
     el.inVal.textContent = x;
     el.feedIn.value = x;
 
-    if (reduceMotion) {
+    if (motionReduced()) {
       el.outVal.textContent = y;
       pushLog(x, y);
       return;
@@ -991,7 +989,7 @@
       el.outVal.textContent = y;
       el.feedIn.value = x;
       pushLog(x, y);
-      if (reduceMotion) { next(); }
+      if (motionReduced()) { next(); }
       else setTimeout(next, 190);
     })();
   }
