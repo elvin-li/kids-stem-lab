@@ -356,6 +356,7 @@
     btnGo.textContent = '放球出发';
     actV.textContent = '—';
     if (!keepPred) { errV.textContent = '—'; }
+    invalidate();
   }
 
   // ---------- 物理 ----------
@@ -458,7 +459,7 @@
     cv.height = Math.round(cssH * dpr);
     W = cssW; H = cssH;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    draw();
+    invalidate();
   }
 
   function computeView() {
@@ -499,20 +500,34 @@
     var th = rad(S.ang);
     var base = rampBase();
 
-    // 地面填充。这块占了画布小半张，纯色一填就是一片死黑，做成分层土壤才像剖面。
+    /* 天空。斜坡通常只用掉画布下半张，上半张不铺点东西就是一块空白。
+       用很淡的一层渐变 + 地平线处的暖光，两种主题下都只是「淡」，不会盖住线条。 */
+    var sky = ctx.createLinearGradient(0, 0, 0, view.floorY);
+    sky.addColorStop(0, 'rgba(110,168,254,.10)');
+    sky.addColorStop(0.62, 'rgba(110,168,254,.03)');
+    sky.addColorStop(1, 'rgba(251,191,36,.10)');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, view.floorY);
+
+    // 地面填充。这块占了画布小半张，做成分层土壤才像剖面；
+    // 颜色写成泥土色而不是深蓝，孩子模式的浅色页面上才不会突兀成一块夜空。
     var groundH = H - view.floorY;
     var soil = ctx.createLinearGradient(0, view.floorY, 0, H);
-    soil.addColorStop(0, 'rgba(58,68,104,.95)');
-    soil.addColorStop(0.3, 'rgba(38,47,78,.95)');
-    soil.addColorStop(1, 'rgba(21,27,48,.95)');
+    soil.addColorStop(0, '#8d7050');
+    soil.addColorStop(0.16, '#6d543a');
+    soil.addColorStop(0.55, '#513e2a');
+    soil.addColorStop(1, '#33261a');
     ctx.fillStyle = soil;
     ctx.fillRect(0, view.floorY, W, groundH);
-    /* 碎石位置用固定公式算，避免每帧重绘时抖动。 */
-    ctx.fillStyle = 'rgba(148,163,184,.13)';
-    for (var g = 0; g < 44; g++) {
+    // 表层压实的一条亮土，地面线才不会像是直接切在深色块上
+    ctx.fillStyle = 'rgba(255,232,196,.16)';
+    ctx.fillRect(0, view.floorY, W, 3);
+    /* 碎石位置用固定公式算，避免每帧重绘时抖动。深浅各一层才有颗粒感。 */
+    for (var g = 0; g < 52; g++) {
       var gx = ((g * 137) % 101) / 100 * W;
-      var gy = view.floorY + 24 + ((g * 61) % 97) / 97 * Math.max(0, groundH - 32);
-      var gr = 1.2 + ((g * 29) % 7) * 0.32;
+      var gy = view.floorY + 20 + ((g * 61) % 97) / 97 * Math.max(0, groundH - 28);
+      var gr = 1.2 + ((g * 29) % 7) * 0.34;
+      ctx.fillStyle = g % 3 ? 'rgba(255,246,230,.13)' : 'rgba(23,16,10,.28)';
       ctx.beginPath(); ctx.ellipse(gx, gy, gr * 1.7, gr, 0, 0, Math.PI * 2); ctx.fill();
     }
 
@@ -552,9 +567,10 @@
       ctx.lineTo(wx(fx) - 4, view.floorY + 9);
       ctx.stroke();
     }
-    /* 贴在跑道起点会正好压住 0m 刻度，挪到跑道尾端、刻度文字下面一行。 */
+    /* 贴在跑道起点会正好压住 0m 刻度，挪到跑道尾端、刻度文字下面一行。
+       文字压在泥土色上，颜色只能用固定的浅色，跟着主题走会在孩子模式变成棕字压棕底。 */
     ctx.font = '700 10px ' + C.mono;
-    ctx.fillStyle = C.code;
+    ctx.fillStyle = '#ffd9a8';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'top';
     ctx.fillText('摩擦 μ=' + S.mu.toFixed(2), wx(base + RUNWAY), view.floorY + 24);
@@ -571,40 +587,46 @@
     ctx.save();
     ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.phys;
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText('h=' + S.h.toFixed(2) + 'm', wx(0) + 5, wy(S.h / 2));
+    ctx.fillText('h=' + S.h.toFixed(2) + 'm', wx(0) + 5, wy(S.h * 0.18));
     ctx.restore();
 
-    // 角度弧
-    ctx.strokeStyle = 'rgba(182,192,224,.6)';
+    // 角度弧。数字放在扇形正中间，贴着角顶写会被斜边压住。
+    var arcR = Math.min(40, Math.max(16, base * view.scale * 0.5));
+    ctx.strokeStyle = 'rgba(167,139,250,.85)';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.arc(wx(base), wy(0), Math.min(40, base * view.scale * 0.5), Math.PI, Math.PI + th);
+    ctx.arc(wx(base), wy(0), arcR, Math.PI, Math.PI + th);
     ctx.stroke();
-    ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.mid;
-    ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
-    ctx.fillText(S.ang + '°', wx(base) - 8, wy(0) - 4);
+    var midA = Math.PI + th / 2;
+    ctx.font = '700 11px ' + C.mono; ctx.fillStyle = C.phys;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(S.ang + '°', wx(base) + Math.cos(midA) * arcR * 0.62, wy(0) + Math.sin(midA) * arcR * 0.62);
 
     // 跑道刻度
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     ctx.font = '600 10px ' + C.mono;
     for (var mk = 0; mk <= RUNWAY + 0.001; mk += 1) {
       var mxp = wx(base + mk);
-      ctx.strokeStyle = C.soft;
+      ctx.strokeStyle = 'rgba(255,246,230,.42)';
       ctx.beginPath(); ctx.moveTo(mxp, view.floorY); ctx.lineTo(mxp, view.floorY + 6); ctx.stroke();
-      ctx.fillStyle = C.dim;
+      ctx.fillStyle = '#f2e6d3';
       ctx.fillText(mk + 'm', mxp, view.floorY + 9);
     }
 
     // 预测旗
     var pfx = wx(base + S.pred);
-    ctx.strokeStyle = S.predLocked ? C.warn : 'rgba(251,191,36,.55)';
+    ctx.save();
+    ctx.globalAlpha = S.predLocked ? 1 : 0.62;
+    ctx.strokeStyle = C.warn;
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(pfx, view.floorY); ctx.lineTo(pfx, view.floorY - 34); ctx.stroke();
-    ctx.fillStyle = S.predLocked ? C.warn : 'rgba(251,191,36,.55)';
+    ctx.fillStyle = C.warn;
     ctx.beginPath();
     ctx.moveTo(pfx, view.floorY - 34); ctx.lineTo(pfx + 18, view.floorY - 28); ctx.lineTo(pfx, view.floorY - 22);
     ctx.closePath(); ctx.fill();
     ctx.font = '700 10px ' + C.mono; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
     ctx.fillText('猜 ' + S.pred.toFixed(2) + 'm', pfx + 3, view.floorY - 36);
+    ctx.restore();
 
     // 实际停止标记
     if (S.phase === 'stopped' && S.stopAt !== null && S.stopAt >= 0) {
@@ -642,25 +664,58 @@
     ctx.beginPath(); ctx.arc(-rpx * 0.28, -rpx * 0.32, rpx * 0.16, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
 
-    // 速度箭头
+    /* 速度箭头。方向和下面的「下滑力」完全同向，从球心一起画会叠成一根，
+       所以整支沿坡面法线往外挪一截，速度在坡上方、受力在球心，各看各的。 */
     if (S.v > 0.05) {
       var dirx = p.onRamp ? Math.cos(th) : 1;
       var diry = p.onRamp ? Math.sin(th) : 0;
+      var nx = p.onRamp ? Math.sin(th) : 0;
+      var ny = p.onRamp ? -Math.cos(th) : -1;
+      var off = rpx + 12;
+      var vx0 = bx + nx * off, vy0 = by + ny * off;
       var len = Math.min(70, 8 + S.v * 9);
-      ctx.strokeStyle = C.sci; ctx.lineWidth = 2.5;
+      ctx.strokeStyle = C.math; ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.moveTo(bx, by);
-      ctx.lineTo(bx + dirx * len, by + diry * len);
+      ctx.moveTo(vx0, vy0);
+      ctx.lineTo(vx0 + dirx * len, vy0 + diry * len);
       ctx.stroke();
-      ctx.fillStyle = C.sci;
-      var ex = bx + dirx * len, ey = by + diry * len;
+      ctx.fillStyle = C.math;
+      var ex = vx0 + dirx * len, ey = vy0 + diry * len;
       ctx.save(); ctx.translate(ex, ey); ctx.rotate(Math.atan2(diry, dirx));
       ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-8, -4.5); ctx.lineTo(-8, 4.5); ctx.closePath(); ctx.fill();
       ctx.restore();
-      ctx.font = '700 10px ' + C.mono; ctx.fillStyle = C.sci;
+      ctx.font = '700 10px ' + C.mono; ctx.fillStyle = C.math;
       ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-      ctx.fillText(S.v.toFixed(2) + ' m/s', bx + dirx * len + 6, by + diry * len - 2);
+      ctx.fillText(S.v.toFixed(2) + ' m/s', ex + 6, ey - 2);
     }
+
+    // 斜面受力分解：重力被拆成「压住坡面」和「沿坡往下拉」两份，
+    // 坡越陡，沿坡的那一份越长——这就是斜面这一课要看见的东西。
+    if (W >= 420 && p.onRamp) {
+      var L = Math.min(66, Math.max(30, view.scale * 0.52), Math.max(0, view.floorY - by - 6));
+      var sin = Math.sin(th), cos = Math.cos(th);
+      var gTipX = bx, gTipY = by + L;
+      var slopeLen = L * sin;
+      var slTipX = bx + cos * slopeLen, slTipY = by + sin * slopeLen;
+      // 分解辅助线：从重力箭头尖连到沿坡分量的尖，补全那个直角三角形
+      ctx.save();
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = 'rgba(148,163,184,.6)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(gTipX, gTipY); ctx.lineTo(slTipX, slTipY); ctx.stroke();
+      ctx.restore();
+      arrow(bx, by, 0, 1, L, C.dim, 2, '重力');
+      arrow(bx, by, cos, sin, slopeLen, C.sci, 2.6, '下滑力');
+      /* 摩擦发生在接触点，从球心画会整根埋在球里；挪到贴着坡面的那一点，
+         沿坡面切线走，正好从球边缘伸出来。 */
+      var fricLen = L * S.mu * cos;
+      if (fricLen > 7) arrow(bx - sin * rpx, by + cos * rpx, -cos, -sin, fricLen, C.code, 2.4, '摩擦');
+    } else if (W >= 420 && !p.onRamp && S.v > 0.05 && S.mu > 0.001) {
+      arrow(bx, by + rpx, -1, 0, Math.min(60, L_FLOOR() * S.mu), C.code, 2.4, '摩擦');
+    }
+
+    // 能量条：势能→动能→摩擦热三段拼起来永远一样长，能量守恒就看这一条
+    if (W >= 420 && view.floorY > 96) drawEnergyBar();
 
     // 左上信息
     ctx.textAlign = 'left'; ctx.textBaseline = 'top';
@@ -669,6 +724,87 @@
     ctx.fillText(label, 6, 6);
     ctx.font = '600 11px ' + C.mono; ctx.fillStyle = C.dim;
     ctx.fillText('t=' + S.t.toFixed(2) + 's  μ=' + S.mu.toFixed(2) + '  m=' + S.m.toFixed(2) + 'kg', 6, 22);
+  }
+
+  function L_FLOOR() { return Math.min(66, Math.max(30, view.scale * 0.52)); }
+
+  /* 带箭头和小标签的力矢量。dx/dy 是屏幕方向单位向量，len 太短就不画。 */
+  function arrow(x, y, dx, dy, len, color, width, label) {
+    if (!(len > 7)) return;
+    var ex = x + dx * len, ey = y + dy * len;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex - dx * 6, ey - dy * 6); ctx.stroke();
+    ctx.translate(ex, ey);
+    ctx.rotate(Math.atan2(dy, dx));
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-8, -4.6); ctx.lineTo(-8, 4.6); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    if (label && len > 22) {
+      ctx.save();
+      ctx.font = '700 9px ' + C.mono;
+      ctx.fillStyle = color;
+      if (Math.abs(dx) < 0.2) {
+        /* 竖直箭头把标签写在正下方会压住旁边的高度标注，挂到箭尖右侧 */
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, ex + 6, ey);
+      } else {
+        ctx.textAlign = dx < 0 ? 'right' : 'left';
+        ctx.textBaseline = dy > 0.2 ? 'top' : 'bottom';
+        ctx.fillText(label, ex + dx * 5, ey + dy * 5);
+      }
+      ctx.restore();
+    }
+  }
+
+  /* 能量条：一条固定总长的横条，按势能 / 动能 / 摩擦热切成三段。
+     球往下滚时紫色段变短、蓝色段变长，停下后全部变成橙色的热。 */
+  function drawEnergyBar() {
+    var tot = Math.max(1e-6, totalE());
+    var pe = S.m * G * heightNow();
+    var ke = 0.5 * S.m * S.v * S.v;
+    var q = Math.min(tot, S.heat);
+    var sum = pe + ke + q;
+    if (sum > tot && sum > 0) { var f = tot / sum; pe *= f; ke *= f; q *= f; }
+
+    var w = Math.min(300, Math.max(190, W * 0.42));
+    var x = W - w - 12, y = 12, barH = 15;
+    ctx.save();
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.font = '700 10px ' + C.mono;
+    ctx.fillStyle = C.mid;
+    ctx.fillText('能量一共 ' + tot.toFixed(2) + ' J，只是换了样子', x, y);
+
+    var top = y + 15;
+    ctx.fillStyle = 'rgba(148,163,184,.16)';
+    ctx.fillRect(x, top, w, barH);
+    var cut = 0;
+    [[pe, C.phys], [ke, C.math], [q, C.code]].forEach(function (part) {
+      var pw = part[0] / tot * w;
+      if (pw <= 0) return;
+      ctx.fillStyle = part[1];
+      ctx.fillRect(x + cut, top, pw, barH);
+      cut += pw;
+    });
+    ctx.strokeStyle = 'rgba(148,163,184,.55)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x + .5, top + .5, w - 1, barH - 1);
+
+    ctx.font = '700 9px ' + C.mono;
+    var legend = [['势能', pe, C.phys], ['动能', ke, C.math], ['摩擦热', q, C.code]];
+    var lx = x;
+    for (var i = 0; i < legend.length; i++) {
+      ctx.fillStyle = legend[i][2];
+      ctx.fillRect(lx, top + barH + 6, 8, 8);
+      ctx.fillStyle = C.dim;
+      var text = legend[i][0] + ' ' + legend[i][1].toFixed(2);
+      ctx.fillText(text, lx + 11, top + barH + 6);
+      lx += 13 + ctx.measureText(text).width + 10;
+    }
+    ctx.restore();
   }
 
   // ---------- 面板 ----------
@@ -802,7 +938,8 @@
   }
 
   // ---------- 循环 ----------
-  var running = false, last = 0, acc = 0;
+  var running = false, last = 0, acc = 0, needsDraw = true;
+  function invalidate() { needsDraw = true; }
   function loop(now) {
     if (!last) last = now;
     var real = Math.min(0.05, (now - last) / 1000);
@@ -812,9 +949,10 @@
       var k = 0;
       while (acc >= DT && k < MAX_STEPS && running) { step(DT); acc -= DT; k++; }
       if (k >= MAX_STEPS) acc = 0;
+      needsDraw = true;
     } else { acc = 0; }
-    draw();
-    refresh();
+    // 球停下之后画面就是静止的，没必要继续每帧重绘整张场景
+    if (needsDraw) { needsDraw = false; draw(); refresh(); }
     requestAnimationFrame(loop);
   }
 
@@ -872,6 +1010,7 @@
       if (!isFinite(v)) return;
       apply(v);
       out.textContent = fmt(v);
+      invalidate();
     });
     out.textContent = fmt(parseFloat(el.value));
     return el;
@@ -899,7 +1038,7 @@
       S.mu = parseFloat(b.dataset.mu);
       muEl.value = String(S.mu);
       document.getElementById('muOut').textContent = S.mu.toFixed(2);
-      syncMuChips(); running = false; reset(true);
+      syncMuChips(); running = false; reset(true); invalidate();
       announce('表面已切换，摩擦系数 ' + S.mu.toFixed(2));
     });
   });
@@ -910,6 +1049,7 @@
     S.pred = Math.min(RUNWAY, Math.max(0, v));
     predEl.value = String(S.pred);
     predOut.textContent = S.pred.toFixed(2) + ' m';
+    invalidate();
     if (!silent) announce('预测位置 ' + S.pred.toFixed(2) + ' 米');
   }
   predEl.addEventListener('input', function () {
