@@ -27,6 +27,9 @@
     backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
     padding: 20px;
   }
+  /* 开局的遮罩后面画着一盘示例糖豆和当前策略的算法，所以压薄成一层纱；
+     猜数阶段画布本来就是空的，遮罩就不必透了。 */
+  .veil.veil-intro { background: rgba(13,20,36,.34); backdrop-filter: none; -webkit-backdrop-filter: none; }
   .veil[hidden] { display: none; }
   .veil h2 { font-size: 1.25rem; margin-bottom: .4em; }
   .veil p { max-width: 40ch; margin: 0 auto 1em; }
@@ -143,7 +146,8 @@
   html[data-mode="kid"] #mode-count { display:block; }
   html[data-mode="kid"] #mode-count > .lab-stage { width:100%; }
   html[data-mode="kid"] #mode-count > div:last-child { width:100%; }
-  html[data-mode="kid"] .stage-wrap canvas { max-height:430px; }
+  /* 画布高度由 fit() 按舞台的 min-height 算，CSS 不再另设上限，
+     否则托盘下面会空出一条和舞台底色一样的灰带。 */
   @media (max-width:620px) {
     .story-hero { grid-template-columns:1fr; padding:18px 16px; }
     .story-guide { width:68px; height:68px; font-size:2rem; }
@@ -479,8 +483,13 @@
     var w = cv.clientWidth || CSS_W;
     CSS_W = w;
     CSS_H = Math.max(300, Math.min(560, Math.round(w * 0.65)));
-    /* 孩子模式用 max-height 给托盘封了顶。CSS 只压显示高度不压位图，
-       画面会被竖向压扁，所以这里先按同一个上限算出高度再定位图尺寸。 */
+    /* 孩子模式给舞台设了 min-height。托盘不长满这一格，下面就会露出一条舞台底色的灰带；
+       长过头又会把舞台顶高，所以直接照着 min-height 减去内边距来定高。 */
+    var host = cv.parentElement;
+    var hs = host ? getComputedStyle(host) : null;
+    var inner = hs ? parseFloat(hs.minHeight) - parseFloat(hs.paddingTop) - parseFloat(hs.paddingBottom) : NaN;
+    if (isFinite(inner) && inner >= 300) CSS_H = Math.min(560, Math.round(inner));
+    // CSS 只压显示高度不压位图，位图必须按同一个高度做，否则画面被竖向压扁
     var cap = parseFloat(getComputedStyle(cv).maxHeight);
     if (isFinite(cap) && cap > 0) CSS_H = Math.min(CSS_H, Math.round(cap));
     cv.style.height = CSS_H + "px";
@@ -550,6 +559,7 @@
 
     /* 当前策略的视觉抓手 */
     var strategy = document.getElementById("estimate-strategy").value;
+    if (phase === "idle" && !showItems) { drawIntro(strategy, trayX, trayY, trayW, trayH); return; }
     ctx.strokeStyle = "rgba(125,136,171,.65)";
     ctx.lineWidth = 1;
     if (strategy === "quarter") {
@@ -590,6 +600,76 @@
     }
   }
 
+  /* 开局示例。空托盘只是一块黑，孩子看不出这一页要干什么，
+     所以先摆一盘固定 48 颗（8 列 × 6 行）的糖豆，再把当前策略画成一步步能照做的算式：
+     四分区就框出一格标「12 × 4」，样方就框出 2×2 标「4 × 12」。
+     数量写死成能整除的 48，标注里的乘法才对得上眼前的糖豆。 */
+  var INTRO_COLS = 8, INTRO_ROWS = 6;
+
+  function drawIntro(strategy, trayX, trayY, trayW, trayH) {
+    var left = trayX + 20, top = trayY + 34;
+    var w = trayW - 40, h = trayH - 74;
+    var cw = w / INTRO_COLS, ch = h / INTRO_ROWS;
+    var r = Math.max(4, Math.min(cw, ch) * 0.3);
+
+    for (var row = 0; row < INTRO_ROWS; row++) {
+      for (var col = 0; col < INTRO_COLS; col++) {
+        var i = row * INTRO_COLS + col;
+        // 位置抖动用固定公式算，重绘时糖豆不会跳来跳去
+        var x = left + (col + 0.5) * cw + ((i * 37) % 11 - 5) * cw * 0.03;
+        var y = top + (row + 0.5) * ch + ((i * 53) % 11 - 5) * ch * 0.03;
+        var color = PALETTE[i % PALETTE.length];
+        if (window.ILLUSTRATIONS && ILLUSTRATIONS.drawCandyBean) {
+          ILLUSTRATIONS.drawCandyBean(ctx, x, y, r, color, (i % 7) * 0.4);
+        } else {
+          ctx.fillStyle = color;
+          ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.78, 0, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+    }
+
+    var boxCols = strategy === "sample" ? 2 : INTRO_COLS / 2;
+    var boxRows = strategy === "sample" ? 2 : INTRO_ROWS / 2;
+    var inBox = boxCols * boxRows;
+    var copies = (INTRO_COLS / boxCols) * (INTRO_ROWS / boxRows);
+
+    ctx.save();
+    ctx.font = "700 13px sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    if (strategy === "whole") {
+      ctx.fillStyle = "rgba(238,242,255,.92)";
+      ctx.font = "700 14px sans-serif";
+      ctx.fillText("整体扫一眼：这一盘大约 50 颗", left, top + h + 24);
+    } else {
+      var bw = boxCols * cw, bh = boxRows * ch;
+      ctx.fillStyle = "rgba(251,191,36,.12)";
+      ctx.fillRect(left, top, bw, bh);
+      ctx.strokeStyle = "rgba(251,191,36,.95)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([7, 5]);
+      ctx.strokeRect(left, top, bw, bh);
+      ctx.setLineDash([]);
+      ctx.fillStyle = "rgba(251,191,36,.95)";
+      ctx.fillText("先数这一块：" + inBox + " 颗", left + 4, top + bh - 8);
+      // 分块的网格线：让「整盘等于几块」看得见
+      ctx.strokeStyle = "rgba(125,136,171,.5)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (var gx = 1; gx < INTRO_COLS / boxCols; gx++) {
+        ctx.moveTo(left + gx * bw, top); ctx.lineTo(left + gx * bw, top + h);
+      }
+      for (var gy = 1; gy < INTRO_ROWS / boxRows; gy++) {
+        ctx.moveTo(left, top + gy * bh); ctx.lineTo(left + w, top + gy * bh);
+      }
+      ctx.stroke();
+      ctx.fillStyle = "rgba(238,242,255,.92)";
+      ctx.font = "700 14px sans-serif";
+      ctx.fillText(inBox + " × " + copies + " = " + (inBox * copies) + " 颗", left, top + h + 24);
+    }
+    ctx.restore();
+  }
+
   var peek = document.getElementById("peek");
   var peekOut = document.getElementById("peek-out");
   function peekSeconds() { return parseInt(peek.value, 10) / 10; }
@@ -624,6 +704,12 @@
   veil.firstElementChild.appendChild(timerWrap);
   var timerFill = timerWrap.querySelector("i");
 
+  /* 开局遮罩要透出后面的示例盘，猜数阶段的遮罩必须是实心的。 */
+  function showVeil(intro) {
+    veil.hidden = false;
+    veil.classList.toggle("veil-intro", !!intro);
+  }
+
   function showErr(msg) {
     if (!msg) { errEl.hidden = true; errEl.textContent = ""; return; }
     errEl.hidden = false;
@@ -653,7 +739,7 @@
   function endFlash() {
     phase = "guess";
     draw(false);
-    veil.hidden = false;
+    showVeil(false);
     timerWrap.hidden = true;
     veilTitle.textContent = "藏起来了！";
     veilText.textContent = "刚才大概有多少个？在右边填个数，不用精确。";
@@ -810,11 +896,12 @@
   });
   document.getElementById("next").addEventListener("click", function () {
     verdict.hidden = true;
-    veil.hidden = false;
+    phase = "idle";
+    showVeil(true);
     flashBtn.hidden = false;
     flashBtn.textContent = "开始第 " + (round + 1) + " 轮";
     veilTitle.textContent = "第 " + (round + 1) + " 轮";
-    veilText.textContent = "还是扫一眼就好。试试先框出 1/4 再乘 4。";
+    veilText.textContent = "还是扫一眼就好。照着后面那盘示例，先框一块再乘。";
     draw(false);
     flashBtn.focus();
   });
@@ -841,6 +928,7 @@
   });
 
   fit();
+  showVeil(true);
   draw(false);
   renderHistory();
   updateEstimateMission();
