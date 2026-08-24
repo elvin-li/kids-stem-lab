@@ -814,12 +814,28 @@ window.ILLUSTRATIONS = (function () {
   }
 
   /** 给主题色配一个半透明版本。写死 rgba(...) 的淡色在浅色主题下会糊掉，
-      从 CSS 变量取到的色再配 alpha，深浅两套主题的对比度才跟着走。 */
-  function fadeHex(hex, alpha) {
-    var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex).trim());
-    if (!m) return hex;
-    return "rgba(" + parseInt(m[1], 16) + "," + parseInt(m[2], 16) + "," +
-      parseInt(m[3], 16) + "," + Math.max(0, Math.min(1, alpha)) + ")";
+      从 CSS 变量取到的色再配 alpha，深浅两套主题的对比度才跟着走。
+
+      认三种写法：#abc、#aabbcc，以及 CSS 变量里常见的 rgb()/rgba()。
+      认不出来就原样返回——宁可不透明，也别把颜色算成 NaN 变成一片黑。 */
+  function fadeHex(color, alpha) {
+    var a = Math.max(0, Math.min(1, alpha));
+    var text = String(color).trim();
+    var short = /^#([a-f\d])([a-f\d])([a-f\d])$/i.exec(text);
+    if (short) text = "#" + short[1] + short[1] + short[2] + short[2] + short[3] + short[3];
+    var hex = /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(text);
+    if (hex) {
+      return "rgba(" + parseInt(hex[1], 16) + "," + parseInt(hex[2], 16) + "," +
+        parseInt(hex[3], 16) + "," + a + ")";
+    }
+    var rgb = /^rgba?\(([^)]+)\)$/i.exec(text);
+    if (rgb) {
+      var parts = rgb[1].split(",");
+      if (parts.length >= 3) {
+        return "rgba(" + parts[0].trim() + "," + parts[1].trim() + "," + parts[2].trim() + "," + a + ")";
+      }
+    }
+    return color;
   }
 
   /** Canvas：3D 数感积木 */

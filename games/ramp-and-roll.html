@@ -307,6 +307,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="../assets/js/illustrations.js?v=16"></script>
 <script>
 (function () {
   'use strict';
@@ -794,16 +795,7 @@
   function L_FLOOR() { return Math.min(66, Math.max(30, view.scale * 0.52)); }
 
   /* 把主题色（十六进制或 rgb()）换成半透明版本，用来画淡辅助线。 */
-  function alpha(color, a) {
-    var hex = /^#([0-9a-f]{6})$/i.exec(String(color).trim());
-    if (hex) {
-      var n = parseInt(hex[1], 16);
-      return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')';
-    }
-    var rgb = /rgba?\(([^)]+)\)/.exec(String(color));
-    if (rgb) { var parts = rgb[1].split(','); return 'rgba(' + parts[0] + ',' + parts[1] + ',' + parts[2] + ',' + a + ')'; }
-    return color;
-  }
+  function alpha(color, a) { return ILLUSTRATIONS.fadeHex(color, a); }
 
   /* 带箭头和小标签的力矢量。dx/dy 是屏幕方向单位向量。
      箭头尖按长度缩放，摩擦这种按真实比例算出来只有几像素的力才不会变成一坨三角形。
@@ -823,28 +815,18 @@
     ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-head, -head * 0.58); ctx.lineTo(-head, head * 0.58); ctx.closePath(); ctx.fill();
     ctx.restore();
     /* 短箭头一样要写名字：冰面上的摩擦只有十来像素，不标出来就是一根
-       没有出处的小箭头。阈值原先是 20，摩擦这一根几乎永远够不到。 */
+       没有出处的小箭头。阈值原先是 20，摩擦这一根几乎永远够不到。
+       四支箭头从同一点散开，名字必然挤在球周围那一小片，底下压着坡面填色、
+       坡边线和另外几支箭头。所以每个名字垫一层页面底色的药丸再落字，
+       并按箭头方向往外让一档，彼此不叠。 */
     if (label && len > 9) {
-      ctx.save();
-      ctx.font = '700 9px ' + C.mono;
-      ctx.fillStyle = color;
-      var tw = ctx.measureText(label).width;
-      var tx, align;
-      if (Math.abs(dx) < 0.2) {
-        /* 竖直箭头把标签写在正下方会压住旁边的高度标注，挂到箭尖右侧 */
-        align = 'left'; tx = ex + 6;
-        ctx.textBaseline = 'middle';
-      } else {
-        align = dx < 0 ? 'right' : 'left';
-        tx = ex + dx * 5;
-        ctx.textBaseline = dy > 0.2 ? 'top' : 'bottom';
-      }
-      var leftEdge = align === 'right' ? tx - tw : tx;
-      if (leftEdge < 3) { align = 'left'; tx = 3; }
-      else if (leftEdge + tw > W - 3) { align = 'right'; tx = W - 3; }
-      ctx.textAlign = align;
-      ctx.fillText(label, tx, ctx.textBaseline === 'middle' ? ey : ey + dy * 5);
-      ctx.restore();
+      var pad = 8;
+      ILLUSTRATIONS.canvasLabel(ctx, label, ex + dx * pad, ey + dy * pad, {
+        size: 9, font: C.mono, color: color,
+        bg: alpha(C.surf, 0.86), border: alpha(color, 0.5), borderWidth: 1,
+        align: Math.abs(dx) < 0.2 ? 'left' : (dx < 0 ? 'right' : 'left'),
+        padX: 4, padY: 3, radius: 5, clampW: W, clampH: H
+      });
     }
   }
 
