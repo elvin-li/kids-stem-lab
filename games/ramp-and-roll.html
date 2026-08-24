@@ -107,7 +107,7 @@
     html[data-mode="kid"] .hero-top p { display:none; }
     html[data-mode="kid"] .kid-visual-stage { min-height:0; padding:7px; }
     html[data-mode="kid"] .stage-sign { margin-bottom:4px; }
-    html[data-mode="kid"] #scene { height:230px !important; }
+    /* 高度交给 resize() 按几何算，这里不再写死 230px。 */
     html[data-mode="kid"] .stage-hint { display:none; }
     .kid-choice { grid-template-columns:minmax(0,1fr); }
     .kid-choice .prediction-choice { grid-column:auto; }
@@ -339,6 +339,7 @@
   var DT = 1 / 480;
   var MAX_STEPS = 400;
   var RUNWAY = 6;          // 平地长度（米）
+  var H_MAX = 2.5, ANG_MAX = 45;   // 与 #hgt / #ang 两个滑杆的上限一致
   var BALL_R = 0.09;       // 球半径（米，仅用于画图与滚动动画）
   /* 画在深棕地层上的字和线只能用这一族浅沙色：主题墨色（连孩子模式的棕色在内）
      压在土上都读不出来。 */
@@ -482,12 +483,42 @@
   var W = 640, H = 400, dpr = 1;
   var view = { scale: 60, ox: 34, floorY: 320 };
 
+  /* 这个世界横向永远吃紧：6 米跑道加上坡底，宽高比在 3.6:1 到 6:1 之间，
+     所以窄屏上标度总是被宽度掐住，纵向空间一寸也用不上。高度原先按
+     max(205, 宽 × 0.32) 取，390px 上算出来是 205（孩子模式还用 !important 定成 230），
+     可这个宽度下世界最多只需要 168 —— 于是有一半画布是空天，坡本身只有 44px 高。
+
+     改成按几何反推：先按宽度定标度，再让高度刚好包住「顶部读数带 + 世界高 + 土层」。
+     取的是「本宽度下最高最陡的那种坡」，因此高度只跟宽度有关，拖高度滑杆时画布不会跳。 */
+  /* 右边留得和左边一样宽：跑道只有 6 米，球跑到头是「离开跑道」而不是撞墙，
+     所以尽头右侧必须始终露出一截不是跑道的土，否则窄屏上标度被宽度掐住时
+     跑道正好顶到画布边缘，看着像是画面裁掉了、而不是跑道到头了。 */
+  var PAD_L = 34, PAD_R = 34, GROUND_MIN = 38, GROUND_MAX = 56;
+
+  /* 画面顶上那一条留给读数和能量条，坡顶不能顶进去。
+     宽屏上能量条挂在右上角，和左上的读数并排，让出三行字就够。
+     窄屏并排不下——单是「t=… μ=… m=…」那行就有两百多像素宽——
+     能量条只能整条横过来摆在读数底下，所以要留出
+     「两行读数 + 一行说明 + 条本身 + 两行图例」。
+     能量守恒正是这一页要讲的东西，手机上原先干脆不画，
+     顶上那块地方就白空着；现在空的那块正好归它。 */
+  var NARROW = 420;
+  function topBand(cssW) { return cssW < NARROW ? 100 : 44; }
+
+  function fitHeight(cssW) {
+    var plotW = Math.max(40, cssW - PAD_L - PAD_R);
+    // 角度越陡坡底越短、标度越大、坡画出来越高，所以最陡那档才是最占高度的
+    var baseAtWorst = H_MAX / Math.tan(rad(ANG_MAX));
+    var scaleAtWorst = plotW / (baseAtWorst + RUNWAY);
+    var groundH = Math.min(GROUND_MAX, Math.max(GROUND_MIN, Math.round(cssW * 0.05)));
+    return topBand(cssW) + (H_MAX + 0.35) * scaleAtWorst + groundH;
+  }
+
   function resize() {
     readTheme();
-    var cssW = Math.max(260, stage.clientWidth - 28);
-    /* 世界又宽又扁：6 米跑道配上最多 2.85 米高，宽高比在 3.6:1 到 6:1 之间。
-       画布再高也只是多铺一层土，所以高度按一个扁比例取，上面留给能量条。 */
-    var cssH = Math.round(Math.min(330, Math.max(205, cssW * 0.32)));
+    // 高度是按宽度反推的，所以宽度要用量到的那个，不能用「舞台减 28」估的
+    var cssW = cv.clientWidth > 0 ? cv.clientWidth : Math.max(260, stage.clientWidth - 28);
+    var cssH = Math.round(Math.min(330, Math.max(150, fitHeight(cssW))));
     dpr = Math.min(3, window.devicePixelRatio || 1);
     cv.style.height = cssH + 'px';
     /* 窄屏的孩子模式用 !important 改写了高度，位图要按真实渲染高度做，否则整张画面被压扁。
@@ -503,17 +534,18 @@
   }
 
   function computeView() {
-    var padL = 30, padR = 16, padT = 26;
     /* 地层只是给跑道一个「踩在地上」的语义，厚度固定成刚好放下刻度和摩擦标签，
        多出来的竖直空间全部留给斜坡本身。 */
-    view.groundH = Math.min(56, Math.max(38, Math.round(H * 0.16)));
+    view.groundH = Math.min(GROUND_MAX, Math.max(GROUND_MIN, Math.round(H * 0.16)));
     view.floorY = H - view.groundH;
     var worldW = rampBase() + RUNWAY;
     var worldH = S.h + 0.35;
-    var sx = (W - padL - padR) / worldW;
-    var sy = (view.floorY - padT) / worldH;
+    var sx = (W - PAD_L - PAD_R) / worldW;
+    /* 顶部这一条留给「待放手 / t=… μ=… m=…」和能量条：原先只留 26px，
+       坡一高，顶点就顶进读数里。 */
+    var sy = (view.floorY - topBand(W)) / worldH;
     view.scale = Math.max(8, Math.min(sx, sy));
-    view.ox = padL;
+    view.ox = PAD_L;
   }
 
   // 世界坐标（米，原点在斜坡顶的正下方地面）→ 屏幕
@@ -792,7 +824,7 @@
     }
 
     // 能量条：势能→动能→摩擦热三段拼起来永远一样长，能量守恒就看这一条
-    if (W >= 420 && view.floorY > 96) drawEnergyBar();
+    if (view.floorY > 96) drawEnergyBar();
 
     // 左上信息
     ctx.textAlign = 'left'; ctx.textBaseline = 'top';
@@ -866,8 +898,13 @@
     var sum = pe + ke + q + carried;
     if (sum > tot && sum > 0) { var f = tot / sum; pe *= f; ke *= f; q *= f; carried *= f; }
 
-    var w = Math.min(300, Math.max(190, W * 0.42));
-    var x = W - w - 12, y = 12, barH = 15;
+    /* 窄屏挂不到右上角：左上的读数那一行就有两百多像素宽，两个会叠在一起。
+       整条横过来放在读数下面，图例自己会换行。 */
+    var narrow = W < NARROW;
+    var w = narrow ? W - 12 : Math.min(300, Math.max(190, W * 0.42));
+    var x = narrow ? 6 : W - w - 12;
+    var y = narrow ? 36 : 12;
+    var barH = 15;
     ctx.save();
     ctx.textAlign = 'left'; ctx.textBaseline = 'top';
     ctx.font = '700 10px ' + C.mono;
