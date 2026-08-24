@@ -25,16 +25,66 @@
   .cue-icon svg { display: block; width: 100%; height: 100%; }
   .big-question b, .look-now b { color: var(--ink); }
   .big-question p, .look-now p { margin: 3px 0 0; color: var(--ink-mid); font-size: .9rem; }
-  .ocean-story { position: relative; min-height: 286px; overflow: hidden; isolation: isolate; border: 1px solid var(--line); border-radius: var(--r-lg); background: linear-gradient(180deg,#7dd3fc 0 18%,#0284c7 18% 40%,#1e3a8a 40% 66%,#07142e 66%); }
-  .ocean-story::before { content: ""; position: absolute; left: -8%; right: -8%; top: 43px; height: 22px; border-radius: 50%; border-top: 4px solid rgba(255,255,255,.72); z-index: 2; pointer-events: none; }
-  .ocean-scene-svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
-  .story-boat { position: absolute; top: 8px; left: 10%; z-index: 3; width: 52px; height: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
-  .story-sub { position: absolute; z-index: 4; left: 43%; top: 106px; width: 58px; height: auto; filter: drop-shadow(0 7px 5px rgba(0,0,0,.35)); transition: top .2s var(--ease); }
-  .story-line { position: absolute; left: 53%; top: 68px; bottom: 48px; border-left: 3px dotted rgba(255,255,255,.65); z-index: 2; }
-  .story-fish { position: absolute; right: 9%; top: 158px; z-index: 3; width: 48px; height: auto; }
-  .story-glow { position: absolute; left: 11%; bottom: 48px; z-index: 3; width: 72px; height: auto; filter: drop-shadow(0 0 10px #67e8f9); }
-  .depth-tags { position: absolute; right: 10px; top: 70px; bottom: 14px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; }
-  .depth-tags span { padding: 3px 7px; border-radius: 999px; background: rgba(5,15,35,.6); color: #fff; font: 700 .66rem var(--mono); }
+  /* 舞台上只有一套深度→纵坐标的映射，写在这两个变量和 --dive-span 里：
+       水面固定留 --surface 给母船，底边留 --floor-gap 给读数条，
+       中间按 √(深度/10935) 压缩浅处（和下面「深度标尺」右边那根同一套）。
+     潜艇、右侧四个深度标签、四只生物、水色的每一档全按这个式子摆，
+     所以「200 m」和「1000 m」两条标签之间的距离，就是潜艇真要走的那段；
+     水从亮蓝转成深蓝的位置，也正好在写着 200 m 的那条标签上。
+     原来标签是 space-between 均分的四行，等于说海面到 200 米和
+     1000 米到海沟一样远——差了七十多倍。 */
+  .ocean-story {
+    position: relative; min-height: 300px; overflow: hidden; isolation: isolate;
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+    --surface: 46px; --floor-gap: 80px;
+    --dive-span: calc(100% - var(--surface) - var(--floor-gap));
+    --d200:  calc(var(--surface) + var(--dive-span) * .135);
+    --d1000: calc(var(--surface) + var(--dive-span) * .302);
+    --d4000: calc(var(--surface) + var(--dive-span) * .605);
+  }
+  /* 水色画在自己的图层上，不写在 .ocean-story 的 background 上：
+     孩子模式的 .kid-visual-stage 会把舞台底色刷成浅色，选择器还更具体。 */
+  .story-water {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(58% 34% at 84% 2%, rgba(253,230,138,.42), rgba(253,230,138,0) 72%),
+      linear-gradient(180deg,
+        #7dd3fc 0, #7dd3fc var(--surface),
+        #38bdf8 var(--surface),
+        #0ea5e9 var(--d200),
+        #1e3a8a var(--d1000),
+        #0d1638 var(--d4000),
+        #05070f 100%);
+  }
+  /* 浪脊压在 --surface 上：viewBox 里浪线画在 y=18，所以图层往上挪 18px。 */
+  .story-wave { position: absolute; left: 0; right: 0; top: calc(var(--surface) - 18px); height: 40px; z-index: 1; }
+  /* 母船、缆绳、潜艇排在同一条竖线上：船把「微光号」顺着缆绳放下去，
+     那条虚线才有身份。原来船在 10%、缆绳在 53%、潜艇在 43%，三样各站一处。 */
+  .story-boat { position: absolute; top: calc(var(--surface) - 42px); left: 50%; transform: translateX(-50%); z-index: 3; width: 84px; height: 46px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
+  .story-sub { position: absolute; z-index: 4; left: 50%; top: var(--d1000); width: 54px; height: 54px; transform: translate(-50%,-50%); filter: drop-shadow(0 7px 5px rgba(0,0,0,.35)); transition: top .2s var(--ease); }
+  /* 缆绳只放到潜艇所在的深度：它是母船正在放出去的那一段，
+     不是画在水里的一条参考线。拖滑块时这条线跟着变长，
+     「已经下去多少」在画面上就有了长度。 */
+  .story-line { position: absolute; left: 50%; top: var(--surface); height: var(--dive-span); border-left: 3px dotted rgba(255,255,255,.6); z-index: 2; }
+  /* 海沟底：一道山脊剪影接着实心海床，最深的那个标签正落在谷底上。
+     没有底的话，「10935 m」只是一行浮在黑水里的字。 */
+  .story-ridge { position: absolute; left: 0; right: 0; top: calc(var(--surface) + var(--dive-span) - 42px); height: 42px; z-index: 1; }
+  .story-bed { position: absolute; left: 0; right: 0; top: calc(var(--surface) + var(--dive-span)); bottom: 0; z-index: 1; background: #101827; }
+  .story-boat svg, .story-sub svg, .story-life svg { display: block; width: 100%; height: 100%; }
+  /* 四只生物各停在自己住的那层，横坐标错开，才不像排成一列的图标；
+     右边整条留给深度标签，所以都靠左。尺寸按 160×90 的画幅算，不留空当。 */
+  .story-life { position: absolute; z-index: 3; width: 74px; height: 42px; transform: translateY(-50%); }
+  .story-life[data-glow="warm"] { filter: drop-shadow(0 0 8px rgba(251,191,36,.55)); }
+  .story-life[data-glow="cool"] { filter: drop-shadow(0 0 8px rgba(103,232,249,.55)); }
+  /* 无光层以下唯一的光是生物自己发的，所以这几点只出现在 1000 m 以下。 */
+  .story-spark {
+    position: absolute; z-index: 2; width: 6px; height: 6px; margin-left: -3px;
+    border-radius: 50%; background: #a5f3fc; box-shadow: 0 0 9px #22d3ee;
+    transform: translateY(-50%); animation: sparkPulse 2.6s ease-in-out infinite;
+  }
+  @keyframes sparkPulse { 0%, 100% { opacity: .22 } 50% { opacity: 1 } }
+  .depth-tags { position: absolute; z-index: 5; inset: 0; pointer-events: none; }
+  .depth-tags span { position: absolute; right: 10px; transform: translateY(-50%); padding: 3px 7px; border-radius: 999px; background: rgba(5,15,35,.68); color: #fff; font: 700 .66rem var(--mono); white-space: nowrap; }
   .stage-readouts { position: absolute; z-index: 3; left: 10px; right: 10px; bottom: 10px; display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
   .stage-readouts span { padding: 6px 8px; border-radius: 9px; background: rgba(5,15,35,.78); color: rgba(255,255,255,.72); font-size: .68rem; text-align: center; }
   .stage-readouts b { display: block; margin-top: 2px; color: #fff; font-size: .76rem; }
@@ -186,16 +236,17 @@
     background: var(--surface-2); border: 1px solid var(--line);
     border-radius: var(--r); padding: 18px; text-align: center;
   }
-  .can {
-    width: 76px; height: 108px; margin: 6px auto 12px; position: relative;
-    border-radius: 9px; border: 2px solid var(--ink-mid);
-    background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.02));
-    transition: transform .25s var(--ease);
-  }
-  .can::before {
-    content: ""; position: absolute; left: 8px; right: 8px; top: 10px; bottom: 10px;
-    border-radius: 4px; border: 1px dashed rgba(255,255,255,.2);
-  }
+  /* 原来这里只有一个空的圆角矩形边框，里面那条虚线是 rgba(255,255,255,.2)，
+     在浅色底上根本看不见——图形什么都没说，压强只剩一个数字。
+     换成同一深度下的两只密封袋：装空气的按 玻意耳定律 体积压到 1/压强，
+     装水的几乎不变。这正好是本页「深海鱼为什么不会被压扁」的答案。 */
+  .bag-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 2px 0 12px; }
+  .bag { margin: 0; }
+  .bag svg { display: block; width: 100%; height: 148px; }
+  .bag #bagAir { transition: transform .25s var(--ease); }
+  .bag figcaption { margin-top: 5px; font-size: .74rem; color: var(--ink-dim); line-height: 1.35; }
+  .bag figcaption b { display: block; margin-top: 2px; font-family: var(--mono); color: var(--ink); font-size: .78rem; }
+  .bag figcaption i { display: block; margin-top: 3px; font-style: normal; font-size: .68rem; }
   .press-num { font-family: var(--mono); font-size: 1.9rem; font-weight: 700; color: var(--video); }
   .press-lab { font-size: .78rem; color: var(--ink-dim); }
   .press-rows { display: flex; flex-direction: column; gap: 9px; }
@@ -245,7 +296,9 @@
   @media (max-width: 720px) {
     .hero-invite, .press { grid-template-columns: 1fr; }
     .word-cards { grid-template-columns: 1fr; }
-    .ocean-story { min-height: 250px; }
+    /* 单栏时舞台不再被左栏文字撑高，四只生物要自己挣出摆放的余量：
+       映射两头一共吃掉 116px，剩下的才是能分给五层海的高度。 */
+    .ocean-story { min-height: 330px; }
     .ruler { height: 400px; }
     .rmark { align-items: flex-start; gap: 6px; }
     .rmark b { flex: 0 0 58px; font-size: .66rem; }
@@ -264,11 +317,14 @@
     html[data-mode="kid"] .hero h1 { margin:0 0 4px; font-size:1.42rem; }
     html[data-mode="kid"] .big-question { margin:0; padding:7px 9px; }
     html[data-mode="kid"] .big-question p { margin:0; font-size:.82rem; line-height:1.3; }
-    html[data-mode="kid"] .ocean-story { min-height:220px; }
+    /* 舞台是这一页孩子模式的首屏主体，压到 220px 时四层生物会叠在一起；
+       同时把两头的余量收紧一点，让 300px 里尽量多留给水。 */
+    html[data-mode="kid"] .ocean-story { min-height:300px; --surface:40px; --floor-gap:74px; }
+    html[data-mode="kid"] .story-life { width:58px; height:33px; }
+    html[data-mode="kid"] .depth-tags span { font-size:.6rem; padding:2px 6px; }
     html[data-mode="kid"] .hero .kid-action-strip { margin-top:7px; padding:9px; gap:7px; grid-template-columns:1fr 1fr; }
     html[data-mode="kid"] .hero .kid-action-strip .btn { grid-column:1 / -1; }
     html[data-mode="kid"] .hero .kid-action-strip .text-result { display:none; }
-    .story-sub { left: 36%; }
     .task-actions > *, .work-card-fields .btn { width: 100%; }
     .ruler { margin-left: 4px; }
   }
@@ -328,33 +384,48 @@
       </div>
       <p style="font-size:.8rem;color:var(--ink-dim)" id="src">照片状态准备中；每种生物都有内置手绘插图，离线也看得到。</p>
     </div>
-    <div class="ocean-story kid-visual-stage" role="img" aria-label="深度剖面：微光号从海面下潜，光逐渐消失，温度降低，压力升高">
-      <svg class="ocean-scene-svg" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
-        <defs>
-          <linearGradient id="oceanDeep" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0284c7"/><stop offset="45%" stop-color="#1e3a8a"/><stop offset="100%" stop-color="#07142e"/></linearGradient>
-          <radialGradient id="sunRays" cx="85%" cy="8%" r="35%"><stop offset="0%" stop-color="#fde68a" stop-opacity=".45"/><stop offset="100%" stop-color="#0284c7" stop-opacity="0"/></radialGradient>
-        </defs>
-        <rect width="400" height="260" fill="url(#oceanDeep)"/>
-        <rect width="400" height="260" fill="url(#sunRays)"/>
-        <path d="M0 48 Q50 38 100 44 T200 40 T300 46 T400 42 L400 58 Q300 68 200 62 T0 58 Z" fill="#38bdf8" opacity=".55"/>
-        <!-- 阳光层鱼群 -->
-        <g fill="#6ee7b7" opacity=".85"><ellipse cx="318" cy="72" rx="11" ry="6"/><path d="M329 72 L338 68 L338 76 Z"/><ellipse cx="342" cy="78" rx="8" ry="4"/><path d="M350 78 L356 75 L356 81 Z"/></g>
-        <!-- 微光层 -->
-        <ellipse cx="88" cy="118" rx="28" ry="14" fill="#1e40af" opacity=".35"/>
-        <!-- 无光层：鮟鱇轮廓 -->
-        <g transform="translate(300 145)" opacity=".7"><circle cx="0" cy="0" r="14" fill="#312e81"/><path d="M0 -18 L0 -28" stroke="#fbbf24" stroke-width="2"/><circle cx="0" cy="-28" r="4" fill="#fef08a"><animate attributeName="opacity" values="1;.4;1" dur="2s" repeatCount="indefinite"/></circle><path d="M-14 0 L-22 8 M14 0 L20 6" stroke="#4338ca" stroke-width="3" stroke-linecap="round"/></g>
-        <!-- 海沟：生物发光点 -->
-        <circle cx="62" cy="208" r="2.5" fill="#67e8f9"><animate attributeName="opacity" values=".3;1;.3" dur="1.8s" repeatCount="indefinite"/></circle>
-        <circle cx="118" cy="224" r="2" fill="#a5f3fc"><animate attributeName="opacity" values=".2;.9;.2" dur="2.4s" repeatCount="indefinite"/></circle>
-        <circle cx="178" cy="216" r="2.2" fill="#67e8f9"><animate attributeName="opacity" values=".4;1;.4" dur="1.5s" repeatCount="indefinite"/></circle>
-        <circle cx="240" cy="232" r="1.8" fill="#22d3ee"><animate attributeName="opacity" values=".3;.8;.3" dur="2.1s" repeatCount="indefinite"/></circle>
+    <div class="ocean-story kid-visual-stage" id="oceanStage" role="img" aria-label="深度剖面：微光号从海面下潜，光逐渐消失，温度降低，压力升高">
+      <div class="story-water" aria-hidden="true"></div>
+      <svg class="story-wave" viewBox="0 0 400 40" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <path d="M0 18 Q40 8 80 16 T160 14 T240 20 T320 12 T400 18 L400 40 L0 40Z" fill="#38bdf8"/>
+        <path d="M0 18 Q40 8 80 16 T160 14 T240 20 T320 12 T400 18" fill="none" stroke="#ffffff" stroke-width="3" stroke-opacity=".82"/>
       </svg>
-      <svg class="story-boat" viewBox="0 0 64 48" aria-hidden="true"><path d="M4 36 L60 36 L52 28 L12 28 Z" fill="#92400e"/><path d="M32 28 L32 8 L36 28 Z" fill="#fef3c7"/><rect x="28" y="6" width="8" height="4" fill="#dc2626"/></svg>
+      <!-- 母船：船体 + 驾驶室 + 尾部的 A 型吊架，缆绳就是从吊架放下去的那一条 -->
+      <svg class="story-boat" viewBox="0 0 84 46" aria-hidden="true" focusable="false">
+        <path d="M6 30 L78 30 L70 42 L14 42 Z" fill="#1f4f6d"/>
+        <path d="M6 30 L78 30 L77 33 L7 33 Z" fill="#e9f2f7"/>
+        <rect x="26" y="16" width="26" height="14" rx="2" fill="#f4f8fa"/>
+        <rect x="30" y="19" width="6" height="5" fill="#7fc3e8"/><rect x="40" y="19" width="6" height="5" fill="#7fc3e8"/>
+        <path d="M52 16 L52 6" stroke="#c9d7de" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M52 7 L64 12 L52 12 Z" fill="#e03e3e"/>
+        <!-- A 型吊架 -->
+        <path d="M60 30 L66 12 L72 30" fill="none" stroke="#f0b429" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M62 20 L70 20" stroke="#f0b429" stroke-width="2.4"/>
+      </svg>
+      <svg class="story-ridge" viewBox="0 0 400 42" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <path d="M0 42 L0 16 Q46 4 92 14 Q140 26 176 40 L224 40 Q268 24 314 12 Q358 2 400 16 L400 42Z" fill="#101827"/>
+        <path d="M0 16 Q46 4 92 14 Q140 26 176 40 L224 40 Q268 24 314 12 Q358 2 400 16" fill="none" stroke="#26364e" stroke-width="2"/>
+      </svg>
+      <div class="story-bed" aria-hidden="true"></div>
       <div class="story-line" aria-hidden="true"></div>
-      <svg class="story-sub" viewBox="0 0 80 44" aria-hidden="true"><ellipse cx="40" cy="24" rx="34" ry="16" fill="#64748b" stroke="#cbd5e1" stroke-width="2"/><rect x="12" y="14" width="18" height="10" rx="3" fill="#38bdf8" opacity=".85"/><circle cx="58" cy="24" r="5" fill="#fbbf24"/><path d="M6 24 L0 24" stroke="#94a3b8" stroke-width="3"/></svg>
-      <svg class="story-fish" viewBox="0 0 56 32" aria-hidden="true"><ellipse cx="22" cy="16" rx="18" ry="10" fill="#fb923c"/><path d="M40 16 L54 8 L54 24 Z" fill="#ea580c"/><circle cx="12" cy="14" r="2" fill="#1e293b"/></svg>
-      <svg class="story-glow" viewBox="0 0 90 70" aria-hidden="true"><ellipse cx="45" cy="38" rx="22" ry="16" fill="#67e8f9" opacity=".55"/><path d="M45 8 L45 2 M45 68 L45 62 M8 38 L2 38 M88 38 L82 38" stroke="#a5f3fc" stroke-width="2" opacity=".6"/><circle cx="45" cy="38" r="6" fill="#fef08a"><animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/></circle><path d="M28 28 Q45 18 62 28" fill="none" stroke="#e0f2fe" stroke-width="2" opacity=".5"/></svg>
-      <div class="depth-tags" aria-hidden="true"><span>海面 · 亮</span><span>200 m · 微光</span><span>1000 m · 黑</span><span>海沟 · 生命仍在</span></div>
+      <span class="story-sub" data-icon="ui/submersible" aria-hidden="true"></span>
+      <!-- 每只生物的 data-depth 就是它常住的深度，纵坐标由同一个映射算出来：
+           海龟在阳光层，大王乌贼在微光层，鮟鱇鱼在无光层，狮子鱼贴着海沟底。
+           四层都有住户，上面那句「那里为什么还有生命」才有画面可指。 -->
+      <span class="story-life" data-icon="ocean/sea-turtle" data-icon-bare data-depth="30" style="left:18%" aria-hidden="true"></span>
+      <span class="story-life" data-icon="ocean/giant-squid" data-icon-bare data-depth="700" style="left:4%" aria-hidden="true"></span>
+      <span class="story-life" data-icon="ocean/anglerfish" data-icon-bare data-depth="2500" data-glow="warm" style="left:16%" aria-hidden="true"></span>
+      <span class="story-life" data-icon="ocean/snailfish" data-icon-bare data-depth="8300" data-glow="cool" style="left:5%" aria-hidden="true"></span>
+      <i class="story-spark" data-depth="1600" style="left:36%;animation-delay:0s" aria-hidden="true"></i>
+      <i class="story-spark" data-depth="3200" style="left:71%;animation-delay:.7s" aria-hidden="true"></i>
+      <i class="story-spark" data-depth="5200" style="left:29%;animation-delay:1.4s" aria-hidden="true"></i>
+      <i class="story-spark" data-depth="9400" style="left:63%;animation-delay:.4s" aria-hidden="true"></i>
+      <div class="depth-tags" aria-hidden="true">
+        <span data-depth="0">海面 · 阳光充足</span>
+        <span data-depth="200">200 m · 只剩微光</span>
+        <span data-depth="1000">1000 m · 完全黑暗</span>
+        <span data-depth="10935">10935 m · 仍然有生命</span>
+      </div>
       <div class="stage-readouts" aria-hidden="true"><span>光<b id="oceanStageLight">微光</b></span><span>温度<b id="oceanStageTemp">约 5–10°C</b></span><span>压力<b id="oceanStagePressure">约 101 倍</b></span></div>
     </div>
   </div>
@@ -469,7 +540,45 @@
       <input id="dep" type="range" min="0" max="10935" step="5" value="40" style="width:100%">
       <div class="press" style="margin-top:16px">
         <div class="press-vis">
-          <div class="can" id="can"></div>
+          <div class="bag-pair">
+            <figure class="bag">
+              <svg viewBox="0 0 80 120" aria-hidden="true" focusable="false">
+                <rect x="1" y="1" width="78" height="118" rx="9" fill="#d7ecfa"/>
+                <path d="M7 110 H73" stroke="currentColor" stroke-width="2" stroke-opacity=".28" stroke-linecap="round"/>
+                <g class="bag-arrows" stroke="#2f6f9e" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".72">
+                  <path d="M4 66 L18 66 M14 62 L18 66 L14 70"/>
+                  <path d="M76 66 L62 66 M66 62 L62 66 L66 70"/>
+                  <path d="M40 8 L40 22 M36 18 L40 22 L44 18"/>
+                </g>
+                <!-- 虚线保留袋子在海面时的轮廓：没有这条「原来多大」，
+                     缩小后的袋子只是一个小袋子，看不出它被压过。 -->
+                <path d="M22 40 C22 34 58 34 58 40 C62 56 62 84 58 100 C56 106 24 106 22 100 C18 84 18 56 22 40 Z"
+                      fill="none" stroke="#2f6f9e" stroke-width="1.6" stroke-dasharray="4 3" opacity=".6"/>
+                <g id="bagAir" transform="translate(40 108) scale(1) translate(-40 -108)">
+                  <path d="M22 40 C22 34 58 34 58 40 C62 56 62 84 58 100 C56 106 24 106 22 100 C18 84 18 56 22 40 Z" fill="#eef7fd" stroke="#2f6f9e" stroke-width="2.4"/>
+                  <path d="M22 40 H58" stroke="#2f6f9e" stroke-width="3.2" stroke-linecap="round"/>
+                  <circle cx="33" cy="60" r="4" fill="#bcd9ee"/><circle cx="47" cy="74" r="5" fill="#bcd9ee"/><circle cx="37" cy="88" r="3.2" fill="#bcd9ee"/>
+                </g>
+              </svg>
+              <figcaption>装空气的袋子<b id="bagAirText">和海面一样大</b><i>虚线是它在海面时的大小</i></figcaption>
+            </figure>
+            <figure class="bag">
+              <svg viewBox="0 0 80 120" aria-hidden="true" focusable="false">
+                <rect x="1" y="1" width="78" height="118" rx="9" fill="#d7ecfa"/>
+                <path d="M7 110 H73" stroke="currentColor" stroke-width="2" stroke-opacity=".28" stroke-linecap="round"/>
+                <g class="bag-arrows" stroke="#2f6f9e" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".72">
+                  <path d="M4 66 L18 66 M14 62 L18 66 L14 70"/>
+                  <path d="M76 66 L62 66 M66 62 L62 66 L66 70"/>
+                  <path d="M40 8 L40 22 M36 18 L40 22 L44 18"/>
+                </g>
+                <path d="M22 40 C22 34 58 34 58 40 C62 56 62 84 58 100 C56 106 24 106 22 100 C18 84 18 56 22 40 Z" fill="#69b4e0" stroke="#2f6f9e" stroke-width="2.4"/>
+                <path d="M22 40 H58" stroke="#2f6f9e" stroke-width="3.2" stroke-linecap="round"/>
+                <path d="M21 56 C31 51 49 61 60 55" fill="none" stroke="#e6f4fd" stroke-width="2.6" stroke-linecap="round" opacity=".85"/>
+                <path d="M22 72 C32 67 50 77 60 71" fill="none" stroke="#e6f4fd" stroke-width="2.2" stroke-linecap="round" opacity=".6"/>
+              </svg>
+              <figcaption>装水的袋子<b>几乎不变</b><i>压到一万米也还是这个大小</i></figcaption>
+            </figure>
+          </div>
           <div class="press-num" id="pnum">5.0</div>
           <div class="press-lab">个大气压</div>
         </div>
@@ -518,7 +627,12 @@
     art.renderArt("#oceanGuide", "guide/octopus", { decorative: true });
     Array.prototype.forEach.call(document.querySelectorAll("[data-icon]"), function (node) {
       var name = node.getAttribute("data-icon");
-      if (art.hasArt(name)) art.renderArt(node, name, { decorative: true });
+      if (!art.hasArt(name)) return;
+      /* 剖面图上的生物要泡在这片海里。图鉴卡自带的深海底色搬过来，
+         在浅蓝的水中就是三块裱好的深色方片，反倒把「同一片海」拆散了。 */
+      var opts = { decorative: true };
+      if (node.hasAttribute("data-icon-bare")) opts.bare = true;
+      art.renderArt(node, name, opts);
     });
   }
 
@@ -545,7 +659,10 @@
     {
       n: "无光层", en: "Midnight / Bathypelagic", from: 1000, to: 4000,
       bg: "linear-gradient(180deg,#1e3a8a,#111a3d)",
-      tone: "none", lightPct: "4%",
+      /* 光带整条空着才和「一丝阳光都没有」对得上。原来这三层留了 4% / 1% / 0%
+         三个不同的短条，读起来像「这层还剩一点、下层更少」——1000 米以下
+         仪器测不到阳光，三层都是零，本来就该长得一样。 */
+      tone: "none", lightPct: "0%",
       lightNote: "完全黑暗 · 唯一的光来自生物自己",
       say: "一丝阳光都没有。这里能看到的光全是动物自己发的——<b>生物发光</b>。有的用来找同伴，有的挂在头前当钓饵。泰坦尼克号就沉在这一层（3,800 米）。",
       who: ["鮟鱇鱼", "吸血乌贼", "深海水母"]
@@ -553,7 +670,7 @@
     {
       n: "深渊层", en: "Abyss / Abyssopelagic", from: 4000, to: 6000,
       bg: "linear-gradient(180deg,#111a3d,#0b1020)",
-      tone: "none", lightPct: "1%",
+      tone: "none", lightPct: "0%",
       lightNote: "永久黑暗 · 水温接近 2°C",
       say: "水温常年只有 2 度左右，压力是海面的四百多倍。食物极少，大部分靠上层沉下来的碎屑——科学家叫它「海洋雪」。这里的动物普遍动作极慢，为了省能量。",
       who: ["深海海参", "盲虾", "三脚架鱼"]
@@ -617,13 +734,19 @@
     dive.appendChild(d);
   });
 
-  /* 每层下面那条彩色光带只有长度和颜色，不写图例就看不出它在表示什么。 */
+  /* 每层下面那条彩色光带只有长度和颜色，不写图例就看不出它在表示什么。
+     第三条原来是一块灰色色块，标签写「几乎为零」——可下面三层的轨道
+     一律是空的，灰色在页面上没有对应物。空轨道用一句话说，比放个色块准。 */
   if (art) {
-    document.getElementById("diveLegend").innerHTML = art.legend([
+    var legendBox = document.getElementById("diveLegend");
+    legendBox.innerHTML = art.legend([
       { color: "#fbbf24", label: "阳光", note: "够光合作用" },
-      { color: "#3b82f6", label: "残留的蓝光", note: "看得见、不够长东西" },
-      { color: "#64748b", label: "几乎为零", note: "轨道空着就是没有阳光" }
+      { color: "#3b82f6", label: "残留的蓝光", note: "看得见、不够长东西" }
     ], { label: "每层光带的含义" });
+    var emptyNote = document.createElement("p");
+    emptyNote.style.cssText = "margin:8px 0 0;font-size:.8rem;color:var(--ink-dim);max-width:66ch";
+    emptyNote.textContent = "下面三层的光带整条是空的：不是漏画了，是那里真的没有阳光。";
+    legendBox.appendChild(emptyNote);
   }
 
   /* ---------- 深度标尺 ---------- */
@@ -730,17 +853,40 @@
   var depv = document.getElementById("depv");
   var pnum = document.getElementById("pnum");
   var prows = document.getElementById("prows");
-  var can = document.getElementById("can");
+  var bagAir = document.getElementById("bagAir");
+  var bagAirText = document.getElementById("bagAirText");
+  var bagArrows = [].slice.call(document.querySelectorAll(".bag-arrows"));
+
+  /* 小数点后那个 .0 会让「1/5.0」读起来像有效数字，孩子看的是倍数不是精度。 */
+  function fmtAtm(atm) {
+    if (atm >= 10) return Math.round(atm).toLocaleString();
+    return (Math.round(atm * 10) / 10).toString();
+  }
 
   function press() {
     var d = +dep.value;
     var atm = 1 + d / 10;
     depv.textContent = d.toLocaleString() + " 米";
-    pnum.textContent = atm < 10 ? atm.toFixed(1) : Math.round(atm).toLocaleString();
+    pnum.textContent = fmtAtm(atm);
 
-    // 罐子按压力可视化压缩（仅示意，不代表真实压缩率）
-    var sq = Math.max(0.22, 1 - Math.log10(atm + 1) / 3.6);
-    can.style.transform = "scaleX(" + sq.toFixed(3) + ") scaleY(" + (0.55 + sq * 0.45).toFixed(3) + ")";
+    /* 挤压箭头也跟着深度加粗、变实：光靠袋子缩小说不清「是谁在挤它」。
+       按 log10 走，1 到 1000 个大气压之间才都看得出差别。 */
+    var lg = Math.log10(Math.max(1, atm));
+    var arrowWidth = (2 + Math.min(3.2, lg * 1.9)).toFixed(2);
+    var arrowOpacity = Math.min(1, 0.55 + lg * 0.18).toFixed(2);
+    bagArrows.forEach(function (g) {
+      g.setAttribute("stroke-width", arrowWidth);
+      g.setAttribute("opacity", arrowOpacity);
+    });
+
+    /* 玻意耳定律：温度不变时气体体积和压强成反比，体积压到 1/atm。
+       画的是侧视图，所以边长按体积的立方根缩——直接按 1/atm 缩边长会把
+       「压到 1/5」画成「压到 1/125」。最小 0.1 只是为了还看得见，
+       真正的倍数写在下面那行字里。 */
+    var linear = Math.max(0.1, Math.pow(1 / atm, 1 / 3));
+    bagAir.setAttribute("transform",
+      "translate(40 108) scale(" + linear.toFixed(3) + ") translate(-40 -108)");
+    bagAirText.textContent = atm < 1.05 ? "和海面一样大" : "体积压到约 1/" + fmtAtm(atm);
 
     var kgcm2 = atm * 1.033;                 // 1 atm ≈ 1.033 kgf/cm²
     var perPalm = kgcm2 * 100;               // 手掌约 100 cm²
@@ -980,6 +1126,23 @@
   var reflect = document.getElementById("oceanReflect"), output = document.getElementById("oceanOutput"), status = document.getElementById("oceanStatus");
   var stageLight = document.getElementById("oceanStageLight"), stageTemp = document.getElementById("oceanStageTemp"), stagePressure = document.getElementById("oceanStagePressure");
   var stageSub = document.querySelector(".story-sub"), diveCheck = document.getElementById("oceanDiveCheck");
+  var stage = document.getElementById("oceanStage");
+  var MAX_DEPTH = 10935;
+
+  /* 舞台上唯一的深度→纵坐标映射，和 CSS 里的 --surface / --floor-gap / --dive-span
+     共用同一组变量，所以式子只有一份：水面留给母船、底边留给读数条，
+     中间按平方根压缩浅处。潜艇、四个深度标签、四只生物、四点生物光都走这里。
+     原来潜艇是 70 + √× 125 px 的写法：舞台被左栏文字撑到 400 多像素高时，
+     拉到一万米的潜艇也只走到一半，底下写着「海沟」的标签它永远到不了。 */
+  function depthFrac(d) { return Math.sqrt(Math.max(0, Math.min(d / MAX_DEPTH, 1))); }
+  function depthTop(d) {
+    return "calc(var(--surface) + var(--dive-span) * " + depthFrac(d).toFixed(4) + ")";
+  }
+  var stageLine = stage.querySelector(".story-line");
+  Array.prototype.forEach.call(stage.querySelectorAll("[data-depth]"), function (node) {
+    node.style.top = depthTop(Number(node.getAttribute("data-depth")));
+  });
+
   var species = { sperm:["抹香鲸","用肺呼吸，可闭气深潜，胸腔会在高压下收缩","约 2250 m"], angler:["鮟鱇鱼","用生物发光诱饵在黑暗中捕食，身体柔软且无大型气腔","1000–4000 m"], snail:["深海狮子鱼","凝胶状身体、无鱼鳔，适应极高压力","6000–8300 m"] };
   function stageValues(d) {
     return {
@@ -995,7 +1158,14 @@
     stageLight.textContent = values.lightShort;
     stageTemp.textContent = values.temp.replace("（随地点季节变化）", "");
     stagePressure.textContent = "约 " + values.atm.toFixed(1) + " 倍";
-    stageSub.style.top = (70 + Math.sqrt(d / 10935) * 125) + "px";
+    stageSub.style.top = depthTop(d);
+    stageLine.style.height = "calc(var(--dive-span) * " + depthFrac(d).toFixed(4) + ")";
+    /* 舞台是一张 role="img"：里面那三格读数对读屏软件是隐藏的，
+       描述必须自己跟着滑块走，否则听到的永远是初始的那一句。 */
+    stage.setAttribute("aria-label",
+      "深度剖面：微光号已下潜到 " + d.toLocaleString() + " 米，" + values.light +
+      "，水温 " + values.temp + "，压力约 " + values.atm.toFixed(1) +
+      " 个大气压。海面有绿海龟，微光层有大王乌贼，无光层有鮟鱇鱼，海沟底有深海狮子鱼。");
   }
   if (window.Progress) Progress.visit("nature/ocean.html", "海底世界");
   slider.addEventListener("input", paintStage);

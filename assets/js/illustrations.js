@@ -4100,10 +4100,15 @@ window.ILLUSTRATIONS = (function () {
     var spec = CATALOG[name];
     var opts = options || {};
     var uid = "ix" + (++seq);
-    var fit = spec.fit || "xMidYMid meet";
+    /* bare：只要主体，不要那张卡自带的底色。图鉴卡里的深海底色是必要的，
+       但同一张图放到别处的场景里（例如海面到海沟的剖面图）时，
+       那块底色会变成一个贴在水里的深色方框，像把照片裱起来挂上去。
+       去掉底色就得同时换成 meet：slice 是按「反正有底色兜着」裁的。 */
+    var bare = opts.bare === true;
+    var fit = opts.fit || (bare ? "xMidYMid meet" : (spec.fit || "xMidYMid meet"));
     var art = spec.art || "";
     if (/slice/.test(fit)) art = safeArea(art, spec.viewBox, spec.safe || 0.78);
-    var body = String((spec.bg || "") + art).replace(/\{\{U\}\}/g, uid);
+    var body = String((bare ? "" : spec.bg || "") + art).replace(/\{\{U\}\}/g, uid);
     var decorative = opts.decorative === true;
     var cls = "illus illus-" + cssName(name) + (opts.className ? " " + opts.className : "");
     var open = '<svg xmlns="http://www.w3.org/2000/svg" class="' + esc(cls) +
