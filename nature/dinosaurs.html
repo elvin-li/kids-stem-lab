@@ -230,7 +230,14 @@
   .evidence-card p { margin: 0; color: var(--ink-mid); font-size: .84rem; }
 
   /* ---------- 离线化石证据板 ---------- */
-  .fossil-board { min-height: 390px; display: flex; flex-direction: column; padding: 14px; background: linear-gradient(180deg,#f7d8a8 0 22%,#bf8157 22% 49%,#8b5d43 49% 73%,#594238 73%); color: #21160f; }
+  /* 岩层画在自己的图层上，不写进 .fossil-board 的 background：
+     孩子模式的 html[data-mode="kid"] .kid-visual-stage 会把舞台底色刷成浅色，
+     而它的选择器比 .fossil-board 更具体。岩层一没，牙齿和骨头（浅奶油色，
+     本来是配深褐岩层挑的）就变成白底上的白影子，选中脚印那圈白光晕也一起失效。 */
+  .fossil-board { min-height: 390px; position: relative; display: flex; flex-direction: column; padding: 14px; color: #21160f; }
+  .board-rock { position: absolute; inset: 0; z-index: 0; border-radius: inherit; background: linear-gradient(180deg,#f7d8a8 0 22%,#bf8157 22% 49%,#8b5d43 49% 73%,#594238 73%); }
+  /* 弹性子项即使 position: static 也吃 z-index，所以不用再给每个孩子加定位。 */
+  .fossil-board > *:not(.board-rock) { z-index: 1; }
   .fossil-board .board-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; font-size: .75rem; font-weight: 800; }
   .fossil-board .board-top span { padding: 6px 9px; border-radius: 999px; background: rgba(255,250,235,.88); }
   .fossil-board svg { position: static; inset: auto; width: 100%; height: auto; min-height: 178px; flex: 1 1 auto; margin: 4px 0; }
@@ -320,6 +327,7 @@
       <section class="quick-clue no-print" aria-labelledby="quickClueTitle"><p class="quick-kicker">你的任务</p><h2 id="quickClueTitle">点亮证据，再量一量脚印</h2><p>选中的线索会亮起来，并告诉你“知道了什么”和“还不能确定什么”。</p><div class="kid-action-strip" data-audience="parent"><a class="btn btn-primary" href="#missionTitle">开始脚印推理</a></div></section>
     </div>
     <div class="kid-visual-stage fossil-board" id="fossilBoard" data-clue="track" aria-label="离线化石证据板。选择脚印、牙齿或骨骼，查看线索支持的推理。">
+      <div class="board-rock" aria-hidden="true"></div>
       <div class="board-top"><span>离线案发现场</span><span aria-hidden="true">🦕 化石侦探</span></div>
       <svg viewBox="0 0 420 240" role="img" aria-labelledby="fossilSvgTitle fossilSvgDesc">
         <title id="fossilSvgTitle">岩层中的三类化石证据</title>
