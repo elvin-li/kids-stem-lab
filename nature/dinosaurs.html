@@ -872,7 +872,7 @@
     srcEl.appendChild(d);
     var t = document.createElement("span");
     t.textContent = ok
-      ? "化石点计数来自 Paleobiology Database，可能因网络不可用"
+      ? "化石点计数来自 Paleobiology Database 实时查询，结果缓存在本机"
       : "网络不可用 · 显示内置数据，功能不受影响";
     srcEl.appendChild(t);
   }
@@ -898,7 +898,7 @@
         el.textContent = "已知化石点：" + siteCache[g] + " 处（PBDB 记录）";
         return;
       }
-      var ck = "pbdb:" + g;
+      var ck = "pbdb-colls:" + g;
       try {
         var c = localStorage.getItem(ck);
         if (c) {
@@ -909,11 +909,13 @@
         }
       } catch (e) {}
 
-      jget("https://paleobiodb.org/data1.2/occs/list.json?base_name=" +
-           encodeURIComponent(g) + "&vocab=pbdb&limit=500")
+      /* 「化石点」对应 PBDB 的 collection（发掘地点），不是 occurrence（单条记录）。
+         旧版拉 occs 列表再数长度：一来数的是记录不是地点，二来 limit=500 会把
+         多于 500 条的属悄悄封顶——用 rowcount 让服务端报总数，只传 1 条记录。 */
+      jget("https://paleobiodb.org/data1.2/colls/list.json?base_name=" +
+           encodeURIComponent(g) + "&limit=1&rowcount")
         .then(function (d) {
-          var recs = (d && d.records) || [];
-          var n = recs.length;
+          var n = d && typeof d.records_found === "number" ? d.records_found : 0;
           siteCache[g] = n;
           try { localStorage.setItem(ck, JSON.stringify(n)); } catch (e) {}
           el.textContent = "已知化石点：" + n + " 处（PBDB 记录）";
