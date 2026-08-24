@@ -198,7 +198,8 @@
 
   <!-- ================= 模式一 ================= -->
   <section id="mode-count" role="tabpanel" aria-labelledby="tab-count" class="lab">
-    <div class="lab-stage stage-wrap kid-visual-stage">
+    <!-- 画布打印时被隐藏，只剩遮罩那块深底方框在纸上留下一条空色带。 -->
+    <div class="lab-stage stage-wrap kid-visual-stage" data-print="hide">
       <canvas id="cv" width="800" height="520" aria-label="散落着许多糖豆的画面，用于估算数量">糖豆数量估算图。糖豆短暂显示后会隐藏，请在表单中填写估计值。</canvas>
       <div class="veil" id="veil">
         <div class="kid-action-strip">
@@ -211,7 +212,8 @@
     </div>
 
     <div>
-      <div class="panel">
+      <!-- 还没揭晓时这块只有控件，纸上会剩一个光标题的空卡；揭晓后它装着判定，要打印。 -->
+      <div class="panel" id="guess-panel" data-print="hide">
         <h3>你的估计</h3>
         <div class="ctrl" data-audience="parent">
           <div class="ctrl-head"><label for="peek">看多久</label><b id="peek-out">1.2 秒</b></div>
@@ -246,7 +248,8 @@
           </select>
         </div>
 
-        <div class="guessbar">
+        <!-- 输入框打印时被隐藏，只留下一个没有主人的「我猜有几个」。 -->
+        <div class="guessbar" data-print="hide">
           <div class="f">
             <label for="guess">我猜有几个</label>
             <input class="input" type="number" id="guess" min="1" max="9999" step="1" inputmode="numeric" placeholder="例如 80" disabled>
@@ -385,7 +388,7 @@
       <li><b>揭晓差多少</b>，做满三轮并换一次方法。</li>
       <li><b>点一句发现</b>，把经验记进足迹。</li>
     </ol>
-    <div class="mission-grid">
+    <div class="mission-grid" data-print="hide">
       <div data-audience="parent"><label for="estimateReflect">我的发现</label><textarea class="input" id="estimateReflect" placeholder="例如：聚类时先估每团，再把几团相加。"></textarea></div>
       <div data-audience="kid-only"><p style="margin:0 0 6px;font-weight:700">我发现……</p><div class="kid-picks" id="estimateReflectChoices"><button class="kid-choice" type="button" data-estimate-reflect="分成四块，先估一块再乘四更容易。">分四块再乘 4</button><button class="kid-choice" type="button" data-estimate-reflect="先看是几十还是几百，再猜具体数量。">先判断几十还是几百</button><button class="kid-choice" type="button" data-estimate-reflect="看过差多少后，下一轮可以把猜测调大或调小。">看差值再调整</button></div></div>
       <button class="btn btn-primary" id="estimateComplete" type="button" disabled>把装箱经验记进足迹</button>
@@ -395,7 +398,7 @@
       <div class="playful-quest-head"><div><h3 id="estimateStoryTitle">云端补给观察卡</h3><p class="playful-story">妙妙不需要精确点完。记录你的估法和下一次怎样校准。</p></div><div data-playful-companion role="note" aria-label="妙妙伙伴提示"></div></div>
       <div class="playful-tools"><button class="btn btn-sm" type="button" data-playful-random-task="#estimateSurprise">打开一箱新补给</button><p class="playful-task-output" id="estimateSurprise" data-playful-task-output role="status" aria-live="polite">补给箱里会出现一种新估法。</p></div>
       <div class="playful-evidence"><span data-playful-sticker aria-label="估算站贴纸位"></span><span data-playful-feedback aria-live="polite"></span></div>
-      <form class="work-card work-card-form" data-playful-work-form aria-labelledby="estimateWorkTitle">
+      <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="estimateWorkTitle">
         <h4 id="estimateWorkTitle">作品表单 · 保存估算观察</h4>
         <div class="work-card-fields">
           <div><label for="estimateWorkType">作品类型</label><select class="input" id="estimateWorkType" name="type"><option value="observation">观察记录</option><option value="prediction">预测卡</option><option value="explanation">我的解释</option></select></div>
@@ -831,6 +834,7 @@
   var errEl = document.getElementById("err");
   var verdict = document.getElementById("verdict");
   var kidResultCard = document.getElementById("kidEstimateResult");
+  var guessPanel = document.getElementById("guess-panel");
   var liveCount = document.getElementById("live-count");
 
   /* 倒计时条挂在舞台上而不是遮罩里：闪现阶段遮罩是隐藏的，
@@ -860,6 +864,7 @@
   function hideResults() {
     verdict.hidden = true;
     kidResultCard.hidden = true;
+    guessPanel.setAttribute("data-print", "hide");
   }
 
   function startRound() {
@@ -957,6 +962,7 @@
       ? "刚好猜中！两条一样长。"
       : "这次猜得" + (g > truth ? "偏大" : "偏小") + "，相差 " + difference + " 个。";
     kidResultCard.hidden = false;
+    guessPanel.removeAttribute("data-print");
     liveCount.textContent = "真实数量 " + truth + " 个，你的相对误差 " + (s.err * 100).toFixed(1) + "%。";
 
     if (s.err <= 0.05) toast("误差 5% 以内，眼睛很准！");
