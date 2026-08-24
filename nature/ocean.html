@@ -56,8 +56,10 @@
         #0d1638 var(--d4000),
         #05070f 100%);
   }
-  /* 浪脊压在 --surface 上：viewBox 里浪线画在 y=18，所以图层往上挪 18px。 */
-  .story-wave { position: absolute; left: 0; right: 0; top: calc(var(--surface) - 18px); height: 40px; z-index: 1; }
+  /* 浪脊压在 --surface 上：viewBox 里浪线画在 y=18，所以图层往上挪 18px。
+     width 得写出来：svg 是替换元素，只写 left/right 时宽度取 viewBox 的 400px，
+     right 被当成过约束丢掉，于是浪线在 400px 处齐齐断掉，右边露出一条直边。 */
+  .story-wave { position: absolute; left: 0; width: 100%; top: calc(var(--surface) - 18px); height: 40px; z-index: 1; }
   /* 母船、缆绳、潜艇排在同一条竖线上：船把「微光号」顺着缆绳放下去，
      那条虚线才有身份。原来船在 10%、缆绳在 53%、潜艇在 43%，三样各站一处。 */
   .story-boat { position: absolute; top: calc(var(--surface) - 42px); left: 50%; transform: translateX(-50%); z-index: 3; width: 84px; height: 46px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
@@ -68,7 +70,7 @@
   .story-line { position: absolute; left: 50%; top: var(--surface); height: var(--dive-span); border-left: 3px dotted rgba(255,255,255,.6); z-index: 2; }
   /* 海沟底：一道山脊剪影接着实心海床，最深的那个标签正落在谷底上。
      没有底的话，「10935 m」只是一行浮在黑水里的字。 */
-  .story-ridge { position: absolute; left: 0; right: 0; top: calc(var(--surface) + var(--dive-span) - 42px); height: 42px; z-index: 1; }
+  .story-ridge { position: absolute; left: 0; width: 100%; top: calc(var(--surface) + var(--dive-span) - 42px); height: 42px; z-index: 1; }
   .story-bed { position: absolute; left: 0; right: 0; top: calc(var(--surface) + var(--dive-span)); bottom: 0; z-index: 1; background: #101827; }
   .story-boat svg, .story-sub svg, .story-life svg { display: block; width: 100%; height: 100%; }
   /* 四只生物各停在自己住的那层，横坐标错开，才不像排成一列的图标；
@@ -88,6 +90,7 @@
   .stage-readouts { position: absolute; z-index: 3; left: 10px; right: 10px; bottom: 10px; display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
   .stage-readouts span { padding: 6px 8px; border-radius: 9px; background: rgba(5,15,35,.78); color: rgba(255,255,255,.72); font-size: .68rem; text-align: center; }
   .stage-readouts b { display: block; margin-top: 2px; color: #fff; font-size: .76rem; }
+  .story-print-key { display: none; margin: 8px 0 0; font-size: .8rem; line-height: 1.6; color: #111; }
   .hero .kid-action-strip { display: grid; grid-template-columns: minmax(190px,1.25fr) minmax(170px,.8fr) auto; gap: 10px; align-items: end; margin-top: 12px; padding: 14px; border: 1px solid rgba(34,211,238,.35); border-radius: var(--r-lg); background: var(--surface); }
   .hero .kid-action-strip label { display: block; margin-bottom: 5px; font-size: .82rem; font-weight: 700; }
   .hero .kid-action-strip select { width: 100%; }
@@ -299,8 +302,10 @@
     .zone .lightbar[data-tone="full"] i { background: #e0a51f !important; }
     .zone .lightbar[data-tone="dim"] i  { background: #4b86d1 !important; }
     .zone .lightbar[data-tone="none"] i { background: #5a6675 !important; }
-    /* 舞台上的读数是压在深色插画上的浅字，纸上会变成黑字压深色。 */
+    /* 舞台上的读数是压在深色插画上的浅字，纸上会变成黑字压深色。
+       换成 .story-print-key 那一行黑字，刻度不会跟着一起消失。 */
     .depth-tags, .stage-readouts { display: none !important; }
+    .story-print-key { display: block !important; grid-column: 1 / -1; }
   }
 
   @media (max-width: 720px) {
@@ -438,6 +443,9 @@
       </div>
       <div class="stage-readouts" aria-hidden="true"><span>光<b id="oceanStageLight">微光</b></span><span>温度<b id="oceanStageTemp">约 5–10°C</b></span><span>压力<b id="oceanStagePressure">约 101 倍</b></span></div>
     </div>
+    <!-- 深度标签和三格读数都是浅字压在深色插画上，纸上印不出来（见下面的 @media print）。
+         印出来只剩一张漂亮的水彩画，深度刻度一个字都没有。这一行就是纸上的那份刻度。 -->
+    <p class="story-print-key" id="oceanPrintKey" aria-hidden="true"></p>
   </div>
   <div class="kid-action-strip" aria-label="微光号主操作">
     <div><label for="missionDepth">拖动下潜：<b id="missionDepthText">1000 米</b></label><input id="missionDepth" type="range" min="0" max="10935" step="5" value="1000"></div>
@@ -1135,6 +1143,7 @@
   var predict = document.getElementById("oceanPredict"), result = document.getElementById("oceanResult");
   var reflect = document.getElementById("oceanReflect"), output = document.getElementById("oceanOutput"), status = document.getElementById("oceanStatus");
   var stageLight = document.getElementById("oceanStageLight"), stageTemp = document.getElementById("oceanStageTemp"), stagePressure = document.getElementById("oceanStagePressure");
+  var printKey = document.getElementById("oceanPrintKey");
   var stageSub = document.querySelector(".story-sub"), diveCheck = document.getElementById("oceanDiveCheck");
   var stage = document.getElementById("oceanStage");
   var MAX_DEPTH = 10935;
@@ -1174,8 +1183,12 @@
        描述必须自己跟着滑块走，否则听到的永远是初始的那一句。 */
     stage.setAttribute("aria-label",
       "深度剖面：微光号已下潜到 " + d.toLocaleString() + " 米，" + values.light +
-      "，水温 " + values.temp + "，压力约 " + values.atm.toFixed(1) +
+      "，水温" + values.temp + "，压力约 " + values.atm.toFixed(1) +
       " 个大气压。海面有绿海龟，微光层有大王乌贼，无光层有鮟鱇鱼，海沟底有深海狮子鱼。");
+    printKey.textContent =
+      "图上从上到下：海面（阳光充足）→ 200 m（只剩微光）→ 1000 m（完全黑暗）→ " +
+      "10935 m 马里亚纳海沟底（仍然有生命）。微光号停在 " + d.toLocaleString() + " 米：" +
+      values.light + "，水温" + values.temp + "，压力约 " + values.atm.toFixed(1) + " 个大气压。";
   }
   if (window.Progress) Progress.visit("nature/ocean.html", "海底世界");
   slider.addEventListener("input", paintStage);
@@ -1183,7 +1196,7 @@
   document.getElementById("oceanDive").addEventListener("click", function () {
     var d = Number(slider.value), values = stageValues(d);
     var s = species[document.getElementById("oceanSpecies").value];
-    output.textContent = "下潜 " + d.toLocaleString() + " m：" + values.light + "，水温 " + values.temp + "，总压力约 " + values.atm.toFixed(1) + " 个大气压。物种卡—" + s[0] + "（常见深度 " + s[2] + "）：" + s[1] + "。";
+    output.textContent = "下潜 " + d.toLocaleString() + " m：" + values.light + "，水温" + values.temp + "，总压力约 " + values.atm.toFixed(1) + " 个大气压。物种卡—" + s[0] + "（常见深度 " + s[2] + "）：" + s[1] + "。";
     diveCheck.textContent = "✓ 已执行 " + d.toLocaleString() + " 米下潜";
     diveCheck.classList.add("done");
     operated = true;
