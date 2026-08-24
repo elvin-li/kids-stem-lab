@@ -1077,9 +1077,10 @@
   /* 和太空页同一个坑：断网重访时照片记录从 localStorage 直出，旧写法把缓存命中
      也报成「来自 iNaturalist（加载中或已完成）」——其实一个字节也没传。缓存命中
      单独计数：有真成功才说联网，全是缓存就说缓存，出现真失败就老实说离线。 */
-  var netState = { ok: 0, cache: 0, fail: 0 };
+  var netState = { ok: 0, cache: 0, fail: 0, none: 0 };
   function mark(kind) {
     if (kind === "cache") netState.cache++;
+    else if (kind === "none") netState.none++;
     else if (kind) netState.ok++;
     else netState.fail++;
     if (netState.ok > 0) {
@@ -1090,6 +1091,10 @@
         : "离线模式 · 显示内置数据（照片需要联网）";
     } else if (netState.cache > 0) {
       srcEl.textContent = "照片来自本机缓存的 iNaturalist 记录。";
+    } else if (netState.none > 0) {
+      /* 请求都成功了但一张匹配照片也没找到：没有 ok/fail/cache 任何一个计数，
+         状态行会永远停在「照片状态准备中」。昆虫页早就数了这种情况，这里补上。 */
+      srcEl.textContent = "联网正常，但没找到匹配照片 · 显示内置手绘插图。";
     }
   }
 
@@ -1154,6 +1159,8 @@
           try { localStorage.setItem(ck, JSON.stringify(hit)); } catch (e) {}
           paint(hit);
           mark(true);
+        } else {
+          mark("none");
         }
       })
       .catch(function () { mark(false); });
