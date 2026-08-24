@@ -739,9 +739,16 @@
       arrow(bx, by, 0, 1, L, C.dim, 2, '重力');
       arrow(bx, by, cos, sin, slopeLen, C.sci, 2.6, '下滑力');
       /* 摩擦发生在接触点，从球心画会整根埋在球里；挪到贴着坡面的那一点，
-         沿坡面切线走，正好从球边缘伸出来。 */
-      var fricLen = normLen * S.mu;
-      if (fricLen > 7) arrow(bx - sin * rpx, by + cos * rpx, -cos, -sin, fricLen, C.code, 2.4, '摩擦');
+         沿坡面切线走，正好从球边缘伸出来。
+         静止不动时画的是静摩擦：它恰好和下滑力一样长、方向相反，两根一样长
+         就是「球为什么不动」的答案。一旦滚起来，摩擦是 μN，通常短于下滑力，
+         差出来的那一截才是把球加速的净力。 */
+      var stuck = S.v <= 1e-6 && Math.sin(th) <= S.mu * Math.cos(th);
+      var fricLen = stuck ? slopeLen : normLen * S.mu;
+      if (fricLen > 5) {
+        arrow(bx - sin * rpx, by + cos * rpx, -cos, -sin, fricLen, C.code, 2.4,
+          stuck ? '静摩擦' : '摩擦');
+      }
     } else if (W >= 420 && !p.onRamp) {
       /* 平地上重力和支持力一样长、方向相反，正好抵消，唯一还在做事的就是摩擦。
          摩擦这一根按 μ·mg 的真实比例画，冰面上短得几乎看不见，地毯上就明显——
@@ -813,7 +820,9 @@
     ctx.rotate(Math.atan2(dy, dx));
     ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-head, -head * 0.58); ctx.lineTo(-head, head * 0.58); ctx.closePath(); ctx.fill();
     ctx.restore();
-    if (label && len > 20) {
+    /* 短箭头一样要写名字：冰面上的摩擦只有十来像素，不标出来就是一根
+       没有出处的小箭头。阈值原先是 20，摩擦这一根几乎永远够不到。 */
+    if (label && len > 9) {
       ctx.save();
       ctx.font = '700 9px ' + C.mono;
       ctx.fillStyle = color;

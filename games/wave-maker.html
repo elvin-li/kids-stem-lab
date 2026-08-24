@@ -498,24 +498,9 @@
       (matched && Math.abs(phaseDiff - 180) < 1 && Math.abs(S.a1 - S.a2) < 0.001 ? 'cancel' : 'other');
     ctx.fillStyle = resultKind === 'enhance' ? '#181207' : (resultKind === 'cancel' ? '#061923' : '#0a0e19');
     ctx.fillRect(0, 0, W, H);
-    // 结果底纹不只靠颜色：增强用上升斜纹，抵消用水平条纹。
-    if (resultKind !== 'other') {
-      ctx.save();
-      /* 舞台底纹只是「气氛」，结果行里还有一层同样图案的纹理。
-         两层叠起来会糊成一片，所以这层画得比行内那层淡、也更疏。 */
-      ctx.strokeStyle = resultKind === 'enhance' ? 'rgba(255,216,77,.10)' : 'rgba(126,231,255,.10)';
-      ctx.lineWidth = 2;
-      if (resultKind === 'enhance') {
-        for (var stripeX = -H; stripeX < W; stripeX += 34) {
-          ctx.beginPath(); ctx.moveTo(stripeX, H); ctx.lineTo(stripeX + H, 0); ctx.stroke();
-        }
-      } else {
-        for (var stripeY = 10; stripeY < H; stripeY += 26) {
-          ctx.beginPath(); ctx.moveTo(0, stripeY); ctx.lineTo(W, stripeY); ctx.stroke();
-        }
-      }
-      ctx.restore();
-    }
+    /* 「增强 / 抵消」不能只靠颜色区分，所以结果行会带一层纹理。纹理只画在
+       结果行里：以前整块画布也铺一遍，两层斜纹叠在一起，面板外的空隙全是
+       斜条，看着像渲染坏了，黄色的合成波也被压得难读。背景改用换底色表达。 */
 
     var padL = 44, padR = 12;
     var plotW = Math.max(40, W - padL - padR);
@@ -546,16 +531,19 @@
       // 结果行同时用纹理区分：增强用斜纹，抵消用横纹，避免只依赖颜色。
       if (r === 2 && resultKind !== 'other') {
         ctx.save();
-        ctx.globalAlpha = 0.2;
+        // 纹理收在面板圆角里，斜线原先会甩到面板左边框外面
+        rr(padL - 6, y0, plotW + 10, rowH, 8);
+        ctx.clip();
+        ctx.globalAlpha = 0.14;
         ctx.strokeStyle = resultKind === 'enhance' ? '#ffd84d' : '#7ee7ff';
         ctx.lineWidth = 2;
         if (resultKind === 'enhance') {
-          for (var hx = padL - rowH; hx < padL + plotW; hx += 18) {
+          for (var hx = padL - 6 - rowH; hx < padL + plotW + 10; hx += 26) {
             ctx.beginPath(); ctx.moveTo(hx, y0 + rowH); ctx.lineTo(hx + rowH, y0); ctx.stroke();
           }
         } else {
-          for (var hy = y0 + 12; hy < y0 + rowH; hy += 12) {
-            ctx.beginPath(); ctx.moveTo(padL, hy); ctx.lineTo(padL + plotW, hy); ctx.stroke();
+          for (var hy = y0 + 12; hy < y0 + rowH; hy += 14) {
+            ctx.beginPath(); ctx.moveTo(padL - 6, hy); ctx.lineTo(padL + plotW + 4, hy); ctx.stroke();
           }
         }
         ctx.restore();
@@ -591,13 +579,14 @@
         var yv = f.get(xm, t);
         var yy = mid - clamp(yv, -maxAmp * 1.2, maxAmp * 1.2) * scale;
         if (px === 0) ctx.moveTo(padL + px, yy); else ctx.lineTo(padL + px, yy);
-        if (r < 2) {
-          if (yv > crestV) { crestV = yv; crestX = padL + px; crestY = yy; }
-          if (yv < troughV) { troughV = yv; troughX = padL + px; troughY = yy; }
-        }
+        if (yv > crestV) { crestV = yv; crestX = padL + px; crestY = yy; }
+        if (yv < troughV) { troughV = yv; troughX = padL + px; troughY = yy; }
       }
       ctx.stroke();
-      var ampNow = r === 0 ? S.a1 : S.a2;
+      /* 结果行也量一次振幅。三行共用一套纵向标度，所以「A=1.00 + A=1.00
+         量出来是 A=2.00」这件事在画面上是可以直接读出来的——不标数字的话
+         孩子只会看到「下面那条更大」，不知道大多少。 */
+      var ampNow = r === 0 ? S.a1 : (r === 1 ? S.a2 : Math.max(crestV, -troughV));
       if (r < 2 && crestX !== null && ampNow > 0.02) {
         /* 峰这边顺手把振幅量出来：从零线到峰顶的一条双箭头就是 A。 */
         ctx.save();
@@ -624,6 +613,24 @@
         ctx.lineTo(padL + plotW, mid); ctx.lineTo(padL, mid); ctx.closePath();
         ctx.fillStyle = f.col; ctx.fill();
         ctx.restore();
+
+        // 合成波的振幅：和上面两行同一套画法、同一套标度，可以直接比高矮
+        if (crestX !== null && ampNow > 0.02) {
+          ctx.save();
+          ctx.strokeStyle = f.col; ctx.globalAlpha = 0.8; ctx.lineWidth = 1.2;
+          ctx.beginPath(); ctx.moveTo(crestX, mid); ctx.lineTo(crestX, crestY); ctx.stroke();
+          vArrow(crestX, crestY, 1); vArrow(crestX, mid, -1);
+          ctx.restore();
+          /* 合成波的峰几乎顶到面板上沿，读数写在峰顶上方会被面板边框切掉，
+             所以贴着量高线写在旁边，并且在靠近右边框时改到左侧。 */
+          ctx.fillStyle = f.col;
+          ctx.font = '700 9px ' + C.mono;
+          var sumTxt = '合起来 A=' + ampNow.toFixed(2);
+          var toRight = crestX + 8 + ctx.measureText(sumTxt).width < padL + plotW;
+          ctx.textAlign = toRight ? 'left' : 'right';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(sumTxt, crestX + (toRight ? 7 : -7), (crestY + mid) / 2);
+        }
       }
 
       // 标题
