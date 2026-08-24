@@ -370,9 +370,12 @@
 
   /* ---------- sizing (crisp on retina, square, responsive) ---------- */
   var CSS = 760;              // logical drawing space, always square
+  var fittedSide = 0;
   function fit() {
-    var box = canvas.parentNode.getBoundingClientRect();
-    var side = Math.max(240, Math.round(box.width));
+    /* 量画板自己而不是外面那个盒子：孩子模式给舞台加了内边距，
+       两者差着几十像素，照盒子定高会把正方形画成矮胖的长方形。 */
+    var side = Math.max(240, Math.round(canvas.clientWidth || canvas.parentNode.getBoundingClientRect().width));
+    fittedSide = side;
     var dpr = window.devicePixelRatio || 1;
     var px = Math.round(side * dpr);
     canvas.style.height = side + "px";
@@ -954,6 +957,13 @@
 
   /* ---------- go ---------- */
   window.addEventListener("resize", fit);
+  /* 切换孩子/家长模式不触发 resize，但舞台的内边距会变，画板因此变窄；
+     只听 resize 的话高度还停在旧值上，正方形画板就成了长方形。 */
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      if (Math.abs(canvas.clientWidth - fittedSide) > 1) fit();
+    }).observe(canvas);
+  }
   fit();
   report();
 })();

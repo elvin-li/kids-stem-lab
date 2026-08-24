@@ -552,10 +552,13 @@
   var phase = 0;
 
   function resize() {
-    var cssW = Math.max(260, stage.clientWidth - 28);
-    var cssH = Math.round(Math.min(520, Math.max(300, cssW * 0.62)));
+    var want = Math.max(260, stage.clientWidth - 28);
     dpr = Math.min(3, window.devicePixelRatio || 1);
-    cv.style.height = cssH + 'px';
+    cv.style.height = Math.round(Math.min(520, Math.max(300, want * 0.62))) + 'px';
+    /* 样式设完再量一次真实盒子。窄屏孩子模式用 !important 把画布压到 220 px 高，
+       照请求值做位图，画面会被竖向压扁四成；宽度也和「舞台减 28」对不上。 */
+    var cssW = Math.max(1, cv.clientWidth || want);
+    var cssH = Math.max(1, cv.clientHeight || Math.round(want * 0.62));
     cv.width = Math.round(cssW * dpr);
     cv.height = Math.round(cssH * dpr);
     W = cssW; H = cssH;

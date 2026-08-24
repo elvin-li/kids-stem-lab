@@ -1058,14 +1058,23 @@
   });
 
   var resizeTimer = 0;
-  window.addEventListener("resize", function () {
+  function refit() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function () {
       if (panels.count.hidden) return;
       fit();
       draw(phase === "done" || phase === "flash");
     }, 120);
-  });
+  }
+  window.addEventListener("resize", refit);
+  /* 窗口大小不变，托盘宽度照样会变：切换孩子/家长模式会换掉舞台的布局。
+     只听 resize 的话，位图还停在旧宽度上，整盘糖豆被横向拉长近四成。
+     只在宽度真的变了时才重画，免得 fit() 自己改高度又把观察者叫回来。 */
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      if (Math.abs(cv.clientWidth - CSS_W) > 1) refit();
+    }).observe(cv);
+  }
 
   fit();
   showVeil(true);
