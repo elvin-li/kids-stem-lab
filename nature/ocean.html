@@ -149,14 +149,17 @@
     filter: drop-shadow(0 1px 2px rgba(0,0,0,.5));
   }
   .rmark i .illus { width: 100%; height: 100%; }
+  /* 标签一路从亮蓝写到近黑，最上面那两条的浅字对比度不到 2，基本看不见。
+     每条标签垫一层深色底，字色就不用再跟着水深走；顺带把挤在一起的 214 / 332 分开。 */
+  .rmark-tag {
+    display: flex; flex: 0 1 auto; min-width: 0; align-items: baseline; gap: 8px;
+    padding: 3px 10px; border-radius: 999px; background: rgba(3,12,28,.66);
+  }
   .rmark b {
-    flex: 0 0 66px; font-family: var(--mono); font-size: .72rem;
-    color: rgba(255,255,255,.82); text-align: right;
+    flex: 0 0 60px; font-family: var(--mono); font-size: .72rem;
+    color: rgba(255,255,255,.9); text-align: right;
   }
-  .rmark span {
-    min-width: 0; font-size: .82rem; color: rgba(255,255,255,.82);
-    text-shadow: 0 1px 3px rgba(2,8,20,.85);
-  }
+  .rmark span { min-width: 0; font-size: .82rem; color: rgba(255,255,255,.92); }
   .rmark.hi b { color: #fde68a; }
   .rmark.hi span { color: #fff; font-weight: 700; }
   .rmark-rule {
@@ -672,7 +675,15 @@
     zoneBands(rulerTrue, trueY, false);
     zoneBands(ruler, openY, true);
 
-    MARKS.forEach(function (m) {
+    /* 拉开的那根上，214 米和 332 米只差 3%，两条标签会互相盖住。
+       这根尺子的间距本来就不代表真实距离（下面那句注解说了这件事），
+       所以再兜一个最小间隔：位置更不准一点，总好过读不到字。 */
+    var tops = MARKS.map(function (m) { return openY(m.d); });
+    for (var gi = 1; gi < tops.length; gi++) {
+      if (tops[gi] - tops[gi - 1] < 6) tops[gi] = tops[gi - 1] + 6;
+    }
+
+    MARKS.forEach(function (m, mi) {
       var tick = document.createElement("div");
       tick.className = "ruler-true-tick";
       tick.setAttribute("data-hi", String(!!m.hi));
@@ -681,7 +692,7 @@
 
       var el = document.createElement("div");
       el.className = "rmark" + (m.hi ? " hi" : "");
-      el.style.top = openY(m.d) + "%";
+      el.style.top = tops[mi] + "%";
       var rule = document.createElement("div");
       rule.className = "rmark-rule";
       rule.setAttribute("aria-hidden", "true");
@@ -692,7 +703,10 @@
       b.textContent = m.d.toLocaleString() + " m";
       var s = document.createElement("span");
       s.textContent = m.t;
-      el.appendChild(rule); el.appendChild(i); el.appendChild(b); el.appendChild(s);
+      var tag = document.createElement("div");
+      tag.className = "rmark-tag";
+      tag.appendChild(b); tag.appendChild(s);
+      el.appendChild(rule); el.appendChild(i); el.appendChild(tag);
       ruler.appendChild(el);
     });
 
