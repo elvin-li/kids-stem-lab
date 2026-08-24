@@ -2004,6 +2004,57 @@ window.ILLUSTRATIONS = (function () {
     '<path d="M24 3 C26 16 32 22 45 24 C32 26 26 32 24 45 C22 32 16 26 3 24 C16 22 22 16 24 3Z" fill="#f6c445"/>' +
     '<path d="M39 6 C40 11 41 12 46 13 C41 14 40 15 39 20 C38 15 37 14 32 13 C37 12 38 11 39 6Z" fill="#fbe08a"/>');
 
+  /* ---------------- 探索目录页的故事图 ----------------
+     原来这一格是四个绝对定位的 emoji（☀️☁️🦊🍃）摞在一条 SVG 小路上：
+     emoji 长相随系统字体变，缺字时还会退成方框，而那只狐狸和页面上方
+     guide/fox 头像明明是同一个角色，却是两张完全不同的脸。 */
+  def("scene/nature-trail", {
+    /* 图位在宽屏是竖的、窄屏是横的，用 slice 铺满并把画面锚在底部：
+       裁掉的永远是上面那片天，狐狸、小路和叶子这些主体一直在。 */
+    viewBox: "0 0 420 420", fit: "xMidYMax slice", safe: 1,
+    title: "小狐沿着小路找线索",
+    desc: "一只橙色小狐狸站在金色小路的起点，路一直通向远处的山坡。天上有太阳和一朵云，路边长着一片大叶子，路上有两个标着线索的圆点。",
+    bg: '<defs><linearGradient id="{{U}}sky" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#b6dcf6"/><stop offset="100%" stop-color="#edf7ff"/></linearGradient></defs>' +
+      '<rect width="420" height="420" fill="url(#{{U}}sky)"/>',
+    art:
+      /* 太阳与云 */
+      '<g><circle cx="348" cy="62" r="21" fill="#f8cd4e"/>' +
+      '<g stroke="#f8cd4e" stroke-width="4.5" stroke-linecap="round">' +
+      '<path d="M348 30 v-9"/><path d="M348 94 v9"/><path d="M316 62 h-9"/><path d="M380 62 h9"/>' +
+      '<path d="M325 39 l-6-6"/><path d="M371 85 l6 6"/><path d="M371 39 l6-6"/><path d="M325 85 l-6 6"/></g></g>' +
+      '<path d="M68 128 C56 128 50 121 52 113 C54 106 61 103 67 105 C69 94 80 88 90 92 C97 95 101 101 102 108 C110 107 115 112 114 119 C113 125 108 128 102 128Z" fill="#fdfeff" stroke="#c3d8e6" stroke-width="2.4" stroke-linejoin="round"/>' +
+      /* 远山与草地 */
+      '<path d="M0 274 C50 240 96 254 140 238 C186 222 232 246 280 235 C330 224 380 244 420 231 L420 294 L0 294Z" fill="#a4d29b"/>' +
+      '<path d="M0 270 C70 252 130 276 200 266 C270 256 340 272 420 260 L420 420 L0 420Z" fill="#7cc06f"/>' +
+      /* 小路：底色一条、虚线一条，走向和下面两个线索点对齐 */
+      '<path d="M-10 412 C60 374 90 398 150 370 C215 340 262 358 330 330 C370 314 400 312 432 310" fill="none" stroke="#efc45c" stroke-width="32" stroke-linecap="round"/>' +
+      '<path d="M-10 412 C60 374 90 398 150 370 C215 340 262 358 330 330 C370 314 400 312 432 310" fill="none" stroke="#fff5d2" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 14"/>' +
+      '<circle cx="176" cy="360" r="8" fill="#3d7fd6" stroke="#fff" stroke-width="2.4"/>' +
+      '<circle cx="316" cy="336" r="8" fill="#2f8d54" stroke="#fff" stroke-width="2.4"/>' +
+      /* 路边的大叶子，叶脉画出来才是「叶脉像小路」那条线索 */
+      '<g transform="translate(312 348) rotate(-14)">' +
+      '<path d="M0 34 C0 12 14 -2 38 -2 C38 22 24 34 0 34Z" fill="#69ac4e"/>' +
+      '<path d="M0 34 C11 24 26 10 38 -2" stroke="#3b7530" stroke-width="2.4" stroke-linecap="round" fill="none"/>' +
+      '<g stroke="#3b7530" stroke-width="1.6" stroke-linecap="round" opacity=".8">' +
+      '<path d="M9 26 L8 17"/><path d="M17 18 L16 9"/><path d="M25 11 L24 4"/>' +
+      '<path d="M9 26 L18 25"/><path d="M17 18 L27 17"/></g></g>' +
+      /* 小狐探探：侧身站在路口，配色和 guide/fox 头像一致 */
+      '<g transform="translate(66 332)">' +
+      '<path d="M8 36 C-10 32 -18 16 -8 4 C-2 14 8 22 20 28Z" fill="#ef8b3c"/>' +
+      '<path d="M-8 4 C-14 -3 -11 -11 -3 -8 C2 -6 2 2 -6 6Z" fill="#fdf4e8"/>' +
+      '<path d="M12 30 C12 17 23 9 39 9 C53 9 62 16 63 26 C64 36 56 43 41 44 C25 45 13 39 12 30Z" fill="#ef8b3c"/>' +
+      '<g stroke="#cf7529" stroke-width="5.5" stroke-linecap="round"><path d="M20 42 L19 54"/><path d="M33 44 L32 55"/><path d="M49 42 L51 54"/><path d="M58 39 L61 51"/></g>' +
+      '<path d="M53 8 L50 -5 L63 2Z" fill="#d9752c"/><path d="M70 4 L76 -8 L78 6Z" fill="#d9752c"/>' +
+      '<path d="M55 6.5 L54 -1 L60 2.5Z" fill="#f7cba6"/><path d="M71.5 4.5 L74.5 -2.5 L75.5 5.5Z" fill="#f7cba6"/>' +
+      '<path d="M52 16 C52 6 60 0 69 0 C79 0 86 7 86 17 C86 26 78 32 69 32 C59 32 52 25 52 16Z" fill="#ef8b3c"/>' +
+      '<path d="M70 18 C79 18 88 21 91 26 C93 30 88 33 82 32 C75 31 70 25 70 21Z" fill="#fdf4e8"/>' +
+      '<circle cx="66" cy="13" r="2.8" fill="#3a2415"/><circle cx="66.9" cy="12.1" r=".9" fill="#fff"/>' +
+      '<path d="M91 26 C94 26 95 28 94 30 C93 32 90 32 89 30Z" fill="#3a2415"/>' +
+      '<g stroke="#cf7529" stroke-width="1.4" stroke-linecap="round" opacity=".8">' +
+      '<path d="M78 24 L88 21"/><path d="M78 28 L88 29"/></g></g>'
+  });
+
   /* ---------------- 离线时顶替远程照片的星空图 ----------------
      太空页的「今天的天文图」和照片墙都要联网才有内容，断网时原来只剩一行
      「未联网」的灰字或一个 emoji。这张星云是内置的，离线打开也有东西可看。 */
