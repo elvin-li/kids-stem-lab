@@ -68,6 +68,11 @@
     background: var(--surface); border: 1px solid var(--line); color: var(--ink-mid);
   }
   .toc a:hover { color: var(--ink); border-color: rgba(110,168,254,.5); text-decoration: none; }
+  .toc a { gap: 9px; }
+  .toc-icon { display: inline-grid; place-items: center; flex: none; width: 26px; height: 26px; }
+  .toc-icon svg { width: 100%; height: auto; }
+  .sec-icon { display: inline-grid; place-items: center; align-self: center; flex: none; width: 30px; height: 30px; }
+  .sec-icon svg { width: 100%; height: auto; }
 
   section.sec { margin-top: 46px; scroll-margin-top: 76px; }
   section.sec > h2 { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
@@ -106,14 +111,32 @@
   .script li:last-child { margin-bottom: 0; }
   .script li b { color: var(--ink); }
 
-  /* 阶梯（卡住时的提示层级） */
+  /* 阶梯（卡住时的提示层级）：每一级比上一级往右挪一格，
+     「一次只上一级」这句话不用再解释，列表自己就是一段台阶。 */
   .ladder { list-style: none; counter-reset: rung; margin: 16px 0 0; padding: 0; }
   .ladder li {
-    counter-increment: rung; position: relative;
+    counter-increment: rung; position: relative; --rise: 0;
+    margin-left: calc(var(--rise) * clamp(0px, 2.4vw, 26px));
     padding: 13px 16px 13px 54px; margin-bottom: 10px;
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
     font-size: .92rem; color: var(--ink-mid);
   }
+  .ladder li:nth-child(2) { --rise: 1; }
+  .ladder li:nth-child(3) { --rise: 2; }
+  .ladder li:nth-child(4) { --rise: 3; }
+  .ladder li:nth-child(5) { --rise: 4; }
+  .ladder li:nth-child(6) { --rise: 5; }
+  .ladder li:nth-child(7) { --rise: 6; }
+  /* 每级左边接一小段虚线，回到上一级的右下角，台阶才是连着的。 */
+  .ladder li + li::after {
+    content: ""; position: absolute; left: calc(-1 * clamp(0px, 2.4vw, 26px)); top: 22px;
+    width: clamp(0px, 2.4vw, 26px); border-top: 2px dashed var(--line);
+  }
+
+  /* 卡住 / 崩溃分岔图：两种状态的处理方式相反，先让人一眼看见分岔口。 */
+  .fork { margin: 18px 0 4px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); }
+  .fork svg { display: block; width: 100%; height: auto; }
+  .fork figcaption { margin-top: 8px; color: var(--ink-dim); font-size: .84rem; }
   .ladder li::before {
     content: counter(rung); position: absolute; left: 15px; top: 12px;
     width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center;
@@ -271,21 +294,21 @@
       <h2>现在遇到什么？</h2>
       <p>点最接近的一项，直接跳到可用做法。</p>
       <nav class="toc" aria-label="按现在遇到的情况浏览">
-        <a href="#ask">孩子总等我给答案</a>
-        <a href="#stuck">卡住了，或情绪崩了</a>
-        <a href="#praise">不知道该怎么夸</a>
-        <a href="#screen">屏幕时间不好定</a>
-        <a href="#anxiety">陪学时我也会紧张</a>
-        <a href="#badfit">怀疑课程不合适</a>
-        <a href="#motivation">只惦记奖励和打卡</a>
-        <a href="#dinner">想找饭桌聊天题</a>
+        <a href="#ask"><span class="toc-icon" data-illus="ui/question"></span>孩子总等我给答案</a>
+        <a href="#stuck"><span class="toc-icon" data-illus="ui/stairs"></span>卡住了，或情绪崩了</a>
+        <a href="#praise"><span class="toc-icon" data-illus="ui/sparkle"></span>不知道该怎么夸</a>
+        <a href="#screen"><span class="toc-icon" data-illus="ui/tablet"></span>屏幕时间不好定</a>
+        <a href="#anxiety"><span class="toc-icon" data-illus="ui/cup"></span>陪学时我也会紧张</a>
+        <a href="#badfit"><span class="toc-icon" data-illus="ui/alert"></span>怀疑课程不合适</a>
+        <a href="#motivation"><span class="toc-icon" data-illus="ui/medal"></span>只惦记奖励和打卡</a>
+        <a href="#dinner"><span class="toc-icon" data-illus="ui/bowl"></span>想找饭桌聊天题</a>
       </nav>
     </div>
   </header>
 
   <!-- ============ 1 ============ -->
   <section class="sec" id="ask">
-    <h2><span class="num">01</span> 用提问代替给答案</h2>
+    <h2><span class="sec-icon" data-illus="ui/question"></span><span class="num">01</span> 用提问代替给答案</h2>
     <div class="section-action">
       <h3>先做一步</h3>
       <p>从下面选中孩子现在的状态，只照结果卡的第一句话说，然后等孩子回应。</p>
@@ -375,7 +398,7 @@
 
   <!-- ============ 2 ============ -->
   <section class="sec" id="stuck">
-    <h2><span class="num">02</span> 孩子卡住了、或者已经炸了</h2>
+    <h2><span class="sec-icon" data-illus="ui/stairs"></span><span class="num">02</span> 孩子卡住了、或者已经炸了</h2>
     <div class="section-action">
       <h3>先做一步</h3>
       <p>看孩子还能不能回应：还能说话就等 30 秒；已经哭闹、僵住或推开材料，就先离开桌子喝口水。</p>
@@ -385,6 +408,36 @@
       先分清两件事：<b>卡住</b>是认知状态，是好事，说明题目正好在能力边缘；<b>崩溃</b>是情绪状态，此时大脑已经不学习了。
       两者的处理方式完全相反——卡住要撑住，崩溃要撤。
     </p>
+
+    <figure class="fork">
+      <svg viewBox="0 0 660 200" role="img" aria-labelledby="forkTitle forkDesc" focusable="false">
+        <title id="forkTitle">卡住与崩溃的分岔图</title>
+        <desc id="forkDesc">孩子停下来以后先问“还能回应吗”：还在动脑就撑住，按台阶给提示；已经哭闹、僵住或推开材料就先撤，离开桌子五分钟。</desc>
+        <g font-family="inherit" font-size="17">
+          <rect x="4" y="70" width="150" height="60" rx="14" fill="#f1eadf" stroke="#c2ccc4" stroke-width="2"/>
+          <text x="79" y="97" text-anchor="middle" fill="#203c35" font-weight="700">孩子停下来了</text>
+          <text x="79" y="118" text-anchor="middle" fill="#687a73" font-size="14">先别急着讲题</text>
+          <path d="M158 100 L196 100" stroke="#8fa39b" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M196 100 L186 94 M196 100 L186 106" stroke="#8fa39b" stroke-width="2.6" stroke-linecap="round"/>
+          <rect x="200" y="66" width="146" height="68" rx="34" fill="#ffffff" stroke="#377866" stroke-width="2.4"/>
+          <text x="273" y="96" text-anchor="middle" fill="#203c35" font-weight="700">他还能回应吗？</text>
+          <text x="273" y="117" text-anchor="middle" fill="#687a73" font-size="14">问一句、等 30 秒</text>
+          <path d="M348 88 C380 88 384 46 424 46" fill="none" stroke="#367c67" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M424 46 L414 40 M424 46 L414 52" stroke="#367c67" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M348 112 C380 112 384 154 424 154" fill="none" stroke="#9a6a22" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M424 154 L414 148 M424 154 L414 160" stroke="#9a6a22" stroke-width="2.6" stroke-linecap="round"/>
+          <text x="348" y="62" fill="#367c67" font-size="14" font-weight="700">还在动脑</text>
+          <text x="348" y="146" fill="#9a6a22" font-size="14" font-weight="700">推开 · 哭闹</text>
+          <rect x="430" y="14" width="226" height="64" rx="14" fill="#f0f8f4" stroke="#8cc0ac" stroke-width="2"/>
+          <text x="444" y="41" fill="#2b6153" font-weight="700">撑住：按台阶给提示</text>
+          <text x="444" y="63" fill="#54756a" font-size="14">一次只上一级，别一步给到解法</text>
+          <rect x="430" y="122" width="226" height="64" rx="14" fill="#fbf3e2" stroke="#dcbc7c" stroke-width="2"/>
+          <text x="444" y="149" fill="#8a5f13" font-weight="700">先撤：离开桌子五分钟</text>
+          <text x="444" y="171" fill="#7d6a45" font-size="14">先处理人，题目留到情绪落下来</text>
+        </g>
+      </svg>
+      <figcaption>同样是「做不下去」，卡住要撑住、崩溃要撤，处理方式正好相反。</figcaption>
+    </figure>
 
     <h3 style="margin-top:22px">还在卡住：按台阶给提示，一次只上一级</h3>
     <ol class="ladder">
@@ -417,7 +470,7 @@
 
   <!-- ============ 3 ============ -->
   <section class="sec" id="praise">
-    <h2><span class="num">03</span> 夸过程，不夸天赋</h2>
+    <h2><span class="sec-icon" data-illus="ui/sparkle"></span><span class="num">03</span> 夸过程，不夸天赋</h2>
     <div class="section-action">
       <h3>先做一步</h3>
       <p>今天只夸一个看得见的动作，例如：“你刚才画图后，自己找到了漏掉的条件。”</p>
@@ -460,7 +513,7 @@
 
   <!-- ============ 4 ============ -->
   <section class="sec" id="screen">
-    <h2><span class="num">04</span> 屏幕时间的边界（针对这类工具）</h2>
+    <h2><span class="sec-icon" data-illus="ui/tablet"></span><span class="num">04</span> 屏幕时间的边界（针对这类工具）</h2>
     <div class="section-action">
       <h3>先做一步</h3>
       <p>开始前一起定结束点：“做完这个任务就停。”结束时只问：“你做出了什么或发现了什么？”</p>
@@ -504,7 +557,7 @@
 
   <!-- ============ 5 ============ -->
   <section class="sec" id="anxiety">
-    <h2><span class="num">05</span> 别把数学焦虑传下去</h2>
+    <h2><span class="sec-icon" data-illus="ui/cup"></span><span class="num">05</span> 别把数学焦虑传下去</h2>
     <div class="section-action">
       <h3>先做一步</h3>
       <p>下次自己也不会时直接说：“这部分我也要想一想，我们先把知道的写下来。”</p>
@@ -536,7 +589,7 @@
 
   <!-- ============ 6 ============ -->
   <section class="sec" id="badfit">
-    <h2><span class="num">06</span> 这个项目不合适的信号</h2>
+    <h2><span class="sec-icon" data-illus="ui/alert"></span><span class="num">06</span> 这个项目不合适的信号</h2>
     <div class="section-action">
       <h3>先做一步</h3>
       <p>把本周最难开始的一次学习缩短一半；如果仍持续抗拒，再对照下面的信号判断是否降档或更换。</p>
@@ -581,7 +634,7 @@
   </section>
 
   <section class="sec" id="motivation">
-    <h2><span class="num">07</span> 反奖励循环：让反馈回到理解本身</h2>
+    <h2><span class="sec-icon" data-illus="ui/medal"></span><span class="num">07</span> 反奖励循环：让反馈回到理解本身</h2>
     <div class="section-action">
       <h3>先做一步</h3>
       <p>孩子提起贴纸或打卡时，先问：“这次哪一步最出乎你意料？”让注意力回到刚做过的事。</p>
@@ -596,7 +649,7 @@
 
   <!-- ============ 8 · 可打印 ============ -->
   <section class="sec" id="dinner">
-    <h2><span class="num">08</span> 饭桌上的 20 个问题</h2>
+    <h2><span class="sec-icon" data-illus="ui/bowl"></span><span class="num">08</span> 饭桌上的 20 个问题</h2>
     <div class="section-action">
       <h3>先做一步</h3>
       <p>今晚只挑一个问题。孩子回答后追问一句：“你怎么想到的？”不知道答案也可以一起猜。</p>
@@ -669,6 +722,15 @@
   </div>
 </footer>
 
+<script src="../assets/js/illustrations.js?v=15"></script>
+<script>
+(function () {"use strict";
+  /* 目录里的小图标只是给这一行加个视觉锚点，读屏不该再念一遍标题，所以一律 decorative。 */
+  Array.prototype.forEach.call(document.querySelectorAll("[data-illus]"), function (node) {
+    if (window.ILLUSTRATIONS) ILLUSTRATIONS.renderArt(node, node.getAttribute("data-illus"), { decorative: true });
+  });
+})();
+</script>
 <script>
 (function () {"use strict";
   var scenes={wrong:{title:"猜错时：把错误变成线索",lines:["跟我讲讲你刚才怎么想的。","我们怎么验证这个答案？","答案大概应该落在哪个范围？","我只提示出问题的大概位置，不替你做下一步。"]},stuck:{title:"卡住时：一次只给一级提示",lines:["先安静等 30 秒。","把题用自己的话再说一遍。","画出来，或退到更小的数字。","最后才一起做一步，然后把笔交回去。"]},quit:{title:"不想继续时：先找原因，不讲坚持",lines:["你是累了、觉得太难，还是今天不想做这个？","我们可以只做最后五分钟，也可以今天停下。","要不要换成画图、积木或另一个题目？","如果连续几次都不想做，就降难度或换项目，不把抗拒当懒惰。"]},answer:{title:"只求答案时：把最小一步交还给孩子",lines:["我可以帮你，但先告诉我题目在问什么。","你想要一个小提示，还是一起画张图？","我只做第一小步，下一步你来。","答案出来后，再问：我们怎么知道它合理？"]},upset:{title:"崩溃时：先处理人",lines:["这题确实难，我们先离开五分钟。","我看得出你很烦；现在不用解决它。","今天停下也可以，明天再看。","情绪平稳后只复盘一句，不补一堂课。"]},right:{title:"答对时：把答案变成理解",lines:["你是怎么想到的？","还有别的办法吗？","如果数字换大，方法还成立吗？","你怎么知道自己对了？"]},experiment:{title:"实验时：预测—观察—再改变",lines:["动手前：你猜会发生什么？为什么？","过程中：哪里和预测一样，哪里不同？","一次只改变一个条件。","结束后：用一句话说出你的发现。"]}};

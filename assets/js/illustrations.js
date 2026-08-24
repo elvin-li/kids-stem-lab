@@ -2253,6 +2253,43 @@ window.ILLUSTRATIONS = (function () {
     '<rect x="34" y="29" width="8" height="5" rx="1.6" fill="#9aa5b1"/>' +
     '<path d="M34.6 34 L41.4 34 L39.6 43 L36.4 43Z" fill="#7c4dbe"/></g>');
 
+  defIcon("stairs", "台阶", "三级往上走的台阶，一支箭头沿着台阶一级一级往上。",
+    '<path d="M4 44 L4 34 L18 34 L18 24 L32 24 L32 14 L46 14 L46 44Z" fill="#e3ece7" stroke="#54756a" stroke-width="2.4" stroke-linejoin="round"/>' +
+    '<g stroke="#2f6f5c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none">' +
+    '<path d="M9 30 L13 30 L13 20 L27 20 L27 10 L38 10"/><path d="M33 5 L39 10 L33 15"/></g>');
+
+  defIcon("tablet", "屏幕", "一块竖着的平板电脑，屏幕上有一个正在画的图形。",
+    '<rect x="10" y="4" width="28" height="40" rx="4" fill="#e9edf2" stroke="#5a6b84" stroke-width="2.6"/>' +
+    '<rect x="13.5" y="9" width="21" height="27" rx="2" fill="#ffffff"/>' +
+    '<path d="M17 30 L22 21 L26 27 L30 17 L32 30Z" fill="#8fc0ec"/>' +
+    '<path d="M17 30 L32 30" stroke="#3f6f96" stroke-width="1.8" stroke-linecap="round"/>' +
+    '<circle cx="24" cy="40" r="2" fill="#8b98ad"/>');
+
+  defIcon("cup", "先停一停", "一只冒着热气的杯子，提醒先离开桌子喝口水。",
+    '<g stroke="#c98a2c" stroke-width="2.2" stroke-linecap="round" fill="none" opacity=".85">' +
+    '<path d="M18 12 C15 9 21 7 18 4"/><path d="M26 12 C23 9 29 7 26 4"/></g>' +
+    '<path d="M8 18 L34 18 L32 38 A6 6 0 0 1 26 43 L16 43 A6 6 0 0 1 10 38Z" fill="#f6efdd" stroke="#8a6a3a" stroke-width="2.6" stroke-linejoin="round"/>' +
+    '<path d="M34 22 A7 7 0 0 1 34 34" fill="none" stroke="#8a6a3a" stroke-width="2.6" stroke-linecap="round"/>' +
+    '<path d="M11 24 L31.4 24" stroke="#c9a86a" stroke-width="2.2"/>');
+
+  defIcon("alert", "警示", "一个黄色三角警示牌，中间是一个感叹号。",
+    '<path d="M24 5 L45 42 A2.6 2.6 0 0 1 42.6 46 L5.4 46 A2.6 2.6 0 0 1 3 42 Z" fill="#f7d97e" stroke="#a8761a" stroke-width="2.6" stroke-linejoin="round"/>' +
+    '<path d="M24 18 L24 32" stroke="#6b4708" stroke-width="4.2" stroke-linecap="round"/>' +
+    '<circle cx="24" cy="39" r="2.6" fill="#6b4708"/>');
+
+  defIcon("medal", "奖章", "一枚挂着缎带的圆形奖章，中间刻着一颗星。",
+    '<path d="M15 4 L23 22 L17 26 L9 8Z" fill="#7f9ec4"/><path d="M33 4 L25 22 L31 26 L39 8Z" fill="#5f80ab"/>' +
+    '<circle cx="24" cy="33" r="13.5" fill="#f2c14b" stroke="#a9761a" stroke-width="2.6"/>' +
+    '<path d="M24 25 L26.4 30.6 L32.4 31.2 L27.8 35.2 L29.2 41.2 L24 38 L18.8 41.2 L20.2 35.2 L15.6 31.2 L21.6 30.6Z" fill="#fff3c4" stroke="#a9761a" stroke-width="1.2" stroke-linejoin="round"/>');
+
+  defIcon("bowl", "饭桌", "一只盛着饭的碗，旁边斜插着一双筷子，热气往上飘。",
+    '<g stroke="#c98a2c" stroke-width="2" stroke-linecap="round" fill="none" opacity=".8">' +
+    '<path d="M20 12 C17 9 23 7 20 4"/><path d="M28 12 C25 9 31 7 28 4"/></g>' +
+    '<path d="M35 6 L43 8 L26 26" stroke="#b07a3f" stroke-width="2.6" stroke-linecap="round" fill="none"/>' +
+    '<path d="M6 24 L42 24 C40 34 33 41 24 41 C15 41 8 34 6 24Z" fill="#f6efdd" stroke="#8a6a3a" stroke-width="2.6" stroke-linejoin="round"/>' +
+    '<path d="M12 24 C16 20 32 20 36 24Z" fill="#ffffff" stroke="#8a6a3a" stroke-width="2"/>' +
+    '<path d="M10 43 L38 43" stroke="#8a6a3a" stroke-width="2.6" stroke-linecap="round"/>');
+
   defIcon("lock", "未解锁", "一把合上的挂锁，锁梁扣着锁身，中间有一个钥匙孔。",
     '<path d="M15 22 L15 16 A9 9 0 0 1 33 16 L33 22" fill="none" stroke="#8a9a92" stroke-width="4.6" stroke-linecap="round"/>' +
     '<rect x="9" y="21" width="30" height="23" rx="5" fill="#e7ece8" stroke="#8a9a92" stroke-width="2.6"/>' +
