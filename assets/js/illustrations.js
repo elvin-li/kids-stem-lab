@@ -3022,25 +3022,27 @@ window.ILLUSTRATIONS = (function () {
 
   defCard("estimation-station", {
     title: "估算站插图",
-    desc: "玻璃罐里装着一堆彩色糖豆，其中十颗被一个虚线圈单独框出来，作为估算整罐数量的参照。",
+    desc: "玻璃罐里装着十五颗彩色糖豆，其中五颗被一个虚线圈单独框出来：数清这一圈，再看整罐大约是三圈。",
     bg: cardSky("#fffaf0", "#ffeccd"),
     art: (function () {
       var jar = '<path d="M44 34 L116 34 L112 96 Q80 102 48 96Z" fill="#eaf6fb" opacity=".85" stroke="#7fa8bd" stroke-width="2.4"/>' +
         '<rect x="40" y="26" width="80" height="9" rx="4" fill="#c98a3e"/>';
       var beans = "";
+      /* 前 5 颗聚成被圈住的那一撮，其余 10 颗散在圈外：图上写的数一定要数得出来。
+         旧版的圈画在糖豆堆中间，圈里其实只有 6 颗，标签却写 10——照着图数的孩子
+         第一步就对不上。现在 5 + 10 = 15，和贴纸「estimate-eye」的 5 → ≈15 同一套账。 */
       var spots = [
-        [58, 48, "#ff7aa8"], [76, 44, "#4d86d6"], [94, 49, "#ffc233"], [106, 58, "#41c7a4"],
-        [56, 62, "#8b6de0"], [72, 60, "#ff9147"], [90, 65, "#ff7aa8"], [104, 74, "#4d86d6"],
-        [54, 76, "#ffc233"], [70, 76, "#41c7a4"], [86, 80, "#8b6de0"], [100, 88, "#ff9147"],
-        [60, 90, "#4d86d6"], [76, 92, "#ffc233"], [92, 92, "#41c7a4"]
+        [56, 48, "#ff7aa8"], [70, 45, "#4d86d6"], [84, 48, "#ffc233"], [62, 57, "#8b6de0"], [77, 56, "#ff9147"],
+        [100, 44, "#41c7a4"], [106, 58, "#4d86d6"], [54, 68, "#ffc233"], [63, 71, "#41c7a4"], [81, 71, "#ff7aa8"],
+        [96, 70, "#8b6de0"], [58, 84, "#ff9147"], [74, 86, "#4d86d6"], [90, 85, "#ffc233"], [104, 80, "#41c7a4"]
       ];
       for (var i = 0; i < spots.length; i++) {
         beans += '<ellipse cx="' + spots[i][0] + '" cy="' + spots[i][1] + '" rx="6.4" ry="5" fill="' + spots[i][2] + '"/>' +
           '<ellipse cx="' + (spots[i][0] - 1.8) + '" cy="' + (spots[i][1] - 1.6) + '" rx="2.2" ry="1.5" fill="#ffffff" opacity=".55"/>';
       }
       /* 先框出一小撮当「一份」，再看整罐是几份，这就是估算的分块策略。 */
-      var group = '<ellipse cx="76" cy="53" rx="30" ry="17" fill="none" stroke="#c2410c" stroke-width="2.2" stroke-dasharray="5 4"/>' +
-        '<text x="42" y="20" font-size="12" font-weight="700" fill="#c2410c">先数一圈 10 颗</text>';
+      var group = '<ellipse cx="70" cy="51" rx="23" ry="13" fill="none" stroke="#c2410c" stroke-width="2.2" stroke-dasharray="5 4"/>' +
+        '<text x="42" y="20" font-size="12" font-weight="700" fill="#c2410c">先数一圈 5 颗</text>';
       return jar + beans + group;
     })()
   });
