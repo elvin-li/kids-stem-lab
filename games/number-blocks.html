@@ -1310,7 +1310,12 @@
   document.getElementById('fillTen').addEventListener('click', fillTen);
   document.getElementById('clear').addEventListener('click', function () {
     S.placed.length = 0; S.rowFlash.length = 0;
-    if (S.mode === 'ten') { for (var i = 0; i < S.tenBase; i++) S.placed.push(mkBlock(G.pad, G.trayTop)); }
+    /* 拆分、进位也有「已有 N 颗」的前提块（拆分模式里 tenBase 就等于 splitBase），
+       原来只有凑十会补回去：拆分/进位一按清空，题面说的起点块全没了，
+       孩子从零搭到目标数也能触发「3 + 5 = 8」这类和画面对不上的判定。 */
+    if (S.mode === 'ten' || S.mode === 'split' || S.mode === 'carry') {
+      for (var i = 0; i < S.tenBase; i++) S.placed.push(mkBlock(G.pad, G.trayTop));
+    }
     S.solved = false;
     refillLoose(); update();
   });
