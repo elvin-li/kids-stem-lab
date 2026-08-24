@@ -1167,10 +1167,14 @@
       if (art.hasArt(name)) art.renderArt(slot, name, { decorative: true });
     });
   }
-  document.querySelectorAll("[data-body-system]").forEach(function (button) {
+  /* 裸的 [data-body-system] 会连 .body-scene 容器一起选中：按钮就住在场景里，
+     点击冒泡上去触发场景自己的监听器，把五个真按钮全部改回 aria-pressed="false"、
+     反倒给 div 挂上按下态——第一次点击后高亮就永远消失。只认开关组里的按钮。 */
+  var systemButtons = document.querySelectorAll(".body-system-switch [data-body-system]");
+  systemButtons.forEach(function (button) {
     button.addEventListener("click", function () {
       var sys = button.getAttribute("data-body-system");
-      document.querySelectorAll("[data-body-system]").forEach(function (item) {
+      systemButtons.forEach(function (item) {
         item.setAttribute("aria-pressed", item === button ? "true" : "false");
       });
       bodyScene.setAttribute("data-body-system", sys);
