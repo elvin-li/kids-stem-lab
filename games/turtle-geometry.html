@@ -242,7 +242,7 @@
       <section class="panel" style="margin-top:14px" aria-labelledby="commandTitle" data-print="hide">
         <h2 class="stage-title" id="commandTitle">给小海龟写路书</h2>
         <label for="code" style="display:block;margin-bottom:8px">我的命令（写完选“让海龟画起来”，也可按 Ctrl/⌘ + Enter）</label>
-        <textarea id="code" class="editor" spellcheck="false" aria-describedby="msg"></textarea>
+        <textarea id="code" class="editor" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" aria-describedby="msg"></textarea>
         <div id="msg" class="msg note note-warn" role="status" aria-live="polite"></div>
         <div class="action-row secondary-actions" data-audience="parent">
           <button class="btn btn-ghost btn-sm" type="button" id="clear">擦掉命令重新写</button>
@@ -464,6 +464,13 @@
   };
   var REPCOUNT = { "次数": 1, "第几遍": 1, "repcount": 1 };
 
+  /* 英文命令表里全是小写，可手机键盘默认把每行首字母大写：孩子照着参考敲
+     「fd 100」，输入框里躺着的是「Fd 100」，回来一句「我不认识命令「Fd」」。
+     中文命令走 toLowerCase 不受影响，所以查表统一先原样、再小写。 */
+  function lookup(table, word) {
+    return table[word] !== undefined ? table[word] : table[word.toLowerCase()];
+  }
+
   function parse(toks) {
     var pos = 0;
 
@@ -472,7 +479,7 @@
 
     function expectExpr(cmdName) {
       var t = peek();
-      if (!t || t.t === "]" || (t.t === "word" && CMD[t.v])) {
+      if (!t || t.t === "]" || (t.t === "word" && lookup(CMD, t.v))) {
         throw { msg: "「" + cmdName + "」后面还缺一个数字，比如 " + cmdName + " 100", line: lineOf() };
       }
       return parseExpr();
@@ -510,7 +517,7 @@
         pos++;
         return e;
       }
-      if (t.t === "word" && REPCOUNT[t.v]) { pos++; return { k: "rc", line: t.line }; }
+      if (t.t === "word" && lookup(REPCOUNT, t.v)) { pos++; return { k: "rc", line: t.line }; }
       if (t.t === "word") throw { msg: "这里应该是个数字，但我看到了「" + t.v + "」", line: t.line };
       throw { msg: "这里应该是个数字", line: t.line };
     }
@@ -526,7 +533,7 @@
         if (t.t !== "word") {
           throw { msg: "这里应该是一条命令（比如 前进 / 右转 / 重复）", line: t.line };
         }
-        name = t.v; line = t.line; kind = CMD[name];
+        name = t.v; line = t.line; kind = lookup(CMD, name);
         if (!kind) {
           throw { msg: "我不认识命令「" + name + "」。右边「命令参考」里列出了能用的命令", line: line };
         }
@@ -540,9 +547,9 @@
           list.push({ k: kind, line: line });
         } else if (kind === "color") {
           var ct = peek();
-          if (ct && ct.t === "word" && PALETTE[ct.v]) {
+          if (ct && ct.t === "word" && lookup(PALETTE, ct.v)) {
             pos++;
-            list.push({ k: "color", v: PALETTE[ct.v], line: line });
+            list.push({ k: "color", v: lookup(PALETTE, ct.v), line: line });
           } else if (ct && ct.t === "num") {
             var n = Math.max(1, Math.min(PALETTE_ORDER.length, Math.round(ct.v)));
             pos++;
