@@ -366,7 +366,7 @@
             <button class="chip btn-sm" type="button" data-preset="same">完全同相</button>
             <button class="chip btn-sm" type="button" data-preset="anti">完全反相</button>
             <button class="chip btn-sm" type="button" data-preset="beat">拍频 beats</button>
-            <button class="chip btn-sm" type="button" data-preset="stand">驻波</button>
+            <button class="chip btn-sm" type="button" id="presetStand" data-preset="stand">驻波</button>
           </div>
           <p class="hint" id="presetHint">选择预设，比较叠加结果。</p>
         </div>
@@ -1233,6 +1233,7 @@
   var PKEYS = ['a1', 'w1', 'f1', 'p1', 'a2', 'w2', 'f2', 'p2'];
   var presetBtns = Array.prototype.slice.call(document.querySelectorAll('[data-preset]'));
   var presetHint = document.getElementById('presetHint');
+  var presetStand = document.getElementById('presetStand');
 
   function applyPreset(name) {
     var p = PRESETS[name];
@@ -1326,6 +1327,19 @@
     mTank.setAttribute('aria-pressed', m === 'tank' ? 'true' : 'false');
     ctrlSep.classList.toggle('modehide', m !== 'tank');
     rowFringe.classList.toggle('modehide', m !== 'tank');
+    /* 「驻波」这一档只做一件事：把波 2 改成向左传。可水波槽里是两个点波源，
+       朝四面八方发圆形波，没有「传播方向」这回事——drawTankMode 根本不读 dir2。
+       于是在水波槽里按下它，画面和「完全同相」一模一样，
+       底下却留着一句「同频反向叠加成驻波」，讲的是画面上根本没有的东西。
+       读数那边早就把「驻波」限定在两列波模式里了（见 updateReadout），
+       所以这个按钮也跟间距滑杆、亮纹间距读数一样按模式收起来，
+       并且把方向复位，免得留下一个按不到却仍然生效的状态。 */
+    presetStand.classList.toggle('modehide', m === 'tank');
+    if (m === 'tank' && dir2 === -1) {
+      dir2 = 1;
+      syncUI();
+      presetHint.textContent = '水波槽的点波源朝四面八方发波，没有传播方向，所以「驻波」只在「两列波相加」模式里有意义。';
+    }
     if (m === 'wave') {
       ctrlTitle.textContent = '波的参数';
       legend.innerHTML = '<span><i style="background:' + C.math + '"></i>波 1</span>' +
