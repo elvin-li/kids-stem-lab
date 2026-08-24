@@ -409,7 +409,12 @@ for (const path of files) {
   /* 共享壳资源必须与 Service Worker 使用同一版本，防止新 HTML 混入旧 CSS/JS。 */
   if (shellVersion) {
     const mandatoryShellResources = ['assets/css/base.css', 'assets/css/kid.css', 'assets/js/pwa.js'];
-    const optionalShellResources = ['assets/js/progress.js', 'assets/js/playful.js'];
+    /* illustrations.js 和 data/playful.js 同样在 sw.js 的 CORE 里，却一直没被这条
+       规则覆盖：升过版本的页面配上旧插图库，卡面和图标就会对不上。 */
+    const optionalShellResources = [
+      'assets/js/progress.js', 'assets/js/playful.js',
+      'assets/js/illustrations.js', 'data/playful.js'
+    ];
     for (const resource of mandatoryShellResources.concat(optionalShellResources)) {
       const referenced = new RegExp(`${escapeRe(resource)}(?:[?"'])`, 'i').test(html);
       if (!referenced && optionalShellResources.includes(resource)) continue;
