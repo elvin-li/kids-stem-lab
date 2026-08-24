@@ -45,8 +45,8 @@
   .stage-card { position: relative; padding: clamp(10px, 2vw, 16px); border: 1px solid rgba(74,222,128,.35); border-radius: calc(var(--r) + 4px); background: linear-gradient(180deg, rgba(74,222,128,.1), var(--surface)); box-shadow: 0 16px 36px rgba(0,0,0,.08); }
   .stage-title { display: flex; align-items: center; gap: 9px; margin: 0 0 10px; font-size: 1.12rem; }
   .stage-title::before { content: "🐢"; font-size: 1.35rem; }
+  /* 右下角原来盖着一排装饰脚印，那正是比例尺现在待的位置，两者会叠在一起。 */
   .lab-stage { position: relative; overflow: hidden; border-radius: var(--r); background: var(--canvas-bg, #fff); }
-  .lab-stage::after { content: ""; position: absolute; right: 10px; bottom: 9px; width: 58px; height: 18px; opacity: .18; pointer-events: none; background: radial-gradient(ellipse, var(--sci) 30%, transparent 34%) 0 0 / 19px 12px; transform: rotate(-10deg); }
   .turtle-heading-card { position:absolute; z-index:2; top:10px; right:10px; display:grid; grid-template-columns:54px minmax(80px,auto); gap:8px; align-items:center; padding:8px 10px; border:2px solid color-mix(in srgb,var(--sci) 34%,var(--line)); border-radius:16px; background:color-mix(in srgb,var(--surface) 92%,transparent); box-shadow:var(--shadow); pointer-events:none; }
   .turtle-heading-card svg { width:54px; height:54px; overflow:visible; }
   .turtle-heading-card b,.turtle-heading-card span { display:block; }
@@ -350,29 +350,32 @@
   };
 
   /* 画笔颜色跟随当前主题：浅色主题用深墨，深色主题用亮墨，
-     两种主题下都能在画布上看清。原「白」在浅色画布上不可见，改为「青」。 */
-  var TG_CSS = getComputedStyle(document.documentElement);
-  function TGV(name, fallback) {
-    var v = TG_CSS.getPropertyValue(name);
-    return (v && v.trim()) || fallback;
-  }
-  var PALETTE = {
-    "蓝": TGV("--math", "#1b64c8"),
-    "紫": TGV("--phys", "#6d31d4"),
-    "绿": TGV("--sci", "#0b7a45"),
-    "橙": TGV("--code", "#b8500f"),
-    "粉": TGV("--kit", "#c01764"),
-    "黄": TGV("--warn", "#96650d"),
-    "青": TGV("--video", "#0a6f85")
-  };
-  PALETTE.blue = PALETTE["蓝"];
-  PALETTE.purple = PALETTE["紫"];
-  PALETTE.green = PALETTE["绿"];
-  PALETTE.orange = PALETTE["橙"];
-  PALETTE.pink = PALETTE["粉"];
-  PALETTE.yellow = PALETTE["黄"];
-  PALETTE.cyan = PALETTE["青"];
+     两种主题下都能在画布上看清。原「白」在浅色画布上不可见，改为「青」。
+     内联脚本比 playful.js 早跑，此刻还没有 data-mode="kid"，所以交给
+     themePalette 延迟读取并在换主题时回调重绘，而不是开局快照一次。 */
+  var TP = ILLUSTRATIONS.themePalette({
+    bg:   ["--canvas-bg", "#ffffff"],
+    grid: ["--canvas-line", "#c8d3e4"],
+    ink:  ["--canvas-ink", "#16202e"],
+    dim:  ["--ink-dim", "#5c6b86"],
+    math: ["--math", "#1b64c8"],
+    phys: ["--phys", "#6d31d4"],
+    sci:  ["--sci", "#0b7a45"],
+    code: ["--code", "#b8500f"],
+    kit:  ["--kit", "#c01764"],
+    warn: ["--warn", "#96650d"],
+    video:["--video", "#0a6f85"],
+    surf: ["--surface", "#ffffff"]
+  }, function () { syncPalette(); dirty = true; });
+  var PALETTE = {};
   var PALETTE_ORDER = ["蓝", "紫", "绿", "橙", "粉", "黄", "青"];
+  var PALETTE_KEYS = { "蓝": "math", "紫": "phys", "绿": "sci", "橙": "code", "粉": "kit", "黄": "warn", "青": "video" };
+  var PALETTE_EN = { blue: "蓝", purple: "紫", green: "绿", orange: "橙", pink: "粉", yellow: "黄", cyan: "青" };
+  function syncPalette() {
+    PALETTE_ORDER.forEach(function (name) { PALETTE[name] = TP[PALETTE_KEYS[name]]; });
+    Object.keys(PALETTE_EN).forEach(function (en) { PALETTE[en] = PALETTE[PALETTE_EN[en]]; });
+  }
+  syncPalette();
 
   var MAX_ACTIONS = 20000;
 
@@ -611,12 +614,14 @@
     W = Math.round(Math.max(260, host.clientWidth - 28));
     H = Math.round(Math.max(300, Math.min(560, W * 0.7)));
     dpr = Math.min(3, window.devicePixelRatio || 1);
-    cv.width = Math.round(W * dpr);
-    cv.height = Math.round(H * dpr);
+    var pw = Math.round(W * dpr), ph = Math.round(H * dpr);
+    // 重设 width/height 会重建位图并清空 buf 里已画的线，尺寸没变就别动
+    if (cv.width !== pw || cv.height !== ph) {
+      cv.width = pw; cv.height = ph;
+      buf.width = pw; buf.height = ph;
+    }
     cv.style.height = "auto";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    buf.width = cv.width;
-    buf.height = cv.height;
     bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     bctx.lineCap = "round";
     bctx.lineJoin = "round";
@@ -680,33 +685,83 @@
   /* ========== 渲染 ========== */
   /* 一格 = GRID_STEP 步。这个换算是「前进 100」到底走多远的唯一线索，
      所以每 5 格画一条粗线方便数，并在角落写明比例尺。 */
-  var GRID_STEP = 40;
+  /* 50 而不是 40：预设里的 100 / 150 / 200 正好落在整格上，
+     「前进 100」= 走 2 格，孩子数得出来；40 会让每个预设都停在半格中间。 */
+  var GRID_STEP = 50;
   var TG_FONT = '-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif';
+
+  function fade(hex, a) { return ILLUSTRATIONS.fadeHex(hex, a); }
+
+  /* 带底色的小标签：网格线和笔画都会从字底下穿过去，没有底色就读不清。 */
+  function tag(text, x, y, color, align) {
+    ctx.save();
+    ctx.font = "700 12px " + TG_FONT;
+    var w = ctx.measureText(text).width + 12, h = 20;
+    var tx = align === "right" ? x - w : align === "center" ? x - w / 2 : x;
+    ILLUSTRATIONS.roundRect(ctx, tx, y - h / 2, w, h, 6);
+    ctx.fillStyle = fade(TP.bg, 0.88);
+    ctx.fill();
+    ctx.fillStyle = color;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, tx + 6, y);
+    ctx.restore();
+  }
 
   function drawGrid() {
     ctx.save();
-    ctx.fillStyle = TGV("--canvas-bg", "#ffffff");
+    ctx.fillStyle = TP.bg;
     ctx.fillRect(0, 0, W, H);
-    var g = GRID_STEP, i, home = homeState();
-    var line = TGV("--canvas-line", "#c8d3e4");
+    /* 粗线每 2 小格 = 100 步：预设里全是「前进 100 / 130 / 160」，
+       粗线落在 100 的整数倍上才对得起来。原来每 5 格一条＝250 步，
+       整张图纸上只剩两三条粗线，既数不出来也对不上命令里的数字。 */
+    var g = GRID_STEP, big = g * 2, i, k, home = homeState();
 
-    ctx.strokeStyle = line;
+    /* 细线和粗线都从起点起算。原来细线从画布左上角起、粗线从起点起，两套网格错开，
+       起点根本不落在交叉点上，「一格 = 多少步」也就无从数起。 */
+    ctx.strokeStyle = fade(TP.grid, 0.45);
     ctx.lineWidth = 1;
     ctx.beginPath();
-    for (i = g; i < W; i += g) { ctx.moveTo(i + .5, 0); ctx.lineTo(i + .5, H); }
-    for (i = g; i < H; i += g) { ctx.moveTo(0, i + .5); ctx.lineTo(W, i + .5); }
+    for (i = home.x % g; i < W; i += g) { ctx.moveTo(i + .5, 0); ctx.lineTo(i + .5, H); }
+    for (i = home.y % g; i < H; i += g) { ctx.moveTo(0, i + .5); ctx.lineTo(W, i + .5); }
     ctx.stroke();
 
-    /* 从起点往外每 5 格一条粗线，数格子时不用一格一格点。粗线必须比细线更重，
-       否则「每 5 格」这个节奏反而看不出来。 */
-    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = fade(TP.grid, 0.95);
+    ctx.lineWidth = 1.6;
     ctx.beginPath();
-    for (i = home.x % (g * 5); i < W; i += g * 5) { ctx.moveTo(i + .5, 0); ctx.lineTo(i + .5, H); }
-    for (i = home.y % (g * 5); i < H; i += g * 5) { ctx.moveTo(0, i + .5); ctx.lineTo(W, i + .5); }
+    for (i = home.x % big; i < W; i += big) { ctx.moveTo(i + .5, 0); ctx.lineTo(i + .5, H); }
+    for (i = home.y % big; i < H; i += big) { ctx.moveTo(0, i + .5); ctx.lineTo(W, i + .5); }
     ctx.stroke();
+
+    // 过起点的两条轴：让「起点」看得出是坐标原点，而不是随手一个圆圈
+    ctx.strokeStyle = fade(TP.dim, 0.45);
+    ctx.lineWidth = 1.4;
+    ctx.setLineDash([2, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, home.y + .5); ctx.lineTo(W, home.y + .5);
+    ctx.moveTo(home.x + .5, 0); ctx.lineTo(home.x + .5, H);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    /* 刻度贴着两条轴写。有了它，「前进 130」会停在哪里可以直接读出来，
+       不必一格一格数过去。 */
+    ctx.font = "700 11px " + TG_FONT;
+    ctx.fillStyle = fade(TP.dim, 0.85);
+    ctx.textBaseline = "top";
+    ctx.textAlign = "center";
+    for (k = -20; k <= 20; k++) {
+      i = home.x + k * big;
+      if (k !== 0 && i > 24 && i < W - 24) ctx.fillText(String(k * big), i, home.y + 6);
+    }
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    for (k = -20; k <= 20; k++) {
+      i = home.y - k * big;
+      if (k !== 0 && i > 14 && i < H - 26) ctx.fillText(String(k * big), home.x + 6, i);
+    }
 
     /* 起点标记：跑完一圈能不能回到这里，是判断图形闭合的依据。 */
-    ctx.strokeStyle = TGV("--code", "#b8500f");
+    ctx.strokeStyle = TP.code;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(home.x, home.y, 9, 0, Math.PI * 2);
@@ -717,25 +772,19 @@
     ctx.moveTo(home.x, home.y - 13);
     ctx.lineTo(home.x, home.y + 13);
     ctx.stroke();
-    ctx.font = '700 12px ' + TG_FONT;
-    ctx.fillStyle = TGV("--code", "#b8500f");
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillText("起点", home.x + 16, home.y + 14);
+    // 靠左下写：闭合图形的最后一个转角就压在起点右下方
+    tag("起点 0,0", home.x - 15, home.y + 18, TP.code, "right");
 
-    /* 比例尺：一格等于多少步。 */
-    ctx.strokeStyle = TGV("--ink-dim", "#5c6b86");
+    /* 比例尺挪到右下角：左下角被「准备走的路线」那枚图例压着，两串字叠在一起。 */
+    var sx = W - 22 - g, sy = H - 18;
+    ctx.strokeStyle = fade(TP.dim, 0.9);
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(14, H - 16);
-    ctx.lineTo(14 + g, H - 16);
-    ctx.moveTo(14, H - 21);
-    ctx.lineTo(14, H - 11);
-    ctx.moveTo(14 + g, H - 21);
-    ctx.lineTo(14 + g, H - 11);
+    ctx.moveTo(sx, sy); ctx.lineTo(sx + g, sy);
+    ctx.moveTo(sx, sy - 5); ctx.lineTo(sx, sy + 5);
+    ctx.moveTo(sx + g, sy - 5); ctx.lineTo(sx + g, sy + 5);
     ctx.stroke();
-    ctx.fillStyle = TGV("--ink-dim", "#5c6b86");
-    ctx.fillText("一格 = " + GRID_STEP + " 步", 20 + g, H - 16);
+    tag("一格 = " + GRID_STEP + " 步", sx - 6, sy, fade(TP.dim, 0.95), "right");
     ctx.restore();
   }
 
@@ -745,7 +794,7 @@
     var x0 = turtle.x + Math.cos(rad) * 20, y0 = turtle.y + Math.sin(rad) * 20;
     var x1 = turtle.x + Math.cos(rad) * 44, y1 = turtle.y + Math.sin(rad) * 44;
     ctx.save();
-    ctx.strokeStyle = turtle.pen ? TGV("--code", "#b8500f") : TGV("--ink-dim", "#5c6b86");
+    ctx.strokeStyle = turtle.pen ? TP.code : TP.dim;
     ctx.fillStyle = ctx.strokeStyle;
     ctx.lineWidth = 2.6;
     ctx.lineCap = "round";
@@ -786,7 +835,7 @@
     ctx.fillStyle = turtle.pen ? "rgba(74,222,128,.95)" : "rgba(125,136,171,.85)";
     ctx.fill();
     ctx.lineWidth = 1.4;
-    ctx.strokeStyle = TGV("--canvas-bg", "#ffffff");
+    ctx.strokeStyle = TP.bg;
     ctx.stroke();
     ctx.restore();
   }
@@ -800,29 +849,109 @@
     }
   }
 
-  function drawPathPreview() {
-    var preview = pathPreviewActions();
-    if (!preview.length) return;
-    var p = homeState(), pen = true;
-    ctx.save();
-    ctx.strokeStyle = TGV("--video", "#0a6f85");
-    ctx.lineWidth = 3;
-    ctx.globalAlpha = .5;
-    ctx.setLineDash([9, 8]);
-    ctx.beginPath();
-    ctx.moveTo(p.x, p.y);
-    for (var i = 0; i < preview.length && i < 2500; i++) {
-      var a = preview[i];
+  /* 预览一帧只需要一份几何数据，但 render() 每帧都跑。原来每帧重新
+     tokenize→parse→flatten 一遍整段代码（螺旋预设是 60 次迭代），
+     动画一跑就是每秒 60 遍。改成写代码时算一次、缓存住。 */
+  var previewCache = null;
+  function invalidatePreview() { previewCache = null; }
+  function previewGeometry() {
+    if (previewCache) return previewCache;
+    var acts = pathPreviewActions();
+    var p = homeState(), pen = true, segs = [], corners = [];
+    var cur = pen ? [{ x: p.x, y: p.y }] : null;
+    for (var i = 0; i < acts.length && i < 2500; i++) {
+      var a = acts[i];
       if (a.t === "move") {
         var rad = p.dir * Math.PI / 180;
         p.x += Math.sin(rad) * a.v;
         p.y -= Math.cos(rad) * a.v;
-        if (pen) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y);
-      } else if (a.t === "turn") p.dir += a.v;
-      else if (a.t === "pen") { pen = a.v; ctx.moveTo(p.x, p.y); }
-      else if (a.t === "home") { p = homeState(); ctx.moveTo(p.x, p.y); }
+        if (pen) { if (!cur) cur = [{ x: p.x, y: p.y }]; else cur.push({ x: p.x, y: p.y }); }
+        else { if (cur) { segs.push(cur); cur = null; } }
+      } else if (a.t === "turn") {
+        if (pen && Math.abs(a.v) > 0.01) corners.push({ x: p.x, y: p.y, from: p.dir, turn: a.v });
+        p.dir += a.v;
+      } else if (a.t === "pen") {
+        pen = a.v;
+        if (!pen && cur) { segs.push(cur); cur = null; }
+        else if (pen) cur = [{ x: p.x, y: p.y }];
+      } else if (a.t === "home") {
+        if (cur) { segs.push(cur); cur = null; }
+        p = homeState();
+        if (pen) cur = [{ x: p.x, y: p.y }];
+      }
+    }
+    if (cur && cur.length > 1) segs.push(cur);
+    previewCache = { segs: segs, corners: corners, end: { x: p.x, y: p.y, dir: p.dir } };
+    return previewCache;
+  }
+
+  /* 转角标注：外角是这一页的核心概念，可路线里只有一条折线，
+     「这里转了几度」得靠孩子自己猜。图形不复杂时就把角度画出来。 */
+  function drawTurnMarks(corners) {
+    if (!corners.length || corners.length > 10) return;
+    var i, c, r = 26;
+    ctx.save();
+    ctx.lineWidth = 2;
+    for (i = 0; i < corners.length; i++) {
+      c = corners[i];
+      // 画布 y 轴朝下，海龟 dir=0 朝上：转到屏幕角度要减 90°
+      var a0 = (c.from - 90) * Math.PI / 180;
+      var a1 = (c.from + c.turn - 90) * Math.PI / 180;
+      ctx.strokeStyle = fade(TP.code, 0.85);
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, r, a0, a1, c.turn < 0);
+      ctx.stroke();
+      var mid = (a0 + a1) / 2 + (Math.abs(c.turn) > 180 ? Math.PI : 0);
+      tag((c.turn >= 0 ? "↻" : "↺") + Math.abs(Math.round(c.turn * 10) / 10) + "°",
+        c.x + Math.cos(mid) * (r + 16), c.y + Math.sin(mid) * (r + 16), TP.code, "center");
+    }
+    ctx.restore();
+  }
+
+  function drawPathPreview() {
+    var geo = previewGeometry(), i, j, pts;
+    if (!geo.segs.length) return;
+    ctx.save();
+    ctx.strokeStyle = TP.video;
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = .55;
+    ctx.setLineDash([9, 8]);
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    for (i = 0; i < geo.segs.length; i++) {
+      pts = geo.segs[i];
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (j = 1; j < pts.length; j++) ctx.lineTo(pts[j].x, pts[j].y);
     }
     ctx.stroke();
+    ctx.restore();
+    drawTurnMarks(geo.corners);
+  }
+
+  /* 任务问的是「能不能回到起点」，那就把结论画在画面上：
+     合上了给一枚绿钩，没合上就把缺口连成一条红线并写明差多少步。 */
+  function drawClosure() {
+    if (!finished || !actions.length || done < actions.length) return;
+    var home = homeState(), gap = Math.hypot(turtle.x - home.x, turtle.y - home.y);
+    ctx.save();
+    if (gap <= 8) {
+      ctx.strokeStyle = TP.sci;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(home.x, home.y, 17, 0, Math.PI * 2);
+      ctx.stroke();
+      tag("✓ 回到起点，闭合了", home.x + 22, home.y - 20, TP.sci);
+    } else {
+      ctx.strokeStyle = fade(TP.kit, 0.9);
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(turtle.x, turtle.y);
+      ctx.lineTo(home.x, home.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      tag("离起点还差 " + Math.round(gap) + " 步", (turtle.x + home.x) / 2, (turtle.y + home.y) / 2 - 18, TP.kit, "center");
+    }
     ctx.restore();
   }
 
@@ -830,6 +959,7 @@
     drawGrid();
     drawPathPreview();
     ctx.drawImage(buf, 0, 0, W, H);
+    drawClosure();
     drawTurtle();
   }
 
@@ -1064,6 +1194,7 @@
 
   document.getElementById("clear").addEventListener("click", function () {
     codeEl.value = "";
+    invalidatePreview();
     resetAll(false);
     runBtn.textContent = "让海龟画起来";
     say("");
@@ -1074,6 +1205,7 @@
     b.addEventListener("click", function () {
       codeEl.value = PRESETS[b.dataset.preset];
       resetAll(false);
+      invalidatePreview();
       actions = pathPreviewActions();
       dirty = true;
       updateReadout();
@@ -1112,8 +1244,8 @@
     taskPassed = false;
     codeEl.classList.remove("has-error");
     codeEl.setAttribute("aria-invalid", "false");
-    var preview = pathPreviewActions();
-    actions = preview;
+    invalidatePreview();
+    actions = pathPreviewActions();
     done = 0;
     finished = true;
     dirty = true;
@@ -1141,6 +1273,7 @@
       var oldW = W;
       sizeCanvas();
       if (oldW === W) { dirty = true; return; }
+      invalidatePreview();   // 起点跟着画布尺寸走，预览的几何要重算
       resetAll(true);
       actions = acts;
       var i;
