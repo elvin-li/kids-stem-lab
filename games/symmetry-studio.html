@@ -485,11 +485,29 @@
     ctx.stroke();
   }
 
+  /* 空画板只有一条镜像线，孩子看不出「画一笔会变成几笔」。这里先放一道淡示范：
+     走的是画真实笔画的同一条 paintStroke，所以示范里出现几条线，真画下去就是几条。 */
+  function drawDemo() {
+    var c = CSS / 2, r = CSS * 0.3, pts = [], i;
+    for (i = 0; i <= 14; i++) {
+      var t = i / 14;
+      pts.push({ x: c - r * (1.05 - t * 0.62), y: c - r * (0.2 + Math.sin(t * Math.PI) * 0.72) });
+    }
+    paintStroke({ color: "rgba(110,168,254,.34)", size: 7, fold: state.fold, mirror: state.mirror, pts: pts });
+    ctx.save();
+    ctx.font = "700 11px sans-serif";
+    ctx.fillStyle = "rgba(125,136,171,.8)";
+    ctx.textAlign = "center";
+    ctx.fillText("示范：拖一笔", c - r * 0.75, c - r * 0.05);
+    ctx.restore();
+  }
+
   function redraw() {
     clearSurface();
     drawGuides();
     for (var i = 0; i < state.strokes.length; i++) paintStroke(state.strokes[i]);
     if (state.current) paintStroke(state.current);
+    if (!state.strokes.length && !state.current) drawDemo();
   }
 
   /* ---------- input ---------- */
