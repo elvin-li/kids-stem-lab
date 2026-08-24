@@ -24,7 +24,21 @@
   .step{padding:14px;border:1px solid var(--line-soft);border-radius:var(--r);background:var(--surface-2)}.step h3,.module h2{margin-top:0}.step textarea{width:100%;min-height:88px;resize:vertical}
   .module{display:flex;flex-direction:column}.module p{color:var(--ink-mid)}.controls{display:grid;gap:10px}.controls label{display:block;font-size:.86rem;font-weight:650}.controls input,.controls select{width:100%}
   button,input,select,textarea{min-height:44px}.output{display:block;min-height:4.6em;margin-top:12px;padding:11px 13px;border-left:3px solid var(--sci);background:var(--bg-soft);color:var(--ink);line-height:1.55}
-  .visual{min-height:126px;border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(#78bff0,#d8edf9);display:grid;place-items:center;position:relative;overflow:hidden;margin:10px 0 14px;color:#132238}.cloud{font-size:3.5rem;filter:grayscale(var(--dry,1));transform:scale(var(--cloud-scale,1))}.visual .drops{position:absolute;inset:auto 0 6px;display:flex;justify-content:center;gap:10px}.visual .drops svg{width:22px;height:22px}.drop-figure{display:grid;place-items:center;width:72px;height:72px}.drop-figure svg{width:100%;height:100%}.thunder-visual{padding:6px 8px}.thunder-visual svg{display:block;width:100%;height:auto}.gauge{width:84%;height:16px;border:1px solid rgba(0,0,0,.25);border-radius:999px;background:rgba(255,255,255,.65);overflow:hidden}.gauge i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6ea8fe,#fbbf24,#f87171)}
+  .visual{min-height:126px;border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(#78bff0,#d8edf9);display:grid;place-items:center;position:relative;overflow:hidden;margin:10px 0 14px;color:#132238}.cloud{font-size:3.5rem;filter:grayscale(var(--dry,1));transform:scale(var(--cloud-scale,1))}.visual .drops{position:absolute;inset:auto 0 6px;display:flex;justify-content:center;gap:10px}.visual .drops svg{width:22px;height:22px}.drop-figure{display:grid;place-items:center;width:72px;height:72px}.drop-figure svg{width:100%;height:100%}.thunder-visual,.cloud-visual{padding:6px 8px}.thunder-visual svg,.cloud-visual svg{display:block;width:100%;height:auto}
+  /* 三列布局里这张卡只有三百出头的宽，七颗雨滴和当前那颗并排必然挤出去，
+     所以竖着排：上面是滑块选中的那一颗，下面是七个直径的对照排。 */
+  .drop-visual{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;justify-items:center;align-content:center;padding:10px 8px;color:#12314a}
+  .drop-now{display:flex;align-items:center;gap:8px}.drop-now b{font-family:var(--mono);font-size:.8rem}
+  .drop-figure{width:56px;height:56px}
+  .drop-strip{display:flex;align-items:flex-end;justify-content:center;gap:3px;max-width:100%}
+  .drop-strip figure{margin:0;display:grid;justify-items:center;gap:1px;padding:3px 2px;border:2px solid transparent;border-radius:10px}
+  .drop-strip figure.is-current{border-color:#12314a;background:rgba(255,255,255,.5)}
+  .drop-strip svg{display:block}
+  /* 刻度数字是图上的标注，不跟着孩子模式的正文一起放大，否则七个数字挤成两行 */
+  .drop-strip figcaption,html[data-mode="kid"] .drop-strip figcaption{font-family:var(--mono);font-size:11px;line-height:1.2;white-space:nowrap}
+  .gauge-row{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:.72rem;color:var(--ink-dim)}
+  .gauge-row .gauge{flex:1;width:auto}
+  @media(max-width:560px){.drop-visual{grid-template-columns:1fr;justify-items:center}}.gauge{width:84%;height:16px;border:1px solid rgba(0,0,0,.25);border-radius:999px;background:rgba(255,255,255,.65);overflow:hidden}.gauge i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6ea8fe,#fbbf24,#f87171)}
   .station-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.station-grid .wide{grid-column:1/-1}.task-actions,.row-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}.task-status{min-height:1.5em;color:var(--ink-mid)}
   .principle{border-left:3px solid var(--phys);padding-left:12px;color:var(--ink-mid)}.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:12px 0}.checks span{padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-sm);font-size:.82rem}.checks span.done{border-color:var(--sci)}
   .parent-q li+li{margin-top:7px}.privacy{font-size:.78rem;color:var(--ink-dim)}
@@ -150,7 +164,18 @@
       <h2 id="cloudTitle">① 云形成：空气冷到露点</h2>
       <p><b>露点</b>，就是空气冷到水汽快要凝结成小水滴的温度。</p>
       <p><b>相对湿度</b>，是“现在的水汽”占“这个温度最多能容纳的水汽”的百分比。接近 100% 时，水汽可能凝结成云滴。</p>
-      <div class="visual" id="cloudVisual" aria-hidden="true"><div class="cloud"><svg viewBox="0 0 100 60" width="100" height="60" aria-hidden="true"><ellipse cx="50" cy="36" rx="42" ry="18" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/><circle cx="28" cy="32" r="16" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><circle cx="68" cy="30" r="18" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/></svg></div><div class="drops" id="moduleDrops"></div></div>
+      <!-- 原先这里是一朵不会变的白云，和上面两段文字没有任何关系。
+           改成抬升凝结高度图：空气每升高 1 km 约降温 8°C，降到露点的那个高度就是云底。
+           气温和露点一动，云底跟着上下移动——这也解释了为什么一片天上的云底几乎一样平。 -->
+      <div class="visual cloud-visual">
+        <svg id="cloudScene" viewBox="0 0 240 176" role="img" aria-labelledby="cloudSceneLabel">
+          <title id="cloudSceneLabel">抬升凝结高度示意图：空气上升会降温，降到露点的高度就是云底</title>
+          <rect x="0" y="158" width="240" height="18" fill="#6f9b57"/>
+          <path d="M0 158 H240" stroke="#4a6f39" stroke-width="2"/>
+          <text x="120" y="171" text-anchor="middle" font-size="9.5" font-weight="600" fill="#eef6e9">每升高 1 km，空气约降温 8 °C</text>
+          <g id="cloudLevel"></g>
+        </svg>
+      </div>
       <p class="action-return">造云控件和实时结果在页面上方的云雨循环舞台旁；运行后这里会计入正式任务。</p>
       <p class="privacy"><b>可在家验证：</b>透明瓶内放少量温水，盖好后用冰袋冷却瓶口，可看到小水滴凝结。不要使用烟雾或加压瓶。</p>
     </section>
@@ -159,10 +184,20 @@
       <h2 id="rainTitle">② 雨滴：变大、下落、破碎</h2>
       <p>云滴互相碰并，才会长成雨滴。小滴近似球形；大滴会被空气托扁，太大时还会破碎。</p>
       <p><b>终端速度</b>，就是空气阻力与重力平衡后，雨滴不再继续加快的下落速度。</p>
-      <div class="visual" aria-hidden="true"><div class="drop-figure" id="dropIcon"></div><div class="gauge"><i id="speedGauge"></i></div></div>
+      <!-- 一次只画一颗，孩子就看不到「变大 → 变扁 → 碎掉」这条线。
+           左边是滑块选中的那一颗，右边把六个直径并排摆出来，形状差别一眼可见。 -->
+      <div class="visual drop-visual">
+        <div class="drop-now">
+          <div class="drop-figure" id="dropIcon" aria-hidden="true"></div>
+          <b id="dropNowLabel">2.0 mm</b>
+        </div>
+        <div class="drop-strip" id="dropStrip" role="img" aria-label="七种直径的雨滴形状对比：越大越扁，超过 5 毫米会碎开"></div>
+      </div>
+      <p class="privacy">上面这一排把小滴放大了：真按比例，0.5 mm 那颗只有 6 mm 那颗的十二分之一宽。要看的是形状，不是大小。</p>
       <div class="controls">
         <label for="dropSize">雨滴直径：<b id="dropSizeText">2.0 mm</b></label><input id="dropSize" type="range" min="1" max="60" value="20" aria-describedby="rainHint">
         <span id="rainHint" class="privacy">滑块数值 1–60 对应 0.1–6.0 毫米。</span>
+        <div class="gauge-row"><span>0</span><div class="gauge" aria-hidden="true"><i id="speedGauge"></i></div><span>9 m/s</span></div>
         <button class="btn btn-primary" type="button" id="testDrop">观察下落</button>
       </div>
       <output class="output" id="rainOutput" aria-live="polite">选择雨滴大小，查看形状和大约终端速度。</output>
@@ -273,7 +308,6 @@
     if(!art) return;
     node.insertAdjacentHTML("beforeend",sizes.map(dropSvg).join(""));
   }
-  fillDrops(document.getElementById("moduleDrops"),[1.2,2.4,1.6]);
   var done={cloud:false,rain:false,thunder:false,station:false};
   var checks={cloud:document.getElementById("checkCloud"),rain:document.getElementById("checkRain"),thunder:document.getElementById("checkThunder"),station:document.getElementById("checkStation")};
   if(window.Progress) Progress.visit("nature/weather.html","天气工坊");
@@ -283,7 +317,59 @@
   var air=document.getElementById("airTemp"),dew=document.getElementById("dewPoint");
   var stageAir=document.getElementById("weatherStageAir"),stageDew=document.getElementById("weatherStageDew");
   setText(air,document.getElementById("airTempText"),"°C");setText(dew,document.getElementById("dewPointText"),"°C");
-  function paintWeatherDials(){stageAir.textContent=air.value+"°C";stageDew.textContent=dew.value+"°C"}
+  /* 抬升凝结高度：气温和露点每差 1°C，云底就高约 125 m（干绝热 10°C/km 与露点
+     递减 2°C/km 之差，教学上取每千米 8°C）。
+     高度轴跟着算出来的高度换量程，云底永远落在图里；顶上那 58 px 是留给云本身的，
+     不留的话云底一高，整朵云就被切在框外。 */
+  var SVG_NS_W="http://www.w3.org/2000/svg",GROUND_Y=158,SKY_TOP=58;
+  function cloudNode(name,attrs,text){
+    var el=document.createElementNS(SVG_NS_W,name);
+    Object.keys(attrs).forEach(function(k){el.setAttribute(k,attrs[k]);});
+    if(text!=null) el.textContent=text;
+    return el;
+  }
+  function paintCloudScene(){
+    var g=document.getElementById("cloudLevel");
+    if(!g) return;
+    while(g.firstChild) g.removeChild(g.firstChild);
+    var t=Number(air.value),d=Number(dew.value),gap=t-d;
+    var lift=Math.max(0,gap)*125;
+    var top=Math.max(2000,Math.ceil(lift/1000)*1000);
+    function liftY(m){ return GROUND_Y-(m/top)*(GROUND_Y-SKY_TOP); }
+    var y=liftY(lift);
+
+    // 高度轴
+    g.appendChild(cloudNode("path",{d:"M34 "+GROUND_Y+" V"+(SKY_TOP-6),stroke:"#3b5a70","stroke-width":1.6}));
+    for(var i=0;i<=4;i++){
+      var m=top*i/4,ty=liftY(m);
+      g.appendChild(cloudNode("path",{d:"M30 "+ty.toFixed(1)+" H34",stroke:"#3b5a70","stroke-width":1.4}));
+      g.appendChild(cloudNode("text",{x:28,y:(ty+3).toFixed(1),"text-anchor":"end","font-size":8,"font-family":"monospace",fill:"#2c4a5e"},String(m)));
+    }
+
+    // 上升的那团空气。已经饱和时不画：这时候空气不用往上跑就凝结了。
+    if(y<GROUND_Y-14){
+      g.appendChild(cloudNode("path",{d:"M58 "+(GROUND_Y-4)+" V"+(y+4).toFixed(1),stroke:"#d97706","stroke-width":2.4,"stroke-linecap":"round"}));
+      g.appendChild(cloudNode("path",{d:"M58 "+y.toFixed(1)+" l-4.5 7 h9 Z",fill:"#d97706"}));
+    }
+
+    // 云底所在的那条线
+    g.appendChild(cloudNode("path",{d:"M40 "+y.toFixed(1)+" H234",stroke:"#1f4c73","stroke-width":1.6,"stroke-dasharray":"6 4"}));
+
+    // 云：底面正好坐在这条线上
+    g.appendChild(cloudNode("path",{
+      d:"M24 56 C13 56 6 48 8 39 C10 31 18 26 26 28 C28 14 41 6 54 10 C64 13 70 21 71 30 C82 28 90 35 90 44 C90 52 83 56 74 56Z",
+      transform:"translate(150,"+(y-44.8).toFixed(1)+") scale(.8)",
+      fill:"#f4f8fb",stroke:"#7d93a6","stroke-width":3,"stroke-linejoin":"round"
+    }));
+
+    // 说明写在左边，长度压在云的左缘（x=150）以内
+    g.appendChild(cloudNode("text",{x:44,y:(y-6).toFixed(1),"font-size":10,"font-weight":700,fill:"#0f3556"},
+      gap<=1?"已经饱和：贴地就是雾":"云底约 "+Math.round(lift)+" m"));
+    g.appendChild(cloudNode("text",{x:234,y:16,"text-anchor":"end","font-size":9.5,"font-weight":700,fill:"#12314a"},
+      "气温 "+t+"°C · 露点 "+d+"°C · 差 "+gap+"°C"));
+  }
+
+  function paintWeatherDials(){stageAir.textContent=air.value+"°C";stageDew.textContent=dew.value+"°C";paintCloudScene()}
   air.addEventListener("input",paintWeatherDials);dew.addEventListener("input",paintWeatherDials);paintWeatherDials();
   document.getElementById("makeCloud").addEventListener("click",function(){
     var t=Number(air.value),d=Number(dew.value),gap=t-d;
@@ -298,21 +384,53 @@
   });
 
   var drop=document.getElementById("dropSize");setText(drop,document.getElementById("dropSizeText")," mm",10);
-  /* 滑块一动形状就跟着变，孩子不用先按“观察下落”才知道大滴是扁的。 */
-  function paintDropShape(){
-    var icon=document.getElementById("dropIcon");
-    icon.textContent="";
-    if(art) icon.insertAdjacentHTML("beforeend",dropSvg(Number(drop.value)/10));
+  function dropSpeed(mm){ return mm<.5?Math.max(.2,mm*2):mm<2?2+mm*2:mm<5?5+mm*.8:9; }
+
+  /* 六个直径并排一次画完，之后只换高亮的那一格。
+     格子宽度不是真实比例——真按比例 0.5 mm 那颗只有几个像素，形状根本看不出来，
+     而这一排要讲的正是形状；比例差距在下面那句说明里补回去。 */
+  var DROP_STEPS=[0.5,1,2,3,4,5,6];
+  function buildDropStrip(){
+    var strip=document.getElementById("dropStrip");
+    if(!strip||!art) return;
+    strip.textContent="";
+    DROP_STEPS.forEach(function(d){
+      var box=Math.round(19+d*5.5);
+      var fig=document.createElement("figure");
+      fig.setAttribute("data-mm",String(d));
+      fig.insertAdjacentHTML("beforeend",dropSvg(d).replace("<svg ","<svg width=\""+box+"\" height=\""+box+"\" "));
+      var cap=document.createElement("figcaption");
+      cap.textContent=d.toFixed(1);
+      fig.appendChild(cap);
+      strip.appendChild(fig);
+    });
   }
-  drop.addEventListener("input",paintDropShape);paintDropShape();
-  document.getElementById("testDrop").addEventListener("click",function(){
+  function highlightDropStep(mm){
+    var strip=document.getElementById("dropStrip");
+    if(!strip) return;
+    var near=DROP_STEPS[0];
+    DROP_STEPS.forEach(function(d){ if(Math.abs(d-mm)<Math.abs(near-mm)) near=d; });
+    [].forEach.call(strip.children,function(fig){
+      fig.classList.toggle("is-current",Number(fig.getAttribute("data-mm"))===near);
+    });
+  }
+  /* 滑块一动形状、读数和速度条就跟着变，孩子不用先按“观察下落”才知道大滴是扁的。 */
+  function paintDropShape(){
     var mm=Number(drop.value)/10;
-    var speed=mm<.5?Math.max(.2,mm*2):mm<2?2+mm*2:mm<5?5+mm*.8:9;
-    var shape=mm<1?"近似小球":mm<4?"底部略扁，像汉堡包":mm<=5?"明显扁平并会振动":"通常会破碎成更小雨滴";
     var icon=document.getElementById("dropIcon");
     icon.textContent="";
     if(art) icon.insertAdjacentHTML("beforeend",dropSvg(mm));
-    document.getElementById("speedGauge").style.width=Math.min(100,speed/9*100)+"%";
+    document.getElementById("dropNowLabel").textContent=mm.toFixed(1)+" mm";
+    document.getElementById("speedGauge").style.width=Math.min(100,dropSpeed(mm)/9*100)+"%";
+    highlightDropStep(mm);
+  }
+  buildDropStrip();
+  drop.addEventListener("input",paintDropShape);paintDropShape();
+  document.getElementById("testDrop").addEventListener("click",function(){
+    var mm=Number(drop.value)/10;
+    var speed=dropSpeed(mm);
+    var shape=mm<1?"近似小球":mm<4?"底部略扁，像汉堡包":mm<=5?"明显扁平并会振动":"通常会破碎成更小雨滴";
+    paintDropShape();
     document.getElementById("rainOutput").textContent="直径 "+mm.toFixed(1)+" mm 的雨滴形状："+shape+"；终端速度约 "+speed.toFixed(1)+" m/s。它不是眼泪形，因为下落时各方向表面张力与下方空气阻力共同塑形。";
     mark("rain");
   });
