@@ -861,19 +861,33 @@
 
   /* ---------- 联网增强（失败静默降级） ---------- */
   var srcEl = document.getElementById("src");
-  var netOk = null;
+  /* 和太空、海洋页同一个坑：断网重访时化石点计数从 localStorage 直出，旧写法把
+     缓存命中也报成「Paleobiology Database 实时查询」——其实一个字节也没传。
+     缓存命中单独计数：有真成功才说实时查询，全是缓存就说缓存，出现真失败就
+     老实说网络不可用。 */
+  var netState = { ok: 0, cache: 0, fail: 0 };
 
-  function mark(ok) {
-    if (netOk === false) return;
-    netOk = ok;
+  function mark(kind) {
+    if (kind === "cache") netState.cache++;
+    else if (kind) netState.ok++;
+    else netState.fail++;
+    var on = false, txt;
+    if (netState.ok > 0) {
+      on = true;
+      txt = "化石点计数来自 Paleobiology Database 实时查询，结果缓存在本机";
+    } else if (netState.fail > 0) {
+      txt = netState.cache > 0
+        ? "未联网 · 化石点计数来自上次缓存的 PBDB 查询结果"
+        : "网络不可用 · 显示内置数据，功能不受影响";
+    } else {
+      txt = "化石点计数来自本机缓存的 PBDB 查询结果";
+    }
     srcEl.textContent = "";
     var d = document.createElement("span");
-    d.className = "dot2" + (ok ? " on" : "");
+    d.className = "dot2" + (on ? " on" : "");
     srcEl.appendChild(d);
     var t = document.createElement("span");
-    t.textContent = ok
-      ? "化石点计数来自 Paleobiology Database 实时查询，结果缓存在本机"
-      : "网络不可用 · 显示内置数据，功能不受影响";
+    t.textContent = txt;
     srcEl.appendChild(t);
   }
 
@@ -904,7 +918,7 @@
         if (c) {
           siteCache[g] = JSON.parse(c);
           el.textContent = "已知化石点：" + siteCache[g] + " 处（PBDB 记录）";
-          mark(true);
+          mark("cache");
           return;
         }
       } catch (e) {}
