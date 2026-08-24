@@ -308,7 +308,8 @@
     </ol>
     <div class="task-fields" data-audience="parent" data-print="hide">
       <div><label for="gravityPrediction">预测</label><select class="input" id="gravityPrediction"><option>羽毛最后</option><option>皮球最后</option><option>锤子最后</option><option>三个同时</option></select></div>
-      <div><label for="gravityReflection">可选反思</label><textarea class="input" id="gravityReflection" rows="2" placeholder="可选：用自己的话讲讲空气做了什么。"></textarea></div>
+      <div><label for="gravityReflection">可选反思</label><textarea class="input" id="gravityReflection" rows="2" maxlength="200" placeholder="可选：用自己的话讲讲空气做了什么。" aria-describedby="gravityFieldHint"></textarea></div>
+      <p class="obj-sub" id="gravityFieldHint" style="grid-column:1/-1">这两项会一起写进「收下实验徽章」保存的证据里。</p>
     </div>
 
     <div class="playful-story" data-audience="parent">
@@ -408,6 +409,7 @@
     bodies: []
   };
   var comparison = { air: null, vacuum: null };
+  var completedOnce = false;
 
   /* quiet：滑块每动一格都会重置一次，条件本身由滑块自己的值和旁边的读数交代。
      这些帧不能往 aria-live 里灌「已重置」，否则拖一次滑块就是几十条重复播报。 */
@@ -838,6 +840,8 @@
   var compareResultEl = document.getElementById('compareResult');
   var gravityComplete = document.getElementById('gravityComplete');
   var gravityTaskStatus = document.getElementById('gravityTaskStatus');
+  var gravityPrediction = document.getElementById('gravityPrediction');
+  var gravityReflection = document.getElementById('gravityReflection');
 
   function resultText(result) {
     if (!result) return '等你松手';
@@ -873,14 +877,22 @@
       compareResultEl.textContent = '比较完成：有空气时' + resultText(comparison.air) + '，真空时' + resultText(comparison.vacuum) + '。';
       gravityTaskStatus.textContent = '两次条件匹配，自动证据已生成。';
     }
+    gravityComplete.textContent = completedOnce ? '更新证据' : '收下实验徽章';
   }
   function recordComparison(times, gap) {
     comparison[S.air ? 'air' : 'vacuum'] = { times: times.slice(), gap: gap, g: S.g, height: S.height };
     updateGravityTask();
   }
+  /* 预测和反思两栏原先没有任何代码读过：家长填完、点了完成，字就没了。
+     和其他实验页一样并进这条证据里，长度留给自动读数（Progress 只存 500 字）。 */
   function buildEvidence() {
     function times(result) { return result.times.map(function (t) { return t.toFixed(2) + 's'; }).join('/'); }
-    return '同高度 ' + comparison.air.height.toFixed(1) + 'm、同重力 ' + comparison.air.g.toFixed(2) + 'm/s²；有空气 羽/球/锤 ' + times(comparison.air) + '，最大差 ' + comparison.air.gap.toFixed(2) + 's；真空 羽/球/锤 ' + times(comparison.vacuum) + '，最大差 ' + comparison.vacuum.gap.toFixed(2) + 's。';
+    var text = '同高度 ' + comparison.air.height.toFixed(1) + 'm、同重力 ' + comparison.air.g.toFixed(2) + 'm/s²；有空气 羽/球/锤 ' + times(comparison.air) + '，最大差 ' + comparison.air.gap.toFixed(2) + 's；真空 羽/球/锤 ' + times(comparison.vacuum) + '，最大差 ' + comparison.vacuum.gap.toFixed(2) + 's。';
+    var predicted = gravityPrediction.value;
+    if (predicted) text += '预测：' + predicted + '。';
+    var reflection = gravityReflection.value.trim().slice(0, 160);
+    if (reflection) text += '解释：' + reflection;
+    return text;
   }
 
   function refreshPanel() {
@@ -946,14 +958,15 @@
   var liveEl = document.getElementById('live');
   function announce(msg) { liveEl.textContent = msg; }
 
+  /* 收下徽章后按钮原先直接禁用：证据里现在带上了预测和反思，改完却再也存不进去。
+     契约里重复完成本来就是更新证据和时间，所以保持可点，只把字改成「更新证据」。 */
   gravityComplete.addEventListener('click', function () {
     if (!hasMatchingPair() || !window.Progress) return;
-    var evidence = buildEvidence();
-    if (window.Progress.complete("games/gravity-drop.html", evidence)) {
-      gravityTaskStatus.textContent = '实验徽章已收好，证据已自动保存。';
-      gravityComplete.textContent = '已完成';
-      gravityComplete.disabled = true;
-      announce('重力比较任务已完成，自动证据已保存在本机。');
+    if (window.Progress.complete("games/gravity-drop.html", buildEvidence())) {
+      completedOnce = true;
+      gravityComplete.textContent = '更新证据';
+      gravityTaskStatus.textContent = '实验徽章已收好，证据已保存；改了预测或反思可以再点一次更新。';
+      announce('重力比较任务已完成，证据已保存在本机。');
     }
   });
 
