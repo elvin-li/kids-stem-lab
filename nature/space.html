@@ -898,14 +898,17 @@
   // ---------------------------------------------------------------
   var badge = document.getElementById("netBadge");
   var netTxt = document.getElementById("netTxt");
-  var netState = { ok: 0, cache: 0, fail: 0 };
+  var netState = { ok: 0, cache: 0, fail: 0, none: 0 };
 
   /* 徽章得分清「真联上了」和「只是本机有缓存」：断网重访时 APOD 和图片墙
      都从 localStorage 直出，旧写法把缓存命中也报成功，徽章亮起「已连上
      NASA 图片」——其实一个字节也没传。缓存命中单独计数：全是缓存就说缓存，
-     出现过一次真失败就老实说离线。 */
+     出现过一次真失败就老实说离线。
+     还得单独数 none（请求成功但接口没给出可用图片）：接口都应答了说明网络
+     通着，不能混进 fail 让徽章报「离线模式」——孩子明明在线。 */
   function mark(ok) {
     if (ok === "cache") netState.cache++;
+    else if (ok === "none") netState.none++;
     else if (ok) netState.ok++;
     else netState.fail++;
     if (netState.ok > 0) {
@@ -914,6 +917,9 @@
     } else if (netState.fail >= 2 || (netState.fail > 0 && netState.cache > 0)) {
       badge.className = "badge-live off";
       netTxt.textContent = netState.cache > 0 ? "未联网 · 显示上次缓存的 NASA 图片" : "离线模式 · 显示内置数据";
+    } else if (netState.none > 0 && netState.fail === 0) {
+      badge.className = "badge-live on";
+      netTxt.textContent = "已连上 NASA · 这次没拿到图片";
     } else if (netState.cache >= 2) {
       badge.className = "badge-live";
       netTxt.textContent = "NASA 图片来自本机缓存";
@@ -1022,7 +1028,8 @@
 
     getJSON("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY")
       .then(function (d) {
-        if (!d || !d.title) throw new Error("bad payload");
+        /* 应答了但数据不完整：网络通着，不能记成 fail 报离线；保留内置图。 */
+        if (!d || !d.title) { mark("none"); return; }
         renderApod(d);
         mark(true);
         try {
@@ -1072,7 +1079,13 @@
           seen[key] = 1;
           return true;
         }).slice(0, 8);
-        if (!out.length) throw new Error("empty");
+        if (!out.length) {
+          /* 搜索成功但零结果：网络通着，不能丢进 catch 记成 fail、还提示
+             「照片需要联网」——孩子明明在线。空结果也不写缓存，下次再试。 */
+          mark("none");
+          shotsNote("已连上 NASA，但没找到这颗行星的匹配照片。上面的行星数据是内置的，不受影响。");
+          return;
+        }
         paintShots(out);
         mark(true);
         try { localStorage.setItem(ck, JSON.stringify(out)); } catch (e) {}
