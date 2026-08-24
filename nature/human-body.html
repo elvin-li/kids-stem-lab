@@ -215,6 +215,13 @@
     border-radius: 2px; background: var(--ink-dim);
   }
   .rt-track .hit.best { width: 5px; margin-left: -2.5px; background: var(--sci); }
+  /* 慢过 600 ms 的那次压在尺子最右端。原来它和「正好 600 ms」长得一模一样，
+     而且 margin 只往左收 1.5px，一半被 overflow 切掉，只剩一根看不见的线。
+     整块贴在端点内侧，右边淡出去，表示「尺子外面还有」。 */
+  .rt-track .hit.over {
+    width: 9px; margin-left: -9px; border-radius: 2px 0 0 2px;
+    background: linear-gradient(90deg, var(--ink-dim), color-mix(in srgb, var(--ink-dim) 20%, transparent));
+  }
   .rt-ticks { position: relative; height: 15px; margin-top: 3px; font-family: var(--mono); font-size: .68rem; color: var(--ink-dim); }
   .rt-ticks span { position: absolute; white-space: nowrap; transform: translateX(-50%); }
   .rt-ticks span:first-child { transform: none; }
@@ -225,6 +232,7 @@
   .rt-key .k-floor { background: repeating-linear-gradient(135deg, rgba(192,23,100,.35) 0 4px, transparent 4px 8px); border: 1px solid rgba(192,23,100,.45); }
   .rt-key .k-adult { background: color-mix(in srgb, var(--sci) 18%, transparent); border: 1px dashed color-mix(in srgb, var(--sci) 60%, transparent); }
   .rt-key .k-best { background: var(--sci); }
+  .rt-key .k-over { background: linear-gradient(90deg, var(--ink-dim), color-mix(in srgb, var(--ink-dim) 20%, transparent)); }
 
   /* ---------- 实验卡片 ---------- */
   .bgrid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); }
@@ -617,6 +625,9 @@
         <span><i class="k-floor"></i>100 毫秒以内：神经传导本身就来不及</span>
         <span><i class="k-adult"></i>200–300 毫秒：成年人常见范围</span>
         <span><i class="k-best"></i>你最快的一次</span>
+        <!-- 只有真出现了慢过 600 ms 的一次才显示：没有的时候放着它，
+             等于在图例里解释一个图上不存在的记号。 -->
+        <span id="rtOverKey" hidden><i class="k-over"></i>慢过 600 毫秒，压在尺子最右端</span>
       </div>
     </div>
     <p style="font-size:.82rem;color:var(--ink-mid);margin-bottom:0" id="rtNote">
@@ -864,7 +875,8 @@
   }
 
   var rtScale = document.getElementById("rtScale"),
-      rtTrack = document.getElementById("rtTrack");
+      rtTrack = document.getElementById("rtTrack"),
+      rtOverKey = document.getElementById("rtOverKey");
   var RT_MAX = 600;
 
   /* 尺子只到 600 ms：再慢的落点压在最右端，具体数字上面那排药丸里有。 */
@@ -874,9 +886,11 @@
     Array.prototype.forEach.call(rtTrack.querySelectorAll(".hit"), function (n) {
       rtTrack.removeChild(n);
     });
+    var over = 0;
     results.forEach(function (m) {
       var mark = document.createElement("i");
       mark.className = m === best ? "hit best" : "hit";
+      if (m > RT_MAX) { mark.className += " over"; over++; }
       mark.style.left = rtPct(m) + "%";
       rtTrack.appendChild(mark);
     });
@@ -884,7 +898,9 @@
     rtTrack.setAttribute("aria-label",
       "反应时间尺，0 到 600 毫秒。你测了 " + results.length + " 次：" +
       results.join("、") + " 毫秒，最快 " + best + " 毫秒。" +
+      (over ? "其中 " + over + " 次慢过 600 毫秒，压在尺子最右端。" : "") +
       "100 毫秒以内是神经传导本身来不及的区间；成年人常见 200 到 300 毫秒。");
+    rtOverKey.hidden = !over;
     rtScale.hidden = false;
   }
 
