@@ -1,9 +1,10 @@
 /* 少儿数理启蒙离线缓存。外部科学 API 不在此缓存，页面自行超时并降级。 */
-const CACHE = "kids-stem-shell-v13";
+const CACHE = "kids-stem-shell-v14";
 const CORE = [
   "./", "./index.html", "./manifest.webmanifest",
   "./assets/css/base.css", "./assets/css/kid.css", "./assets/css/print.css",
-  "./assets/js/progress.js", "./assets/js/playful.js", "./assets/js/pwa.js", "./assets/icons/app-icon.svg",
+  "./assets/js/progress.js", "./assets/js/playful.js", "./assets/js/pwa.js",
+  "./assets/js/illustrations.js", "./assets/icons/app-icon.svg",
   "./data/explorations.js", "./data/playful.js", "./data/resources.js",
   "./games/index.html", "./games/number-blocks.html", "./games/fraction-lab.html",
   "./games/pattern-machine.html", "./games/symmetry-studio.html", "./games/estimation-station.html",
