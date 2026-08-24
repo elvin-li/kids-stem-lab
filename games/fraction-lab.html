@@ -480,6 +480,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="sr-only" id="live" aria-live="polite"></div>
 
+<script src="../assets/js/illustrations.js?v=15"></script>
 <script>
 (function () {
   'use strict';
@@ -490,24 +491,30 @@
   function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
   function randInt(lo, hi) { return lo + Math.floor(Math.random() * (hi - lo + 1)); }
 
-  var CSSV = getComputedStyle(document.documentElement);
   function cv(name, fallback) {
-    var v = CSSV.getPropertyValue(name);
+    var v = getComputedStyle(document.documentElement).getPropertyValue(name);
     return (v && v.trim()) || fallback;
   }
-  var C = {
-    a:     cv('--math', '#6ea8fe'),
-    b:     cv('--kit', '#f472b6'),
-    line:  cv('--line', '#2a3355'),
-    soft:  cv('--line-soft', '#202844'),
-    ink:   cv('--ink', '#eef2ff'),
-    mid:   cv('--ink-mid', '#b6c0e0'),
-    dim:   cv('--ink-dim', '#7d88ab'),
-    surf:  cv('--surface', '#161d33'),
-    surf2: cv('--surface-2', '#1d2540'),
-    ok:    cv('--sci', '#4ade80'),
-    warn:  cv('--warn', '#fbbf24')
-  };
+  /* 三块画布都是透明底，颜色必须跟着页面主题走。
+     这段脚本比 playful.js 早执行，那一刻 <html> 上还没有 data-mode，kid.css 的整套变量
+     都还没生效，直接读只会拿到 base.css 的家长配色——孩子模式是奶油底，画出来的灰蓝
+     底色和冷灰文字压在暖色卡片上就显得脏。themePalette 会等主题稳定后重读，
+     并在孩子／家长模式互相切换时重绘。 */
+  var C = ILLUSTRATIONS.themePalette({
+    a:     ['--math', '#1b64c8'],
+    b:     ['--kit', '#c01764'],
+    line:  ['--line', '#c8d3e4'],
+    soft:  ['--line-soft', '#dde4ef'],
+    ink:   ['--ink', '#16202e'],
+    mid:   ['--ink-mid', '#41506a'],
+    dim:   ['--ink-dim', '#5f6d85'],
+    surf:  ['--surface', '#ffffff'],
+    surf2: ['--surface-2', '#eaeff7'],
+    ok:    ['--sci', '#0b7a45'],
+    warn:  ['--warn', '#96650d']
+  }, function () { render(); });
+  var MONO = MONO;
+  var FONT = FONT;
 
   // 斜纹图案：不只靠颜色区分 A / B
   function hatch(color) {
@@ -555,88 +562,196 @@
     var cssW = Math.round(canvas.clientWidth) || canvas.parentNode.clientWidth || 300;
     var cap = parseFloat(getComputedStyle(canvas).maxHeight);
     if (isFinite(cap) && cap > 0) cssH = Math.min(cssH, Math.round(cap));
-    canvas.style.height = cssH + 'px';
-    canvas.width = Math.max(1, Math.round(cssW * dpr));
-    canvas.height = Math.max(1, Math.round(cssH * dpr));
+    var bw = Math.max(1, Math.round(cssW * dpr));
+    var bh = Math.max(1, Math.round(cssH * dpr));
+    /* 拖着涂色时每个 pointermove 都会重画一次。给 canvas.width 赋值即使值没变也会重新
+       分配位图并丢掉整个绘图状态，是这里最贵的一步，所以尺寸没变就只清屏。 */
+    if (canvas.width !== bw || canvas.height !== bh) {
+      canvas.style.height = cssH + 'px';
+      canvas.width = bw;
+      canvas.height = bh;
+    }
     var ctx = canvas.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
     return { ctx: ctx, w: cssW, h: cssH };
   }
 
+  // ---------- 图形几何 ----------
+  /* 绘制和命中测试共用同一份几何，两边各算一套迟早会对不上：
+     以前圆饼按「未裁剪的 190px」定圆心，画布却被 kid.css 的 max-height 收到 180px，
+     于是点到的扇形和看到的扇形差半格。 */
+  function circleGeom(w, h) {
+    return { cx: w / 2, cy: h / 2, r: Math.min(w, h) / 2 - 16 };
+  }
+  function barGeom(w, h) {
+    return { x0: 10, y0: 24, bw: w - 20, bh: h - 44 };
+  }
+
+  /* 画布上的竖排分数：分子在上、分母在下、中间一条横线，和页面 .frac 的排版一致。
+     图上和文字里的分数长得一样，孩子不必再做一次「3/4 就是那个竖着写的」的翻译。 */
+  function fracGlyph(ctx, x, y, n, d, size, color) {
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.textAlign = 'center';
+    ctx.font = '800 ' + size + 'px ' + MONO;
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(String(n), x, y - 2);
+    ctx.textBaseline = 'top';
+    ctx.fillText(String(d), x, y + 3);
+    var half = Math.max(ctx.measureText(String(n)).width, ctx.measureText(String(d)).width) / 2 + 2;
+    ctx.lineWidth = Math.max(1.4, size / 9);
+    ctx.beginPath();
+    ctx.moveTo(x - half, y + 0.5);
+    ctx.lineTo(x + half, y + 0.5);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* 圆饼两侧的留白很宽——画布是横的，圆是方的。够宽就两边各补一句读图时用得上的话：
+     左边是「每份 = 1/d」的单位块（一刀切出来的那一块到底多大），
+     右边是还没涂的部分（涂的加剩的正好凑成一整个）。
+     涂了多少不在这里重复：卡片右上角已经用大号分数写着了。 */
+  function circleNotes(ctx, w, h, side, den, num, color) {
+    if (side < 84) return;
+    var mid = h / 2, step = Math.PI * 2 / den;
+
+    var ux = side / 2, uy = mid - 10, ur = 16;
+    ctx.beginPath(); ctx.arc(ux, uy, ur, 0, Math.PI * 2);
+    ctx.fillStyle = C.surf2; ctx.fill();
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(ux, uy);
+    ctx.arc(ux, uy, ur, -Math.PI / 2, -Math.PI / 2 + step);
+    ctx.closePath();
+    ctx.fillStyle = color; ctx.globalAlpha = .9; ctx.fill(); ctx.globalAlpha = 1;
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.font = '700 10px ' + FONT;
+    ctx.fillStyle = C.dim;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText('每份 1/' + den, ux, uy + ur + 7);
+
+    var rx = w - side / 2, rest = den - num;
+    ctx.font = '700 10px ' + FONT;
+    ctx.fillStyle = C.dim;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText('还剩', rx, mid - 20);
+    if (rest === 0) {
+      ctx.font = '800 17px ' + MONO;
+      ctx.textBaseline = 'middle';
+      ctx.fillText('0', rx, mid);
+    } else {
+      fracGlyph(ctx, rx, mid, rest, den, 17, C.mid);
+    }
+  }
+
   // ---------- 画面积图 ----------
   function drawShape(canvas, frac, which) {
-    var h = S.shape === 'circle' ? 190 : 130;
-    var f = fit(canvas, h);
-    var ctx = f.ctx, w = f.w;
+    var f = fit(canvas, S.shape === 'circle' ? 190 : 130);
+    var ctx = f.ctx, w = f.w, h = f.h;
     var color = which === 'a' ? C.a : C.b;
     var den = frac.d, num = frac.n;
+    // B 额外压一层斜纹：色盲或黑白打印时也分得清是哪一个分数
+    var pat = which === 'b' ? ctx.createPattern(hatchB, 'repeat') : null;
 
-    if (S.shape === 'circle') {
-      var cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - 12;
-      var step = Math.PI * 2 / den;
-      for (var i = 0; i < den; i++) {
-        var s = -Math.PI / 2 + i * step, e = s + step;
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, r, s, e);
-        ctx.closePath();
-        if (i < num) {
-          ctx.fillStyle = color; ctx.globalAlpha = .85; ctx.fill(); ctx.globalAlpha = 1;
-          if (which === 'b') { ctx.fillStyle = ctx.createPattern(hatchB, 'repeat'); ctx.fill(); }
-        } else {
-          ctx.fillStyle = C.surf2; ctx.fill();
-        }
-        ctx.strokeStyle = i < num ? 'rgba(255,255,255,.45)' : C.line;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-        if (den <= 8) {
-          var midA = s + step / 2;
-          var lx = cx + Math.cos(midA) * r * 0.62;
-          var ly = cy + Math.sin(midA) * r * 0.62;
-          ctx.font = '700 9px ' + cv('--mono', 'monospace');
-          ctx.fillStyle = i < num ? 'rgba(255,255,255,.92)' : C.dim;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('1/' + den, lx, ly);
-        }
+    function paint(on) {
+      if (on) {
+        ctx.fillStyle = color; ctx.globalAlpha = .88; ctx.fill(); ctx.globalAlpha = 1;
+        if (pat) { ctx.fillStyle = pat; ctx.fill(); }
+        ctx.strokeStyle = 'rgba(255,255,255,.55)';
+      } else {
+        ctx.fillStyle = C.surf2; ctx.fill();
+        ctx.strokeStyle = C.line;
       }
-      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
-    } else {
-      var pad = 10, bw = w - pad * 2, bh = h - 34, x0 = pad, y0 = 14;
-      var pw = bw / den;
-      for (var j = 0; j < den; j++) {
-        var x = x0 + j * pw;
-        ctx.beginPath();
-        ctx.rect(x, y0, pw, bh);
-        if (j < num) {
-          ctx.fillStyle = color; ctx.globalAlpha = .85; ctx.fill(); ctx.globalAlpha = 1;
-          if (which === 'b') { ctx.fillStyle = ctx.createPattern(hatchB, 'repeat'); ctx.fill(); }
-        } else {
-          ctx.fillStyle = C.surf2; ctx.fill();
-        }
-        ctx.strokeStyle = j < num ? 'rgba(255,255,255,.45)' : C.line;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-        if (den <= 8 && pw >= 18) {
-          ctx.font = '700 9px ' + cv('--mono', 'monospace');
-          ctx.fillStyle = j < num ? 'rgba(255,255,255,.92)' : C.dim;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('1/' + den, x + pw / 2, y0 + bh / 2);
-        }
-      }
-      ctx.strokeStyle = color; ctx.lineWidth = 2;
-      ctx.strokeRect(x0, y0, bw, bh);
-      ctx.fillStyle = C.dim;
-      ctx.font = '600 11px ' + cv('--mono', 'monospace');
-      ctx.textAlign = 'left';  ctx.fillText('0', x0, h - 6);
-      ctx.textAlign = 'right'; ctx.fillText('1', x0 + bw, h - 6);
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    function unitLabel(on, x, y) {
+      ctx.font = '700 ' + (den <= 6 ? 10 : 9) + 'px ' + MONO;
+      ctx.fillStyle = on ? 'rgba(255,255,255,.95)' : C.dim;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('1/' + den, x, y);
     }
 
+    if (S.shape === 'circle') {
+      var g = circleGeom(w, h);
+      var step = Math.PI * 2 / den;
+      for (var i = 0; i < den; i++) {
+        var s = -Math.PI / 2 + i * step;
+        ctx.beginPath();
+        ctx.moveTo(g.cx, g.cy);
+        ctx.arc(g.cx, g.cy, g.r, s, s + step);
+        ctx.closePath();
+        paint(i < num);
+        if (den <= 8) {
+          var m = s + step / 2;
+          unitLabel(i < num, g.cx + Math.cos(m) * g.r * 0.62, g.cy + Math.sin(m) * g.r * 0.62);
+        }
+      }
+      ctx.beginPath(); ctx.arc(g.cx, g.cy, g.r, 0, Math.PI * 2);
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.stroke();
+
+      /* 涂色量的外弧：从第一刀量到最后一刀。
+         扇形本身要靠「数格子」才知道涂了多少，一段连续的弧则一眼就能和整圈比长短。 */
+      if (num > 0 && num < den) {
+        var a0 = -Math.PI / 2, a1 = a0 + num * step, ro = g.r + 7;
+        ctx.save();
+        ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.globalAlpha = .85;
+        ctx.beginPath(); ctx.arc(g.cx, g.cy, ro, a0, a1); ctx.stroke();
+        [a0, a1].forEach(function (a) {
+          ctx.beginPath();
+          ctx.moveTo(g.cx + Math.cos(a) * (ro - 4), g.cy + Math.sin(a) * (ro - 4));
+          ctx.lineTo(g.cx + Math.cos(a) * (ro + 4), g.cy + Math.sin(a) * (ro + 4));
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
+      circleNotes(ctx, w, h, (w - g.r * 2) / 2, den, num, color);
+    } else {
+      var b = barGeom(w, h);
+      var pw = b.bw / den;
+      for (var j = 0; j < den; j++) {
+        var x = b.x0 + j * pw;
+        ctx.beginPath();
+        ctx.rect(x, b.y0, pw, b.bh);
+        paint(j < num);
+        if (den <= 8 && pw >= 18) unitLabel(j < num, x + pw / 2, b.y0 + b.bh / 2);
+      }
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+      ctx.strokeRect(b.x0, b.y0, b.bw, b.bh);
+
+      // 涂色量的量尺：长条上方一道带端点的横线，写明这一段是 n/d
+      if (num > 0) {
+        var xe = b.x0 + num * pw, by = 15;
+        ctx.save();
+        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.globalAlpha = .85;
+        ctx.beginPath();
+        ctx.moveTo(b.x0, by); ctx.lineTo(xe, by);
+        ctx.moveTo(b.x0, by - 4); ctx.lineTo(b.x0, by + 4);
+        ctx.moveTo(xe, by - 4); ctx.lineTo(xe, by + 4);
+        ctx.stroke();
+        ctx.restore();
+        ctx.font = '800 11px ' + MONO;
+        ctx.fillStyle = color;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+        ctx.fillText(num + '/' + den, clamp((b.x0 + xe) / 2, 18, w - 18), by - 5);
+      }
+
+      ctx.fillStyle = C.dim;
+      ctx.font = '600 11px ' + MONO;
+      ctx.textBaseline = 'alphabetic';
+      ctx.textAlign = 'left';  ctx.fillText('0', b.x0, h - 6);
+      ctx.textAlign = 'right'; ctx.fillText('1', b.x0 + b.bw, h - 6);
+    }
+
+    /* role="slider" 的读数必须跟着图形走，否则读屏念的份数会停在 HTML 里的初始值。 */
+    canvas.setAttribute('aria-valuemin', '0');
+    canvas.setAttribute('aria-valuemax', String(den));
+    canvas.setAttribute('aria-valuenow', String(num));
+    canvas.setAttribute('aria-valuetext', den + ' 份里涂了 ' + num + ' 份');
     canvas.setAttribute('aria-label',
-      (which === 'a' ? '分数 A' : '分数 B') + '：' + den + ' 份里涂了 ' + num + ' 份');
+      (which === 'a' ? '分数 A' : '分数 B') + '涂色份数：' + den + ' 份里涂了 ' + num + ' 份');
   }
 
   // ---------- 命中测试 ----------
@@ -644,18 +759,17 @@
     var r = canvas.getBoundingClientRect();
     var x = ev.clientX - r.left, y = ev.clientY - r.top;
     if (S.shape === 'circle') {
-      var cx = r.width / 2, cy = r.height / 2;
-      var rad = Math.min(r.width, r.height) / 2 - 12;
-      var dx = x - cx, dy = y - cy;
-      if (Math.sqrt(dx * dx + dy * dy) > rad * 1.15) return -1;
+      var g = circleGeom(r.width, r.height);
+      var dx = x - g.cx, dy = y - g.cy;
+      if (Math.sqrt(dx * dx + dy * dy) > g.r * 1.15) return -1;
       var ang = Math.atan2(dy, dx) + Math.PI / 2;
       while (ang < 0) ang += Math.PI * 2;
       ang = ang % (Math.PI * 2);
       return clamp(Math.floor(ang / (Math.PI * 2 / den)), 0, den - 1);
     }
-    var pad = 10, bw = r.width - pad * 2;
-    if (x < pad - 6 || x > pad + bw + 6) return -1;
-    return clamp(Math.floor((x - pad) / bw * den), 0, den - 1);
+    var b = barGeom(r.width, r.height);
+    if (x < b.x0 - 6 || x > b.x0 + b.bw + 6) return -1;
+    return clamp(Math.floor((x - b.x0) / b.bw * den), 0, den - 1);
   }
 
   function bindPaint(canvas, key) {
@@ -680,43 +794,67 @@
     canvas.addEventListener('pointermove', function (ev) { if (painting) apply(ev); });
     canvas.addEventListener('pointerup', function () { painting = false; });
     canvas.addEventListener('pointercancel', function () { painting = false; });
+
+    /* 画布是 role="slider" 且 tabindex="0"，无障碍文案也写着「使用方向键调整」，
+       但一直没有按键处理：只能用鼠标涂色。补上方向键／Home／End。 */
+    canvas.addEventListener('keydown', function (ev) {
+      var frac = S[key], next = frac.n;
+      if (ev.key === 'ArrowRight' || ev.key === 'ArrowUp') next = frac.n + 1;
+      else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowDown') next = frac.n - 1;
+      else if (ev.key === 'PageUp') next = frac.n + 2;
+      else if (ev.key === 'PageDown') next = frac.n - 2;
+      else if (ev.key === 'Home') next = 0;
+      else if (ev.key === 'End') next = frac.d;
+      else return;
+      ev.preventDefault();
+      next = clamp(next, 0, frac.d);
+      if (next === frac.n) return;
+      frac.n = next;
+      S.guess = null;
+      render();
+      say((key === 'a' ? '分数 A' : '分数 B') + '：' + frac.d + ' 份里涂了 ' + next + ' 份');
+    });
   }
 
   // ---------- 数轴 ----------
   function drawLine() {
-    var maxV = 1;
-    var sum = S.a.n / S.a.d + S.b.n / S.b.d;
-    if (S.mode === 'add') maxV = Math.max(1, Math.ceil(sum - 1e-9)) || 1;
+    var isAdd = S.mode === 'add';
+    var va = S.a.n / S.a.d, vb = S.b.n / S.b.d, sum = va + vb;
+    var maxV = isAdd ? (Math.max(1, Math.ceil(sum - 1e-9)) || 1) : 1;
 
-    var f = fit(el.cvLine, 108);
-    var ctx = f.ctx, w = f.w, h = f.h;
-    var padL = 26, padR = 26, y = 60;
+    // 相加模式要在轴上方画两段跳弧、下方留出「和」的读数，所以比比较模式高一截
+    var f = fit(el.cvLine, isAdd ? 146 : 112);
+    var ctx = f.ctx, w = f.w;
+    // 相加模式的「和」可能正好落在最右一个整数上，右边多留一截给它的读数和轴箭头
+    var padL = 26, padR = isAdd ? 46 : 30, y = isAdd ? 92 : 62;
     var lw = w - padL - padR;
     function X(v) { return padL + (v / maxV) * lw; }
 
-    // 主轴
+    // 主轴，右端带箭头：数轴是往右一直走下去的，不是一根到 1 就没了的短棍
     ctx.strokeStyle = C.mid; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + lw, y); ctx.stroke();
-    ctx.font = '700 11px ' + cv('--font', 'sans-serif');
-    ctx.fillStyle = C.dim;
-    ctx.textAlign = 'right';
-    ctx.fillText('数轴 →', padL + lw, y - 14);
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + lw + 11, y); ctx.stroke();
+    ctx.fillStyle = C.mid;
+    ctx.beginPath();
+    ctx.moveTo(padL + lw + 18, y);
+    ctx.lineTo(padL + lw + 9, y - 4.5);
+    ctx.lineTo(padL + lw + 9, y + 4.5);
+    ctx.closePath(); ctx.fill();
 
     // 整数刻度
-    ctx.font = '700 12px ' + cv('--mono', 'monospace');
-    ctx.textAlign = 'center';
+    ctx.font = '700 12px ' + MONO;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
     for (var k = 0; k <= maxV; k++) {
       var xk = X(k);
       ctx.strokeStyle = C.mid; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(xk, y - 9); ctx.lineTo(xk, y + 9); ctx.stroke();
       ctx.fillStyle = C.mid;
-      ctx.fillText(String(k), xk, y + 26);
+      ctx.fillText(String(k), xk, y + 25);
     }
 
     // A 的等分刻度（轴上方）/ B 的等分刻度（轴下方）
     function ticks(den, color, up) {
-      ctx.strokeStyle = color; ctx.lineWidth = 1;
-      ctx.globalAlpha = .5;
+      ctx.save();
+      ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.globalAlpha = .55;
       var total = den * maxV;
       for (var i = 1; i < total; i++) {
         if (i % den === 0) continue;
@@ -726,55 +864,127 @@
         ctx.lineTo(xx, up ? y - 6 : y + 6);
         ctx.stroke();
       }
-      ctx.globalAlpha = 1;
+      ctx.restore();
     }
     ticks(S.a.d, C.a, true);
     ticks(S.b.d, C.b, false);
+
+    /* 从 0 到某个分数的那一段，画成 n 小节而不是一整条：
+       分数在数轴上就是「每步 1/d，走了 n 步」，分节以后这 n 步可以直接数出来。
+       第一节旁边标一次步长，省得再回头去数刻度。 */
+    function hops(frac, color, up) {
+      var oy = up ? y - 5 : y + 5;
+      var w1 = X(1 / frac.d) - X(0);
+      ctx.save();
+      ctx.strokeStyle = color; ctx.lineWidth = 3.5; ctx.lineCap = 'butt';
+      for (var i = 0; i < frac.n; i++) {
+        var xa = X(i / frac.d) + 3, xb = X((i + 1) / frac.d) - 3;
+        if (xb <= xa) xb = xa + 0.4;
+        ctx.beginPath(); ctx.moveTo(xa, oy); ctx.lineTo(xb, oy); ctx.stroke();
+      }
+      ctx.restore();
+      if (frac.n > 0 && w1 >= 30) {
+        ctx.save();
+        ctx.globalAlpha = .8;
+        ctx.fillStyle = color;
+        ctx.font = '700 9px ' + MONO;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = up ? 'bottom' : 'top';
+        ctx.fillText('1/' + frac.d, X(0.5 / frac.d), up ? oy - 4 : oy + 4);
+        ctx.restore();
+      }
+    }
 
     // 标记点
     function marker(v, color, label, up, sq) {
       if (v > maxV + 1e-9) return;
       var x = X(v);
-      ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.globalAlpha = .55;
-      ctx.beginPath(); ctx.moveTo(padL, up ? y - 3 : y + 3); ctx.lineTo(x, up ? y - 3 : y + 3); ctx.stroke();
-      ctx.globalAlpha = 1;
       ctx.fillStyle = color;
       if (sq) {
         ctx.save();
         ctx.translate(x, y); ctx.rotate(Math.PI / 4);
         ctx.fillRect(-5.5, -5.5, 11, 11);
+        ctx.strokeStyle = C.surf; ctx.lineWidth = 1.5;
+        ctx.strokeRect(-5.5, -5.5, 11, 11);
         ctx.restore();
       } else {
         ctx.beginPath(); ctx.arc(x, y, 6.5, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = C.surf; ctx.lineWidth = 1.5; ctx.stroke();
       }
-      ctx.strokeStyle = '#0b0f1a'; ctx.lineWidth = 1.5;
-      if (!sq) { ctx.beginPath(); ctx.arc(x, y, 6.5, 0, Math.PI * 2); ctx.stroke(); }
       ctx.fillStyle = color;
-      ctx.font = '800 12px ' + cv('--mono', 'monospace');
-      ctx.textAlign = 'center';
-      ctx.fillText(label, clamp(x, 20, w - 20), up ? y - 16 : y + 34);
+      ctx.font = '800 12px ' + MONO;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText(label, clamp(x, 22, w - 22), up ? y - 16 : y + 36);
     }
 
-    var va = S.a.n / S.a.d, vb = S.b.n / S.b.d;
-    // 两点重合时错开标签，避免互相盖住
+    /* 相加模式画成两段跳：先从 0 跳过 A，再从 A 接着跳过 B，落点就是和。
+       这和下面「通分后数格子」讲的是同一件事，只是换成了长度的语言。 */
+    function jump(v0, v1, color, label) {
+      var x0 = X(v0), x1 = X(v1);
+      var rise = clamp(Math.abs(x1 - x0) * 0.42, 15, 40);
+      ctx.save();
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(x0, y - 2);
+      ctx.quadraticCurveTo((x0 + x1) / 2, y - 2 - rise * 2, x1, y - 2);
+      ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x1, y - 1);
+      ctx.lineTo(x1 - 4.5, y - 9.5);
+      ctx.lineTo(x1 + 4.5, y - 9.5);
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+      ctx.fillStyle = color;
+      ctx.font = '800 11px ' + MONO;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText(label, clamp((x0 + x1) / 2, 24, w - 24), y - 5 - rise);
+    }
+
     var same = Math.abs(va - vb) < 1e-9;
-    marker(va, C.a, 'A ' + S.a.n + '/' + S.a.d, true, false);
-    marker(vb, C.b, 'B ' + S.b.n + '/' + S.b.d, !same, true);
 
-    if (S.mode === 'add' && sum <= maxV + 1e-9) {
-      var xs = X(sum);
-      ctx.strokeStyle = C.ok; ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath(); ctx.moveTo(xs, y - 30); ctx.lineTo(xs, y + 12); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = C.ok;
-      ctx.font = '800 12px ' + cv('--mono', 'monospace');
-      ctx.textAlign = 'center';
-      ctx.fillText('和 ' + fmt(sum), clamp(xs, 26, w - 26), y - 36);
+    if (isAdd) {
+      jump(0, va, C.a, 'A ' + S.a.n + '/' + S.a.d);
+      if (sum <= maxV + 1e-9) jump(va, sum, C.b, 'B ' + S.b.n + '/' + S.b.d);
+      marker(va, C.a, '', false, false);
+      if (sum <= maxV + 1e-9) {
+        var xs = X(sum);
+        ctx.save();
+        ctx.strokeStyle = C.ok; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(xs, y - 14); ctx.lineTo(xs, y + 18); ctx.stroke();
+        ctx.restore();
+        ctx.fillStyle = C.ok;
+        ctx.beginPath(); ctx.arc(xs, y, 6.5, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = C.surf; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.font = '800 12px ' + MONO;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        ctx.fillText('落在 ' + fmt(sum), clamp(xs, 32, w - 32), y + 34);
+      }
+    } else {
+      hops(S.a, C.a, true);
+      hops(S.b, C.b, false);
+      /* A 一律在轴上方、B 一律在轴下方：刻度、步长、标记点三样东西都按同一边分，
+         两个分数挨得再近也不会互相盖住，也不用再判断「是不是重合了」。 */
+      marker(va, C.a, 'A ' + S.a.n + '/' + S.a.d, true, false);
+      marker(vb, C.b, 'B ' + S.b.n + '/' + S.b.d, false, true);
+      /* 重合时套一个绿圈：两个标记挨在一起容易被读成「差不多」，
+         圈出来才说得清它们是数轴上的同一个点。 */
+      if (same && va <= 1 + 1e-9) {
+        var xe = X(va);
+        ctx.save();
+        ctx.strokeStyle = C.ok; ctx.lineWidth = 2; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.arc(xe, y, 13, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+        ctx.fillStyle = C.ok;
+        ctx.font = '800 11px ' + FONT;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+        ctx.fillText('同一个点', clamp(xe, 26, w - 26), y - 32);
+      }
     }
 
-    el.cvLine.setAttribute('aria-label',
-      '数轴，最大值 ' + maxV + '。A 在 ' + fmt(va) + '，B 在 ' + fmt(vb));
+    el.cvLine.setAttribute('aria-label', isAdd
+      ? '数轴，最大值 ' + maxV + '。先从 0 跳过 A ' + fmt(va) + '，再跳过 B ' + fmt(vb) + '，落在 ' + fmt(sum)
+      : '数轴，最大值 1。A 在 ' + fmt(va) + '，B 在 ' + fmt(vb) + (same ? '，两者是同一个点' : ''));
   }
 
   function fmt(v) {
@@ -795,10 +1005,12 @@
 
     var f = fit(el.cvCommon, height);
     var ctx = f.ctx, w = f.w;
-    var pad = 8, bw = w - pad * 2;
+    // 左边留一条装订线写「这一条现在叫什么」，右边只留 8px 边距
+    var padL = 46, bw = w - padL - 8;
     var pieceW = bw / L;
+    function rowTop(r) { return r * (rowH + gap) + 4; }
 
-    ctx.font = '700 11px ' + cv('--mono', 'monospace');
+    ctx.font = '700 11px ' + MONO;
 
     function cell(x, y, cw, ch, color, which) {
       ctx.beginPath(); ctx.rect(x, y, cw, ch);
@@ -816,38 +1028,95 @@
     if (isAdd) {
       // 把 A 的块和 B 的块顺序倒进同样厚的格子里
       var total = ca + cb;
+      /* 一行里 A 段和 B 段各占几格，直接写在色块上。
+         整排同色小格要靠一格一格数才知道有几个，写出来就省了这一步。 */
+      var segLabel = function (row, from, to, tag) {
+        var lo = Math.max(from, row * L), hi = Math.min(to, (row + 1) * L);
+        if (hi - lo < 1) return;
+        var x1 = padL + (lo - row * L) * pieceW, x2 = padL + (hi - row * L) * pieceW;
+        if (x2 - x1 < 50) return;
+        ctx.font = '800 12px ' + MONO;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        // 白字压在斜纹上会被纹路切碎，先描一圈深色再填白
+        ctx.strokeStyle = 'rgba(8,16,31,.5)'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+        ctx.strokeText(tag + ' ' + (hi - lo) + ' 格', (x1 + x2) / 2, rowTop(row) + rowH / 2);
+        ctx.fillStyle = 'rgba(255,255,255,.98)';
+        ctx.fillText(tag + ' ' + (hi - lo) + ' 格', (x1 + x2) / 2, rowTop(row) + rowH / 2);
+        ctx.font = '700 11px ' + MONO;
+      };
       for (var r = 0; r < rows; r++) {
-        var y = r * (rowH + gap) + 4;
+        var y = rowTop(r);
         for (var i = 0; i < L; i++) {
           var idx = r * L + i;
-          var x = pad + i * pieceW;
+          var x = padL + i * pieceW;
           if (idx < ca) cell(x, y, pieceW, rowH, C.a, 'a');
           else if (idx < total) cell(x, y, pieceW, rowH, C.b, 'b');
           else cell(x, y, pieceW, rowH, null);
         }
+        segLabel(r, 0, ca, 'A');
+        segLabel(r, ca, total, 'B');
         ctx.strokeStyle = C.mid; ctx.lineWidth = 1.5;
-        ctx.strokeRect(pad, y, bw, rowH);
+        ctx.strokeRect(padL, y, bw, rowH);
+        /* 一整行就是一个 1。分子最多等于分母，所以 A+B 最多两整行：
+           第二行一出现就说明和超过了 1，这正是假分数的样子。 */
+        ctx.fillStyle = r === 0 ? C.dim : C.warn;
+        ctx.font = '800 12px ' + FONT;
+        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        ctx.fillText(r === 0 ? (rows > 1 ? '满 1' : '和') : '多出', 4, y + rowH / 2);
       }
       ctx.fillStyle = C.dim;
-      ctx.textAlign = 'left';
-      ctx.fillText('每格 = 1/' + L + ' · 蓝 ' + ca + ' 格 + 粉 ' + cb + ' 格 = ' + total + ' 格', pad, height - 8);
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText('每格 = 1/' + L + ' · A 占 ' + ca + ' 格 + B 占 ' + cb + ' 格 = ' + total + ' 格', 4, height - 8);
       el.cvCommon.setAttribute('aria-label',
         '公分母加法图：每格是 1/' + L + '，A 占 ' + ca + ' 格，B 占 ' + cb + ' 格，一共 ' + total + ' 格');
     } else {
       // 上下对照：同样厚度下谁的格子多
-      var pairs = [[ca, C.a, 'a', 'A ' + ca + '/' + L], [cb, C.b, 'b', 'B ' + cb + '/' + L]];
+      var pairs = [[ca, C.a, 'a', 'A'], [cb, C.b, 'b', 'B']];
       for (var p = 0; p < 2; p++) {
-        var yy = p * (rowH + gap) + 4;
+        var yy = rowTop(p);
         for (var q = 0; q < L; q++) {
-          var xx = pad + q * pieceW;
-          cell(xx, yy, pieceW, rowH, q < pairs[p][0] ? pairs[p][1] : null, pairs[p][2]);
+          cell(padL + q * pieceW, yy, pieceW, rowH, q < pairs[p][0] ? pairs[p][1] : null, pairs[p][2]);
         }
         ctx.strokeStyle = C.mid; ctx.lineWidth = 1.5;
-        ctx.strokeRect(pad, yy, bw, rowH);
+        ctx.strokeRect(padL, yy, bw, rowH);
+        /* 通分后这一条的新名字。原来这个字符串算出来却从没画上去，
+           于是两条一模一样的格子条上没有任何东西说明谁是 A、通分成了几分之几。 */
+        ctx.fillStyle = pairs[p][1];
+        ctx.font = '800 13px ' + MONO;
+        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        ctx.fillText(pairs[p][3], 4, yy + rowH / 2);
+        fracGlyph(ctx, 30, yy + rowH / 2, pairs[p][0], L, 12, pairs[p][1]);
+      }
+      /* 多出来的那几格：短的那条到哪儿为止，拉一条虚线穿过两行，
+         再把差值写在长的那条多出来的色块上——「谁大」和「大多少」是一起看的。 */
+      var lo2 = Math.min(ca, cb), hi2 = Math.max(ca, cb);
+      if (hi2 > lo2) {
+        var xd = padL + lo2 * pieceW, xh = padL + hi2 * pieceW;
+        var longRow = ca > cb ? 0 : 1;
+        ctx.save();
+        ctx.strokeStyle = C.warn; ctx.lineWidth = 2; ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.moveTo(xd, rowTop(0)); ctx.lineTo(xd, rowTop(1) + rowH);
+        ctx.stroke();
+        ctx.restore();
+        var diff = '多 ' + (hi2 - lo2) + ' 格';
+        ctx.font = '800 12px ' + MONO;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        if (xh - xd >= 52) {
+          ctx.strokeStyle = 'rgba(8,16,31,.5)'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+          ctx.strokeText(diff, (xd + xh) / 2, rowTop(longRow) + rowH / 2);
+          ctx.fillStyle = 'rgba(255,255,255,.98)';
+          ctx.fillText(diff, (xd + xh) / 2, rowTop(longRow) + rowH / 2);
+        } else {
+          ctx.fillStyle = C.warn;
+          ctx.font = '800 11px ' + MONO;
+          ctx.fillText(diff, clamp(xh + 26, 26, w - 26), rowTop(0) + rowH + gap / 2);
+        }
       }
       ctx.fillStyle = C.dim;
-      ctx.textAlign = 'left';
-      ctx.fillText('两条都切成 ' + L + ' 等份 → ' + ca + '/' + L + '  对比  ' + cb + '/' + L, pad, height - 8);
+      ctx.font = '700 11px ' + MONO;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText('两条都切成 ' + L + ' 等份 → ' + ca + '/' + L + '  对比  ' + cb + '/' + L, 4, height - 8);
       el.cvCommon.setAttribute('aria-label',
         '公分母对照图：都切成 ' + L + ' 份后，A 是 ' + ca + ' 份，B 是 ' + cb + ' 份');
     }
