@@ -30,48 +30,46 @@
   .quick-clue p { margin: 5px 0; color: var(--ink-mid); font-size: .87rem; }
   .quick-clue .quick-kicker { color: var(--warn); font-size: .72rem; font-weight: 800; letter-spacing: .08em; }
   .quick-clue .row { margin-top: 10px; }
-  .dig-scene { position: relative; min-height: 390px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r-lg); background: linear-gradient(180deg,color-mix(in oklab,var(--kit) 13%,var(--surface)) 0 31%,#c9915b 31% 45%,#a96f48 45% 61%,#82543b 61% 78%,#5e4033 78%); isolation: isolate; }
-  .dig-scene svg { position: absolute; inset: 28% 4% 10%; width: 92%; height: 62%; z-index: 1; }
-  .dig-friend,.dig-brush,.dig-foot { position: absolute; z-index: 3; filter: drop-shadow(0 5px 8px rgba(0,0,0,.22)); }
-  .dig-friend { left: 8%; top: 8%; font-size: 3.5rem; }
-  .dig-brush { right: 9%; top: 20%; font-size: 3rem; transform: rotate(-22deg); }
-  .dig-foot { right: 11%; bottom: 10%; font-size: 2.6rem; transform: rotate(20deg); opacity: .82; }
-  .dig-label { position: absolute; z-index: 4; right: 8%; top: 7%; max-width: 18ch; padding: 7px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: .72rem; font-weight: 750; }
-  .dig-caption { position: absolute; z-index: 4; left: 13px; right: 13px; bottom: 9px; margin: 0; color: #fff3dd; text-align: center; font-size: .76rem; }
-
   /* ---------- 地质时间轴 ---------- */
   .tl-wrap { margin: 26px 0 8px; }
+  /* overflow 不能是 hidden：灭绝线的标签挂在轴的下方，一裁就整条看不见。
+     圆角改由首尾两段自己承担。 */
   .tl {
     position: relative; height: 78px; border-radius: var(--r);
-    border: 1px solid var(--line); overflow: hidden;
+    border: 1px solid var(--line);
     background: var(--surface);
   }
   .tl-era {
     position: absolute; top: 0; bottom: 0;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     font-size: .78rem; font-weight: 700; letter-spacing: .04em;
-    color: #0b1020; text-align: center; line-height: 1.25;
+    color: #10131c; text-align: center; line-height: 1.25;
     border-right: 1px solid rgba(0,0,0,.25);
   }
-  .tl-era small { display: block; font-weight: 600; opacity: .72; font-size: .68rem; }
+  .tl-era:first-child { border-radius: calc(var(--r) - 1px) 0 0 calc(var(--r) - 1px); }
+  .tl-era:last-child { border-radius: 0 calc(var(--r) - 1px) calc(var(--r) - 1px) 0; border-right: 0; }
+  .tl-era small { display: block; font-weight: 600; opacity: .78; font-size: .68rem; }
   .tl-mark {
-    position: absolute; top: -4px; bottom: -4px; width: 2px;
-    background: var(--danger); box-shadow: 0 0 0 1px rgba(0,0,0,.4);
+    position: absolute; top: -5px; bottom: -5px; width: 3px;
+    background: var(--danger); border-radius: 2px;
+    box-shadow: 0 0 0 1.5px var(--surface);
   }
   .tl-mark::after {
     content: attr(data-lab);
     position: absolute; left: 50%; transform: translateX(-50%);
-    bottom: -21px; white-space: nowrap;
-    font-size: .68rem; color: var(--danger); font-weight: 700;
+    bottom: -22px; white-space: nowrap;
+    font-size: .7rem; color: var(--danger); font-weight: 800;
   }
-  .tl-legend { margin-top: 26px; font-size: .82rem; color: var(--ink-dim); }
+  .tl-legend { margin-top: 30px; font-size: .82rem; color: var(--ink-dim); }
 
   /* ---------- 控件 ---------- */
+  /* 这条筛选栏原来写死 rgba(11,15,26,.87) 的深底，但站点是浅色主题，
+     里面的 --ink-dim 标签和 --ink 数值直接消失。改成跟导航同一套浅色玻璃。 */
   .ctl {
     position: sticky; top: 51px; z-index: 40;
-    background: rgba(11,15,26,.87);
+    background: var(--nav-bg);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
     padding: 11px 0; margin: 22px 0;
   }
   .crow { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
@@ -95,36 +93,24 @@
   .dino .sci { margin: 0; font-family: var(--mono); font-size: .74rem; color: var(--ink-dim); }
   .dino .zh { margin: 4px 0 0; font-size: .86rem; color: var(--ink-mid); }
 
-  /* 等比剪影 */
+  /* 等比剪影：孩子和恐龙在同一把尺子上，SVG 自己按场景比例缩放，
+     两个读数用 HTML 放在角上，否则字号会跟着场景一起被缩到看不见。 */
   .silo {
-    position: relative; height: 132px; padding: 10px 14px 0;
-    display: flex; align-items: flex-end; gap: 12px;
+    position: relative; height: 138px; padding: 8px 12px 20px;
     background:
-      linear-gradient(180deg, transparent, rgba(0,0,0,.16)),
+      linear-gradient(180deg, color-mix(in oklab, var(--math) 5%, transparent), transparent 62%),
       repeating-linear-gradient(90deg, var(--line-soft) 0 1px, transparent 1px 34px);
     border-bottom: 1px solid var(--line-soft);
   }
-  .kid { position: relative; flex: 0 0 auto; }
-  .kid-b { background: var(--ink-dim); border-radius: 3px 3px 0 0; }
-  .kid-h {
-    position: absolute; left: 50%; transform: translateX(-50%);
-    background: var(--ink-dim); border-radius: 50%;
+  .silo-svg { display: block; width: 100%; height: 100%; color: var(--ink-mid); }
+  .kid-t, .beast-t {
+    position: absolute; bottom: 3px; white-space: nowrap;
+    font-size: .64rem; font-weight: 700; font-family: var(--mono);
   }
-  .kid-t {
-    position: absolute; left: 50%; transform: translateX(-50%);
-    bottom: -15px; white-space: nowrap;
-    font-size: .62rem; color: var(--ink-dim); font-family: var(--mono);
-  }
-  .beast { position: relative; flex: 1 1 auto; align-self: flex-end; }
-  .beast-body { border-radius: 44% 30% 26% 20% / 62% 58% 42% 38%; }
-  .beast-neck { position: absolute; border-radius: 40%; }
-  .beast-tail { position: absolute; border-radius: 40%; }
-  .beast-t {
-    position: absolute; right: 2px; bottom: -15px; white-space: nowrap;
-    font-size: .62rem; font-family: var(--mono);
-  }
+  .kid-t { left: 12px; color: var(--ink-dim); }
+  .beast-t { right: 12px; }
   .scale-note {
-    padding: 6px 14px 0; font-size: .68rem; color: var(--ink-dim);
+    padding: 6px 14px 0; font-size: .69rem; color: var(--ink-dim);
     font-family: var(--mono);
   }
 
@@ -469,6 +455,7 @@
   网络不可用或用 <code>file://</code> 直接打开时，本页显示内置数据，功能不受影响。
 </footer>
 
+<script src="../assets/js/illustrations.js?v=15"></script>
 <script>
 (function () {
   "use strict";
@@ -641,89 +628,21 @@
       "通常很难在这把尺上单独画出来。";
   })();
 
-  /* ---------- 剪影 ---------- */
+  /* ---------- 剪影 ----------
+     共享插图库按学名存了 10 属的侧视 path（含颈、帆、板、角、尾锤），
+     比这里原来那个「圆角矩形当身体」的抽象色块认得出来得多。
+     ILLUSTRATIONS 缺席时回退到一条纯文字比例说明，比例信息不丢。 */
   function silhouette(d) {
-    // 以孩子身高为基准，恐龙用臀高（四足）或站立高度做等比
-    var kidCm = state.kh;
-    var beastCm = d.hip * 100;
-    var maxPx = 104;                       // 画布可用高度
-    var tall = Math.max(kidCm, beastCm);
-    var pxPerCm = maxPx / tall;
-
-    var kidPx = kidCm * pxPerCm;
-    var beastPx = beastCm * pxPerCm;
-
+    var art = window.ILLUSTRATIONS;
+    if (art && typeof art.dinoScaleCompare === "function") {
+      return art.dinoScaleCompare(d, state.kh, { maxPx: 104 });
+    }
     var wrap = document.createElement("div");
     wrap.className = "silo";
-
-    // 孩子
-    var kid = document.createElement("div");
-    kid.className = "kid";
-    kid.style.width = Math.max(11, kidPx * 0.19) + "px";
-    kid.style.height = kidPx + "px";
-    var kb = document.createElement("div");
-    kb.className = "kid-b";
-    kb.style.height = (kidPx * 0.82) + "px";
-    kb.style.marginTop = (kidPx * 0.18) + "px";
-    var khd = document.createElement("div");
-    khd.className = "kid-h";
-    var hs = Math.max(7, kidPx * 0.17);
-    khd.style.width = hs + "px";
-    khd.style.height = hs + "px";
-    khd.style.top = "0";
-    kid.appendChild(khd);
-    kid.appendChild(kb);
-    var kt = document.createElement("div");
-    kt.className = "kid-t";
-    kt.textContent = kidCm + "cm";
-    kid.appendChild(kt);
-    wrap.appendChild(kid);
-
-    // 恐龙（抽象剪影，按臀高等比）
-    var col = d.diet === "carn" ? "var(--danger)" : "var(--sci)";
-    var b = document.createElement("div");
-    b.className = "beast";
-    b.style.height = beastPx + "px";
-
-    var body = document.createElement("div");
-    body.className = "beast-body";
-    body.style.height = (beastPx * 0.62) + "px";
-    body.style.marginTop = (beastPx * 0.38) + "px";
-    body.style.background = col;
-    body.style.opacity = ".85";
-    b.appendChild(body);
-
-    // 长颈类：加一段脖子
-    var neckish = d.len > 18 || d.hip > 4;
-    if (neckish) {
-      var nk = document.createElement("div");
-      nk.className = "beast-neck";
-      nk.style.width = Math.max(6, beastPx * 0.1) + "px";
-      nk.style.height = (beastPx * 0.55) + "px";
-      nk.style.left = "4%";
-      nk.style.top = "0";
-      nk.style.background = col;
-      nk.style.opacity = ".85";
-      b.appendChild(nk);
-    }
-
-    var tl2 = document.createElement("div");
-    tl2.className = "beast-tail";
-    tl2.style.width = "34%";
-    tl2.style.height = Math.max(5, beastPx * 0.11) + "px";
-    tl2.style.right = "-2%";
-    tl2.style.bottom = (beastPx * 0.30) + "px";
-    tl2.style.background = col;
-    tl2.style.opacity = ".7";
-    b.appendChild(tl2);
-
-    var bt = document.createElement("div");
-    bt.className = "beast-t";
-    bt.style.color = col;
-    bt.textContent = "臀高 " + d.hip + "m · 全长 " + d.len + "m";
-    b.appendChild(bt);
-
-    wrap.appendChild(b);
+    var note = document.createElement("p");
+    note.className = "scale-note";
+    note.textContent = "臀高 " + d.hip + " m · 全长 " + d.len + " m（孩子 " + state.kh + " cm）";
+    wrap.appendChild(note);
     return wrap;
   }
 

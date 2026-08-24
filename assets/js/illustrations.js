@@ -5,77 +5,177 @@ window.ILLUSTRATIONS = (function () {
 
   var NS = "http://www.w3.org/2000/svg";
 
-  /** 恐龙学名 → 剪影 path 数据（侧视，viewBox 0 0 200 100，基准线 y=88） */
-  var DINO_PATHS = {
+  /* 恐龙学名 → 侧视剪影。
+     每属画在自己的 `0 0 w 100` 盒子里：地面固定在 y=100，最高点在 y≈0，
+     `hipY` 是臀高所在的 y。盒子宽度按 全长÷全高 定，所以把盒子映射到真实的
+     「全长 × 全高」矩形时不会被拉扁。这三个数配合 dinoScaleCompare()，
+     才能让孩子和恐龙落在同一把尺子上——旧版是把每一属都塞进同一个 200×100
+     的框里，梁龙和甲龙于是画得一样长，臀高倍数也对不上图。 */
+  var DINO_ART = {
     "Tyrannosaurus rex": {
-      body: "M8 72 Q18 58 42 52 L78 48 Q98 44 118 50 L142 58 Q158 62 168 70 L178 78 Q186 82 192 88 L8 88 Z",
-      head: "M142 50 Q158 38 172 34 Q182 32 188 40 Q192 48 186 56 L168 58 Q152 56 142 50 Z",
-      leg: "M52 88 L48 88 L44 72 M118 88 L122 88 L128 72",
-      arm: "M98 58 L92 64 L88 62",
-      detail: "carn"
+      w: 250, hipY: 24, diet: "carn",
+      leg: [
+        { d: "M104 42 L128 60", w: 14, back: true },
+        { d: "M128 60 L114 78", w: 9, back: true },
+        { d: "M114 78 L138 92", w: 7, back: true },
+        { d: "M116 42 L142 62", w: 17 },
+        { d: "M142 62 L126 82", w: 11 },
+        { d: "M126 82 L152 96", w: 8 }
+      ],
+      body: "M2 60 C24 57 48 50 72 41 C94 33 112 28 128 25 C150 20 172 12 190 7 C200 2 214 0 226 3 C238 6 246 11 249 17 C250 20 247 23 242 23 L224 24 C219 29 212 32 204 33 C194 36 184 39 176 42 C156 50 132 55 108 57 C78 59 38 63 4 66 Z",
+      arm: "M180 41 L192 53 L202 56",
+      eye: [222, 14, 2.8],
+      mouth: "M223 24 L243 20"
     },
+    /* 三角龙近三成的体长都是那颗带颈盾的头骨，所以头要画得够大；
+       肩部有明显的隆起，背线从肩往臀微微下斜。 */
     "Triceratops horridus": {
-      body: "M12 78 Q28 62 58 56 L108 54 Q138 56 158 68 L172 78 L8 88 Z",
-      head: "M158 68 Q172 52 188 48 Q198 46 196 58 Q194 68 182 72 L168 74 Q160 72 158 68 Z",
-      frill: "M152 60 Q168 42 192 44 Q188 56 176 64 Q164 68 152 60 Z",
-      horn: "M180 52 L188 38 M172 54 L166 42 M192 56 L202 48",
-      leg: "M48 88 L46 88 L42 72 M130 88 L134 88 L138 72",
-      detail: "herb"
+      w: 273, hipY: 12, diet: "herb",
+      leg: [
+        { d: "M86 56 L82 100", w: 18, back: true },
+        { d: "M170 54 L174 100", w: 16, back: true },
+        { d: "M60 58 L52 100", w: 22 },
+        { d: "M152 56 L154 100", w: 19 }
+      ],
+      tail: "M40 42 C26 44 12 50 0 58 L4 68 C16 62 28 58 42 56 Z",
+      frill: "M178 34 C174 8 198 -3 226 -1 C252 1 270 14 270 33 C270 51 250 59 226 55 C202 51 184 46 178 34 Z",
+      body: "M20 40 C22 24 48 14 96 12 C144 10 180 18 192 34 C202 48 196 61 176 67 C140 77 72 77 40 67 C22 61 16 50 20 40 Z",
+      head: "M196 40 C220 38 250 46 266 60 C274 68 266 78 252 75 C232 71 208 58 196 50 Z",
+      horn: "M218 40 C236 30 256 20 268 16 M226 50 C242 42 260 34 270 30 M248 62 C252 52 258 48 264 50",
+      eye: [218, 50, 2.8]
     },
     "Stegosaurus stenops": {
-      body: "M18 74 Q38 60 72 58 L128 60 Q152 62 168 72 L8 88 Z",
-      plates: "M52 42 L56 28 L60 42 M72 38 L76 22 L80 38 M92 40 L96 24 L100 40 M112 42 L116 26 L120 42",
-      tail: "M168 72 Q188 68 196 62 L198 70 Q190 76 172 78 Z",
-      leg: "M42 88 L40 88 L36 70 M118 88 L122 88 L126 70",
-      detail: "herb"
+      w: 175, hipY: 32, diet: "herb",
+      leg: [
+        { d: "M86 86 L84 100", w: 14, back: true },
+        { d: "M142 78 L146 100", w: 11, back: true },
+        { d: "M64 84 L60 100", w: 17 },
+        { d: "M132 80 L134 100", w: 13 }
+      ],
+      tail: "M30 66 C20 62 10 60 2 60 L0 68 C10 70 20 72 30 74 Z",
+      body: "M28 68 C32 52 48 36 76 30 C104 25 132 33 152 47 C162 55 165 67 159 77 C146 89 116 93 86 91 C58 89 34 80 28 72 Z",
+      head: "M148 56 C158 58 168 64 172 72 C175 78 169 84 161 82 C152 80 144 73 141 66 Z",
+      plates: "M36 44 L40 28 L48 43 Z M52 34 L58 12 L68 32 Z M72 28 L80 4 L90 27 Z M94 30 L102 6 L112 30 Z M116 38 L124 18 L132 40 Z M136 48 L142 32 L149 50 Z",
+      spike: "M12 60 L0 50 M18 60 L8 48 M10 70 L0 72 M16 72 L6 80",
+      eye: [158, 68, 2.4]
     },
+    /* 腕龙的看点全在那条抬高的脖子：前肢比后肢长，肩比臀高，
+       头顶到地面约 12 米，臀高 4.4 米只占四成——盒子必须留出上半截给脖子。 */
     "Brachiosaurus altithorax": {
-      body: "M28 78 Q52 68 88 66 L128 68 Q148 70 162 76 L8 88 Z",
-      neck: "M128 68 Q138 52 142 32 Q144 18 148 8 Q152 4 156 10 Q158 22 154 38 Q150 54 142 66",
-      head: "M148 8 Q158 4 164 10 Q168 16 162 22 L152 20 Q148 14 148 8 Z",
-      leg: "M48 88 L44 88 L38 68 M138 88 L142 88 L148 68",
-      detail: "herb"
+      w: 215, hipY: 55, diet: "herb",
+      leg: [
+        { d: "M84 66 L86 100", w: 7, back: true },
+        { d: "M128 54 L132 100", w: 7, back: true },
+        { d: "M70 68 L65 100", w: 8 },
+        { d: "M118 56 L116 100", w: 9 }
+      ],
+      tail: "M57 48 C40 44 19 40 0 36 L0 47 C19 51 40 55 57 60 Z",
+      neck: "M128 46 C138 30 156 14 176 5 C184 1 194 5 193 13 C192 19 185 22 178 26 C162 35 150 46 143 60 Z",
+      body: "M48 56 C50 42 66 32 92 31 C118 30 133 36 138 48 C143 59 137 69 119 73 C93 79 62 77 52 69 C48 65 47 60 48 56 Z",
+      head: "M184 4 C198 0 208 5 207 13 C206 19 196 21 189 17 L181 10 Z",
+      eye: [195, 10, 2.6]
     },
     "Diplodocus carnegii": {
-      body: "M22 76 Q48 66 88 64 L148 66 Q172 68 188 74 L8 88 Z",
-      neck: "M148 66 Q156 48 160 28 Q162 14 166 6 Q170 2 174 8 Q176 20 172 36 Q168 52 158 64",
-      tail: "M188 74 Q196 70 200 64 L200 72 Q194 78 184 80 Z",
-      leg: "M52 88 L48 88 L44 70 M148 88 L152 88 L158 70",
-      detail: "herb"
+      w: 540, hipY: 12, diet: "herb",
+      leg: [
+        { d: "M348 86 L346 100", w: 17, back: true },
+        { d: "M398 80 L402 100", w: 15, back: true },
+        { d: "M320 84 L316 100", w: 20 },
+        { d: "M382 82 L386 100", w: 18 }
+      ],
+      /* 梁龙的尾巴比脖子长一倍多（约 14 米对 6.5 米），躯干因此要坐在偏右侧。 */
+      tail: "M300 52 C240 46 150 48 70 56 C36 60 10 64 0 66 L1 72 C16 70 40 68 66 66 C146 60 236 62 302 70 Z",
+      neck: "M402 32 C428 20 464 14 498 17 C516 19 528 22 534 26 L536 36 C526 33 512 31 496 31 C464 29 430 36 408 50 Z",
+      body: "M292 48 C300 26 322 16 348 15 C376 14 398 24 408 44 C414 58 410 72 396 78 C372 88 316 88 296 76 C282 69 284 60 292 48 Z",
+      head: "M526 22 C538 20 540 26 539 32 C538 38 530 42 522 38 L520 32 Z",
+      eye: [531, 28, 3.4]
     },
     "Allosaurus fragilis": {
-      body: "M10 74 Q24 58 52 52 L98 50 Q128 52 152 62 L170 72 L8 88 Z",
-      head: "M152 62 Q168 48 182 44 Q192 42 194 52 Q192 62 180 66 L162 64 Q154 64 152 62 Z",
-      leg: "M44 88 L42 88 L38 70 M118 88 L122 88 L128 70",
-      detail: "carn"
+      w: 250, hipY: 21, diet: "carn",
+      leg: [
+        { d: "M98 40 L122 58", w: 12, back: true },
+        { d: "M122 58 L108 76", w: 8, back: true },
+        { d: "M108 76 L132 91", w: 6, back: true },
+        { d: "M110 40 L136 60", w: 15 },
+        { d: "M136 60 L120 80", w: 10 },
+        { d: "M120 80 L146 95", w: 7 }
+      ],
+      body: "M2 58 C24 55 48 48 72 39 C96 30 116 25 134 21 C156 16 176 9 192 5 C202 1 216 0 227 3 C238 6 246 11 249 17 C250 20 247 23 242 23 L224 24 C219 29 213 32 205 33 C195 36 186 39 178 42 C158 50 132 55 108 57 C78 59 36 62 2 65 Z",
+      arm: "M176 42 L192 56 L206 60",
+      horn: "M211 7 L214 1 L218 7 M221 7 L225 2 L229 8",
+      eye: [218, 14, 2.8],
+      mouth: "M223 24 L243 20"
     },
     "Spinosaurus aegyptiacus": {
-      body: "M14 76 Q32 62 68 58 L118 56 Q148 58 168 68 L8 88 Z",
-      sail: "M88 56 L92 18 L96 56 M104 54 L108 12 L112 54 M120 56 L124 20 L128 56 M136 58 L140 24 L144 58",
-      snout: "M168 68 Q182 64 192 60 L194 66 Q186 70 172 72 Z",
-      leg: "M48 88 L46 88 L42 70 M128 88 L132 88 L136 70",
-      detail: "carn"
+      w: 260, hipY: 31, diet: "carn",
+      leg: [
+        { d: "M84 64 L94 78", w: 10, back: true },
+        { d: "M94 78 L86 88", w: 7, back: true },
+        { d: "M86 88 L100 96", w: 6, back: true },
+        { d: "M96 64 L108 78", w: 12 },
+        { d: "M108 78 L98 90", w: 9 },
+        { d: "M98 90 L114 98", w: 7 }
+      ],
+      sail: "M62 48 C70 14 96 2 126 3 C158 4 182 18 193 43 C160 34 126 33 96 38 C80 41 70 45 62 48 Z",
+      spike: "M84 42 L88 16 M104 37 L106 10 M126 34 L126 6 M148 34 L150 10 M168 37 L172 18",
+      body: "M2 70 C24 62 50 52 82 44 C114 36 148 34 176 39 C192 42 206 47 216 52 L214 62 C198 57 180 55 162 57 C134 59 106 67 78 75 C48 83 18 82 2 76 Z",
+      head: "M208 48 C226 47 250 52 258 59 C263 64 258 71 250 70 C234 68 214 61 205 55 Z",
+      arm: "M186 56 L198 68 L208 72",
+      eye: [216, 52, 2.6],
+      mouth: "M214 59 L254 63"
     },
+    /* 甲龙是一辆低趴的装甲车：躯干只占体长一半，剩下的一半是尾巴和尾锤。
+       背上一排骨突、体侧一排尖刺，腿短到几乎缩在裙边里。 */
     "Ankylosaurus magniventris": {
-      body: "M16 78 Q36 64 72 60 L128 62 Q158 66 176 74 L8 88 Z",
-      armor: "M48 62 Q72 54 96 58 Q120 54 144 58 Q160 62 168 68",
-      club: "M176 74 Q188 70 196 62 Q200 68 198 76 Q192 82 178 80 Z",
-      leg: "M42 88 L40 88 L36 72 M118 88 L122 88 L126 72",
-      detail: "herb"
+      w: 433, hipY: 8, diet: "herb",
+      leg: [
+        { d: "M212 60 L208 100", w: 20, back: true },
+        { d: "M330 58 L334 100", w: 20, back: true },
+        { d: "M184 62 L178 100", w: 24 },
+        { d: "M356 58 L360 100", w: 24 }
+      ],
+      club: "M46 44 C22 40 2 52 2 66 C2 81 22 91 46 86 C61 83 63 48 46 44 Z",
+      tail: "M158 52 C120 52 84 57 48 61 L48 73 C84 78 120 80 158 78 Z",
+      body: "M150 56 C152 34 176 18 220 12 C270 5 330 8 366 22 C388 31 396 44 392 58 C388 72 368 80 330 83 C270 88 200 86 172 78 C156 73 148 66 150 56 Z",
+      head: "M378 54 C402 48 424 55 429 66 C432 76 421 84 405 82 C391 80 380 70 378 62 Z",
+      armor: "M186 40 q11 -11 22 -1 M228 26 q11 -11 22 -1 M274 20 q11 -11 22 -1 M320 24 q11 -11 22 -1 M360 36 q11 -11 22 -1",
+      horn: "M398 56 C408 48 416 44 422 44 M392 62 C400 56 408 53 414 53",
+      spike: "M154 60 L134 56 M170 76 L160 90 M232 84 L228 96 M300 86 L302 98 M372 74 L386 84",
+      eye: [404, 64, 3.2]
     },
     "Velociraptor mongoliensis": {
-      body: "M24 78 Q48 66 88 64 L128 66 Q148 68 158 74 L8 88 Z",
-      head: "M128 66 Q142 58 154 54 Q162 52 164 58 Q162 64 152 66 L138 66 Q130 66 128 66 Z",
-      tail: "M158 74 Q172 68 184 60 L186 66 Q174 74 160 78 Z",
-      feathers: "M100 64 L96 58 L104 62 M112 62 L108 54 L116 60",
-      leg: "M52 88 L50 88 L46 74 M118 88 L122 88 L126 74",
-      detail: "carn"
+      w: 308, hipY: 23, diet: "carn",
+      leg: [
+        { d: "M136 66 L156 78", w: 7, back: true },
+        { d: "M156 78 L142 88", w: 5, back: true },
+        { d: "M142 88 L164 96", w: 4, back: true },
+        { d: "M148 66 L170 80", w: 9 },
+        { d: "M170 80 L154 90", w: 6 },
+        { d: "M154 90 L178 99", w: 5 }
+      ],
+      tail: "M120 56 C88 54 46 54 8 58 L4 68 C42 66 86 65 122 67 Z",
+      neck: "M212 40 C226 30 244 20 262 18 L270 36 C252 40 236 46 226 54 Z",
+      body: "M118 48 C130 34 156 26 184 28 C206 30 222 38 228 50 C232 62 222 72 204 74 C178 78 146 72 126 63 C114 57 112 54 118 48 Z",
+      head: "M256 16 C276 12 296 20 300 30 C303 40 291 46 278 43 L258 34 Z",
+      arm: "M200 60 L216 70 L230 72",
+      feathers: "M150 30 L144 15 M170 27 L166 12 M192 29 L190 14 M212 34 L212 19 M240 68 L254 79 M232 72 L246 85 M224 73 L236 87 M60 56 L54 45 M90 55 L86 44 M30 58 L26 48",
+      eye: [284, 27, 3]
     },
+    /* 副栉龙的头冠是一根向后上方伸出的空心管，比头骨本身还长；
+       尾巴又深又长，占去将近一半体长，后肢明显比前肢粗壮。 */
     "Parasaurolophus walkeri": {
-      body: "M18 76 Q38 64 72 60 L118 58 Q148 60 164 68 L8 88 Z",
-      crest: "M118 58 Q124 42 128 18 Q130 8 134 6 Q138 8 140 18 Q142 36 138 52 L128 58 Z",
-      leg: "M44 88 L42 88 L38 70 M128 88 L132 88 L136 70",
-      detail: "herb"
+      w: 293, hipY: 18, diet: "herb",
+      leg: [
+        { d: "M124 56 L118 100", w: 16, back: true },
+        { d: "M210 62 L214 100", w: 10, back: true },
+        { d: "M100 58 L92 100", w: 19 },
+        { d: "M196 64 L198 100", w: 12 }
+      ],
+      tail: "M110 36 C82 38 46 48 4 66 L12 82 C50 70 82 62 112 62 Z",
+      crest: "M242 26 C222 8 200 -2 186 4 C176 8 180 20 194 28 C210 37 228 42 242 44 Z",
+      body: "M96 52 C100 32 126 20 164 18 C200 16 226 24 238 40 C246 51 244 62 230 70 C208 82 162 86 126 80 C102 76 92 66 96 52 Z",
+      head: "M234 38 C252 34 272 40 282 50 C288 57 282 66 270 64 C254 61 238 52 232 44 Z",
+      eye: [248, 45, 2.6]
     }
   };
 
@@ -151,107 +251,149 @@ window.ILLUSTRATIONS = (function () {
     return el;
   }
 
+  /* 站点是浅色底，原来的 #ef4444 / #22c55e / #f59e0b 当填充还行，
+     一旦拿去写图注就只有 3:1 上下。整体压深一档，填充和文字共用一个色。 */
   function dietColor(diet) {
-    return diet === "carn" ? "#ef4444" : diet === "herb" ? "#22c55e" : "#f59e0b";
+    return diet === "carn" ? "#bf2c1c" : diet === "herb" ? "#137a4a" : "#a86612";
   }
 
-  /** 等比身高对比：返回 DOM 元素（.silo 容器） */
+  /** 画一属恐龙的剪影到 `0 0 w 100` 的局部坐标里。 */
+  function dinoSilhouette(art, col) {
+    var g = svgEl("g", {
+      fill: col, "fill-opacity": "0.9",
+      stroke: col, "stroke-width": "1.4", "stroke-linejoin": "round"
+    });
+    function stroked(d, w, o) {
+      return svgEl("path", {
+        d: d, fill: "none", stroke: col, "stroke-width": w,
+        "stroke-linecap": "round", "stroke-linejoin": "round",
+        "stroke-opacity": o == null ? "1" : o
+      });
+    }
+    /* 远侧的腿先画、压暗一档：剪影里唯一能表达前后关系的就是明度。 */
+    var far = shadeHex(col, -0.34);
+    (art.leg || []).forEach(function (leg) {
+      if (!leg.back) return;
+      g.appendChild(svgEl("path", {
+        d: leg.d, fill: "none", stroke: far, "stroke-width": leg.w,
+        "stroke-linecap": "round", "stroke-linejoin": "round"
+      }));
+    });
+    if (art.sail) g.appendChild(svgEl("path", { d: art.sail, fill: shadeHex(col, 0.5), "fill-opacity": "0.96" }));
+    if (art.frill) g.appendChild(svgEl("path", { d: art.frill, fill: shadeHex(col, 0.52), "fill-opacity": "0.96" }));
+    if (art.crest) g.appendChild(svgEl("path", { d: art.crest, fill: shadeHex(col, 0.48), "fill-opacity": "0.96" }));
+    if (art.tail) g.appendChild(svgEl("path", { d: art.tail }));
+    if (art.neck) g.appendChild(svgEl("path", { d: art.neck }));
+    if (art.club) g.appendChild(svgEl("path", { d: art.club }));
+    if (art.body) g.appendChild(svgEl("path", { d: art.body }));
+    if (art.head) g.appendChild(svgEl("path", { d: art.head }));
+    if (art.plates) {
+      art.plates.split(" M").forEach(function (seg, i) {
+        g.appendChild(svgEl("path", { d: i === 0 ? seg : "M" + seg, fill: "#c2870c", "fill-opacity": "0.95", stroke: "#8a5f08" }));
+      });
+    }
+    if (art.armor) {
+      g.appendChild(svgEl("path", {
+        d: art.armor, fill: "none", stroke: shadeHex(col, 0.45),
+        "stroke-width": 4, "stroke-linecap": "round"
+      }));
+    }
+    if (art.spike) g.appendChild(stroked(art.spike, 3.4, 0.85));
+    if (art.horn) g.appendChild(stroked(art.horn, 4, 1));
+    if (art.arm) g.appendChild(stroked(art.arm, 4, 1));
+    if (art.feathers) g.appendChild(stroked(art.feathers, 2.6, 0.75));
+    (art.leg || []).forEach(function (leg) {
+      if (!leg.back) g.appendChild(stroked(leg.d, leg.w, 1));
+    });
+    if (art.mouth) g.appendChild(stroked(art.mouth, 1.6, 0.45));
+    if (art.eye) {
+      g.appendChild(svgEl("circle", { cx: art.eye[0], cy: art.eye[1], r: art.eye[2], fill: "#fdf8ef", stroke: "none" }));
+      g.appendChild(svgEl("circle", { cx: art.eye[0], cy: art.eye[1], r: art.eye[2] * 0.45, fill: "#1b1208", stroke: "none" }));
+    }
+    return g;
+  }
+
+  /** 等比身高对比：孩子和恐龙画在同一把尺子上，返回 `.silo` 容器。
+      场景坐标 1 单位 = 1 厘米，所以孩子多高、恐龙多长多高，量出来都是真的。 */
   function dinoScaleCompare(d, kidCm, opts) {
     opts = opts || {};
-    var beastCm = d.hip * 100;
-    var maxPx = opts.maxPx || 104;
-    var tall = Math.max(kidCm, beastCm);
-    var pxPerCm = maxPx / tall;
-    var kidPx = kidCm * pxPerCm;
-    var beastPx = beastCm * pxPerCm;
+    var art = DINO_ART[d.sci] || DINO_ART["Tyrannosaurus rex"];
     var col = opts.color || dietColor(d.diet);
+
+    var hipCm = d.hip * 100;
+    /* 全高由臀高和剪影里的臀线位置反推，两者永远自洽。 */
+    var beastH = hipCm * 100 / (100 - art.hipY);
+    var beastL = d.len * 100;
+
+    var kidW = kidCm * 0.32;
+    var gap = Math.max(24, kidCm * 0.22);
+    var pad = Math.max(10, kidCm * 0.07);
+    var sceneW = pad + kidW + gap + beastL + pad;
+    var sceneH = Math.max(kidCm, beastH) * 1.05;
+    var ground = sceneH;
+    var hair = sceneH * 0.006;                    /* 细线宽度，按场景大小走 */
 
     var wrap = document.createElement("div");
     wrap.className = "silo";
 
-    /* 孩子剪影 SVG */
-    var kidBox = document.createElement("div");
-    kidBox.className = "kid";
-    kidBox.style.width = Math.max(28, kidPx * 0.38) + "px";
-    kidBox.style.height = kidPx + "px";
-    var kidSvg = svgEl("svg", {
-      viewBox: "0 0 40 100",
-      width: "100%",
-      height: "100%",
-      "aria-hidden": "true",
-      role: "presentation"
+    var svg = svgEl("svg", {
+      class: "silo-svg",
+      viewBox: "0 0 " + Math.round(sceneW) + " " + Math.round(sceneH),
+      preserveAspectRatio: "xMidYMax meet",
+      role: "img",
+      "aria-label": d.n + " 与 " + kidCm + " 厘米高的孩子等比对比：臀高约 " +
+        d.hip + " 米（孩子身高的 " + (hipCm / kidCm).toFixed(1) + " 倍），全长约 " + d.len + " 米"
     });
-    kidSvg.innerHTML =
-      '<circle cx="20" cy="12" r="10" fill="#94a3b8"/>' +
-      '<path d="M12 24 Q20 20 28 24 L26 68 Q20 72 14 68 Z" fill="#64748b"/>' +
-      '<path d="M14 68 L10 88 M26 68 L30 88" stroke="#64748b" stroke-width="5" stroke-linecap="round"/>' +
-      '<path d="M12 38 L6 52 M28 38 L34 48" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>';
-    kidBox.appendChild(kidSvg);
+
+    /* 孩子身高参考线：横穿整个场景，一眼能数出恐龙有几个孩子高 */
+    svg.appendChild(svgEl("line", {
+      x1: 0, y1: ground - kidCm, x2: sceneW, y2: ground - kidCm,
+      stroke: "currentColor", "stroke-opacity": ".28",
+      "stroke-width": hair, "stroke-dasharray": hair * 5 + " " + hair * 4
+    }));
+    /* 臀高线只画在恐龙身上那一段 */
+    var beastX = pad + kidW + gap;
+    svg.appendChild(svgEl("line", {
+      x1: beastX, y1: ground - hipCm, x2: beastX + beastL, y2: ground - hipCm,
+      stroke: col, "stroke-opacity": ".5",
+      "stroke-width": hair, "stroke-dasharray": hair * 3 + " " + hair * 3
+    }));
+
+    var kid = svgEl("g", {
+      transform: "translate(" + pad + "," + ground + ") scale(" +
+        (kidW / 40) + "," + (kidCm / 100) + ") translate(0,-100)"
+    });
+    kid.innerHTML =
+      '<circle cx="20" cy="12" r="10" fill="#5f6d85"/>' +
+      '<path d="M12 24 Q20 20 28 24 L26 68 Q20 72 14 68 Z" fill="#41506a"/>' +
+      '<path d="M14 68 L10 98 M26 68 L30 98" stroke="#41506a" stroke-width="6" stroke-linecap="round"/>' +
+      '<path d="M12 38 L6 54 M28 38 L34 50" stroke="#41506a" stroke-width="5" stroke-linecap="round"/>';
+    svg.appendChild(kid);
+
+    var beast = svgEl("g", {
+      transform: "translate(" + beastX + "," + ground + ") scale(" +
+        (beastL / art.w) + "," + (beastH / 100) + ") translate(0,-100)"
+    });
+    beast.appendChild(dinoSilhouette(art, col));
+    svg.appendChild(beast);
+
+    svg.appendChild(svgEl("line", {
+      x1: 0, y1: ground - hair, x2: sceneW, y2: ground - hair,
+      stroke: "currentColor", "stroke-opacity": ".45", "stroke-width": hair * 2
+    }));
+
+    wrap.appendChild(svg);
+
     var kt = document.createElement("div");
     kt.className = "kid-t";
-    kt.textContent = kidCm + "cm";
-    kidBox.appendChild(kt);
-    wrap.appendChild(kidBox);
-
-    /* 恐龙 SVG 剪影 */
-    var paths = DINO_PATHS[d.sci] || DINO_PATHS["Tyrannosaurus rex"];
-    var beast = document.createElement("div");
-    beast.className = "beast";
-    beast.style.flex = "1 1 auto";
-    beast.style.height = beastPx + "px";
-    beast.style.display = "flex";
-    beast.style.alignItems = "flex-end";
-
-    var dSvg = svgEl("svg", {
-      viewBox: "0 0 200 100",
-      width: "100%",
-      height: beastPx + "px",
-      role: "img",
-      "aria-label": d.n + " 侧视剪影，臀高约 " + d.hip + " 米"
-    });
-    var g = svgEl("g", { fill: col, "fill-opacity": "0.88", stroke: col, "stroke-width": "1.5", "stroke-linejoin": "round" });
-    if (paths.body) g.appendChild(svgEl("path", { d: paths.body }));
-    if (paths.neck) g.appendChild(svgEl("path", { d: paths.neck, "fill-opacity": "0.82" }));
-    if (paths.head) g.appendChild(svgEl("path", { d: paths.head }));
-    if (paths.frill) g.appendChild(svgEl("path", { d: paths.frill, "fill-opacity": "0.75" }));
-    if (paths.plates) {
-      paths.plates.split(" M").forEach(function (seg, i) {
-        if (!seg) return;
-        var pd = (i === 0 ? seg : "M" + seg);
-        g.appendChild(svgEl("path", { d: pd, fill: "#eab308", "fill-opacity": "0.9" }));
-      });
-    }
-    if (paths.sail) {
-      paths.sail.split(" M").forEach(function (seg, i) {
-        if (!seg) return;
-        g.appendChild(svgEl("path", { d: (i === 0 ? seg : "M" + seg), fill: "#dc2626", "fill-opacity": "0.85" }));
-      });
-    }
-    if (paths.crest) g.appendChild(svgEl("path", { d: paths.crest, fill: "#f97316", "fill-opacity": "0.9" }));
-    if (paths.tail) g.appendChild(svgEl("path", { d: paths.tail, "fill-opacity": "0.7" }));
-    if (paths.club) g.appendChild(svgEl("path", { d: paths.club, fill: "#78716c" }));
-    if (paths.snout) g.appendChild(svgEl("path", { d: paths.snout }));
-    if (paths.horn) {
-      g.appendChild(svgEl("path", { d: paths.horn, fill: "none", stroke: "#fef3c7", "stroke-width": "3", "stroke-linecap": "round" }));
-    }
-    if (paths.arm) {
-      g.appendChild(svgEl("path", { d: paths.arm, fill: "none", stroke: col, "stroke-width": "2.5", "stroke-linecap": "round" }));
-    }
-    if (paths.feathers) {
-      g.appendChild(svgEl("path", { d: paths.feathers, fill: "none", stroke: "#fcd34d", "stroke-width": "2" }));
-    }
-    if (paths.leg) {
-      g.appendChild(svgEl("path", { d: paths.leg, fill: "none", stroke: col, "stroke-width": "4", "stroke-linecap": "round" }));
-    }
-    dSvg.appendChild(g);
-    beast.appendChild(dSvg);
+    kt.textContent = "孩子 " + kidCm + " cm";
+    wrap.appendChild(kt);
 
     var bt = document.createElement("div");
     bt.className = "beast-t";
     bt.style.color = col;
-    bt.textContent = "臀高 " + d.hip + "m · 全长 " + d.len + "m";
-    beast.appendChild(bt);
-    wrap.appendChild(beast);
+    bt.textContent = "臀高 " + d.hip + " m · 全长 " + d.len + " m";
+    wrap.appendChild(bt);
     return wrap;
   }
 
