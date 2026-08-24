@@ -40,7 +40,12 @@ function ages(t){var n=String(t).match(/\d+/g)||[];return[Number(n[0]||0),Number
 /* 「数据模式」按详情页的真实行为分类：天气工坊和人体机器不请求任何远程数据
    （页面自己就写着「完全离线可用」），其余五个专题才有公开数据加离线回退。 */
 var OFFLINE_TOPICS={"nature/weather.html":1,"nature/human-body.html":1};
-function mode(x){return OFFLINE_TOPICS[x.id]?"offline":"live";}function status(id){var d=Progress.all();return{visited:!!d.pages[id],completed:!!d.completions[id],discovery:!!d.notes[id]};}
+function mode(x){return OFFLINE_TOPICS[x.id]?"offline":"live";}
+/* 下面的 kidMode() 已经承认 progress.js 可能没加载成（缓存残缺等），这里却裸调
+   Progress.all()：同样情况下 render 在第一张卡上就抛 TypeError，整个专题网格
+   一张卡都画不出来，顶栏计数停在「载入中」。实验目录页刚补过同一道守卫，
+   读不到足迹就当全部「还没去过」，目录本身照常可用。 */
+function status(id){var d=window.Progress?Progress.all():{pages:{},completions:{},notes:{}};return{visited:!!d.pages[id],completed:!!d.completions[id],discovery:!!d.notes[id]};}
 /* 切模式时 kids-stem:progress 比 <html data-mode> 先落地，读属性会拿到上一轮的值，
    所以这里问偏好本身。 */
 function kidMode(){var m=window.Progress&&Progress.getPreference?Progress.getPreference("mode"):null;return (m||document.documentElement.getAttribute("data-mode"))==="kid";}
