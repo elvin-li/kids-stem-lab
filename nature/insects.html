@@ -721,11 +721,18 @@
 
   /* ---------- 联网增强：iNaturalist 照片 ---------- */
   var srcEl = document.getElementById("src");
-  var got = 0, tried = 0;
+  /* got/tried 之外还得分开数 fail 和 none：旧写法只要一张照片都没挂上就说
+     「离线模式」，可「接口都通了、只是没搜到匹配照片」时孩子明明在线。
+     海底世界页上一轮修过同一件事——真失败才说离线，空成功要老实说没找到。 */
+  var got = 0, tried = 0, fail = 0, none = 0;
   function report() {
     srcEl.textContent = got > 0
       ? "已加载 " + got + " 张照片（iNaturalist，版权归拍摄者）。"
-      : "离线模式 · 显示内置图标与文字（照片需要联网）。";
+      : fail > 0
+        ? "离线模式 · 显示内置图标与文字（照片需要联网）。"
+        : none > 0
+          ? "联网正常，但没找到匹配照片 · 显示内置插图与文字。"
+          : "显示内置插图与文字（照片需要联网）。";
   }
 
   function jget(url, ms) {
@@ -748,7 +755,7 @@
     var ck = "inat-bug:" + q;
 
     // 先插入文档再设 src；游离节点不会加载。
-    function paint(rec) {
+    function paint(rec, fromCache) {
       if (!rec || !rec.url) { tried++; if (tried === total) report(); return; }
       var img = document.createElement("img");
       img.alt = rec.name || q;
@@ -768,6 +775,9 @@
       };
       img.onerror = function () {
         img.remove();               // 失败保留离线插图
+        /* 缓存链接挂不上多半是断网重访，算真失败；刚从接口拿到的链接挂不上，
+           说明网络其实通着，不能据此说离线。 */
+        if (fromCache) fail++; else none++;
         tried++; if (tried === total) report();
       };
       img.src = rec.url;
@@ -775,7 +785,7 @@
 
     try {
       var c = localStorage.getItem(ck);
-      if (c) { paint(JSON.parse(c)); return; }
+      if (c) { paint(JSON.parse(c), true); return; }
     } catch (e) {}
 
     jget("https://api.inaturalist.org/v1/taxa?q=" + encodeURIComponent(q) + "&per_page=6")
@@ -794,9 +804,9 @@
         if (hit) {
           try { localStorage.setItem(ck, JSON.stringify(hit)); } catch (e) {}
           paint(hit);
-        } else { tried++; if (tried === total) report(); }
+        } else { none++; tried++; if (tried === total) report(); }
       })
-      .catch(function () { tried++; if (tried === total) report(); });
+      .catch(function () { fail++; tried++; if (tried === total) report(); });
   });
 
   strength();
