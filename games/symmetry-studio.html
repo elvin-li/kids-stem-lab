@@ -989,16 +989,39 @@
   });
   function evaluateChallenge(stroke) {
     if (!state.challenge || state.prediction === null) return;
-    var actual = stroke.fold * (stroke.mirror ? 2 : 1);
+    var predict = document.getElementById("symPredict"), lock = document.getElementById("symLock");
+    var status = document.getElementById("symStatus");
     var label = state.challenge === "mirror" ? "镜像" : "旋转";
-    if (state.prediction === actual) {
+    var want = state.challenge === "mirror" ? { fold: 1, mirror: true } : { fold: 4, mirror: false };
+    /* 锁定预测之后设置还能改（家长面板的折数滑块、孩子那两颗魔法按钮都改得动）。
+       拿一笔 6 折的线去判「1 折镜像信」，报出来的实际笔数跟这封信压根没关系。 */
+    if (stroke.fold !== want.fold || stroke.mirror !== want.mirror) {
+      status.textContent = "这一笔画在 " + stroke.fold + " 折" + (stroke.mirror ? "镜像" : "旋转") +
+        "上，和" + label + "信的 " + want.fold + " 折" + (want.mirror ? "镜像" : "旋转") +
+        "对不上：调回去再画一笔，这一笔不算。";
+      return;
+    }
+    var actual = stroke.fold * (stroke.mirror ? 2 : 1);
+    var hit = state.prediction === actual;
+    state.lastEvidence = label + "挑战预测 " + state.prediction + "，实际 " + actual + " 笔";
+    if (hit) {
       state.challengeDone[state.challenge] = true;
-      state.lastEvidence = label + "挑战预测 " + state.prediction + "，实际 " + actual + " 笔";
-    } else state.lastEvidence = label + "挑战预测 " + state.prediction + "，实际 " + actual + " 笔，需要再试";
+      /* 过关就把这一关收起来。留着的话随手再画一笔又会拿同一个旧预测重判一次，
+         中途动过折数还会把已经通过的挑战重新判成没过。 */
+      state.challenge = null; state.prediction = null;
+    } else {
+      /* 猜错要能再猜。原先输入框和「就猜这么多笔」在锁定时一起 disabled，此后再没解开过：
+         提示写着「需要再试」，可那两个控件都按不动，唯一的出路是重新打开信封。 */
+      state.prediction = null;
+      predict.disabled = false; lock.disabled = false;
+    }
     var complete = state.challengeDone.mirror && state.challengeDone.rotate;
     document.getElementById("symComplete").disabled = !complete;
-    document.getElementById("symStatus").textContent = (state.prediction === actual ? "✓ " : "未通过：") + state.lastEvidence +
-      (complete ? "。两项挑战均通过，选一句或写一句发现再记录。" : "。还需通过另一项挑战。 ");
+    status.textContent = hit
+      ? "✓ " + state.lastEvidence + "。" + (complete
+          ? "两项挑战均通过，选一句或写一句发现再记录。"
+          : "还差一封：" + (state.challengeDone.mirror ? "打开旋转信 · 4 折" : "打开镜像信 · 1 折") + "。")
+      : "还没对上：" + state.lastEvidence + "。改一个数重新锁定，再画一笔。";
   }
   Array.prototype.forEach.call(document.querySelectorAll("[data-sym-reflect]"), function (btn) {
     btn.addEventListener("click", function () {
