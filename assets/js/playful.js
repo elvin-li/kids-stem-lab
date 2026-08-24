@@ -14,6 +14,21 @@
 
   function config() { return global.PLAYFUL && typeof global.PLAYFUL === "object" ? global.PLAYFUL : null; }
   function progress() { return global.Progress && typeof global.Progress === "object" ? global.Progress : null; }
+  /* 共享插图是可选依赖：页面没引 illustrations.js（或插图库里还没这张）时，
+     这些位置继续显示 data/playful.js 里的 emoji，不影响任何功能。 */
+  function artInto(node, name, fallback) {
+    if (!node) return false;
+    var lib = global.ILLUSTRATIONS;
+    var html = lib && typeof lib.art === "function" && lib.hasArt(name)
+      ? lib.art(name, { decorative: true }) : "";
+    node.textContent = "";
+    if (!html) {
+      if (fallback != null) node.textContent = fallback;
+      return false;
+    }
+    node.insertAdjacentHTML("beforeend", html);
+    return true;
+  }
   function copy(value) {
     if (!value) return null;
     try { return JSON.parse(JSON.stringify(value)); } catch (e) { return null; }
@@ -173,7 +188,7 @@
     cardReturnFocus = trigger || global.document.activeElement;
     var face = dialog.querySelector("[data-reward-card]");
     face.style.setProperty("--card-accent", item.accent);
-    text(dialog.querySelector(".reward-card-emoji"), item.emoji);
+    artInto(dialog.querySelector(".reward-card-emoji"), "sticker/" + item.id, item.emoji);
     text(dialog.querySelector(".reward-card-series"), item.series + " · 新收藏卡");
     text(dialog.querySelector("#rewardDialogTitle"), item.label);
     text(dialog.querySelector("[data-reward-discovery]"), item.discovery);
@@ -207,7 +222,7 @@
     var avatar = global.document.createElement("span");
     avatar.className = "playful-character";
     avatar.setAttribute("aria-hidden", "true");
-    avatar.textContent = friend.emoji;
+    artInto(avatar, "friend/" + friend.id, friend.emoji);
     var bubble = global.document.createElement("span");
     bubble.className = "playful-companion-bubble";
     var strong = global.document.createElement("strong");
@@ -240,7 +255,13 @@
     node.classList.add("playful-sticker");
     node.setAttribute("data-earned", earned ? "true" : "false");
     if (earned) {
-      node.textContent = earned.emoji + " " + earned.label + " · 查看收藏卡";
+      node.textContent = "";
+      var mark = global.document.createElement("span");
+      mark.className = "playful-sticker-mark";
+      mark.setAttribute("aria-hidden", "true");
+      artInto(mark, "sticker/" + earned.id, earned.emoji);
+      node.appendChild(mark);
+      node.appendChild(global.document.createTextNode(earned.label + " · 查看收藏卡"));
       node.setAttribute("aria-label", "查看已解锁收藏卡：" + earned.label);
       node.setAttribute("role", "button");
       node.setAttribute("tabindex", "0");
