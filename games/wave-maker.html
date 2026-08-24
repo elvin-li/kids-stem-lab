@@ -153,7 +153,9 @@
   .wave-choice-cancel::before { content:"— —"; margin-right:7px; letter-spacing:.06em; }
   .wave-choice-cancel::after { content:"一高一低互相抵消"; }
   .wave-choice:focus-visible { outline:4px solid var(--ink); outline-offset:3px; }
-  .wave-choice[aria-pressed="true"] { box-shadow:inset 0 0 0 4px currentColor; }
+  /* 按下态原先是一圈 currentColor 的内描边，和外面那圈 3px 同色边框看着一模一样。
+     改成「浅色间隙 + 粗内圈」的双环，不靠色相也能一眼看出正在做哪个实验。 */
+  .wave-choice[aria-pressed="true"] { box-shadow:inset 0 0 0 3px var(--surface),inset 0 0 0 8px currentColor; }
   /* 进度这行原先是裸的 .status（--ink-dim），直接压在木甲板上只有 1.01:1 ——
      孩子最该读到的「已完成 1 / 2」反而是全页最看不清的一句。给它自己的浅底。 */
   #kidExperimentStatus { display:block; margin:0; padding:9px 13px; border:2px solid color-mix(in srgb,var(--video) 30%,var(--line)); border-radius:12px; background:var(--surface); color:var(--ink); font-size:.9rem; }
@@ -211,6 +213,21 @@
     .wave-result-card h2 { font-size:.92rem; }
     .wave-result-card p { font-size:.72rem; }
     .stage-meta { display:none; }
+  }
+  @media print {
+    /* 甲板木纹、船栏和水花都是纯装饰。照原样打印是一整片棕色色块（还相当费墨），
+       画布抽掉之后木框中间又剩一条空带；图例讲的是画布上的颜色，画布不在纸上就没有意义。
+       进度那行不在 .stage-meta 里，会照常留在纸上。 */
+    .ship-rail, .ship-water, .stage-meta, #stage { display:none !important; }
+    .lab-stage { padding:0 !important; border:none !important; background:none !important; box-shadow:none !important; }
+    /* print.css 把 section 一律改成 position:static，这几枚绝对定位的装饰气泡
+       于是挣脱了各自的卡片，跑到纸面上悬着。 */
+    .lab-stage::before, .lab-stage::after,
+    .voyage-hero::before, .voyage-hero::after { display:none !important; }
+    /* 结果卡是 <article>，print.css 把它连同 section 一起改成 position:static，
+       右上角那枚「待实验 / 完成 ✓」徽章于是脱离本卡，飘到整行的右上方去了。
+       完成状态必须留在自己那张卡上，所以纸上让它跟着文字排。 */
+    .wave-result-card::before { position:static !important; display:inline-block !important; margin-bottom:4px; }
   }
   @media (prefers-reduced-motion:reduce) {
     *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
@@ -385,9 +402,11 @@
   <details class="parent-deep-dive" data-audience="parent">
     <summary>家长可选：预测、文字反思与教学说明</summary>
     <div class="parent-tools task formal-task">
-      <div class="task-fields">
+      <!-- print.css 会隐藏 select / textarea 本身，label 却会留在纸上变成没有主人的
+           标题，所以整块标掉。 -->
+      <div class="task-fields" data-print="hide">
         <div><label for="wavePrediction">预测</label><select class="input" id="wavePrediction"><option>同相增强，反相抵消</option><option>同相抵消，反相增强</option><option>两种都不改变</option></select></div>
-        <div><label for="waveReflection">可选发现（不影响完成）</label><textarea class="input" id="waveReflection" rows="2" placeholder="例如：两列波会逐点相加。"></textarea></div>
+        <div><label for="waveReflection">可选发现（不影响完成）</label><textarea class="input" id="waveReflection" rows="2" maxlength="200" placeholder="例如：两列波会逐点相加。"></textarea></div>
       </div>
       <section class="teaching-card" aria-labelledby="teachingTitle">
         <p class="section-kicker">研究员知识卡</p>
@@ -980,7 +999,9 @@
       rDPhi = document.getElementById('rDPhi'), rSum = document.getElementById('rSum'),
       rType = document.getElementById('rType'), rFringe = document.getElementById('rFringe');
   var probeEl = document.getElementById('probe'), probeOut = document.getElementById('probeOut'), probeText = document.getElementById('probeText');
-  var waveReflection = document.getElementById('waveReflection'), waveComplete = document.getElementById('waveComplete'), waveTaskStatus = document.getElementById('waveTaskStatus');
+  var wavePrediction = document.getElementById('wavePrediction'), waveReflection = document.getElementById('waveReflection'),
+      waveComplete = document.getElementById('waveComplete'), waveTaskStatus = document.getElementById('waveTaskStatus');
+  var completedOnce = false;
   var kidExperimentStatus = document.getElementById('kidExperimentStatus');
   var enhanceResultCard = document.getElementById('enhanceResultCard'), cancelResultCard = document.getElementById('cancelResultCard');
   var seenEnhance = false, seenCancel = false;
@@ -992,10 +1013,20 @@
     probeOut.textContent = probeX.toFixed(2) + ' m';
     probeText.textContent = '在 x=' + probeX.toFixed(2) + ' m：波 1 位移 ' + values[0].toFixed(2) + '，波 2 位移 ' + values[1].toFixed(2) + '，逐点相加结果 ' + values[2].toFixed(2) + '。';
   }
+  /* 预测那一栏原先没有任何代码读过：家长选完、点了完成，选项就没了。
+     和落体页同一套写法并进证据里（Progress 只存 500 字，所以反思要截断）。 */
+  function buildEvidence() {
+    var text = presetEvidence.same + '；' + presetEvidence.anti;
+    var predicted = wavePrediction.value;
+    if (predicted) text += '；预测：' + predicted;
+    var reflection = waveReflection.value.trim().slice(0, 160);
+    if (reflection) text += '；可选发现：' + reflection;
+    return text;
+  }
   function updateWaveTask() {
     var ready = seenEnhance && seenCancel;
     waveComplete.disabled = !ready;
-    waveComplete.textContent = ready ? '保存两次实验的自动证据' : '完成两次实验后保存证据';
+    waveComplete.textContent = !ready ? '完成两次实验后保存证据' : (completedOnce ? '更新证据' : '保存两次实验的自动证据');
     enhanceResultCard.classList.toggle('is-complete', seenEnhance);
     cancelResultCard.classList.toggle('is-complete', seenCancel);
     if (ready) {
@@ -1126,13 +1157,14 @@
     probeX = clamp(num(probeEl.value, 1), 0, 4);
     updateProbe();
   });
-  waveReflection.addEventListener('input', function () {});
   waveComplete.addEventListener('click', function () {
     if (waveComplete.disabled || !window.Progress || !seenEnhance || !seenCancel) return;
-    var evidence = presetEvidence.same + '；' + presetEvidence.anti;
-    var optionalReflection = waveReflection.value.trim();
-    if (optionalReflection) evidence += '；可选发现：' + optionalReflection;
+    var evidence = buildEvidence();
     if (Progress.complete("games/wave-maker.html", evidence)) {
+      /* 重复完成是允许的，用来更新证据。按钮因此保持可用，只把文字换成
+         「更新证据」，否则家长补填了预测和发现之后会以为没处可存。 */
+      completedOnce = true;
+      updateWaveTask();
       waveTaskStatus.textContent = '已完成并保存自动证据：' + evidence;
       announce('波峰对齐和波峰错开实验已完成并保存在本机。');
     }
