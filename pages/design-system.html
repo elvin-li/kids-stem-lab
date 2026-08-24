@@ -878,8 +878,11 @@
         var id = document.createElement("code");
         id.textContent = name;
         var title = document.createElement("span");
-        /* title 是读屏拿到的名字，这里当成人读的说明列出来，缺了就一眼看得见。 */
-        title.textContent = ILLUSTRATIONS.art(name).replace(/[\s\S]*?<title[^>]*>([\s\S]*?)<\/title>[\s\S]*/, "$1") || "（缺 title）";
+        /* title 是读屏拿到的名字，这里当成人读的说明列出来，缺了就一眼看得见。
+           注意不能用 replace：没匹配到 <title> 时 replace 原样返回整段 SVG（非空），
+           「（缺 title）」的兜底永远轮不上，页面反而会把 SVG 源码当标题铺出来。 */
+        var titleMatch = ILLUSTRATIONS.art(name).match(/<title[^>]*>([\s\S]*?)<\/title>/);
+        title.textContent = (titleMatch && titleMatch[1].trim()) || "（缺 title）";
         meta.appendChild(id);
         meta.appendChild(title);
         item.appendChild(cell);
