@@ -2358,6 +2358,36 @@ window.ILLUSTRATIONS = (function () {
     '<path d="M24 25 L32 29" stroke="#4a3f2a" stroke-width="3.2" stroke-linecap="round"/>' +
     '<circle cx="24" cy="25" r="2.4" fill="#4a3f2a"/>');
 
+  defIcon("speech", "对话", "一个圆角对话气泡，里面有三个点。",
+    '<path d="M8 8 L40 8 A5 5 0 0 1 45 13 L45 31 A5 5 0 0 1 40 36 L22 36 L12 44 L13 36 L8 36 A5 5 0 0 1 3 31 L3 13 A5 5 0 0 1 8 8Z" ' +
+    'fill="#e8f1fb" stroke="#3f6f9e" stroke-width="2.6" stroke-linejoin="round"/>' +
+    '<g fill="#3f6f9e"><circle cx="15" cy="22" r="3"/><circle cx="24" cy="22" r="3"/><circle cx="33" cy="22" r="3"/></g>');
+
+  defIcon("map", "地图", "一张折叠的地图，上面有一条虚线路线和一个终点标记。",
+    '<path d="M3 12 L17 7 L31 12 L45 7 L45 38 L31 43 L17 38 L3 43Z" fill="#f2efe0" stroke="#7f8a6a" stroke-width="2.4" stroke-linejoin="round"/>' +
+    '<g stroke="#c3cbb0" stroke-width="1.8"><path d="M17 7 L17 38"/><path d="M31 12 L31 43"/></g>' +
+    '<path d="M9 34 C14 28 14 22 20 19 C26 16 30 22 36 16" fill="none" stroke="#c9682f" stroke-width="2.4" stroke-dasharray="4 3.5" stroke-linecap="round"/>' +
+    '<path d="M36 8 C40 8 43 11 43 15 C43 20 36 26 36 26 C36 26 29 20 29 15 C29 11 32 8 36 8Z" fill="#d1495b"/>' +
+    '<circle cx="36" cy="15" r="3" fill="#fff1f2"/>');
+
+  defIcon("compass", "指南针", "一枚圆形指南针，红蓝双色的指针斜指向东北。",
+    '<circle cx="24" cy="24" r="19" fill="#eef3f6" stroke="#4a6272" stroke-width="2.8"/>' +
+    '<g stroke="#9fb2be" stroke-width="2" stroke-linecap="round">' +
+    '<path d="M24 7 L24 11"/><path d="M24 37 L24 41"/><path d="M7 24 L11 24"/><path d="M37 24 L41 24"/></g>' +
+    '<path d="M34 14 L27 27 L14 34 L21 21Z" fill="#d1495b"/>' +
+    '<path d="M14 34 L21 21 L27 27Z" fill="#e8eef2" stroke="#4a6272" stroke-width="1.2" stroke-linejoin="round"/>' +
+    '<circle cx="24" cy="24" r="2.6" fill="#4a6272"/>');
+
+  defIcon("teddy", "孩子模式", "一只小熊的正脸，两只圆耳朵，鼻子是一个深色的小三角。",
+    '<g fill="#c98a52" stroke="#8a5a2b" stroke-width="2.4">' +
+    '<circle cx="11" cy="13" r="7.5"/><circle cx="37" cy="13" r="7.5"/>' +
+    '<path d="M24 8 C34 8 42 16 42 26 C42 36 34 43 24 43 C14 43 6 36 6 26 C6 16 14 8 24 8Z"/></g>' +
+    '<g fill="#f0cba3"><circle cx="11" cy="13" r="3.4"/><circle cx="37" cy="13" r="3.4"/></g>' +
+    '<path d="M24 26 C31 26 35 29 35 33 C35 38 30 41 24 41 C18 41 13 38 13 33 C13 29 17 26 24 26Z" fill="#f0cba3"/>' +
+    '<g fill="#4a3323"><circle cx="17" cy="23" r="2.6"/><circle cx="31" cy="23" r="2.6"/>' +
+    '<path d="M20.5 30 L27.5 30 L24 34Z"/></g>' +
+    '<path d="M24 34 L24 37" stroke="#4a3323" stroke-width="2" stroke-linecap="round"/>');
+
   defIcon("droplet", "水滴", "一颗水滴，左上角有一点高光。",
     '<path d="M24 4 C33 16 40 24 40 31 A16 16 0 0 1 8 31 C8 24 15 16 24 4Z" fill="#6fb7e8" stroke="#2f6f9e" stroke-width="2.4" stroke-linejoin="round"/>' +
     '<path d="M17 30 C17 24 19 21 22 18" stroke="#e6f4ff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".9"/>');
