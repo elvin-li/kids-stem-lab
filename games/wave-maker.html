@@ -429,11 +429,16 @@
 
   var css = getComputedStyle(document.documentElement);
   function V(n, fb) { var v = css.getPropertyValue(n); return (v && v.trim()) || fb; }
+  /* 这块画布的底色是写死的深色（#0a0e19 / #070b14），不跟着主题走。
+     颜色若照常读 --ink 一类的变量，孩子模式下整套会翻成深色，
+     于是深字压深底，读数和标签全部消失。所以这里固定用一份深底配色，
+     只有字体名从变量取——字体跟明暗无关。
+     同一份配色在 assets/js/illustrations.js 里叫 STAGE_DARK，改色请两边一起改。 */
   var C = {
-    ink: V('--ink', '#eef2ff'), mid: V('--ink-mid', '#b6c0e0'), dim: V('--ink-dim', '#7d88ab'),
-    line: V('--line', '#2a3355'), soft: V('--line-soft', '#202844'),
-    math: V('--math', '#6ea8fe'), kit: V('--kit', '#f472b6'), sci: V('--sci', '#4ade80'),
-    warn: V('--warn', '#fbbf24'), phys: V('--phys', '#a78bfa'),
+    ink: '#eef2ff', mid: '#b6c0e0', dim: '#8e99bd',
+    line: '#3a456e', soft: '#293252',
+    math: '#6ea8fe', kit: '#f472b6', sci: '#4ade80',
+    warn: '#fbbf24', phys: '#a78bfa',
     mono: V('--mono', 'monospace'), font: V('--font', 'sans-serif')
   };
 
@@ -494,14 +499,16 @@
     // 结果底纹不只靠颜色：增强用上升斜纹，抵消用水平条纹。
     if (resultKind !== 'other') {
       ctx.save();
-      ctx.strokeStyle = resultKind === 'enhance' ? 'rgba(255,216,77,.16)' : 'rgba(126,231,255,.16)';
+      /* 舞台底纹只是「气氛」，结果行里还有一层同样图案的纹理。
+         两层叠起来会糊成一片，所以这层画得比行内那层淡、也更疏。 */
+      ctx.strokeStyle = resultKind === 'enhance' ? 'rgba(255,216,77,.10)' : 'rgba(126,231,255,.10)';
       ctx.lineWidth = 2;
       if (resultKind === 'enhance') {
-        for (var stripeX = -H; stripeX < W; stripeX += 24) {
+        for (var stripeX = -H; stripeX < W; stripeX += 34) {
           ctx.beginPath(); ctx.moveTo(stripeX, H); ctx.lineTo(stripeX + H, 0); ctx.stroke();
         }
       } else {
-        for (var stripeY = 10; stripeY < H; stripeY += 18) {
+        for (var stripeY = 10; stripeY < H; stripeY += 26) {
           ctx.beginPath(); ctx.moveTo(0, stripeY); ctx.lineTo(W, stripeY); ctx.stroke();
         }
       }
@@ -512,7 +519,8 @@
     var plotW = Math.max(40, W - padL - padR);
     var rows = 3;
     var gap = 12;
-    var rowH = (H - 26 - gap * (rows - 1)) / rows;
+    // 底下留出 22px 给「距离 x」和「t=」这一行，否则它们会压在第三块面板的边框上
+    var rowH = (H - 36 - gap * (rows - 1)) / rows;
     var maxAmp = Math.max(0.5, Math.max(S.a1, S.a2, S.a1 + S.a2) * 1.06);
 
     var titles = [
@@ -571,31 +579,40 @@
       ctx.lineJoin = 'round';
       ctx.beginPath();
       var step = 1;
-      var crestX = null, crestY = null, troughX = null, troughY = null;
+      /* 峰谷要标在真正的最高／最低点上。原先按「穿过零线」判断，
+         标出来的位置其实是波形中间高度，孩子照着读会把峰认错地方。
+         纯正弦在半个屏幕里最大值就是波峰，直接取采样极值最稳。 */
+      var crestX = null, crestY = null, crestV = -Infinity;
+      var troughX = null, troughY = null, troughV = Infinity;
       for (var px = 0; px <= plotW; px += step) {
         var xm = px / PPM;
         var yv = f.get(xm, t);
         var yy = mid - clamp(yv, -maxAmp * 1.2, maxAmp * 1.2) * scale;
         if (px === 0) ctx.moveTo(padL + px, yy); else ctx.lineTo(padL + px, yy);
-        if (r < 2 && px > 4) {
-          var prevXm = (px - step) / PPM;
-          var prevYv = f.get(prevXm, t);
-          if (prevYv <= 0 && yv > 0 && crestX === null) { crestX = padL + px; crestY = yy; }
-          if (prevYv >= 0 && yv < 0 && troughX === null) { troughX = padL + px; troughY = yy; }
+        if (r < 2) {
+          if (yv > crestV) { crestV = yv; crestX = padL + px; crestY = yy; }
+          if (yv < troughV) { troughV = yv; troughX = padL + px; troughY = yy; }
         }
       }
       ctx.stroke();
-      if (r < 2 && crestX !== null) {
+      var ampNow = r === 0 ? S.a1 : S.a2;
+      if (r < 2 && crestX !== null && ampNow > 0.02) {
+        /* 峰这边顺手把振幅量出来：从零线到峰顶的一条双箭头就是 A。 */
+        ctx.save();
+        ctx.strokeStyle = f.col; ctx.globalAlpha = 0.75; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(crestX, mid); ctx.lineTo(crestX, crestY); ctx.stroke();
+        vArrow(crestX, crestY, 1); vArrow(crestX, mid, -1);
+        ctx.restore();
         ctx.fillStyle = f.col;
         ctx.font = '700 9px ' + C.mono;
-        ctx.textAlign = 'center';
-        ctx.fillText('峰', crestX, crestY - 4);
+        ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+        ctx.fillText('峰 A=' + ampNow.toFixed(2), crestX, crestY - 4);
       }
-      if (r < 2 && troughX !== null) {
+      if (r < 2 && troughX !== null && ampNow > 0.02) {
         ctx.fillStyle = f.col;
         ctx.font = '700 9px ' + C.mono;
-        ctx.textAlign = 'center';
-        ctx.fillText('谷', troughX, troughY + 12);
+        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        ctx.fillText('谷', troughX, troughY + 3);
       }
 
       // 叠加波填充
@@ -633,7 +650,7 @@
     var probePx = padL + clamp(probeX * PPM, 0, plotW);
     var probeVals = probeValues();
     ctx.strokeStyle = C.warn; ctx.lineWidth = 1.3; ctx.setLineDash([4, 3]);
-    ctx.beginPath(); ctx.moveTo(probePx, 8); ctx.lineTo(probePx, H - 18); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(probePx, 8); ctx.lineTo(probePx, H - 22); ctx.stroke(); ctx.setLineDash([]);
     [C.math, C.kit, C.sci].forEach(function (color, index) {
       var py0 = 14 + index * (rowH + gap), pmid = py0 + rowH / 2;
       var py = pmid - clamp(probeVals[index], -maxAmp * 1.2, maxAmp * 1.2) * ((rowH / 2 - 6) / maxAmp);
@@ -650,12 +667,23 @@
     ctx.fillText('t = ' + t.toFixed(2) + ' s', padL - 6, H - 2);
   }
 
+  /* 横向标尺两端的小箭羽。dir=-1 指向左端，dir=+1 指向右端。 */
   function arrow(x, y, dir) {
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x + dir * 5, y - 3.5);
     ctx.moveTo(x, y);
     ctx.lineTo(x + dir * 5, y + 3.5);
+    ctx.stroke();
+  }
+
+  /* 竖向标尺两端的小箭羽。dir=-1 指向上端，dir=+1 指向下端。 */
+  function vArrow(x, y, dir) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - 3.5, y + dir * 5);
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + 3.5, y + dir * 5);
     ctx.stroke();
   }
 
@@ -715,8 +743,6 @@
     var k0 = s0.lam > 0.0001 ? TWO_PI / (s0.lam * PPM) : 0;
     var k1 = s1.lam > 0.0001 ? TWO_PI / (s1.lam * PPM) : 0;
     var om0 = TWO_PI * s0.f * t, om1 = TWO_PI * s1.f * t;
-    var maxA = Math.max(0.001, s0.A + s1.A);
-
     var idx = 0;
     for (var gy = 0; gy < tankH; gy++) {
       var py = (gy + 0.5) * scaleY;
@@ -733,14 +759,21 @@
         var g1 = s1.A / Math.sqrt(1 + r1 / 42);
 
         var h = g0 * Math.sin(k0 * r0 - om0 + ph0) + g1 * Math.sin(k1 * r1 - om1 + ph1);
-        var n = h / maxA;            // -1..1 附近
+        /* 除以「这一点上两列波各自还剩多少振幅」，而不是除以全场最大值。
+           几何衰减会让远处的振幅只剩几分之一，按全场最大值归一化的话，
+           整块远场就永远停在中间那档颜色——干涉条纹恰恰在那里才最好看。
+           这样归一化后，波节线保持中间色不动、波腹处满幅摆动，正是水波槽里看到的样子。 */
+        var denom = g0 + g1;
+        var n = denom > 1e-6 ? h / denom : 0;
         if (n > 1) n = 1; else if (n < -1) n = -1;
 
-        // 波峰偏青白、波谷偏深蓝
-        var lum = (n + 1) * 0.5;     // 0..1
-        var R = Math.round(14 + 60 * lum * lum);
-        var G = Math.round(24 + 190 * lum);
-        var B = Math.round(52 + 190 * lum);
+        /* 波峰偏青白、波谷偏深蓝。
+           线性映射时整片水都停在中间那档青色，波纹糊成一团；
+           归一化改成按本地振幅之后，这里线性映射就够，再拉 S 形反而会压成黑白两色。 */
+        var lum = (n + 1) * 0.5;                       // 0..1
+        var R = Math.round(8 + 96 * lum * lum * lum);
+        var G = Math.round(16 + 214 * lum);
+        var B = Math.round(44 + 206 * lum);
 
         data[idx] = R; data[idx + 1] = G; data[idx + 2] = B;
         idx += 4;
@@ -776,22 +809,34 @@
     // 波源
     for (var i = 0; i < src.length; i++) {
       var s = src[i];
-      ctx.strokeStyle = i === 0 ? C.math : C.kit;
+      var tone = i === 0 ? C.math : C.kit;
+      ctx.strokeStyle = tone;
       ctx.lineWidth = 2;
       ctx.fillStyle = '#0b0f1a';
-      ctx.beginPath(); ctx.arc(s.x, s.y, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(s.x, s.y, 11, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.strokeStyle = i === 0 ? 'rgba(110,168,254,.55)' : 'rgba(244,114,182,.55)';
       ctx.lineWidth = 1.2;
       ctx.setLineDash([2, 4]);
-      ctx.beginPath(); ctx.arc(s.x, s.y, 14 + Math.sin(t * 4 + i) * 2, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(s.x, s.y, 18 + Math.sin(t * 4 + i) * 2, 0, Math.PI * 2); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.font = '800 10px ' + C.font;
-      ctx.fillStyle = i === 0 ? C.math : C.kit;
+      /* 圆里只放得下一个数字：「源1」两个字挤在直径 16 的圆里会糊成一团墨。
+         数字留在圆心，「源」字挪到圆下方，两边都读得清。 */
+      ctx.font = '800 13px ' + C.mono;
+      ctx.fillStyle = tone;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('源' + (i + 1), s.x, s.y + .5);
+      ctx.fillText(String(i + 1), s.x, s.y + .5);
+      /* 水面亮起来的时候，浅色文字直接写在上面会看不清，垫一层深色药丸底。 */
+      ctx.font = '700 10px ' + C.font;
+      ctx.textBaseline = 'middle';
+      var cap = '源 ' + (i + 1);
+      var capW = ctx.measureText(cap).width;
+      ctx.fillStyle = 'rgba(7,11,20,.8)';
+      rr(s.x - capW / 2 - 5, s.y + 20, capW + 10, 16, 8); ctx.fill();
+      ctx.fillStyle = tone;
+      ctx.fillText(cap, s.x, s.y + 28.5);
       if (dragSrc === i) {
         ctx.setLineDash([3, 3]); ctx.strokeStyle = 'rgba(255,255,255,.7)';
-        ctx.beginPath(); ctx.arc(s.x, s.y, 14, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(s.x, s.y, 18, 0, Math.PI * 2); ctx.stroke();
         ctx.setLineDash([]);
       }
     }
@@ -800,30 +845,39 @@
     ctx.strokeStyle = 'rgba(238,242,255,.55)'; ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(s0.x, s0.y - 22); ctx.lineTo(s1.x, s1.y - 22); ctx.stroke();
     arrow(s0.x, s0.y - 22, -1); arrow(s1.x, s1.y - 22, 1);
-    ctx.font = '600 10px ' + C.mono; ctx.fillStyle = C.ink;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-    ctx.fillText('d=' + S.sep.toFixed(2) + 'm', (s0.x + s1.x) / 2, s0.y - 25);
+    ctx.font = '600 10px ' + C.mono;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    var dTxt = 'd=' + S.sep.toFixed(2) + 'm';
+    var dW = ctx.measureText(dTxt).width;
+    var dCx = (s0.x + s1.x) / 2;
+    ctx.fillStyle = 'rgba(7,11,20,.8)';
+    rr(dCx - dW / 2 - 6, s0.y - 40, dW + 12, 16, 8); ctx.fill();
+    ctx.fillStyle = C.ink;
+    ctx.fillText(dTxt, dCx, s0.y - 31.5);
 
-    // 底部图例条
+    /* 底部图例条。原先「深=低 亮=高」那行写在 H-26，正好骑在水槽下边框上被切掉一半，
+       现在整条改成一行：色带两端各写一个词，右边留时间。 */
     ctx.fillStyle = '#0b0f1a';
     ctx.fillRect(0, H - 30, W, 30);
     ctx.strokeStyle = C.soft; ctx.beginPath();
     ctx.moveTo(0, H - 30 + .5); ctx.lineTo(W, H - 30 + .5); ctx.stroke();
-    var gradW = Math.min(160, W * 0.4);
-    var lg = ctx.createLinearGradient(10, 0, 10 + gradW, 0);
-    lg.addColorStop(0, 'rgb(14,24,52)');
-    lg.addColorStop(0.5, 'rgb(29,109,147)');
-    lg.addColorStop(1, 'rgb(74,214,242)');
-    ctx.fillStyle = lg; ctx.fillRect(10, H - 20, gradW, 10);
-    ctx.strokeStyle = C.line; ctx.strokeRect(10, H - 20, gradW, 10);
-    ctx.font = '600 10px ' + C.mono; ctx.fillStyle = C.dim;
-    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText('波谷', 10 + gradW + 8, H - 15);
-    ctx.textAlign = 'right';
-    ctx.fillText('t = ' + t.toFixed(2) + ' s', W - 10, H - 15);
-    ctx.textAlign = 'left';
-    ctx.fillStyle = C.mid;
-    ctx.fillText('← 深 = 低    亮 = 高 →', 10, H - 26);
+    ctx.font = '600 10px ' + C.mono;
+    ctx.textBaseline = 'middle';
+    var midY = H - 15;
+    ctx.fillStyle = C.mid; ctx.textAlign = 'left';
+    ctx.fillText('波谷 低', 10, midY);
+    var barX = 10 + ctx.measureText('波谷 低').width + 8;
+    var gradW = Math.max(60, Math.min(180, W * 0.34));
+    var lg = ctx.createLinearGradient(barX, 0, barX + gradW, 0);
+    lg.addColorStop(0, 'rgb(8,16,44)');
+    lg.addColorStop(0.5, 'rgb(52,123,147)');
+    lg.addColorStop(1, 'rgb(112,230,250)');
+    ctx.fillStyle = lg; ctx.fillRect(barX, H - 21, gradW, 12);
+    ctx.strokeStyle = C.line; ctx.strokeRect(barX, H - 21, gradW, 12);
+    ctx.fillStyle = C.mid; ctx.textAlign = 'left';
+    ctx.fillText('高 波峰', barX + gradW + 8, midY);
+    ctx.fillStyle = C.dim; ctx.textAlign = 'right';
+    ctx.fillText('t = ' + t.toFixed(2) + ' s', W - 10, midY);
   }
 
   // 波节线：|r1 - r0| = (m + 1/2) λ  → 双曲线，逐行求解
@@ -838,6 +892,7 @@
     ctx.lineWidth = 1.2;
     var cx = (s0.x + s1.x) / 2, cy = s0.y;
     var a2 = d / 2;
+    var labelled = false, labelX = 0, labelY = 0;
     for (var m = -mMax; m <= mMax; m++) {
       var delta = (m + 0.5) * lam;           // r1 - r0
       var a = delta / 2;
@@ -855,10 +910,27 @@
         var sx = cx + X, sy = cy + Y;
         if (sx < -20 || sx > W + 20) { first = true; continue; }
         if (first) { ctx.moveTo(sx, sy); first = false; } else ctx.lineTo(sx, sy);
+        /* 记下第一条曲线在源下方一段的位置，等会儿在那儿写「波节线」。
+           虚线不写字的话，孩子只会当成装饰纹路。 */
+        if (!labelled && Y > 62 && sx > 40 && sx < W - 40) {
+          labelled = true; labelX = sx; labelY = sy;
+        }
       }
       ctx.stroke();
     }
     ctx.restore();
+    if (labelled) {
+      ctx.save();
+      ctx.font = '700 10px ' + C.font;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      var txt = '波节线 · 水面不动';
+      var tw = ctx.measureText(txt).width;
+      ctx.fillStyle = 'rgba(7,11,20,.78)';
+      rr(labelX - tw / 2 - 6, labelY - 9, tw + 12, 18, 9); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.88)';
+      ctx.fillText(txt, labelX, labelY + .5);
+      ctx.restore();
+    }
   }
 
   function probeValues() {
