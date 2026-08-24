@@ -196,7 +196,7 @@
   .rrow .bar { height: 18px; border-radius: 999px; background: #101a34; position: relative; border: 1px solid #2b3a5c; overflow: hidden; }
   .rrow .bar i { display: block; height: 100%; border-radius: 999px; }
   /* 552 年是个读不出长短的数字。画一条「一辈子」在同一根轴上，
-     木星正好压线，土星以外全都超出去——这才看得出「飞不到」。 */
+     木星正好压线，土星起全都超出去——这才看得出「飞不到」。 */
   .rrow .life {
     position: absolute; top: -2px; bottom: -2px; width: 3px; margin-left: -1px;
     /* 两段都是实色：留透明段的话，这条线在深色槽上和浅棕、浅青的填充上
@@ -589,19 +589,21 @@
       wow:"火星上的一天只比地球长 37 分钟，所以火星车团队会按「火星时间」上班，每天晚 37 分钟。",
       q:"mars surface" },
     { id:"jupiter", zh:"木星", en:"Jupiter", emoji:"♃", col:"#d8a373",
-      au:5.20, dkm:142984, g:2.36, day:0.41, year:11.86, tempC:-110, moons:95,
+      au:5.20, dkm:142984, g:2.36, day:0.41, year:11.86, tempC:-110, moons:115,
       tag:"最大的行星",
-      desc:"气体巨行星，能装下 1300 个地球。表面那些条纹是高速气流，大红斑是一场刮了至少几百年的风暴，比地球还大。它有 95 颗已确认卫星。",
+      /* 原来这里写「它有 95 颗已确认卫星」。这个数一直在变，而且下面数据格里
+         本来就有一格「卫星」，正文再抄一遍就是留了个会过期的副本。 */
+      desc:"气体巨行星，能装下 1300 个地球。表面那些条纹是高速气流，大红斑是一场刮了至少几百年的风暴，比地球还大。",
       wow:"木星自转极快，一天不到 10 小时。转得太快，把自己甩成了一个扁球——赤道明显鼓出来。",
       q:"jupiter" },
     { id:"saturn", zh:"土星", en:"Saturn", emoji:"♄", col:"#e0cd9a",
-      au:9.54, dkm:120536, g:0.92, day:0.44, year:29.4, tempC:-140, moons:146,
+      au:9.54, dkm:120536, g:0.92, day:0.44, year:29.4, tempC:-140, moons:293,
       tag:"戴环的星",
-      desc:"最漂亮的行星，环由无数冰块和石块组成，从几厘米到几米大。环很宽（几十万公里）却极薄，平均只有几十米厚。",
+      desc:"最漂亮的行星，环由无数冰块和石块组成，从几厘米到几米大。环很宽（几十万公里）却极薄，平均只有几十米厚。它的卫星是太阳系里最多的，而且还在往上加：2025 年 3 月天文学家一次就确认了 128 颗新卫星，土星并没有多长出卫星，是望远镜终于看清了它们。",
       wow:"土星的平均密度比水还小。如果有一个足够大的浴缸，土星能浮起来。",
       q:"saturn rings" },
     { id:"uranus", zh:"天王星", en:"Uranus", emoji:"♅", col:"#93d3dd",
-      au:19.2, dkm:51118, g:0.89, day:0.72, year:84, tempC:-195, moons:28,
+      au:19.2, dkm:51118, g:0.89, day:0.72, year:84, tempC:-195, moons:29,
       tag:"躺着转的星",
       desc:"冰巨行星，甲烷让它呈青蓝色。自转轴几乎躺平（倾斜 98 度），所以它是「滚着」绕太阳走的，两极各有 21 年的极昼和极夜。",
       wow:"天王星绕太阳一圈要 84 年。1781 年被发现至今，它才走完不到三圈。",
@@ -757,7 +759,11 @@
       p.g > 1 ? "比地球大" : p.g === 1 ? "基准" : "比地球小"));
     pFacts.appendChild(fact("平均温度", p.tempC + " ℃",
       p.tempC > 100 ? "能烤熟一切" : p.tempC < -100 ? "极冷" : "还算温和"));
-    pFacts.appendChild(fact("卫星", p.moons + " 颗", p.moons === 0 ? "一颗也没有" : ""));
+    /* 卫星数不是行星的固定属性，是「到今天确认了多少颗」：土星 2025 年 3 月
+       从 146 一次加到 274，2026 年又往上走。所以这一格得带日期，
+       不然它看起来会跟直径一样像个定数。 */
+    pFacts.appendChild(fact("卫星", p.moons + " 颗",
+      p.moons === 0 ? "一颗也没有" : "2026 年 8 月已确认"));
     pFacts.appendChild(fact("坐飞机要飞", flightTime(p.au), "900 km/h 不停飞"));
   }
 
@@ -801,7 +807,11 @@
     });
     var note = document.createElement("p");
     note.className = "wbars-note";
-    note.textContent = "虚线是地球的 1 倍重力：条子越过虚线的行星（木星、海王星）会把你压得更重，没到虚线的都比家里轻。";
+    /* 越线的是哪几颗，从数据里数出来：写死「木星、海王星」的话，
+       以后动一个 g 值，图上越了线、字里没这颗，两边就对不上了。 */
+    var over = PLANETS.filter(function (p) { return p.g > 1; }).map(function (p) { return p.zh; });
+    note.textContent = "虚线是地球的 1 倍重力：条子越过虚线的行星（" + over.join("、") +
+      "）会把你压得更重，没到虚线的都比家里轻。";
     wbars.appendChild(note);
   }
   kgEl.addEventListener("input", renderWeigh);
@@ -861,7 +871,8 @@
     var capText = document.createElement("span");
     capText.className = "cap";
     capText.textContent = "条越长，飞得越久。黄色虚线是 " + LIFETIME_YEARS +
-      " 年，大约一个人的一辈子：木星刚好压在线上，土星以外坐飞机一辈子也到不了。" +
+      /* 「土星以外」把土星本身排在外面，可土星要飞 162 年，早就过线了。 */
+      " 年，大约一个人的一辈子：木星刚好压在线上，从土星起坐飞机一辈子都到不了。" +
       "（刻度按开平方压缩，否则近的几颗会全挤在最左边）";
     cap.appendChild(document.createElement("span"));
     cap.appendChild(capText);
