@@ -539,9 +539,15 @@
 
   /* wrap.clientWidth 含内边距，直接拿它当画布宽度会超出内容区一截，
      画布随后被 max-width:100% 压回去，横竖比例就此对不上。 */
-  /** 散块一行最多摆几个。托盘高度和散块落点都要用，必须是同一个答案。 */
-  function looseCols(size) {
+  /** 托盘一行最多塞得下几个散块。托盘高度和散块落点都要用，必须是同一个答案。 */
+  function looseFit(size) {
     return Math.min(10, Math.max(4, Math.floor((G.W - G.pad * 2) / (size + 8))));
+  }
+  /** 散块实际一行摆几个。塞得下 6 个就先摆满 6 个，10 块散块会排成参差的 6 + 4，
+      孩子要数两遍才知道是十块；按行数摊平成 5 + 5，和上面的十格阵是同一种读法。 */
+  function looseCols(size, n) {
+    var fits = looseFit(size), want = Math.max(1, n || 0);
+    return want <= fits ? want : Math.ceil(want / Math.ceil(want / fits));
   }
 
   function layout() {
@@ -572,10 +578,16 @@
       return clamp(Math.floor(Math.min(byW, byH)), 14, 58);
     }
     var wide = cellFor(10), tall = cellFor(5);
-    /* 一样大就用横条：宽屏上那条 5 + 5 的长带最接近算珠架，而且行尾读数好放。 */
-    G.cols = tall > wide ? 5 : 10;
+    /* 横条是首选排法：一条 5 + 5 最接近算珠架，行尾的「差几」也有地方写。只有横条
+       把格子挤到指尖以下、换成 5 × 2 能明显画得更大时才改排法。这里不能写成
+       「谁大用谁」：宽屏上两种排法都撞在 58px 的上限上，5 × 2 只赢 2px 就能胜出，
+       于是孩子模式的舞台里立着一座 5 格宽的塔，左右各空掉小半块。 */
+    G.cols = (wide < 34 && tall > wide * 1.2) ? 5 : 10;
     G.subRows = 10 / G.cols;
-    G.cell = Math.max(wide, tall);
+    /* 格子必须取所选排法自己算出来的边长。写成 max(wide, tall) 只在「谁大用谁」时
+       才碰巧成立：768px 上选了横条却拿 5 × 2 的 58px 去画，十格阵就横着冲出画布右缘，
+       最后一格和行尾的「差 10」一起被切掉。 */
+    G.cell = G.cols === 5 ? tall : wide;
     G.rowGap = G.cell > 34 ? 8 : 5;
     G.frameW = G.cell * G.cols + (G.cols - 1) * G.gap + (G.cols === 10 ? G.gGap : 0);
     /* 一个「十」自己占的高度，行与行之间再留 rowGap。 */
@@ -588,7 +600,7 @@
     /* 散块托盘按真正要摆几行来定高：宽屏一行就够，原来固定按两行留高度，
        画布下方会空出一大块灰地，看着像没画完。 */
     var looseSize = Math.max(14, G.cell * 0.86);
-    var perRow = looseCols(looseSize);
+    var perRow = looseCols(looseSize, 10);
     var looseRows = Math.ceil(10 / perRow);
     /* 散块要能一眼数清，所以第二行整个错开而不是压在第一行上：
        原来按 0.55 倍叠着放，格子一变大就叠成一摞看不出个数的砖。 */
@@ -629,13 +641,12 @@
   }
   function looseHome(i, n) {
     var size = Math.max(14, G.cell * 0.86);
-    var fits = looseCols(size);
-    var per = Math.min(Math.max(1, n), fits);
+    var per = looseCols(size, n);
     var col = i % per, row = Math.floor(i / per);
     /* 只剩两三块的时候，原来仍然把它们摊满整行宽，
        结果画布左右各钉着一块、中间一大片空——那不像一盘散块。
        排得下就按固定间距靠左挨着放，排不下才压缩间距。 */
-    var spread = n >= fits && per > 1;
+    var spread = per > 1 && per >= looseFit(size);
     var step = spread ? (G.W - G.pad * 2 - size) / (per - 1) : size + 8;
     return {
       x: G.pad + col * step,
