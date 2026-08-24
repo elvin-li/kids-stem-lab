@@ -690,8 +690,16 @@
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }
+    function unitFont() { ctx.font = '700 ' + (den <= 6 ? 10 : 9) + 'px ' + MONO; }
+    /** 一格里放不放得下「1/d」。写死的 18px 门槛是按「1/2」估的：「1/7」在 9px 下
+        就有 16px 宽，21px 的格子里前后两个标签之间只剩 2px，七个「1/7」连成一串
+        谁也读不出来。按真实文本宽度留出间距再决定写不写。 */
+    function unitFits(room) {
+      unitFont();
+      return room >= ctx.measureText('1/' + den).width + 9;
+    }
     function unitLabel(on, x, y) {
-      ctx.font = '700 ' + (den <= 6 ? 10 : 9) + 'px ' + MONO;
+      unitFont();
       ctx.fillStyle = on ? 'rgba(255,255,255,.95)' : C.dim;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText('1/' + den, x, y);
@@ -707,7 +715,8 @@
         ctx.arc(g.cx, g.cy, g.r, s, s + step);
         ctx.closePath();
         paint(i < num);
-        if (den <= 8) {
+        /* 圆饼上相邻两个标签之间的空档是 0.62r 那圈的弧长，跟着圆一起缩。 */
+        if (den <= 8 && unitFits(Math.PI * 2 * g.r * 0.62 / den)) {
           var m = s + step / 2;
           unitLabel(i < num, g.cx + Math.cos(m) * g.r * 0.62, g.cy + Math.sin(m) * g.r * 0.62);
         }
@@ -739,7 +748,7 @@
         ctx.beginPath();
         ctx.rect(x, b.y0, pw, b.bh);
         paint(j < num);
-        if (den <= 8 && pw >= 18) unitLabel(j < num, x + pw / 2, b.y0 + b.bh / 2);
+        if (den <= 8 && unitFits(pw)) unitLabel(j < num, x + pw / 2, b.y0 + b.bh / 2);
       }
       ctx.strokeStyle = color; ctx.lineWidth = 2.5;
       ctx.strokeRect(b.x0, b.y0, b.bw, b.bh);
