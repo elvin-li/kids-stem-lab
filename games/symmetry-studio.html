@@ -114,6 +114,8 @@
   .stage-kid-actions { margin-bottom:10px; }
   .stage-kid-actions .kid-choice { flex:1 1 260px; }
   .stage-kid-actions .kid-choice button { flex:1 1 112px; }
+  .kid-picks { display:flex; flex-wrap:wrap; gap:8px; }
+  .kid-picks .kid-choice { min-height:44px; }
   .mirror-predict { display:flex; flex:1 1 250px; gap:8px; align-items:center; flex-wrap:wrap; }
   .mirror-predict label { flex:1 1 135px; }
   .mirror-predict .input { width:76px; flex:0 0 76px; text-align:center; }
@@ -279,7 +281,8 @@
     <div class="mission-grid">
       <div role="group" aria-label="选择对称挑战"><button class="chip" id="mirrorChallenge" type="button">打开镜像信 · 1 折</button><button class="chip" id="rotateChallenge" type="button">打开旋转信 · 4 折</button></div>
       <div><label for="symPredict">我猜一笔会变成（笔）</label><input class="input" id="symPredict" type="number" min="1" max="32" step="1" inputmode="numeric"><button class="btn btn-sm" id="symLock" type="button" style="margin-top:6px">就猜这么多笔</button></div>
-      <div><label for="symReflect">我的发现</label><textarea class="input" id="symReflect" placeholder="例如：镜像会翻面，旋转只绕中心转。"></textarea></div>
+      <div data-audience="parent"><label for="symReflect">我的发现</label><textarea class="input" id="symReflect" placeholder="例如：镜像会翻面，旋转只绕中心转。"></textarea></div>
+      <div data-audience="kid-only"><p style="margin:0 0 6px;font-weight:700">我发现……</p><div class="kid-picks" id="symReflectChoices" role="group" aria-label="选一句我的发现"><button class="kid-choice" type="button" aria-pressed="false" data-sym-reflect="镜像会把笔画翻个面，旋转只是绕中心转过去，不翻面。">镜像翻面，旋转不翻</button><button class="kid-choice" type="button" aria-pressed="false" data-sym-reflect="镜面越多，一笔变出来的笔就越多。">镜面越多，笔越多</button><button class="kid-choice" type="button" aria-pressed="false" data-sym-reflect="打开镜像以后，一笔变出的笔数正好是只旋转时的两倍。">开镜像，笔数翻倍</button></div></div>
       <button class="btn btn-primary" id="symComplete" type="button" disabled>把图案发现记进足迹</button>
     </div>
     <p class="task-status status" id="symStatus" role="status" aria-live="polite">尚未完成：先选择镜像挑战或旋转挑战。</p>
@@ -945,11 +948,30 @@
     var complete = state.challengeDone.mirror && state.challengeDone.rotate;
     document.getElementById("symComplete").disabled = !complete;
     document.getElementById("symStatus").textContent = (state.prediction === actual ? "✓ " : "未通过：") + state.lastEvidence +
-      (complete ? "。两项挑战均通过，请写反思并记录。" : "。还需通过另一项挑战。 ");
+      (complete ? "。两项挑战均通过，选一句或写一句发现再记录。" : "。还需通过另一项挑战。 ");
   }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-sym-reflect]"), function (btn) {
+    btn.addEventListener("click", function () {
+      document.getElementById("symReflect").value = btn.getAttribute("data-sym-reflect");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-sym-reflect]"), function (choice) {
+        choice.setAttribute("aria-pressed", choice === btn ? "true" : "false");
+      });
+      document.getElementById("canvasLive").textContent = "已选发现：" + btn.textContent;
+    });
+  });
+
   document.getElementById("symComplete").addEventListener("click", function () {
     var reflection = document.getElementById("symReflect").value.trim();
-    if (!reflection) { document.getElementById("symStatus").textContent = "请先写一句反思。"; document.getElementById("symReflect").focus(); return; }
+    /* 孩子模式把这个文本框整个藏了（kid.css 的 .mission textarea），发现是点出来的。
+       原来这里一律说「请先写一句反思」再 focus 它：那边根本没有可写的框，
+       按钮于是永远按不动，孩子模式下这项任务记不进足迹。 */
+    if (!reflection) {
+      var box = document.getElementById("symReflect");
+      var firstPick = document.querySelector("[data-sym-reflect]");
+      document.getElementById("symStatus").textContent = "还差一句发现：选一句，或自己写一句镜像和旋转有什么不一样。";
+      (box.offsetParent || !firstPick ? box : firstPick).focus();
+      return;
+    }
     var evidence = "镜像 1 折实际复制 2 笔；旋转 4 折实际复制 4 笔。反思：" + reflection;
     var saved = window.Progress && Progress.complete("games/symmetry-studio.html", evidence);
     document.getElementById("symStatus").textContent = saved ? "✓ 任务已完成并记录：" + evidence : "✓ 任务已完成；本机存储不可用，未能保存足迹。";
