@@ -862,7 +862,16 @@
     if ((S.mode === 'ten' || S.mode === 'split' || S.mode === 'carry') && S.prediction === expected) {
       S.levelSolved[S.mode] = true; S.lastResult = msg + ' 预测正确：还要 ' + expected + ' 颗。';
     } else if (S.mode === 'ten' || S.mode === 'split' || S.mode === 'carry') {
-      S.lastResult = msg + ' 但这题没有先锁定正确预测，不计入分级任务。';
+      S.lastResult = msg + ' 但这题没有先锁定正确预测，不计入分级任务；点「换一题」再猜一次。';
+      /* 赢的这句话已经把「还要几颗」念出来了。预测口子若还开着，先不猜直接搭完看答案、
+         再把答案当预测锁上、拆一颗积木放回去重新触发判定，同一道题也能补进分级任务——
+         和规律机器「看过答案的题不再计分」是同一类漏洞。所以答案一出就关预测，
+         孩子模式那排数字按钮走的也是 lockPredict，一并停用；「换一题」会重新打开。 */
+      document.getElementById('numPredict').disabled = true;
+      document.getElementById('lockPredict').disabled = true;
+      Array.prototype.forEach.call(document.querySelectorAll('[data-number-predict]'), function (choice) {
+        choice.disabled = true;
+      });
     }
     updateMission();
     renderChallengeLog();
