@@ -1190,8 +1190,11 @@
   Array.prototype.slice.call(document.querySelectorAll('[data-shadow-action]')).forEach(function (button) {
     button.addEventListener('click', function () {
       var action = button.dataset.shadowAction;
-      if (action === 'lamp-near') S.lamp.x = clamp(S.objX - 0.07, 0.02, 0.60);
-      if (action === 'lamp-far') S.lamp.x = clamp(S.objX - 0.35, 0.02, 0.60);
+      /* 上限用和拖拽/滑块一致的 wallX-0.06：旧值 0.60 是老滑块量程的残留，
+         道具搬到右边（objX 可到 0.87）时「把灯搬近」会把灯钳回 0.60，
+         反而比按之前拖到 0.78 的灯离道具更远。 */
+      if (action === 'lamp-near') S.lamp.x = clamp(S.objX - 0.07, 0.02, wallX - 0.06);
+      if (action === 'lamp-far') S.lamp.x = clamp(S.objX - 0.35, 0.02, wallX - 0.06);
       if (action === 'soft') S.lamp.r = 60;
       syncShadowSliders();
       announce(button.textContent.trim() + '，影子读数已更新。');
