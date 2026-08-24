@@ -447,7 +447,9 @@
     state.drawing=true;wrap.classList.add("is-drawing");state.last=p;line(p,{x:p.x+.1,y:p.y+.1,pressure:p.pressure});
   }
   function pointerMove(ev) { if(!state.drawing||state.stamp||!state.last)return;ev.preventDefault();var p=point(ev);line(state.last,p);state.last=p; }
-  function pointerUp(ev) { if(!state.drawing)return;state.drawing=false;state.last=null;wrap.classList.remove("is-drawing");if(!state.stamp){state.strokes++;if(state.tool!=="eraser")state.used.add(state.color);pushHistory();updateMission();} }
+  /* 橡皮那一下不算「画了一笔」：任务数的是画上去的笔画，擦三下空画布就点亮
+     「笔 3/3」等于没画也能完成。历史照常入栈，擦除仍然可以撤销。 */
+  function pointerUp(ev) { if(!state.drawing)return;state.drawing=false;state.last=null;wrap.classList.remove("is-drawing");if(!state.stamp){if(state.tool!=="eraser"){state.strokes++;state.used.add(state.color);}pushHistory();updateMission();} }
   function setPressed(selector,value){document.querySelectorAll(selector).forEach(function(b){b.setAttribute("aria-pressed",b.getAttribute(selector.indexOf("data-tool")>=0?"data-tool":selector.indexOf("data-mirror")>=0?"data-mirror":"data-stamp")===value?"true":"false");});}
   function status(text){document.getElementById("toolStatus").textContent=text;}
   function updateMission(){
