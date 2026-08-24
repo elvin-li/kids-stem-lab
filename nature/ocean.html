@@ -107,26 +107,70 @@
     border: 1px solid rgba(255,255,255,.14);
   }
 
-  /* ---------- 深度标尺 ---------- */
-  .ruler {
-    position: relative; height: 460px; margin: 26px 0 8px;
-    border-left: 2px solid var(--line);
-    padding-left: 0;
+  /* ---------- 深度标尺 ----------
+     两根尺子并排：左边一根按真实比例，右边一根把浅处拉开好读。
+     并排放才说得清「拉开」这件事——单看拉开的那根，孩子会以为 214 米和 10935 米差不多远。 */
+  .ruler-pair {
+    display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 14px;
+    margin: 26px 0 10px; align-items: stretch;
   }
+  .ruler-true, .ruler {
+    position: relative; height: 470px; border-radius: 12px; overflow: hidden;
+  }
+  .ruler-true { margin: 0; border: 1px solid var(--line); }
+  .ruler-water, .ruler-true-water { position: absolute; inset: 0; }
+  .ruler-band { position: absolute; left: 0; right: 0; }
+  /* 层名靠右贴边：左边那条已经排满了图标、米数和地标名，两边各占一头才不打架。 */
+  .ruler-band > b {
+    position: absolute; right: 9px; top: 4px; font: 800 .68rem/1 var(--font);
+    color: rgba(255,255,255,.78); letter-spacing: .04em;
+  }
+  .ruler-true .ruler-band > b { display: none; }
+  /* 真实比例那根上，前六个地标全挤在顶端不到一成的位置——这正是要看到的结果。 */
+  .ruler-true-tick { position: absolute; left: 0; right: 0; height: 2px; background: #fde68a; }
+  .ruler-true-tick[data-hi="true"] { background: #fb923c; height: 3px; }
+  .ruler-true figcaption {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 5px 6px;
+    background: rgba(4,10,22,.72); color: rgba(255,255,255,.86);
+    font: 700 .64rem/1.25 var(--font); text-align: center;
+  }
+  .ruler { border: 1px solid var(--line); }
   .rmark {
-    position: absolute; left: 0; display: flex; align-items: center; gap: 9px;
-    transform: translateY(-50%); width: 100%;
+    position: absolute; left: 0; right: 0; display: flex; align-items: center; gap: 8px;
+    transform: translateY(-50%); padding: 0 74px 0 0;
   }
   .rmark i {
-    display: block; height: 1px; background: var(--line); flex: 0 0 26px;
+    flex: 0 0 30px; height: 28px; margin-left: 4px; display: block;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,.5));
   }
+  .rmark i .illus { width: 100%; height: 100%; }
   .rmark b {
-    font-family: var(--mono); font-size: .72rem; color: var(--ink-mid);
-    flex: 0 0 74px;
+    flex: 0 0 66px; font-family: var(--mono); font-size: .72rem;
+    color: rgba(255,255,255,.82); text-align: right;
   }
-  .rmark span { font-size: .83rem; color: var(--ink-mid); }
-  .rmark.hi b { color: var(--video); }
-  .rmark.hi span { color: var(--ink); font-weight: 600; }
+  .rmark span {
+    min-width: 0; font-size: .82rem; color: rgba(255,255,255,.82);
+    text-shadow: 0 1px 3px rgba(2,8,20,.85);
+  }
+  .rmark.hi b { color: #fde68a; }
+  .rmark.hi span { color: #fff; font-weight: 700; }
+  .rmark-rule {
+    position: absolute; left: 40px; right: 74px; top: 50%; height: 1px;
+    background: rgba(255,255,255,.22);
+  }
+  .ruler-note { margin: 0; font-size: .82rem; color: var(--ink-dim); max-width: 66ch; }
+  @media (max-width: 560px) {
+    .ruler-pair { grid-template-columns: 40px minmax(0, 1fr); gap: 9px; }
+    .ruler-true, .ruler { height: 420px; }
+    .rmark { gap: 5px; }
+    .rmark i { flex: 0 0 22px; height: 22px; margin-left: 2px; }
+    .rmark b { flex: 0 0 52px; font-size: .64rem; }
+    .rmark span { font-size: .72rem; }
+    .rmark { padding-right: 8px; }
+    .rmark-rule { left: 26px; right: 6px; }
+    /* 窄屏塞不下两头的文字，层名收进上一节的五层卡片里读。 */
+    .ruler-band > b { display: none; }
+  }
 
   /* ---------- 压强计算器 ---------- */
   .press { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; align-items: start; }
@@ -396,7 +440,11 @@
     <p style="color:var(--ink-mid);max-width:66ch">
       同一根标尺上比一比。人能自由下潜的深度，和海最深处比起来几乎看不见。
     </p>
-    <div class="ruler" id="ruler"></div>
+    <div class="ruler-pair">
+      <figure class="ruler-true" id="rulerTrue"></figure>
+      <div class="ruler" id="ruler"></div>
+    </div>
+    <p class="ruler-note" id="rulerNote"></p>
   </section>
 
   <!-- 压强 -->
@@ -569,29 +617,91 @@
 
   /* ---------- 深度标尺 ---------- */
   var MARKS = [
-    { d: 40,    t: "休闲潜水的安全上限", hi: false },
-    { d: 214,   t: "人类自由潜纪录（无装备）", hi: true },
-    { d: 332,   t: "水肺潜水世界纪录", hi: false },
-    { d: 2250,  t: "抹香鲸最深下潜", hi: true },
-    { d: 3800,  t: "泰坦尼克号残骸", hi: true },
-    { d: 8849,  t: "珠穆朗玛峰的高度（对比）", hi: true },
-    { d: 10935, t: "马里亚纳海沟最深处", hi: true }
+    { d: 40,    t: "休闲潜水的安全上限", hi: false, icon: "ui/scuba" },
+    { d: 214,   t: "人类自由潜纪录（无装备）", hi: true, icon: "ui/freediver" },
+    { d: 332,   t: "水肺潜水世界纪录", hi: false, icon: "ui/scuba" },
+    { d: 2250,  t: "抹香鲸最深下潜", hi: true, icon: "ui/whale" },
+    { d: 3800,  t: "泰坦尼克号残骸", hi: true, icon: "ui/shipwreck" },
+    { d: 8849,  t: "珠穆朗玛峰的高度（对比）", hi: true, icon: "ui/mountain" },
+    { d: 10935, t: "马里亚纳海沟最深处", hi: true, icon: "ui/submersible" }
   ];
   var ruler = document.getElementById("ruler");
+  var rulerTrue = document.getElementById("rulerTrue");
   var MAXD = 11034;
-  MARKS.forEach(function (m) {
-    var el = document.createElement("div");
-    el.className = "rmark" + (m.hi ? " hi" : "");
-    // 用平方根压缩，否则浅处全挤在顶端
-    el.style.top = (Math.sqrt(m.d / MAXD) * 96 + 2) + "%";
-    var i = document.createElement("i");
-    var b = document.createElement("b");
-    b.textContent = m.d.toLocaleString() + " m";
-    var s = document.createElement("span");
-    s.textContent = m.t;
-    el.appendChild(i); el.appendChild(b); el.appendChild(s);
-    ruler.appendChild(el);
-  });
+
+  /* 两套映射。真实比例照实画，读得出「几乎全挤在顶上」；
+     拉开的那根用平方根压缩浅处，否则前三条会叠成一行看不清。
+     两根尺子必须同时在场，压缩才不会被当成事实。 */
+  function trueY(d) { return d / MAXD * 100; }
+  function openY(d) { return Math.sqrt(d / MAXD) * 90 + 5; }
+
+  /* 五层海的配色直接从 ZONES 的渐变里取，标尺和上一节因此永远是同一套颜色。 */
+  function zoneBands(target, map, withLabel) {
+    var water = document.createElement("div");
+    water.className = withLabel ? "ruler-water" : "ruler-true-water";
+    water.setAttribute("aria-hidden", "true");
+    ZONES.forEach(function (z, index) {
+      /* 首尾两层要贴满整根尺子：拉开的映射在两端各留了一点余量给标记，
+         若照搬会在最上和最下露出两条没有颜色的空条。 */
+      var top = index === 0 ? 0 : map(z.from);
+      var bottom = index === ZONES.length - 1 ? 100 : map(z.to);
+      var band = document.createElement("div");
+      band.className = "ruler-band";
+      band.style.top = top + "%";
+      band.style.height = (bottom - top) + "%";
+      band.style.background = z.bg;
+      if (withLabel) {
+        var name = document.createElement("b");
+        name.textContent = z.n;
+        band.appendChild(name);
+      }
+      water.appendChild(band);
+    });
+    target.appendChild(water);
+  }
+
+  if (ruler && rulerTrue) {
+    zoneBands(rulerTrue, trueY, false);
+    zoneBands(ruler, openY, true);
+
+    MARKS.forEach(function (m) {
+      var tick = document.createElement("div");
+      tick.className = "ruler-true-tick";
+      tick.setAttribute("data-hi", String(!!m.hi));
+      tick.style.top = trueY(m.d) + "%";
+      rulerTrue.appendChild(tick);
+
+      var el = document.createElement("div");
+      el.className = "rmark" + (m.hi ? " hi" : "");
+      el.style.top = openY(m.d) + "%";
+      var rule = document.createElement("div");
+      rule.className = "rmark-rule";
+      rule.setAttribute("aria-hidden", "true");
+      var i = document.createElement("i");
+      i.setAttribute("aria-hidden", "true");
+      if (art && art.hasArt(m.icon)) art.renderArt(i, m.icon, { decorative: true });
+      var b = document.createElement("b");
+      b.textContent = m.d.toLocaleString() + " m";
+      var s = document.createElement("span");
+      s.textContent = m.t;
+      el.appendChild(rule); el.appendChild(i); el.appendChild(b); el.appendChild(s);
+      ruler.appendChild(el);
+    });
+
+    var caption = document.createElement("figcaption");
+    caption.textContent = "真实比例";
+    rulerTrue.appendChild(caption);
+
+    /* 压缩了多少倍要写出来，不能让孩子自己去猜。 */
+    var shallow = MARKS[2].d;
+    var note = document.getElementById("rulerNote");
+    if (note) {
+      note.textContent = "左边那根按真实比例：前三条（" + shallow +
+        " 米以内）全挤在最上面不到 " + Math.ceil(trueY(shallow)) +
+        "% 的地方，几乎看不出间隔——这就是「几乎看不见」的意思。" +
+        "右边那根把浅处拉开了，方便读，但间距不再等于真实距离。";
+    }
+  }
 
   /* ---------- 压强计算器 ---------- */
   var dep = document.getElementById("dep");

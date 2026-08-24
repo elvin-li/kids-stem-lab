@@ -2076,6 +2076,64 @@ window.ILLUSTRATIONS = (function () {
     '<path d="M24 3 C26 16 32 22 45 24 C32 26 26 32 24 45 C22 32 16 26 3 24 C16 22 22 16 24 3Z" fill="#f6c445"/>' +
     '<path d="M39 6 C40 11 41 12 46 13 C41 14 40 15 39 20 C38 15 37 14 32 13 C37 12 38 11 39 6Z" fill="#fbe08a"/>');
 
+  /* 下面五枚是海洋深度标尺上的地标图标。都朝下潜的方向画（头朝下、船头朝下），
+     竖着排在标尺上时视线才是一路往下走的。 */
+
+  defIcon("freediver", "自由潜水员", "一个只戴面镜和脚蹼的潜水员头朝下往深处潜。",
+    '<circle cx="24" cy="9" r="5.2" fill="#e9b489"/>' +
+    '<path d="M18.6 7.6 L29.4 7.6 L29.4 10.4 A5.4 5.4 0 0 1 18.6 10.4Z" fill="#8fd3ef" opacity=".9" stroke="#2f6f8f" stroke-width="1.4"/>' +
+    '<path d="M24 14 C28 14 30 17 30 21 L29 31 L19 31 L18 21 C18 17 20 14 24 14Z" fill="#2f6f8f"/>' +
+    '<path d="M20 17 L11 26" stroke="#e9b489" stroke-width="3.6" stroke-linecap="round"/>' +
+    '<path d="M28 17 L37 26" stroke="#e9b489" stroke-width="3.6" stroke-linecap="round"/>' +
+    '<path d="M21 31 L20 40" stroke="#e9b489" stroke-width="3.6" stroke-linecap="round"/>' +
+    '<path d="M27 31 L28 40" stroke="#e9b489" stroke-width="3.6" stroke-linecap="round"/>' +
+    '<g fill="#f2a03c"><path d="M16 39 L24 41 L20 47Z"/><path d="M32 39 L24 41 L28 47Z"/></g>');
+
+  defIcon("scuba", "水肺潜水员", "一个背着气瓶、戴调节器的潜水员头朝下往深处潜，身后冒出一串气泡。",
+    '<rect x="30" y="12" width="9" height="17" rx="4.5" fill="#c8823c" stroke="#8a541d" stroke-width="1.6"/>' +
+    '<circle cx="24" cy="9" r="5.2" fill="#e9b489"/>' +
+    '<path d="M18.6 7.4 L29.4 7.4 L29.4 10.6 A5.4 5.4 0 0 1 18.6 10.6Z" fill="#8fd3ef" opacity=".9" stroke="#2f6f8f" stroke-width="1.4"/>' +
+    '<path d="M24 14 C28.4 14 30.6 17 30.6 21.4 L29.4 32 L18.6 32 L17.4 21.4 C17.4 17 19.6 14 24 14Z" fill="#26506b"/>' +
+    '<path d="M18.4 17 L9 25" stroke="#e9b489" stroke-width="3.6" stroke-linecap="round"/>' +
+    '<path d="M20.6 32 L19.4 40" stroke="#26506b" stroke-width="4" stroke-linecap="round"/>' +
+    '<path d="M27.4 32 L28.6 40" stroke="#26506b" stroke-width="4" stroke-linecap="round"/>' +
+    '<g fill="#f2a03c"><path d="M15 39 L23 41 L19 47Z"/><path d="M33 39 L25 41 L29 47Z"/></g>' +
+    '<g fill="#bfe6f5" opacity=".85"><circle cx="12" cy="12" r="3"/><circle cx="7" cy="5" r="2"/><circle cx="16" cy="4" r="1.4"/></g>');
+
+  defIcon("shipwreck", "沉船残骸", "一艘船头朝下斜插在海底泥沙里的破船，桅杆断成两截。",
+    '<path d="M2 40 C12 36 26 36 46 40 L46 46 L2 46Z" fill="#7d6a4f" opacity=".55"/>' +
+    '<path d="M6 22 L34 12 L41 32 C33 41 19 43 11 39Z" fill="#6d5433" stroke="#42301a" stroke-width="2" stroke-linejoin="round"/>' +
+    '<path d="M12 24 L36 16" stroke="#42301a" stroke-width="1.8"/>' +
+    '<path d="M20 30 L39 23" stroke="#42301a" stroke-width="1.8"/>' +
+    '<path d="M24 15 L18 3" stroke="#42301a" stroke-width="3.2" stroke-linecap="round"/>' +
+    '<path d="M33 22 L44 14" stroke="#42301a" stroke-width="2.6" stroke-linecap="round"/>' +
+    '<g fill="#1c2f45"><circle cx="17" cy="27" r="2.4"/><circle cx="25" cy="24" r="2.4"/></g>');
+
+  defIcon("whale", "下潜的抹香鲸", "一头抹香鲸头朝下往深处潜：又大又方的头在最下面，尾鳍在最上面张成 V 形。",
+    '<g fill="#4a4b53"><path d="M23 11 C17 8 11 5 5 2 C7 8 11 12 17 14Z"/>' +
+    '<path d="M25 11 C31 8 37 5 43 2 C41 8 37 12 31 14Z"/>' +
+    '<path d="M12 30 C8 32 5 35 3 39 C7 38 10 36 13 34Z"/></g>' +
+    '<path d="M12 41 C12 44 14 46 17 46 L31 46 C34 46 36 44 36 41 L36 33 C36 24 33 15 29 8 L19 8 C15 15 12 24 12 33Z" fill="#5c5d66"/>' +
+    '<path d="M13 39 C19 41 29 41 35 39" stroke="#3a3b43" stroke-width="1.8" stroke-linecap="round" fill="none"/>' +
+    '<g stroke="#7c7d86" stroke-width="1.4" stroke-linecap="round" fill="none" opacity=".55">' +
+    '<path d="M17 18 C16 24 16 30 16 35"/><path d="M23 17 C22 23 22 30 22 36"/></g>' +
+    '<circle cx="16" cy="34" r="1.9" fill="#1b1c22"/>');
+
+  defIcon("mountain", "山峰", "一座带积雪峰顶的深色山峰。",
+    '<path d="M2 43 L18 12 L28 29 L33 21 L46 43Z" fill="#6c7f96" stroke="#3d4b5e" stroke-width="2" stroke-linejoin="round"/>' +
+    '<path d="M18 12 L11 25 C14 23 16 25 19 24 C21 23 23 25 25 24Z" fill="#f2f7fb"/>' +
+    '<path d="M33 21 L29 28 C31 27 33 28 35 27Z" fill="#f2f7fb"/>' +
+    '<path d="M2 43 L46 43" stroke="#3d4b5e" stroke-width="2" stroke-linecap="round"/>');
+
+  defIcon("submersible", "深潜器", "一台带观察窗、探照灯和推进器的载人深潜器。",
+    '<path d="M9 24 C9 16 16 11 25 11 C34 11 41 16 41 24 C41 32 34 37 25 37 C16 37 9 32 9 24Z" fill="#f2c14b" stroke="#8a6410" stroke-width="2.2"/>' +
+    '<circle cx="34" cy="24" r="6.5" fill="#bfe6f5" stroke="#2f6f8f" stroke-width="2"/>' +
+    '<circle cx="32" cy="21.5" r="2" fill="#ffffff" opacity=".9"/>' +
+    '<rect x="17" y="4" width="7" height="8" rx="2" fill="#c9d3de" stroke="#5a6b84" stroke-width="1.8"/>' +
+    '<path d="M9 20 L2 16 L2 32 L9 28Z" fill="#c9d3de" stroke="#5a6b84" stroke-width="1.8" stroke-linejoin="round"/>' +
+    '<path d="M14 37 L12 44 M32 36 L34 44" stroke="#5a6b84" stroke-width="2.6" stroke-linecap="round"/>' +
+    '<path d="M41 21 L47 18 L47 30 L41 27Z" fill="#fff3c4" opacity=".85"/>');
+
   /* ---------------- 探索目录页的故事图 ----------------
      原来这一格是四个绝对定位的 emoji（☀️☁️🦊🍃）摞在一条 SVG 小路上：
      emoji 长相随系统字体变，缺字时还会退成方框，而那只狐狸和页面上方
