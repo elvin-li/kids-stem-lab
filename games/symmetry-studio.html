@@ -114,6 +114,11 @@
   .stage-kid-actions { margin-bottom:10px; }
   .stage-kid-actions .kid-choice { flex:1 1 260px; }
   .stage-kid-actions .kid-choice button { flex:1 1 112px; }
+  /* 撤销和清空原来只长在家长面板里。孩子模式是默认视图，那块面板整个不显示，
+     结果孩子画歪一笔就再也擦不掉，只能带着它玩到关页面。 */
+  .kid-fix { display:flex; gap:8px; flex-wrap:wrap; }
+  @media (min-width:621px) { .kid-fix { margin-left:auto; } }
+  @media (max-width:620px) { .kid-fix { flex:1 1 100%; } .kid-fix .btn { flex:1 1 120px; } }
   .kid-picks { display:flex; flex-wrap:wrap; gap:8px; }
   .kid-picks .kid-choice { min-height:44px; }
   .mirror-predict { display:flex; flex:1 1 250px; gap:8px; align-items:center; flex-wrap:wrap; }
@@ -198,6 +203,10 @@
         <div class="kid-choice" data-kid-choice-group role="group" aria-label="选择对称方式">
           <button id="kidMirrorMode" type="button" data-kid-choice data-value="镜像" aria-pressed="false">沿镜像线翻过去</button>
           <button id="kidRotateMode" type="button" data-kid-choice data-value="旋转" aria-pressed="false">绕中心转过去</button>
+        </div>
+        <div class="kid-fix" role="group" aria-label="修改画板">
+          <button class="btn btn-sm" id="kidUndo" type="button">收回一笔</button>
+          <button class="btn btn-ghost btn-sm" id="kidClear" type="button">全部擦掉</button>
         </div>
       </div>
       <div class="canvas-card kid-visual-stage">
@@ -897,25 +906,32 @@
   }
   syncSwatches();
 
-  document.getElementById("undoBtn").addEventListener("click", function () {
+  function undoStroke() {
     var stroke = state.strokes.pop();
     if (stroke) state.redo.push(stroke);
+    /* 撤销到空画板要把提示放回来，否则「拖一笔试试」再也不出现，
+       而此时画面上恰好又是那张只有辅助线的空盘。 */
+    if (!state.strokes.length) hint.classList.remove("gone");
     invalidate();
     redraw(); report();
     document.getElementById("canvasLive").textContent = stroke ? "已撤销一笔" : "没有可撤销的笔画";
-  });
-  document.getElementById("redoBtn").addEventListener("click", function () {
-    var stroke = state.redo.pop();
-    if (stroke) state.strokes.push(stroke);
-    redraw(); report();
-    document.getElementById("canvasLive").textContent = stroke ? "已重做一笔" : "没有可重做的笔画";
-  });
-  document.getElementById("clearBtn").addEventListener("click", function () {
+  }
+  function clearBoard() {
     state.strokes = []; state.redo = []; state.current = null;
     hint.classList.remove("gone");
     invalidate();
     redraw(); report();
     document.getElementById("canvasLive").textContent = "画板已清空";
+  }
+  document.getElementById("undoBtn").addEventListener("click", undoStroke);
+  document.getElementById("clearBtn").addEventListener("click", clearBoard);
+  document.getElementById("kidUndo").addEventListener("click", undoStroke);
+  document.getElementById("kidClear").addEventListener("click", clearBoard);
+  document.getElementById("redoBtn").addEventListener("click", function () {
+    var stroke = state.redo.pop();
+    if (stroke) { state.strokes.push(stroke); hint.classList.add("gone"); }
+    redraw(); report();
+    document.getElementById("canvasLive").textContent = stroke ? "已重做一笔" : "没有可重做的笔画";
   });
   document.getElementById("saveBtn").addEventListener("click", function () {
     var status = document.getElementById("saveStatus");
