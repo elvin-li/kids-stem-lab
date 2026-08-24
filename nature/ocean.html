@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>海底世界 · 一万米下潜 | 少儿数理启蒙</title>
 <meta name="description" content="从海面一直沉到马里亚纳海沟：光在哪一层消失、压力有多大、谁住在那里。含压强计算器与真实海洋生物照片。">
-<link rel="stylesheet" href="../assets/css/base.css?v=17">
-<link rel="stylesheet" href="../assets/css/kid.css?v=17">
+<link rel="stylesheet" href="../assets/css/base.css?v=18">
+<link rel="stylesheet" href="../assets/css/kid.css?v=18">
 <link rel="stylesheet" href="../assets/css/print.css" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
@@ -441,7 +441,7 @@
         <span data-depth="1000">1000 m · 完全黑暗</span>
         <span data-depth="10935">10935 m · 仍然有生命</span>
       </div>
-      <div class="stage-readouts" aria-hidden="true"><span>光<b id="oceanStageLight">微光</b></span><span>温度<b id="oceanStageTemp">约 5–10°C</b></span><span>压力<b id="oceanStagePressure">约 101 倍</b></span></div>
+      <div class="stage-readouts" aria-hidden="true"><span>光<b id="oceanStageLight">黑暗</b></span><span>温度<b id="oceanStageTemp">约 2–4°C</b></span><span>压力<b id="oceanStagePressure">约 101 倍</b></span></div>
     </div>
     <!-- 深度标签和三格读数都是浅字压在深色插画上，纸上印不出来（见下面的 @media print）。
          印出来只剩一张漂亮的水彩画，深度刻度一个字都没有。这一行就是纸上的那份刻度。 -->
@@ -633,7 +633,7 @@
   离线时页面显示内置数据，功能不受影响。
 </footer>
 
-<script src="../assets/js/illustrations.js?v=17"></script>
+<script src="../assets/js/illustrations.js?v=18"></script>
 <script>
 (function () {
   "use strict";
@@ -924,8 +924,9 @@
       ["每 1 cm²（指甲盖）压着", kgcm2.toFixed(1) + " kg"],
       ["整个手掌（约 100 cm²）", Math.round(perPalm).toLocaleString() + " kg"],
       ["相当于几头大象压手掌", (perPalm / 4000).toFixed(2) + " 头"],
-      ["这里还有阳光吗", d <= 200 ? "有，能光合作用" : d <= 1000 ? "只剩微弱蓝光" : "完全黑暗"],
-      ["水温大约", d <= 200 ? "随季节 15–25°C" : d <= 1000 ? "约 5–10°C" : "约 2–4°C"],
+      /* 分界和舞台读数同一套：200 m 起进微光层、1000 m 起进无光层（五层海就是这么分的）。 */
+      ["这里还有阳光吗", d < 200 ? "有，能光合作用" : d < 1000 ? "只剩微弱蓝光" : "完全黑暗"],
+      ["水温大约", d < 200 ? "随季节 15–25°C" : d < 1000 ? "约 5–10°C" : "约 2–4°C"],
       ["谁能到这里", who(d)]
     ];
     prows.textContent = "";
@@ -1155,9 +1156,9 @@
 })();
 </script>
 <script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=17"></script>
-<script src="../data/playful.js?v=17"></script>
-<script src="../assets/js/playful.js?v=17"></script>
+<script src="../assets/js/progress.js?v=18"></script>
+<script src="../data/playful.js?v=18"></script>
+<script src="../assets/js/playful.js?v=18"></script>
 <script>
 (function () {
   "use strict";
@@ -1192,12 +1193,16 @@
   function atmText(atm) {
     return atm >= 10 ? Math.round(atm).toLocaleString() : String(Math.round(atm * 10) / 10);
   }
+  /* 分界取「到达即进入下一层」：五层海把微光层写成 200–1000 m、无光层从 1000 m 起，
+     舞台右侧的标签也在 200 m 处写「只剩微光」、1000 m 处写「完全黑暗」。
+     原来用的是 <=，滑块正好停在 1000（还是默认值）时，潜艇贴着「完全黑暗」的
+     标签，读数却说「微光」——同一画面两个说法。 */
   function stageValues(d) {
     return {
       atm: 1 + d / 10,
-      light: d <= 200 ? "阳光充足" : d <= 1000 ? "只有微弱蓝光" : "没有阳光",
-      lightShort: d <= 200 ? "明亮" : d <= 1000 ? "微光" : "黑暗",
-      temp: d <= 200 ? "约 15–25°C（随地点季节变化）" : d <= 1000 ? "约 5–10°C" : "约 2–4°C"
+      light: d < 200 ? "阳光充足" : d < 1000 ? "只有微弱蓝光" : "没有阳光",
+      lightShort: d < 200 ? "明亮" : d < 1000 ? "微光" : "黑暗",
+      temp: d < 200 ? "约 15–25°C（随地点季节变化）" : d < 1000 ? "约 5–10°C" : "约 2–4°C"
     };
   }
   function paintStage() {
@@ -1240,6 +1245,6 @@
   if (window.Progress && Progress.getCompletion(id)) status.textContent = "此任务已完成；可换深度和物种更新证据。";
 })();
 </script>
-<script src="../assets/js/pwa.js?v=17"></script>
+<script src="../assets/js/pwa.js?v=18"></script>
 </body>
 </html>
