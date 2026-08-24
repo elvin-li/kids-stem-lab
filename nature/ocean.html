@@ -1068,13 +1068,23 @@
 
   /* ---------- 联网增强：iNaturalist 照片 ---------- */
   var srcEl = document.getElementById("src");
-  var netOk = null;
-  function mark(ok) {
-    if (netOk === false) return;
-    netOk = ok;
-    srcEl.textContent = ok
-      ? "照片来自 iNaturalist（加载中或已完成）。"
-      : "离线模式 · 显示内置数据（照片需要联网）";
+  /* 和太空页同一个坑：断网重访时照片记录从 localStorage 直出，旧写法把缓存命中
+     也报成「来自 iNaturalist（加载中或已完成）」——其实一个字节也没传。缓存命中
+     单独计数：有真成功才说联网，全是缓存就说缓存，出现真失败就老实说离线。 */
+  var netState = { ok: 0, cache: 0, fail: 0 };
+  function mark(kind) {
+    if (kind === "cache") netState.cache++;
+    else if (kind) netState.ok++;
+    else netState.fail++;
+    if (netState.ok > 0) {
+      srcEl.textContent = "照片来自 iNaturalist 的公开观察记录。";
+    } else if (netState.fail > 0) {
+      srcEl.textContent = netState.cache > 0
+        ? "未联网 · 显示上次缓存的 iNaturalist 照片。"
+        : "离线模式 · 显示内置数据（照片需要联网）";
+    } else if (netState.cache > 0) {
+      srcEl.textContent = "照片来自本机缓存的 iNaturalist 记录。";
+    }
   }
 
   function jget(url, ms) {
@@ -1118,7 +1128,7 @@
 
     try {
       var c = localStorage.getItem(ck);
-      if (c) { paint(JSON.parse(c)); mark(true); return; }
+      if (c) { paint(JSON.parse(c)); mark("cache"); return; }
     } catch (e) {}
 
     jget("https://api.inaturalist.org/v1/taxa?q=" + encodeURIComponent(q) + "&per_page=6")
