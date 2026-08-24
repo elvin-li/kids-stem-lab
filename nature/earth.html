@@ -192,8 +192,28 @@
   .earth-lab { display: grid; gap: 14px; margin-top: 18px; }
   .earth-tabs { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
   .earth-stage-tools { display: flex; justify-content: center; margin: 10px 0; }
-  .earth-stage { min-width: 0; min-height: 280px; display: grid; place-items: center; padding: 10px; border: 2px solid var(--line); border-radius: var(--r); overflow: hidden; }
+  /* 剖面图 + 真实厚度尺并排。舞台在宽屏有一千多像素，只放一张 300px 的圆
+     会空掉大半；把尺子收进来正好补上，两张图也才读得成一对。 */
+  .earth-stage {
+    min-width: 0; min-height: 280px; padding: 10px 14px;
+    border: 2px solid var(--line); border-radius: var(--r); overflow: hidden;
+    display: grid; grid-template-columns: minmax(0,1fr); place-items: center;
+    gap: 12px;
+  }
   .earth-stage .core-svg { width: min(100%,300px); max-height: 300px; }
+  .depth-ruler-fig { margin: 0; width: 100%; max-width: 620px; }
+  .depth-ruler-fig figcaption {
+    font-size: .8rem; font-weight: 700; color: var(--ink-mid); text-align: center;
+  }
+  .depth-ruler-fig p { margin: 2px 0 0; font-size: .76rem; color: var(--ink-dim); text-align: center; }
+  @media (min-width: 900px) {
+    .earth-stage {
+      grid-template-columns: clamp(280px,30%,380px) minmax(0,1fr);
+      align-items: center; gap: clamp(16px,2.6vw,34px);
+    }
+    .earth-stage .core-svg { width: 100%; max-height: none; }
+    .depth-ruler-fig { max-width: none; }
+  }
   .earth-layer-info { display: grid; grid-template-columns: minmax(220px,.75fr) minmax(0,1.25fr); gap: 12px; margin-top: 12px; }
   /* 剖面图里的地壳只有几个像素宽，鼠标都难点中，更别说手指。
      这排按钮才是真正能按的入口，所以孩子模式一定要留着，只是排成大色块。 */
@@ -292,10 +312,12 @@
 
       <section class="earth-panel" id="earthPanelLayer" role="tabpanel" aria-labelledby="earthTabLayer">
         <h2>点一层：它是硬的、软的，还是液体？</h2>
+        <!-- 剖面图和深度尺并排：左边那张为了让地壳看得见把它画粗了 7 倍，
+             右边那把尺按真实厚度排开。两张图挨着看，「作弊」和「没作弊」的差别才成立；
+             此前尺子在舞台外面，中间隔着一条边框，孩子不会把两者联系起来。 -->
         <div class="earth-stage kid-visual-stage">
           <!-- 圈层半径按 6371 km 等比换算：下地幔 112、外核 69、内核 24 都是真值。
-               只有地壳被画粗到 5 个单位——按真比例它只有 0.7 个单位，屏幕上根本不存在。
-               下面的深度尺不作这个夸张，专门用来把「薄」这件事还回去。 -->
+               只有地壳被画粗到 5 个单位——按真比例它只有 0.7 个单位，屏幕上根本不存在。 -->
           <svg class="core-svg" id="coreSvg" viewBox="0 0 300 292" role="img" aria-labelledby="coreSvgTitle coreSvgDesc">
             <title id="coreSvgTitle">地球内部分层剖面图</title>
             <desc id="coreSvgDesc">一个切开的地球，从外往内依次是地壳、上地幔、下地幔、外核和内核，每一圈都可以点选。我们住在最外面那层薄壳上。</desc>
@@ -335,8 +357,12 @@
             </g>
             <text x="150" y="284" text-anchor="middle" font-size="10" fill="#5b4a33" font-family="monospace" pointer-events="none">半径 6,371 km · 圈层按真实比例</text>
           </svg>
+          <figure class="depth-ruler-fig">
+            <figcaption>同样五层，按真实厚度排一排</figcaption>
+            <svg class="depth-ruler" id="depthRuler" viewBox="0 0 320 104" role="img" aria-label="地球深度尺：从地表 0 公里到地心 6371 公里，五层按真实厚度排开，地壳只占最左边一根发丝那么宽"></svg>
+            <p>左边那张图把地壳画粗了 7 倍，否则它在屏幕上根本不存在。这把尺子没有作弊。</p>
+          </figure>
         </div>
-        <svg class="depth-ruler" id="depthRuler" viewBox="0 0 320 104" role="img" aria-label="地球深度尺：从地表 0 公里到地心 6371 公里，五层按真实厚度排开，地壳只占最左边一根发丝那么宽"></svg>
         <!-- 不加 single-column：这张卡左栏确实有东西——剖面缩略图，两栏才是对的 -->
         <div class="earth-layer-info"><div class="layer-list" id="layerList" aria-label="地球层按钮"></div><div class="layer-detail kid-result-card" id="layerDetail" aria-live="polite"></div></div>
       </section>

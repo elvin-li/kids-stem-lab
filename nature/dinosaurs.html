@@ -847,24 +847,27 @@
       var q = slot.getAttribute("data-inat");
       if (slot.getAttribute("data-done") === "1") return;
 
+      /* 图片先在文档外加载，onload 成功了才挂进卡片。
+         早先是先插入再等加载，离线或图床被墙时每张卡底部都留一块 138px 的空色块。 */
       function paint(rec) {
         if (!rec || !rec.url) return;
         slot.setAttribute("data-done", "1");
-        var fig = document.createElement("figure");
-        fig.className = "dphoto-wrap";
-        fig.style.margin = "0";
         var img = document.createElement("img");
         img.className = "dphoto";
-        img.loading = "lazy";
         img.alt = q + " 的化石或复原照片";
+        img.onload = function () {
+          var fig = document.createElement("figure");
+          fig.className = "dphoto-wrap";
+          fig.style.margin = "0";
+          var cap = document.createElement("figcaption");
+          cap.className = "dphoto-cap";
+          cap.textContent = (rec.name || q) + " · iNaturalist";
+          fig.appendChild(img);
+          fig.appendChild(cap);
+          slot.appendChild(fig);
+        };
+        img.onerror = function () { slot.removeAttribute("data-done"); };
         img.src = rec.url;
-        img.onerror = function () { fig.remove(); };   // 碎图直接移除整块
-        var cap = document.createElement("figcaption");
-        cap.className = "dphoto-cap";
-        cap.textContent = (rec.name || q) + " · iNaturalist";
-        fig.appendChild(img);
-        fig.appendChild(cap);
-        slot.appendChild(fig);
       }
 
       var ck = "inat:" + q;
