@@ -216,11 +216,18 @@
     background: var(--surface); border: 1px solid var(--line);
     border-radius: var(--r); padding: 15px 16px;
   }
-  .fstat b {
+  /* 数字块原来是六段纯文字，六个格子长得一模一样，扫过去分不出哪个说的是什么。
+     每格配一枚共享插图库里的小图标，先认图再读数。 */
+  .fstat-icon { display: block; width: 38px; height: 38px; margin-bottom: 8px; }
+  .fstat-icon .illus { width: 100%; height: 100%; }
+  /* 只有直接子元素的 <b> 是那个大数字。说明文字里的 <b> 是普通着重，
+     早先一起吃到了大号等宽粉字，「新生儿约 270 块」被读成了第二个标题。 */
+  .fstat > b {
     display: block; font-family: var(--mono); font-size: 1.5rem;
     color: var(--kit); line-height: 1.1;
   }
-  .fstat span { font-size: .8rem; color: var(--ink-mid); display: block; margin-top: 5px; }
+  .fstat > span { font-size: .8rem; color: var(--ink-mid); display: block; margin-top: 5px; }
+  .fstat > span b { color: var(--ink); font-weight: 800; }
 
   @media (max-width: 760px) {
     .hero-story { grid-template-columns: 1fr; }
@@ -512,12 +519,12 @@
   <section>
     <h2 style="font-size:1.16rem">④ 身体里的大数字</h2>
     <div class="fact-strip">
-      <div class="fstat"><b>206</b><span>成人骨头数。<b>新生儿约 270 块</b>，长大过程中一部分融合在了一起。</span></div>
-      <div class="fstat"><b>600+</b><span>骨骼肌数量。光是说一句话，就要用上上百块肌肉配合。</span></div>
-      <div class="fstat"><b>10 万公里</b><span>全身血管接起来的长度，能绕地球赤道<b>两圈半</b>。</span></div>
-      <div class="fstat"><b>2 万次</b><span>一天呼吸的次数，平均每分钟约 14 次，你几乎从不需要去想它。</span></div>
-      <div class="fstat"><b>2% / 20%</b><span>大脑只占体重 2%，却要消耗全身约 20% 的氧气。</span></div>
-      <div class="fstat"><b>120 天</b><span>一颗红细胞的寿命，之后就会被替换掉。你身体一直在重建自己。</span></div>
+      <div class="fstat"><span class="fstat-icon" data-icon="ui/bone" aria-hidden="true"></span><b>206</b><span>成人骨头数。<b>新生儿约 270 块</b>，长大过程中一部分融合在了一起。</span></div>
+      <div class="fstat"><span class="fstat-icon" data-icon="ui/runner" aria-hidden="true"></span><b>600+</b><span>骨骼肌数量。光是说一句话，就要用上上百块肌肉配合。</span></div>
+      <div class="fstat"><span class="fstat-icon" data-icon="ui/globe" aria-hidden="true"></span><b>10 万公里</b><span>全身血管接起来的长度，能绕地球赤道<b>两圈半</b>。</span></div>
+      <div class="fstat"><span class="fstat-icon" data-icon="ui/lungs" aria-hidden="true"></span><b>2 万次</b><span>一天呼吸的次数，平均每分钟约 14 次，你几乎从不需要去想它。</span></div>
+      <div class="fstat"><span class="fstat-icon" data-icon="ui/brain" aria-hidden="true"></span><b>2% / 20%</b><span>大脑只占体重 2%，却要消耗全身约 20% 的氧气。</span></div>
+      <div class="fstat"><span class="fstat-icon" data-icon="ui/blood-cell" aria-hidden="true"></span><b>120 天</b><span>一颗红细胞的寿命，之后就会被替换掉。你身体一直在重建自己。</span></div>
     </div>
   </section>
 
@@ -972,6 +979,13 @@
     if (html) legendBox.innerHTML = html;
   }
   paintLegend("all");
+  /* 「身体里的大数字」每格前面那枚小图标，全部取自共享插图库；库没加载就只剩数字，页面照读。 */
+  if (art) {
+    document.querySelectorAll("[data-icon]").forEach(function (slot) {
+      var name = slot.getAttribute("data-icon");
+      if (art.hasArt(name)) art.renderArt(slot, name, { decorative: true });
+    });
+  }
   document.querySelectorAll("[data-body-system]").forEach(function (button) {
     button.addEventListener("click", function () {
       var sys = button.getAttribute("data-body-system");

@@ -2161,6 +2161,32 @@ window.ILLUSTRATIONS = (function () {
     '<path d="M24 3 C26 16 32 22 45 24 C32 26 26 32 24 45 C22 32 16 26 3 24 C16 22 22 16 24 3Z" fill="#f6c445"/>' +
     '<path d="M39 6 C40 11 41 12 46 13 C41 14 40 15 39 20 C38 15 37 14 32 13 C37 12 38 11 39 6Z" fill="#fbe08a"/>');
 
+  /* 人体页的三个器官小图标。和页面里的大解剖图共用配色：
+     脑紫、肺蓝、血红，同一个器官在两处不会变色。 */
+
+  defIcon("brain", "大脑", "一个侧面看的大脑，表面有一道道沟回，下面连着脑干。",
+    '<path d="M17 8 C11 8 7 12 7 17 C4 19 3 23 5 26 C3 29 5 34 9 35 C11 39 16 41 20 39 L28 39 C33 41 38 38 39 34 C43 32 44 27 41 24 C43 20 41 15 36 14 C34 9 29 6 24 8 C22 7 19 7 17 8Z" fill="#a888dd"/>' +
+    '<g stroke="#6d4ba3" stroke-width="1.8" stroke-linecap="round" fill="none" opacity=".8">' +
+    '<path d="M24 9 C24 16 24 30 24 39"/><path d="M13 13 C17 16 16 21 12 23"/>' +
+    '<path d="M35 15 C31 18 32 23 36 25"/><path d="M11 29 C15 30 18 33 18 37"/>' +
+    '<path d="M37 30 C33 31 30 33 30 37"/></g>' +
+    '<path d="M21 39 L21 45 L27 45 L27 39Z" fill="#8f6bcb"/>');
+
+  defIcon("lungs", "肺", "一对粉蓝色的肺，中间是气管和支气管。",
+    '<path d="M22 6 L26 6 L26 20 L22 20Z" fill="#8ba7bd"/>' +
+    '<path d="M24 19 L14 24 M24 19 L34 24" stroke="#8ba7bd" stroke-width="3" stroke-linecap="round"/>' +
+    '<path d="M15 21 C9 24 6 32 7 39 C7.6 43 11 45 15 44 C19 43 21 39 21 34 L21 24 C21 21 18 20 15 21Z" fill="#9ed3ea"/>' +
+    '<path d="M33 21 C39 24 42 32 41 39 C40.4 43 37 45 33 44 C29 43 27 39 27 34 L27 24 C27 21 30 20 33 21Z" fill="#9ed3ea"/>' +
+    '<g stroke="#4f8fae" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".75">' +
+    '<path d="M16 27 C13 30 12 35 13 40"/><path d="M32 27 C35 30 36 35 35 40"/></g>');
+
+  defIcon("blood-cell", "红细胞", "三个中间凹陷的红色圆盘状红细胞。",
+    '<g fill="#d2453c"><ellipse cx="18" cy="20" rx="13" ry="11"/><ellipse cx="33" cy="33" rx="10.5" ry="9"/></g>' +
+    '<g fill="#a92e28"><ellipse cx="18" cy="20" rx="5.5" ry="4.4"/><ellipse cx="33" cy="33" rx="4.4" ry="3.6"/></g>' +
+    '<ellipse cx="12" cy="37" rx="7.5" ry="6.4" fill="#e5675e"/>' +
+    '<ellipse cx="12" cy="37" rx="3.1" ry="2.5" fill="#bd3a33"/>' +
+    '<path d="M9 14 C11 11 15 9 19 9" stroke="#f3a09a" stroke-width="2.6" stroke-linecap="round" fill="none"/>');
+
   /* 下面五枚是海洋深度标尺上的地标图标。都朝下潜的方向画（头朝下、船头朝下），
      竖着排在标尺上时视线才是一路往下走的。 */
 
