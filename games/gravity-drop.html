@@ -176,13 +176,13 @@
     <div class="canvas-shell">
       <span class="canvas-label">当前轨迹</span>
       <canvas id="scene" role="img" tabindex="0"
-        aria-label="下落实验画面：羽毛、皮球、锤子从同一高度落下，黄色虚线标出没有空气阻力时应到的位置，箭头标出速度与空气阻力。聚焦画面后按空格键可开始或暂停。"></canvas>
+        aria-label="下落实验画面：羽毛、皮球、锤子从同一高度落下，黄色虚线标出没有空气阻力时应到的位置，每个物体旁一支向下的重力箭头和一支向上的空气阻力箭头，两支一样长时物体不再加速。聚焦画面后按空格键可开始或暂停。"></canvas>
       <p id="live" class="sr-only" aria-live="polite"></p>
     </div>
     <ul class="scene-legend" aria-label="画面标注说明">
       <li><i class="lg-dash"></i>黄虚线：没有空气时该到的位置</li>
-      <li><i class="lg-down"></i>向下箭头：现在的速度</li>
-      <li><i class="lg-up"></i>向上箭头：空气拖住的力</li>
+      <li><i class="lg-down"></i>向下箭头：重力（一直这么大）</li>
+      <li><i class="lg-up"></i>向上箭头：空气拖住的力，两支一样长就不再加速</li>
     </ul>
 
     <div class="stage-results" aria-labelledby="gravityCompareTitle">
@@ -586,7 +586,6 @@
     var lanes = [0, 1, 2].map(function (i) { return rulerX + usable * (0.22 + 0.29 * i); });
     // 窄画面放不下受力箭头和文字标注，只留虚线参考，避免糊成一团
     var wide = usable >= 380;
-    var vRef = Math.sqrt(2 * S.g * S.height) || 1;
     var arrowMax = Math.min(46, (y1 - y0) * 0.16);
 
     // 天空渐变（真空更暗）
@@ -728,15 +727,28 @@
 
       drawShape(d.kind, bx, yb, d.r, d.paint || d.color, 1);
 
-      // 速度箭头（向下）与空气阻力箭头（向上）。
-      // 阻力按「占自身重力的几分之几」画，两支一样长就说明达到了终端速度。
+      /* 受力：向下的重力和向上的空气阻力，从同一点出发、按同一把尺子量，
+         所以两支一样长就是真的一样大——羽毛正好在这一刻不再加速。
+         这里原先向下画的是速度、向上画的是力：两种量、两套标度摆在一起比长短，
+         比出来的结论没有意义。速度改由轨迹点的疏密和右侧面板的读数交代。
+         每支箭头都按「这个物体自己的重力」归一，所以别拿羽毛那一列和锤子那一列
+         比长短；写在阻力旁边的百分比才是可比的那个数。 */
       if (wide && !o.landed && S.t > 0.0001) {
-        var vLen = Math.min(Math.min(1, o.v / vRef) * arrowMax, y1 - yc - 3);
-        drawVArrow(bx + d.r + 13, yc, vLen, 1, d.color, 0.95);
+        var ax = bx + d.r + 14;
+        var wLen = Math.min(arrowMax, y1 - yc - 3);
+        drawVArrow(ax, yc, wLen, 1, C.mid, 0.72);
         var frac = dragForce(d, o.v) / (d.m * S.g);
         if (frac > 0.03) {
           var dLen = Math.min(Math.min(1, frac) * arrowMax, yc - 4);
-          drawVArrow(bx - d.r - 13, yc, dLen, -1, C.warn, 0.95);
+          drawVArrow(ax, yc, dLen, -1, C.warn, 0.95);
+          var balanced = frac > 0.94;
+          ctx.save();
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.font = '700 10px ' + MONO;
+          ctx.fillStyle = balanced ? C.sci : C.warn;
+          ctx.fillText(balanced ? '空气=重力' : Math.round(frac * 100) + '%', ax + 6, yc - dLen / 2);
+          ctx.restore();
         }
       }
 
