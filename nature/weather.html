@@ -200,7 +200,7 @@
       <div class="controls">
         <label for="dropSize">雨滴直径：<b id="dropSizeText">2.0 mm</b></label><input id="dropSize" type="range" min="1" max="60" value="20" aria-describedby="rainHint">
         <span id="rainHint" class="privacy">滑块数值 1–60 对应 0.1–6.0 毫米。</span>
-        <div class="gauge-row"><span>0</span><div class="gauge" aria-hidden="true"><i id="speedGauge"></i></div><span>9 m/s</span></div>
+        <div class="gauge-row"><span>0</span><div class="gauge" aria-hidden="true"><i id="speedGauge"></i></div><span>10 m/s</span></div>
         <button class="btn btn-primary" type="button" id="testDrop">观察下落</button>
       </div>
       <output class="output" id="rainOutput" aria-live="polite">选择雨滴大小，查看形状和大约终端速度。</output>
@@ -273,7 +273,7 @@
     </div>
     <h3>给家长的三个问题</h3>
     <ol class="parent-q"><li>为什么浴室镜子起雾和云形成有相似之处？</li><li>同样 6 秒雷声间隔，在寒冷空气中计算结果会不会完全一样？</li><li>如果气压下降但还没下雨，怎样避免把“可能”说成“一定”？</li></ol>
-    <p class="privacy">内置近似采用常见基础气象值：声速 343 m/s（约 20°C）、雨滴终端速度按直径分段估算、相对湿度由气温与露点差作教学近似。专业观测应使用校准仪器和当地气象机构数据。本页不请求远程数据，<code>file://</code> 下四个模块完整可用。</p>
+    <p class="privacy">内置近似采用常见基础气象值：声速 343 m/s（约 20°C）、雨滴终端速度按 Atlas 等（1973）经验式估算、相对湿度由气温与露点差作教学近似。专业观测应使用校准仪器和当地气象机构数据。本页不请求远程数据，<code>file://</code> 下四个模块完整可用。</p>
   </section>
 </main>
 <footer class="foot wrap-narrow" style="text-align:center;padding:30px 0 46px">基础概念可参考 <a href="https://cloudatlas.wmo.int/" target="_blank" rel="noopener">WMO 国际云图集</a>；链接仅供进一步阅读，不影响离线内容。</footer>
@@ -387,7 +387,9 @@
   });
 
   var drop=document.getElementById("dropSize");setText(drop,document.getElementById("dropSizeText")," mm",10);
-  function dropSpeed(mm){ return mm<.5?Math.max(.2,mm*2):mm<2?2+mm*2:mm<5?5+mm*.8:9; }
+  /* 终端速度用 Atlas 等（1973）的经验式 9.65 − 10.3·e^(−0.6·D)：曲线是连续的。
+     旧的三段折线在 0.5 mm 处从 1.0 直接跳到 3.0 m/s——滑块挪一格，速度表跳三倍。 */
+  function dropSpeed(mm){ return Math.max(.1,9.65-10.3*Math.exp(-.6*mm)); }
 
   /* 六个直径并排一次画完，之后只换高亮的那一格。
      格子宽度不是真实比例——真按比例 0.5 mm 那颗只有几个像素，形状根本看不出来，
@@ -424,7 +426,7 @@
     icon.textContent="";
     if(art) icon.insertAdjacentHTML("beforeend",dropSvg(mm));
     document.getElementById("dropNowLabel").textContent=mm.toFixed(1)+" mm";
-    document.getElementById("speedGauge").style.width=Math.min(100,dropSpeed(mm)/9*100)+"%";
+    document.getElementById("speedGauge").style.width=Math.min(100,dropSpeed(mm)/10*100)+"%";
     highlightDropStep(mm);
   }
   buildDropStrip();
