@@ -160,6 +160,17 @@
     .tabs { display:grid; grid-template-columns:1fr; }
     .guessbar > * { width:100%; }
     .verdict .row .btn { flex:1 1 100%; }
+
+    /* 开局遮罩之所以压薄成一层纱，是为了透出后面那盘示例糖豆和当前策略的算式。
+       窄屏上这张卡有 207px 高、盖住画布的 58%，示例一颗豆也看不见，
+       连底下「这一盘是 48 颗」那行字都被卡片下沿从中间切开。
+       这一档干脆让它落到画布下面：要藏糖豆的是猜数阶段那层遮罩，不是它。 */
+    .veil.veil-intro {
+      position: static;
+      inset: auto;
+      padding: 10px 0 0;
+      background: none;
+    }
   }
 </style>
 </head>
@@ -649,15 +660,50 @@
     return { x: t.ix + col * cw, y: t.iy + row * ch, w: cw, h: ch };
   }
 
+  /* 托盘底下那行字是这一轮的算式，写死 13px 从左边起画：手机上托盘只有 269px 宽，
+     「38 + 41 + 35 + 35 = 149 颗（四块加起来就是全部）」的右半截被画布边缘切掉，
+     等于把「四块加起来就是全部」这句结论裁没了。先收字号，仍装不下就折行。 */
+  function fitFont(text, maxWidth, maxSize, minSize) {
+    for (var size = maxSize; size > minSize; size--) {
+      ctx.font = "700 " + size + "px sans-serif";
+      if (ctx.measureText(text).width <= maxWidth) return size;
+    }
+    ctx.font = "700 " + minSize + "px sans-serif";
+    return minSize;
+  }
+
+  /* 中文可以逐字断行，只有连着的数字不能拆开（149 断成 14 / 9 就读错了）。 */
+  function wrapText(text, maxWidth) {
+    var lines = [], line = "";
+    for (var i = 0; i < text.length; i++) {
+      var ch = text.charAt(i);
+      var next = line + ch;
+      var splitsNumber = /\d/.test(ch) && /\d$/.test(line);
+      if (line && !splitsNumber && ctx.measureText(next).width > maxWidth) {
+        lines.push(line);
+        line = ch;
+      } else line = next;
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+
   function stageNote(t, text, done) {
     ctx.save();
-    ctx.font = "700 13px sans-serif";
     ctx.textAlign = "left"; ctx.textBaseline = "middle";
-    var by = t.y + t.h - 17;
+    var size = fitFont(text, t.iw - 8, 13, 10);
+    var lines = wrapText(text, t.iw - 8);
+    var lineH = size + 8;
+    var widest = 0;
+    lines.forEach(function (s) { widest = Math.max(widest, ctx.measureText(s).width); });
+    var boxH = lines.length * lineH + 4;
+    var boxTop = t.y + t.h - 6 - boxH;
     ctx.fillStyle = "rgba(11,15,26,.72)";
-    ctx.fillRect(t.ix - 6, by - 11, ctx.measureText(text).width + 16, 22);
+    ctx.fillRect(t.ix - 6, boxTop, widest + 16, boxH);
     ctx.fillStyle = done ? "rgba(238,242,255,.96)" : "rgba(251,191,36,.95)";
-    ctx.fillText(text, t.ix + 2, by);
+    lines.forEach(function (s, i) {
+      ctx.fillText(s, t.ix + 2, boxTop + 2 + lineH * i + lineH / 2);
+    });
     ctx.restore();
   }
 
@@ -773,12 +819,12 @@
     ctx.textBaseline = "alphabetic";
     if (strategy === "whole") {
       ctx.fillStyle = "rgba(238,242,255,.92)";
-      ctx.font = "700 14px sans-serif";
       /* 另外两种策略的示例都写出了完整算式，整体估算这一条原先只说「大约 50」，
          没交代 50 是怎么来的。把示例盘的真数 48 也写出来，孩子才看得到
          「48 说成 50 就够了」这一步——那正是整体估算要练的取整。 */
-      ctx.fillText("整体扫一眼：这一盘是 " + (INTRO_COLS * INTRO_ROWS) + " 颗，说“大约 50”就够用了",
-        left, top + h + 24);
+      var wholeNote = "整体扫一眼：这一盘是 " + (INTRO_COLS * INTRO_ROWS) + " 颗，说“大约 50”就够用了";
+      fitFont(wholeNote, t.iw - 4, 14, 10);
+      ctx.fillText(wholeNote, left, top + h + 24);
     } else {
       var bw = boxCols * cw, bh = boxRows * ch;
       ctx.fillStyle = "rgba(251,191,36,.12)";
@@ -788,8 +834,13 @@
       ctx.setLineDash([7, 5]);
       ctx.strokeRect(left, top, bw, bh);
       ctx.setLineDash([]);
+      /* 样方的框只有两格宽，这行标签必然探出框外压在糖豆上；垫一层深色底才读得出。 */
+      var boxNote = "先数这一块：" + inBox + " 颗";
+      var noteSize = fitFont(boxNote, Math.max(bw - 8, 96), 13, 10);
+      ctx.fillStyle = "rgba(11,15,26,.78)";
+      ctx.fillRect(left + 1, top + bh - 9 - noteSize, ctx.measureText(boxNote).width + 9, noteSize + 10);
       ctx.fillStyle = "rgba(251,191,36,.95)";
-      ctx.fillText("先数这一块：" + inBox + " 颗", left + 4, top + bh - 8);
+      ctx.fillText(boxNote, left + 5, top + bh - 8);
       // 分块的网格线：让「整盘等于几块」看得见
       ctx.strokeStyle = "rgba(125,136,171,.5)";
       ctx.lineWidth = 1;
@@ -802,8 +853,9 @@
       }
       ctx.stroke();
       ctx.fillStyle = "rgba(238,242,255,.92)";
-      ctx.font = "700 14px sans-serif";
-      ctx.fillText(inBox + " × " + copies + " = " + (inBox * copies) + " 颗", left, top + h + 24);
+      var sumNote = inBox + " × " + copies + " = " + (inBox * copies) + " 颗";
+      fitFont(sumNote, t.iw - 4, 14, 10);
+      ctx.fillText(sumNote, left, top + h + 24);
     }
     ctx.restore();
   }
@@ -898,7 +950,8 @@
     showVeil(false);
     timerWrap.hidden = true;
     veilTitle.textContent = "藏起来了！";
-    veilText.textContent = "刚才大概有多少个？在右边填个数，不用精确。";
+    /* 「在右边」只在家长模式的宽屏成立：孩子模式和窄屏里输入框都在画面下方。 */
+    veilText.textContent = "刚才大概有多少个？填一个数，不用精确。";
     flashBtn.hidden = true;
     guessInput.disabled = false;
     submitBtn.disabled = false;
@@ -1057,7 +1110,7 @@
     flashBtn.hidden = false;
     flashBtn.textContent = "开始第 " + (round + 1) + " 轮";
     veilTitle.textContent = "第 " + (round + 1) + " 轮";
-    veilText.textContent = "还是扫一眼就好。照着后面那盘示例，先框一块再乘。";
+    veilText.textContent = "还是扫一眼就好。照着示例盘，先框一块再乘。";
     draw(false);
     flashBtn.focus();
   });
