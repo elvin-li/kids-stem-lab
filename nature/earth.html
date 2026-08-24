@@ -981,7 +981,6 @@
       .then(function (r) { clearTimeout(t); if (!r.ok) throw new Error("http"); return r.json(); })
       .then(function (d) {
         var fs = (d && d.features) || [];
-        if (!fs.length) return;
         var out = fs.map(function (f) {
           var p = f.properties || {}, g = (f.geometry && f.geometry.coordinates) || [];
           return {
@@ -992,7 +991,15 @@
             note: ""
           };
         }).filter(function (q) { return !isNaN(q.m); });
-        if (out.length) paintQuakes(out, true);
+        if (out.length) {
+          paintQuakes(out, true);
+        } else {
+          /* 请求成功但一条可用记录都没有（结果为空或震级字段缺失）时，
+             原来直接 return，说明行停在「离线模式」——明明联网正常却谎报断网，
+             还许诺「联网后会换成真实记录」。海洋页上一轮刚修过同类空成功，
+             这里也如实说明：网络没问题，只是这段时间查不到符合条件的记录。 */
+          qsrc.textContent = "已连上 USGS，但近 30 天暂无可显示的 M4.5 以上记录 · 以上为内置的历史著名地震。";
+        }
       })
       .catch(function () { clearTimeout(t); /* 保留内置数据 */ });
   })();
