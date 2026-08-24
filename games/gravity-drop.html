@@ -279,6 +279,7 @@
 
         <section class="panel" data-audience="parent">
           <h3>详细速度与时间读数</h3>
+          <p class="obj-sub" style="margin:0 0 8px">三根速度条共用一把尺子：满格＝当前高度和重力下的真空落地速度 √(2gh)。</p>
           <div class="obj-row" data-row="0">
             <div class="obj-top"><i class="sw" style="background:var(--sci)"></i><span>羽毛</span><span class="num" data-v>0.00 m/s</span></div>
             <div class="vbar"><i data-bar style="background:var(--sci)"></i></div>
@@ -297,6 +298,7 @@
             <div class="readout" style="margin-top:10px"><span>已经过了</span><b id="clock">0.00 s</b></div>
             <div class="readout"><span>最先与最后相差</span><b id="gap">—</b></div>
             <div class="readout"><span>理论自由落体 √(2h/g)</span><b id="tIdeal">—</b></div>
+            <div class="readout"><span>速度条满格 √(2gh)</span><b id="vFull">—</b></div>
             <div class="readout"><span>羽毛的终端速度</span><b id="vTerm">—</b></div>
         </section>
       </div>
@@ -837,6 +839,7 @@
   var clockEl = document.getElementById('clock');
   var gapEl = document.getElementById('gap');
   var tIdealEl = document.getElementById('tIdeal');
+  var vFullEl = document.getElementById('vFull');
   var vTermEl = document.getElementById('vTerm');
   var airResultEl = document.getElementById('airResult');
   var vacuumResultEl = document.getElementById('vacuumResult');
@@ -901,9 +904,16 @@
   }
 
   function refreshPanel() {
-    var vmax = 1;
-    S.bodies.forEach(function (o) { if (o.v > vmax) vmax = o.v; });
-    var ref = Math.max(10, Math.sqrt(2 * S.g * S.height));
+    /* 速度条的满格原先写死成「至少 10 m/s」。可这一页整个设定就是低重力——
+       提示里直接写着月球 1.62——而月球从 8 米落下来只有 5.09 m/s，
+       三根条最多涨到一半；g 拉到 0.5、高度 2 米时只剩 14%，
+       正好在最该比长短的那一档，条子全挤在左边。
+
+       真空落地速度 √(2gh) 是任何一个物体在当前条件下能达到的上限（空气只会更慢），
+       所以拿它当满格：条子涨满就是「按理想自由落体撞到地面」，
+       真空里三根同时涨满，有空气时羽毛几乎不动——这才是要看的对比。 */
+    var ref = Math.max(0.5, Math.sqrt(2 * S.g * S.height));
+    vFullEl.textContent = ref.toFixed(2) + ' m/s';
     S.bodies.forEach(function (o, i) {
       rows[i].v.textContent = o.v.toFixed(2) + ' m/s';
       rows[i].bar.style.width = Math.min(100, o.v / ref * 100).toFixed(1) + '%';
