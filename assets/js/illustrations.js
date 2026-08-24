@@ -668,6 +668,7 @@ window.ILLUSTRATIONS = (function () {
     ctx.restore();
   }
 
+  /** 把 #rrggbb 往白（amt>0）或往黑（amt<0）推一档，返回 rgb() 字符串。 */
   function shadeHex(hex, amt) {
     var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex).trim());
     if (!m) return hex;
@@ -676,6 +677,15 @@ window.ILLUSTRATIONS = (function () {
       return Math.max(0, Math.min(255, Math.round(amt < 0 ? v * (1 + amt) : v + (255 - v) * amt)));
     }
     return "rgb(" + f(m[1]) + "," + f(m[2]) + "," + f(m[3]) + ")";
+  }
+
+  /** 给主题色配一个半透明版本。写死 rgba(...) 的淡色在浅色主题下会糊掉，
+      从 CSS 变量取到的色再配 alpha，深浅两套主题的对比度才跟着走。 */
+  function fadeHex(hex, alpha) {
+    var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex).trim());
+    if (!m) return hex;
+    return "rgba(" + parseInt(m[1], 16) + "," + parseInt(m[2], 16) + "," +
+      parseInt(m[3], 16) + "," + Math.max(0, Math.min(1, alpha)) + ")";
   }
 
   /** Canvas：3D 数感积木 */
@@ -2957,6 +2967,7 @@ window.ILLUSTRATIONS = (function () {
     tileIcon: tileIcon,
     dietColor: dietColor,
     shadeHex: shadeHex,
+    fadeHex: fadeHex,
     hasArt: has,
     art: markup,
     renderArt: render,

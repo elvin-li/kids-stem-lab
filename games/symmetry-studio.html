@@ -29,13 +29,18 @@
     border-radius: var(--r-lg); box-shadow: var(--shadow);
   }
   #pad { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+  /* 提示压在正中间会盖住示范笔画：收成一颗小胶囊，留在中心那块空地上。 */
   .canvas-hint {
-    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
-    text-align: center; pointer-events: none; color: var(--ink-dim);
-    font-size: .95rem; line-height: 1.7; transition: opacity .35s var(--ease);
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 4;
+    display: flex; align-items: center; gap: 7px; white-space: nowrap;
+    padding: 7px 14px; border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    border: 1px solid var(--line); box-shadow: var(--shadow-sm, 0 2px 8px rgba(11,15,26,.12));
+    pointer-events: none; color: var(--ink-mid);
+    font-size: .9rem; font-weight: 700; line-height: 1.3; transition: opacity .35s var(--ease);
   }
   .canvas-hint.gone { opacity: 0; }
-  .canvas-hint .big { font-size: 2rem; display: block; margin-bottom: 6px; }
+  .canvas-hint .big { font-size: 1.15rem; }
 
   .panel { display: flex; flex-direction: column; gap: 16px; }
   .ctl { display: flex; flex-direction: column; gap: 7px; }
@@ -96,13 +101,16 @@
   @media (max-width:620px) { .playful-quest-head { grid-template-columns:1fr; } }
   /* 镜面舞台：中线、左右映射热区和选择都贴着画板出现。 */
   .mirror-board { position:relative; min-width:0; }
-  .mirror-map { position:absolute; inset:0; pointer-events:none; z-index:2; display:grid; grid-template-columns:1fr 1fr; }
-  .mirror-hot { display:flex; align-items:flex-start; justify-content:center; padding-top:12px; color:var(--ink-dim); font-size:.78rem; font-weight:850; letter-spacing:.06em; background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--math) 5%,transparent)); transition:background .16s var(--ease),color .16s var(--ease); }
-  .mirror-hot + .mirror-hot { background:linear-gradient(-90deg,transparent,color-mix(in srgb,var(--sci) 5%,transparent)); }
-  .mirror-hot.is-source { color:var(--math); background:color-mix(in srgb,var(--math) 13%,transparent); }
-  .mirror-hot.is-copy { color:var(--sci); background:color-mix(in srgb,var(--sci) 13%,transparent); }
-  .mirror-axis { position:absolute; z-index:3; inset:0 auto 0 50%; width:4px; translate:-2px 0; pointer-events:none; background:repeating-linear-gradient(to bottom,var(--warn) 0 13px,transparent 13px 21px); filter:drop-shadow(0 0 3px color-mix(in srgb,var(--warn) 60%,transparent)); }
-  .mirror-axis::before { content:"镜像线"; position:absolute; top:10px; left:8px; white-space:nowrap; padding:3px 8px; border-radius:999px; background:var(--surface); border:1px solid var(--line); color:var(--warn); font-size:.72rem; font-weight:850; }
+  /* 镜面本身由 canvas 画：折数一变镜面就有 n 条，DOM 里那条竖线只画得出 1 条，
+     6 折时会跟画面上的 12 格对不上，所以只留下左右热区做拖动反馈。 */
+  .mirror-map { position:absolute; inset:0; pointer-events:none; z-index:2; display:grid; grid-template-columns:1fr 1fr; transition:opacity .18s var(--ease); }
+  .mirror-map[data-off="1"] { opacity:0; }
+  /* 底色只铺画板最上面一条：整块半透明色板会把 canvas 上分格的蓝绿配色盖成左右两半，
+     16 格的对称盘看上去就只剩 2 格。 */
+  .mirror-hot { display:flex; align-items:flex-start; justify-content:center; padding-top:10px; }
+  .mirror-hot::before { content:attr(data-label); padding:4px 11px; border-radius:999px; background:color-mix(in srgb,var(--surface) 88%,transparent); border:1px solid var(--line-soft); color:var(--ink-dim); font-size:.76rem; font-weight:850; letter-spacing:.05em; transition:color .16s var(--ease),border-color .16s var(--ease); }
+  .mirror-hot.is-source::before { color:var(--math); border-color:color-mix(in srgb,var(--math) 55%,transparent); }
+  .mirror-hot.is-copy::before { color:var(--sci); border-color:color-mix(in srgb,var(--sci) 55%,transparent); }
   .stage-kid-actions { margin-bottom:10px; }
   .stage-kid-actions .kid-choice { flex:1 1 260px; }
   .stage-kid-actions .kid-choice button { flex:1 1 112px; }
@@ -114,7 +122,6 @@
   @media (max-width:620px) {
     .stage-kid-actions { align-items:stretch; }
     .mirror-predict { flex-basis:100%; }
-    .mirror-axis::before { left:6px; font-size:.68rem; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
@@ -187,7 +194,7 @@
       <div class="stage-kid-actions kid-action-strip" data-audience="kid-only">
         <span>先选一种魔法，再在画板拖一笔</span>
         <div class="kid-choice" data-kid-choice-group role="group" aria-label="选择对称方式">
-          <button id="kidMirrorMode" type="button" data-kid-choice data-value="镜像" aria-pressed="true">沿镜像线翻过去</button>
+          <button id="kidMirrorMode" type="button" data-kid-choice data-value="镜像" aria-pressed="false">沿镜像线翻过去</button>
           <button id="kidRotateMode" type="button" data-kid-choice data-value="旋转" aria-pressed="false">绕中心转过去</button>
         </div>
       </div>
@@ -196,13 +203,12 @@
           <canvas id="pad" width="760" height="760" role="application" tabindex="0"
                   aria-label="对称画板：中间是镜像线；拖动绘画；键盘方向键移动画笔，空格或回车画一小笔"></canvas>
           <div class="mirror-map" id="mirrorMap" aria-hidden="true">
-            <div class="mirror-hot" id="mirrorLeft">左侧热区</div>
-            <div class="mirror-hot" id="mirrorRight">右侧热区</div>
+            <div class="mirror-hot" id="mirrorLeft" data-label="左半边"></div>
+            <div class="mirror-hot" id="mirrorRight" data-label="右半边"></div>
           </div>
-          <span class="mirror-axis" id="mirrorAxis" aria-hidden="true"></span>
           <div class="canvas-hint" id="hint">
-            <span class="big">✎</span>
-            任选一边拖一笔，看另一边马上出现
+            <span class="big" aria-hidden="true">✎</span>
+            <span>拖一笔试试</span>
           </div>
           <p class="sr-only" id="canvasLive" aria-live="polite"></p>
         </div>
@@ -316,6 +322,7 @@
 
 </main>
 
+<script src="../assets/js/illustrations.js?v=15"></script>
 <script>
 (function () {
   "use strict";
@@ -323,24 +330,32 @@
   var canvas = document.getElementById("pad");
   var ctx = canvas.getContext("2d");
   var hint = document.getElementById("hint");
+  var fade = ILLUSTRATIONS.fadeHex;
 
-  /* 画笔颜色读共享主题变量：浅色主题自动换成深一档的墨色，避免白纸白笔。 */
-  var CSSV = getComputedStyle(document.documentElement);
-  function V(name, fallback) {
-    var v = CSSV.getPropertyValue(name);
-    return (v && v.trim()) || fallback;
-  }
-  var COLORS = [
-    V('--math', '#1b64c8'), V('--sci', '#0b7a45'), V('--phys', '#6d31d4'),
-    V('--code', '#b8500f'), V('--kit', '#c01764'), V('--video', '#0a6f85'),
-    V('--warn', '#96650d'), V('--canvas-ink', '#16202e')
-  ];
+  /* 配色晚一步读：内联脚本跑的时候 playful.js 还没写上 data-mode="kid"，
+     直接快照会把深色主题的值定死，浅色主题下淡蓝画在白纸上就看不见了。 */
+  var P = ILLUSTRATIONS.themePalette({
+    bg:   ['--canvas-bg', '#ffffff'],
+    ink:  ['--canvas-ink', '#16202e'],
+    dim:  ['--ink-dim', '#5f6d85'],
+    line: ['--line', '#c8d3e4'],
+    surf: ['--surface', '#ffffff'],
+    math: ['--math', '#1b64c8'],
+    sci:  ['--sci', '#0b7a45'],
+    phys: ['--phys', '#6d31d4'],
+    code: ['--code', '#b8500f'],
+    kit:  ['--kit', '#c01764'],
+    video:['--video', '#0a6f85'],
+    warn: ['--warn', '#96650d']
+  }, function () { syncSwatches(); invalidate(); redraw(); });
+  var FONT = (getComputedStyle(document.documentElement).getPropertyValue('--font') || '').trim() || 'sans-serif';
+  var SWATCH_KEYS = ['math', 'sci', 'phys', 'code', 'kit', 'video', 'warn', 'ink'];
 
   var state = {
     fold: 6,
     mirror: true,
     size: 4,
-    color: COLORS[0],
+    colorKey: 'math',
     guide: true,
     strokes: [],   // committed strokes: {color, size, fold, mirror, pts:[{x,y}]}
     redo: [],
@@ -359,12 +374,42 @@
     var box = canvas.parentNode.getBoundingClientRect();
     var side = Math.max(240, Math.round(box.width));
     var dpr = window.devicePixelRatio || 1;
+    var px = Math.round(side * dpr);
     canvas.style.height = side + "px";
-    canvas.width  = Math.round(side * dpr);
-    canvas.height = Math.round(side * dpr);
+    // 重新赋 width/height 会重建位图并清掉状态，尺寸没变时就别碰
+    if (canvas.width !== px || canvas.height !== px || layer.width !== px) {
+      canvas.width = px;
+      canvas.height = px;
+      layer.width = px;
+      layer.height = px;
+      invalidate();
+    }
     // map logical CSS space -> device pixels
-    ctx.setTransform(canvas.width / CSS, 0, 0, canvas.height / CSS, 0, 0);
+    ctx.setTransform(px / CSS, 0, 0, px / CSS, 0, 0);
+    lctx.setTransform(px / CSS, 0, 0, px / CSS, 0, 0);
     redraw();
+  }
+
+  /* 已落笔的线画在离屏层上缓存起来。拖动时每帧只重画「底图 + 缓存层 + 当前这一笔」，
+     不必把历史笔画 ×2n 份重描一遍——16 折镜像下那是每帧几百条路径。 */
+  var layer = document.createElement("canvas");
+  var lctx = layer.getContext("2d");
+  var layerDirty = true;
+  var layerCount = 0;
+  function invalidate() { layerDirty = true; layerCount = 0; }
+  function syncLayer() {
+    var i;
+    if (layerDirty) {
+      lctx.save();
+      lctx.setTransform(1, 0, 0, 1, 0, 0);
+      lctx.clearRect(0, 0, layer.width, layer.height);
+      lctx.restore();
+      layerCount = 0;
+      layerDirty = false;
+    }
+    // 常见情况是「又多了一笔」，只把新增的补画上去
+    for (i = layerCount; i < state.strokes.length; i++) paintStroke(lctx, state.strokes[i]);
+    layerCount = state.strokes.length;
   }
 
   /* ---------- coordinate conversion ---------- */
@@ -376,172 +421,317 @@
   }
 
   /* ---------- rendering ---------- */
+  var R = CSS * 0.455;        // 对称盘半径
+  var BASE = -Math.PI / 2;    // 第 0 格从正上方开始
+
+  /* 一笔会变成几笔 = 对称群的阶。只旋转是 C_n（n 份），加上翻面是 D_n（2n 份）。 */
+  function slots() { return state.fold * (state.mirror ? 2 : 1); }
+
+  function fmtDeg(deg) { return String(Math.round(deg * 10) / 10); }
+
   function clearSurface() {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    var bg = V("--canvas-bg", "#ffffff");
-    ctx.fillStyle = bg;
+    ctx.fillStyle = P.bg;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
-    ctx.save();
     var c = CSS / 2;
+    ctx.save();
     var rg = ctx.createRadialGradient(c, c, 8, c, c, CSS * 0.72);
-    rg.addColorStop(0, "rgba(110,168,254,.06)");
-    rg.addColorStop(1, "rgba(110,168,254,0)");
+    rg.addColorStop(0, fade(P.math, 0.05));
+    rg.addColorStop(1, fade(P.math, 0));
     ctx.fillStyle = rg;
     ctx.fillRect(0, 0, CSS, CSS);
     ctx.restore();
   }
 
-  function drawGuides() {
-    if (!state.guide) return;
-    var c = CSS / 2, n = state.fold;
+  /* 一颗带底色的胶囊标签：底下压着虚线和笔画，没有底色就读不出来。 */
+  function pill(text, x, y, color, size) {
+    var fs = size || 15;
     ctx.save();
-    if (n >= 2) {
-      for (var s = 0; s < n; s++) {
-        var a0 = (Math.PI * 2 / n) * s - Math.PI / 2;
-        var a1 = a0 + Math.PI * 2 / n;
-        ctx.beginPath();
-        ctx.moveTo(c, c);
-        ctx.arc(c, c, CSS * 0.48, a0, a1);
-        ctx.closePath();
-        ctx.fillStyle = s % 2 ? "rgba(167,139,250,.06)" : "rgba(110,168,254,.06)";
-        ctx.fill();
-      }
-    }
-    ctx.strokeStyle = "rgba(125,136,171,.38)";
-    ctx.lineWidth = 1;
-    ctx.setLineDash([5, 7]);
-    for (var i = 0; i < n; i++) {
-      var a = (Math.PI * 2 / n) * i - Math.PI / 2;
-      ctx.beginPath();
-      ctx.moveTo(c, c);
-      ctx.lineTo(c + Math.cos(a) * CSS, c + Math.sin(a) * CSS);
-      ctx.stroke();
-    }
-    ctx.setLineDash([]);
-    ctx.fillStyle = "rgba(125,136,171,.55)";
-    ctx.beginPath(); ctx.arc(c, c, 3.5, 0, Math.PI * 2); ctx.fill();
-    ctx.font = "700 11px sans-serif";
-    ctx.fillStyle = "rgba(125,136,171,.75)";
+    ctx.font = "800 " + fs + "px " + FONT;
+    var w = ctx.measureText(text).width + 22, h = fs + 15;
+    x = Math.max(w / 2 + 6, Math.min(CSS - w / 2 - 6, x));
+    y = Math.max(h / 2 + 6, Math.min(CSS - h / 2 - 6, y));
+    ILLUSTRATIONS.roundRect(ctx, x - w / 2, y - h / 2, w, h, h / 2);
+    ctx.fillStyle = fade(P.surf, 0.94);
+    ctx.fill();
+    ctx.strokeStyle = fade(color, 0.55);
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.fillStyle = color;
     ctx.textAlign = "center";
-    /* 正下方永远压着一条辅助线（镜像轴或朝下的那根分隔线），居中放就会被划掉。 */
-    ctx.fillText(n + " 份对称", c + CSS * 0.22, c + CSS * 0.42);
-    if (state.mirror) {
-      ctx.strokeStyle = "rgba(251,191,36,.55)";
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(c, 0);
-      ctx.lineTo(c, CSS);
-      ctx.stroke();
-      ctx.setLineDash([]);
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  /* 同一颗胶囊里分段换色，让「蓝格 / 绿格 / 橙线」和画面上的颜色对得上。 */
+  function segPill(segs, y) {
+    var c = CSS / 2, i, w = 0, h = 30;
+    ctx.save();
+    ctx.font = "800 14px " + FONT;
+    for (i = 0; i < segs.length; i++) w += ctx.measureText(segs[i][0]).width;
+    w += 32;
+    var x = Math.max(6, c - w / 2);
+    ILLUSTRATIONS.roundRect(ctx, x, y - h / 2, w, h, h / 2);
+    ctx.fillStyle = fade(P.surf, 0.94);
+    ctx.fill();
+    ctx.strokeStyle = fade(P.line, 1);
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    var cx = x + 16;
+    for (i = 0; i < segs.length; i++) {
+      ctx.fillStyle = segs[i][1];
+      ctx.fillText(segs[i][0], cx, y);
+      cx += ctx.measureText(segs[i][0]).width;
     }
     ctx.restore();
+  }
+
+  /* 只旋转时中心是旋转中心而不是镜面交点，画一枚转箭头把区别说清楚。 */
+  function rotationMark(r) {
+    var a1 = Math.PI * 0.62;
+    ctx.save();
+    ctx.strokeStyle = fade(P.phys, 0.55);
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, -Math.PI * 0.75, a1);
+    ctx.stroke();
+    ctx.translate(Math.cos(a1) * r, Math.sin(a1) * r);
+    ctx.rotate(a1 + Math.PI / 2);
+    ctx.beginPath();
+    ctx.moveTo(0, 0); ctx.lineTo(-5.5, -9); ctx.lineTo(5.5, -9);
+    ctx.closePath();
+    ctx.fillStyle = fade(P.phys, 0.7);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawGuides() {
+    var c = CSS / 2, m = slots(), step = Math.PI * 2 / m, i, a;
+    ctx.save();
+    ctx.translate(c, c);
+    if (state.guide) {
+      for (i = 0; i < m; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, R, BASE + step * i, BASE + step * (i + 1));
+        ctx.closePath();
+        /* 开着镜像时相邻两格互为翻面，一蓝一绿就把「转过去」和「翻过来」分开了；
+           只旋转时每一格都是同一种变换，改用深浅交替，纯粹为了数得清有几格。 */
+        ctx.fillStyle = state.mirror
+          ? fade(i % 2 ? P.sci : P.math, 0.085)
+          : fade(P.math, i % 2 ? 0.11 : 0.04);
+        ctx.fill();
+      }
+      /* n 折镜像的对称轴有 n 条、射线 2n 条，条条都是真镜面。原来只画正中间那一条，
+         6 折时画面上明明出现 12 笔，辅助线却只分出 6 格，数都数不上。 */
+      ctx.setLineDash([6, 7]);
+      ctx.lineWidth = state.mirror ? 1.6 : 1.2;
+      ctx.strokeStyle = state.mirror ? fade(P.warn, 0.85) : fade(P.dim, 0.42);
+      for (i = 0; i < m; i++) {
+        a = BASE + step * i;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(a) * R, Math.sin(a) * R);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.arc(0, 0, R, 0, Math.PI * 2);
+      ctx.strokeStyle = fade(P.line, 0.75);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      // 半径要绕开正中那颗提示胶囊，不然转箭头只露出小半圈
+      if (!state.mirror) rotationMark(R * 0.26);
+    }
+    ctx.fillStyle = fade(P.dim, 0.75);
+    ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawLabels() {
+    var c = CSS / 2, m = slots();
+    pill("一笔 → " + m + " 笔", c, c + CSS * 0.372, P.math, 17);
+    if (!state.guide) return;
+    segPill(state.mirror
+      ? [["蓝格原样", P.math], [" · ", P.dim], ["绿格翻面", P.sci],
+         [" · 橙虚线是镜面，共 " + state.fold + " 条", P.warn]]
+      : [["绕中心每转 " + fmtDeg(360 / state.fold) + "° 就重合", P.phys],
+         [" · 不翻面", P.dim]], c + CSS * 0.437);
   }
 
   // Draw one stroke replicated across all symmetry slots.
-  function paintStroke(s) {
-    if (s.pts.length < 1) return;
-    var c = CSS / 2;
-    ctx.save();
-    ctx.translate(c, c);
-    ctx.strokeStyle = s.color;
-    ctx.lineWidth = s.size;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-
-    for (var i = 0; i < s.fold; i++) {
-      var ang = (Math.PI * 2 / s.fold) * i;
+  function paintStroke(g, s) {
+    if (!s.pts.length) return;
+    var c = CSS / 2, i, ang;
+    g.save();
+    g.translate(c, c);
+    g.strokeStyle = s.color || P[s.colorKey] || P.ink;
+    g.lineWidth = s.size;
+    g.lineCap = "round";
+    g.lineJoin = "round";
+    for (i = 0; i < s.fold; i++) {
+      ang = (Math.PI * 2 / s.fold) * i;
       // pass 1: rotation only
-      ctx.save();
-      ctx.rotate(ang);
-      trace(s.pts, false);
-      ctx.restore();
+      g.save();
+      g.rotate(ang);
+      trace(g, s.pts);
+      g.restore();
       // pass 2: rotation + reflection (only when mirroring)
       if (s.mirror) {
-        ctx.save();
-        ctx.rotate(ang);
-        ctx.scale(-1, 1);
-        trace(s.pts, false);
-        ctx.restore();
+        g.save();
+        g.rotate(ang);
+        g.scale(-1, 1);
+        trace(g, s.pts);
+        g.restore();
       }
     }
-    ctx.restore();
+    g.restore();
   }
 
-  function trace(pts) {
-    var c = CSS / 2;
-    ctx.beginPath();
+  function trace(g, pts) {
+    var c = CSS / 2, i;
+    g.beginPath();
     if (pts.length === 1) {
       // a tap -> dot
-      ctx.arc(pts[0].x - c, pts[0].y - c, ctx.lineWidth / 2, 0, Math.PI * 2);
-      ctx.fillStyle = ctx.strokeStyle;
-      ctx.fill();
+      g.arc(pts[0].x - c, pts[0].y - c, g.lineWidth / 2, 0, Math.PI * 2);
+      g.fillStyle = g.strokeStyle;
+      g.fill();
       return;
     }
-    ctx.moveTo(pts[0].x - c, pts[0].y - c);
-    for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x - c, pts[i].y - c);
-    ctx.stroke();
+    g.moveTo(pts[0].x - c, pts[0].y - c);
+    for (i = 1; i < pts.length; i++) g.lineTo(pts[i].x - c, pts[i].y - c);
+    g.stroke();
   }
 
-  /* 空画板只有一条镜像线，孩子看不出「画一笔会变成几笔」。这里先放一道淡示范：
-     走的是画真实笔画的同一条 paintStroke，所以示范里出现几条线，真画下去就是几条。 */
-  function drawDemo() {
-    var c = CSS / 2, r = CSS * 0.3, pts = [], i;
-    for (i = 0; i <= 14; i++) {
-      var t = i / 14;
-      pts.push({ x: c - r * (1.05 - t * 0.62), y: c - r * (0.2 + Math.sin(t * Math.PI) * 0.72) });
-    }
-    paintStroke({ color: "rgba(110,168,254,.34)", size: 7, fold: state.fold, mirror: state.mirror, pts: pts });
+  function arrowHead(x, y, dir, color) {
     ctx.save();
-    ctx.font = "700 11px sans-serif";
-    ctx.fillStyle = "rgba(125,136,171,.8)";
-    ctx.textAlign = "center";
-    ctx.fillText("示范：拖一笔", c - r * 0.75, c - r * 0.05);
+    ctx.translate(x, y);
+    ctx.rotate(dir + Math.PI / 2);
+    ctx.beginPath();
+    ctx.moveTo(0, 0); ctx.lineTo(-6, -10); ctx.lineTo(6, -10);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
     ctx.restore();
+  }
+
+  /* 「你画这里，那边自己长出来」。两种对称的搬运方式不一样，箭头也画成两种：
+     旋转是绕中心的弧；镜像是垂直穿过那条镜面的直线——画成弧就把翻面说成了转圈。 */
+  function copyArrow(rad) {
+    var c = CSS / 2, m = slots(), step = Math.PI * 2 / m, mid = BASE + step / 2;
+    var col = state.mirror ? P.sci : P.phys;
+    ctx.save();
+    ctx.translate(c, c);
+    ctx.strokeStyle = fade(col, 0.75);
+    ctx.lineWidth = 2.4;
+    ctx.setLineDash([7, 5]);
+    if (state.mirror) {
+      // 镜面在两格交界的那条射线上；起讫点关于它对称，连线自然与镜面垂直
+      var axis = BASE + step, off = Math.min(step * 0.3, Math.PI / 4.5);
+      var x0 = Math.cos(axis - off) * rad, y0 = Math.sin(axis - off) * rad;
+      var x1 = Math.cos(axis + off) * rad, y1 = Math.sin(axis + off) * rad;
+      ctx.beginPath();
+      ctx.moveTo(x0, y0); ctx.lineTo(x1, y1);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      arrowHead(x1, y1, Math.atan2(y1 - y0, x1 - x0), fade(col, 0.85));
+    } else {
+      ctx.beginPath();
+      ctx.arc(0, 0, rad, mid, mid + step);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      arrowHead(Math.cos(mid + step) * rad, Math.sin(mid + step) * rad, mid + step + Math.PI / 2, fade(col, 0.85));
+    }
+    ctx.restore();
+  }
+
+  /* 空画板只有辅助线，孩子看不出「画一笔会变成几笔」。这里先放一道示范，
+     而且只画在第 0 格里：原笔画实，复制品画淡，一眼分得出谁是自己画的。
+     示范走的是真实笔画那条 paintStroke，所以示范几条线，真下笔就是几条。 */
+  function drawDemo() {
+    var c = CSS / 2, m = slots(), step = Math.PI * 2 / m;
+    var mid = BASE + step / 2, pts = [], i, t, rr, ang;
+    for (i = 0; i <= 18; i++) {
+      t = i / 18;
+      rr = R * (0.34 + 0.58 * t);
+      // 摆幅压在半格以内，示范笔就不会越出自己那一格
+      ang = mid + step * 0.34 * Math.sin(Math.PI * t);
+      pts.push({ x: c + Math.cos(ang) * rr, y: c + Math.sin(ang) * rr });
+    }
+    ctx.save();
+    ctx.translate(c, c);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, R, BASE, BASE + step);
+    ctx.closePath();
+    ctx.fillStyle = fade(P.math, 0.16);
+    ctx.fill();
+    ctx.restore();
+    paintStroke(ctx, { color: fade(P.math, 0.24), size: 8, fold: state.fold, mirror: state.mirror, pts: pts });
+    ctx.save();
+    ctx.translate(c, c);
+    ctx.strokeStyle = fade(P.math, 0.92);
+    ctx.lineWidth = 9;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    trace(ctx, pts);
+    ctx.restore();
+    if (m <= 12) copyArrow(R * (state.mirror ? 0.68 : 0.74));
+    var tip = pts[pts.length - 1];
+    pill("你只画这一笔", tip.x + Math.cos(mid) * 26, tip.y + Math.sin(mid) * 26, P.math, 14);
   }
 
   function redraw() {
     clearSurface();
     drawGuides();
-    for (var i = 0; i < state.strokes.length; i++) paintStroke(state.strokes[i]);
-    if (state.current) paintStroke(state.current);
+    syncLayer();
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(layer, 0, 0);
+    ctx.restore();
+    if (state.current) paintStroke(ctx, state.current);
     if (!state.strokes.length && !state.current) drawDemo();
+    drawLabels();
   }
 
   /* ---------- input ---------- */
   var mirrorLeft = document.getElementById("mirrorLeft");
   var mirrorRight = document.getElementById("mirrorRight");
-  var mirrorAxis = document.getElementById("mirrorAxis");
+  var mirrorMap = document.getElementById("mirrorMap");
   var mirrorStageResult = document.getElementById("mirrorStageResult");
   var mirrorStageSub = document.getElementById("mirrorStageSub");
 
   function updateMirrorMap(point) {
+    var m = slots();
     mirrorLeft.className = "mirror-hot";
     mirrorRight.className = "mirror-hot";
+    /* 只旋转时没有镜面，「左边映到右边」就是句假话，热区整块收起来。 */
+    mirrorMap.setAttribute("data-off", state.mirror ? "0" : "1");
     if (!state.mirror) {
-      mirrorLeft.textContent = "绕中心";
-      mirrorRight.textContent = "旋转映射";
-      mirrorAxis.style.opacity = ".24";
-      mirrorStageResult.textContent = "现在不翻面：每一笔会绕中心旋转 " + state.fold + " 份。";
-      mirrorStageSub.textContent = "画一笔，再找它绕中心转过去的同伴。";
+      mirrorStageResult.textContent = "不翻面：一笔绕中心转 " + state.fold + " 次，变成 " + m + " 笔。";
+      mirrorStageSub.textContent = "每转 " + fmtDeg(360 / state.fold) + "° 就和原来重合；紫色转箭头指着旋转中心。";
       return;
     }
-    mirrorLeft.textContent = "左侧热区";
-    mirrorRight.textContent = "右侧热区";
-    mirrorAxis.style.opacity = "1";
     if (!point) {
-      mirrorStageResult.textContent = "镜像线把左边和右边一一对应。";
-      mirrorStageSub.textContent = "任选一边拖一笔，另一边会同时出现翻面图形。";
+      mirrorLeft.setAttribute("data-label", "左半边");
+      mirrorRight.setAttribute("data-label", "右半边");
+      mirrorStageResult.textContent = state.fold + " 条镜面把圆分成 " + m + " 格，一笔变 " + m + " 笔。";
+      mirrorStageSub.textContent = "橙色虚线就是镜面；蓝格是原样，绿格是翻过来的。";
       return;
     }
     var source = point.x < CSS / 2 ? mirrorLeft : mirrorRight;
     var copy = source === mirrorLeft ? mirrorRight : mirrorLeft;
     source.classList.add("is-source");
     copy.classList.add("is-copy");
+    source.setAttribute("data-label", "你画在这边");
+    copy.setAttribute("data-label", "这边自动出现");
     mirrorStageResult.textContent = source === mirrorLeft ? "左边是原笔，右边是镜像。" : "右边是原笔，左边是镜像。";
-    mirrorStageSub.textContent = "两点离镜像线一样远，方向左右相反。";
+    mirrorStageSub.textContent = "两点离竖直镜面一样远，方向左右相反；一共映出 " + m + " 笔。";
   }
 
   function begin(ev) {
@@ -549,7 +739,7 @@
     state.drawing = true;
     var p = toLogical(ev);
     state.current = {
-      color: state.color, size: state.size,
+      colorKey: state.colorKey, size: state.size,
       fold: state.fold, mirror: state.mirror, pts: [p]
     };
     hint.classList.add("gone");
@@ -600,7 +790,7 @@
     else if (ev.key === "ArrowDown") state.keyboardPoint.y = Math.min(CSS - 20, state.keyboardPoint.y + step);
     else if (ev.key === " " || ev.key === "Enter") {
       var p = state.keyboardPoint;
-      var stroke = { color:state.color, size:state.size, fold:state.fold, mirror:state.mirror,
+      var stroke = { colorKey:state.colorKey, size:state.size, fold:state.fold, mirror:state.mirror,
         pts:[{x:p.x - 10,y:p.y},{x:p.x,y:p.y - (state.challenge === "rotate" ? 8 : 0)},{x:p.x + 10,y:p.y}] };
       state.strokes.push(stroke); state.redo.length = 0; hint.classList.add("gone");
       updateMirrorMap(p);
@@ -612,16 +802,18 @@
 
   /* ---------- readout ---------- */
   function report() {
-    var copies = state.fold * (state.mirror ? 2 : 1);
+    var copies = slots();
+    /* 说清是哪种对称群：只旋转是 C_n，镜像 + 旋转是 D_n，阶正好是画面上的格数。 */
     var kind = state.mirror
-      ? "反射 + 旋转对称（像雪花）"
-      : "只有旋转对称（像风车）";
+      ? "反射 + 旋转（二面体群 D" + state.fold + "，像雪花）"
+      : "只有旋转（循环群 C" + state.fold + "，像风车）";
     var strokes = state.strokes.length + (state.current ? 1 : 0);
     var latest = state.current || state.strokes[state.strokes.length - 1];
     updateMirrorMap(latest && latest.pts.length ? latest.pts[0] : null);
     document.getElementById("readout").innerHTML =
       "你画的每一笔会变成 <span class='n'>" + copies + "</span> 笔。<br>" +
-      "现在是 <b>" + kind + "</b>。<br>" +
+      "现在是 <b>" + kind + "</b>：绕中心每转 <span class='n'>" + fmtDeg(360 / state.fold) + "°</span> 重合" +
+      (state.mirror ? "，另有 <span class='n'>" + state.fold + "</span> 条镜面。" : "，没有镜面。") + "<br>" +
       "已经画了 <span class='n'>" + strokes + "</span> 笔，" +
       "屏幕上一共 <span class='n'>" + (strokes * copies) + "</span> 条线。";
   }
@@ -646,8 +838,10 @@
     state.mirror = on;
     mOn.setAttribute("aria-pressed", on ? "true" : "false");
     mOff.setAttribute("aria-pressed", on ? "false" : "true");
-    kidMirrorMode.setAttribute("aria-pressed", on ? "true" : "false");
-    kidRotateMode.setAttribute("aria-pressed", on ? "false" : "true");
+    /* 孩子模式那两颗按钮各自锁定一套折数：只按 mirror 判断的话，
+       开局 6 折镜像也会点亮「沿镜像线翻过去」，可画面上明明还在转。 */
+    kidMirrorMode.setAttribute("aria-pressed", on && state.fold === 1 ? "true" : "false");
+    kidRotateMode.setAttribute("aria-pressed", !on && state.fold === 4 ? "true" : "false");
     redraw(); report();
   }
   mOn.addEventListener("click", function () { setMirror(true); });
@@ -669,24 +863,31 @@
     redraw();
   });
 
+  var SWATCH_NAMES = { math: "蓝", sci: "绿", phys: "紫", code: "橙", kit: "洋红", video: "青", warn: "琥珀", ink: "墨黑" };
   var sw = document.getElementById("swatches");
-  COLORS.forEach(function (col, i) {
+  SWATCH_KEYS.forEach(function (key) {
     var b = document.createElement("button");
     b.className = "sw";
-    b.style.background = col;
-    b.setAttribute("aria-pressed", i === 0 ? "true" : "false");
-    b.setAttribute("aria-label", "颜色 " + (i + 1));
+    b.setAttribute("data-key", key);
+    b.setAttribute("aria-pressed", key === state.colorKey ? "true" : "false");
+    b.setAttribute("aria-label", SWATCH_NAMES[key] + "色画笔");
     b.addEventListener("click", function () {
-      state.color = col;
+      state.colorKey = key;
       [].forEach.call(sw.children, function (n) { n.setAttribute("aria-pressed", "false"); });
       b.setAttribute("aria-pressed", "true");
     });
     sw.appendChild(b);
   });
+  // 主题切换后色板要跟着换，否则按钮上还留着上一套主题的颜色
+  function syncSwatches() {
+    [].forEach.call(sw.children, function (n) { n.style.background = P[n.getAttribute("data-key")]; });
+  }
+  syncSwatches();
 
   document.getElementById("undoBtn").addEventListener("click", function () {
     var stroke = state.strokes.pop();
     if (stroke) state.redo.push(stroke);
+    invalidate();
     redraw(); report();
     document.getElementById("canvasLive").textContent = stroke ? "已撤销一笔" : "没有可撤销的笔画";
   });
@@ -699,6 +900,7 @@
   document.getElementById("clearBtn").addEventListener("click", function () {
     state.strokes = []; state.redo = []; state.current = null;
     hint.classList.remove("gone");
+    invalidate();
     redraw(); report();
     document.getElementById("canvasLive").textContent = "画板已清空";
   });
