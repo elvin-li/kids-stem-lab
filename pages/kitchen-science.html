@@ -986,13 +986,16 @@
   document.getElementById("huntMaterial").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();document.getElementById("huntButton").click();}});
   document.getElementById("materialFilter").addEventListener("input", function (e) { state.material=e.target.value.trim().toLowerCase(); render(); });
 
+  /* 「仅收藏」「孩子可主做」「需成人协助」这三枚芯片所在的组没有「不限」按钮，
+     按下去就再也取消不了。再点一次已按下的芯片，退回该组的「全部」。 */
   chips.forEach(function (c) {
     c.addEventListener("click", function () {
       var k = c.dataset.k;
-      state[k] = c.dataset.v;
+      var next = (c.getAttribute("aria-pressed") === "true" && c.dataset.v !== "all") ? "all" : c.dataset.v;
+      state[k] = next;
       chips.forEach(function (o) {
         if (o.dataset.k === k) {
-          o.setAttribute("aria-pressed", o === c ? "true" : "false");
+          o.setAttribute("aria-pressed", o.dataset.v === next ? "true" : "false");
         }
       });
       render();
