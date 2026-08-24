@@ -460,6 +460,15 @@
     ctx.restore();
   }
 
+  /* 画布是固定的 760 逻辑单位，再整块缩到 CSS 宽度上。手机上这块只有 337px，
+     缩放比 0.44：图例写死的 14 逻辑像素落到屏幕上只剩 6.2px，一行小蚂蚁。
+     字号反着跟缩放比走，保证真实高度不低于 minReal；宽屏 (≥768) 缩放比接近 1，
+     算出来还是原值，桌面版式一点不动。 */
+  function fs(px, minReal) {
+    var scale = (fittedSide || CSS) / CSS;
+    return Math.max(px * scale, minReal) / scale;
+  }
+
   /* 一颗带底色的胶囊标签：底下压着虚线和笔画，没有底色就读不出来。 */
   function pill(text, x, y, color, size) {
     var fs = size || 15;
@@ -472,12 +481,12 @@
   }
 
   /* 同一颗胶囊里分段换色，让「蓝格 / 绿格 / 橙线」和画面上的颜色对得上。 */
-  function segPill(segs, y) {
-    var c = CSS / 2, i, w = 0, h = 30;
+  function segPill(segs, y, size, h) {
+    var c = CSS / 2, i, w = 0;
     ctx.save();
-    ctx.font = "800 14px " + FONT;
+    ctx.font = "800 " + size + "px " + FONT;
     for (i = 0; i < segs.length; i++) w += ctx.measureText(segs[i][0]).width;
-    w += 32;
+    w += size * 2.3;
     var x = Math.max(6, c - w / 2);
     ILLUSTRATIONS.roundRect(ctx, x, y - h / 2, w, h, h / 2);
     ctx.fillStyle = fade(P.surf, 0.94);
@@ -487,7 +496,7 @@
     ctx.stroke();
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
-    var cx = x + 16;
+    var cx = x + size * 1.15;
     for (i = 0; i < segs.length; i++) {
       ctx.fillStyle = segs[i][1];
       ctx.fillText(segs[i][0], cx, y);
@@ -560,13 +569,21 @@
 
   function drawLabels() {
     var c = CSS / 2, m = slots();
-    pill("一笔 → " + m + " 笔", c, c + CSS * 0.372, P.math, 17);
+    var big = fs(17, 14.5), small = fs(14, 12.5);
+    /* 手机上放大后的两颗胶囊会撞在一起，也会掉出画布下沿：图例贴着底边排，
+       计数胶囊再往上让开一整颗的高度，两者的间距就跟着字号一起长。 */
+    var legendH = Math.round(small * 2.15), bigH = Math.round(big * 2.15);
+    var legendY = CSS - legendH / 2 - small * 0.32;
+    var mainY = state.guide ? legendY - legendH / 2 - bigH / 2 - small * 0.4 : c + CSS * 0.372;
+    pill("一笔 → " + m + " 笔", c, mainY, P.math, big);
     if (!state.guide) return;
+    /* 窄画布上这行是唯一一处能横着写满的地方，长句会顶到左右两边，只留下最要紧的三段。 */
+    var narrow = (fittedSide || CSS) < 520;
     segPill(state.mirror
       ? [["蓝格原样", P.math], [" · ", P.dim], ["绿格翻面", P.sci],
-         [" · 橙虚线是镜面，共 " + state.fold + " 条", P.warn]]
-      : [["绕中心每转 " + fmtDeg(360 / state.fold) + "° 就重合", P.phys],
-         [" · 不翻面", P.dim]], c + CSS * 0.437);
+         [narrow ? " · " + state.fold + " 条镜面" : " · 橙虚线是 " + state.fold + " 条镜面，每条穿过中心", P.warn]]
+      : [[(narrow ? "每转 " : "绕中心每转 ") + fmtDeg(360 / state.fold) + "° 就重合", P.phys],
+         [" · 不翻面", P.dim]], legendY, small, legendH);
   }
 
   // Draw one stroke replicated across all symmetry slots.
@@ -688,7 +705,7 @@
     ctx.restore();
     if (m <= 12) copyArrow(R * (state.mirror ? 0.68 : 0.74));
     var tip = pts[pts.length - 1];
-    pill("你只画这一笔", tip.x + Math.cos(mid) * 26, tip.y + Math.sin(mid) * 26, P.math, 14);
+    pill("你只画这一笔", tip.x + Math.cos(mid) * 26, tip.y + Math.sin(mid) * 26, P.math, fs(14, 12.5));
   }
 
   function redraw() {
