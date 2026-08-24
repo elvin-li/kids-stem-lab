@@ -1929,19 +1929,23 @@ window.ILLUSTRATIONS = (function () {
       '<circle cx="' + (rx + r * 0.35) + '" cy="' + (y - r * 0.35) + '" r="' + (r * 0.32) + '" fill="#ffffff"/>';
   }
 
+  /* 果果（记录伙伴）和这里的向导是同一只狐狸，脸只画一次，
+     两处共用同一段路径，免得同一个角色在站内长出两张脸。 */
+  var FOX_FACE =
+    '<path d="M13 24 L11 5 L27 14Z" fill="#d9752c"/><path d="M51 24 L53 5 L37 14Z" fill="#d9752c"/>' +
+    '<path d="M16.5 21.5 L15.5 11 L24 16Z" fill="#f7cba6"/><path d="M47.5 21.5 L48.5 11 L40 16Z" fill="#f7cba6"/>' +
+    '<path d="M32 11 C46 11 55 21 55 32 C55 45 45 55 32 55 C19 55 9 45 9 32 C9 21 18 11 32 11Z" fill="#ef8b3c"/>' +
+    '<path d="M32 29 C41 29 47 35 47 42 C47 50 40 56 32 56 C24 56 17 50 17 42 C17 35 23 29 32 29Z" fill="#fdf4e8"/>' +
+    eyes(24, 40, 31, 3.4) +
+    '<path d="M32 37 C35 37 37 39 37 41 C37 43.5 34.5 45 32 45 C29.5 45 27 43.5 27 41 C27 39 29 37 32 37Z" fill="#3a2415"/>' +
+    '<path d="M32 45 L32 48 M32 48 C29 48 27 46.5 26 45 M32 48 C35 48 37 46.5 38 45" stroke="#3a2415" stroke-width="1.8" stroke-linecap="round" fill="none"/>' +
+    '<g stroke="#c9773a" stroke-width="1.4" stroke-linecap="round" opacity=".8">' +
+    '<path d="M18 40 L10 38"/><path d="M18 44 L10 45"/><path d="M46 40 L54 38"/><path d="M46 44 L54 45"/></g>';
+
   defGuide("fox", {
     title: "小狐探探",
     desc: "一只橙色小狐狸探出头，白色的脸颊和黑亮的眼睛正看着你。",
-    art:
-      '<path d="M13 24 L11 5 L27 14Z" fill="#d9752c"/><path d="M51 24 L53 5 L37 14Z" fill="#d9752c"/>' +
-      '<path d="M16.5 21.5 L15.5 11 L24 16Z" fill="#f7cba6"/><path d="M47.5 21.5 L48.5 11 L40 16Z" fill="#f7cba6"/>' +
-      '<path d="M32 11 C46 11 55 21 55 32 C55 45 45 55 32 55 C19 55 9 45 9 32 C9 21 18 11 32 11Z" fill="#ef8b3c"/>' +
-      '<path d="M32 29 C41 29 47 35 47 42 C47 50 40 56 32 56 C24 56 17 50 17 42 C17 35 23 29 32 29Z" fill="#fdf4e8"/>' +
-      eyes(24, 40, 31, 3.4) +
-      '<path d="M32 37 C35 37 37 39 37 41 C37 43.5 34.5 45 32 45 C29.5 45 27 43.5 27 41 C27 39 29 37 32 37Z" fill="#3a2415"/>' +
-      '<path d="M32 45 L32 48 M32 48 C29 48 27 46.5 26 45 M32 48 C35 48 37 46.5 38 45" stroke="#3a2415" stroke-width="1.8" stroke-linecap="round" fill="none"/>' +
-      '<g stroke="#c9773a" stroke-width="1.4" stroke-linecap="round" opacity=".8">' +
-      '<path d="M18 40 L10 38"/><path d="M18 44 L10 45"/><path d="M46 40 L54 38"/><path d="M46 44 L54 45"/></g>'
+    art: FOX_FACE
   });
 
   defGuide("cloud-detective", {
@@ -2214,6 +2218,19 @@ window.ILLUSTRATIONS = (function () {
     '<path d="M9 20 L2 16 L2 32 L9 28Z" fill="#c9d3de" stroke="#5a6b84" stroke-width="1.8" stroke-linejoin="round"/>' +
     '<path d="M14 37 L12 44 M32 36 L34 44" stroke="#5a6b84" stroke-width="2.6" stroke-linecap="round"/>' +
     '<path d="M41 21 L47 18 L47 30 L41 27Z" fill="#fff3c4" opacity=".85"/>');
+
+  defIcon("palette", "调色盘", "一块画家的调色盘，上面挤了四团颜料，右上角插着一支画笔。",
+    '<path d="M22 5 C34 5 44 13 44 24 C44 31 39 33 34 33 L30 33 C27 33 25 35 25 38 C25 41 23 43 20 43 C11 43 4 35 4 25 C4 13 11 5 22 5Z" fill="#f6efdd" stroke="#a8844c" stroke-width="2.4" stroke-linejoin="round"/>' +
+    '<g><circle cx="14" cy="16" r="3.6" fill="#d1495b"/><circle cx="24" cy="12" r="3.6" fill="#f0a02a"/>' +
+    '<circle cx="34" cy="18" r="3.6" fill="#3f8fd0"/><circle cx="13" cy="29" r="3.6" fill="#57ab63"/></g>' +
+    '<g transform="rotate(28 38 30)"><rect x="35" y="14" width="6" height="16" rx="2.4" fill="#b07a3f"/>' +
+    '<rect x="34" y="29" width="8" height="5" rx="1.6" fill="#9aa5b1"/>' +
+    '<path d="M34.6 34 L41.4 34 L39.6 43 L36.4 43Z" fill="#7c4dbe"/></g>');
+
+  defIcon("lock", "未解锁", "一把合上的挂锁，锁梁扣着锁身，中间有一个钥匙孔。",
+    '<path d="M15 22 L15 16 A9 9 0 0 1 33 16 L33 22" fill="none" stroke="#8a9a92" stroke-width="4.6" stroke-linecap="round"/>' +
+    '<rect x="9" y="21" width="30" height="23" rx="5" fill="#e7ece8" stroke="#8a9a92" stroke-width="2.6"/>' +
+    '<circle cx="24" cy="30" r="3.6" fill="#7b8a82"/><path d="M24 31 L24 38" stroke="#7b8a82" stroke-width="3.4" stroke-linecap="round"/>');
 
   /* ---------------- 探索目录页的故事图 ----------------
      原来这一格是四个绝对定位的 emoji（☀️☁️🦊🍃）摞在一条 SVG 小路上：
@@ -3142,6 +3159,446 @@ window.ILLUSTRATIONS = (function () {
       '<path d="M30 21 L38 33"/><path d="M68 21 L58 33"/>' +
       "</g>" +
       '<g fill="#c2410c"><circle cx="31" cy="41" r="1.9"/><circle cx="27" cy="48" r="1.9"/><circle cx="35" cy="48" r="1.9"/></g>'
+  });
+
+  /* ================= 四位伙伴 =================
+     妙妙 / 波波 / 果果 / 星星 在每一页的「伙伴提示」里露脸，原来是 🐱🐳🦊🐰 四个 emoji：
+     同一个伙伴在安卓、iOS、Windows 上是三张完全不同的脸，缺字时还会退成方框。
+     这里按 data/playful.js 里各自的角色画固定头像，规格与 guide/* 一致（64×64、meet、透明底），
+     由 .playful-character 自己的圆底衬着。 */
+
+  function defFriend(id, spec) {
+    def("friend/" + id, {
+      viewBox: "0 0 64 64", fit: "xMidYMid meet",
+      title: spec.title, desc: spec.desc, bg: "", art: spec.art
+    });
+  }
+
+  defFriend("miao", {
+    title: "妙妙",
+    desc: "一只粉色的小猫歪着头，耳朵尖尖，旁边浮着一个问号，因为它总是先提问。",
+    art:
+      '<path d="M13 30 L10 8 L28 17Z" fill="#f0a3c6"/><path d="M45 29 L52 9 L36 16Z" fill="#f0a3c6"/>' +
+      '<path d="M15.5 26 L14 14 L23.5 18.5Z" fill="#fbd7e6"/><path d="M44 25.5 L48.5 14.5 L39 18Z" fill="#fbd7e6"/>' +
+      '<path d="M30 14 C43 14 52 23 52 34 C52 46 43 55 30 55 C17 55 8 46 8 34 C8 23 17 14 30 14Z" fill="#f7b7d2"/>' +
+      '<path d="M30 32 C39 32 45 38 45 45 C45 51 38 56 30 56 C22 56 15 51 15 45 C15 38 21 32 30 32Z" fill="#fff2f7"/>' +
+      eyes(22, 38, 33, 3.4, "#4a1f36") +
+      '<path d="M30 39 L27 42.5 L33 42.5Z" fill="#c2547f"/>' +
+      '<path d="M30 42.5 L30 45 M30 45 C27.5 45 26 44 25 42.8 M30 45 C32.5 45 34 44 35 42.8" stroke="#c2547f" stroke-width="1.7" stroke-linecap="round" fill="none"/>' +
+      '<g stroke="#e58bb2" stroke-width="1.4" stroke-linecap="round" opacity=".9">' +
+      '<path d="M16 41 L6 39"/><path d="M16 45 L6 47"/><path d="M44 41 L54 39"/><path d="M44 45 L54 47"/></g>' +
+      '<circle cx="53" cy="52" r="9" fill="#fff5fa" stroke="#d76ba0" stroke-width="2"/>' +
+      '<path d="M50 49.5 A3.2 3.2 0 1 1 53 53.5 L53 55" fill="none" stroke="#c2547f" stroke-width="2.2" stroke-linecap="round"/>' +
+      '<circle cx="53" cy="58" r="1.3" fill="#c2547f"/>'
+  });
+
+  /* 侧面的鲸：头钝、身体前粗后细，尾鳍向上翻成两片。
+     画成竖直展开的一把扇子就成了一条鱼，所以波波和深海贴纸共用这一段轮廓。
+     坐标写在 64×64 里，贴纸用 transform 放大后再上色。 */
+  function whaleSide(main, deep, belly, ink) {
+    return '<path d="M20 47 C22 53 26 57 31 58 C28 53 27 49 27 45Z" fill="' + deep + '"/>' +
+      '<path d="M48 34 C54 30 58 22 58 14 C52 18 46 25 44 31Z" fill="' + deep + '"/>' +
+      '<path d="M49 39 C55 39 60 37 63 33 C60 42 54 46 47 46Z" fill="' + deep + '"/>' +
+      '<path d="M8 34 C8 22 20 15 33 16 C43 17 51 23 54 31 C56 36 55 42 51 46 C43 53 26 54 16 47 C11 43 8 39 8 34Z" fill="' + main + '"/>' +
+      '<path d="M12 40 C22 49 42 50 52 43 C46 51 26 53 15 47 C13.5 45 12.5 42.5 12 40Z" fill="' + belly + '"/>' +
+      '<circle cx="20" cy="31" r="3.4" fill="' + ink + '"/><circle cx="21.2" cy="29.8" r="1.1" fill="#ffffff"/>';
+  }
+
+  defFriend("bo", {
+    title: "波波",
+    desc: "一头青蓝色的小鲸鱼侧着身子，头顶喷出一小股水柱，正安静地看着水里的变化。",
+    art:
+      whaleSide("#57c2dc", "#3fa8c4", "#dff4fa", "#123a4a") +
+      '<g stroke="#a7dcec" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".9">' +
+      '<path d="M16 44 L18 49"/><path d="M23 47 L24 52"/><path d="M30 48 L31 53"/></g>' +
+      '<path d="M14 37 C17 39 21 39 24 37" stroke="#1d6a83" stroke-width="1.8" stroke-linecap="round" fill="none"/>' +
+      '<g stroke="#8fd7ea" stroke-width="2.6" stroke-linecap="round" fill="none">' +
+      '<path d="M26 15 C24 10 22 7 20 5"/><path d="M28 14 C29 9 29 6 29 3"/><path d="M31 15 C34 11 36 8 38 6"/></g>'
+  });
+
+  defFriend("guo", {
+    title: "果果",
+    desc: "记录伙伴果果，一只橙色小狐狸叼着一支铅笔，随时把发现写下来。",
+    art:
+      FOX_FACE +
+      '<g transform="rotate(-24 46 52)">' +
+      '<rect x="38" y="49" width="24" height="6" rx="1.4" fill="#f2c14e" stroke="#a9761a" stroke-width="1.4"/>' +
+      '<path d="M38 49 L32 52 L38 55Z" fill="#f6e0b8" stroke="#a9761a" stroke-width="1.4" stroke-linejoin="round"/>' +
+      '<path d="M34.4 50.8 L32 52 L34.4 53.2Z" fill="#3a2415"/>' +
+      '<rect x="58" y="49" width="4" height="6" rx="1.2" fill="#e58bb2"/></g>'
+  });
+
+  defFriend("xing", {
+    title: "星星",
+    desc: "一只紫色的小兔子竖着长耳朵，额头旁边亮着一颗小星星，喜欢把道理讲清楚。",
+    art:
+      '<path d="M20 26 C16 18 15 10 18 5 C23 6 26 13 27 22Z" fill="#b79cf0"/>' +
+      '<path d="M44 26 C48 18 49 10 46 5 C41 6 38 13 37 22Z" fill="#b79cf0"/>' +
+      '<path d="M21 24 C18.5 18 18 12 19.5 9 C22 11 24 16 24.5 22Z" fill="#e6dcfb"/>' +
+      '<path d="M43 24 C45.5 18 46 12 44.5 9 C42 11 40 16 39.5 22Z" fill="#e6dcfb"/>' +
+      '<path d="M32 18 C44 18 53 26 53 36 C53 47 44 55 32 55 C20 55 11 47 11 36 C11 26 20 18 32 18Z" fill="#c4aef5"/>' +
+      '<path d="M32 34 C40 34 46 39 46 45 C46 51 40 56 32 56 C24 56 18 51 18 45 C18 39 24 34 32 34Z" fill="#f7f3ff"/>' +
+      eyes(24, 40, 35, 3.4, "#3b2a63") +
+      '<path d="M32 41 C34.4 41 36 42.4 36 44 C36 46 34 47.2 32 47.2 C30 47.2 28 46 28 44 C28 42.4 29.6 41 32 41Z" fill="#8b5fd6"/>' +
+      '<path d="M32 47.2 L32 50 M32 50 C29.6 50 28 49 27 47.8 M32 50 C34.4 50 36 49 37 47.8" stroke="#8b5fd6" stroke-width="1.7" stroke-linecap="round" fill="none"/>' +
+      '<g fill="#e9a3c4" opacity=".7"><ellipse cx="19" cy="43" rx="4" ry="2.6"/><ellipse cx="45" cy="43" rx="4" ry="2.6"/></g>' +
+      '<path d="M53 8 L55.4 15 L62.5 15 L56.8 19.4 L59 26.4 L53 22 L47 26.4 L49.2 19.4 L43.5 15 L50.6 15Z" fill="#f6c445"/>'
+  });
+
+  /* ================= 收藏卡贴纸 =================
+     卡册里每张卡原来只有一个放大到 6.8rem 的 emoji：字体缺字会变成方框，
+     同一张卡在不同系统上长相不同，放大后边缘也糊。这里给 18 张卡各画一枚贴纸。
+
+     统一规格（新增时照做）：
+     - viewBox 固定 `0 0 120 120`，fit 用 meet（图位是方的，主体不能被裁）；
+     - 外圈波浪边、底色和虚线内环由 defSticker 按主色统一生成，各张只写中间的图案；
+     - 图案画在以 (60,60) 为心、半径 38 的圆里，超出这个范围会压到波浪边上。 */
+
+  function n1(value) { return Math.round(value * 10) / 10; }
+
+  /** 贴纸的模切波浪边：把半径 r 的圆均分成 teeth 段，每段向外鼓出 bump。 */
+  function scallop(cx, cy, r, teeth, bump) {
+    var step = (Math.PI * 2) / teeth;
+    function at(radius, angle) {
+      return n1(cx + radius * Math.cos(angle)) + " " + n1(cy + radius * Math.sin(angle));
+    }
+    var out = "M" + at(r, -Math.PI / 2);
+    for (var i = 0; i < teeth; i++) {
+      var a = -Math.PI / 2 + step * i;
+      out += " Q" + at(r + bump * 1.4, a + step / 2) + " " + at(r, a + step);
+    }
+    return out + "Z";
+  }
+
+  function defSticker(id, spec) {
+    def("sticker/" + id, {
+      viewBox: "0 0 120 120",
+      fit: "xMidYMid meet",
+      title: spec.title + "收藏卡",
+      desc: spec.desc,
+      bg:
+        '<path d="' + scallop(60, 60, 52, 18, 3.4) + '" fill="#fffdf7" stroke="' + spec.accent + '" stroke-width="3"/>' +
+        '<circle cx="60" cy="60" r="45" fill="' + fadeHex(spec.accent, 0.13) + '"/>' +
+        '<circle cx="60" cy="60" r="45" fill="none" stroke="' + fadeHex(spec.accent, 0.5) +
+        '" stroke-width="1.6" stroke-dasharray="3 4"/>',
+      art: spec.art
+    });
+  }
+
+  defSticker("ten-builder", {
+    title: "凑十建筑师", accent: "#d97706",
+    desc: "一个十格阵里砌好了 7 块砖，还空着 3 格；上面写着 7+3=10。",
+    art: (function () {
+      var out = '<text x="60" y="38" text-anchor="middle" font-size="15" font-weight="800" fill="#8a5a10" font-family="monospace">7+3=10</text>' +
+        '<rect x="22" y="44" width="76" height="34" rx="5" fill="#fffdf6" stroke="#b06f13" stroke-width="2.4"/>';
+      for (var i = 0; i < 10; i++) {
+        var x = 25 + (i % 5) * 14.2, y = i < 5 ? 46.5 : 62.1;
+        if (i < 7) {
+          out += '<rect x="' + x + '" y="' + y + '" width="12.4" height="13.4" rx="2.4" fill="#d97706"/>' +
+            '<rect x="' + x + '" y="' + y + '" width="12.4" height="4.6" rx="2.2" fill="#f2ac4b"/>';
+        } else {
+          out += '<rect x="' + (x + 0.8) + '" y="' + (y + 0.8) + '" width="10.8" height="11.8" rx="2" fill="none" stroke="#c98a2c" stroke-width="1.6" stroke-dasharray="3 3"/>';
+        }
+      }
+      /* 十格阵的分组线：上下各五格，这条线才是「一眼看出多少」的依据。 */
+      return out + '<path d="M22 61 L98 61" stroke="#b06f13" stroke-width="1.8"/>';
+    })()
+  });
+
+  defSticker("fraction-chef", {
+    title: "分数主厨", accent: "#dc2626",
+    desc: "一张切成四块的披萨，对角的两块放了香肠，下面写着 2/4 = 1/2。",
+    art:
+      '<circle cx="60" cy="54" r="29" fill="#e0a458"/>' +
+      '<circle cx="60" cy="54" r="25" fill="#f7d489"/>' +
+      '<path d="M60 54 L85 54 A25 25 0 0 0 60 29Z" fill="#e2563f"/>' +
+      '<path d="M60 54 L35 54 A25 25 0 0 0 60 79Z" fill="#e2563f"/>' +
+      '<g fill="#a3241a"><circle cx="72" cy="42" r="3.6"/><circle cx="49" cy="66" r="3.6"/><circle cx="66" cy="36" r="2.6"/><circle cx="54" cy="72" r="2.6"/></g>' +
+      '<g stroke="#b45309" stroke-width="2.2" stroke-linecap="round"><path d="M35 54 L85 54"/><path d="M60 29 L60 79"/></g>' +
+      '<text x="60" y="99" text-anchor="middle" font-size="15" font-weight="800" fill="#a51b42" font-family="monospace">2/4 = 1/2</text>'
+  });
+
+  defSticker("rule-detective", {
+    title: "规律侦探", accent: "#7c3aed",
+    desc: "三根一次比一次高的柱子排成一列，第四根还是虚线，放大镜正对着它上面的问号。",
+    art:
+      '<path d="M22 82 L98 82" stroke="#4c1d95" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<g fill="#a78bfa">' +
+      '<rect x="26" y="68" width="13" height="14" rx="2.5"/>' +
+      '<rect x="44" y="58" width="13" height="24" rx="2.5" fill="#8b5cf6"/>' +
+      '<rect x="62" y="48" width="13" height="34" rx="2.5" fill="#7c3aed"/></g>' +
+      '<rect x="80" y="38" width="13" height="44" rx="2.5" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4 3"/>' +
+      '<circle cx="79" cy="44" r="14" fill="#ffffff" fill-opacity=".72" stroke="#4c1d95" stroke-width="3"/>' +
+      '<path d="M89 54 L97 62" stroke="#4c1d95" stroke-width="4" stroke-linecap="round"/>' +
+      '<text x="79" y="51" text-anchor="middle" font-size="19" font-weight="800" fill="#4c1d95">?</text>'
+  });
+
+  defSticker("symmetry-artist", {
+    title: "对称艺术家", accent: "#2563eb",
+    desc: "一片六角雪花，中间一条虚线是它的对称轴，两边完全一样。",
+    art: (function () {
+      var out = '<path d="M60 18 L60 102" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="5 4"/>';
+      for (var k = 0; k < 6; k++) {
+        out += '<g transform="rotate(' + (k * 60) + ' 60 60)">' +
+          '<path d="M60 60 L60 26" stroke="#2563eb" stroke-width="3.4" stroke-linecap="round"/>' +
+          '<path d="M60 36 L52 29 M60 36 L68 29" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round" fill="none"/>' +
+          '<path d="M60 47 L54 42 M60 47 L66 42" stroke="#60a5fa" stroke-width="2.4" stroke-linecap="round" fill="none"/>' +
+          "</g>";
+      }
+      return out + '<circle cx="60" cy="60" r="5.5" fill="#1d4ed8"/>';
+    })()
+  });
+
+  defSticker("estimate-eye", {
+    title: "估算慧眼", accent: "#db2777",
+    desc: "一罐糖豆，虚线框先圈出一小堆 5 颗，再照这一堆估出整罐大约 15 颗。",
+    art: (function () {
+      /* 糖豆排成整齐的方阵就成了「数得清」，估算的前提恰恰是数不清：
+         位置和角度都错开，只有被虚线圈住的那一小堆是可数的基准。 */
+      var grouped = [[46, 52, -14], [56, 49, 8], [66, 53, -6], [76, 50, 16], [51, 58, 22]];
+      var loose = [[44, 65, 10], [55, 62, -18], [65, 67, 6], [76, 63, -10],
+        [47, 74, -8], [59, 72, 16], [70, 75, -14], [79, 71, 4], [52, 80, 12]];
+      var out = '<rect x="45" y="29" width="30" height="9" rx="4" fill="#f9a8d4" stroke="#9d174d" stroke-width="2.2"/>' +
+        '<path d="M36 44 C36 40 41 38 60 38 C79 38 84 40 84 44 L84 82 A8 8 0 0 1 76 90 L44 90 A8 8 0 0 1 36 82Z" ' +
+        'fill="#ffffff" fill-opacity=".72" stroke="#9d174d" stroke-width="2.6" stroke-linejoin="round"/>';
+      function bean(spot, fill) {
+        return '<ellipse cx="' + spot[0] + '" cy="' + spot[1] + '" rx="5" ry="3.8" fill="' + fill +
+          '" transform="rotate(' + spot[2] + " " + spot[0] + " " + spot[1] + ')"/>';
+      }
+      var i;
+      for (i = 0; i < grouped.length; i++) out += bean(grouped[i], "#db2777");
+      for (i = 0; i < loose.length; i++) out += bean(loose[i], "#f472b6");
+      return out +
+        '<rect x="39" y="43" width="44" height="20" rx="6" fill="none" stroke="#831843" stroke-width="2" stroke-dasharray="4 3"/>' +
+        '<text x="86" y="52" font-size="12" font-weight="800" fill="#9d174d" font-family="monospace">5</text>' +
+        '<rect x="41" y="79" width="38" height="15" rx="7.5" fill="#ffffff" stroke="#9d174d" stroke-width="2"/>' +
+        '<text x="60" y="90" text-anchor="middle" font-size="12" font-weight="800" fill="#9d174d" font-family="monospace">≈ 15</text>';
+    })()
+  });
+
+  defSticker("turtle-coder", {
+    title: "海龟指挥家", accent: "#059669",
+    desc: "一只小海龟沿着虚线正方形走，每个角上标着要转的 90 度。",
+    art:
+      '<rect x="36" y="38" width="48" height="44" rx="2" fill="none" stroke="#047857" stroke-width="3" stroke-dasharray="6 5"/>' +
+      '<text x="60" y="32" text-anchor="middle" font-size="13" font-weight="800" fill="#065f46" font-family="monospace">90°</text>' +
+      '<path d="M74 38 A10 10 0 0 1 84 48" fill="none" stroke="#f59e0b" stroke-width="2.6"/>' +
+      '<path d="M84 48 L80.6 44.6 M84 48 L87.4 44.6" stroke="#f59e0b" stroke-width="2.6" stroke-linecap="round" fill="none"/>' +
+      '<g fill="#34d399" stroke="#065f46" stroke-width="1.4">' +
+      '<ellipse cx="48" cy="72" rx="6" ry="4" transform="rotate(-30 48 72)"/>' +
+      '<ellipse cx="48" cy="90" rx="6" ry="4" transform="rotate(30 48 90)"/>' +
+      '<ellipse cx="70" cy="72" rx="6" ry="4" transform="rotate(30 70 72)"/>' +
+      '<ellipse cx="70" cy="90" rx="6" ry="4" transform="rotate(-30 70 90)"/></g>' +
+      '<path d="M42 81 C38 79 36 82 40 84Z" fill="#34d399" stroke="#065f46" stroke-width="1.4"/>' +
+      '<ellipse cx="59" cy="81" rx="16" ry="13" fill="#047857" stroke="#065f46" stroke-width="1.8"/>' +
+      '<g fill="#10b981"><circle cx="59" cy="81" r="5.6"/>' +
+      '<ellipse cx="59" cy="71.5" rx="4.6" ry="3"/><ellipse cx="59" cy="90.5" rx="4.6" ry="3"/>' +
+      '<ellipse cx="47.5" cy="81" rx="3" ry="4.6"/><ellipse cx="70.5" cy="81" rx="3" ry="4.6"/></g>' +
+      '<ellipse cx="78" cy="77" rx="7" ry="5.6" fill="#34d399" stroke="#065f46" stroke-width="1.4"/>' +
+      '<circle cx="81" cy="75.5" r="1.7" fill="#0f172a"/>'
+  });
+
+  defSticker("rainbow-artist", {
+    title: "彩虹故事家", accent: "#be185d",
+    desc: "一把画笔正刷出四道彩虹，红橙绿蓝一层套一层。",
+    art:
+      '<g fill="none" stroke-linecap="round" stroke-width="8">' +
+      '<path d="M26 86 A34 34 0 0 1 94 86" stroke="#e11d48"/>' +
+      '<path d="M32 86 A28 28 0 0 1 88 86" stroke="#f59e0b"/>' +
+      '<path d="M38 86 A22 22 0 0 1 82 86" stroke="#22c55e"/>' +
+      '<path d="M44 86 A16 16 0 0 1 76 86" stroke="#3b82f6"/></g>' +
+      '<path d="M24 86 L96 86" stroke="#be185d" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<g transform="rotate(32 60 46)">' +
+      '<rect x="55.5" y="14" width="9" height="21" rx="4" fill="#b07a3f"/>' +
+      '<rect x="53.5" y="33" width="13" height="8" rx="2" fill="#9aa5b1"/>' +
+      '<path d="M54.5 41 L65.5 41 L63 52 L57 52Z" fill="#be185d"/></g>'
+  });
+
+  defSticker("gravity-observer", {
+    title: "落体观察员", accent: "#6366f1",
+    desc: "羽毛和小球从同一条虚线同时放手，此刻还并排落在同一高度，下面是地面。",
+    art:
+      /* 两样东西必须画在同一高度：这枚贴纸讲的就是「真空里一起落地」，
+         一旦一高一低，图上说的话和卡片背面的结论正好相反。 */
+      '<path d="M28 34 L92 34" stroke="#6366f1" stroke-width="2" stroke-dasharray="5 4"/>' +
+      '<g fill="#4338ca"><circle cx="42" cy="34" r="2.6"/><circle cx="80" cy="34" r="2.6"/></g>' +
+      '<g stroke="#a5b4fc" stroke-width="2.6" stroke-dasharray="4 6" stroke-linecap="round">' +
+      '<path d="M42 38 L42 84"/><path d="M80 38 L80 84"/></g>' +
+      '<path d="M26 88 L94 88" stroke="#4338ca" stroke-width="3.4" stroke-linecap="round"/>' +
+      '<g transform="rotate(-16 42 60)">' +
+      /* 羽毛的辨识点是羽轴从羽片下端伸出来的那一小截，少了它就只是一片叶子。 */
+      '<path d="M43.4 60 L44.6 84" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round"/>' +
+      '<path d="M42 42 C53 52 53 66 44 75 C35 66 32 52 42 42Z" fill="#eef2ff" stroke="#6366f1" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<path d="M42.6 45 L43.6 74" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>' +
+      '<g stroke="#a5b4fc" stroke-width="1.6" stroke-linecap="round">' +
+      '<path d="M42.7 52 L36.5 57"/><path d="M42.8 60 L35.5 65"/><path d="M42.9 68 L37 72"/>' +
+      '<path d="M42.7 52 L48.9 57"/><path d="M42.8 60 L50.1 65"/><path d="M42.9 68 L48.8 72"/></g></g>' +
+      '<circle cx="80" cy="60" r="12" fill="#6366f1"/>' +
+      '<circle cx="76" cy="56" r="3.6" fill="#c7d2fe" opacity=".85"/>'
+  });
+
+  defSticker("ramp-engineer", {
+    title: "斜坡工程师", accent: "#b45309",
+    desc: "一个斜坡上滚着小球，坡底标出了坡度角，箭头指着球会往哪边加速。",
+    art:
+      '<path d="M28 84 L92 84 L28 44Z" fill="#fcd9a3" stroke="#92400e" stroke-width="2.8" stroke-linejoin="round"/>' +
+      '<path d="M28 62 L60 62" stroke="#c98a2c" stroke-width="1.8" stroke-dasharray="4 4"/>' +
+      '<path d="M74 84 A18 18 0 0 0 78.5 72.4" fill="none" stroke="#92400e" stroke-width="2.2"/>' +
+      '<circle cx="55" cy="56" r="9" fill="#4d86d6" stroke="#1e40af" stroke-width="2.4"/>' +
+      '<circle cx="52" cy="53" r="2.8" fill="#bfdbfe" opacity=".9"/>' +
+      '<g stroke="#b45309" stroke-width="3" stroke-linecap="round" fill="none">' +
+      '<path d="M66 68 L74 73"/><path d="M74 73 L69.6 73.6"/><path d="M74 73 L72.4 69"/></g>' +
+      '<path d="M24 88 L96 88" stroke="#92400e" stroke-width="2.4" stroke-linecap="round"/>'
+  });
+
+  defSticker("shadow-director", {
+    title: "影子导演", accent: "#ca8a04",
+    desc: "灯泡的两条光线擦过小方块的上下边，在右边的白墙上圈出一块更大的影子。",
+    art:
+      '<g stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="5 4" fill="none">' +
+      '<path d="M30 60 L82 44"/><path d="M30 60 L82 80"/></g>' +
+      '<rect x="80" y="28" width="11" height="62" rx="2" fill="#faf8f4" stroke="#a8a29e" stroke-width="2.2"/>' +
+      '<rect x="80" y="44" width="11" height="36" fill="#4b4643"/>' +
+      '<rect x="55" y="52" width="11" height="18" rx="2" fill="#b45309" stroke="#78350f" stroke-width="2"/>' +
+      '<circle cx="30" cy="60" r="9" fill="#fde047" stroke="#a16207" stroke-width="2.4"/>' +
+      '<g stroke="#eab308" stroke-width="2.2" stroke-linecap="round">' +
+      '<path d="M30 46 L30 41"/><path d="M18 60 L13 60"/><path d="M21 51 L17.5 47.5"/><path d="M21 69 L17.5 72.5"/></g>'
+  });
+
+  defSticker("wave-listener", {
+    title: "波浪倾听者", accent: "#0891b2",
+    desc: "两列波上下排开，加在一起后波峰变得更高，这就是相长叠加。",
+    art:
+      '<g fill="none" stroke-linecap="round">' +
+      '<path d="M30 40 Q37.5 31 45 40 T60 40 T75 40 T90 40" stroke="#0891b2" stroke-width="3"/>' +
+      '<path d="M30 60 Q37.5 51 45 60 T60 60 T75 60 T90 60" stroke="#f472b6" stroke-width="3"/>' +
+      '<path d="M30 84 Q37.5 66 45 84 T60 84 T75 84 T90 84" stroke="#164e63" stroke-width="4"/></g>' +
+      '<g fill="#155e75" font-size="14" font-weight="800" font-family="monospace">' +
+      '<text x="24" y="55" text-anchor="middle">+</text><text x="24" y="76" text-anchor="middle">=</text></g>' +
+      '<path d="M28 70 L92 70" stroke="#a5b4c4" stroke-width="1.4"/>'
+  });
+
+  defSticker("fossil-sleuth", {
+    title: "化石推理员", accent: "#15803d",
+    desc: "地层剖面里埋着一具恐龙化石：头骨、脊椎和肋骨都还连在原来的位置上。",
+    art:
+      '<path d="M26 50 L94 50 L94 66 L26 66Z" fill="#d9b382"/>' +
+      '<path d="M26 66 L94 66 L94 82 L26 82Z" fill="#bf9760"/>' +
+      '<path d="M26 82 L94 82 L94 90 L26 90Z" fill="#9c7745"/>' +
+      '<g stroke="#a8834f" stroke-width="1.4" opacity=".7"><path d="M26 58 L94 58"/><path d="M26 74 L94 74"/></g>' +
+      '<g fill="#4a7f3a"><path d="M32 50 C33 45 35 43 37 42 C36 45 36 48 37 50Z"/>' +
+      '<path d="M40 50 C41 46 43 44 45 43 C44 46 44 48 45 50Z"/><path d="M84 50 C85 45 87 43 89 42 C88 45 88 48 89 50Z"/></g>' +
+      /* 化石要能被认出是「谁」的骨头：侧面的长吻头骨加一排牙，
+         后面接三节带棘突的脊椎，比一堆白色碎块更像一具躺在原位的骨架。 */
+      '<g fill="#fdfaf0" stroke="#6b5227" stroke-width="1.5" stroke-linejoin="round">' +
+      '<path d="M30 71 C30 66 34 62 41 62 C48 62 54 65 57 70 L70 74 L70 78 L56 78 C52 81 43 82 36 80 C32 79 30 75 30 71Z"/>' +
+      '<path d="M62 71 L70 68 L74 71 L69 74Z"/>' +
+      '<circle cx="40" cy="69" r="3" fill="#6b5227" stroke="none"/>' +
+      '<g fill="#6b5227" stroke="none"><path d="M46 78 L48.6 82 L51.2 78Z"/><path d="M53 78 L55.6 82 L58.2 78Z"/>' +
+      '<path d="M60 78 L62.6 81.4 L65.2 78Z"/></g>' +
+      '<path d="M76 66 L80 61 L84 66 L80 71Z"/><path d="M82 72 L86 67 L90 72 L86 77Z"/></g>' +
+      '<g stroke="#fdfaf0" stroke-width="3.6" stroke-linecap="round" fill="none">' +
+      '<path d="M72 72 L78 70"/><path d="M80 74 L84 73"/></g>'
+  });
+
+  defSticker("planet-navigator", {
+    title: "行星领航员", accent: "#6d28d9",
+    desc: "一颗带光环的紫色行星，旁边一颗小卫星沿虚线轨道绕行，背景撒着星星。",
+    art:
+      '<g fill="#faf5ff"><circle cx="30" cy="34" r="2.4"/><circle cx="92" cy="82" r="2"/>' +
+      '<circle cx="36" cy="86" r="1.6"/><circle cx="86" cy="30" r="1.6"/></g>' +
+      '<g transform="rotate(-18 58 58)">' +
+      '<ellipse cx="58" cy="58" rx="38" ry="12" fill="none" stroke="#a78bfa" stroke-width="5"/></g>' +
+      '<circle cx="58" cy="58" r="23" fill="#7c3aed"/>' +
+      '<path d="M35 58 A23 23 0 0 1 81 58Z" fill="#8b5cf6"/>' +
+      '<g fill="#a78bfa" opacity=".85"><ellipse cx="58" cy="48" rx="20" ry="4"/><ellipse cx="58" cy="66" rx="21" ry="4.4"/></g>' +
+      '<circle cx="48" cy="50" r="4.6" fill="#6d28d9" opacity=".8"/>' +
+      '<g transform="rotate(-18 58 58)">' +
+      '<path d="M20 58 A38 12 0 0 0 96 58" fill="none" stroke="#c4b5fd" stroke-width="5"/></g>' +
+      '<circle cx="90" cy="44" r="6" fill="#e9d5ff" stroke="#6d28d9" stroke-width="1.8"/>' +
+      '<circle cx="88.4" cy="42.6" r="1.5" fill="#c4b5fd"/>'
+  });
+
+  defSticker("deep-sea-scout", {
+    title: "深海观察员", accent: "#0369a1",
+    desc: "海水从上到下越来越暗，一头鲸在深处游过，左边的刻度标出越潜越深。",
+    art:
+      '<defs><linearGradient id="deep{{U}}" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="#7dd3fc"/><stop offset="0.5" stop-color="#0e6ba8"/>' +
+      '<stop offset="1" stop-color="#0b2a45"/></linearGradient></defs>' +
+      '<circle cx="60" cy="60" r="44" fill="url(#deep{{U}})"/>' +
+      '<g stroke="#e0f2fe" stroke-width="2" stroke-linecap="round" opacity=".8">' +
+      '<path d="M22 44 L30 44"/><path d="M20 60 L28 60"/><path d="M22 76 L30 76"/></g>' +
+      '<g fill="#e0f2fe" opacity=".55"><circle cx="74" cy="34" r="3"/><circle cx="82" cy="26" r="2"/><circle cx="66" cy="28" r="1.6"/></g>' +
+      '<g transform="translate(60 66) scale(1.25) translate(-32 -34)">' +
+      whaleSide("#dbeafe", "#bfdbfe", "#93c5fd", "#0b2a45") +
+      '<path d="M14 37 C17 39 21 39 24 37" stroke="#0b2a45" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".7"/>' +
+      "</g>"
+  });
+
+  defSticker("bug-friend", {
+    title: "昆虫好朋友", accent: "#ea580c",
+    desc: "一只俯视的瓢虫，头、胸、腹分明，六条腿都长在胸部两侧。",
+    art:
+      '<g stroke="#2b1a10" stroke-width="3" stroke-linecap="round" fill="none">' +
+      '<path d="M40 54 L26 46"/><path d="M38 64 L22 64"/><path d="M40 74 L26 84"/>' +
+      '<path d="M80 54 L94 46"/><path d="M82 64 L98 64"/><path d="M80 74 L94 84"/></g>' +
+      '<g stroke="#2b1a10" stroke-width="2.6" stroke-linecap="round" fill="none">' +
+      '<path d="M52 34 C48 26 44 22 39 20"/><path d="M68 34 C72 26 76 22 81 20"/></g>' +
+      '<circle cx="38" cy="19" r="3" fill="#2b1a10"/><circle cx="82" cy="19" r="3" fill="#2b1a10"/>' +
+      '<ellipse cx="60" cy="68" rx="25" ry="24" fill="#e04a2f"/>' +
+      '<path d="M35 68 A25 24 0 0 1 85 68Z" fill="#f2603f"/>' +
+      '<path d="M60 44 L60 92" stroke="#2b1a10" stroke-width="3"/>' +
+      '<g fill="#2b1a10"><circle cx="47" cy="60" r="5"/><circle cx="73" cy="60" r="5"/>' +
+      '<circle cx="45" cy="76" r="4.2"/><circle cx="75" cy="76" r="4.2"/>' +
+      '<circle cx="60" cy="86" r="3.6"/></g>' +
+      '<ellipse cx="60" cy="40" rx="14" ry="10" fill="#2b1a10"/>' +
+      '<g fill="#fdfdf7"><circle cx="53" cy="38" r="3"/><circle cx="67" cy="38" r="3"/></g>' +
+      '<g fill="#2b1a10"><circle cx="53.8" cy="38.6" r="1.4"/><circle cx="67.8" cy="38.6" r="1.4"/></g>'
+  });
+
+  defSticker("earth-reader", {
+    title: "地球读图员", accent: "#0f766e",
+    desc: "地球上标着一颗震中星，三圈波纹向外扩散，下面是记录仪画出的地震波形。",
+    art:
+      '<circle cx="60" cy="50" r="23" fill="#3b82c4"/>' +
+      '<g fill="#4ca86a"><path d="M45 38 C51 32 60 33 63 39 C66 45 59 50 52 49 C46 48 43 43 45 38Z"/>' +
+      '<path d="M62 58 C67 54 74 56 75 61 C76 67 69 70 64 67 C60 65 59 60 62 58Z"/></g>' +
+      '<g fill="none" stroke="#dbeafe" stroke-width="1.4" opacity=".8">' +
+      '<circle cx="60" cy="50" r="23"/><ellipse cx="60" cy="50" rx="10" ry="23"/><path d="M37 50 L83 50"/></g>' +
+      '<g fill="none" stroke="#f59e0b" stroke-width="2.2" opacity=".95">' +
+      '<path d="M64 30 A9 9 0 0 1 72.6 38.6"/><path d="M62 24 A15 15 0 0 1 78.4 40.4"/></g>' +
+      '<path d="M70 28 L72.6 34.4 L79.4 34.8 L74.2 39.2 L75.8 45.8 L70 42.2 L64.2 45.8 L65.8 39.2 L60.6 34.8 L67.4 34.4Z" fill="#f59e0b" stroke="#b45309" stroke-width="1.4" stroke-linejoin="round"/>' +
+      '<path d="M32 88 L96 88" stroke="#5b7d78" stroke-width="1.4"/>' +
+      '<path d="M32 88 L42 88 L46 82 L50 94 L54 86 L60 88 L64 79 L70 97 L74 88 L88 88" fill="none" stroke="#0f766e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>'
+  });
+
+  defSticker("cloud-reporter", {
+    title: "云朵观察员", accent: "#0284c7",
+    desc: "太阳从云后露出半边，云底下落着三滴雨。",
+    art:
+      '<circle cx="40" cy="40" r="12" fill="#fbbf24"/>' +
+      '<g stroke="#f59e0b" stroke-width="2.6" stroke-linecap="round">' +
+      '<path d="M40 22 L40 26"/><path d="M25 40 L21 40"/><path d="M28 28 L25 25"/><path d="M28 52 L25 55"/></g>' +
+      '<path d="M44 74 C36 74 30 68 31 61 C32 55 38 51 44 53 C46 42 57 36 66 40 C73 43 77 49 78 55 C85 55 89 60 88 66 C87 71 82 74 77 74Z" fill="#ffffff" stroke="#5b93b8" stroke-width="2.6" stroke-linejoin="round"/>' +
+      '<g fill="#38bdf8" stroke="#0284c7" stroke-width="1.6">' +
+      '<path d="M46 80 C49 85 51 88 51 90.5 A5 5 0 0 1 41 90.5 C41 88 43 85 46 80Z"/>' +
+      '<path d="M60 84 C63 89 65 92 65 94.5 A5 5 0 0 1 55 94.5 C55 92 57 89 60 84Z"/>' +
+      '<path d="M74 80 C77 85 79 88 79 90.5 A5 5 0 0 1 69 90.5 C69 88 71 85 74 80Z"/></g>'
+  });
+
+  defSticker("body-researcher", {
+    title: "身体研究员", accent: "#e11d48",
+    desc: "一颗心脏上画着心电图折线，右下角的秒表说明测量要记时间。",
+    art:
+      '<path d="M60 90 C36 74 24 62 24 48 C24 38 32 30 42 30 C50 30 56 35 60 41 C64 35 70 30 78 30 C88 30 96 38 96 48 C96 62 84 74 60 90Z" fill="#e11d48"/>' +
+      '<path d="M42 33 C34 33 28 39 28 47 C28 52 30 57 34 62 C29 54 30 40 42 37Z" fill="#f79aa3" opacity=".85"/>' +
+      '<path d="M28 58 L42 58 L47 47 L54 71 L59 58 L74 58" fill="none" stroke="#fff1f2" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<circle cx="74" cy="58" r="3.4" fill="#fff1f2"/>' +
+      '<g transform="translate(80 78)">' +
+      '<circle cx="0" cy="0" r="13" fill="#fdf2f4" stroke="#9f1239" stroke-width="2.4"/>' +
+      '<path d="M-4 -14 L4 -14" stroke="#9f1239" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M0 0 L0 -8 M0 0 L6 3" stroke="#9f1239" stroke-width="2.2" stroke-linecap="round"/></g>'
   });
 
   /* ---------------- 对外 API ---------------- */
