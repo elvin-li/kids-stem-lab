@@ -3489,7 +3489,9 @@ window.ILLUSTRATIONS = (function () {
       '<g transform="rotate(-16 20 62)">' +
       '<rect x="6" y="52" width="28" height="30" rx="4" fill="#f6c445" stroke="#b98a2e" stroke-width="2.4"/>' +
       '<g stroke="#b98a2e" stroke-width="2"><path d="M12 52 L12 60"/><path d="M20 52 L20 64"/><path d="M28 52 L28 60"/></g>' +
-      "</g>"
+      "</g>" +
+      /* 描述里点名的那个齿轮：放在瓶子右下角，配卫星/深潜器同款金属灰。 */
+      gearShape(104, 70, 9, 8, "#c9d3de", "#5a6b84")
   });
 
   defPortal("nature", {
