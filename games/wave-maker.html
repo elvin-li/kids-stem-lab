@@ -1071,7 +1071,13 @@
 
     var sameWave = Math.abs(S.f1 - S.f2) < 0.001 && Math.abs(S.w1 - S.w2) < 0.001;
     var maxSum;
-    if (sameWave) {
+    if (sameWave && dir2 === -1) {
+      /* 驻波：两列波反向传播，相位差只是把波节挪个位置，波腹照样荡到 a₁+a₂。
+         原先这档也走下面同向干涉的余弦公式，按了「驻波」再把相位差拖到 180°，
+         读数写「叠加最大振幅 0.00」，画面上驻波却在满幅上下——公式属于同向波，
+         对反向波根本不成立。 */
+      maxSum = S.a1 + S.a2;
+    } else if (sameWave) {
       var rad = dphi * Math.PI / 180;
       maxSum = Math.sqrt(S.a1 * S.a1 + S.a2 * S.a2 + 2 * S.a1 * S.a2 * Math.cos(rad));
     } else {
