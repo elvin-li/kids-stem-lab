@@ -484,7 +484,7 @@
       <div class="mission-step"><h3>2 操作</h3><p>主操作就在上方深度剖面旁。至少执行一次下潜，文字结果会留在舞台下方。</p><div class="checks" aria-label="下潜操作状态"><span id="oceanDiveCheck">○ 尚未执行下潜</span></div></div>
       <div class="mission-step"><h3>3 结果</h3><p>选一条这次下潜看到的联系。</p><div class="quick-picks" data-fill="oceanResult"><button class="kid-choice" type="button" data-value="下潜时光越来越少、水温越来越低，压力却一直在升高。" aria-pressed="false">📉 光少温低压力大</button><button class="kid-choice" type="button" data-value="深海生物靠发光诱饵或柔软的身体，适应黑暗和高压的环境。" aria-pressed="false">🐟 生物有自己的装备</button></div><label class="sr-only" for="oceanResult">结果记录</label><textarea class="input" id="oceanResult" data-audience="parent" placeholder="也可以记录光、温度、压力和生物适应中的两项联系"></textarea></div>
       <div class="mission-step"><h3>4 反思</h3><p>为什么深海鱼更怕“快速上浮”，而不是一直待在高压水中？</p><div class="quick-picks" data-fill="oceanReflect"><button class="kid-choice" type="button" data-value="深海鱼的身体已经适应高压；快速上浮时压力骤减，身体里的气体会膨胀，反而受伤。" aria-pressed="false">🎈 上浮时气体会膨胀</button><button class="kid-choice" type="button" data-value="高压是深海鱼平时的家；突然的变化才危险，慢慢改变它们能适应。" aria-pressed="false">⚖️ 突然变化才危险</button></div><label class="sr-only" for="oceanReflect">反思记录</label><textarea class="input" id="oceanReflect" data-audience="parent" placeholder="也可以用自己的话解释"></textarea></div>
-    </div><div class="task-actions"><button class="btn btn-primary" id="oceanComplete" type="button">完成任务</button><span class="task-status" id="oceanStatus" role="status" aria-live="polite">尚未完成：请完成一次下潜并写记录。</span></div>
+    </div><div class="task-actions"><button class="btn btn-primary" id="oceanComplete" type="button">完成任务</button><span class="task-status" id="oceanStatus" role="status" aria-live="polite"><span data-audience="parent">尚未完成：请完成一次下潜并写记录。</span><span data-audience="kid-only">尚未完成：先执行一次下潜，再点选记录。</span></span></div>
     <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="oceanWorkTitle">
       <h3 class="work-card-title" id="oceanWorkTitle">把这次下潜存进作品册</h3>
       <p class="work-card-meta">把光、温度、压力和生物写在同一个深度上。作品只保存在这台设备上。</p>
@@ -1291,7 +1291,10 @@
   });
   document.getElementById("oceanComplete").addEventListener("click", function () {
     if (!predict.value.trim() || !operated || !result.value.trim() || !reflect.value.trim()) {
-      status.textContent = "还不能完成：请预测、执行下潜、记录联动结果并反思。"; return;
+      /* 预测、结果、反思的文本框都在家长层（data-audience="parent"），孩子模式 display:none：
+         「写记录」「记录联动结果」指着孩子看不见的写字栏——孩子的路径是四步里的快捷选项按钮。
+         照斜坡试车场 checkFairPair 的做法拆成 data-audience 双 span，孩子版只说点按钮。 */
+      status.innerHTML = '<span data-audience="parent">还不能完成：请预测、执行下潜、记录联动结果并反思。</span><span data-audience="kid-only">还不能完成：先点一个预测、执行下潜，再各点一条结果和反思。</span>'; return;
     }
     var done = window.Progress && Progress.complete("nature/ocean.html", "完成一次下潜，关联了光、温度、压力与生物适应。");
     status.textContent = done ? "已完成任务：下潜证据已保存。" : "四步已完成；当前浏览器无法保存。";
