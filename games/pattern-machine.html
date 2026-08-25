@@ -1676,6 +1676,18 @@
       }
     });
   });
+  /* 「猜规则 / 生长图形」标签条整条在家长层（data-audience="parent"）：家长切到
+     生长图形后把设备换回孩子模式，标签条被藏掉，孩子的图形轨道还锁在带 hidden 的
+     猜规则面板里（base.css 的 [hidden] 带 !important）——满屏只剩生长题，页首的
+     故事和丝带讲的却全是喂数字的机器，孩子也找不到任何开关切回来。和估算站
+     费米面板、造波机水波槽同一类「家长层专属舞台状态」：模式偏好一变就检查，
+     孩子模式下还停在生长图形就替孩子切回猜规则。
+     读偏好而不读 data-mode，因为进度事件先于 <html> 属性更新派发。 */
+  window.addEventListener('kids-stem:progress', function () {
+    if (MODE !== 'grow') return;
+    if (!(window.Playful && Playful.getPreference && Playful.getPreference('mode') === 'kid')) return;
+    setMode('guess');
+  });
 
   el.patSel.addEventListener('change', function () { resetGrow(el.patSel.value); });
   el.askSel.addEventListener('input', function () {
@@ -1810,6 +1822,14 @@
       entry.field.dispatchEvent(new Event(entry.field.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true }));
     });
     if (window.Playful && Playful.syncPreferences) Playful.syncPreferences(document);
+    /* 上面那个 kids-stem:progress 守卫只护得住「本页开着时切模式」这一条路：
+       家长切到生长图形、进别的页面把设备换成孩子模式再按「返回」，偏好事件
+       发生在别的页面的窗口里，这边听不到；bfcache 复活时 syncPreferences 刚把
+       <html data-mode> 拨成 kid——标签条藏进家长层，孩子的图形轨道锁在带 hidden 的
+       猜规则面板里出不来。复活后补同一步检查：孩子模式下还停在生长图形，
+       就替孩子切回猜规则。back_forward 重建时页面从头初始化、MODE 本来就是
+       guess，这步是空操作。 */
+    if (MODE === 'grow' && window.Playful && Playful.getPreference && Playful.getPreference('mode') === 'kid') setMode('guess');
   });
 })();
 </script>
