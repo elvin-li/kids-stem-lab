@@ -945,7 +945,7 @@
 
     var store = loadStore(), key = itemKey(i), saved = store[key] || {};
     var obs = el("div", "observation work-card"); var label=el("label", null, "记录看到的结果（保存在本机）"); label.setAttribute("for", "observation-"+(i+1));
-    var area=el("textarea", "input"); area.id="observation-"+(i+1); area.name="observation-"+(i+1); area.maxLength=500; area.placeholder="我先预测……\n我观察到……\n证据或测量……\n下一次想改……"; area.value=saved.observation||"";
+    var area=el("textarea", "input"); area.id="observation-"+(i+1); area.name="observation-"+(i+1); area.maxLength=500; area.placeholder="我先预测……\n我观察到……\n证据或测量……\n下一次想改……"; area.value=area.id in drafts?drafts[area.id]:(saved.observation||"");
     var save=el("button", "btn btn-sm no-print", "保存观察记录"); save.type="button"; var noteMsg=el("span", "save-msg");
     save.addEventListener("click", function(){var data=loadStore(),rec=data[key]||{};rec.observation=area.value.trim().slice(0,500);data[key]=rec;noteMsg.textContent=saveStore(data)?"已保存":"保存失败";});
     label.appendChild(area); obs.appendChild(label); obs.appendChild(save); obs.appendChild(noteMsg); body.appendChild(obs);
@@ -971,7 +971,17 @@
     return c;
   }
 
+  /* 筛选一动整个网格就重建，观察记录框的内容是从本机存档重新灌的：
+     孩子在卡片里写到一半还没点「保存观察记录」，家长在上面点一枚筛选芯片、
+     或在材料框里敲一个字（每敲一键都重画一次），没保存的草稿当场清空；
+     按「返回」或刷新回到本页时，浏览器在 load 之后才恢复进textarea的未保存
+     草稿，紧跟着 pageshow 补发的那次重画又把它抹掉。重画前先把每个观察框
+     正显示的文字按 id 收进草稿表，重建时优先用草稿；表跨次重画一直留着，
+     被筛掉再筛回来的卡也能拿回自己的那份。点过「保存」的内容和草稿相同，
+     行为不变。 */
+  var drafts = Object.create(null);
   function render() {
+    [].forEach.call(out.querySelectorAll(".observation textarea"), function (t) { drafts[t.id] = t.value; });
     out.textContent = "";
     var list = XP.filter(passes);
     list.forEach(function (x, i) { out.appendChild(card(x, XP.indexOf(x))); });
