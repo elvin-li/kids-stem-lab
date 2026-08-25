@@ -790,7 +790,15 @@
 
   tapBtn.addEventListener("click", function () {
     var now = performance.now();
-    if (times.length && now - times[times.length - 1] > 4000) times = []; // 隔太久重新开始
+    if (times.length && now - times[times.length - 1] > 4000) {
+      /* 隔太久重新开始。原来只清点按记录：大号读数、跳动的心和判语都还是
+         上一轮的，计数行却写着「已点 1 次」——旧数挂在那里看着像正在测的结果。
+         新一轮凑满 4 下之前，读数就该回到「—」。 */
+      times = [];
+      bpmEl.textContent = "—";
+      verdict.textContent = "";
+      heart.classList.remove("beating");
+    }
     times.push(now);
     tapBtn.classList.add("armed");
     paintZone(Math.min(times.length, NEED));
