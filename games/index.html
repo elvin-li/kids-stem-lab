@@ -77,8 +77,13 @@ document.getElementById("randomTask").textContent=task?x.icon+" "+x.title+" · "
    按默认「全部学科」画好的 11 张卡——筛选器和结果各说各话；bfcache 整页复活时
    「去过／完成」的状态角标也停在离开前那一刻（进度事件发生在实验页的窗口里，
    这边听不到）。专题目录页早补过同一步：按恢复后的筛选和最新足迹重画一次即可；
-   首次打开是 navigate，render() 在下面照常跑，不用重复。 */
-window.addEventListener("pageshow",function(event){var nav=performance.getEntriesByType?performance.getEntriesByType("navigation")[0]:null;if(event.persisted||(nav&&(nav.type==="back_forward"||nav.type==="reload")))render();});
+   首次打开是 navigate，render() 在下面照常跑，不用重复。
+   重画之前还得先把模式对齐：本页的筛选条、随机入口、卡片上的「打开实验」和
+   「马上玩」都分孩子/家长两层，bfcache 整页复活时 <html data-mode> 冻着出发前的
+   值——在实验页里切过模式再返回，目录还按旧模式摆整页，导航里的模式下拉也停在
+   旧值；十一个实验页、首页和足迹页复活时都由 Playful.syncPreferences 按存好的
+   偏好重对齐，目录这页一直漏着。 */
+window.addEventListener("pageshow",function(event){var nav=performance.getEntriesByType?performance.getEntriesByType("navigation")[0]:null;if(event.persisted||(nav&&(nav.type==="back_forward"||nav.type==="reload"))){if(window.Playful&&Playful.syncPreferences)Playful.syncPreferences(document);render();}});
 render();
 })();
 </script><script src="../assets/js/pwa.js?v=54"></script>
