@@ -1381,12 +1381,21 @@
   });
   /* 预测按钮是 newTask() 按当前关卡现生成的，绑定也在那里（chooseKidPrediction）；
      这里再扫一遍 [data-number-predict] 永远扫到 0 个。 */
+  /* 发现句原来只同步「按钮 → 文本框」一个方向：孩子点过某句后，家长在家长层文本框里
+     改写或清空记录，按钮仍亮着按下的样子——亮着的是 A、记录里写的却是 B。和自然页
+     快捷选项的失同步同一类：文本框一有输入就按内容对齐按下状态，顺带补上缺失的 aria-pressed 初值。 */
+  var numReflectBox = document.getElementById('numReflect');
+  function syncNumReflect() {
+    document.querySelectorAll('[data-number-reflect]').forEach(function (choice) {
+      choice.setAttribute('aria-pressed', String(choice.getAttribute('data-number-reflect') === numReflectBox.value));
+    });
+  }
+  numReflectBox.addEventListener('input', syncNumReflect);
+  syncNumReflect();
   Array.prototype.forEach.call(document.querySelectorAll('[data-number-reflect]'), function (btn) {
     btn.addEventListener('click', function () {
-      document.getElementById('numReflect').value = btn.getAttribute('data-number-reflect');
-      document.querySelectorAll('[data-number-reflect]').forEach(function (choice) {
-        choice.setAttribute('aria-pressed', String(choice === btn));
-      });
+      numReflectBox.value = btn.getAttribute('data-number-reflect');
+      numReflectBox.dispatchEvent(new Event('input', { bubbles: true }));
       say('已选发现：' + btn.textContent);
     });
   });

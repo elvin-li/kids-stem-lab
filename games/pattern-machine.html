@@ -1735,13 +1735,21 @@
     say(el.patternMissionStatus.textContent);
   });
 
-  /* 点选的发现句填进同一个文本域，保存路径不变；家长模式仍可自己打字覆盖。 */
+  /* 点选的发现句填进同一个文本域，保存路径不变；家长模式仍可自己打字覆盖。
+     覆盖或清空时按钮要跟着熄掉：原来只同步「按钮 → 文本框」一个方向，
+     家长改写后按钮仍亮着旧句——亮着的是 A、记录里写的却是 B。
+     文本框一有输入就按内容对齐按下状态，内容不再等于哪个选项就全部熄掉。 */
+  function syncPatternReflect() {
+    document.querySelectorAll('[data-pattern-reflect]').forEach(function (choice) {
+      choice.setAttribute('aria-pressed', String(choice.getAttribute('data-pattern-reflect') === el.patternReflect.value));
+    });
+  }
+  el.patternReflect.addEventListener('input', syncPatternReflect);
+  syncPatternReflect();
   Array.prototype.forEach.call(document.querySelectorAll('[data-pattern-reflect]'), function (btn) {
     btn.addEventListener('click', function () {
       el.patternReflect.value = btn.getAttribute('data-pattern-reflect');
-      document.querySelectorAll('[data-pattern-reflect]').forEach(function (choice) {
-        choice.setAttribute('aria-pressed', String(choice === btn));
-      });
+      el.patternReflect.dispatchEvent(new Event('input', { bubbles: true }));
       say('已选发现：' + btn.textContent);
     });
   });

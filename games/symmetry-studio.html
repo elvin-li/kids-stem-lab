@@ -1030,12 +1030,21 @@
           : "还差一封：" + (state.challengeDone.mirror ? "打开旋转信 · 4 折" : "打开镜像信 · 1 折") + "。")
       : "还没对上：" + state.lastEvidence + "。改一个数重新锁定，再画一笔。";
   }
+  /* 发现句原来只同步「按钮 → 文本框」一个方向：孩子点过某句后，家长在家长层文本框里
+     改写或清空记录，按钮仍亮着按下的样子——亮着的是 A、记录里写的却是 B。和折数
+     那次失同步同一类：文本框一有输入就按内容对齐按下状态，内容不再等于哪个选项就全部熄掉。 */
+  var symReflectBox = document.getElementById("symReflect");
+  function syncSymReflect() {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-sym-reflect]"), function (choice) {
+      choice.setAttribute("aria-pressed", choice.getAttribute("data-sym-reflect") === symReflectBox.value ? "true" : "false");
+    });
+  }
+  symReflectBox.addEventListener("input", syncSymReflect);
+  syncSymReflect();
   Array.prototype.forEach.call(document.querySelectorAll("[data-sym-reflect]"), function (btn) {
     btn.addEventListener("click", function () {
-      document.getElementById("symReflect").value = btn.getAttribute("data-sym-reflect");
-      Array.prototype.forEach.call(document.querySelectorAll("[data-sym-reflect]"), function (choice) {
-        choice.setAttribute("aria-pressed", choice === btn ? "true" : "false");
-      });
+      symReflectBox.value = btn.getAttribute("data-sym-reflect");
+      symReflectBox.dispatchEvent(new Event("input", { bubbles: true }));
       document.getElementById("canvasLive").textContent = "已选发现：" + btn.textContent;
     });
   });

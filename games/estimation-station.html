@@ -1042,12 +1042,22 @@
       : "进度：" + history.length + "/3 轮；已用策略：" + (names.join("、") || "尚无") + "。至少需要两种策略。";
   }
 
+  /* 发现句原来只同步「按钮 → 文本框」一个方向：孩子点过某句后，家长在家长层文本框里
+     改写或清空记录，按钮仍亮着按下的样子——亮着的是 A、记录里写的却是 B，清空后完成键
+     提示还没填、面板上却明明「已选」。和自然页快捷选项的失同步同一类：
+     文本框一有输入就按内容对齐按下状态，内容不再等于哪个选项就全部熄掉。 */
+  var estimateReflectBox = document.getElementById("estimateReflect");
+  function syncEstimateReflect() {
+    document.querySelectorAll('[data-estimate-reflect]').forEach(function (choice) {
+      choice.setAttribute("aria-pressed", String(choice.getAttribute("data-estimate-reflect") === estimateReflectBox.value));
+    });
+  }
+  estimateReflectBox.addEventListener("input", syncEstimateReflect);
+  syncEstimateReflect();
   Array.prototype.forEach.call(document.querySelectorAll('[data-estimate-reflect]'), function (btn) {
     btn.addEventListener("click", function () {
-      document.getElementById("estimateReflect").value = btn.getAttribute("data-estimate-reflect");
-      document.querySelectorAll('[data-estimate-reflect]').forEach(function (choice) {
-        choice.setAttribute("aria-pressed", String(choice === btn));
-      });
+      estimateReflectBox.value = btn.getAttribute("data-estimate-reflect");
+      estimateReflectBox.dispatchEvent(new Event("input", { bubbles: true }));
       liveCount.textContent = "已选发现：" + btn.textContent;
     });
   });

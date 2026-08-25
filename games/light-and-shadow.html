@@ -1178,12 +1178,20 @@
   function announce(m) { liveEl.textContent = m; }
 
   lightReflection.addEventListener('input', updateLightTask);
+  /* 发现句原来只同步「按钮 → 文本框」一个方向：点过某句后直接在文本框里改写或清空，
+     按钮仍亮着按下的样子——亮着的是 A、记录里写的却是 B，清空后完成键灰了按钮却还「已选」。
+     和自然页快捷选项的失同步同一类：文本框一有输入就按内容对齐按下状态。 */
+  function syncLightPhrases() {
+    document.querySelectorAll('[data-light-phrase]').forEach(function (item) {
+      item.setAttribute('aria-pressed', item.dataset.lightPhrase === lightReflection.value ? 'true' : 'false');
+    });
+  }
+  lightReflection.addEventListener('input', syncLightPhrases);
+  syncLightPhrases();
   Array.prototype.slice.call(document.querySelectorAll('[data-light-phrase]')).forEach(function (button) {
-    button.setAttribute('aria-pressed', 'false');
     button.addEventListener('click', function () {
-      document.querySelectorAll('[data-light-phrase]').forEach(function (item) { item.setAttribute('aria-pressed', item === button ? 'true' : 'false'); });
       lightReflection.value = button.dataset.lightPhrase;
-      updateLightTask();
+      lightReflection.dispatchEvent(new Event('input', { bubbles: true }));
       announce('已选发现：' + button.textContent.trim());
     });
   });
