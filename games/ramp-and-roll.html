@@ -1116,7 +1116,13 @@
   function checkFairPair() {
     fairPassed = false; fairChanged = '';
     if (S.trials.length < 2) {
-      fairResult.textContent = 'A 已完成。只改变高度、角度、跑道或球重中的一项，再锁定 B 的预测。';
+      /* 「跑道」「球重」滑杆都在家长区「详细设置」里（data-audience="parent"），
+         孩子模式下整块 display:none：A 轮做完，这句照旧请孩子在四项里挑一项改，
+         其中两项他满页找不到。照重力落体页 updateGravityTask 的做法拆成
+         data-audience 双 span 交给 kid.css 按模式收显——孩子面前真有的
+         只有高度、角度两根滑杆和「插旗并放球」按钮，就只说它们。 */
+      fairResult.innerHTML = '<span data-audience="parent">A 已完成。只改变高度、角度、跑道或球重中的一项，再锁定 B 的预测。</span>' +
+        '<span data-audience="kid-only">A 已完成。高度或角度只改一个，再插旗放球做 B。</span>';
     } else {
       var a = S.trials[0], b = S.trials[1];
       var changed = ['ang', 'h', 'mu', 'm'].filter(function (key) { return Math.abs(a[key] - b[key]) > 0.0001; });
