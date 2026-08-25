@@ -574,7 +574,10 @@
   document.getElementById("completeTask").addEventListener("click",function(){
     var prediction=document.getElementById("weatherPredict").value.trim(),result=document.getElementById("weatherResult").value.trim(),reflection=document.getElementById("weatherReflect").value.trim();
     var all=Object.keys(done).every(function(k){return done[k]});
-    if(!prediction||!all||!result||!reflection){taskStatus.textContent="还不能完成：请填写预测，运行四个模块，并写下结果和反思。";return}
+    /* 预测、结果、反思的文本框都在家长层（data-audience="parent"），孩子模式 display:none：
+       这句要孩子「填写」「写下」，他满页找不到能写字的地方——孩子的路径是四步里的快捷选项按钮。
+       照斜坡试车场 checkFairPair 的做法拆成 data-audience 双 span，孩子版只说点按钮。 */
+    if(!prediction||!all||!result||!reflection){taskStatus.innerHTML='<span data-audience="parent">还不能完成：请填写预测，运行四个模块，并写下结果和反思。</span><span data-audience="kid-only">还不能完成：先点一个预测，运行四个模块，再各点一条结果和反思。</span>';return}
     var saved=window.Progress&&Progress.complete("nature/weather.html","完成云、雨滴、雷声测距和气象站四项观察，并记录两个天气证据。");
     taskStatus.textContent=saved?"已完成任务：天气观察证据已保存到我的足迹。":"任务四步已完成；当前浏览器无法保存足迹。";
   });
