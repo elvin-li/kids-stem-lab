@@ -1453,7 +1453,12 @@
 
     if (!S.revealed) {
       el.vMain.textContent = '先猜猜：哪个大？';
-      el.vSub.textContent = '让孩子说出理由，再点「看答案」或下面的按钮。';
+      /* 「看答案」和 A 大 / B 大 / 一样大的猜测按钮都在家长栏（data-audience="parent"）：
+         家长出完题切到孩子模式，这句照旧让孩子去点看不见的按钮。拆成两个
+         data-audience span 交给 kid.css 按模式收显：孩子版只说他能做的——说理由，
+         请家长揭晓。 */
+      el.vSub.innerHTML = '<span data-audience="parent">让孩子说出理由，再点「看答案」或下面的按钮。</span>' +
+        '<span data-audience="kid-only">说说你的理由，再请家长揭晓答案。</span>';
       return;
     }
 
@@ -1543,6 +1548,14 @@
     document.getElementById('kidFracBLabel').textContent = 'B ' + S.b.n + '/' + S.b.d;
     var va = S.a.n / S.a.d, vb = S.b.n / S.b.d;
     var conclusion = document.getElementById('kidFractionConclusion');
+    /* 猜一猜进行中结论卡不能先说答案：上面的判定区特意写着「先猜猜：哪个大？」，
+       这里却直接印出「A 更长、更大：3/4 > 2/5」，孩子往下瞟一眼游戏就废了。 */
+    if (!S.revealed) {
+      /* 同判定区：「看答案」在家长栏，孩子模式下点不到，孩子版不提这颗按钮。 */
+      conclusion.innerHTML = '<span data-audience="parent">先猜猜：哪条更长？点「看答案」验证</span>' +
+        '<span data-audience="kid-only">先猜猜：哪条更长？请家长帮你揭晓</span>';
+      return;
+    }
     if (S.mode === 'add') {
       var L = lcm(S.a.d, S.b.d);
       var total = S.a.n * (L / S.a.d) + S.b.n * (L / S.b.d);
