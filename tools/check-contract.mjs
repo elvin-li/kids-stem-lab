@@ -408,7 +408,10 @@ for (const path of files) {
 
   /* 共享壳资源必须与 Service Worker 使用同一版本，防止新 HTML 混入旧 CSS/JS。 */
   if (shellVersion) {
-    const mandatoryShellResources = ['assets/css/base.css', 'assets/css/kid.css', 'assets/js/pwa.js'];
+    /* print.css 同为 CORE 里的共享样式表，也在持续修打印缺陷，之前却是唯一
+       不带 ?v= 的一张：没装上 Service Worker 的 HTTP 访客会拿新页面配旧打印样式，
+       改好的打印页在他们那儿迟迟不生效。三张壳样式表一并强制同版本。 */
+    const mandatoryShellResources = ['assets/css/base.css', 'assets/css/kid.css', 'assets/css/print.css', 'assets/js/pwa.js'];
     /* illustrations.js 和 data/playful.js 同样在 sw.js 的 CORE 里，却一直没被这条
        规则覆盖：升过版本的页面配上旧插图库，卡面和图标就会对不上。 */
     const optionalShellResources = [
