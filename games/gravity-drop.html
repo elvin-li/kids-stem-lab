@@ -176,7 +176,11 @@
     <div class="stage-head">
       <div>
         <h2 id="stageTitle">落体实验舞台</h2>
-        <p>保持高度和重力不变，完成有空气、真空各一次。</p>
+        <!-- 「高度」「重力」都在下面家长区的滑杆里（data-audience="parent"），孩子模式下
+             整块 display:none：孩子照着「保持高度和重力不变」满页找不到这两样东西。
+             孩子面前真有的只是「有空气 / 真空」开关，就只说它；家长版原句保留，
+             打印层按家长版出纸（print.css 收掉 kid-only）。 -->
+        <p><span data-audience="parent">保持高度和重力不变，完成有空气、真空各一次。</span><span data-audience="kid-only">「有空气」和「真空」各做一次，看看谁先落地。</span></p>
       </div>
       <span class="condition-badge" id="airVal">有空气</span>
     </div>
@@ -877,7 +881,13 @@
     if (!both) {
       var missing = !comparison.air && !comparison.vacuum ? '有空气和真空' : (!comparison.air ? '有空气' : '真空');
       compareResultEl.textContent = '还需要完成' + missing + '实验。';
-      gravityTaskStatus.textContent = '保持高度和重力不变，再完成另一种空气条件。';
+      /* 「保持高度和重力不变」指的是家长区里的高度、重力滑杆（data-audience="parent"），
+         孩子模式下整块 display:none，孩子照着提示满页找不到能动这两样的东西。
+         这句初始化时就要写一次，而那一刻 playful.js 还没在 <html> 上写 data-mode，
+         按模式分支拿不到当前模式——所以两种说法都写进去，交给 kid.css 按模式收显
+         （中途切换模式也跟着换）：孩子只说他面前真有的空气开关。 */
+      gravityTaskStatus.innerHTML = '<span data-audience="parent">保持高度和重力不变，再完成另一种空气条件。</span>' +
+        '<span data-audience="kid-only">只切换「有空气 / 真空」，两种各松手一次。</span>';
     } else if (!matched) {
       compareResultEl.textContent = '两次的高度或重力不同，还不能比较。';
       gravityTaskStatus.textContent = '请按同一高度、同一重力重做其中一次。';
