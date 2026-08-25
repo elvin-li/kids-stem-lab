@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>少儿数理启蒙 · 数学 物理 科学 资源库</title>
 <meta name="description" content="面向 4–13 岁孩子的数学、物理、科学启蒙。经过筛选的欧美优质项目，加一组可以直接玩的互动实验，按年龄和学科分类。">
-<link rel="stylesheet" href="assets/css/base.css?v=61">
-<link rel="stylesheet" href="assets/css/kid.css?v=61" media="screen">
-<link rel="stylesheet" href="assets/css/print.css?v=61" media="print">
+<link rel="stylesheet" href="assets/css/base.css?v=62">
+<link rel="stylesheet" href="assets/css/kid.css?v=62" media="screen">
+<link rel="stylesheet" href="assets/css/print.css?v=62" media="print">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b0f1a">
 <link rel="icon" href="assets/icons/app-icon.svg" type="image/svg+xml">
@@ -390,12 +390,12 @@
 
 </main>
 
-<script src="data/resources.js?v=61"></script>
-<script src="data/explorations.js?v=61"></script>
-<script src="assets/js/illustrations.js?v=61"></script>
-<script src="data/playful.js?v=61"></script>
-<script src="assets/js/progress.js?v=61"></script>
-<script src="assets/js/playful.js?v=61"></script>
+<script src="data/resources.js?v=62"></script>
+<script src="data/explorations.js?v=62"></script>
+<script src="assets/js/illustrations.js?v=62"></script>
+<script src="data/playful.js?v=62"></script>
+<script src="assets/js/progress.js?v=62"></script>
+<script src="assets/js/playful.js?v=62"></script>
 <script>
 (function () {
   "use strict";
@@ -685,7 +685,29 @@ var challenge=window.Playful&&Playful.randomTask?Playful.randomTask(x.id):null;
 var mark=document.getElementById("randomRouteMark"),slug=String(x.id).replace(/^.*\//,"").replace(/\.html$/,""),tile=window.ILLUSTRATIONS&&ILLUSTRATIONS.tileIcon&&ILLUSTRATIONS.tileIcon(slug);
 if(mark){mark.innerHTML=tile||"";if(!tile)mark.textContent=x.icon||"";mark.hidden=!(tile||x.icon);}
 output.textContent=x.title+" · "+(challenge?challenge.lead+"："+challenge.text:"任务："+x.task);link.href=x.id;link.hidden=false;link.textContent="前往“"+x.title+"” →";});
-  window.addEventListener("kids-stem:progress",renderRecentPlayful);renderRecentPlayful();
+  renderRecentPlayful();
+
+  /* 足迹一变就按快照对比重画首页的足迹块。两个目录页都整页订阅了
+     kids-stem:progress——它既在本窗口的足迹变化时派发，也由 progress.js 的
+     storage 监听把别的标签页里的变化转发过来。首页原先只把「最近收藏卡/作品」
+     那一格挂上了事件：家长开着首页、孩子在另一个标签页里完成任务，收藏卡
+     当场亮出新卡，旁边画着同一份足迹的三块（「继续探索」的状态角标、孩子
+     首页「继续」大图卡的去向、「已访问 n / 18」）却谁也不听，一屏两个说法。
+     指纹只算 pages/recent/notes/completions/works 这些真被画出来的层——
+     偏好也在同一个事件里派发，切一次孩子/家长模式不该让 aria-live 的
+     实验格子白白重报一遍。 */
+  function trailFingerprint(progressData) {
+    return JSON.stringify([progressData.pages, progressData.recent, progressData.notes, progressData.completions, progressData.works]);
+  }
+  var trailSnapshot = trailFingerprint(data);
+  function refreshTrail() {
+    var fresh = trailFingerprint(readProgress());
+    if (fresh === trailSnapshot) return;
+    trailSnapshot = fresh;
+    renderTrailSections();
+    renderRecentPlayful();
+  }
+  window.addEventListener("kids-stem:progress", refreshTrail);
 
   /* 七个自然专题页和两个目录页都补了返回导航的重同步，首页一直缺着：
      孩子从这里进太空站完成任务、按「返回」回来，bfcache 把整页原样解冻，
@@ -696,18 +718,13 @@ output.textContent=x.title+" · "+(challenge?challenge.lead+"："+challenge.text
      解冻时先让 Playful 按存下的偏好对齐模式，再对比足迹快照，
      真变了才重画，没变就不动，免得 aria-live 的实验格子白白重报一遍。
      back_forward 里 scripts 重跑的那种恢复本来就读到新足迹，不用管。 */
-  var trailSnapshot = JSON.stringify(data);
   window.addEventListener("pageshow", function (event) {
     if (!event.persisted) return;
     if (window.Playful && Playful.syncPreferences) Playful.syncPreferences(document);
-    var fresh = JSON.stringify(readProgress());
-    if (fresh === trailSnapshot) return;
-    trailSnapshot = fresh;
-    renderTrailSections();
-    renderRecentPlayful();
+    refreshTrail();
   });
 })();
 </script>
-<script src="assets/js/pwa.js?v=61"></script>
+<script src="assets/js/pwa.js?v=62"></script>
 </body>
 </html>
