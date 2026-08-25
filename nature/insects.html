@@ -2336,8 +2336,22 @@
  }
 
  function strength() {
- var kg = +kgEl.value || 26;
+ /* 体重框清空时 value 是空串，+"" 得 0，旧的 || 26 会悄悄退回默认体重：
+    孩子把 26 删掉准备填自己的体重，两根条立刻按 26 公斤画出「能举起
+    1.3 吨」——没量过的数被当成量好的画了出来。同一页的蟋蟀温度计
+    早为同一件事补过空输入守卫。空着或不是正数就不画条，先请孩子填数。 */
+ var raw = kgEl.value.trim();
+ var kg = +raw;
  var mult = +whoEl.value || 50;
+ if (raw === "" || !isFinite(kg) || kg <= 0) {
+ barsEl.textContent = "";
+ var wait = document.createElement("p");
+ wait.style.cssText = "margin:0;font-size:.84rem;color:var(--ink-mid)";
+ wait.textContent = "先填上你的体重（公斤），这里再画出对比条。";
+ barsEl.appendChild(wait);
+ stNote.textContent = "";
+ return;
+ }
  var lifted = kg * mult;
  var normal = kg * 0.5; // 普通孩子大致能提起自身一半体重
  var max = Math.max(lifted, normal);
@@ -2357,7 +2371,9 @@
  "肌肉力量随截面积（长度的平方）增长，体重随体积（长度的立方）增长。" +
  "个子越小，力量相对体重就越占优势。这跟蚂蚁「天生大力士」没关系，纯粹是几何。";
  } else {
- txt += " 这就是你真实的大概水平。";
+ /* 1 倍不是「真实水平」：上面那根「你现在」的条画的就是普通孩子
+    大约半个体重的水平，同屏出现两个互相矛盾的「真实」会把人绕晕。 */
+ txt += " 举起整整一个自己听起来普通？普通孩子平时大约只能提起半个体重——就是上面那根「你现在」的条。";
  }
  stNote.innerHTML = txt;
  }
@@ -2403,8 +2419,12 @@
  }
 
  function cricket() {
- var n = +chirp.value;
- if (isNaN(n) || n < 0) { ctemp.textContent = "—"; return; }
+ /* 数字框清空时 value 是空串，+"" 得 0 而不是 NaN：原来会照算出 4.4 °C
+    还附一句「这么凉蟋蟀基本不叫了」——什么都没填却报了个具体温度。
+    空着就该显示占位符，等孩子数完叫声再算。 */
+ var raw = chirp.value.trim();
+ var n = +raw;
+ if (raw === "" || isNaN(n) || n < 0) { ctemp.textContent = "—"; return; }
  var f = n + 40; // 多尔贝定律
  var c = (f - 32) * 5 / 9;
  var html = c.toFixed(1) + "\u00a0°C <small>（" + f + " °F）</small>";
