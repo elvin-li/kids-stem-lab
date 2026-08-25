@@ -3338,8 +3338,16 @@ window.ILLUSTRATIONS = (function () {
       '<g stroke="#4f8f3a" stroke-width="3" fill="none" stroke-linecap="round"><path d="M52 88 L52 58"/></g>' +
       '<g fill="#ff8fb0"><circle cx="44" cy="52" r="8"/><circle cx="60" cy="52" r="8"/><circle cx="52" cy="44" r="8"/><circle cx="52" cy="60" r="8"/></g>' +
       '<circle cx="52" cy="52" r="5.4" fill="#ffd24a"/>' +
-      '<g><ellipse cx="52" cy="36" rx="11" ry="6" fill="#e4f0f8" opacity=".85" stroke="#b6d0e2" stroke-width="1.2" transform="rotate(-22 52 36)"/>' +
+      /* 描述承诺「六条腿和两对翅膀都数得清」：远侧的一对翅和三条腿画在身体后面、
+         颜色略浅，近远各半——翅前后各两片共两对，腿一侧三条共六条。 */
+      '<g><g fill="#cfe2f0" opacity=".85" stroke="#a3c2d8" stroke-width="1.2">' +
+      '<ellipse cx="48" cy="30" rx="10" ry="5" transform="rotate(-52 48 30)"/>' +
+      '<ellipse cx="63" cy="32" rx="8" ry="4.4" transform="rotate(14 63 32)"/>' +
+      "</g>" +
+      '<ellipse cx="52" cy="36" rx="11" ry="6" fill="#e4f0f8" opacity=".85" stroke="#b6d0e2" stroke-width="1.2" transform="rotate(-22 52 36)"/>' +
       '<ellipse cx="60" cy="36" rx="9" ry="5" fill="#e4f0f8" opacity=".85" stroke="#b6d0e2" stroke-width="1.2" transform="rotate(-6 60 36)"/>' +
+      '<g stroke="#5c4a38" stroke-width="1.6" fill="none" stroke-linecap="round">' +
+      '<path d="M50 47 L44 53"/><path d="M55 48 L51 55"/><path d="M61 47 L58 54"/></g>' +
       '<ellipse cx="58" cy="44" rx="10" ry="7" fill="#f0b429"/>' +
       '<rect x="53" y="37" width="3.4" height="14" fill="#33261a" transform="rotate(-8 55 44)"/>' +
       '<rect x="60" y="37" width="3.4" height="14" fill="#33261a" transform="rotate(-8 62 44)"/>' +
