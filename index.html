@@ -607,12 +607,16 @@
   var ageBox=document.getElementById("agePaths");
   ageGroups.forEach(function(g){
     var matches=all.filter(function(x){var r=ageRange(x.age);return r[0]<=g.hi&&r[1]>=g.lo;});
+    /* 标题原来写全部适龄数（11～18 项），下面却只渲染前 3 条链接：说 18、数一数
+       只有 3，和「先玩起来」角标说 11 只摆 6 张卡同一类。照同样的改法写成
+       「精选 3 / N」，其余的从上面一句里的学习路径入口看。 */
+    var shownMatches=matches.slice(0,3);
     var article=document.createElement("article");article.className="step";
     var age=document.createElement("span");age.className="age";age.textContent=g.label;
-    var title=document.createElement("b");title.textContent=matches.length+" 项适龄探索";
+    var title=document.createElement("b");title.textContent=(shownMatches.length<matches.length?"精选 "+shownMatches.length+" / "+matches.length:String(matches.length))+" 项适龄探索";
     var note=document.createElement("p");note.textContent=g.note;
     var links=document.createElement("div");links.className="age-links";
-    matches.slice(0,3).forEach(function(x){var a=document.createElement("a");a.href=x.id;a.textContent=x.icon+" "+x.title;links.appendChild(a);});
+    shownMatches.forEach(function(x){var a=document.createElement("a");a.href=x.id;a.textContent=x.icon+" "+x.title;links.appendChild(a);});
     article.appendChild(age);article.appendChild(title);article.appendChild(note);article.appendChild(links);ageBox.appendChild(article);
   });
   /* 角标原来写全部实验数（11 个），下面的格子却只渲染前 6 张卡：标题说 11、
