@@ -905,7 +905,11 @@
      NASA 图片」——其实一个字节也没传。缓存命中单独计数：全是缓存就说缓存，
      出现过一次真失败就老实说离线。
      还得单独数 none（请求成功但接口没给出可用图片）：接口都应答了说明网络
-     通着，不能混进 fail 让徽章报「离线模式」——孩子明明在线。 */
+     通着，不能混进 fail 让徽章报「离线模式」——孩子明明在线。
+     none 分支原来还挂着 fail === 0 的门闩：APOD 挂掉（DEMO_KEY 常被限流）
+     加上图片墙空结果，fail=1、none=1 一个分支都进不去，徽章从头到尾停在
+     「正在连接 NASA…」。none 应答本身就是网络通着的铁证；真断网自有前面
+     fail>=2 那关，它排在这条之前，先判先赢。 */
   function mark(ok) {
     if (ok === "cache") netState.cache++;
     else if (ok === "none") netState.none++;
@@ -917,7 +921,7 @@
     } else if (netState.fail >= 2 || (netState.fail > 0 && netState.cache > 0)) {
       badge.className = "badge-live off";
       netTxt.textContent = netState.cache > 0 ? "未联网 · 显示上次缓存的 NASA 图片" : "离线模式 · 显示内置数据";
-    } else if (netState.none > 0 && netState.fail === 0) {
+    } else if (netState.none > 0) {
       badge.className = "badge-live on";
       netTxt.textContent = "已连上 NASA · 这次没拿到图片";
     } else if (netState.cache >= 2) {
