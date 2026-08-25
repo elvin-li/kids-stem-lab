@@ -2624,7 +2624,8 @@ window.ILLUSTRATIONS = (function () {
     '<g stroke="#9fb2be" stroke-width="2" stroke-linecap="round">' +
     '<path d="M24 7 L24 11"/><path d="M24 37 L24 41"/><path d="M7 24 L11 24"/><path d="M37 24 L41 24"/></g>' +
     '<path d="M34 14 L27 27 L14 34 L21 21Z" fill="#d1495b"/>' +
-    '<path d="M14 34 L21 21 L27 27Z" fill="#e8eef2" stroke="#4a6272" stroke-width="1.2" stroke-linejoin="round"/>' +
+    /* 指南尾那半按描述涂蓝：原先的 #e8eef2 和表盘底色几乎同色，「双色」只剩红色一半看得见。 */
+    '<path d="M14 34 L21 21 L27 27Z" fill="#4d7fbe" stroke="#2f5a8e" stroke-width="1.2" stroke-linejoin="round"/>' +
     '<circle cx="24" cy="24" r="2.6" fill="#4a6272"/>');
 
   defIcon("teddy", "孩子模式", "一只小熊的正脸，两只圆耳朵，鼻子是一个深色的小三角。",
