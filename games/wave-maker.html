@@ -1374,6 +1374,27 @@
   mWave.addEventListener('click', function () { setMode('wave'); });
   mTank.addEventListener('click', function () { setMode('tank'); });
 
+  /* 两个大实验按钮承诺的是「看最下面的结果波变高／变平」，可它们只换参数不换模式：
+     舞台停在水波槽时按下去，孩子看到的仍是干涉图，结果卡却已经打上「完成 ✓」。
+     按下的瞬间先把舞台切回两列波，让按钮说的和画面上出现的是同一件事。
+     挂在按钮条的捕获阶段，好让 applyPreset 在正确的模式里跑，
+     它那句「已应用预设」的播报也不会被换模式的播报盖掉。 */
+  document.querySelector('.kid-action-strip').addEventListener('click', function (e) {
+    if (MODE !== 'wave' && e.target.closest && e.target.closest('.wave-choice')) setMode('wave');
+  }, true);
+
+  /* 水波槽的开关收在「家长与进阶工具」折叠里，孩子模式下整块 display:none。
+     家长切到水波槽后把设备换回孩子模式，舞台上留着的是干涉图——
+     结果卡讲的「最下面的结果波」画面上根本没有，孩子也找不到任何开关切回来。
+     和估算站费米面板同一类「家长层专属舞台状态」：模式偏好一变就检查，
+     孩子模式下还停在水波槽就替孩子切回两列波。
+     读偏好而不读 data-mode，因为进度事件先于 <html> 属性更新派发。 */
+  window.addEventListener('kids-stem:progress', function () {
+    if (MODE !== 'tank') return;
+    if (!(window.Playful && Playful.getPreference && Playful.getPreference('mode') === 'kid')) return;
+    setMode('wave');
+  });
+
   var liveEl = document.getElementById('live');
   function announce(msg) { liveEl.textContent = msg; }
 
