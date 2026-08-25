@@ -567,6 +567,23 @@
     taskStatus.textContent=saved?"已完成任务：天气观察证据已保存到我的足迹。":"任务四步已完成；当前浏览器无法保存足迹。";
   });
   if(window.Progress&&Progress.getCompletion(PAGE_ID)) taskStatus.textContent="此任务已完成；可以用新一次天气观察更新证据。";
+
+  /* 从别的页面按「返回」回来时，浏览器在 load 之后、pageshow 之前才把上次填的
+     表单值放回来，而且一个事件也不发：文本框里躺着上次点选的预测，快捷按钮却
+     全部熄灭；气温、露点、雨滴、秒表几个滑块停在上次的位置，舞台读数和图讲的
+     还是初始那一组——一屏两个说法。给每个控件补发一次它平时听的那个事件，
+     走各自现成的同步路；首次打开是 navigate，不用补。
+     偏好控件以 Progress 里存的偏好为准，交给 Playful 重新对齐。 */
+  window.addEventListener("pageshow",function(event){
+    var nav=performance.getEntriesByType?performance.getEntriesByType("navigation")[0]:null;
+    if(!event.persisted&&!(nav&&(nav.type==="back_forward"||nav.type==="reload"))) return;
+    Array.prototype.forEach.call(document.querySelectorAll("input, select, textarea"),function(field){
+      if(field.hasAttribute("data-playful-preference")) return;
+      var kind=field.tagName==="SELECT"||field.type==="radio"||field.type==="checkbox"?"change":"input";
+      field.dispatchEvent(new Event(kind,{bubbles:true}));
+    });
+    if(window.Playful&&Playful.syncPreferences) Playful.syncPreferences(document);
+  });
 })();
 </script>
 <script src="../assets/js/pwa.js?v=49"></script>
