@@ -535,15 +535,23 @@
   });
 
   var taskStatus=document.getElementById("taskStatus");
-  [].forEach.call(document.querySelectorAll(".quick-picks[data-fill] .kid-choice"),function(button){
-    button.addEventListener("click",function(){
-      var group=button.parentNode;
-      [].forEach.call(group.querySelectorAll(".kid-choice"),function(other){
-        other.setAttribute("aria-pressed",other===button?"true":"false");
+  /* 快捷选项原来只同步「按钮 → 文本框」一个方向：孩子按下某个选项后，家长直接改写
+     甚至清空文本框，按钮仍亮着按下的样子——面板上明明「已选」，完成任务却提示还没填预测，
+     或者亮着的是 A、记录里写的是 B。和分数实验室的猜测按钮失同步同一类：
+     文本框一有输入就按内容对齐按下状态，内容不再等于哪个选项就全部熄掉。 */
+  [].forEach.call(document.querySelectorAll(".quick-picks[data-fill]"),function(group){
+    var field=document.getElementById(group.getAttribute("data-fill"));
+    function syncPicks(){
+      [].forEach.call(group.querySelectorAll(".kid-choice"),function(choice){
+        choice.setAttribute("aria-pressed",choice.getAttribute("data-value")===field.value?"true":"false");
       });
-      var field=document.getElementById(group.getAttribute("data-fill"));
-      field.value=button.getAttribute("data-value");
-      field.dispatchEvent(new Event("input",{bubbles:true}));
+    }
+    field.addEventListener("input",syncPicks);
+    [].forEach.call(group.querySelectorAll(".kid-choice"),function(button){
+      button.addEventListener("click",function(){
+        field.value=button.getAttribute("data-value");
+        field.dispatchEvent(new Event("input",{bubbles:true}));
+      });
     });
   });
   document.getElementById("completeTask").addEventListener("click",function(){

@@ -874,13 +874,23 @@
     if (stageNotes[stage]) lookResult.textContent = stageNotes[stage];
   });
 
-  [].forEach.call(document.querySelectorAll(".quick-picks[data-fill] .kid-choice"), function (button) {
-    button.addEventListener("click", function () {
-      var group = button.parentNode;
-      var field = document.getElementById(group.getAttribute("data-fill"));
-      selectOne(button, ".kid-choice");
-      field.value = button.getAttribute("data-value");
-      field.dispatchEvent(new Event("input", { bubbles: true }));
+  /* 快捷选项原来只同步「按钮 → 文本框」一个方向：按下选项后家长改写或清空文本框，
+     按钮仍亮着——面板上「已选」，完成任务却提示还没填，或者亮着 A、记录里写的是 B。
+     和上面生命周期下拉的失同步同一类：文本框一有输入就按内容对齐按下状态，
+     内容不再等于哪个选项就全部熄掉。 */
+  [].forEach.call(document.querySelectorAll(".quick-picks[data-fill]"), function (group) {
+    var field = document.getElementById(group.getAttribute("data-fill"));
+    function syncPicks() {
+      [].forEach.call(group.querySelectorAll(".kid-choice"), function (choice) {
+        choice.setAttribute("aria-pressed", choice.getAttribute("data-value") === field.value ? "true" : "false");
+      });
+    }
+    field.addEventListener("input", syncPicks);
+    [].forEach.call(group.querySelectorAll(".kid-choice"), function (button) {
+      button.addEventListener("click", function () {
+        field.value = button.getAttribute("data-value");
+        field.dispatchEvent(new Event("input", { bubbles: true }));
+      });
     });
   });
 
