@@ -540,6 +540,12 @@
         }
         name = t.v; line = t.line; kind = lookup(CMD, name);
         if (!kind) {
+          /* 「海龟听得懂这些话」整块是家长层（parent-deep-dive + data-audience="parent"），
+             孩子模式（默认视图）下 display:none——让孩子去找一块看不见的面板等于没说。
+             孩子模式直接把能用的命令列在报错里；家长模式仍指向那块面板。 */
+          if (document.documentElement.getAttribute("data-mode") === "kid") {
+            throw { msg: "我不认识命令「" + name + "」。海龟听得懂：前进、后退、右转、左转、重复、抬笔、落笔、颜色、回家", line: line };
+          }
           throw { msg: "我不认识命令「" + name + "」。右边「海龟听得懂这些话」里列出了能用的命令", line: line };
         }
         pos++;
