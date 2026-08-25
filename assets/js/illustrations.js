@@ -1877,9 +1877,10 @@ window.ILLUSTRATIONS = (function () {
       '<path d="M26 30 L24 20"/><path d="M18 30 L12 22"/>' +
       '<path d="M26 66 L24 76"/><path d="M18 66 L12 74"/>' +
       "</g>" +
+      /* 俯视图：左右各三条腿才是六条。上排的后腿是下排 M92 那条沿身体中线（y=48）的镜像。 */
       '<g stroke="#4a2b16" stroke-width="3" fill="none" stroke-linecap="round">' +
       '<path d="M58 62 C54 72 48 78 40 82"/><path d="M74 64 C72 74 68 80 62 84"/><path d="M92 64 C94 74 94 80 90 84"/>' +
-      '<path d="M58 34 C54 24 48 18 40 14"/><path d="M74 32 C72 22 68 16 62 12"/>' +
+      '<path d="M58 34 C54 24 48 18 40 14"/><path d="M74 32 C72 22 68 16 62 12"/><path d="M92 32 C94 22 94 16 90 12"/>' +
       "</g>" +
       '<rect x="36" y="38" width="20" height="20" rx="6" fill="#6b3f21"/>' +
       '<rect x="52" y="31" width="24" height="34" rx="9" fill="#7a4826"/>' +
