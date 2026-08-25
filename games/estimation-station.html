@@ -491,6 +491,17 @@
       if (m === "count") { fit(); draw(phase === "done" || phase === "flash"); }
     });
   });
+  /* 模式标签条和费米面板都属于家长层：家长切到费米问题后把设备换回孩子模式，
+     数糖豆面板还挂着标签切换写上的 hidden，费米面板又被孩子模式整个藏掉——
+     孩子面前连一个实验都不剩，只有横幅和任务卡，标签条也看不见，自己救不回来。
+     模式偏好一变就检查：孩子模式下费米还开着，就替孩子按回「数糖豆」。
+     读偏好而不读 data-mode，是因为这个事件先于 <html> 属性更新派发；
+     切换后的重排会触发 resize/ResizeObserver，托盘尺寸随后自行校正。 */
+  window.addEventListener("kids-stem:progress", function () {
+    if (!panels.count.hidden) return;
+    if (!(window.Playful && Playful.getPreference && Playful.getPreference("mode") === "kid")) return;
+    document.getElementById("tab-count").click();
+  });
 
   /* ================= 模式一：数糖豆 ================= */
   var cv = document.getElementById("cv");
