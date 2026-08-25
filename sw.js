@@ -1,5 +1,6 @@
 /* 少儿数理启蒙离线缓存。外部科学 API 不在此缓存，页面自行超时并降级。 */
 const CACHE = "kids-stem-shell-v70";
+const SHELL_VERSION = Number(CACHE.slice(CACHE.lastIndexOf("-v") + 2));
 const CORE = [
   "./", "./index.html", "./manifest.webmanifest",
   "./assets/css/base.css", "./assets/css/kid.css", "./assets/css/print.css",
@@ -65,6 +66,17 @@ self.addEventListener("fetch", (event) => {
         }
         return response;
       });
+      /* 请求的 ?v= 比本壳还新，只发生在一个窗口里：升级刚部署、导航（网络优先）
+         已经拿到了新 HTML，可旧 SW 还在掌管子资源——新 SW 要等 load 后的注册检查
+         才安装，skipWaiting/clients.claim 也救不回这个已经开始渲染的页面。此时照旧
+         cached||network 会把上一版的 CSS/JS 配给新 HTML 用满整个页面周期（共享的
+         kid.css、playful.js 与页面结构是成对改的）。这一刻网络必然通着——新 HTML
+         本身刚从网络来——所以改走网络优先；真断网（比如上次部署后新 HTML 被运行时
+         缓存收进了旧壳、SW 升级却没装完）再退回旧缓存，不比原来差。 */
+      const assetVersion = Number(url.searchParams.get("v")) || 0;
+      if (assetVersion > SHELL_VERSION) {
+        return network.catch(() => cached);
+      }
       return cached || network;
     })
   );
