@@ -289,7 +289,8 @@
     </div>
     <p class="sec-note">
       这些是本站自己做的互动实验，直接在浏览器里跑。每个都针对一个具体概念，
-      玩 10 分钟能有一次「原来是这样」的时刻。下面每张卡片标了适合年龄。
+      玩 10 分钟能有一次「原来是这样」的时刻。下面每张卡片标了适合年龄；
+      全部实验在<a href="games/index.html">互动实验室</a>，可按学科、年龄和状态筛选。
     </p>
     <div class="tiles" id="explorationTiles" aria-live="polite"></div>
   </section>
@@ -614,7 +615,11 @@
     matches.slice(0,3).forEach(function(x){var a=document.createElement("a");a.href=x.id;a.textContent=x.icon+" "+x.title;links.appendChild(a);});
     article.appendChild(age);article.appendChild(title);article.appendChild(note);article.appendChild(links);ageBox.appendChild(article);
   });
-  document.getElementById("labIntroCount").textContent=all.filter(function(x){return x.type==="experiment";}).length+" 个实验 · 无需注册";
+  /* 角标原来写全部实验数（11 个），下面的格子却只渲染前 6 张卡：标题说 11、
+     数一数只有 6，和海底世界「三个实验四张卡」同一类。角标改成如实的
+     「精选 6 / 11 个」，其余的从旁边的入口进互动实验页看。 */
+  var experiments=all.filter(function(x){return x.type==="experiment";}),featuredExperiments=experiments.slice(0,6);
+  document.getElementById("labIntroCount").textContent=(featuredExperiments.length<experiments.length?"精选 "+featuredExperiments.length+" / "+experiments.length:String(experiments.length))+" 个实验 · 无需注册";
   function tile(x, continued) {
     var a = document.createElement("a"); a.className = "tile " + (x.subject === "physics" ? "p" : x.subject === "code" ? "c" : x.type === "nature" ? "s" : "m"); a.href = x.id;
     var icon = document.createElement("span"); icon.className = "ic"; icon.textContent = x.icon;
@@ -626,7 +631,7 @@
     a.appendChild(icon); a.appendChild(h); a.appendChild(p); a.appendChild(go); return a;
   }
   var featured=document.getElementById("explorationTiles");
-  all.filter(function(x){return x.type === "experiment";}).slice(0,6).forEach(function(x){featured.appendChild(tile(x,false));});
+  featuredExperiments.forEach(function(x){featured.appendChild(tile(x,false));});
   var cont=document.getElementById("continueTiles"), recent=data.recent.map(function(id){return byId[id];}).filter(Boolean).slice(0,4),kidContinue=document.getElementById("kidContinue");
   if (!recent.length) recent=all.filter(function(x){return x.age.indexOf("4") === 0 || x.age.indexOf("5") === 0;}).slice(0,4);
   if(kidContinue&&recent[0])kidContinue.href=recent[0].id;
