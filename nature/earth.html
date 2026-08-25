@@ -1240,6 +1240,18 @@
       var kind = field.tagName === "SELECT" || field.type === "radio" || field.type === "checkbox" ? "change" : "input";
       field.dispatchEvent(new Event(kind, { bubbles: true }));
     });
+    /* 案卷是浏览器恢复的，地图不是：脚本重跑把地图画回「还没有画圆」，案卷里
+       却躺着恢复回来的「三个距离圆交在同一个红点上」——案卷说圆交在红点，旁边
+       的地图上一个圆也没有，operated 也归了零，点「完成任务」还会被要求重画。
+       只认「画圆」按钮生成的那句开头（第 3 步快捷按钮填的是另一句「三个距离圆
+       最接近红点」，不算数）：圆心和台站是写死的，照原样重画就是当时那张图，
+       结果行同步补回，operated 一并恢复。bfcache 复活时整页原样，重画一遍不变。 */
+    if (result.value.indexOf("三个距离圆交在同一个红点上（") === 0) {
+      drawTriMap(true);
+      operated = true;
+      output.textContent = result.value + "这是内置教学模拟，不是 USGS 实时事件。";
+      if (status.textContent === "尚未完成：先完成三角定位。") status.textContent = "红点找到了！再完成预测和反思就能保存。";
+    }
     if (window.Playful && Playful.syncPreferences) Playful.syncPreferences(document);
   });
 })();
