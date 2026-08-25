@@ -749,19 +749,29 @@
   }
 
   /* ---------- 任务 / 判定 ---------- */
+  /* 预测有两条路：孩子模式这排数字按钮、家长模式的输入框＋「就猜这个数」。
+     原来只同步「按钮 → 输入框」一个方向：家长填好数字锁定后，这排按钮
+     一颗也不亮、看着还能点，按下去却被 lock.disabled 的守卫悄悄吞掉——
+     和关卡三条路失同步同一类。两条路都走这一个同步器：按下状态跟着输入框的值走，
+     锁定后没选中的一起停用；选中的那颗留着可聚焦，免得焦点被扔回 body。 */
+  function syncPredictChoices() {
+    var value = document.getElementById('numPredict').value.trim();
+    var locked = document.getElementById('lockPredict').disabled;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-number-predict]'), function (choice) {
+      var on = value !== '' && choice.getAttribute('data-number-predict') === value;
+      choice.setAttribute('aria-pressed', String(on));
+      choice.disabled = locked && !on;
+    });
+  }
   function chooseKidPrediction() {
     var input = document.getElementById('numPredict');
     var lock = document.getElementById('lockPredict');
     /* 锁过一次以后 lockPredict 就 disabled 了，click() 再也不会派发。此时改选别的数字，
        选中态和输入框都跟着变，S.prediction 却还停在第一次那个——画面写着「我猜 5 颗」，
-       判定用的是 4。家长模式锁定后输入框和按钮一起停用，这排数字也照办；
-       选中的那个留着可聚焦，免得焦点被扔回 body。 */
+       判定用的是 4。所以锁定后这条路直接关闭。 */
     if (lock.disabled) return;
     input.value = this.getAttribute('data-number-predict');
-    Array.prototype.forEach.call(document.querySelectorAll('[data-number-predict]'), function (choice) {
-      choice.setAttribute('aria-pressed', String(choice === this));
-      choice.disabled = choice !== this;
-    }, this);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
     lock.click();
   }
 
@@ -786,10 +796,13 @@
       var choice = document.createElement('button');
       choice.className = 'kid-choice'; choice.type = 'button';
       choice.setAttribute('data-number-predict', String(value));
+      /* 初值不能少：没有 aria-pressed 的话，读屏只报「按钮」，听不出这是一颗开关。 */
+      choice.setAttribute('aria-pressed', 'false');
       choice.textContent = value + ' 颗';
       choice.addEventListener('click', chooseKidPrediction);
       choices.appendChild(choice);
     });
+    syncPredictChoices();
   }
 
   function newTask() {
@@ -1410,10 +1423,12 @@
       say('已选发现：' + btn.textContent);
     });
   });
+  document.getElementById('numPredict').addEventListener('input', syncPredictChoices);
   document.getElementById('lockPredict').addEventListener('click', function () {
     var input = document.getElementById('numPredict'), v = Number(input.value);
     if (input.value.trim() === '' || !isFinite(v) || Math.floor(v) !== v || v < 0) { nudge('请先填写非负整数预测', input); return; }
     S.prediction = v; input.disabled = true; this.disabled = true;
+    syncPredictChoices();
     updateMission(); say('已锁定预测，还要放 ' + v + ' 颗');
   });
   function updateMission() {
