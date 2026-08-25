@@ -1115,12 +1115,16 @@
     updateRampTask();
     updateABDisplay();
   }
+  /* 冲出跑道的那一轮，球不是停在 6 米，是带着速度离开了跑道：
+     舞台读数和 A/B 卡都写「≥6.00m」，快照少了这个前缀就成了「正好停在 6 米」，
+     同一轮数据两种说法。快照跟着卡片的写法走。 */
+  function distText(trial) { return (trial.hitWall ? '≥' : '') + trial.actual.toFixed(2) + 'm'; }
   function trialSnapshot(trial, number) {
-    return '第' + number + '轮：角度 ' + trial.ang.toFixed(0) + '°，高度 ' + trial.h.toFixed(2) + 'm，摩擦 ' + trial.mu.toFixed(2) + '，质量 ' + trial.m.toFixed(2) + 'kg；预测 ' + trial.pred.toFixed(2) + 'm，实际 ' + trial.actual.toFixed(2) + 'm，误差 ' + trial.err.toFixed(2) + 'm。';
+    return '第' + number + '轮：角度 ' + trial.ang.toFixed(0) + '°，高度 ' + trial.h.toFixed(2) + 'm，摩擦 ' + trial.mu.toFixed(2) + '，质量 ' + trial.m.toFixed(2) + 'kg；预测 ' + trial.pred.toFixed(2) + 'm，实际 ' + distText(trial) + '，误差 ' + trial.err.toFixed(2) + 'm。';
   }
   function evidenceText() {
     var a = S.trials[0], b = S.trials[1];
-    return '公平变量：' + fairChanged + '；A 高' + a.h.toFixed(2) + 'm/角' + a.ang.toFixed(0) + '°/停' + a.actual.toFixed(2) + 'm；B 高' + b.h.toFixed(2) + 'm/角' + b.ang.toFixed(0) + '°/停' + b.actual.toFixed(2) + 'm。';
+    return '公平变量：' + fairChanged + '；A 高' + a.h.toFixed(2) + 'm/角' + a.ang.toFixed(0) + '°/停' + distText(a) + '；B 高' + b.h.toFixed(2) + 'm/角' + b.ang.toFixed(0) + '°/停' + distText(b) + '。';
   }
   function updateRampTask() {
     var canComplete = fairPassed && S.trials.length === 2;
