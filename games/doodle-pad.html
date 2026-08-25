@@ -234,7 +234,7 @@
         <button class="quick-color" type="button" data-quick-color="1" aria-label="森林绿" aria-pressed="false"></button>
         <button class="quick-color" type="button" data-quick-color="3" aria-label="太阳橙" aria-pressed="false"></button>
         <button class="quick-color" type="button" data-quick-color="4" aria-label="草莓粉" aria-pressed="false"></button>
-        <button class="quick-tool" type="button" data-quick-stamp="star" aria-label="星星印章">★</button>
+        <button class="quick-tool" type="button" data-quick-stamp="star" aria-label="星星印章" aria-pressed="false">★</button>
         <button class="quick-tool" type="button" id="quickUndo" aria-label="撤销" disabled>↶</button>
       </div>
     </div>
@@ -445,7 +445,7 @@
     if(state.stamp){
       stampShape(state.stamp,p);state.stamps++;state.used.add(state.color);state.stamp=null;
       state.drawing=false;state.last=null;wrap.classList.remove("is-drawing");
-      setPressed("#stampGrid [data-stamp]",null);pushHistory();updateMission();status("印章盖好啦！");return;
+      setPressed("#stampGrid [data-stamp]",null);syncQuickControls();pushHistory();updateMission();status("印章盖好啦！");return;
     }
     state.drawing=true;wrap.classList.add("is-drawing");state.last=p;line(p,{x:p.x+.1,y:p.y+.1,pressure:p.pressure});
   }
@@ -468,6 +468,10 @@
   function syncQuickControls(){
     document.querySelectorAll("[data-quick-tool]").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.quickTool===state.tool?"true":"false");});
     document.querySelectorAll("[data-quick-color]").forEach(function(b){var item=colors[Number(b.dataset.quickColor)];b.style.background=item.value;b.setAttribute("aria-pressed",item.value===state.color?"true":"false");});
+    /* 快捷条上的印章按钮原先是整条里唯一没有按下态的开关：点了星星，侧栏的印章格
+       亮了，孩子手指下的这颗却毫无反应，读屏也只报「星星印章，按钮」听不出已选。
+       跟工具、颜色一样按 state 对齐，盖完章或换回画笔时自动熄灭。 */
+    document.querySelectorAll("[data-quick-stamp]").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.quickStamp===state.stamp?"true":"false");});
   }
   document.querySelectorAll("[data-quick-tool]").forEach(function(b){b.addEventListener("click",function(){var target=document.querySelector('#toolGrid [data-tool="'+b.dataset.quickTool+'"]');if(target)target.click();syncQuickControls();});});
   document.querySelectorAll("[data-quick-color]").forEach(function(b){b.addEventListener("click",function(){var target=swatches.children[Number(b.dataset.quickColor)];if(target)target.click();});});
@@ -476,7 +480,7 @@
   document.querySelectorAll("#toolGrid [data-tool]").forEach(function(b){b.addEventListener("click",function(){state.tool=b.dataset.tool;state.stamp=null;setPressed("#toolGrid [data-tool]",state.tool);setPressed("#stampGrid [data-stamp]",null);syncQuickControls();status(state.tool==="eraser"?"橡皮擦准备好了。":"画笔准备好了。");});});
   syncQuickControls();
   document.querySelectorAll("#mirrorGrid [data-mirror]").forEach(function(b){b.addEventListener("click",function(){state.mirror=b.dataset.mirror;setPressed("#mirrorGrid [data-mirror]",state.mirror);document.getElementById("mirrorV").className="mirror-line"+(state.mirror!=="none"?" v":"");document.getElementById("mirrorH").className="mirror-line"+(state.mirror==="quad"?" h":"");status(state.mirror==="none"?"普通画法。":state.mirror==="vertical"?"左右镜像打开了。":"四面镜像打开了。");});});
-  document.querySelectorAll("#stampGrid [data-stamp]").forEach(function(b){b.setAttribute("aria-pressed","false");b.addEventListener("click",function(){state.stamp=b.dataset.stamp;setPressed("#stampGrid [data-stamp]",state.stamp);status("点一下画布，盖上印章。");});});
+  document.querySelectorAll("#stampGrid [data-stamp]").forEach(function(b){b.setAttribute("aria-pressed","false");b.addEventListener("click",function(){state.stamp=b.dataset.stamp;setPressed("#stampGrid [data-stamp]",state.stamp);syncQuickControls();status("点一下画布，盖上印章。");});});
   document.getElementById("brushSize").addEventListener("input",function(){state.size=Number(this.value);});
   canvas.addEventListener("pointerdown",pointerDown);canvas.addEventListener("pointermove",pointerMove);canvas.addEventListener("pointerup",pointerUp);canvas.addEventListener("pointercancel",pointerUp);
   document.getElementById("undoBtn").addEventListener("click",function(){if(undo.length<2)return;redo.push(undo.pop());restore(undo[undo.length-1],updateHistoryButtons);status("撤销了一步。");});
