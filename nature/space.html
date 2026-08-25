@@ -1061,8 +1061,16 @@
 
   // ---------- 图片墙 ----------
   var shots = document.getElementById("shots");
+  /* 每次换行星都把「代号」加一：正文承诺「点上面的行星会换一组照片」，可旧写法
+     谁的应答后到谁就占墙——先点水星（没缓存，请求在路上）再点土星，土星的图
+     刚铺好，水星那次慢请求回来又把墙盖成水星；更糟的是旧请求 8 秒超时走进
+     catch，把当前行星铺满的照片墙整个擦掉换成「照片需要联网才能显示」，而上面
+     的徽章还亮着「已连上 NASA 图片」。过期代号的应答只许记网络状态和写缓存
+     （下次点回来还能用），不许再碰画面。 */
+  var shotGen = 0;
 
   function loadShots(p) {
+    var gen = ++shotGen;
     shots.textContent = "";
     for (var i = 0; i < 4; i++) {
       var sk = document.createElement("div");
@@ -1073,7 +1081,7 @@
     var ck = "shots:" + p.id;
     try {
       var c = localStorage.getItem(ck);
-      if (c) { paintShots(JSON.parse(c)); mark("cache"); return; }
+      if (c) { paintShots(JSON.parse(c), gen); mark("cache"); return; }
     } catch (e) {}
 
     getJSON("https://images-api.nasa.gov/search?q=" +
@@ -1098,16 +1106,16 @@
           /* 搜索成功但零结果：网络通着，不能丢进 catch 记成 fail、还提示
              「照片需要联网」——孩子明明在线。空结果也不写缓存，下次再试。 */
           mark("none");
-          shotsNote("已连上 NASA，但没找到这颗行星的匹配照片。上面的行星数据是内置的，不受影响。");
+          if (gen === shotGen) shotsNote("已连上 NASA，但没找到这颗行星的匹配照片。上面的行星数据是内置的，不受影响。");
           return;
         }
-        paintShots(out);
         mark(true);
         try { localStorage.setItem(ck, JSON.stringify(out)); } catch (e) {}
+        if (gen === shotGen) paintShots(out, gen);
       })
       .catch(function () {
         mark(false);
-        shotsNote("照片需要联网才能显示。上面的行星数据是内置的，不受影响。");
+        if (gen === shotGen) shotsNote("照片需要联网才能显示。上面的行星数据是内置的，不受影响。");
       });
   }
 
@@ -1119,7 +1127,7 @@
     shots.appendChild(d);
   }
 
-  function paintShots(list) {
+  function paintShots(list, gen) {
     shots.textContent = "";
     var alive = list.length;
     list.forEach(function (o) {
@@ -1133,8 +1141,9 @@
         d.remove();
         /* 接口通了、图床没通（或者缓存里的旧链接失效了）时，八张图会一张张
            自己消失，最后剩一格空网格，而联网徽章还挂着「已联网」。
-           掉光了就得说一句，不能让孩子对着一片空白。 */
-        if (--alive <= 0) shotsNote("照片这次没能加载。上面的行星数据是内置的，不受影响。");
+           掉光了就得说一句，不能让孩子对着一片空白。
+           onerror 是老墙的余波：换过行星再响的，不许把新墙擦成提示。 */
+        if (--alive <= 0 && gen === shotGen) shotsNote("照片这次没能加载。上面的行星数据是内置的，不受影响。");
       };
       var cap = document.createElement("span");
       cap.className = "cap";
