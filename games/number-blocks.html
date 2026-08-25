@@ -339,9 +339,9 @@
       <li><b>三关都亮起</b>，点一句发现。</li>
     </ol>
     <div class="kid-picks" data-audience="kid-only" aria-label="选择任务关卡">
-      <button class="kid-choice" type="button" data-number-level="ten">第 1 关 · 凑十</button>
-      <button class="kid-choice" type="button" data-number-level="split">第 2 关 · 拆分</button>
-      <button class="kid-choice" type="button" data-number-level="carry">第 3 关 · 进位</button>
+      <button class="kid-choice" type="button" data-number-level="ten" aria-pressed="false">第 1 关 · 凑十</button>
+      <button class="kid-choice" type="button" data-number-level="split" aria-pressed="false">第 2 关 · 拆分</button>
+      <button class="kid-choice" type="button" data-number-level="carry" aria-pressed="false">第 3 关 · 进位</button>
     </div>
     <div data-audience="kid-only" style="margin-top:12px">
       <p style="margin:0 0 6px;font-weight:700">我猜还要放几颗？</p>
@@ -1346,11 +1346,23 @@
   });
 
   var modeBtns = { free: document.getElementById('mFree'), target: document.getElementById('mTarget'), ten: document.getElementById('mTen'), split: document.getElementById('mSplit'), carry: document.getElementById('mCarry') };
+  /* 换关有三条路：家长的玩法芯片、家长的分级下拉、孩子模式那排关卡按钮。
+     原来只有孩子按钮自己点亮自己，家长那两条路根本不碰它们——家长在下拉里
+     切到拆分再换回孩子模式，「第 1 关 · 凑十」还亮着按下的样子，画面上跑的
+     却是拆分题；和分数实验室猜测按钮那次失同步同一类。三条路都走这一处，
+     按 S.mode 对齐；自由搭 / 目标数没有对应按钮，三颗全部熄掉。 */
+  function syncLevelPicks() {
+    document.querySelectorAll('[data-number-level]').forEach(function (choice) {
+      choice.setAttribute('aria-pressed', String(choice.getAttribute('data-number-level') === S.mode));
+    });
+  }
+  syncLevelPicks();
   Object.keys(modeBtns).forEach(function (m) {
     modeBtns[m].addEventListener('click', function () {
       S.mode = m;
       Object.keys(modeBtns).forEach(function (k) { modeBtns[k].setAttribute('aria-pressed', k === m ? 'true' : 'false'); });
       if (m === 'ten' || m === 'split' || m === 'carry') document.getElementById('taskLevel').value = m;
+      syncLevelPicks();
       newTask();
       /* 五个玩法各报各的名字：原先拆分、进位也被播成「凑十模式」，
          读屏用户听到的模式和画面上按下的芯片对不上。 */
@@ -1365,6 +1377,7 @@
   document.getElementById('taskLevel').addEventListener('change', function () {
     S.mode = this.value;
     Object.keys(modeBtns).forEach(function (k) { modeBtns[k].setAttribute('aria-pressed', k === S.mode ? 'true' : 'false'); });
+    syncLevelPicks();
     newTask(); say('开始' + document.getElementById('taskLevel').selectedOptions[0].textContent);
   });
   Array.prototype.forEach.call(document.querySelectorAll('[data-number-level]'), function (btn) {
@@ -1372,9 +1385,7 @@
       S.mode = btn.getAttribute('data-number-level');
       document.getElementById('taskLevel').value = S.mode;
       Object.keys(modeBtns).forEach(function (k) { modeBtns[k].setAttribute('aria-pressed', k === S.mode ? 'true' : 'false'); });
-      document.querySelectorAll('[data-number-level]').forEach(function (choice) {
-        choice.setAttribute('aria-pressed', String(choice === btn));
-      });
+      syncLevelPicks();
       newTask();
       say('开始' + btn.textContent);
     });
