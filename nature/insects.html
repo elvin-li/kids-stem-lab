@@ -2654,17 +2654,40 @@
  var stage = button.getAttribute("data-stage");
  selectOne(button, ".life-node");
  document.getElementById("lifeStage").value = stage;
+ document.getElementById("lifeStage").dispatchEvent(new Event("change", { bubbles: true }));
  lookResult.textContent = stageNotes[stage];
  });
  });
+ /* 下拉框标着「舞台上选中的阶段」，原来只有按钮→下拉单向同步：直接改下拉后，
+    舞台仍亮着旧阶段、说明卡还讲旧阶段，两处和下拉互相矛盾。反向也要跟上；
+    「无法判断」没有对应节点，就把节点全部熄掉。阶段图卡也照同一份真相对齐。 */
+ document.getElementById("lifeStage").addEventListener("change", function () {
+ var stage = this.value;
+ [].forEach.call(document.querySelectorAll(".life-node[data-stage]"), function (button) {
+ button.setAttribute("aria-pressed", button.getAttribute("data-stage") === stage ? "true" : "false");
+ });
+ [].forEach.call(document.querySelectorAll("#ibStagePicks [data-ib-stage]"), function (button) {
+ button.setAttribute("aria-pressed", button.getAttribute("data-ib-stage") === stage ? "true" : "false");
+ });
+ if (stageNotes[stage]) lookResult.textContent = stageNotes[stage];
+ });
 
- [].forEach.call(document.querySelectorAll(".quick-picks[data-fill] .kid-choice"), function (button) {
- button.addEventListener("click", function () {
- var group = button.parentNode;
+ /* 快捷选项原来只同步「按钮 → 文本框」一个方向：按下选项后家长改写或清空文本框，
+    按钮仍亮着——面板上「已选」，完成任务却提示还没填，或者亮着 A、记录里写的是 B。
+    文本框一有输入就按内容对齐按下状态，内容不再等于哪个选项就全部熄掉。 */
+ [].forEach.call(document.querySelectorAll(".quick-picks[data-fill]"), function (group) {
  var field = document.getElementById(group.getAttribute("data-fill"));
- selectOne(button, ".kid-choice");
+ function syncPicks() {
+ [].forEach.call(group.querySelectorAll(".kid-choice"), function (choice) {
+ choice.setAttribute("aria-pressed", choice.getAttribute("data-value") === field.value ? "true" : "false");
+ });
+ }
+ field.addEventListener("input", syncPicks);
+ [].forEach.call(group.querySelectorAll(".kid-choice"), function (button) {
+ button.addEventListener("click", function () {
  field.value = button.getAttribute("data-value");
  field.dispatchEvent(new Event("input", { bubbles: true }));
+ });
  });
  });
 
@@ -2687,7 +2710,10 @@
  slider.addEventListener("input", function () { scaleText.textContent = slider.value; });
  document.getElementById("insectRun").addEventListener("click", function () {
  var k = Number(slider.value), area = k * k, volume = area * k, stage = document.getElementById("lifeStage").value;
- output.textContent = "边长 ×" + k + " 后，表面积 ×" + area + "，体积 ×" + volume + "，体积相对表面积多增长 " + k + "\u00a0倍。记录阶段：" + stage + "。生命周期阶段应按身体特征判断，不能只凭地点或颜色。";
+ /* 「多增长 k 倍」在中文里是 (k+1) 倍的意思：k=5 时体积 ×125 恰是表面积 ×25 的
+    5 倍而不是 6 倍；滑到 k=1 更是两者相等，却说「多增长 1 倍」。按倍数之比来说。 */
+ var ratioText = k === 1 ? "边长不放大时，两者都不变" : "体积的放大倍数是表面积的 " + k + "\u00a0倍";
+ output.textContent = "边长 ×" + k + " 后，表面积 ×" + area + "，体积 ×" + volume + "，" + ratioText + "。记录阶段：" + stage + "。生命周期阶段应按身体特征判断，不能只凭地点或颜色。";
  operated = true;
  });
  document.getElementById("insectComplete").addEventListener("click", function () {
@@ -2700,6 +2726,22 @@
  status.textContent = done ? "已完成任务：观察证据已保存，不含定位。" : "四步已完成；当前浏览器无法保存。";
  });
  if (window.Progress && Progress.getCompletion(id)) status.textContent = "此任务已完成；可观察另一阶段更新证据。";
+
+ /* 从别的页面按「返回」回来时，浏览器在 load 之后、pageshow 之前才把上次填的
+    表单值放回来，而且一个事件也不发：文本框里躺着上次点选的答案，快捷按钮却
+    全部熄灭；生命周期下拉停在上次的「蛹」，舞台上亮着的节点和说明卡讲的却还是
+    「卵」——一屏两个说法。给每个控件补发一次它平时听的那个事件，走各自现成的
+    同步路；首次打开是 navigate，不用补。偏好控件交给 Playful 自己对齐。 */
+ window.addEventListener("pageshow", function (event) {
+ var nav = performance.getEntriesByType ? performance.getEntriesByType("navigation")[0] : null;
+ if (!event.persisted && !(nav && (nav.type === "back_forward" || nav.type === "reload"))) return;
+ Array.prototype.forEach.call(document.querySelectorAll("input, select, textarea"), function (field) {
+ if (field.hasAttribute("data-playful-preference")) return;
+ var kind = field.tagName === "SELECT" || field.type === "radio" || field.type === "checkbox" ? "change" : "input";
+ field.dispatchEvent(new Event(kind, { bubbles: true }));
+ });
+ if (window.Playful && Playful.syncPreferences) Playful.syncPreferences(document);
+ });
 })();
 </script>
 <script>

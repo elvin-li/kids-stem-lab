@@ -2871,16 +2871,30 @@
  var br = Number(document.getElementById("breathRest").value), ba = Number(document.getElementById("breathAfter").value);
  var d = Number(document.getElementById("leverDistance").value);
  if (![pr,pa,br,ba,d].every(function (n) { return isFinite(n) && n > 0; })) { output.textContent = "请先填完五个本次测量值。"; return; }
- output.textContent = "本次比较：活动后脉搏变化 " + (pa-pr >= 0 ? "+" : "") + (pa-pr) + "\u00a0次/分；呼吸变化 " + (ba-br >= 0 ? "+" : "") + (ba-br) + "\u00a0次/分。书离肘 " + d + " cm；若移到 " + Math.min(70,d*2) + " cm，同样重量对肘的力矩约变为 " + (Math.min(70,d*2)/d).toFixed(1) + "\u00a0倍。数据只在当前页面内存中使用。";
+ /* 对照点向外翻倍；翻倍超出 70 cm（手臂放不下）就改成向里减半。
+    旧写法把翻倍封顶在 70：填 70 时会说「若移到 70 cm，力矩约变为 1.0 倍」。 */
+ var farther = d * 2 <= 70, lever = farther ? d * 2 : Math.round(d / 2);
+ output.textContent = "本次比较：活动后脉搏变化 " + (pa-pr >= 0 ? "+" : "") + (pa-pr) + "\u00a0次/分；呼吸变化 " + (ba-br >= 0 ? "+" : "") + (ba-br) + "\u00a0次/分。书离肘 " + d + " cm；若移" + (farther ? "远到 " : "近到 ") + lever + " cm，同样重量对肘的力矩约变为 " + (lever/d).toFixed(1) + "\u00a0倍。数据只在当前页面内存中使用。";
  operated = true;
  refreshBodyStatus("测量比较完成。");
  });
- document.querySelectorAll("[data-answer-target] button").forEach(function (button) {
+ /* 图卡原来只同步「按钮 → 文本框」一个方向：家长改写或清空家长层文本框后，
+    图卡仍亮着旧选项。文本框一有输入就按内容对齐按下状态。 */
+ document.querySelectorAll("[data-answer-target]").forEach(function (group) {
+ var field = document.getElementById(group.dataset.answerTarget);
+ if (!field) return;
+ function syncAnswers() {
+ group.querySelectorAll("button").forEach(function (item) {
+ item.setAttribute("aria-pressed", item.dataset.value === field.value ? "true" : "false");
+ });
+ }
+ field.addEventListener("input", syncAnswers);
+ group.querySelectorAll("button").forEach(function (button) {
  button.addEventListener("click", function () {
- var group = button.closest("[data-answer-target]");
- selectOne(group, button);
- document.getElementById(group.dataset.answerTarget).value = button.dataset.value;
+ field.value = button.dataset.value;
+ field.dispatchEvent(new Event("input", { bubbles: true }));
  refreshBodyStatus("图卡已记下。");
+ });
  });
  });
  document.querySelectorAll("[data-body-operation] button").forEach(function (button) {
@@ -2921,19 +2935,44 @@
  });
  if (window.Progress && Progress.getCompletion(id)) status.textContent = "此任务已完成；身体数值没有写入足迹。";
 
+ /* 从别的页面按「返回」回来时，浏览器在 load 之后、pageshow 之前才把上次填的
+    表单值放回来，而且一个事件也不发：文本框里躺着上次点选的答案，快捷按钮却
+    全部熄灭——面板上什么都没选，记录里却写着完整的预测，一屏两个说法。
+    给每个控件补发一次它平时听的那个事件，走各自现成的同步路；
+    首次打开是 navigate，不用补。偏好控件交给 Playful 自己对齐。 */
+ window.addEventListener("pageshow", function (event) {
+ var nav = performance.getEntriesByType ? performance.getEntriesByType("navigation")[0] : null;
+ if (!event.persisted && !(nav && (nav.type === "back_forward" || nav.type === "reload"))) return;
+ Array.prototype.forEach.call(document.querySelectorAll("input, select, textarea"), function (field) {
+ if (field.hasAttribute("data-playful-preference")) return;
+ var kind = field.tagName === "SELECT" || field.type === "radio" || field.type === "checkbox" ? "change" : "input";
+ field.dispatchEvent(new Event(kind, { bubbles: true }));
+ });
+ if (window.Playful && Playful.syncPreferences) Playful.syncPreferences(document);
+ });
+
  /* ---------- 分层讲解的可点选答案：只填进输入框，不做任何保存 ---------- */
  function selectOne(group, button) {
  [].forEach.call(group.querySelectorAll("button"), function (item) {
  item.setAttribute("aria-pressed", item === button ? "true" : "false");
  });
  }
+ /* 快捷选项原来只同步「按钮 → 文本框」一个方向：按下选项后家长改写或清空文本框，
+    按钮仍亮着——面板上「已选」，完成任务却提示还没填，或者亮着 A、记录里写的是 B。
+    文本框一有输入就按内容对齐按下状态，内容不再等于哪个选项就全部熄掉。 */
  [].forEach.call(document.querySelectorAll(".quick-picks[data-fill]"), function (group) {
  var field = document.getElementById(group.getAttribute("data-fill"));
  if (!field) return;
+ function syncPicks() {
+ [].forEach.call(group.querySelectorAll("button"), function (choice) {
+ choice.setAttribute("aria-pressed", choice.getAttribute("data-value") === field.value ? "true" : "false");
+ });
+ }
+ field.addEventListener("input", syncPicks);
  [].forEach.call(group.querySelectorAll("button"), function (button) {
  button.addEventListener("click", function () {
- selectOne(group, button);
  field.value = button.getAttribute("data-value");
+ field.dispatchEvent(new Event("input", { bubbles: true }));
  /* 这个循环覆盖全页所有 .quick-picks[data-fill]，其中 bodyWorkContent 属于
  下方「作品册」表单，不是核心任务的判定项。原来它也写 bodyStatus，
  把核心任务真实的缺项清单整句冲掉了（跨任务串台）。

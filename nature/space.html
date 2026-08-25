@@ -2141,14 +2141,23 @@
  picker.value = button.dataset.id;
  renderScale(false);
  });
- document.querySelectorAll("[data-answer-target] button").forEach(function (button) {
+ /* 图卡原来只同步「按钮 → 文本框」一个方向：家长改写或清空家长层文本框后，
+    图卡仍亮着旧选项。文本框一有输入就按内容对齐按下状态；点图卡改为给文本框
+    补发 input——用 JS 赋 .value 不触发事件，补发后走 refreshStatus 现成的路。 */
+ document.querySelectorAll("[data-answer-target]").forEach(function (group) {
+ var field = document.getElementById(group.dataset.answerTarget);
+ if (!field) return;
+ function syncAnswers() {
+ group.querySelectorAll("button").forEach(function (item) {
+ item.setAttribute("aria-pressed", item.dataset.value === field.value ? "true" : "false");
+ });
+ }
+ field.addEventListener("input", syncAnswers);
+ group.querySelectorAll("button").forEach(function (button) {
  button.addEventListener("click", function () {
- var group = button.closest("[data-answer-target]");
- group.querySelectorAll("button").forEach(function (item) { item.setAttribute("aria-pressed", item === button ? "true" : "false"); });
- document.getElementById(group.dataset.answerTarget).value = button.dataset.value;
- /* 原来这句写死的旁白会盖掉 refreshStatus() 的结果，而且内容不准（漏掉「选模型提醒」）；
- 另外用 JS 赋 .value 不触发 input 事件，不补这一句这条路径根本不刷新。 */
- refreshStatus();
+ field.value = button.dataset.value;
+ field.dispatchEvent(new Event("input", { bubbles: true }));
+ });
  });
  });
  /* 缺什么由判定条件自己说，别再手写第二份清单。
@@ -2188,6 +2197,34 @@
  el.addEventListener("change", refreshStatus);
  });
  if (window.Progress && Progress.getCompletion(id)) status.textContent = "此任务已完成；可以换一颗行星更新证据。";
+
+ /* 从别的页面按「返回」回来时，浏览器在 load 之后、pageshow 之前才把上次填的
+    表单值放回来，而且一个事件也不发：家长层文本框里躺着上次点选的答案，
+    图卡却全部熄灭，状态行讲的还是初始那句——一屏两个说法。给每个控件补发
+    一次它平时听的那个事件，走各自现成的同步路；首次打开是 navigate，不用补。
+    偏好控件交给 Playful 自己对齐。 */
+ window.addEventListener("pageshow", function (event) {
+ var nav = performance.getEntriesByType ? performance.getEntriesByType("navigation")[0] : null;
+ if (!event.persisted && !(nav && (nav.type === "back_forward" || nav.type === "reload"))) return;
+ Array.prototype.forEach.call(document.querySelectorAll("input, select, textarea"), function (field) {
+ if (field.hasAttribute("data-playful-preference")) return;
+ /* 换尺单选的 change 会按「孩子换了一把尺」记 operated：补发会凭空造出
+    「已实际操作」。跳过它，下面用 renderScale(false) 按恢复的选项重画舞台。 */
+ if (field.name === "spaceScale") return;
+ var kind = field.tagName === "SELECT" || field.type === "radio" || field.type === "checkbox" ? "change" : "input";
+ field.dispatchEvent(new Event(kind, { bubbles: true }));
+ });
+ renderScale(false);
+ /* 原记录栏是浏览器恢复的，operated 不是：脚本重跑把它归了零。只认「换尺看看」
+    写进结果栏的那几种机器开头（快捷图卡只写预测和反思栏，不会误认）：认出来就把
+    operated 补回来，再让状态行按当前真相重算。bfcache 复活时 operated 本来就活着。 */
+ var machineHeads = ["地球直径 1 cm 时，", "日地距离 1 m 时，"];
+ for (var i = 0; i < machineHeads.length; i++) {
+ if (result.value.indexOf(machineHeads[i]) === 0) { operated = true; break; }
+ }
+ refreshStatus();
+ if (window.Playful && Playful.syncPreferences) Playful.syncPreferences(document);
+ });
 })();
 </script>
 <script>

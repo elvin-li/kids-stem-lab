@@ -1224,13 +1224,20 @@
   }
 
   // 快捷答案：让还不会打字的孩子也能填完作品说明。
+  /* 只同步「按钮 → 输入框」一个方向会失同步：按下选项后再手动改写或清空输入框，
+     按钮仍亮着按下的样子。输入框一有输入就按内容对齐按下状态。 */
   [].forEach.call(document.querySelectorAll(".quick-picks[data-fill]"),function(group){
     var field=document.getElementById(group.getAttribute("data-fill"));
     if(!field)return;
     var buttons=group.querySelectorAll("button[data-value]");
+    function syncPicks(){
+      [].forEach.call(buttons,function(choice){
+        choice.setAttribute("aria-pressed",choice.getAttribute("data-value")===field.value?"true":"false");
+      });
+    }
+    field.addEventListener("input",syncPicks);
     [].forEach.call(buttons,function(button){
       button.addEventListener("click",function(){
-        pressOnly(buttons,button);
         field.value=button.getAttribute("data-value");
         field.dispatchEvent(new Event("input",{bubbles:true}));
       });
@@ -1432,6 +1439,23 @@
   dpxSetTarget(0,false);
 
   fitCanvas(false);pushHistory();updateMission();
+
+  /* 从别的页面按「返回」回来时，浏览器在 load 之后、pageshow 之前才把上次的
+     表单值放回来，而且一个事件也不发：粗细滑块停在上次的位置，实际画出来的
+     却还是默认粗细。这里多一道「值真的被恢复动过才补发」，没动过的控件不该
+     被白白惊动。bfcache 整页复活（persisted）时脚本状态原样都在，一个事件也
+     不用补，只需按存好的偏好重对齐偏好控件。 */
+  var restoredFields=Array.prototype.map.call(document.querySelectorAll("input, select, textarea"),function(field){return {field:field,initial:field.value};});
+  window.addEventListener("pageshow",function(event){
+    var nav=performance.getEntriesByType?performance.getEntriesByType("navigation")[0]:null;
+    var rebuilt=!event.persisted&&nav&&(nav.type==="back_forward"||nav.type==="reload");
+    if(!event.persisted&&!rebuilt)return;
+    if(rebuilt)restoredFields.forEach(function(entry){
+      if(entry.field.value===entry.initial||entry.field.hasAttribute("data-playful-preference"))return;
+      entry.field.dispatchEvent(new Event(entry.field.tagName==="SELECT"?"change":"input",{bubbles:true}));
+    });
+    if(window.Playful&&Playful.syncPreferences)Playful.syncPreferences(document);
+  });
 })();
 </script>
 <script src="../data/explorations.js?v=490"></script>

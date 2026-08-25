@@ -2736,13 +2736,25 @@
  button.addEventListener("click", function () { renderWave(button.dataset.waveChoice); });
  });
 
- document.querySelectorAll("[data-fill-target] button").forEach(function (button) {
+ /* 图卡原来只同步「按钮 → 文本框」一个方向：家长改写或清空家长层文本框后，
+    图卡仍亮着旧选项——亮着 A、记录里写的是 B。文本框一有输入就按内容对齐
+    按下状态，内容不再等于哪个选项就全部熄掉。 */
+ document.querySelectorAll("[data-fill-target]").forEach(function (group) {
+ var field = document.getElementById(group.dataset.fillTarget);
+ if (!field) return;
+ function syncAnswers() {
+ group.querySelectorAll("button").forEach(function (item) {
+ item.setAttribute("aria-pressed", item.dataset.answer === field.value ? "true" : "false");
+ });
+ }
+ field.addEventListener("input", syncAnswers);
+ group.querySelectorAll("button").forEach(function (button) {
  button.addEventListener("click", function () {
- var group = button.closest("[data-fill-target]");
- group.querySelectorAll("button").forEach(function (item) { item.setAttribute("aria-pressed", item === button ? "true" : "false"); });
- document.getElementById(group.dataset.fillTarget).value = button.dataset.answer;
+ field.value = button.dataset.answer;
+ field.dispatchEvent(new Event("input", { bubbles: true }));
  /* 这个处理器绑在预测、结果、反思三组图卡上，原来一律说「还要画三个圆」。 */
  refreshEarthStatus("线索已记下。");
+ });
  });
  });
 
@@ -2862,6 +2874,22 @@
  field.addEventListener("input", function () { refreshEarthStatus(); });
  });
  if (window.Progress && Progress.getCompletion(id)) status.textContent = "此任务已完成；可换震级更新证据。";
+
+ /* 从别的页面按「返回」回来时，浏览器在 load 之后、pageshow 之前才把上次填的
+    表单值放回来，而且一个事件也不发：家长层文本框里躺着上次点选的答案，
+    图卡却全部熄灭；震级滑杆停在上次的位置，读数讲的还是初始那一档——
+    一屏两个说法。给每个控件补发一次它平时听的那个事件，走各自现成的同步路；
+    首次打开是 navigate，不用补。偏好控件交给 Playful 自己对齐。 */
+ window.addEventListener("pageshow", function (event) {
+ var nav = performance.getEntriesByType ? performance.getEntriesByType("navigation")[0] : null;
+ if (!event.persisted && !(nav && (nav.type === "back_forward" || nav.type === "reload"))) return;
+ Array.prototype.forEach.call(document.querySelectorAll("input, select, textarea"), function (field) {
+ if (field.hasAttribute("data-playful-preference")) return;
+ var kind = field.tagName === "SELECT" || field.type === "radio" || field.type === "checkbox" ? "change" : "input";
+ field.dispatchEvent(new Event(kind, { bubbles: true }));
+ });
+ if (window.Playful && Playful.syncPreferences) Playful.syncPreferences(document);
+ });
 })();
 </script>
 <script>
