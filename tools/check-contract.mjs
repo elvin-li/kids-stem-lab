@@ -394,7 +394,11 @@ for (const path of files) {
   /* 阶段 2：孩子模式主题层必须每页接入，且夹在 base.css 与 print.css 之间。 */
   if (kidIndex < 0) fail('未加载 assets/css/kid.css，孩子模式在本页会失效');
   else {
-    if (String(links[kidIndex].media || '').toLowerCase() === 'print') fail('kid.css 不得使用 media="print"，它是屏幕主题层');
+    /* kid.css 是屏幕主题层，必须以 media="screen" 加载：它里面的
+       html[data-mode="kid"] [data-audience="parent"] { display:none !important }
+       一旦进入打印媒介，孩子模式（新设备的默认模式）打出来的纸上就没有
+       原理、家长提问和「这在教什么」——契约要求纸上保留这些。 */
+    if (String(links[kidIndex].media || '').toLowerCase() !== 'screen') fail('kid.css 必须使用 media="screen"：不带 media 会把孩子模式的 display:none 带进打印，孩子模式打印会丢掉原理与家长提问');
     if (baseIndex >= 0 && kidIndex < baseIndex) fail('kid.css 必须在 base.css 之后加载，否则覆盖不到共享变量');
     if (printIndex >= 0 && kidIndex > printIndex) fail('kid.css 必须在 print.css 之前加载（顺序应为 base.css → kid.css → print.css）');
   }
