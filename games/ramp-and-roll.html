@@ -464,7 +464,14 @@
       S.predLocked = false;
       actV.textContent = '没动';
       announce('斜坡太平缓，摩擦力大于下滑力，球没有动；这一轮不会记录。');
-      toast('球没滚动，请把坡调陡或减小摩擦');
+      /* 「减小摩擦」指的是家长区「详细设置」里的跑道摩擦滑杆（data-audience="parent"），
+         孩子模式下整块 display:none。球动不动只看 tanθ 和 μ 的比较，
+         孩子面前真有的是角度滑杆，就只说它。 */
+      if (document.documentElement.getAttribute('data-mode') === 'kid') {
+        toast('球没滚动，把角度调大一点，坡陡了球才会动');
+      } else {
+        toast('球没滚动，请把坡调陡或减小摩擦');
+      }
       updateABDisplay();
       return;
     }
@@ -484,7 +491,15 @@
       announce('球停在离坡底 ' + S.d.toFixed(2) + ' 米。');
       updateABDisplay();
     }
-    if (hitWall) toast('冲到跑道尽头了，把摩擦调大一点');
+    /* 同上：摩擦滑杆在孩子模式看不见。少给点能量球就停得住——
+       高度和角度两根滑杆都在孩子模式的「斜坡与预测设置」里。 */
+    if (hitWall) {
+      if (document.documentElement.getAttribute('data-mode') === 'kid') {
+        toast('冲到跑道尽头了，把高度调低或角度调小一点再试');
+      } else {
+        toast('冲到跑道尽头了，把摩擦调大一点');
+      }
+    }
   }
 
   // ---------- Canvas ----------
