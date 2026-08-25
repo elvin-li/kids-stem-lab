@@ -15,7 +15,6 @@ const EXPECTED_NAV = [
 ];
 /* Progress v3 允许的六种作品类型，data/playful.js 与页面表单共用这一份定义。 */
 const WORK_TYPES = ['observation', 'prediction', 'drawing', 'model', 'explanation', 'photo-note'];
-const VERSIONED_SHARED = /(?:^|\/)(?:assets\/css\/(?:base|kid|print)\.css|assets\/js\/(?:progress|playful|pwa)\.js|data\/(?:explorations|playful)\.js)(?:[?#]|$)/i;
 const errors = [];
 const sourceCache = new Map();
 let shellVersion = null;
@@ -417,10 +416,14 @@ for (const path of files) {
        改好的打印页在他们那儿迟迟不生效。三张壳样式表一并强制同版本。 */
     const mandatoryShellResources = ['assets/css/base.css', 'assets/css/kid.css', 'assets/css/print.css', 'assets/js/pwa.js'];
     /* illustrations.js 和 data/playful.js 同样在 sw.js 的 CORE 里，却一直没被这条
-       规则覆盖：升过版本的页面配上旧插图库，卡面和图标就会对不上。 */
+       规则覆盖：升过版本的页面配上旧插图库，卡面和图标就会对不上。
+       data/explorations.js 与 data/resources.js 也在 CORE 里，此前是最后两个不带
+       ?v= 的共享脚本：没装上 Service Worker 的 HTTP 访客会拿新页面配 HTTP 缓存里的
+       旧目录/旧资源库——任务文字、专题清单和资源清单迟迟不更新。 */
     const optionalShellResources = [
       'assets/js/progress.js', 'assets/js/playful.js',
-      'assets/js/illustrations.js', 'data/playful.js'
+      'assets/js/illustrations.js', 'data/playful.js',
+      'data/explorations.js', 'data/resources.js'
     ];
     for (const resource of mandatoryShellResources.concat(optionalShellResources)) {
       const referenced = new RegExp(`${escapeRe(resource)}(?:[?"'])`, 'i').test(html);
