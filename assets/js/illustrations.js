@@ -2592,8 +2592,9 @@ window.ILLUSTRATIONS = (function () {
     '<circle cx="24" cy="25" r="18" fill="#f7f4ea" stroke="#8a7a5c" stroke-width="2.8"/>' +
     '<g stroke="#c2b291" stroke-width="2.2" stroke-linecap="round">' +
     '<path d="M24 9 L24 12"/><path d="M24 38 L24 41"/><path d="M8 25 L11 25"/><path d="M37 25 L40 25"/></g>' +
-    '<path d="M24 25 L24 15" stroke="#4a3f2a" stroke-width="3.2" stroke-linecap="round"/>' +
-    '<path d="M24 25 L32 29" stroke="#4a3f2a" stroke-width="3.2" stroke-linecap="round"/>' +
+    /* 十点十分：长针指 2（十分），短针过 10 一点点，两针张成对称的 V。 */
+    '<path d="M24 25 L32.7 20" stroke="#4a3f2a" stroke-width="3.2" stroke-linecap="round"/>' +
+    '<path d="M24 25 L17.4 20.4" stroke="#4a3f2a" stroke-width="3.2" stroke-linecap="round"/>' +
     '<circle cx="24" cy="25" r="2.4" fill="#4a3f2a"/>');
 
   defIcon("speech", "对话", "一个圆角对话气泡，里面有三个点。",
