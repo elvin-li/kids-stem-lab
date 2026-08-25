@@ -1360,6 +1360,21 @@
       var kind = field.tagName === "SELECT" || field.type === "radio" || field.type === "checkbox" ? "change" : "input";
       field.dispatchEvent(new Event(kind, { bubbles: true }));
     });
+    /* 原记录栏是浏览器恢复的，operated 不是：脚本重跑把它归了零，上面补发的
+       change 只走 renderScale(false)，对比图和结果行都照恢复的目的地重画好了——
+       和地心页不同，这一页没有任何一格显示「还没换尺」，满屏都是已操作的样子，
+       点「给护照盖章」却被要求「实际换尺」。只认「换尺看看」写进原记录栏的那
+       几种机器开头（两组快捷按钮只写预测和反思栏，不会误认）：认出来就把
+       operated 补回来，状态行只在还是初始提示时才跟进。bfcache 复活时
+       operated 本来就活着，再置一次不变。 */
+    var machineHeads = ["这把尺的基准：", "地球直径 1 cm 时，", "日地距离 1 m 时，"];
+    for (var i = 0; i < machineHeads.length; i++) {
+      if (result.value.indexOf(machineHeads[i]) === 0) {
+        operated = true;
+        if (status.textContent === "还差：点行星、换尺、勾两条证据。") status.textContent = "已换尺！再勾两条证据、完成预测和模型提醒。";
+        break;
+      }
+    }
     if (window.Playful && Playful.syncPreferences) Playful.syncPreferences(document);
   });
 })();
