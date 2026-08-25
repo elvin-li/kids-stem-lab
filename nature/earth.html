@@ -330,11 +330,11 @@
               <radialGradient id="coreMantleU" cx="28%" cy="22%"><stop offset="0%" stop-color="#fdba74"/><stop offset="100%" stop-color="#c2703d"/></radialGradient>
               <radialGradient id="coreCrust" cx="25%" cy="20%"><stop offset="0%" stop-color="#a8a29e"/><stop offset="55%" stop-color="#8b6f47"/><stop offset="100%" stop-color="#57534e"/></radialGradient>
             </defs>
-            <circle class="seg" data-l="crust" tabindex="0" role="button" aria-label="地壳" cx="150" cy="138" r="126" fill="url(#coreCrust)"></circle>
-            <circle class="seg" data-l="upper" tabindex="0" role="button" aria-label="上地幔" cx="150" cy="138" r="121" fill="url(#coreMantleU)"></circle>
-            <circle class="seg" data-l="lower" tabindex="0" role="button" aria-label="下地幔" cx="150" cy="138" r="112" fill="url(#coreMantleL)"></circle>
-            <circle class="seg" data-l="outer" tabindex="0" role="button" aria-label="外核（液态铁）" cx="150" cy="138" r="69" fill="url(#coreOuter)"></circle>
-            <circle class="seg" data-l="inner" tabindex="0" role="button" aria-label="内核（固态铁球）" cx="150" cy="138" r="24" fill="url(#coreInner)"></circle>
+            <circle class="seg" data-l="crust" tabindex="0" role="button" aria-pressed="true" aria-label="地壳" cx="150" cy="138" r="126" fill="url(#coreCrust)"></circle>
+            <circle class="seg" data-l="upper" tabindex="0" role="button" aria-pressed="false" aria-label="上地幔" cx="150" cy="138" r="121" fill="url(#coreMantleU)"></circle>
+            <circle class="seg" data-l="lower" tabindex="0" role="button" aria-pressed="false" aria-label="下地幔" cx="150" cy="138" r="112" fill="url(#coreMantleL)"></circle>
+            <circle class="seg" data-l="outer" tabindex="0" role="button" aria-pressed="false" aria-label="外核（液态铁）" cx="150" cy="138" r="69" fill="url(#coreOuter)"></circle>
+            <circle class="seg" data-l="inner" tabindex="0" role="button" aria-pressed="false" aria-label="内核（固态铁球）" cx="150" cy="138" r="24" fill="url(#coreInner)"></circle>
             <!-- 海和陆画在最外那圈上。旧版把它们压在上地幔圆下面，整整两条路径从来没露过面。 -->
             <g pointer-events="none" fill="none" stroke-linecap="round">
               <circle cx="150" cy="138" r="123.5" stroke="#2e7bab" stroke-width="5"/>
@@ -732,7 +732,12 @@
       b.setAttribute("aria-pressed", b.dataset.l === cur ? "true" : "false");
       b.style.color = b.dataset.l === cur ? L.tc : "";
     });
-    segs().forEach(function (s) { s.classList.toggle("on", s.dataset.l === cur); });
+    segs().forEach(function (s) {
+      var on = s.dataset.l === cur;
+      s.classList.toggle("on", on);
+      /* 剖面图那五个圈标了 role="button"，按下状态也要让读屏器听得见；深度尺的色块没有按钮语义，跳过。 */
+      if (s.getAttribute("role") === "button") s.setAttribute("aria-pressed", on ? "true" : "false");
+    });
 
     /* 引线指向该圈层的中线，角度固定在左上方 150°，那一带图面是空的。 */
     var midR = { crust: 123.5, upper: 116.5, lower: 90.5, outer: 46.5, inner: 12 }[cur] || 123.5;
