@@ -1419,7 +1419,8 @@
  </svg>
  </div>
  <div class="depth-tags" aria-hidden="true"><span>海面 · 亮</span><span>200 m · 微光</span><span>1000 m · 黑</span><span>海沟 · 生命仍在</span></div>
- <div class="stage-readouts" aria-hidden="true"><span>光<b id="oceanStageLight">微光</b></span><span>温度<b id="oceanStageTemp">约 5–10°C</b></span><span>压力<b id="oceanStagePressure">约 101&nbsp;倍</b></span></div>
+ <!-- 初始读数按默认深度 1000 米写：1000 m 起已进无光层（右侧标签就写着「1000 m · 黑」）。 -->
+<div class="stage-readouts" aria-hidden="true"><span>光<b id="oceanStageLight">黑暗</b></span><span>温度<b id="oceanStageTemp">约 2–4°C</b></span><span>压力<b id="oceanStagePressure">约 101&nbsp;倍</b></span></div>
  </div>
  </div>
  <div class="kid-action-strip" role="group" aria-label="微光号主操作">
@@ -3231,8 +3232,9 @@
  setCell("cm2", kgcm2.toFixed(1) + "\u00a0kg");
  setCell("palm", Math.round(perPalm).toLocaleString() + "\u00a0kg");
  setCell("elephant", (perPalm / 4000).toFixed(2) + " 头");
- setCell("light", d <= 200 ? "有，能光合作用" : d <= 1000 ? "只剩微弱蓝光" : "完全黑暗");
- setCell("temp", d <= 200 ? "随季节 15–25°C" : d <= 1000 ? "约 5–10°C" : "约 2–4°C");
+/* 分界和舞台读数同一套：200 m 起进微光层、1000 m 起进无光层（五层海就是这么分的）。 */
+setCell("light", d < 200 ? "有，能光合作用" : d < 1000 ? "只剩微弱蓝光" : "完全黑暗");
+setCell("temp", d < 200 ? "随季节 15–25°C" : d < 1000 ? "约 5–10°C" : "约 2–4°C");
  setCell("who", who(d));
  }
  function who(d) {
@@ -3421,9 +3423,13 @@
  function stageValues(d) {
  return {
  atm: 1 + d / 10,
- light: d <= 200 ? "阳光充足" : d <= 1000 ? "只有微弱蓝光" : "没有阳光",
- lightShort: d <= 200 ? "明亮" : d <= 1000 ? "微光" : "黑暗",
- temp: d <= 200 ? "约 15–25°C（随地点季节变化）" : d <= 1000 ? "约 5–10°C" : "约 2–4°C"
+/* 分界取「到达即进入下一层」：五层海把微光层写成 200–1000 m、无光层从 1000 m 起，
+   舞台右侧的标签也在 200 m 处写「微光」、1000 m 处写「黑」。
+   原来用的是 <=，滑块正好停在 1000（还是默认值）时，潜艇贴着「1000 m · 黑」的
+   标签，读数却说「微光」——同一画面两个说法。 */
+light: d < 200 ? "阳光充足" : d < 1000 ? "只有微弱蓝光" : "没有阳光",
+lightShort: d < 200 ? "明亮" : d < 1000 ? "微光" : "黑暗",
+temp: d < 200 ? "约 15–25°C（随地点季节变化）" : d < 1000 ? "约 5–10°C" : "约 2–4°C"
  };
  }
  function paintStage() {
