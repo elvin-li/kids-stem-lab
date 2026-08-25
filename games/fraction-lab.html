@@ -1547,13 +1547,22 @@
   });
 
   Array.prototype.forEach.call(document.querySelectorAll('[data-kid-select]'), function (group) {
+    var select = document.getElementById(group.getAttribute('data-kid-select'));
+    /* 家长模式改下拉框，孩子模式点这排按钮，原先只同步「按钮 → 下拉」一个方向：
+       家长在下拉里选了猜测再切回孩子模式，按钮全是没按下的样子，挑战按钮却直接放行——
+       孩子跳过「先猜」这一步，判定用的还是家长那个猜测。和对称工作室的折数失同步同一类，
+       所以下拉一变就把按下状态对齐，初始也对一次（顺带补上按钮缺失的 aria-pressed 初值）。 */
+    function syncPicks() {
+      Array.prototype.forEach.call(group.querySelectorAll('[data-value]'), function (choice) {
+        choice.setAttribute('aria-pressed', String(choice.getAttribute('data-value') === select.value));
+      });
+    }
+    select.addEventListener('change', syncPicks);
+    syncPicks();
     Array.prototype.forEach.call(group.querySelectorAll('[data-value]'), function (btn) {
       btn.addEventListener('click', function () {
-        var select = document.getElementById(group.getAttribute('data-kid-select'));
         select.value = btn.getAttribute('data-value');
-        Array.prototype.forEach.call(group.querySelectorAll('[data-value]'), function (choice) {
-          choice.setAttribute('aria-pressed', String(choice === btn));
-        });
+        syncPicks();
         say('已选择：' + btn.textContent);
       });
     });
