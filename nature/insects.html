@@ -622,8 +622,12 @@
   var chirp = document.getElementById("chirp");
   var ctemp = document.getElementById("ctemp");
   function cricket() {
-    var n = +chirp.value;
-    if (isNaN(n) || n < 0) { ctemp.textContent = "—"; return; }
+    /* 数字框清空时 value 是空串，+"" 得 0 而不是 NaN：原来会照算出 4.4 °C
+       还附一句「这么凉蟋蟀基本不叫了」——什么都没填却报了个具体温度。
+       空着就该显示占位符，等孩子数完叫声再算。 */
+    var raw = chirp.value.trim();
+    var n = +raw;
+    if (raw === "" || isNaN(n) || n < 0) { ctemp.textContent = "—"; return; }
     var f = n + 40;                       // 多尔贝定律
     var c = (f - 32) * 5 / 9;
     var html = c.toFixed(1) + " °C <small>（" + f + " °F）</small>";
