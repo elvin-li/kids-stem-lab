@@ -4070,8 +4070,10 @@ window.ILLUSTRATIONS = (function () {
       '<path d="M62 58 C67 54 74 56 75 61 C76 67 69 70 64 67 C60 65 59 60 62 58Z"/></g>' +
       '<g fill="none" stroke="#dbeafe" stroke-width="1.4" opacity=".8">' +
       '<circle cx="60" cy="50" r="23"/><ellipse cx="60" cy="50" rx="10" ry="23"/><path d="M37 50 L83 50"/></g>' +
+      /* 描述说「三圈波纹向外扩散」：三道弧同心（圆心约 63.5,39），半径 9/15/21 一圈圈往外。 */
       '<g fill="none" stroke="#f59e0b" stroke-width="2.2" opacity=".95">' +
-      '<path d="M64 30 A9 9 0 0 1 72.6 38.6"/><path d="M62 24 A15 15 0 0 1 78.4 40.4"/></g>' +
+      '<path d="M64 30 A9 9 0 0 1 72.6 38.6"/><path d="M62 24 A15 15 0 0 1 78.4 40.4"/>' +
+      '<path d="M59.1 18.5 A21 21 0 0 1 84 43.4"/></g>' +
       '<path d="M70 28 L72.6 34.4 L79.4 34.8 L74.2 39.2 L75.8 45.8 L70 42.2 L64.2 45.8 L65.8 39.2 L60.6 34.8 L67.4 34.4Z" fill="#f59e0b" stroke="#b45309" stroke-width="1.4" stroke-linejoin="round"/>' +
       '<path d="M32 88 L96 88" stroke="#5b7d78" stroke-width="1.4"/>' +
       '<path d="M32 88 L42 88 L46 82 L50 94 L54 86 L60 88 L64 79 L70 97 L74 88 L88 88" fill="none" stroke="#0f766e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>'
