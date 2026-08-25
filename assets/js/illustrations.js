@@ -2446,6 +2446,8 @@ window.ILLUSTRATIONS = (function () {
      竖着排在标尺上时视线才是一路往下走的。 */
 
   defIcon("freediver", "自由潜水员", "一个只戴面镜和脚蹼的潜水员头朝下往深处潜。",
+    /* 人形按站姿坐标画好后整体倒转：头在最下、脚蹼在最上，才是「头朝下往深处潜」。 */
+    '<g transform="rotate(180 24 24)">' +
     '<circle cx="24" cy="9" r="5.2" fill="#e9b489"/>' +
     '<path d="M18.6 7.6 L29.4 7.6 L29.4 10.4 A5.4 5.4 0 0 1 18.6 10.4Z" fill="#8fd3ef" opacity=".9" stroke="#2f6f8f" stroke-width="1.4"/>' +
     '<path d="M24 14 C28 14 30 17 30 21 L29 31 L19 31 L18 21 C18 17 20 14 24 14Z" fill="#2f6f8f"/>' +
@@ -2453,9 +2455,12 @@ window.ILLUSTRATIONS = (function () {
     '<path d="M28 17 L37 26" stroke="#e9b489" stroke-width="3.6" stroke-linecap="round"/>' +
     '<path d="M21 31 L20 40" stroke="#e9b489" stroke-width="3.6" stroke-linecap="round"/>' +
     '<path d="M27 31 L28 40" stroke="#e9b489" stroke-width="3.6" stroke-linecap="round"/>' +
-    '<g fill="#f2a03c"><path d="M16 39 L24 41 L20 47Z"/><path d="M32 39 L24 41 L28 47Z"/></g>');
+    '<g fill="#f2a03c"><path d="M16 39 L24 41 L20 47Z"/><path d="M32 39 L24 41 L28 47Z"/></g>' +
+    "</g>");
 
   defIcon("scuba", "水肺潜水员", "一个背着气瓶、戴调节器的潜水员头朝下往深处潜，身后冒出一串气泡。",
+    /* 人形按站姿坐标画好后整体倒转：头在最下、脚蹼在最上，才是「头朝下往深处潜」。 */
+    '<g transform="rotate(180 24 24)">' +
     '<rect x="30" y="12" width="9" height="17" rx="4.5" fill="#c8823c" stroke="#8a541d" stroke-width="1.6"/>' +
     '<circle cx="24" cy="9" r="5.2" fill="#e9b489"/>' +
     '<path d="M18.6 7.4 L29.4 7.4 L29.4 10.6 A5.4 5.4 0 0 1 18.6 10.6Z" fill="#8fd3ef" opacity=".9" stroke="#2f6f8f" stroke-width="1.4"/>' +
@@ -2464,7 +2469,12 @@ window.ILLUSTRATIONS = (function () {
     '<path d="M20.6 32 L19.4 40" stroke="#26506b" stroke-width="4" stroke-linecap="round"/>' +
     '<path d="M27.4 32 L28.6 40" stroke="#26506b" stroke-width="4" stroke-linecap="round"/>' +
     '<g fill="#f2a03c"><path d="M15 39 L23 41 L19 47Z"/><path d="M33 39 L25 41 L29 47Z"/></g>' +
-    '<g fill="#bfe6f5" opacity=".85"><circle cx="12" cy="12" r="3"/><circle cx="7" cy="5" r="2"/><circle cx="16" cy="4" r="1.4"/></g>');
+    "</g>" +
+    /* 描述里点名的调节器：一截从背后气瓶（倒转后在左侧）绕到嘴边的软管，接一个咬嘴。 */
+    '<path d="M13.5 34 C13.5 41 16.5 44.5 21 44.5" fill="none" stroke="#8a541d" stroke-width="2" stroke-linecap="round"/>' +
+    '<rect x="20.5" y="41.8" width="7" height="4.6" rx="1.8" fill="#6b7a8c" stroke="#33404e" stroke-width="1.3"/>' +
+    /* 呼出的气泡在下潜方向的反面往上跑，不跟着人形一起倒转。 */
+    '<g fill="#bfe6f5" opacity=".85"><circle cx="11" cy="13" r="3"/><circle cx="6" cy="6" r="2"/><circle cx="14" cy="3" r="1.4"/></g>');
 
   defIcon("shipwreck", "沉船残骸", "一艘船头朝下斜插在海底泥沙里的破船，桅杆断成两截。",
     '<path d="M2 40 C12 36 26 36 46 40 L46 46 L2 46Z" fill="#7d6a4f" opacity=".55"/>' +
