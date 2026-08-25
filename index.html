@@ -587,6 +587,17 @@
   document.getElementById("s-lab").textContent = explorations.filter(function (x) { return x.type === "experiment" && x.ready; }).length;
   document.getElementById("s-topic").textContent = explorations.filter(function (x) { return x.type === "nature" && x.ready; }).length;
 
+  /* 从别的页面按「返回」回来时，浏览器在 load 之后、pageshow 之前才把搜索框
+     恢复成上次输入的关键词，而且一个事件也不发：框里写着「PhET」，下面摆的却是
+     按空关键词分组画好的全部资源——和专题目录筛选器同一根源。给搜索框补发一次
+     它平时听的 input，走同一条防抖同步路；首次打开是 navigate，不用补。 */
+  window.addEventListener("pageshow", function (event) {
+    var nav = performance.getEntriesByType ? performance.getEntriesByType("navigation")[0] : null;
+    if (event.persisted || (nav && (nav.type === "back_forward" || nav.type === "reload"))) {
+      qInput.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
+
   render();
 })();
 </script>
@@ -594,7 +605,8 @@
 (function () {
   "use strict";
   var all = (window.EXPLORATIONS || []).filter(function (x) { return x.ready; });
-  var data = window.Progress ? Progress.all() : { pages:{}, recent:[], notes:{}, completions:{} };
+  function readProgress() { return window.Progress ? Progress.all() : { pages:{}, recent:[], notes:{}, completions:{} }; }
+  var data = readProgress();
   var byId = Object.create(null);
   all.forEach(function (x) { byId[x.id] = x; });
   function ageRange(text) { var n=String(text).match(/\d+/g)||[]; return [Number(n[0]||0),Number(n[1]||n[0]||99)]; }
@@ -634,15 +646,23 @@
     go.textContent = (states.length ? states.join(" · ") + " · " : x.age + " 岁 · ") + "继续 →";
     a.appendChild(icon); a.appendChild(h); a.appendChild(p); a.appendChild(go); return a;
   }
-  var featured=document.getElementById("explorationTiles");
-  featuredExperiments.forEach(function(x){featured.appendChild(tile(x,false));});
-  var cont=document.getElementById("continueTiles"), recent=data.recent.map(function(id){return byId[id];}).filter(Boolean).slice(0,4),kidContinue=document.getElementById("kidContinue");
-  if (!recent.length) recent=all.filter(function(x){return x.age.indexOf("4") === 0 || x.age.indexOf("5") === 0;}).slice(0,4);
-  if(kidContinue&&recent[0])kidContinue.href=recent[0].id;
-  recent.forEach(function(x){cont.appendChild(tile(x,true));}); document.getElementById("continueCount").textContent=data.recent.length?"最近 "+recent.length+" 项":"从适龄起点开始";
-  var n=Object.keys(data.pages).length, total=all.length, go=document.getElementById("trail-go"), desc=document.getElementById("trail-desc");
-  if(go) go.textContent="已访问 "+n+" / "+total+" →";
-  if(desc) desc.textContent=n?"已经访问 "+n+" 处；完成、发现与作品会在足迹页分层显示。":"还没有访问记录，从上面的适龄起点开始吧。";
+  /* 这几块都从足迹画出来，包成函数：首次加载画一遍；从别的页面按「返回」被
+     bfcache 整页冻结着放回来时（scripts 不重跑），再按最新足迹画一遍。 */
+  function renderTrailSections() {
+    data = readProgress();
+    var featured=document.getElementById("explorationTiles");
+    featured.textContent="";
+    featuredExperiments.forEach(function(x){featured.appendChild(tile(x,false));});
+    var cont=document.getElementById("continueTiles"), recent=data.recent.map(function(id){return byId[id];}).filter(Boolean).slice(0,4),kidContinue=document.getElementById("kidContinue");
+    cont.textContent="";
+    if (!recent.length) recent=all.filter(function(x){return x.age.indexOf("4") === 0 || x.age.indexOf("5") === 0;}).slice(0,4);
+    if(kidContinue&&recent[0])kidContinue.href=recent[0].id;
+    recent.forEach(function(x){cont.appendChild(tile(x,true));}); document.getElementById("continueCount").textContent=data.recent.length?"最近 "+recent.length+" 项":"从适龄起点开始";
+    var n=Object.keys(data.pages).length, total=all.length, go=document.getElementById("trail-go"), desc=document.getElementById("trail-desc");
+    if(go) go.textContent="已访问 "+n+" / "+total+" →";
+    if(desc) desc.textContent=n?"已经访问 "+n+" 处；完成、发现与作品会在足迹页分层显示。":"还没有访问记录，从上面的适龄起点开始吧。";
+  }
+  renderTrailSections();
 
   /* slug 指向共享插图；插图库缺席或这张卡还没画时退回 icon 这个字符。 */
   function recentItem(icon,title,detail,href,slug){var item=document.createElement(href?"a":"div");item.className="recent-item";if(href)item.href=href;var mark=document.createElement("span");mark.className="recent-mark";mark.textContent=icon;mark.setAttribute("aria-hidden","true");if(slug&&window.ILLUSTRATIONS&&ILLUSTRATIONS.renderArt(mark,slug,{decorative:true}))mark.classList.add("has-art");var copy=document.createElement("span"),strong=document.createElement("b");strong.textContent=title;copy.appendChild(strong);copy.appendChild(document.createTextNode(detail));item.appendChild(mark);item.appendChild(copy);return item;}
@@ -666,6 +686,26 @@ var mark=document.getElementById("randomRouteMark"),slug=String(x.id).replace(/^
 if(mark){mark.innerHTML=tile||"";if(!tile)mark.textContent=x.icon||"";mark.hidden=!(tile||x.icon);}
 output.textContent=x.title+" · "+(challenge?challenge.lead+"："+challenge.text:"任务："+x.task);link.href=x.id;link.hidden=false;link.textContent="前往“"+x.title+"” →";});
   window.addEventListener("kids-stem:progress",renderRecentPlayful);renderRecentPlayful();
+
+  /* 七个自然专题页和两个目录页都补了返回导航的重同步，首页一直缺着：
+     孩子从这里进太空站完成任务、按「返回」回来，bfcache 把整页原样解冻，
+     scripts 不重跑、kids-stem:progress 也只在完成任务的那个窗口派发过——
+     「继续探索」的专题卡、孩子首页「继续」大图卡的去向、「已访问 n / 18」、
+     最近收藏卡和作品全都停在出发前；在别的页面切过孩子/家长模式，
+     <html data-mode> 也还冻着旧值，回来落在另一副首页上。
+     解冻时先让 Playful 按存下的偏好对齐模式，再对比足迹快照，
+     真变了才重画，没变就不动，免得 aria-live 的实验格子白白重报一遍。
+     back_forward 里 scripts 重跑的那种恢复本来就读到新足迹，不用管。 */
+  var trailSnapshot = JSON.stringify(data);
+  window.addEventListener("pageshow", function (event) {
+    if (!event.persisted) return;
+    if (window.Playful && Playful.syncPreferences) Playful.syncPreferences(document);
+    var fresh = JSON.stringify(readProgress());
+    if (fresh === trailSnapshot) return;
+    trailSnapshot = fresh;
+    renderTrailSections();
+    renderRecentPlayful();
+  });
 })();
 </script>
 <script src="assets/js/pwa.js?v=51"></script>
