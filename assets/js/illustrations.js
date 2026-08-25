@@ -3424,15 +3424,18 @@ window.ILLUSTRATIONS = (function () {
       '<path d="M0 86 C24 80 46 92 70 86 C94 80 118 92 160 84 L160 110 L0 110Z" fill="#3f8fc4"/>' +
       '<path d="M118 88 L146 42 L160 66 L160 88Z" fill="#8a9a6d"/>' +
       '<path d="M146 42 L152 52 L140 52Z" fill="#f2f6f8"/>' +
+      /* 描述说「云在山上下雨，雨水又流回海里」：得有一朵云飘到山坡上方、
+         雨点落在山上（x≥118 才在山的轮廓里），回流箭头才有水可回。
+         雨要是直接下进海里，山上那条回流箭头就成了无源之水。 */
       '<g fill="#f7fbfe" stroke="#a9c3d6" stroke-width="1.6">' +
-      '<ellipse cx="82" cy="30" rx="24" ry="14"/><ellipse cx="62" cy="36" rx="16" ry="10"/><ellipse cx="104" cy="36" rx="15" ry="10"/>' +
+      '<ellipse cx="82" cy="30" rx="24" ry="14"/><ellipse cx="62" cy="36" rx="16" ry="10"/><ellipse cx="122" cy="32" rx="15" ry="10"/>' +
       "</g>" +
-      '<g fill="#4a9fd6"><path d="M70 50 L67 60 L73 58Z"/><path d="M84 52 L81 63 L87 61Z"/><path d="M98 50 L95 60 L101 58Z"/></g>' +
+      '<g fill="#4a9fd6"><path d="M122 52 L119 62 L125 60Z"/><path d="M131 46 L128 56 L134 54Z"/><path d="M125 66 L122 76 L128 74Z"/></g>' +
       '<g stroke="#2f7fb5" stroke-width="2.4" fill="none" stroke-linecap="round">' +
       '<path d="M52 80 C46 66 56 58 52 48"/><path d="M52 48 L48 54 M52 48 L57 53"/>' +
       "</g>" +
       '<text x="18" y="72" font-size="11" font-weight="700" fill="#1e5f8c">蒸发</text>' +
-      '<text x="76" y="74" font-size="11" font-weight="700" fill="#1e5f8c">降水</text>' +
+      '<text x="94" y="58" font-size="11" font-weight="700" fill="#1e5f8c">降水</text>' +
       '<g stroke="#2f7fb5" stroke-width="2.2" fill="none" stroke-linecap="round">' +
       '<path d="M132 74 C120 78 112 82 104 84"/><path d="M104 84 L110 82 M104 84 L110 87"/>' +
       "</g>"
