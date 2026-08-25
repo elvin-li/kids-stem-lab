@@ -1298,10 +1298,17 @@
     say("");
   });
 
+  /* 「清空」和「装图纸」都是直接给 codeEl 赋值，原来只各自手动补了一部分同步：
+     出过一次语法错误后编辑器的红框和 aria-invalid 留在原地，valid 的预设代码
+     顶着报错样式；上一关攒下的 taskPassed 也不清，任务状态还写着「挑战通过」；
+     最要命的是作品表单里那个只读的「命令快照」没人刷新，装好五角星去保存，
+     存进足迹的还是上一张图纸的命令。和地球页画圆按钮同一类失同步：赋值后
+     补发一个 input，走键入时同一条同步路（清错、清 taskPassed、重算路线、
+     刷新读数/任务/快照），这里只保留同步路不管的画布清理和按钮文案。 */
   document.getElementById("clear").addEventListener("click", function () {
     codeEl.value = "";
-    invalidatePreview();
     resetAll(false);
+    codeEl.dispatchEvent(new Event("input", { bubbles: true }));
     runBtn.textContent = "让海龟画起来";
     say("");
     codeEl.focus();
@@ -1311,10 +1318,7 @@
     b.addEventListener("click", function () {
       codeEl.value = PRESETS[b.dataset.preset];
       resetAll(false);
-      invalidatePreview();
-      actions = pathPreviewActions();
-      dirty = true;
-      updateReadout();
+      codeEl.dispatchEvent(new Event("input", { bubbles: true }));
       runBtn.textContent = "让海龟画起来";
       say("图纸装好了，点「让海龟画起来」看它怎么画。", "ok");
     });
