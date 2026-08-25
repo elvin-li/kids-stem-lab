@@ -743,6 +743,13 @@
   document.getElementById("printCompanion").addEventListener("click",function(){document.body.classList.add("print-companion");window.print();});
   document.getElementById("printBtn").addEventListener("click",function(){document.body.classList.remove("print-companion");window.print();});
   window.addEventListener("afterprint",function(){document.body.classList.remove("print-companion");});
+  /* 从别的页面按「返回」回来时，浏览器在 load 之后、pageshow 之前才把
+     「孩子现在的状态」下拉恢复成上次的选择，而且一个事件也不发：下拉写着
+     「情绪崩了」，陪伴卡上印的却是开局的「卡住了」四句话——家长照着念就
+     念错了场景。自然七页和首页搜索框已补过同一步：按恢复后的值重画一次
+     即可；bfcache 整页复活时页面状态原样都在，首次打开是 navigate，
+     上面那次 render() 照常跑，都不用重复。 */
+  window.addEventListener("pageshow",function(event){var nav=performance.getEntriesByType?performance.getEntriesByType("navigation")[0]:null;if(!event.persisted&&nav&&(nav.type==="back_forward"||nav.type==="reload"))render();});
 })();
 </script>
 

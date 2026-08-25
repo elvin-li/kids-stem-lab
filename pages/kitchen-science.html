@@ -1028,6 +1028,19 @@
   });
 
   render();
+
+  /* 从别的页面按「返回」回来时，浏览器在 load 之后、pageshow 之前才把
+     「用材料找」搜索框恢复成上次的关键词，而且一个事件也不发：框里写着
+     「硬币」，下面的实验网格和计数摆的却是按空关键词画好的全部 24 张卡——
+     筛选器和结果各说各话。首页搜索框和目录页筛选器已补过同一步：给搜索框
+     补发一次它平时听的 input，走同一条「记状态再重画」的路；bfcache 整页
+     复活时页面状态原样都在，首次打开是 navigate，都不用补。 */
+  window.addEventListener("pageshow", function (event) {
+    var nav = performance.getEntriesByType ? performance.getEntriesByType("navigation")[0] : null;
+    if (!event.persisted && nav && (nav.type === "back_forward" || nav.type === "reload")) {
+      document.getElementById("materialFilter").dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
 })();
 </script>
 

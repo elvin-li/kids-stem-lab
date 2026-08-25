@@ -816,6 +816,15 @@
   var range = document.getElementById("dsRange");
   var out = document.getElementById("dsRangeOut");
   range.addEventListener("input", function () { out.textContent = range.value; });
+  /* 按「返回」回来时浏览器在 load 之后才把滑杆恢复成上次的位置、不发事件，
+     旁边的读数还写着开局的 50——演示的正是「控件与读数同步」，自己先失同步。
+     和全站返回导航的修法一样，按恢复后的值补发一次 input。 */
+  window.addEventListener("pageshow", function (event) {
+    var nav = performance.getEntriesByType ? performance.getEntriesByType("navigation")[0] : null;
+    if (!event.persisted && nav && (nav.type === "back_forward" || nav.type === "reload")) {
+      range.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
 
   /* --- 插图目录 ---
      现场读 ILLUSTRATIONS.artNames()，按 "族/名" 的族名分组。族的顺序和说明写死在这里，
