@@ -1076,7 +1076,10 @@
   var srcEl = document.getElementById("src");
   /* 和太空页同一个坑：断网重访时照片记录从 localStorage 直出，旧写法把缓存命中
      也报成「来自 iNaturalist（加载中或已完成）」——其实一个字节也没传。缓存命中
-     单独计数：有真成功才说联网，全是缓存就说缓存，出现真失败就老实说离线。 */
+     单独计数：有真成功才说联网，全是缓存就说缓存，出现真失败就老实说离线。
+     计数还得等图真挂上（昆虫页同款写法）：本机存的只是照片链接，图本身仍要联网。
+     原来缓存命中一读到记录就报「照片来自本机缓存」，断网时图根本挂不上、
+     页面上明明是内置插图，状态行却咬定在展示缓存照片，还从头到尾不提离线。 */
   var netState = { ok: 0, cache: 0, fail: 0, none: 0 };
   function mark(kind) {
     if (kind === "cache") netState.cache++;
@@ -1114,8 +1117,7 @@
     var q = slot.getAttribute("data-inat");
     var ck = "inat-ocean:" + q;
 
-    function paint(rec) {
-      if (!rec || !rec.url) return;
+    function paint(rec, fromCache) {
       var img = document.createElement("img");
       img.className = "ph";
       img.alt = q;
@@ -1126,20 +1128,29 @@
       img.style.display = "none";
       slot.appendChild(img);
       img.onload = function () {
-        // 加载成功才清掉离线插图，避免闪成空白
+        // 加载成功才清掉离线插图，避免闪成空白；状态也在这时才算数
         [].slice.call(slot.childNodes).forEach(function (n) {
           if (n !== img) slot.removeChild(n);
         });
         slot.className = "";
         img.style.display = "";
+        mark(fromCache ? "cache" : true);
       };
-      img.onerror = function () { img.remove(); };  // 失败保留离线插图
+      img.onerror = function () {
+        img.remove();               // 失败保留离线插图
+        /* 缓存链接挂不上多半是断网重访，算真失败；刚从接口拿到的链接挂不上，
+           说明网络其实通着，不能据此说离线。 */
+        mark(fromCache ? false : "none");
+      };
       img.src = rec.url;
     }
 
     try {
       var c = localStorage.getItem(ck);
-      if (c) { paint(JSON.parse(c)); mark("cache"); return; }
+      if (c) {
+        var rec = JSON.parse(c);
+        if (rec && rec.url) { paint(rec, true); return; }
+      }
     } catch (e) {}
 
     jget("https://api.inaturalist.org/v1/taxa?q=" + encodeURIComponent(q) + "&per_page=6")
@@ -1158,7 +1169,6 @@
         if (hit) {
           try { localStorage.setItem(ck, JSON.stringify(hit)); } catch (e) {}
           paint(hit);
-          mark(true);
         } else {
           mark("none");
         }
