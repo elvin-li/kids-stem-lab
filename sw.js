@@ -1,5 +1,5 @@
 /* 少儿数理启蒙离线缓存。外部科学 API 不在此缓存，页面自行超时并降级。 */
-const CACHE = "kids-stem-shell-v72";
+const CACHE = "kids-stem-shell-v73";
 const SHELL_VERSION = Number(CACHE.slice(CACHE.lastIndexOf("-v") + 2));
 const CORE = [
   "./", "./index.html", "./manifest.webmanifest",
