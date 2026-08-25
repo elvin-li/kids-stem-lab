@@ -1428,6 +1428,14 @@
       entry.field.dispatchEvent(new Event(entry.field.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true }));
     });
     if (window.Playful && Playful.syncPreferences) Playful.syncPreferences(document);
+    /* 上面那个 kids-stem:progress 守卫只护得住「本页开着时切模式」这一条路：
+       家长切到水波槽、进别的页面把设备换成孩子模式再按「返回」，偏好事件发生在
+       别的页面的窗口里，这边听不到；bfcache 复活时 syncPreferences 刚把
+       <html data-mode> 拨成 kid——舞台上留着的还是干涉图，孩子手里的两个大按钮
+       和两张结果卡讲的「最下面的结果波」画面上根本没有，模式芯片又收在家长折叠里。
+       复活后补同一步检查：孩子模式下还停在水波槽，就替孩子切回两列波。
+       back_forward 重建时页面从头初始化、MODE 本来就是 wave，这步是空操作。 */
+    if (MODE === 'tank' && window.Playful && Playful.getPreference && Playful.getPreference('mode') === 'kid') setMode('wave');
   });
 })();
 </script>
