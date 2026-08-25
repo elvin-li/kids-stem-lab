@@ -1527,9 +1527,12 @@ window.ILLUSTRATIONS = (function () {
     desc: "暗红色的大王乌贼睁着一只很大的眼睛，八条腕和两条更长的触手向下张开。",
     bg: sea("#123a56", "#08202f", bubbles([[24, 20, 2.2], [136, 26, 1.8]])),
     art:
+      /* 短腕左右各四条才是八条；两条带端锤的长触手另算。 */
       '<g stroke="#b8443d" stroke-width="5" fill="none" stroke-linecap="round">' +
       '<path d="M78 62 C64 70 46 74 28 72"/><path d="M80 64 C70 76 54 84 36 86"/>' +
+      '<path d="M82 65 C74 77 62 86 48 89"/>' +
       '<path d="M84 66 C80 78 72 88 62 90"/><path d="M90 66 C92 78 90 86 86 90"/>' +
+      '<path d="M93 65 C98 77 103 85 108 88"/>' +
       '<path d="M96 64 C104 74 116 82 130 84"/><path d="M98 61 C110 66 126 68 142 66"/>' +
       "</g>" +
       '<g stroke="#a03c36" stroke-width="3" fill="none" stroke-linecap="round">' +
@@ -1583,9 +1586,12 @@ window.ILLUSTRATIONS = (function () {
     desc: "大王酸浆鱿身体粗壮，触手上带着能转动的钩子，眼睛比拳头还大。",
     bg: sea("#132a44", "#071626", bubbles([[136, 18, 2], [20, 28, 1.8]])),
     art:
+      /* 和大王乌贼同款：短腕左右各四条共八条，长触手两条。 */
       '<g stroke="#9c5b8e" stroke-width="6" fill="none" stroke-linecap="round">' +
       '<path d="M76 64 C60 72 42 76 24 74"/><path d="M80 66 C70 78 54 86 38 88"/>' +
+      '<path d="M83 67 C75 79 64 88 52 90"/>' +
       '<path d="M86 68 C82 80 74 88 66 90"/><path d="M92 68 C94 80 92 88 90 90"/>' +
+      '<path d="M95 67 C100 79 105 87 112 90"/>' +
       '<path d="M98 66 C106 76 118 84 132 86"/><path d="M100 62 C112 68 128 70 144 68"/>' +
       "</g>" +
       '<g stroke="#84497a" stroke-width="4" fill="none" stroke-linecap="round">' +
