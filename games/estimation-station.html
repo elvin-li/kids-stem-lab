@@ -1367,6 +1367,17 @@
       entry.field.dispatchEvent(new Event(entry.field.tagName === "SELECT" ? "change" : "input", { bubbles: true }));
     });
     if (window.Playful && Playful.syncPreferences) Playful.syncPreferences(document);
+    /* 上面那个 kids-stem:progress 守卫只护得住「本页开着时切模式」这一条路：
+       家长切到费米问题、进别的页面把设备换成孩子模式再按「返回」，偏好事件
+       发生在别的页面的窗口里，这边听不到；bfcache 复活时 syncPreferences 刚把
+       <html data-mode> 拨成 kid——费米面板被孩子模式整个藏掉，数糖豆面板还挂着
+       标签切换写上的 hidden（base.css 的 [hidden] 带 !important，孩子模式那条
+       display:block 压不过它），孩子面前连一个实验都不剩。复活后补同一步检查：
+       孩子模式下数糖豆还收着，就替孩子按回「数糖豆」。back_forward 重建时页面
+       从头初始化、数糖豆本来就开着，这步是空操作。 */
+    if (panels.count.hidden && window.Playful && Playful.getPreference && Playful.getPreference("mode") === "kid") {
+      document.getElementById("tab-count").click();
+    }
   });
 })();
 </script>
