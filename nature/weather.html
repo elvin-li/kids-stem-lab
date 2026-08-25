@@ -516,9 +516,13 @@
     navigator.geolocation.getCurrentPosition(function(pos){locationText="约 "+pos.coords.latitude.toFixed(2)+", "+pos.coords.longitude.toFixed(2);status.textContent="已在本次会话标注位置（约到 0.01°）；不会保存或上传。"},function(){status.textContent="未取得定位；已使用完整的无定位模式。"},{timeout:5000,maximumAge:0,enableHighAccuracy:false});
   });
   document.getElementById("makeReport").addEventListener("click",function(){
-    var temp=Number(document.getElementById("stationTemp").value),cover=Number(document.getElementById("cloudCover").value),rain=Number(document.getElementById("precip").value);
+    /* 数字框清空时 value 是空串，Number("") 得 0 而不是 NaN，isFinite 拦不住：
+       气温没填会生成并保存一份「气温 0°C、云量 0 成」的观测报告——报告里的
+       数字应该都是真的量出来的。空着任何一项都先提示补填，不出报告。 */
+    var tempEl=document.getElementById("stationTemp"),coverEl=document.getElementById("cloudCover"),rainEl=document.getElementById("precip");
+    var temp=Number(tempEl.value),cover=Number(coverEl.value),rain=Number(rainEl.value);
     var output=document.getElementById("stationOutput");
-    if(!isFinite(temp)||!isFinite(cover)||cover<0||cover>10||!isFinite(rain)||rain<0){output.textContent="请检查气温、0–10 成云量和非负降水量。";return}
+    if(tempEl.value.trim()===""||coverEl.value.trim()===""||rainEl.value.trim()===""||!isFinite(temp)||!isFinite(cover)||cover<0||cover>10||!isFinite(rain)||rain<0){output.textContent="请先填写气温、0–10 成云量和非负降水量，再生成报告。";return}
     var trendValue=document.getElementById("pressureTrend").value;
     var trend={rise:"上升，天气常趋于稳定",steady:"平稳，需继续观察",fall:"下降，云雨可能性常增加"}[trendValue];
     var wind=document.getElementById("windDirection").value,windSign=document.getElementById("windSign").value;
