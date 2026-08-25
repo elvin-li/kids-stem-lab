@@ -491,10 +491,15 @@
 
   timerButton.addEventListener("click",function(){
     if(timerStart===null){timerStart=performance.now();timerButton.textContent="听到雷声：停止";document.getElementById("thunderOutput").textContent="正在计时。请在安全室内操作。"}
-    else{var elapsed=Math.min(90,(performance.now()-timerStart)/1000);sec.value=(Math.round(elapsed*2)/2).toFixed(1);sec.dispatchEvent(new Event("input"));timerStart=null;timerButton.textContent="开始计时";
+    else{var raw=(performance.now()-timerStart)/1000;timerStart=null;timerButton.textContent="开始计时";
     /* 停表后输出行原来还挂着「正在计时」，要一直等到按「计算距离」才改口——
-       秒表明明停了，页面却说还在计。停下就报测到的秒数，并指一下下一步。 */
-    document.getElementById("thunderOutput").textContent="计时结束：约 "+Number(sec.value).toFixed(1)+" 秒。按「计算距离」换算成距离。"}
+       秒表明明停了，页面却说还在计。停下就报测到的秒数，并指一下下一步。
+       计过 90 秒的那次原来被 Math.min 悄悄夹到滑块上限再写进滑块：孩子按了
+       三分钟才停，页面却宣布「计时结束：约 90.0 秒」，按「计算距离」还会一本
+       正经算出 30 千米。超限的一次不写滑块、如实说明这次不算数。 */
+    if(raw>90){document.getElementById("thunderOutput").textContent="计到 "+Math.round(raw)+" 秒才停，超过滑块的 90 秒上限——雷声传不了这么久，多半是忘了按停，这次不算数。下次看到闪电马上开始、听到雷声马上停。"}
+    else{sec.value=(Math.round(raw*2)/2).toFixed(1);sec.dispatchEvent(new Event("input"));
+    document.getElementById("thunderOutput").textContent="计时结束：约 "+Number(sec.value).toFixed(1)+" 秒。按「计算距离」换算成距离。"}}
   });
   document.getElementById("calcThunder").addEventListener("click",function(){
     var s=Number(sec.value),km=s*343/1000;
