@@ -47,7 +47,10 @@
     border-right: 1px solid rgba(0,0,0,.25);
   }
   .tl-era:first-child { border-radius: calc(var(--r) - 1px) 0 0 calc(var(--r) - 1px); }
-  .tl-era:last-child { border-radius: 0 calc(var(--r) - 1px) calc(var(--r) - 1px) 0; border-right: 0; }
+  /* 右端那段不能用 :last-child 选：灭绝线是最后才 append 的孩子，
+     .tl-era:last-child 谁也选不中——新生代于是留着分隔线、方角还戳出圆框外。
+     由 timeline() 给最后一段挂上 .tl-era-end。 */
+  .tl-era.tl-era-end { border-radius: 0 calc(var(--r) - 1px) calc(var(--r) - 1px) 0; border-right: 0; }
   .tl-era small { display: block; font-weight: 600; opacity: .78; font-size: .68rem; }
   .tl-mark {
     position: absolute; top: -5px; bottom: -5px; width: 3px;
@@ -635,9 +638,9 @@
   /* ---------- 时间轴 ---------- */
   (function timeline() {
     var tl = document.getElementById("tl");
-    PERIODS.forEach(function (p) {
+    PERIODS.forEach(function (p, i) {
       var el = document.createElement("div");
-      el.className = "tl-era";
+      el.className = "tl-era" + (i === PERIODS.length - 1 ? " tl-era-end" : "");
       var l = (TOTAL - p.from) / TOTAL * 100;
       var w = (p.from - p.to) / TOTAL * 100;
       el.style.left = l + "%";
