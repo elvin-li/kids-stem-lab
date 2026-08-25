@@ -43,6 +43,11 @@
 (function(){"use strict";
 var items=(window.EXPLORATIONS||[]).filter(function(x){return x.ready;}),byId=Object.create(null),view="stickers",box=document.getElementById("collection"),empty=document.getElementById("empty"),toolMsg=document.getElementById("toolMsg"),viewStatus=document.getElementById("viewStatus"),collectionPanel=document.getElementById("collectionPanel"),albumSummary=document.getElementById("albumSummary"),milestoneBox=document.getElementById("milestones"),tabs=Array.prototype.slice.call(document.querySelectorAll("[data-view]"));
 items.forEach(function(x){byId[x.id]=x;});
+/* 首页和实验、探索两个目录页都已承认 progress.js 可能没加载成（缓存残缺等），读不到就当没记录。
+   这一页整页都在读写记录，底部第一句 Progress.available() 就会抛错：卡册永远停在
+   「已收集 0 / 18」、格子全空、不说原因，视图标签早已绑好，点一下再抛一次。
+   没有模块就没有可信的兜底数据，只能收起卡册骨架、停用标签和备份按钮，明说载入失败请刷新重试。 */
+if(!window.Progress){var notice=document.getElementById("storageNotice");notice.textContent="记录功能没有载入，收藏卡、笔记、作品和备份暂时打不开；请刷新页面重试。";notice.hidden=false;empty.textContent="记录功能没有载入，这里暂时读不出内容。请刷新页面重试。";empty.hidden=false;albumSummary.hidden=true;milestoneBox.hidden=true;tabs.forEach(function(tab){tab.disabled=true;});["exportJson","importJson","clearData","importFile"].forEach(function(id){document.getElementById(id).disabled=true;});return;}
 var workLabels={observation:"观察记录",prediction:"预测卡",drawing:"发现画",model:"模型说明",explanation:"我的解释","photo-note":"照片备注"};
 function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
 /* 卡面、锁标和伙伴头像都走共享插图；没有对应插图时退回原来的 emoji，功能不受影响。 */
