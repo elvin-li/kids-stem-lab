@@ -72,7 +72,15 @@ document.getElementById("exportJson").addEventListener("click",function(){var te
 document.getElementById("importJson").addEventListener("click",function(){if(Progress.importJSON(document.getElementById("jsonData").value)){render();if(window.Playful)Playful.init(document);setToolMsg("v3 导入成功：访问、完成、笔记、作品和偏好已恢复。");}else setToolMsg("导入失败：请确认内容是有效的 Progress v3 JSON。");});
 document.getElementById("importFile").addEventListener("change",function(event){var file=event.target.files&&event.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(){document.getElementById("jsonData").value=String(reader.result||"");setToolMsg("文件已读入下框，请点击“导入下框 v3 JSON”。");};reader.onerror=function(){setToolMsg("文件读取失败。");};reader.readAsText(file);});
 document.getElementById("clearData").addEventListener("click",function(){var button=this;if(button.dataset.armed!=="true"){button.dataset.armed="true";button.textContent="再次点击确认清空";setToolMsg("尚未清空；再次点击才会删除三代记录，建议先导出 v3 JSON。");clearTimeout(button._timer);button._timer=setTimeout(function(){button.dataset.armed="false";button.textContent="清空全部记录";},6000);return;}clearTimeout(button._timer);button.dataset.armed="false";button.textContent="清空全部记录";if(Progress.reset()){render();if(window.Playful)Playful.init(document);setToolMsg("全部记录已清空；可用 v3 JSON 恢复。");}else setToolMsg("清空失败，原记录仍保留。");});
-window.addEventListener("kids-stem:progress",render);document.getElementById("storageNotice").hidden=Progress.available();render();
+window.addEventListener("kids-stem:progress",render);document.getElementById("storageNotice").hidden=Progress.available();
+/* 首页和灵感卡收尾的入口一直带着 ?view=cards 链过来，首页「最近作品」也该落在作品册；
+   但这页从不读查询串，开局永远是收藏卡册——卡册链接只是恰好撞上默认值才像是在工作，
+   点一件最近作品过来看到的却是卡册，还得自己再点一次「作品册」。
+   开局按 view 参数选中对应标签页（cards 沿用旧链接的叫法，对应收藏卡）；没带参数照旧默认卡册。 */
+var requestedView=null;try{requestedView=new URLSearchParams(location.search).get("view");}catch(e){}
+if(requestedView==="cards")requestedView="stickers";
+var initialTab=null;tabs.some(function(tab){if(tab.dataset.view===requestedView){initialTab=tab;return true;}return false;});
+if(initialTab)activateTab(initialTab,false);else render();
 })();
 </script>
 <script src="../assets/js/pwa.js?v=47"></script>
