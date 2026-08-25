@@ -486,8 +486,16 @@
         syncPreferences(global.document);
         nodes(global.document, "[data-playful-sticker]").forEach(renderSticker);
         var source = event && event.detail ? event.detail.source : "";
+        /* 别的标签页的足迹变化由 progress.js 转发成 source="storage" 到达这里，
+           已知卡册却只在本窗口 reset/import 时重建：另一个标签页解锁的卡一直
+           不算「已知」，孩子下次在这个标签页完成任务时，庆祝弹窗按目录顺序
+           先弹出那张别处解锁的旧卡；反过来另一个标签页清空记录后，这边重新
+           完成同一任务，卡的 id 还挂在已知名单上，正式任务做完却一个弹窗也
+           没有。跨标签页的变化同样按当前解锁集重建名单：庆祝只留给本窗口
+           刚完成的那张卡。 */
         if (source === "reset") rememberUnlockedCards(true);
         else if (source === "import") rememberUnlockedCards(true);
+        else if (source === "storage") rememberUnlockedCards(true);
         if (source === "complete") {
           var newlyUnlocked = [];
           var store = progress();
