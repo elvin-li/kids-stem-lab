@@ -416,10 +416,12 @@
     if(quickUndo)quickUndo.disabled=undoDisabled;
   }
   function point(ev) { var r=canvas.getBoundingClientRect(); return { x:(ev.clientX-r.left)/r.width*logicalWidth, y:(ev.clientY-r.top)/r.height*logicalHeight, pressure:ev.pressure>0?ev.pressure:.5 }; }
+  /* sx/sy 记录这一份跨过了哪条镜像轴：笔画逐点映射用不上它，
+     印章却要靠它把形状真的翻过去，而不是原样挪个位置。 */
   function mirrors(p) {
-    var list=[p];
-    if(state.mirror==="vertical"||state.mirror==="quad") list.push({x:logicalWidth-p.x,y:p.y,pressure:p.pressure});
-    if(state.mirror==="quad") { list.push({x:p.x,y:logicalHeight-p.y,pressure:p.pressure}); list.push({x:logicalWidth-p.x,y:logicalHeight-p.y,pressure:p.pressure}); }
+    var list=[{x:p.x,y:p.y,pressure:p.pressure,sx:1,sy:1}];
+    if(state.mirror==="vertical"||state.mirror==="quad") list.push({x:logicalWidth-p.x,y:p.y,pressure:p.pressure,sx:-1,sy:1});
+    if(state.mirror==="quad") { list.push({x:p.x,y:logicalHeight-p.y,pressure:p.pressure,sx:1,sy:-1}); list.push({x:logicalWidth-p.x,y:logicalHeight-p.y,pressure:p.pressure,sx:-1,sy:-1}); }
     return list;
   }
   function line(a,b) {
@@ -432,9 +434,11 @@
     for(var i=0;i<aa.length;i++){ctx.beginPath();ctx.moveTo(aa[i].x,aa[i].y);ctx.lineTo(bb[i].x,bb[i].y);ctx.stroke();}
     ctx.restore();
   }
+  /* 镜像份要按轴翻面再落纸：笔画是逐点映射、本来就翻了面，印章若只平移不翻，
+     四面镜像里下半边的爱心还是正着的，和同一条虚线轴映出的笔画对不上。 */
   function stampShape(kind,p) {
     var pts=mirrors(p); ctx.save();ctx.fillStyle=state.color;ctx.strokeStyle=state.color;ctx.lineWidth=3;
-    pts.forEach(function(q){ctx.save();ctx.translate(q.x,q.y);var s=Math.max(18,state.size*2.3);ctx.beginPath();
+    pts.forEach(function(q){ctx.save();ctx.translate(q.x,q.y);ctx.scale(q.sx,q.sy);var s=Math.max(18,state.size*2.3);ctx.beginPath();
       if(kind==="star"){for(var i=0;i<10;i++){var r=i%2?s*.42:s,ang=-Math.PI/2+i*Math.PI/5;var x=Math.cos(ang)*r,y=Math.sin(ang)*r;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();ctx.fill();}
       else if(kind==="heart"){ctx.moveTo(0,s*.85);ctx.bezierCurveTo(-s*1.2,s*.05,-s*.72,-s*.72,0,-s*.22);ctx.bezierCurveTo(s*.72,-s*.72,s*1.2,s*.05,0,s*.85);ctx.fill();}
       else {for(var j=0;j<6;j++){ctx.rotate(Math.PI/3);ctx.ellipse(0,-s*.52,s*.32,s*.58,0,0,Math.PI*2);ctx.fill();}ctx.beginPath();ctx.arc(0,0,s*.3,0,Math.PI*2);ctx.fillStyle="#d68a00";ctx.fill();}
