@@ -715,8 +715,20 @@
   }
 
   function renderMe() {
-    var H = +ht.value || 130, W = +wt.value || 26, A = +ag.value || 8;
+    /* 数字框清空时 value 是空串，+"" 得 0，旧的 || 130/26/8 会悄悄换上默认
+       孩子：身高一删，六格照样按 130 cm、26 kg、8 岁那个假想孩子算出血量、
+       心跳和步数——可这一节的标题偏偏是「属于我的数字」。哪个框空着或
+       不是正数，就把六格换成一句提示，等三个数都填好再算。 */
+    var H = +ht.value, W = +wt.value, A = +ag.value;
     meOut.textContent = "";
+    if (ht.value.trim() === "" || wt.value.trim() === "" || ag.value.trim() === "" ||
+        !isFinite(H) || H <= 0 || !isFinite(W) || W <= 0 || !isFinite(A) || A <= 0) {
+      var wait = document.createElement("p");
+      wait.style.cssText = "grid-column:1/-1;margin:0;font-size:.86rem;color:var(--ink-mid)";
+      wait.textContent = "身高、体重、年龄三个数都填好，下面才算得出属于你的数字。";
+      meOut.appendChild(wait);
+      return;
+    }
 
     // 血量约占体重 7%（约 70 mL/kg）
     var blood = Math.round(W * 70);

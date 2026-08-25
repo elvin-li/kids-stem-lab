@@ -780,10 +780,21 @@
   var wbars = document.getElementById("wbars");
 
   function renderWeigh() {
-    var kg = parseFloat(kgEl.value);
-    if (!isFinite(kg) || kg <= 0) kg = 25;
-    var maxG = Math.max.apply(null, PLANETS.map(function (p) { return p.g; }));
+    /* 体重框清空时 parseFloat("") 是 NaN，旧写法悄悄退回默认的 25：孩子把 25
+       删掉准备填自己的体重，八根条立刻按 25 公斤写出「木星上 59.0 kg」——
+       没量过的数被当成量好的写了出来（虫子页力量条、天气页气象站同款问题）。
+       空着或不是正数就不画条，先请孩子填数。 */
+    var raw = kgEl.value.trim();
+    var kg = parseFloat(raw);
     wbars.textContent = "";
+    if (raw === "" || !isFinite(kg) || kg <= 0) {
+      var wait = document.createElement("p");
+      wait.className = "wbars-note";
+      wait.textContent = "先在上面填好体重（公斤），这里再算出你在每颗行星上有多重。";
+      wbars.appendChild(wait);
+      return;
+    }
+    var maxG = Math.max.apply(null, PLANETS.map(function (p) { return p.g; }));
     PLANETS.forEach(function (p) {
       var row = document.createElement("div");
       row.className = "wbar" + (p.id === current.id ? " me" : "");

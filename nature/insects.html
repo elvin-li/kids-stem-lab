@@ -564,8 +564,22 @@
   }
 
   function strength() {
-    var kg = +kgEl.value || 26;
+    /* 体重框清空时 value 是空串，+"" 得 0，旧的 || 26 会悄悄退回默认体重：
+       孩子把 26 删掉准备填自己的体重，两根条立刻按 26 公斤画出「能举起
+       1.3 吨」——没量过的数被当成量好的画了出来。同一页的蟋蟀温度计
+       早为同一件事补过空输入守卫。空着或不是正数就不画条，先请孩子填数。 */
+    var raw = kgEl.value.trim();
+    var kg = +raw;
     var mult = +whoEl.value || 50;
+    if (raw === "" || !isFinite(kg) || kg <= 0) {
+      barsEl.textContent = "";
+      var wait = document.createElement("p");
+      wait.style.cssText = "margin:0;font-size:.84rem;color:var(--ink-mid)";
+      wait.textContent = "先填上你的体重（公斤），这里再画出对比条。";
+      barsEl.appendChild(wait);
+      stNote.textContent = "";
+      return;
+    }
     var lifted = kg * mult;
     var normal = kg * 0.5;              // 普通孩子大致能提起自身一半体重
     var max = Math.max(lifted, normal);
