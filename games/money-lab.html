@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>钱币凑整 · 换一种硬币，钱会变多吗？</title>
+<meta name="description" content="同一块牌子上的金额，可以用大硬币少几枚，也可以用小硬币多几枚。换组合，总额可以不变。本页是代币演算，不是真账本，不涉及赌博。真币不入口。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  .hero { padding: 28px 0 10px; }
+  .hero h1 { margin: .15em 0 .3em; }
+  .lead { max-width: 58ch; color: var(--ink-mid); }
+  .kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--math) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--math) 12%,var(--surface)),var(--surface) 62%);
+  }
+  .mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--math) 36%,var(--line));
+    background: color-mix(in srgb,var(--math) 12%,var(--surface)); font-size: 2.2rem;
+  }
+  .stage {
+    padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface);
+  }
+  .coin-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+  .ml-sky { fill: color-mix(in srgb,var(--math) 8%,#eef6ff); }
+  .ml-desk { fill: color-mix(in srgb,var(--kit) 18%,#efe0c8); }
+  .ml-tray { fill: color-mix(in srgb,var(--surface) 70%,#d9c7a4); stroke: color-mix(in srgb,var(--ink) 28%,transparent); stroke-width: 1.6; }
+  .ml-board { fill: color-mix(in srgb,var(--warn) 22%,#fff4d6); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 2; }
+  .ml-slot { fill: color-mix(in srgb,var(--math) 42%,#6ea8fe); }
+  .ml-pig { fill: color-mix(in srgb,var(--danger) 38%,#f0b4b0); stroke: color-mix(in srgb,var(--ink) 34%,transparent); stroke-width: 1.6; }
+  .ml-snout { fill: color-mix(in srgb,var(--danger) 22%,#f7d0cc); }
+  .ml-eye { fill: var(--ink); }
+  .ml-tag-k { fill: var(--ink-mid); font: 700 12px sans-serif; text-anchor: middle; }
+  .ml-tag-v { fill: var(--ink); font: 800 22px var(--mono); text-anchor: middle; }
+  .ml-cap { fill: var(--ink); font: 800 13px var(--mono); text-anchor: middle; }
+  .ml-c1 { fill: color-mix(in srgb,var(--kit) 46%,#d8b070); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 1.4; }
+  .ml-c5 { fill: color-mix(in srgb,var(--sci) 42%,#7dcea0); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 1.4; }
+  .ml-c10 { fill: color-mix(in srgb,var(--math) 48%,#6ea8fe); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 1.4; }
+  .ml-num { fill: var(--ink); font: 800 12px var(--mono); text-anchor: middle; }
+  .readout { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); margin-top: 10px; }
+  .readout b { display: block; font: 800 1.2rem/1.2 var(--mono); color: var(--ink); }
+  .readout span { font-size: .78rem; color: var(--ink-dim); }
+  .kid-action-strip { display: grid; gap: 10px; margin: 12px 0; }
+  .side-row { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit,minmax(min(220px,100%),1fr)); }
+  .peg-card { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); }
+  .peg-card h3 { margin: 0; font-size: 1rem; }
+  .peg-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+  .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+  .ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--math) 16%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--math) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+  .log { margin: 0; padding-left: 1.2em; color: var(--ink-mid); }
+  button, .btn { min-height: 44px; min-width: 44px; }
+  .stage + .kid-action-strip { margin-top: 8px; }
+  .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+  @media (max-width: 640px) {
+    .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+  /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 6px 0 8px; padding: 8px 10px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .2em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.35rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead {
+      font-size: .88rem; line-height: 1.4; margin-bottom: .3em;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    html[data-mode="kid"] .kid-visual-stage { padding: 8px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1rem; margin-bottom: .25em; }
+    html[data-mode="kid"] .coin-art { max-height: 120px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+    html[data-mode="kid"] .readout b { font-size: .95rem; }
+    html[data-mode="kid"] .kid-visual-stage > p:not(.live-text) { font-size: .86rem; margin: .05em 0 .3em; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .86rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; gap: 6px; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+  }
+
+  .guess-card { border-color: color-mix(in srgb,var(--math) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--math); background: color-mix(in srgb,var(--math) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pick-btns .btn { white-space: nowrap; }
+</style>
+</head>
+<body data-playful-page="games/money-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-hero-scene">
+    <div>
+      <p class="row"><span class="pill pill-math">数学</span><span class="pill">6–10&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>换一种硬币，钱会变多吗？</h1>
+      <p class="lead">牌子上要凑 20&nbsp;元，可以放 2&nbsp;枚 10&nbsp;元，也可以放 4&nbsp;枚 5&nbsp;元，总额还是那么多。换组合不是钱自己长出来。本页用代币演算，不翻家里钱包，真硬币不入口。</p>
+      <p class="live-text" data-edu-point role="note"><b>这一页在学：</b>换一种硬币，钱会变多吗？ 看结构图/真图，别被「凡是金属都吸」这类错话带跑。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><svg viewBox="0 0 120 90" width="70" height="52" focusable="false" aria-hidden="true"><rect fill="#eef6ee" width="120" height="90"/><circle cx="42" cy="48" r="22" fill="#f0c14a" stroke="#8a6a20" stroke-width="2"/><circle cx="78" cy="48" r="22" fill="#d0d5db" stroke="#5a6570" stroke-width="2"/><text x="42" y="53" text-anchor="middle" font-size="14" font-weight="800" fill="#5a3a10">1</text><text x="78" y="53" text-anchor="middle" font-size="12" font-weight="800" fill="#3a2a18">10</text></svg></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">先凑够，再换一种</h2>
+    <p>大硬币顶得快，小硬币好拆开。两种摆法的张数可以不一样，只要加起来一样多。</p>
+    <svg class="coin-art" id="coinArt" viewBox="0 0 640 280" role="img" aria-labelledby="coinTitle coinDesc">
+      <title id="coinTitle">钱币托盘舞台</title>
+      <desc id="coinDesc">三个托盘分别放 10&nbsp;元、5&nbsp;元和 1&nbsp;元硬币，上方牌子写出这一次要凑的金额。</desc>
+      <rect class="ml-sky" width="640" height="280"/>
+      <rect class="ml-desk" y="228" width="640" height="52"/>
+      <rect class="ml-board" x="186" y="14" width="268" height="62" rx="12"/>
+      <text class="ml-tag-k" x="320" y="36">这一次要凑</text>
+      <text class="ml-tag-v" id="boardTarget" x="320" y="62">20元</text>
+      <ellipse class="ml-pig" cx="560" cy="48" rx="38" ry="28"/>
+      <ellipse class="ml-snout" cx="590" cy="54" rx="12" ry="9"/>
+      <circle class="ml-eye" cx="548" cy="42" r="3"/>
+      <rect class="ml-slot" x="548" y="28" width="22" height="6" rx="3"/>
+      <rect class="ml-tray" x="46" y="168" width="168" height="68" rx="10"/>
+      <rect class="ml-tray" x="236" y="168" width="168" height="68" rx="10"/>
+      <rect class="ml-tray" x="426" y="168" width="168" height="68" rx="10"/>
+      <text class="ml-cap" x="130" y="250">10元托盘</text>
+      <text class="ml-cap" x="320" y="250">5元托盘</text>
+      <text class="ml-cap" x="510" y="250">1元托盘</text>
+      <g id="coinsLayer"></g>
+    </svg>
+    <div class="readout">
+      <div><span>目标金额</span><b id="targetOut">20&nbsp;元</b></div>
+      <div><span>现在凑到</span><b id="sumOut">0&nbsp;元</b></div>
+      <div><span>比一比</span><b id="diffOut">还没放硬币</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">点托盘上的「放一枚」，看总数有没有到牌子上的金额。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="往托盘里放硬币">
+    <div class="side-row">
+      <article class="peg-card">
+        <h3>10&nbsp;元 · 大硬币</h3>
+        <div class="peg-btns">
+          <button class="btn btn-primary" type="button" data-val="10" data-delta="1">放一枚</button>
+          <button class="btn btn-ghost" type="button" data-val="10" data-delta="-1">拿走一枚</button>
+        </div>
+        <p id="c10">0&nbsp;枚</p>
+      </article>
+      <article class="peg-card">
+        <h3>5&nbsp;元 · 中硬币</h3>
+        <div class="peg-btns">
+          <button class="btn btn-primary" type="button" data-val="5" data-delta="1">放一枚</button>
+          <button class="btn btn-ghost" type="button" data-val="5" data-delta="-1">拿走一枚</button>
+        </div>
+        <p id="c5">0&nbsp;枚</p>
+      </article>
+      <article class="peg-card">
+        <h3>1&nbsp;元 · 小硬币</h3>
+        <div class="peg-btns">
+          <button class="btn btn-primary" type="button" data-val="1" data-delta="1">放一枚</button>
+          <button class="btn btn-ghost" type="button" data-val="1" data-delta="-1">拿走一枚</button>
+        </div>
+        <p id="c1">0&nbsp;枚</p>
+      </article>
+    </div>
+    <div class="row">
+      <button class="btn btn-ghost" type="button" id="clearAll">全部拿走</button>
+      <button class="btn btn-ghost" type="button" id="nextTarget">换一个目标</button>
+      <button class="btn btn-primary" type="button" id="keepCombo" disabled>记下这种凑法</button>
+    </div>
+  </div>
+
+  <section class="card guess-card" aria-labelledby="guessTitleMl">
+    <h2 id="guessTitleMl">先猜一猜，再凑</h2>
+    <p><b>第 1 题：</b>目标 10 元。2 枚 5 元，总额等于？</p>
+    <div class="pick-btns" role="group" aria-label="猜 2 枚 5 元">
+      <button class="btn guess-pick" type="button" data-guess1="five" aria-pressed="false">还是 5 元</button>
+      <button class="btn guess-pick" type="button" data-guess1="ten" aria-pressed="false">正好 10 元，等于 1 枚 10 元</button>
+      <button class="btn guess-pick" type="button" data-guess1="fifteen" aria-pressed="false">变成 15 元</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。目标调到 10，放 2 枚 5 元，看「现在凑到」。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>已经用 1 枚 10 元凑到 10。换成 10 枚 1 元，总额会？</p>
+      <div class="pick-btns" role="group" aria-label="猜等价分解">
+        <button class="btn guess-pick" type="button" data-guess2="same" aria-pressed="false">仍是 10 元，等价拆法</button>
+        <button class="btn guess-pick" type="button" data-guess2="more" aria-pressed="false">枚数多了，总额变大</button>
+        <button class="btn guess-pick" type="button" data-guess2="less" aria-pressed="false">全变小硬币，总额变小</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后清空，再放 10 枚 1 元对照。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>放 4 枚 5&nbsp;元（不放别的），总额是？</p>
+      <div class="pick-btns" role="group" aria-label="猜四枚五元">
+        <button class="btn guess-pick" type="button" data-guess3="10" aria-pressed="false">10&nbsp;元</button>
+        <button class="btn guess-pick" type="button" data-guess3="20" aria-pressed="false">20&nbsp;元（4×5）</button>
+        <button class="btn guess-pick" type="button" data-guess3="25" aria-pressed="false">25&nbsp;元</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后清空，再放 4 枚 5 元。</p>
+    </div>
+    <div id="guessBlock4" hidden>
+      <p><b>第 4 题：</b>目标 20&nbsp;元。托盘里只有 3 枚 5&nbsp;元（共 15），还差几元？</p>
+      <div class="pick-btns" role="group" aria-label="猜还差几元">
+        <button class="btn guess-pick" type="button" data-guess4="3" aria-pressed="false">3&nbsp;元</button>
+        <button class="btn guess-pick" type="button" data-guess4="5" aria-pressed="false">5&nbsp;元（20−15）</button>
+        <button class="btn guess-pick" type="button" data-guess4="15" aria-pressed="false">15&nbsp;元</button>
+      </div>
+      <p class="guess-out" id="guessOut4" role="status" aria-live="polite">押好后目标调到 20，清空再放 3 枚 5 元，看「比一比」还差几。</p>
+    </div>
+  </section>
+
+            <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">同一个总额，可以有两种不同的硬币凑法</h2>
+    <p>先往托盘里放硬币，让「现在凑到」刚好等于牌子上的金额，点「记下这种凑法」。再改几种硬币的枚数，用另一套组合凑出同一个数，再记一次。</p>
+    <p>一枚 10&nbsp;元顶两枚 5&nbsp;元，也顶十枚 1&nbsp;元。换的是包装，不是钱变多了。付多了要找回差额，找零是付出减去价格，不是店员变出额外的钱。</p>
+    <p>舞台上的元是本页比较尺子，用来对照「同一总额、不同拆法」，不是家庭账本，也不是彩票。真币不入口，不翻家里钱包，不拿来比谁更有钱。</p>
+  </section>
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">凑钱图鉴</h2>
+    <p>点一张，对照上面的托盘：同一总额，硬币可以完全不一样。</p>
+    <div class="kid-figure-grid" role="group" aria-label="凑钱图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-ml-atlas="one" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="32" fill="#d5dce2" stroke="#3a2a18" stroke-width="2.2"/><circle cx="60" cy="46" r="29" fill="none" stroke="#8a949c" stroke-width="1.4" stroke-dasharray="1.4 1.6"/><circle cx="60" cy="46" r="24" fill="#e8eef2" stroke="#6a737a" stroke-width="1.2"/><g fill="#e4d6a8" stroke="#6a5a38" stroke-width="0.85"><ellipse cx="60" cy="24" rx="3.8" ry="11" transform="rotate(0 60 36)"/><ellipse cx="60" cy="24" rx="3.8" ry="11" transform="rotate(30 60 36)"/><ellipse cx="60" cy="24" rx="3.8" ry="11" transform="rotate(60 60 36)"/><ellipse cx="60" cy="24" rx="3.8" ry="11" transform="rotate(90 60 36)"/><ellipse cx="60" cy="24" rx="3.8" ry="11" transform="rotate(120 60 36)"/><ellipse cx="60" cy="24" rx="3.8" ry="11" transform="rotate(150 60 36)"/><ellipse cx="60" cy="24" rx="3.8" ry="11" transform="rotate(180 60 36)"/><ellipse cx="60" cy="24" rx="3.8" ry="11" transform="rotate(210 60 36)"/><ellipse cx="60" cy="24" rx="3.8" ry="11" transform="rotate(240 60 36)"/><ellipse cx="60" cy="24" rx="3.8" ry="11" transform="rotate(270 60 36)"/><ellipse cx="60" cy="24" rx="3.8" ry="11" transform="rotate(300 60 36)"/><ellipse cx="60" cy="24" rx="3.8" ry="11" transform="rotate(330 60 36)"/></g><circle cx="60" cy="36" r="4.4" fill="#c9b06a" stroke="#6a5a38" stroke-width="0.9"/><text x="60" y="66" text-anchor="middle" font-size="13" font-weight="800" fill="#3a2a18">1</text><text x="60" y="78" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">元</text></svg></span><span class="kid-figure-cap">1&nbsp;元</span><span class="kid-figure-fact">最小的硬币，一枚只值 1&nbsp;元，拆开最好用，枚数多了总额仍可以不变少这一点</span></button>
+      <button class="kid-figure" type="button" data-ml-atlas="five" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#86efac" stroke="#166534" stroke-width="2.2"/><circle cx="60" cy="46" r="26" fill="none" stroke="#166534" stroke-width="1.2" stroke-dasharray="1.6 1.8"/><circle cx="60" cy="46" r="20" fill="#bbf7d0" stroke="#166534"/><text x="60" y="42" text-anchor="middle" font-size="16" font-weight="800" fill="#14532d">5</text><text x="60" y="56" text-anchor="middle" font-size="9" font-weight="800" fill="#14532d">元</text></svg></span><span class="kid-figure-cap">5&nbsp;元</span><span class="kid-figure-fact">一枚 5&nbsp;元顶 5&nbsp;个 1&nbsp;元，两枚刚好顶一枚 10&nbsp;元，换的是包装，不是钱自己变多这一账</span></button>
+      <button class="kid-figure" type="button" data-ml-atlas="ten" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="32" fill="#93c5fd" stroke="#1c3a66" stroke-width="2.2"/><circle cx="60" cy="46" r="28" fill="none" stroke="#1c3a66" stroke-width="1.2" stroke-dasharray="1.6 1.8"/><circle cx="60" cy="46" r="22" fill="#dbeafe" stroke="#1c3a66"/><text x="60" y="42" text-anchor="middle" font-size="15" font-weight="800" fill="#1e3a5f">10</text><text x="60" y="56" text-anchor="middle" font-size="9" font-weight="800" fill="#1e3a5f">元</text></svg></span><span class="kid-figure-cap">10&nbsp;元</span><span class="kid-figure-fact">一枚 10&nbsp;元顶 2&nbsp;个 5&nbsp;元，也顶 10&nbsp;个 1&nbsp;元，点数对上就能换，钱没有自己变多出来这一账</span></button>
+      <button class="kid-figure" type="button" data-ml-atlas="tenones" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="16" cy="32" r="7" fill="#d8b070"/><circle cx="34" cy="32" r="7" fill="#d8b070"/><circle cx="52" cy="32" r="7" fill="#d8b070"/><circle cx="70" cy="32" r="7" fill="#d8b070"/><circle cx="88" cy="32" r="7" fill="#d8b070"/><circle cx="24" cy="58" r="7" fill="#d8b070"/><circle cx="42" cy="58" r="7" fill="#d8b070"/><circle cx="60" cy="58" r="7" fill="#d8b070"/><circle cx="78" cy="58" r="7" fill="#d8b070"/><circle cx="96" cy="58" r="7" fill="#d8b070"/></svg></span><span class="kid-figure-cap">10&nbsp;个 1</span><span class="kid-figure-fact">十枚 1&nbsp;元加起来还是 10&nbsp;元，枚数多了总额没变，不是钱会自己变多这一账</span></button>
+      <button class="kid-figure" type="button" data-ml-atlas="twofives" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="40" cy="45" r="18" fill="#7dcea0" stroke="#5a3a20"/><circle cx="80" cy="45" r="18" fill="#7dcea0" stroke="#5a3a20"/><text x="40" y="50" text-anchor="middle" font-size="13" font-weight="800" fill="#3a2a18">5</text><text x="80" y="50" text-anchor="middle" font-size="13" font-weight="800" fill="#3a2a18">5</text></svg></span><span class="kid-figure-cap">2&nbsp;个 5</span><span class="kid-figure-fact">两枚 5&nbsp;元刚好等于一枚 10&nbsp;元，可以换着凑，面值加权和没有变多这一点要记住</span></button>
+      <button class="kid-figure" type="button" data-ml-atlas="fewest" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="42" cy="45" r="22" fill="#6ea8fe" stroke="#5a3a20"/><circle cx="82" cy="45" r="22" fill="#6ea8fe" stroke="#5a3a20"/><text x="42" y="50" text-anchor="middle" font-size="13" font-weight="800" fill="#3a2a18">10</text><text x="82" y="50" text-anchor="middle" font-size="13" font-weight="800" fill="#3a2a18">10</text></svg></span><span class="kid-figure-cap">一种最少枚</span><span class="kid-figure-fact">尽量用大硬币，枚数最少，总额可以不变，少枚并不等于更穷了这一账</span></button>
+      <button class="kid-figure" type="button" data-ml-atlas="most" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="18" cy="28" r="6" fill="#d8b070"/><circle cx="34" cy="28" r="6" fill="#d8b070"/><circle cx="50" cy="28" r="6" fill="#d8b070"/><circle cx="66" cy="28" r="6" fill="#d8b070"/><circle cx="82" cy="28" r="6" fill="#d8b070"/><circle cx="26" cy="46" r="6" fill="#d8b070"/><circle cx="42" cy="46" r="6" fill="#d8b070"/><circle cx="58" cy="46" r="6" fill="#d8b070"/><circle cx="74" cy="46" r="6" fill="#d8b070"/><circle cx="90" cy="46" r="6" fill="#d8b070"/><circle cx="34" cy="64" r="6" fill="#d8b070"/><circle cx="50" cy="64" r="6" fill="#d8b070"/><circle cx="66" cy="64" r="6" fill="#d8b070"/><circle cx="82" cy="64" r="6" fill="#d8b070"/><circle cx="98" cy="64" r="6" fill="#d8b070"/></svg></span><span class="kid-figure-cap">一种最多枚</span><span class="kid-figure-fact">全用 1&nbsp;元，枚数最多，加起来仍是同一个总额，多枚并不等于更有钱了这一账</span></button>
+      <button class="kid-figure" type="button" data-ml-atlas="split" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="28" cy="45" r="16" fill="#6ea8fe" stroke="#5a3a20"/><text x="28" y="50" text-anchor="middle" font-size="11" font-weight="800" fill="#3a2a18">10</text><path d="M50 45 H58" stroke="#5a3a20" stroke-width="3"/><circle cx="78" cy="32" r="12" fill="#7dcea0" stroke="#5a3a20"/><circle cx="98" cy="58" r="12" fill="#7dcea0" stroke="#5a3a20"/><text x="78" y="36" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">5</text><text x="98" y="62" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">5</text></svg></span><span class="kid-figure-cap">同一个数不同拆法</span><span class="kid-figure-fact">总额一样，硬币可以完全不一样，这叫等价拆开，不是钱自己变多出来了</span></button><button class="kid-figure" type="button" data-ml-atlas="twenty" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="22" fill="#e8b84a" stroke="#5a3a20"/><text x="60" y="52" text-anchor="middle" font-size="12" font-weight="800" fill="#3a2a18">20</text></svg></span><span class="kid-figure-cap">20&nbsp;元</span><span class="kid-figure-fact">可以用 2&nbsp;枚 10&nbsp;元，也可以用 4&nbsp;枚 5&nbsp;元来凑，两种点数都要对上牌子才算够这一账</span></button><button class="kid-figure" type="button" data-ml-atlas="change" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="36" cy="46" r="16" fill="#6ea8fe" stroke="#5a3a20"/><text x="36" y="51" text-anchor="middle" font-size="11" font-weight="800" fill="#3a2a18">10</text><circle cx="84" cy="36" r="10" fill="#7dcea0" stroke="#5a3a20"/><circle cx="88" cy="60" r="10" fill="#e8b84a" stroke="#5a3a20"/></svg></span><span class="kid-figure-cap">找零</span><span class="kid-figure-fact">付多了，要找回差额，找零是付出减去价格，不是店员变出额外的钱来</span></button><button class="kid-figure" type="button" data-ml-atlas="equal" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="34" cy="46" r="14" fill="#6ea8fe" stroke="#5a3a20"/><text x="60" y="52" text-anchor="middle" font-size="16" font-weight="800" fill="#3a2a18">=</text><circle cx="86" cy="36" r="10" fill="#7dcea0" stroke="#5a3a20"/><circle cx="90" cy="60" r="10" fill="#7dcea0" stroke="#5a3a20"/></svg></span><span class="kid-figure-cap">一样多</span><span class="kid-figure-fact">左右加起来相等，就能换，钱没有变多也没有变少，只是面值换了包装</span></button><button class="kid-figure" type="button" data-ml-atlas="short" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="36" cy="46" r="14" fill="#7dcea0" stroke="#5a3a20"/><text x="36" y="51" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">5</text><text x="78" y="52" text-anchor="middle" font-size="14" font-weight="800" fill="#b03030">差</text></svg></span><span class="kid-figure-cap">还差几元</span><span class="kid-figure-fact">手里不够牌子上的数，还要再加几枚才刚好，差的那一截不会自己长出来</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照托盘里怎样凑出同一个数。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--math)"
+         data-kid-predict
+         data-kid-predict-explain="10 个一角应能兑 1 元；付大面值买小价，找零=付出−价格。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🪙</span><b>同一个金额，硬币凑法可以怎样变？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：钱币怎么凑">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="one">每个总额只有一种凑法</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="many" data-kid-predict-correct>同一个整数可用不同加数拆开，例如 2×5= 1×10= 10×1</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="fake">换一种凑法总额一定会变</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：同一种总额，找出两种凑法</h2>
+    <p>先让托盘里的总数刚好等于牌子上的金额，点「记下这种凑法」。然后改几种硬币的枚数，再用另一种组合凑出同一个数。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <ol class="log" id="comboLog"></ol>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：还差 2&nbsp;种不同的凑法。</p>
+  </section>
+
+
+                <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">同一种总额，先记下一种凑法，再换一种</h2>
+    <p>舞台上先只改硬币怎么拆。同一块牌子，先凑够记下一种，再改枚数凑出同一个总额。这样比，才知道变的是组合，不是钱自己长出来。</p>
+    <p>回家只带两句：「两种凑法，总额一样」；「换包装，钱没变多」。不要写成「硬币越多就越有钱」，也不要把本页当成家庭账本。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="40" cy="46" r="20" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="40" cy="46" r="16" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="40" cy="46" r="12" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="40" cy="42" r="3" fill="#c9b06a"/><text x="40" y="58" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">1元</text><circle cx="78" cy="40" r="16" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="78" cy="40" r="12" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="78" cy="40" r="8" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="78" cy="36" r="3" fill="#c9b06a"/><text x="78" y="52" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">1元</text><circle cx="84" cy="62" r="12" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="84" cy="62" r="8" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="84" cy="62" r="6" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="84" cy="58" r="3" fill="#c9b06a"/><text x="60" y="84" text-anchor="middle" font-size="9" font-weight="800" fill="#1c66c2">= 牌子</text></svg></span><span class="kid-figure-cap">凑够</span><span class="kid-figure-sub">刚好</span><p class="kid-figure-fact">托盘里的总和刚好等于牌子上的数，才算凑够，可以记下，差一截都不算。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="28" cy="46" r="16" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="28" cy="46" r="12" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="28" cy="46" r="8" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="28" cy="42" r="3" fill="#c9b06a"/><text x="28" y="58" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">1元</text><text x="52" y="50" font-size="14" font-weight="800" fill="#1c66c2">=</text><circle cx="74" cy="32" r="12" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="74" cy="32" r="8" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="74" cy="32" r="6" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="74" cy="28" r="3" fill="#c9b06a"/><circle cx="90" cy="32" r="12" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="90" cy="32" r="8" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="90" cy="32" r="6" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="90" cy="28" r="3" fill="#c9b06a"/><circle cx="74" cy="58" r="12" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="74" cy="58" r="8" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="74" cy="58" r="6" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="74" cy="54" r="3" fill="#c9b06a"/><circle cx="90" cy="58" r="12" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="90" cy="58" r="8" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="90" cy="58" r="6" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="90" cy="54" r="3" fill="#c9b06a"/></svg></span><span class="kid-figure-cap">换法</span><span class="kid-figure-sub">同一总额</span><p class="kid-figure-fact">枚数变了、硬币种类变了，加起来仍可以是同一个数，变的是拆法不是变多。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="16" cy="34" r="7" fill="#d5dce2" stroke="#3a2a18"/><circle cx="34" cy="34" r="7" fill="#d5dce2" stroke="#3a2a18"/><circle cx="52" cy="34" r="7" fill="#d5dce2" stroke="#3a2a18"/><circle cx="70" cy="34" r="7" fill="#d5dce2" stroke="#3a2a18"/><circle cx="88" cy="34" r="7" fill="#d5dce2" stroke="#3a2a18"/><circle cx="16" cy="62" r="7" fill="#d5dce2" stroke="#3a2a18"/><circle cx="34" cy="62" r="7" fill="#d5dce2" stroke="#3a2a18"/><circle cx="52" cy="62" r="7" fill="#d5dce2" stroke="#3a2a18"/><circle cx="70" cy="62" r="7" fill="#d5dce2" stroke="#3a2a18"/><circle cx="88" cy="62" r="7" fill="#d5dce2" stroke="#3a2a18"/><text x="110" y="52" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">10</text></svg></span><span class="kid-figure-cap">十个一</span><span class="kid-figure-sub">兑十元</span><p class="kid-figure-fact">十枚 1&nbsp;元兑一枚 10&nbsp;元，只是换了包装，钱没有变多，也不是更有钱了这一账。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="32" cy="46" r="16" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="32" cy="46" r="12" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="32" cy="46" r="8" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="32" cy="42" r="3" fill="#c9b06a"/><text x="32" y="58" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">1元</text><text x="58" y="50" font-size="16" font-weight="800" fill="#c2410c">−</text><rect x="70" y="32" width="28" height="28" rx="3" fill="#fff" stroke="#3a2a18"/><text x="84" y="52" text-anchor="middle" font-size="11" font-weight="800" fill="#3a2a18">价</text></svg></span><span class="kid-figure-cap">找零</span><span class="kid-figure-sub">付出−价格</span><p class="kid-figure-fact">付出比价格多的那一截，店员要找零还回来，不是变出额外的钱，也不是钱自己长。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M24 30 H78 L96 48 L78 66 H24 Z" fill="#ffe08a" stroke="#3a2a18" stroke-width="1.8"/><circle cx="34" cy="48" r="4" fill="#fff" stroke="#3a2a18"/><text x="58" y="54" text-anchor="middle" font-size="14" font-weight="800" fill="#3a2a18">20</text></svg></span><span class="kid-figure-cap">牌子</span><span class="kid-figure-sub">目标</span><p class="kid-figure-fact">先看牌子上要凑多少，再动手选硬币。牌子没改，总和就不能当「变多」，点数对上才行。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="48" cy="46" r="18" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="48" cy="46" r="14" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="48" cy="46" r="10" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="48" cy="42" r="3" fill="#c9b06a"/><text x="48" y="58" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">1元</text><circle cx="72" cy="46" r="18" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="72" cy="46" r="14" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="72" cy="46" r="10" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="72" cy="42" r="3" fill="#c9b06a"/><text x="72" y="58" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">1元</text><text x="60" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="#c2410c">变多?</text><path d="M28 22 L92 68 M92 22 L28 68" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">变多</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">钱不会自己长出来。枚数变多，总额仍可以不变，多枚不等于更有钱了。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>凑够记下。</b>第一种组合刚好等于牌子。</li>
+      <li data-step="2"><b>改枚数。</b>换几种硬币，再凑同一个数。</li>
+      <li data-step="3"><b>对总额。</b>两种都等于牌子，枚数可以不同。</li>
+      <li data-step="4"><b>写完成句。</b>两种凑法，不是钱变多了。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>同样多的钱，可以用不同的硬币凑出来。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>两枚 5&nbsp;元等于一枚 10&nbsp;元，十枚 1&nbsp;元也等于一枚 10&nbsp;元。只是换了包装。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>同一整数可以有不同分拆。兑换是单位变换，面值加权和不变。找零是付出减价格。本页是代币演算，不是真账本。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能对同一总额给出两种组合，并否定「钱会自己变多」。完成看的是对照，不是背「十进制」三个字。</p>
+    <ul class="ask-list">
+      <li>牌子是 20&nbsp;元：2&nbsp;枚 10&nbsp;元和 4&nbsp;枚 5&nbsp;元，哪一种总额更大？</li>
+      <li>已经用 1&nbsp;枚 10&nbsp;元凑到 10，改成 10&nbsp;枚 1&nbsp;元，钱变多了吗？</li>
+      <li>托盘里只有 3&nbsp;枚 5&nbsp;元，目标 20&nbsp;元，还差几元？差的那一截从哪来？</li>
+      <li>硬币变多了，是不是就更有钱了？</li>
+    </ul>
+  </section>
+
+
+            <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">外币兑换是另一把尺子；本页不当真账本</h2>
+    <p>出国换汇是用另一国的单位去量同一笔购买力，中间有牌价。本页只练 1、5、10 的整数元怎么拆，不当汇率课，也不模拟角和分。</p>
+    <p>商店扫码和放硬币是两条付法，牌子上的总额仍要够。优惠是把价格改低了，不是硬币自己繁殖。零钱罐里的枚数变多，也不等于更有钱。</p>
+    <p>真币不入口，不翻家里钱包，不拿来比谁更有钱。本页是代币演算，不是赌博，也不是家庭记账软件。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="34" cy="46" r="16" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="34" cy="46" r="12" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="34" cy="46" r="8" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="34" cy="42" r="3" fill="#c9b06a"/><text x="34" y="58" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">1元</text><text x="60" y="50" text-anchor="middle" font-size="12" font-weight="800" fill="#8a857c">≠</text><circle cx="88" cy="46" r="16" fill="#7dcea0" stroke="#3a2a18"/><text x="88" y="50" text-anchor="middle" font-size="9" font-weight="800">$</text></svg></span><span class="kid-figure-cap">换汇</span><span class="kid-figure-sub">另尺</span><p class="kid-figure-fact">换成别的国家的钱是另一把尺子，有牌价。这一页不教汇率，只练整数元拆开。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="40" y="12" width="40" height="66" rx="6" fill="#2a2a2a" stroke="#3a2a18"/><rect x="46" y="22" width="28" height="36" fill="#fff"/><path d="M50 28 H58 V36 H50 Z M66 28 H70 V32 H66 Z M50 48 H54 V52 H50 Z M62 44 H70 V52 H62 Z" fill="#3a2a18"/></svg></span><span class="kid-figure-cap">扫码</span><span class="kid-figure-sub">另一付法</span><p class="kid-figure-fact">扫码也是付钱，牌子上的总额还是要够。付法变了，该付的数没变，不是少付了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M24 30 H78 L96 48 L78 66 H24 Z" fill="#ffe08a" stroke="#3a2a18" stroke-width="1.8"/><text x="54" y="44" text-anchor="middle" font-size="10" fill="#8a857c">20</text><text x="54" y="60" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">16</text><path d="M40 40 L68 52" stroke="#c2410c" stroke-width="2"/></svg></span><span class="kid-figure-cap">优惠</span><span class="kid-figure-sub">改价</span><p class="kid-figure-fact">优惠是把价格改低了，不是托盘里的硬币自己变多了，钱不会自己长出来。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="50" r="18" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="60" cy="50" r="14" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="60" cy="50" r="10" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="60" cy="46" r="3" fill="#c9b06a"/><text x="60" y="62" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">1元</text><path d="M60 12 L74 38 H46 Z" fill="#e8b84a" stroke="#3a2a18"/><text x="60" y="34" text-anchor="middle" font-size="12" font-weight="800">!</text></svg></span><span class="kid-figure-cap">真币</span><span class="kid-figure-sub">不入口</span><p class="kid-figure-fact">真硬币不要放进嘴里，也不要翻家里钱包。台上用代币示意就好，不比谁更有钱。</p></div>
+    </div>
+  </section>
+
+
+            <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：两种凑法 · 总额不变 · 钱会自己变多</h2>
+    <p>三列用同一块牌子。先只改硬币组合：第一种记下枚数，第二种枚数不同、总和相同。「钱会自己变多」整列划掉：牌子没改，总和不能当成变多。</p>
+    <p>找零是另开一行：付出减去价格，多的还回来。不要和「换一种凑法」叠在同一档里讲。</p>
+    <p>本页只用 1、5、10 的整数元。角、分、汇率、赌博都不在这张台上。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="28" cy="40" r="14" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="28" cy="40" r="10" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="28" cy="40" r="6" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="28" cy="36" r="3" fill="#c9b06a"/><text x="48" y="44" font-size="12" font-weight="800" fill="#1c66c2">=</text><circle cx="64" cy="32" r="10" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="64" cy="32" r="6" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="64" cy="32" r="6" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="64" cy="28" r="3" fill="#c9b06a"/><circle cx="80" cy="32" r="10" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="80" cy="32" r="6" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="80" cy="32" r="6" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="80" cy="28" r="3" fill="#c9b06a"/><circle cx="72" cy="52" r="10" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="72" cy="52" r="6" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="72" cy="52" r="6" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="72" cy="48" r="3" fill="#c9b06a"/><circle cx="104" cy="16" r="8" fill="#3d9a58"/></svg></span><span class="kid-figure-cap">两种凑法</span><span class="kid-figure-sub">同一总额</span><p class="kid-figure-fact">两种凑法总额一样，只是硬币怎么拆开不同。这才是本页对照，不是变多。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="18" cy="58" r="4.5" fill="#d5dce2" stroke="#3a2a18"/><circle cx="28" cy="58" r="4.5" fill="#d5dce2" stroke="#3a2a18"/><circle cx="38" cy="58" r="4.5" fill="#d5dce2" stroke="#3a2a18"/><circle cx="48" cy="58" r="4.5" fill="#d5dce2" stroke="#3a2a18"/><circle cx="58" cy="58" r="4.5" fill="#d5dce2" stroke="#3a2a18"/><circle cx="68" cy="58" r="4.5" fill="#d5dce2" stroke="#3a2a18"/><circle cx="78" cy="58" r="4.5" fill="#d5dce2" stroke="#3a2a18"/><circle cx="88" cy="58" r="4.5" fill="#d5dce2" stroke="#3a2a18"/><circle cx="98" cy="58" r="4.5" fill="#d5dce2" stroke="#3a2a18"/><circle cx="108" cy="58" r="4.5" fill="#d5dce2" stroke="#3a2a18"/><text x="60" y="28" text-anchor="middle" font-size="11" font-weight="800" fill="#3a2a18">10×1 = 10</text><circle cx="104" cy="16" r="8" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">兑单位</span><span class="kid-figure-sub">十个一兑十</span><p class="kid-figure-fact">十枚 1&nbsp;元兑一枚 10&nbsp;元，钱没有变多，只是包装换成了另一张，点数仍要对上。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="40" cy="46" r="16" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="40" cy="46" r="12" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="40" cy="46" r="8" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="40" cy="42" r="3" fill="#c9b06a"/><text x="40" y="58" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">1元</text><circle cx="80" cy="46" r="16" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="80" cy="46" r="12" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="80" cy="46" r="8" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="80" cy="42" r="3" fill="#c9b06a"/><text x="80" y="58" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">1元</text><path d="M28 22 L92 68 M92 22 L28 68" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/><circle cx="104" cy="16" r="8" fill="#c2410c"/></svg></span><span class="kid-figure-cap">变多</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">换来换去总值还是那么多。把「钱会自己长出来」整列划掉，也划掉更有钱。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="28" y="18" width="64" height="54" fill="#fff" stroke="#3a2a18"/><path d="M38 36 H80 M38 48 H70" stroke="#3a2a18" stroke-width="2"/><path d="M78 58 L96 74 L92 58 Z" fill="#e8b84a" stroke="#3a2a18"/></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">两种凑法</span><p class="kid-figure-fact">回家只记：两种凑法总额一样，不是钱变多了，也不是更有钱，面值只是包装。</p></div>
+    </div>
+  </section>
+
+
+            <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">两种凑法各写一行列出枚数</h2>
+    <p>在纸上画两行：组合甲写几种硬币各几枚，组合乙再写一回，总和都等于牌子。两行并排，比背「等价」两个字有用。</p>
+    <p>口头只要两句：「钱没变多，只是硬币换了。」「十枚 1&nbsp;元顶一枚 10&nbsp;元。」找零如果要写，另开一行：付出减去价格。</p>
+    <p>真币不入口，不翻家里钱包，不拿枚数比谁更有钱。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="34" y="16" width="52" height="62" rx="4" fill="#fff" stroke="#3a2a18" stroke-width="1.8"/><rect x="44" y="10" width="32" height="12" rx="3" fill="#c4b49a" stroke="#3a2a18"/><path d="M44 36 H76 M44 48 H76 M44 60 H68" stroke="#8a857c" stroke-width="2"/></svg></span><span class="kid-figure-cap">两行</span><span class="kid-figure-sub">甲/乙</span><p class="kid-figure-fact">一行写甲怎么凑、几枚，一行写乙的枚数和总和。两行都要对上牌子，差一截就重数。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="56" cy="40" rx="28" ry="18" fill="#fff" stroke="#3a2a18" stroke-width="1.8"/><path d="M44 54 L40 70 L56 58" fill="#fff" stroke="#3a2a18" stroke-width="1.8"/><circle cx="46" cy="40" r="3" fill="#3a2a18"/><circle cx="56" cy="40" r="3" fill="#3a2a18"/><circle cx="66" cy="40" r="3" fill="#3a2a18"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">没变多</span><p class="kid-figure-fact">回家说得出：钱没变多，只是硬币组合换了。枚数多不等于更有钱，找零另记。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="32" cy="46" r="16" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="32" cy="46" r="12" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="32" cy="46" r="8" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="32" cy="42" r="3" fill="#c9b06a"/><text x="32" y="58" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">1元</text><text x="58" y="50" font-size="16" font-weight="800" fill="#c2410c">−</text><rect x="70" y="32" width="28" height="28" rx="3" fill="#fff" stroke="#3a2a18"/><text x="84" y="52" text-anchor="middle" font-size="11" font-weight="800" fill="#3a2a18">价</text></svg></span><span class="kid-figure-cap">找零</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">找零另记一行：付出的钱减去价格，多的要还回来，不是变出来的，也不是自己长。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="20" fill="#d5dce2" stroke="#3a2a18" stroke-width="1.8"/><circle cx="60" cy="46" r="16" fill="none" stroke="#8a949c" stroke-width="1" stroke-dasharray="1.2 1.4"/><circle cx="60" cy="46" r="12" fill="#e8eef2" stroke="#6a737a" stroke-width="0.9"/><circle cx="60" cy="42" r="3" fill="#c9b06a"/><text x="60" y="58" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">1元</text><circle cx="60" cy="46" r="24" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M44 30 L76 62" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">真币</span><span class="kid-figure-sub">禁入口</span><p class="kid-figure-fact">代币就够练凑数。真硬币不要入口，也不要翻家里钱包来玩散，不比谁有钱。</p></div>
+    </div>
+  </section>
+
+
+      <section class="card" aria-labelledby="thickTitle">
+    <h2 id="thickTitle">面值约定、兑换与找零算法</h2>
+    <p>本页把 1、5、10 当成大家认同一张记号。十枚 1&nbsp;元兑一枚 10&nbsp;元，是十进制换包装，不是钱变多。找零写成付出减去价格，只是本页比较尺子，不是收银机说明书。</p>
+    <p>刚好付清，托盘等于牌子；付多了，多的那一截要还回来。角与分、外币牌价，都是邻居尺子，本页先不碰。</p>
+    <p>真钱能买东西，是因为大家认这套记号。本页先把加法钉牢，不讲银行，不讲赌博，也不拿来攀比。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「换组合会不会让钱变多」，就只改硬币怎么拆这一项。同一块牌子、同一个目标金额，先记下一种刚好凑够的摆法，再换枚数凑出同一个数。换目标是另一次对照，不要和「换凑法」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>1、5、10 三种硬币的枚数组合。</li>
+      <li><b>先保持不变：</b>同一块牌子上的目标金额。</li>
+      <li><b>要观察的：</b>两种摆法加起来是不是都等于牌子。</li>
+      <li><b>另开一行：</b>付多了还差几，用「比一比」看差额，不要说钱变多了。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>买一支 8&nbsp;元的笔，付了一张 10&nbsp;元，店员应找回几元？找回的是「变出来的钱」，还是多付的那一截？</li>
+      <li>零钱罐里全是 1&nbsp;元，看起来很多。倒出来换成几枚 10&nbsp;元，还一样多吗？枚数变少，是不是变穷了？</li>
+      <li>手机扫码付 20&nbsp;元，和放 2&nbsp;枚 10&nbsp;元，哪一种付得更多？付法变了，该付的数变了吗？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把「分拆」「加权和」提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>同样多的钱，可以用不同的硬币凑出来。能指着两种摆法说「都是这么多」就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>两枚 5&nbsp;元等于一枚 10&nbsp;元。找零是付出减去价格。枚数变多，总额可以不变。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>同一整数的不同分拆；兑换是单位变换。本页元数是比较尺子，不是真账本，也不涉及角分和汇率。不赌博、不攀比。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：记下这次凑整</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：20&nbsp;元可以用 2&nbsp;枚 10&nbsp;元，也可以用 4&nbsp;枚 5&nbsp;元"></div>
+      <div><label for="workContent">两种凑法分别是什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下两种组合的枚数，再说一句它们为什么相等。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+                <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>牌子仍是 20&nbsp;元，孩子从 2&nbsp;枚 10&nbsp;元换成 4&nbsp;枚 5&nbsp;元，却说「钱变多了」——你让他指牌子还是指枚数？</li>
+      <li>两种凑法哪一句四岁听得懂？试「硬币不一样，加起来还是这么多」。</li>
+      <li>买 8&nbsp;元的东西付了 10&nbsp;元：找回的 2&nbsp;元是店员变出来的，还是多付的那一截？</li>
+      <li>出国换汇、手机扫码，为什么不能当本页完成句？差在「本页只练怎么拆开」。</li>
+      <li>真硬币入口、翻家里钱包、比谁更有钱：红线怎么说？本页能当家庭账本吗？</li>
+      <li>零钱罐里全是 1&nbsp;元，看起来很多。换成几枚 10&nbsp;元以后，他还觉得自己变穷了吗？</li>
+    </ul>
+  </section>
+
+                <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着托盘讲：一枚 10&nbsp;元顶两枚 5&nbsp;元，也顶十枚 1&nbsp;元。换的是包装，牌子上的总额可以不变。枚数变多，不等于更有钱。</p>
+    <p>同一个整数可以有不同分拆。兑换是单位变换，面值乘枚数再加起来，总和还是那个数。找零是付出减去价格。这些都是本页比较尺子，不是收银机说明书，也不是自然定律。</p>
+    <p>外币牌价、角与分、银行账户，都是邻居尺子。本页只用 1、5、10 的整数元练拆开。扫码是另一条付法，该付的数没变。优惠是改价格，不是硬币繁殖。</p>
+    <p>真币不入口，不翻家里钱包，不赌博，不攀比。舞台是代币示意，不是真账本。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：两种凑法，总额一样；换包装，钱没变多。数感积木继续拆同一个数；分数实验台看一份怎么切开；测量工坊练同一把尺子怎么读。</p>
+    <p class="row"><a class="btn btn-ghost" href="number-blocks.html">数感积木</a><a class="btn btn-ghost" href="fraction-lab.html">分数实验台</a><a class="btn btn-ghost" href="measure-lab.html">测量工坊</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页只用 1、5、10 的整数元演示等价凑法，不涉及角、分和汇率。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var state = {1:0, 5:0, 10:0};
+  var target = 20;
+  var kept = [];
+  var finished = false;
+  var guess1 = "", guess2 = "", guess3 = "", guess4 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false, guess4Done = false;
+  var seenMoney = { twoFive:false, tenOnes:false, fourFive:false, threeFive:false };
+  var TARGETS = [10, 15, 20, 25, 30];
+  var MAX = {1:20, 5:8, 10:5};
+  var NS = "http://www.w3.org/2000/svg";
+  function sum(){ return state[1]*1 + state[5]*5 + state[10]*10; }
+  function keyOf(){ return "10:"+state[10]+",5:"+state[5]+",1:"+state[1]; }
+  function phrase(){
+    return state[10]+"\u00a0枚10元 + "+state[5]+"\u00a0枚5元 + "+state[1]+"\u00a0枚1元";
+  }
+  function drawCoins(){
+    var layer = document.getElementById("coinsLayer");
+    while (layer.firstChild) layer.removeChild(layer.firstChild);
+    var specs = [
+      {v:10, n:state[10], cx:130, cls:"ml-c10", r:22},
+      {v:5, n:state[5], cx:320, cls:"ml-c5", r:18},
+      {v:1, n:state[1], cx:510, cls:"ml-c1", r:14}
+    ];
+    specs.forEach(function(s){
+      var show = Math.min(s.n, 6), i;
+      for (i = 0; i < show; i += 1) {
+        var c = document.createElementNS(NS,"circle");
+        c.setAttribute("class", s.cls);
+        c.setAttribute("cx", String(s.cx));
+        c.setAttribute("cy", String(196 - i*11));
+        c.setAttribute("r", String(s.r));
+        layer.appendChild(c);
+        var t = document.createElementNS(NS,"text");
+        t.setAttribute("class","ml-num");
+        t.setAttribute("x", String(s.cx));
+        t.setAttribute("y", String(196 - i*11 + 4));
+        t.textContent = String(s.v);
+        layer.appendChild(t);
+      }
+    });
+  }
+  function render(){
+    var total = sum();
+    var hit = total === target && total > 0;
+    if (state[5] === 2 && state[10] === 0 && state[1] === 0 && total === 10) seenMoney.twoFive = true;
+    if (state[1] === 10 && state[5] === 0 && state[10] === 0 && total === 10) seenMoney.tenOnes = true;
+    if (state[5] === 4 && state[10] === 0 && state[1] === 0 && total === 20) seenMoney.fourFive = true;
+    if (target === 20 && state[5] === 3 && state[10] === 0 && state[1] === 0 && total === 15) seenMoney.threeFive = true;
+    if (guess1 && !guess1Done && seenMoney.twoFive) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "ten" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "2×5 = 1×10 = 10。不同硬币，同一个整数。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && seenMoney.tenOnes) {
+      guess2Done = true;
+      document.getElementById("guessBlock3").hidden = false;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "same" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "10×1 = 10。枚数变了，总额可以不变——这就是等价。";
+    }
+    if (guess3 && !guess3Done && seenMoney.fourFive) {
+      guess3Done = true;
+      document.getElementById("guessBlock4").hidden = false;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "20" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "4×5=20\u00a0元。枚数与面额相乘才是总额。";
+    }
+    if (guess4 && !guess4Done && seenMoney.threeFive) {
+      guess4Done = true;
+      document.getElementById("guessOut4").innerHTML = (guess4 === "5" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "20−15=<b>还差 5\u00a0元</b>。相对差 5÷20=25%。看「比一比」读数。";
+    }
+    document.getElementById("boardTarget").textContent = target + "元";
+    document.getElementById("targetOut").textContent = target + "\u00a0元";
+    document.getElementById("sumOut").textContent = total + "\u00a0元";
+    document.getElementById("c10").textContent = state[10] + "\u00a0枚";
+    document.getElementById("c5").textContent = state[5] + "\u00a0枚";
+    document.getElementById("c1").textContent = state[1] + "\u00a0枚";
+    document.getElementById("keepCombo").disabled = !hit;
+    var diff = document.getElementById("diffOut");
+    var live = document.getElementById("live");
+    var eq = state[10]+"×10 + "+state[5]+"×5 + "+state[1]+"×1";
+    if (!total) {
+      diff.textContent = "还没放硬币";
+      live.textContent = "点托盘上的「放一枚」，看总数有没有到牌子上的金额。";
+    } else if (hit) {
+      diff.textContent = "刚好凑够";
+      live.textContent = "刚好是 "+target+"\u00a0元 = "+eq+"。可以记下这种凑法。";
+    } else if (total < target) {
+      diff.textContent = "还差 "+(target-total)+"\u00a0元";
+      live.textContent = "现在 "+total+"\u00a0元 = "+eq+"，还差 "+(target-total)+"\u00a0元。";
+    } else {
+      diff.textContent = "多了 "+(total-target)+"\u00a0元";
+      live.textContent = "现在 "+total+"\u00a0元 = "+eq+"，比目标多 "+(total-target)+"\u00a0元。";
+    }
+    drawCoins();
+  }
+  function change(val, delta){
+    var next = state[val] + delta;
+    if (next < 0 || next > MAX[val]) return;
+    state[val] = next;
+    render();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-val]"), function(btn){
+    btn.addEventListener("click", function(){
+      change(Number(btn.getAttribute("data-val")), Number(btn.getAttribute("data-delta")));
+    });
+  });
+  document.getElementById("clearAll").addEventListener("click", function(){
+    state = {1:0, 5:0, 10:0};
+    render();
+  });
+  document.getElementById("nextTarget").addEventListener("click", function(){
+    var pick = TARGETS[Math.floor(Math.random()*TARGETS.length)];
+    if (pick === target) pick = TARGETS[(TARGETS.indexOf(pick)+1)%TARGETS.length];
+    target = pick;
+    state = {1:0, 5:0, 10:0};
+    kept = [];
+    var log = document.getElementById("comboLog");
+    while (log.firstChild) log.removeChild(log.firstChild);
+    var status = document.getElementById("taskStatus");
+    if (!finished) status.textContent = "尚未完成：还差 2\u00a0种不同的凑法。";
+    else status.textContent = "已经完成任务。新目标是 "+target+"\u00a0元，还可以再玩。";
+    render();
+  });
+  document.getElementById("keepCombo").addEventListener("click", function(){
+    var total = sum();
+    if (total !== target || !total) return;
+    var key = keyOf();
+    if (kept.some(function(item){ return item.key === key; })) {
+      document.getElementById("live").textContent = "这种凑法已经记过了，换几枚硬币再试。";
+      return;
+    }
+    kept.push({ key:key, text:phrase(), total:total });
+    var li = document.createElement("li");
+    li.textContent = "第 "+kept.length+"\u00a0种：目标 "+target+"\u00a0元 = "+phrase()+"。";
+    document.getElementById("comboLog").appendChild(li);
+    var status = document.getElementById("taskStatus");
+    if (kept.length < 2) {
+      status.textContent = "已记下 1\u00a0种。再换一种不同的凑法，凑出同一个 "+target+"\u00a0元。";
+    } else {
+      finished = true;
+      var evidence = "目标"+target+"\u00a0元：第一种 "+kept[0].text+"；第二种 "+kept[1].text;
+      if (window.Progress) Progress.complete("games/money-lab.html", evidence);
+      status.textContent = "完成啦：同一个 "+target+"\u00a0元，已经找到两种不同的凑法。";
+    }
+  });
+  var ATLAS = {
+    one:"1\u00a0元：最小的硬币，一枚只值 1\u00a0元，拆开最好用，枚数多了总额仍可以不变。",
+    five:"5\u00a0元：一枚 5\u00a0元顶 5\u00a0个 1\u00a0元，两枚刚好顶一枚 10\u00a0元，换的是包装不是变多。",
+    ten:"10\u00a0元：一枚 10\u00a0元顶 2\u00a0个 5\u00a0元，也顶 10\u00a0个 1\u00a0元，点数对上就能换，钱没有变多。",
+    tenones:"10\u00a0个 1：十枚 1\u00a0元加起来还是 10\u00a0元，枚数多了总额没变，不是钱会自己变多。",
+    twofives:"2\u00a0个 5：两枚 5\u00a0元刚好等于一枚 10\u00a0元，可以换着凑，面值加权和没变。",
+    fewest:"一种最少枚：尽量用大硬币，枚数最少，总额可以不变，少枚并不等于更穷了这一账。",
+    most:"一种最多枚：全用 1\u00a0元，枚数最多，加起来仍是同一个总额，多枚不等于更有钱。",
+    split:"同一个数不同拆法：总额一样，硬币可以完全不一样，这叫等价拆开，不是钱自己变多出来了。",
+    twenty:"20\u00a0元：可以用 2\u00a0枚 10\u00a0元，也可以用 4\u00a0枚 5\u00a0元来凑，两种点数都对上牌子。",
+    change:"找零：付多了，要找回差额，找零是付出减去价格，不是店员变出额外的钱来。",
+    equal:"一样多：左右加起来相等，就能换，钱没有变多也没有变少，只是面值换了包装。",
+    short:"还差几元：手里不够牌子上的数，还要再加几枚才刚好，差的那一截不会自己长出来。"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-ml-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-ml-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-ml-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if(guess1Done)return; guess1=btn.getAttribute("data-guess1")||"";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){n.setAttribute("aria-pressed",n===btn?"true":"false");});
+      document.getElementById("guessOut1").textContent="押好了。清空后放 2 枚 5 元对照。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+      document.getElementById("guessOut2").textContent = '押好了。对照面额合计。';
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+      document.getElementById("guessOut3").textContent = '押好了。清空后再放 4 枚 5 元。';
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess4]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess4Done) return;
+      guess4 = btn.getAttribute("data-guess4");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess4]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+      document.getElementById("guessOut4").textContent = "押好了。目标 20，放 3 枚 5 元，看还差几。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-ml-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key=btn.getAttribute("data-ml-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-ml-atlas]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+      var say=document.getElementById("atlasSay");
+      if (say) say.textContent=(typeof ATLAS!=="undefined" && ATLAS[key]) ? ATLAS[key] : key;
+    });
+  });
+  render(true);
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/money-lab.html", "钱币凑整");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

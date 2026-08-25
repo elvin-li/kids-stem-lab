@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>河流观察站 · 水往哪走 | 少儿数理启蒙</title>
+<meta name="description" content="沿一条河从山上下到海里，看水流如何搬运泥沙、拐弯和形成三角洲。离线即可使用。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+ .hero { padding: 28px 0 10px; }
+ .hero h1 { margin: .15em 0 .3em; }
+ .lead { max-width: 58ch; color: var(--ink-mid); }
+ .kid-hero-scene {
+ display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+ margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+ border: 1px solid color-mix(in srgb,var(--video) 40%,var(--line));
+ border-radius: var(--r-lg);
+ background: linear-gradient(135deg,color-mix(in srgb,var(--video) 14%,var(--surface)),var(--surface) 62%);
+ }
+ .mission-face {
+ width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+ border: 2px solid color-mix(in srgb,var(--video) 42%,var(--line));
+ background: color-mix(in srgb,var(--video) 14%,var(--surface)); font-size: 2.2rem;
+ }
+ .mission-face svg { width: 64px; height: 64px; display: block; }
+ .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+ .rv-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+ .rv-sky { fill: color-mix(in srgb,var(--video) 10%,#e8f4ff); }
+ .rv-hill { fill: color-mix(in srgb,var(--sci) 28%,#8fbf7a); }
+ .rv-water { fill: color-mix(in srgb,var(--math) 48%,#5aa0d4); }
+ .rv-sand { fill: color-mix(in srgb,var(--kit) 36%,#e2c48a); }
+ .rv-sea { fill: color-mix(in srgb,var(--math) 55%,#3d7eb0); }
+ .kid-action-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+ .stop-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit,minmax(min(160px,100%),1fr)); }
+ .stop-card {
+ display: grid; gap: 6px; min-height: 120px; padding: 12px; text-align: left;
+ border: 2px solid var(--line); border-radius: var(--r); background: var(--surface);
+ }
+ .stop-card[aria-pressed="true"] { border-color: var(--video); box-shadow: 0 0 0 3px color-mix(in srgb,var(--video) 22%,transparent); }
+ .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+ .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+ .ask li::before {
+ counter-increment: q; content: counter(q);
+ position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+ display: grid; place-items: center; background: color-mix(in srgb,var(--video) 12%,var(--surface));
+ border: 1px solid color-mix(in srgb,var(--video) 40%,var(--line)); color: var(--ink);
+ font: 800 .76rem var(--mono);
+ }
+ button, .btn { min-height: 44px; }
+ .stage + .kid-action-strip { margin-top: 8px; }
+ .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+ .river-atlas .kid-figure { --tone: var(--video); }
+ .river-atlas .kid-figure-art { padding: 6px; }
+ .river-atlas .kid-figure-art > svg { width: 100%; max-width: 148px; height: auto; }
+ .river-atlas .kid-figure-fact { display: block; }
+ .rv-cliff { fill: color-mix(in srgb, var(--ink) 22%, #9a9488); }
+ .rv-oxbow { fill: color-mix(in srgb, var(--math) 40%, #6aa8c8); }
+ .rv-mix { fill: color-mix(in srgb, var(--math) 28%, #8eb8c8); }
+ .rv-plain { fill: color-mix(in srgb, var(--sci) 18%, #d5e8c4); }
+ @media (max-width: 640px) {
+ .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+ .mission-face { display: none; }
+ .stage { padding: 10px; }
+ .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+ .lead { max-width: none; }
+ }
+
+ .ri-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+.ri-lab-panel { margin: 12px 0; padding: 10px; border: 1px solid color-mix(in srgb,var(--sci) 36%,var(--line)); border-radius: var(--r-lg); background: color-mix(in srgb,var(--sci) 8%,var(--surface)); }
+ .ri-lab-panel .readout { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0; }
+ .ri-lab-panel .readout div { padding:8px; border-radius:var(--r); background:var(--surface); border:1px solid var(--line); }
+ .ri-lab-panel .readout span { display:block; font-size:.78rem; color:var(--ink-mid); }
+ .ri-lab-panel .readout b { font:800 1.05rem var(--mono); color:var(--ink); }
+ .ri-lab-panel label { display:block; font-weight:700; margin-top:8px; }
+ .ri-lab-panel input[type="range"] { width:100%; min-height:44px; }
+ .ri-lab-panel .kid-action-strip { flex-direction:column; align-items:stretch; gap:4px; margin:8px 0; }
+ .ri-guess .pick-btns { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+ .guess-card { border-color: color-mix(in srgb,var(--sci) 45%,var(--line)); }
+ .guess-pick[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 18%,var(--surface)); color: var(--ink); }
+ .guess-out { font-weight: 750; color: var(--ink-mid); }
+ .guess-out b { color: var(--ink); }
+ @media (max-width:640px){
+ .hero .lead { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+ .ri-lab-panel > p { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+ }
+ @media (max-width:480px){
+ [data-playful-companion], [data-playful-sticker] { display:none !important; }
+ .ri-lab-panel .readout { grid-template-columns:1fr; }
+ }
+
+</style>
+</head>
+<body data-playful-page="nature/rivers.html">
+<!-- ART:START 插画图库由 tools/art-build.mjs 生成，请改 tools/art-library.mjs -->
+<svg class="art-sprite" aria-hidden="true" focusable="false" width="0" height="0" viewBox="0 0 0 0">
+ <symbol id="art-geo-crust" viewBox="0 0 120 120">
+ <linearGradient id="ag-w36-gc-rk" x1="0" y1="0" x2=".25" y2="1">
+ <stop offset="0" stop-color="#d6b48a"/><stop offset=".4" stop-color="#a16207"/><stop offset="1" stop-color="#44403c"/>
+ </linearGradient>
+ <linearGradient id="ag-w36-gc-sl" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0" stop-color="#65a30d"/><stop offset=".35" stop-color="#6b4328"/><stop offset="1" stop-color="#44403c"/>
+ </linearGradient>
+ <path d="M12 28 C28 18 70 16 108 26 L114 104 C86 114 40 112 8 102 Z" fill="url(#ag-w36-gc-rk)" stroke="#292524" stroke-width="2"/>
+ <path d="M14 30 C30 22 68 20 106 28 L108 42 L16 44 Z" fill="url(#ag-w36-gc-sl)"/>
+ <g fill="none" stroke="#4d7c0f" stroke-width="2.4" stroke-linecap="round">
+ <path d="M24 32 C22 22 24 14 28 8"/><path d="M42 30 C40 20 44 12 48 6"/>
+ <path d="M62 28 C60 18 64 12 68 6"/><path d="M82 30 C80 20 84 12 88 8"/>
+ <path d="M98 32 C97 24 100 16 104 12"/>
+ </g>
+ <g fill="#4d7c0f" opacity=".7">
+ <ellipse cx="28" cy="30" rx="3" ry="2"/><ellipse cx="62" cy="28" rx="3.4" ry="2"/><ellipse cx="92" cy="30" rx="3" ry="2"/>
+ </g>
+ <g fill="#57534e" opacity=".55">
+ <circle cx="26" cy="38" r="1.6"/><circle cx="48" cy="37" r="1.3"/><circle cx="74" cy="39" r="1.5"/><circle cx="96" cy="37" r="1.2"/>
+ </g>
+ <g fill="none" stroke="#fde68a" stroke-width="1.7" opacity=".7">
+ <path d="M16 54 C40 50 74 52 110 48"/><path d="M14 68 C38 64 76 66 112 62"/>
+ <path d="M12 82 C36 78 78 80 112 76"/><path d="M10 94 C34 90 76 92 110 90"/>
+ </g>
+ <g fill="none" stroke="#78350f" stroke-width="1.1" opacity=".45">
+ <path d="M22 56 L28 66"/><path d="M54 52 L50 64"/><path d="M86 50 L90 62"/>
+ <path d="M34 70 L30 80"/><path d="M70 68 L76 80"/>
+ </g>
+ <path d="M64 42 L56 64 L70 84 L58 104" fill="none" stroke="#1c1917" stroke-width="3.2" stroke-linecap="round"/>
+ <path d="M64 42 L56 64 L70 84 L58 104" fill="none" stroke="#fde68a" stroke-width="1.15" opacity=".55"/>
+ <g fill="#a8a29e" opacity=".4">
+ <ellipse cx="36" cy="72" rx="6" ry="2.4"/><ellipse cx="88" cy="86" rx="7" ry="2.6"/>
+ </g>
+ <g stroke="#ea580c" stroke-width="2.3" stroke-linecap="round" fill="none">
+ <path d="M116 34 V100"/>
+ </g>
+ <path d="M111 40 L116 30 L121 40 Z" fill="#ea580c"/>
+ <path d="M111 96 L116 106 L121 96 Z" fill="#ea580c"/>
+ <ellipse cx="60" cy="112" rx="20" ry="3" fill="#1c1917" opacity=".12"/>
+ </symbol>
+ <symbol id="art-nature-riverbend" viewBox="0 0 120 120">
+ <linearGradient id="ag-w38-rb-ld" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#3f6212"/>
+ </linearGradient>
+ <linearGradient id="ag-w38-rb-rv" x1="0" y1=".2" x2="1" y2=".8">
+ <stop offset="0" stop-color="#7dd3fc"/><stop offset=".5" stop-color="#0ea5e9"/><stop offset="1" stop-color="#0369a1"/>
+ </linearGradient>
+ <path d="M0 78 C28 62 52 96 86 76 C106 66 120 82 120 82 V120 H0 Z" fill="url(#ag-w38-rb-ld)"/>
+ <path d="M0 68 C24 96 52 44 88 70 C108 84 120 66 120 66 V92 C94 112 52 70 24 98 C12 106 0 90 0 90 Z"
+ fill="url(#ag-w38-rb-rv)" stroke="#0e7490" stroke-width="1.7"/>
+ <g fill="none" stroke="#e0f2fe" stroke-width="1.5" stroke-linecap="round" opacity=".55">
+ <path d="M10 82 C28 96 48 64 70 78"/><path d="M24 88 C44 74 66 86 86 76"/><path d="M40 74 C58 88 80 70 102 80"/>
+ </g>
+ <path d="M52 86 C62 78 74 90 84 82" fill="#fde68a" opacity=".55"/>
+ <g fill="#166534">
+ <path d="M16 70 C12 50 22 48 20 70 Z"/><path d="M104 68 C100 46 112 44 110 68 Z"/>
+ <path d="M70 58 C66 40 78 38 76 58 Z"/>
+ </g>
+ <g fill="#22c55e">
+ <ellipse cx="18" cy="50" rx="8" ry="5"/><ellipse cx="106" cy="46" rx="9" ry="5.2"/><ellipse cx="74" cy="40" rx="7" ry="4.4"/>
+ </g>
+ <g fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round">
+ <path d="M16 92 C14 84 20 80 18 74"/><path d="M108 90 C106 82 112 78 110 72"/>
+ </g>
+ <g fill="#4ade80">
+ <ellipse cx="18" cy="72" rx="5.4" ry="2.6"/><ellipse cx="110" cy="70" rx="5.4" ry="2.6"/>
+ </g>
+ <g fill="#7dd3fc" opacity=".5">
+ <ellipse cx="36" cy="84" rx="8" ry="2.6"/><ellipse cx="80" cy="76" rx="7" ry="2.2"/><ellipse cx="58" cy="90" rx="5" ry="1.8"/>
+ </g>
+ <path d="M8 110 C22 104 32 112 46 106" fill="none" stroke="#4d7c0f" stroke-width="2" opacity=".4"/>
+ <ellipse cx="96" cy="112" rx="12" ry="3.2" fill="#14532d" opacity=".35"/>
+ <ellipse cx="48" cy="114" rx="10" ry="2.8" fill="#14532d" opacity=".3"/>
+ <path d="M70 108 C84 102 94 110 108 104" fill="none" stroke="#4d7c0f" stroke-width="1.8" opacity=".4"/>
+ <g fill="#854d0e" opacity=".45">
+ <ellipse cx="30" cy="108" rx="6" ry="2"/><ellipse cx="88" cy="104" rx="5" ry="1.6"/>
+ </g>
+ </symbol>
+</svg>
+<!-- ART:END -->
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+ <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+ <div class="row" aria-label="主导航">
+ <a class="nav-link" href="../index.html">资源库</a>
+ <a class="nav-link" href="../pages/paths.html">学习路径</a>
+ <a class="nav-link" href="../games/index.html">互动实验</a>
+ <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+ <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+ <a class="nav-link" href="../pages/parents.html">家长指南</a>
+ <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+ </div>
+</div></nav>
+<main id="main" class="wrap">
+ <header class="hero">
+ <div>
+ <p class="row"><span class="pill pill-sci">地球</span><span class="pill">5–11&nbsp;岁</span><span class="pill">本地观察</span></p>
+ <h1>河流观察站</h1>
+ <p class="lead">河流是往低处流的搬运带：水快就搬走沙，水慢就放下沙。弯道外侧更快、被掏，内侧更慢、堆沙，弯就越来越弯。入海口流速降，泥沙铺成三角洲，潮和浪会再塑形，不是唯一一种三角形。本页练「外快内慢、快搬慢沉」；因为急流会把人冲走，所以岸上看、不下去测流，也不把垃圾当漂流材料丢进真河。舞台上的「携沙」数字只是比较尺子，不是某条河的说明书，更不是水文预报。</p>
+ <div data-playful-companion></div>
+ <span data-playful-sticker></span>
+ </div>
+ <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="78" height="78"></div>
+ </header>
+
+
+ <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+ <h2 id="stageTitle">沿河走四站</h2>
+ <svg class="rv-art" viewBox="0 0 640 220" role="img" aria-labelledby="rvTitle rvDesc">
+ <title id="rvTitle">从山到海的河流剖面</title>
+ <desc id="rvDesc">左边是山和急流，中间是弯曲的河，右边沙子铺进海里。</desc>
+ <rect class="rv-sky" width="640" height="220"/>
+ <path class="rv-hill" d="M0 90 L80 30 L160 90 L160 220 H0 Z"/>
+ <path class="rv-water" id="riverPath" d="M120 80 C180 100 200 70 260 110 S360 150 430 130 S520 150 580 160"/>
+ <path class="rv-sand" id="delta" d="M520 150 L640 130 L640 200 L500 190 Z" opacity=".35"/>
+ <path class="rv-sea" d="M560 120 H640 V220 H500 Z" opacity=".55"/>
+ <circle id="marker" cx="140" cy="88" r="10" fill="#c2560f"/>
+ </svg>
+ <p class="live-text" id="live" role="status" aria-live="polite">第一站：山上。水很急，能搬动小石头。</p>
+ </section>
+
+ <div class="kid-action-strip" role="group" aria-label="选择河段">
+ <div class="stop-grid" id="stops"></div>
+
+<section class="card ri-lab-panel" aria-labelledby="riLabTitle">
+ <h2 id="riLabTitle">河流携沙台 · 真参数</h2>
+ <p>调<strong>水流速度</strong>与<strong>河床坡降</strong>。更快更陡，河水更能搬沙子、改河道；平缓处更容易沉积。</p>
+ <div class="kid-action-strip" role="group" aria-label="真参数主操作">
+ <label for="riA">水流速度：<span id="riALab">…</span></label>
+ <input class="input" id="riA" type="range" min="4" max="36" value="16" aria-valuetext="16">
+ <label for="riB">河床坡降：<span id="riBLab">…</span></label>
+ <input class="input" id="riB" type="range" min="2" max="20" value="8" aria-valuetext="8">
+ </div>
+ <svg class="ri-art" viewBox="0 0 640 220" role="img" aria-labelledby="riLabSvgTitle riLabSvgDesc">
+ <title id="riLabSvgTitle">水快搬走沙，水慢放下沙</title>
+ <desc id="riLabSvgDesc">左边坡陡、水快，沙被带走、外岸被掏。右边变平，沙沉下来堆成滩。划掉「河只会冲、从不放下」。</desc>
+ <rect fill="#e8e0c8" width="640" height="220"/>
+ <path id="riHill" d="M0 40 L180 150 H0 Z" fill="#c4b48a"/>
+ <path id="riFlow" d="M20 70 Q160 110 300 100 T620 150" fill="none" stroke="#4a90b8" stroke-width="22"/>
+ <circle id="riSand1" cx="140" cy="96" r="5" fill="#8a6a40"/>
+ <circle id="riSand2" cx="260" cy="104" r="6" fill="#c4a06a"/>
+ <ellipse id="riBank" cx="500" cy="168" rx="50" ry="14" fill="#d8c090"/>
+ <g id="riNeverDrop" opacity="0.28">
+ <path d="M560 28 L600 70" stroke="#4a90b8" stroke-width="8"/>
+ <path d="M552 20 L608 78 M608 20 L552 78" stroke="#c2410c" stroke-width="4"/>
+ </g>
+ <rect id="riBar" x="20" y="160" width="14" height="40" fill="#1a5a3a"/>
+ <text fill="#1a2a20" style="font:800 13px monospace" x="16" y="28">携沙台</text>
+ <text id="riStateLab" fill="#1a2a20" style="font:700 12px monospace" x="220" y="28">快搬走，慢放下</text>
+ </svg>
+ <div class="readout" aria-live="polite">
+ <div><span>流速</span><b id="riAOut">…</b></div>
+ <div><span>携沙（算）</span><b id="riSOut">…</b></div>
+ <div><span>够冲？</span><b id="riOkOut">…</b></div>
+ </div>
+ <p class="live-text" id="riLabLive" role="status" aria-live="polite">水是搬运的介质：流得快、坡更陡，沙被带走；变平变慢，沙就放下。不是只会冲、从不堆。</p>
+ </section>
+ <section class="card guess-card ri-guess" aria-labelledby="riGuessTitle">
+ <h2 id="riGuessTitle">先猜一猜，再拖滑杆</h2>
+ <p><b>第 1 题：</b>流得快、坡又陡（流速 32、坡降 10），水是带走沙，还是放下沙？</p>
+ <div class="pick-btns" role="group" aria-label="猜搬运">
+ <button class="btn guess-pick" type="button" data-ri-g1="15" aria-pressed="false">几乎不变</button>
+ <button class="btn guess-pick" type="button" data-ri-g1="20" aria-pressed="false">水快，带走沙</button>
+ <button class="btn guess-pick" type="button" data-ri-g1="28" aria-pressed="false">河底会被掏空</button>
+ </div>
+ <p class="guess-out" id="riGuessOut1" role="status" aria-live="polite">先押一个，再拖到 水流速度 32、河床坡降 10。</p>
+ <div id="riGuessBlock2" hidden>
+ <p><b>第 2 题：</b>流速 6、坡降 4，水是继续带走沙，还是开始放下沙？</p>
+ <div class="pick-btns" role="group" aria-label="猜放下还是带走">
+ <button class="btn guess-pick" type="button" data-ri-g2="yes" aria-pressed="false">继续带走</button>
+ <button class="btn guess-pick" type="button" data-ri-g2="no" aria-pressed="false">慢了，放下沙</button>
+ </div>
+ <p class="guess-out" id="riGuessOut2" role="status" aria-live="polite">押好后拖到 水流速度 6、河床坡降 4。</p>
+ </div>
+ <div id="riGuessBlock3" hidden>
+ <p><b>第 3 题：</b>流速最慢 4、坡最平 2。还能冲走沙子吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜又慢又平">
+ <button class="btn guess-pick" type="button" data-ri-g3="yes" aria-pressed="false">能，水还在流</button>
+ <button class="btn guess-pick" type="button" data-ri-g3="no" aria-pressed="false">不能，沙会沉下去</button>
+ <button class="btn guess-pick" type="button" data-ri-g3="zero" aria-pressed="false">河会停住</button>
+ </div>
+ <p class="guess-out" id="riGuessOut3" role="status" aria-live="polite">押好后流速 4、坡降 2。</p>
+ </div>
+ </section>
+ </div>
+
+ <section class="card river-atlas" aria-labelledby="riverAtlasTitle">
+ <h2 id="riverAtlasTitle">河流地貌图鉴</h2>
+ <p>点一张，沿河从山上下到海里，比一比每一段长什么样。</p>
+ <div class="kid-figure-grid" id="riverAtlasGrid" role="group" aria-label="河流地貌图鉴：十二种地形">
+ <button class="kid-figure" type="button" id="riverFigSource" data-river-fig="source" aria-pressed="false" aria-label="源头：山里冒出的第一股水" data-say="源头：山里冒出的第一股水，又浅又急，只能搬小石子；水往低处走，不是小溪在玩。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">源头</span>
+ <span class="kid-figure-fact">山里第一股水，坡陡又浅又急，能搬小石头，是搬运的开始，不是小溪在玩。</span>
+ </button>
+ <button class="kid-figure" type="button" id="riverFigFall" data-river-fig="waterfall" aria-pressed="false" aria-label="瀑布：水从悬崖掉下去" data-say="瀑布：水从悬崖掉下去，比平地的河曲猛得多；岸上看，不要下到水里去测。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/waterfall.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">瀑布</span>
+ <span class="kid-figure-fact">水从悬崖上掉下来，落差大、水快，搬沙能力一下子变强，岸上看、不下去。</span>
+ </button>
+ <button class="kid-figure" type="button" id="riverFigMeander" data-river-fig="meander" aria-pressed="false" aria-label="河曲：河道弯成 S 形" data-say="河曲：河道弯成 S 形。外侧冲刷、内侧堆沙，弯会越来越大，不是河自己想拐。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">河曲</span>
+ <span class="kid-figure-fact">河道弯成 S 形，外侧水快被掏，内侧水慢堆沙；弯会变大，不是河自己想拐弯。</span>
+ </button>
+ <button class="kid-figure" type="button" id="riverFigOxbow" data-river-fig="oxbow" aria-pressed="false" aria-label="牛轭湖：被截断的月牙湖" data-say="牛轭湖：弯得太厉害被截断，留下一个月牙湖。它曾经是河曲的一部分。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">牛轭湖</span>
+ <span class="kid-figure-fact">旧弯被切开以后，留下一弯静水，叫牛轭湖，是河道改线的证据，不是谁挖的池。</span>
+ </button>
+ <button class="kid-figure" type="button" id="riverFigFlood" data-river-fig="floodplain" aria-pressed="false" aria-label="河漫滩：河两边发大水会淹的平地" data-say="河漫滩：河两边那片平地，发大水才会被淹。比源头宽得多、也平得多，汛期不要下。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">河漫滩</span>
+ <span class="kid-figure-fact">河两边的平地，发大水会淹，细沙先沉在这里；不要下去测流，汛期更不要下。</span>
+ </button>
+ <button class="kid-figure" type="button" id="riverFigJoin" data-river-fig="confluence" aria-pressed="false" aria-label="汇流：两条河并成一条" data-say="汇流：两条河并成一条。水量一下子变大，泥沙也合在一起，仍是往低处走。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rivers.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">汇流</span>
+ <span class="kid-figure-fact">两条河并成一条，水量变大，搬运能力也跟着变，不是一夜魔法，水仍往低处走。</span>
+ </button>
+ <button class="kid-figure" type="button" id="riverFigDelta" data-river-fig="delta" aria-pressed="false" aria-label="三角洲：入海口沙子铺成扇子" data-say="三角洲：入海口沙子铺成一把扇子。和河口湾不同，它是堆出来的新陆地。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/mangrove.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">三角洲</span>
+ <span class="kid-figure-fact">入海口水变慢，沙子铺成扇子或三角地，潮和浪还会再塑形，不是唯一正三角。</span>
+ </button>
+ <button class="kid-figure" type="button" id="riverFigEstuary" data-river-fig="estuary" aria-pressed="false" aria-label="河口湾：河和海在喇叭口里混合" data-say="河口湾：河和海在喇叭口里混在一起。不像三角洲那样铺出大片新陆地。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/tides.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">河口湾</span>
+ <span class="kid-figure-fact">河和海在喇叭口里混合，流速降，泥沙容易歇脚，不是正三角模板，也不是河想停。</span>
+ </button>
+ <button class="kid-figure" type="button" id="riverFigCanyon" data-river-fig="canyon" aria-pressed="false" aria-label="峡谷：河把石头切出深沟" data-say="峡谷：河把石头切出一条深沟。比源头更陡、更深，水还是很急，长期搬沙不是人挖。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/canyon.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">峡谷</span>
+ <span class="kid-figure-fact">河把石头切出一条深沟，是快水长期搬沙的结果，不是人挖的花纹，水往低处走。</span>
+ </button>
+ <button class="kid-figure" type="button" id="riverFigLevee" data-river-fig="levee" aria-pressed="false" aria-label="天然堤：岸边沙子堆高" data-say="天然堤：发大水时沙子先堆在岸边，岸就比旁边的河漫滩更高一点，不是一夜堆成。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">天然堤</span>
+ <span class="kid-figure-fact">岸边沙子堆高，比滩还高，是水慢时放下的沙，不是一夜堆成的堤，也不是谁堆的。</span>
+ </button>
+ <button class="kid-figure" type="button" id="riverFigTrib" data-river-fig="tributary" aria-pressed="false" aria-label="支流：小河并进大河" data-say="支流：一条小河并进大河。还没到汇流口那么壮观，但水量已经开始变大。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rivers.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">支流</span>
+ <span class="kid-figure-fact">小河并进大河，支流把水和沙都交上去，大河才有后面的三角洲，水仍往低处走。</span>
+ </button>
+ <button class="kid-figure" type="button" id="riverFigFan" data-river-fig="fan" aria-pressed="false" aria-label="冲积扇：出山口沙子摊开" data-say="冲积扇：河冲出山口，坡突然变缓，沙子摊成一把扇子。它在山脚，不是入海口的三角洲。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">冲积扇</span>
+ <span class="kid-figure-fact">出山口坡变平，沙子摊成扇子，和水入海变慢放下沙是同一家人，都是减速沉积。</span>
+ </button>
+ </div>
+ <p class="live-text" id="riverAtlasSay" role="status" aria-live="polite">还没选地貌。点一张，比一比这一段。</p>
+ </section>
+
+ <section class="card" aria-labelledby="predictTitle">
+ <h2 id="predictTitle">猜一猜</h2>
+ <div class="kid-predict" style="--tone:var(--sci)"
+ data-kid-predict
+ data-kid-predict-explain="河往低处流，一路搬沙石；弯道外侧掏深、内侧淤浅。水一减速，泥沙就堆成三角洲。危险河段不要下去，也不要丢垃圾。"
+ data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+ data-kid-predict-again="押好了，点「看答案」。">
+ <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🏖️</span><b>往沙堆上慢慢倒一杯水，冲出的小水沟过一会儿会变成什么样？</b></p>
+ <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：沙堆上的小水沟会怎么变">
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="straight">一直是笔直的一条</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="bend" data-kid-predict-correct>慢慢弯来弯去</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="gone">水沟会自己合上</button>
+ </div>
+ <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+ <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+ </div>
+ </section>
+
+ <section class="task" aria-labelledby="taskTitle">
+ <h2 class="task-title" id="taskTitle">任务：说出一站水在做什么</h2>
+ <p>点开至少两站，再选一句最符合当前这一站的话。</p>
+ <div class="kid-tiles" id="jobPicks" role="group" aria-label="这一站的水在做什么"></div>
+ <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+ <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+ <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先点开两站，再选一句。</p>
+ </section>
+
+ <section class="card" aria-labelledby="numsTitle">
+ <h2 id="numsTitle">河流的惊人数字</h2>
+ <div class="kid-figure-grid" role="group" aria-label="四个关于河流的数字">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rivers.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">每秒约&nbsp;20&nbsp;万吨</span><span class="kid-figure-sub">亚马孙河倒进海里的水</span><p class="kid-figure-fact">一秒钟的水量能装满八十多个标准泳池。全世界每五杯流进海里的河水，就有一杯来自它。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">约&nbsp;6300&nbsp;千米</span><span class="kid-figure-sub">长江的长度</span><p class="kid-figure-fact">亚洲最长的河。从青藏高原的雪水出发，走到上海入海，海拔要下降五千多米。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">约&nbsp;600&nbsp;万年</span><span class="kid-figure-sub">科罗拉多河凿出大峡谷的时间</span><p class="kid-figure-fact">最深处约 1800&nbsp;米。一年只磨掉纸片那么薄的一层，水往低处走，所以它从不停工。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">曾达约&nbsp;16&nbsp;亿吨</span><span class="kid-figure-sub">黄河一年搬运的泥沙</span><p class="kid-figure-fact">世界上最能搬土的河——河水里的黄土最多时一碗水半碗沙，「黄河」的名字就是这么来的。</p></div>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="howTitle">
+ <h2 id="howTitle">在托盘里造一条小河</h2>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>搭河床。</b>托盘里铺湿沙，一头用两本书垫高，做出坡。</li>
+ <li data-step="2"><b>慢慢供水。</b>从高处一点点倒水，看水自己选路、开始搬沙。</li>
+ <li data-step="3"><b>加障碍。</b>河道中间放一颗小石头，看水怎么绕流、在石头后面掏坑。</li>
+ <li data-step="4"><b>看出口。</b>水流到平地慢下来，卸下的沙铺成小扇形——那就是你的三角洲。</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>水往低处跑，顺路把沙子和石头都搬了家。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>坡陡水快，能搬大石头；水一慢，先放下粗的，再放下细的。河流像一条永远在运货的传送带，还会按颗粒大小分站卸货。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>侵蚀、搬运、沉积三件事同时发生，哪件占上风由流速决定，流速又由坡度和水量决定。峡谷、河曲、三角洲都是这套简单规则跑了几百万年的结果——看见地形，就能倒推当年的水。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>同一条简单规则（快了搬、慢了放）重复亿万次，就能雕出峡谷和三角洲——用一个可重复的小实验，理解大到看不过来的地貌尺度。</p>
+ <ul class="ask-list">
+ <li>下雨时楼下那条「小河」，哪一段流得最快？你怎么看出来的？</li>
+ <li>托盘出口堆出的小扇子，和地图上的三角洲像不像？</li>
+ <li>如果把水量调大一倍，弯道会更弯还是被冲直？先猜再试。</li>
+ </ul>
+ </section>
+
+
+<section class="card" aria-labelledby="teachWhatTitle">
+ <h2 id="teachWhatTitle">为什么河道会自己弯起来，并在入海处铺出三角地</h2>
+ <p>先在图上标一段弯河的外岸和内岸。水往低处流，哪怕河床最初几乎直，一点点扰动也会让外侧更快、内侧更慢：外侧被掏，内侧堆沙，弯就越来越弯。这不是一夜魔法，也不是人挖出来的花纹。</p>
+ <p>水快就搬走沙，水慢就放下沙。大颗粒滚得近，细沙走得远；洪水期搬得更多，枯水期有的沙会沉回床面。弯被抄近路切开以后，旧弯留下一弯静水，叫牛轭湖。入海口流速降，泥沙堆成三角洲，潮和浪会再塑形，不是唯一一种三角形。</p>
+ <p>因为急流会把人冲走，所以岸上看、不下去测流，也不把垃圾当「漂流实验材料」丢进真河。舞台上的「携沙」读数只比较「流速和坡降」，不是某条河的说明书，更不是水文预报。</p>
+ </section>
+
+ <section class="card" aria-labelledby="lookTitle">
+ <h2 id="lookTitle">水快就搬走沙，水慢就放下沙，弯道因此越来越弯</h2>
+ <p>同一段弯河，先只改快慢这一项：外侧水快看它掏岸，内侧水慢看它堆沙。这样比，才知道弯会自己变大，不是人挖的花纹。把「水往低处走」和「泥沙在哪歇脚」分成两句，不要写成「水把沙带走就没了」。</p>
+ <p>入海处水变慢，沙就放下，铺成扇子或三角地。完成句写「外快内慢」或「水快搬走、水慢放下」。禁止「弯是人工挖的」，也禁止「三角洲一定是正三角」。因为急流会把人冲走，所以岸上看、不下去测流，也不往河里扔瓶子。</p>
+ <div class="kid-figure-grid" role="group" aria-label="主题细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">坡降</span><span class="kid-figure-sub">重力驱动</span><p class="kid-figure-fact">没有坡降就没有持续流动；高程差写进河道能量预算，水往低处走才搬沙。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">弯道</span><span class="kid-figure-sub">不对称</span><p class="kid-figure-fact">外岸切蚀、内岸淤积；一点点不对称会被放大，弯就越来越弯，不是河自己选路。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">搬运</span><span class="kid-figure-sub">分选</span><p class="kid-figure-fact">大颗粒滚得近，细沙走得更远；洪水期搬得更多，枯水期有的沙会沉回。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/mangrove.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">三角洲</span><span class="kid-figure-sub">减速沉积</span><p class="kid-figure-fact">入海口流速一降，泥沙就堆出水上沙体；潮和浪再改形状，不要只画一个正三角。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">牛轭湖</span><span class="kid-figure-sub">改线</span><p class="kid-figure-fact">旧弯被切穿后遗留静水湖，叫牛轭湖，是曲流改线的时间史证据，不是谁挖的池塘。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">险段涉水</span><span class="kid-figure-sub">红线</span><p class="kid-figure-fact">不进入急流、滚水或不明深坑；孩子要有大人陪同，岸上看就够，汛期洪水里更不要下。</p></div>
+ </div>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>找高低。</b>指出上游与下游，说明水为何往那个方向流。</li>
+ <li data-step="2"><b>标弯内外。</b>在弯道上标外岸与内岸，各猜一种侵蚀或沉积。</li>
+ <li data-step="3"><b>谈搬运。</b>洪水与枯水时，同一条河搬运能力怎样变？</li>
+ <li data-step="4"><b>看三角洲。</b>入海处为何泥沙更容易落下？潮与浪起什么作用？</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>水往低处流，会把沙子石头带走；河弯外面水快、里面水慢。我们在岸边安全地看，不跑到急流里。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>弯道外面掏、里面淤，所以越来越弯。大颗粒滚得近，细沙走得远。入海口减速才堆出三角洲。牛轭湖是旧弯被切开留下的。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>外快内慢是正反馈。洪水期搬得更多。河口形状因潮或浪而异，不是唯一正三角。本页数字只用来比较，不是水文预报。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能把弯道说成外快内慢、把沙说成快搬走慢放下，并否定「弯是人挖的」。完成看的是搬运对照，不是背「水往低处流」。</p>
+ <ul class="ask-list">
+ <li>弯道外侧水快还是慢？哪一边被掏、哪一边堆沙？</li>
+ <li>水快的时候沙去哪？水慢的时候沙在哪歇脚？</li>
+ <li>入海口为什么更容易铺出三角地？一定是正三角吗？</li>
+ <li>因为急流会把人冲走，所以能不能下去测流、往河里扔瓶子？</li>
+ </ul>
+ </section>
+
+
+ <section class="card" aria-labelledby="deepTitle">
+ <h2 id="deepTitle">曲流迁移：弯怎样越走越大</h2>
+ <p>外岸被掏得越深，弯就越弯，下一次水更爱走外侧。两个弯靠得很近时，洪水可能抄近路切开旧弯，留下牛轭湖。完成：在图上标出外岸、内岸，并写一句「为何弯会变大」。</p>
+ <p>把河挖直能让洪水走得快，岸边弯曲的家园会变少——这是权衡，不是对错题。冰川是冰推着大小石头一起走，和河用水筛沙不是一套。航拍和地图要写下从哪来；不把水利设施坐标发到网上。</p>
+ <p>本页「携沙≈流速×坡降÷16」只是比较尺子，用来让孩子看见「陡急搬沙、平缓沉积」，不是某条河的说明书，更不是水文预报。</p>
+ <p>因为急流会把人冲走，所以岸上看、不下去测流，也不把垃圾当实验材料丢进真河。涨水时远离河岸。</p>
+ <div class="kid-figure-grid" role="group" aria-label="专属事实卡">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">正反馈</span><span class="kid-figure-sub">曲率</span><p class="kid-figure-fact">外岸被掏得越深，弯就越弯，下一次水更爱走外侧，这是正反馈，不是河自己要拐。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">标内外</span><span class="kid-figure-sub">完成</span><p class="kid-figure-fact">在弯道图上标：外侧被掏，内侧堆沙，两句不要写反，也不是人拿铲子挖出来的。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">渠道化</span><span class="kid-figure-sub">权衡</span><p class="kid-figure-fact">把河挖直能让洪水走得快，岸边弯曲的家园会变少，这是权衡不是对错题。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/glacier.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">冰川</span><span class="kid-figure-sub">另册</span><p class="kid-figure-fact">冰川是冰推着大小石头一起走，和河用水筛沙不是一套，不要混成一种搬法。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">来源</span><span class="kid-figure-sub">标注</span><p class="kid-figure-fact">看航拍或地图时写下从哪来，才分得清哪一段是弯、哪一段被挖直，不要猜河想去哪。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">牛轭</span><span class="kid-figure-sub">改线</span><p class="kid-figure-fact">弯被抄近路切开以后，旧弯留下一弯静水，叫牛轭湖；这是改线证据，不是新挖的湖。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="fieldTitle">
+ <h2 id="fieldTitle">对照卡：河流搬运 vs 风搬运 vs 冰川搬运</h2>
+ <p>三列都在搬沙，工具不同。河流：水筛，大的滚得近、细的走得远。风：多半只搬走细沙，粗石头很难吹起来。冰川：大石小沙混着推，分得没有河清楚。各写一个「最擅长搬的」。否决句：「弯是人工挖的。」</p>
+ <p>先问是水筛、风吹还是冰推，不要混成一种搬法。本页读数只比较方向，不是某条河的说明书。</p>
+ <div class="kid-figure-grid" role="group" aria-label="对照与细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">河流</span><span class="kid-figure-sub">分选</span><p class="kid-figure-fact">河流用水力分选，悬移、推移、滚移可以同时有，河道是连续输送带，水往低处走。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">风</span><span class="kid-figure-sub">细远</span><p class="kid-figure-fact">风多半只搬走细沙，粗石头很难吹起来，和河能滚卵石不是同一把尺子。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/glacier.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">冰川</span><span class="kid-figure-sub">混合</span><p class="kid-figure-fact">冰川把大石小沙混着推，分得没有河用水筛那么清楚；工具不同，不要写成河想搬。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">尺度</span><span class="kid-figure-sub">各一</span><p class="kid-figure-fact">溪、河、河口各写一个能看见的差别：谁更快、谁先放下粗沙，水都是往低处走。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">混名</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">先问是水筛、风吹还是冰推，不要混成一种搬法，三角洲也不是冰推的。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/mangrove.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">三角洲</span><span class="kid-figure-sub">河</span><p class="kid-figure-fact">河入海变慢，沙就放下，铺成扇子或三角地，不是冰川推出来的，也不是河自己铺的。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="moreTitle">
+ <h2 id="moreTitle">沙堆弯道五分钟</h2>
+ <p>在干沙或浅水槽里冲出一道细流，大约&nbsp;5&nbsp;分钟看弯处哪一侧被掏、哪一侧堆沙。一次只改流速或坡度其中一项。完成句点名外快内慢：例如「外侧水快被掏，内侧水慢堆沙，弯就越来越弯。」</p>
+ <p>口头只要两句：「水快搬走沙，水慢放下沙。」「岸上看，不下去。」有人说「弯是人挖的」，让孩子指着外岸反驳。</p>
+ <p>因为急流会把人冲走，所以真河里不要投东西测流，也不要自己下去。实验后沙归位，不把染料倒进真河。水循环页看这份水从哪来；潮汐页看入海口另一股力。本页数字不要抄进水文手册。</p>
+ <div class="kid-figure-grid" role="group" aria-label="加厚事实">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">沙流</span><span class="kid-figure-sub">弯</span><p class="kid-figure-fact">沙槽里冲一道细流，看弯道哪一侧被掏、哪一侧堆沙，一次只改快慢，不要下真河里。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">5&nbsp;分钟</span><span class="kid-figure-sub">观察</span><p class="kid-figure-fact">大约&nbsp;5&nbsp;分钟只改流速或坡度其中一项，看「外快内慢」还在不在，不要两样一起拧。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">一变量</span><span class="kid-figure-sub">控</span><p class="kid-figure-fact">一次只改流速或坡度其中一项，才看得出是谁让沙走或留下，不要两样一起改。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rivers.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">真河</span><span class="kid-figure-sub">不投</span><p class="kid-figure-fact">因为急流会把人冲走，扔进去的瓶子会跟着沙堆到下游，所以只在岸上看漂浮物，不下去、不往河里投东西。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">漂移</span><span class="kid-figure-sub">慎连</span><p class="kid-figure-fact">岸上漂浮物能对照快慢，不要把沙槽结论直接写进真河，更不要扔瓶子。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">内外</span><span class="kid-figure-sub">记录</span><p class="kid-figure-fact">外侧写被掏还是堆沙，内侧再写一句对照，两句写反就等于没看见侧蚀，不是河想弯。</p></div>
+ </div>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+ <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+ <p>想知道「弯为什么会自己变大」，就只改快慢这一项。同一段弯，先看外侧掏不掏得动，再看内侧堆不堆得住。把「这是人挖的」叠进同一档，分不清到底是外快内慢，还是把工程渠当成了自然河。</p>
+ <ul>
+ <li><b>只改这一项：</b>水快还是慢（或坡陡还是平）。</li>
+ <li><b>先保持不变：</b>同一段弯、同一堆沙、同一次岸上远观。</li>
+ <li><b>要观察的：</b>哪一边被掏、哪一边堆沙、入海处沙歇在哪。</li>
+ <li><b>另开一行：</b>真河不投东西、不下水，不要和沙槽实验叠在一起。</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+ <h2 id="askMoreTitle">还可以问下去</h2>
+ <ol>
+ <li>若人为把弯道外岸砌死，水还会掏哪一边？弯还会自己变大吗？</li>
+ <li>洪水期和枯水期，同一条河搬沙的「脾气」差在哪？细沙和卵石谁走得更远？</li>
+ <li>把塑料瓶扔进河里看它漂多远，记下的是流速，还是把垃圾送到了下游？</li>
+ </ol>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+ <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+ <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把剪切应力提前塞进四岁耳朵。</p>
+ <div class="age-tiers" aria-label="给家长的分层讲法">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>水往低处流，会把沙子石头带走；河弯外面水快、里面水慢。我们在岸边安全地看，不跑到急流里。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>弯道外掏内淤；搬运分粗细；三角洲是减速沉积；牛轭湖是河道改线痕迹。本页数字只用来比较。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>外快内慢是正反馈，弯会自己变大。河口三角型因潮或浪而异。观察礼貌：岸上看、不投垃圾，是在保护河道和自己，不只是礼貌。</p></div>
+ </div>
+ </section>
+
+ <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+ <h2 class="work-card-title" id="workTitle">作品表单：河流观察</h2>
+ <p class="work-card-meta">只保存文字。楼下的小溪、排水沟下雨后也能对照。</p>
+ <div class="work-card-fields">
+ <div><label for="workType">作品类型</label>
+ <select class="input" id="workType" name="type">
+ <option value="observation">观察记录</option>
+ <option value="explanation">我的解释</option>
+ <option value="drawing">发现画</option>
+ </select>
+ </div>
+ <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：弯道外侧水更快"></div>
+ <div><label for="workContent">水做了什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下这一站的坡度、水的快慢，以及泥沙被搬到了哪里。"></textarea></div>
+ <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+ </div>
+ <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+ </form>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+ <h2 id="askTitle">给家长的问题</h2>
+ <ul class="ask">
+ <li>若人为把弯道外岸砌死，水还会掏哪一边？弯还会自己变大吗？</li>
+ <li>冰川把大石小沙混着推，河用水筛沙。各擅长搬哪一种颗粒？</li>
+ <li>指着一段弯河：哪一边该写「被掏」，哪一边该写「堆沙」？</li>
+ <li>洪水期和枯水期，同一条河搬沙的「脾气」差在哪？细沙和卵石谁走得更远？</li>
+ <li>把塑料瓶扔进河里看它漂多远，记下的是流速，还是把垃圾送到了下游？</li>
+ <li>三角洲一定是正三角吗？潮和浪还会再塑成什么样子？</li>
+ <li>本页「携沙」读数能当某条河的说明书吗？它比较的是流速和坡降，还是水文预报？</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+ <h2 id="whyTitle">背后的原理</h2>
+ <p>舞台上不写这些词，留给孩子用眼睛看。弯曲通道外侧更快、内侧更慢，外掏内淤是正反馈：弯会自己变大。粒度分选反映能量：大的滚得近，细的走得远。河口流速骤降，潮和浪再分配，三角洲不是唯一模板。</p>
+ <p>把河挖直能加快泄洪，也会少掉弯曲的家园。冰川刮床和河用水筛不是一套。本页「携沙≈流速×坡降÷16」只是比较尺子，不是某条河的说明书，更不是水文预报。</p>
+ <p>常见误会：水只往下不搬沙、弯是人工挖的、三角洲一夜长成、三角洲一定是正三角。纠正。</p>
+ <p>观察安全：岸上看，不进入急流和不明深坑；不把垃圾当漂流材料；涨水时远离河岸。本页不提供水文预报。</p>
+ </section>
+
+ <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))" data-audience="parent">
+ <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">河流公式卡 · 携沙≈流速×坡降÷16；携沙≥10 冲刷更强；陡急搬沙、平缓沉积</p>
+ <p style="margin:0;color:var(--ink-mid);line-height:1.55">真实还受流量、河岸植被与底质影响。近岸玩水要看水位与大人陪同。</p>
+ </div>
+
+
+<section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+ <h2 id="nextTitle">接下来可以去</h2>
+ <p>带走句：水快搬走沙，水慢放下沙。因为急流会把人冲走，所以岸上看、不下去测流。水循环页看这份水从哪来、往哪回；潮汐页看入海口另一股力怎么再塑形。</p>
+ <p class="row"><a class="btn btn-ghost" href="../games/water-cycle.html">水循环工坊</a><a class="btn btn-ghost" href="tides.html">潮汐观察站</a></p>
+ </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为急流会把人冲走，所以河边观察请站在安全处，涨水时远离河岸。本页不提供水文预报。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+ "use strict";
+ var STOPS = [
+ { id:"src", name:"源头急流", job:"搬小石头往下冲", x:140, y:88, say:"第一站：山上。坡陡，水急，能搬动小石头。" },
+ { id:"mid", name:"中游弯道", job:"外侧冲、内侧淤", x:320, y:132, say:"第二站：平一点了。水开始拐弯，外侧冲刷，内侧堆沙。" },
+ { id:"plain", name:"下游平原", job:"水变慢，细沙沉底", x:430, y:130, say:"第三站：很平了。水变慢，细沙先沉下来。" },
+ { id:"mouth", name:"入海三角洲", job:"把沙子铺成三角形", x:560, y:158, say:"第四站：入海口。沙子摊开，像一把扇子。" }
+ ];
+ var current = STOPS[0], seen = {}, done = false, visits = 0;
+ var box = document.getElementById("stops");
+ var picks = document.getElementById("jobPicks");
+ function draw(){
+ document.getElementById("marker").setAttribute("cx", String(current.x));
+ document.getElementById("marker").setAttribute("cy", String(current.y));
+ document.getElementById("delta").setAttribute("opacity", current.id === "mouth" ? "0.9" : "0.35");
+ document.getElementById("live").textContent = current.say;
+ }
+ STOPS.forEach(function(stop){
+ var b = document.createElement("button");
+ b.className = "stop-card"; b.type = "button";
+ b.setAttribute("aria-pressed", stop.id === "src" ? "true" : "false");
+ b.setAttribute("aria-label", "查看"+stop.name);
+ b.innerHTML = "<b>"+stop.name+"</b><span>"+stop.job+"</span>";
+ b.addEventListener("click", function(){
+ current = stop;
+ if (!seen[stop.id]) { seen[stop.id] = true; visits += 1; }
+ Array.prototype.forEach.call(box.querySelectorAll(".stop-card"), function(n){ n.setAttribute("aria-pressed", n===b?"true":"false"); });
+ draw();
+ if (!done) document.getElementById("taskStatus").textContent = visits < 2
+ ? "再点另一站，比较水和沙子的变化。"
+ : "已看过两站。选一句：这一站的水在做什么？";
+ });
+ box.appendChild(b);
+ });
+ seen.src = true; visits = 1;
+ STOPS.forEach(function(stop){
+ var b = document.createElement("button");
+ b.className = "kid-tile"; b.type = "button";
+ b.innerHTML = '<span class="kid-tile-label">'+stop.job+'</span>';
+ b.addEventListener("click", function(){
+ Array.prototype.forEach.call(picks.querySelectorAll(".kid-tile"), function(n){ n.setAttribute("aria-pressed", n===b?"true":"false"); });
+ if (done) return;
+ if (visits < 2) {
+ document.getElementById("taskStatus").textContent = "先至少点开两站，再选句子。";
+ return;
+ }
+ if (stop.job !== current.job) {
+ document.getElementById("taskStatus").textContent = "再看看当前这一站的图，换一句试试。";
+ return;
+ }
+ done = true;
+ if (window.Progress) Progress.complete("nature/rivers.html", current.name+"："+current.job);
+ document.getElementById("taskStatus").textContent = "完成啦："+current.name+"的水在"+current.job+"。";
+ });
+ picks.appendChild(b);
+ });
+ draw();
+ var atlasSay = document.getElementById("riverAtlasSay");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-river-fig]"), function(btn){
+ btn.addEventListener("click", function(){
+ Array.prototype.forEach.call(document.querySelectorAll("[data-river-fig]"), function(n){
+ n.setAttribute("aria-pressed", n===btn ? "true" : "false");
+ });
+ atlasSay.textContent = btn.getAttribute("data-say") || "";
+ });
+ });
+})();
+</script>
+<script>
+
+(function(){
+ "use strict";
+ var a = document.getElementById("riA");
+ var b = document.getElementById("riB");
+ if (!a || !b) return;
+ var g1 = "", g2 = "", g3 = "";
+ var g1Done = false, g2Done = false, g3Done = false;
+ function score(){ return Math.round(Number(a.value) * Number(b.value) / 16); }
+ function paint(){
+ var s = score();
+ var ok = s >= 10;
+ document.getElementById("riALab").textContent = a.value;
+ document.getElementById("riBLab").textContent = b.value;
+ a.setAttribute("aria-valuetext", a.value);
+ b.setAttribute("aria-valuetext", b.value);
+ document.getElementById("riAOut").textContent = a.value;
+ document.getElementById("riSOut").textContent = String(s);
+ document.getElementById("riOkOut").textContent = ok ? "够冲" : "偏沉";
+ document.getElementById("riStateLab").textContent = ok ? "快搬走，慢放下" : "水慢了，沙先沉下来";
+ document.getElementById("riLabLive").textContent = "水是搬运的介质：流得快、坡更陡，沙被带走；变平变慢，沙就放下。不是只会冲、从不堆。";
+ document.getElementById("riFlow").setAttribute("stroke-width", String(14 + Number(a.value) * 0.35));
+ var s1 = document.getElementById("riSand1");
+ var s2 = document.getElementById("riSand2");
+ if (s1) s1.setAttribute("cx", String(100 + Number(a.value) * 4));
+ if (s2) s2.setAttribute("cx", String(200 + Number(a.value) * 5));
+ var bank = document.getElementById("riBank");
+ if (bank) bank.setAttribute("opacity", ok ? "0.35" : "0.95");
+ var never = document.getElementById("riNeverDrop");
+ if (never) never.setAttribute("opacity", ok ? "0.12" : "0.4");
+ var bh = 30 + s * 2.5;
+ document.getElementById("riBar").setAttribute("height", String(bh));
+ document.getElementById("riBar").setAttribute("y", String(180 - bh));
+
+ if (g1 && !g1Done && Number(a.value) === 32 && Number(b.value) === 10 && s === 20) {
+ g1Done = true;
+ document.getElementById("riGuessOut1").innerHTML = (g1 === "20" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "水快、坡陡，沙被带走。";
+ document.getElementById("riGuessBlock2").hidden = false;
+ }
+ if (g2 && !g2Done && Number(a.value) <= 6 && Number(b.value) <= 4 && !ok) {
+ g2Done = true;
+ document.getElementById("riGuessOut2").innerHTML = (g2 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "水慢、坡缓，沙放下。";
+ document.getElementById("riGuessBlock3").hidden = false;
+ }
+ if (g3 && !g3Done && Number(a.value) === 4 && Number(b.value) === 2) {
+ g3Done = true;
+ document.getElementById("riGuessOut3").innerHTML = (g3 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "最慢最平，沙沉下去。河还在流，只是放下沙。";
+ }
+ }
+ a.addEventListener("input", paint); b.addEventListener("input", paint);
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ri-g1]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g1Done) return;
+ g1 = btn.getAttribute("data-ri-g1");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ri-g1]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("riGuessOut1").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ri-g2]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g2Done) return;
+ g2 = btn.getAttribute("data-ri-g2");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ri-g2]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("riGuessOut2").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ri-g3]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g3Done) return;
+ g3 = btn.getAttribute("data-ri-g3");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ri-g3]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("riGuessOut3").textContent = "押好了";
+ });
+ });
+ paint();
+})();
+
+</script>
+<script>if (window.Progress) Progress.visit("nature/rivers.html", "河流观察站");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

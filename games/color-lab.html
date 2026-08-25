@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>调色工坊 · 颜料越混越亮，还是越叠越暗？</title>
+<meta name="description" content="同一对原色，只改份量和是颜料还是光。亮度按 100−(左+右)×8 来比：份量越大越暗，哪边份多更偏哪边。光越加越亮是另一本账。本页数字是比较尺子，不是印刷配方。颜料不入口。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  .hero { padding: 28px 0 10px; }
+  .hero h1 { margin: .15em 0 .3em; }
+  .lead { max-width: 58ch; color: var(--ink-mid); }
+  .kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--kit) 36%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--kit) 12%,var(--surface)),var(--surface) 62%);
+  }
+  .mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--kit) 40%,var(--line));
+    background: color-mix(in srgb,var(--kit) 12%,var(--surface)); font-size: 2.2rem;
+  }
+  .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .cl-art { display: block; width: 100%; max-width: 480px; height: auto; margin: 0 auto; }
+  .cl-lab { fill: var(--ink); font: 700 13px var(--mono); text-anchor: middle; }
+  .cl-sub { fill: #7a6a50; font: 600 12px var(--mono); text-anchor: middle; }
+  /* 颜色池：选中时带回弹地浮现；换色时平滑过渡 */
+  .cl-pool { opacity: 0; transform: scale(.3); transform-box: fill-box; transform-origin: center;
+    transition: opacity .3s var(--ease), transform .45s cubic-bezier(.34,1.56,.64,1), fill .4s var(--ease); }
+  .cl-pool.on { opacity: 1; transform: scale(1); }
+  .cl-empty { transition: opacity .3s var(--ease); }
+  .cl-pool.on + .cl-empty { opacity: 0; }
+  /* 画笔：出结果时挪到混色盘上搅两下 */
+  #brush { transition: transform .45s var(--ease); transform-box: view-box; }
+  #brush[data-stir="1"] { transform: translate(-26px,-44px) rotate(-10deg); animation: clStir .4s .45s 2 alternate var(--ease); }
+  @keyframes clStir {
+    from { transform: translate(-26px,-44px) rotate(-4deg); }
+    to { transform: translate(-16px,-46px) rotate(-18deg); }
+  }
+  html[data-playful-motion="reduced"] .cl-art * { transition: none !important; animation: none !important; }
+  .kid-action-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+  .color-atlas .kid-figure { --tone: var(--kit); }
+  .color-atlas .kid-figure-art { padding: 6px; }
+  .color-atlas .kid-figure-art > svg { width: 100%; max-width: 120px; height: auto; }
+  .color-atlas .kid-figure-fact { display: block; }
+  .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+  .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+  .ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--kit) 16%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--kit) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+  button, .btn { min-height: 44px; }
+  .stage + .kid-action-strip { margin-top: 8px; }
+  .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+  @media (max-width: 640px) {
+    .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+
+  .readout { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); margin-top: 10px; }
+  .readout b { display: block; font: 800 1.12rem/1.2 var(--mono); color: var(--ink); }
+  .readout span { font-size: .78rem; color: var(--ink-dim); }
+
+  .guess-card { border-color: color-mix(in srgb,var(--phys) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--phys); background: color-mix(in srgb,var(--phys) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 6px 0 8px; padding: 8px 10px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .2em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.35rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .88rem; line-height: 1.4; margin-bottom: .3em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 8px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1rem; margin-bottom: .25em; }
+    html[data-mode="kid"] .cl-art { max-height: 132px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+    html[data-mode="kid"] .readout b { font-size: .95rem; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .86rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; gap: 6px; }
+    html[data-mode="kid"] .kid-action-strip label { font-size: .86rem; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+  }
+
+.ad-photo-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 10px;align-items:end}.ad-photo-strip figure{margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface-2)}.ad-photo-strip img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}.ad-photo-strip figcaption{padding:6px 8px;font-size:.78rem;font-weight:800;color:var(--ink-mid);line-height:1.35}.ad-photo-strip .is-contrast figcaption{color:color-mix(in srgb,var(--warn) 70%,var(--ink))}@media (max-width:480px){.ad-photo-strip{gap:6px}.ad-photo-strip figcaption{font-size:.7rem;padding:4px 6px}}
+</style>
+</head>
+<body data-playful-page="games/color-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+<main id="main" class="wrap">
+  <header class="hero kid-hero-scene">
+    <div>
+      <p class="row"><span class="pill pill-phys">物理</span><span class="pill">5–10&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>颜料越混越亮，还是越叠越暗？</h1>
+      <p class="lead">红加黄看出橙，黄加蓝看出绿，蓝加红看出紫。份量一偏，间色就往某一边倒。手电筒的光叠在一起常常更亮；蜡笔叠涂常常更脏更暗——方向正好相反。屏幕用红绿蓝小灯拼色，不是这桶颜料。本页亮度是比较尺子，不是印刷配方，也不是自然定律。颜料不入口，手电筒不照眼睛。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">两盘颜料混在一起</h2>
+    <div class="ad-photo-strip" role="group" aria-label="真实现象参照"><figure><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="640" height="360" loading="lazy"><figcaption>生活里能看见的参照</figcaption></figure><figure><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="640" height="360" loading="lazy"><figcaption>再看台上的结构图：零件对上号</figcaption></figure></div>
+<svg class="cl-art" viewBox="0 0 420 240" role="img" aria-labelledby="clTitle clDesc">
+      <title id="clTitle">调色台</title>
+      <desc id="clDesc">木桌上铺着一张白纸，纸上放三只陶瓷盘：左盘和右盘装你点的两种颜料，右边最大的盘子里混出新颜色，画笔会过去搅一搅。</desc>
+      <!-- 墙与木桌 -->
+      <rect width="420" height="64" fill="#f3e6cc"/>
+      <rect y="64" width="420" height="176" fill="#cfa267"/>
+      <rect y="64" width="420" height="6" fill="#e0bc82"/>
+      <path d="M28 230 h64 M150 234 h58 M300 231 h70" stroke="#b98a52" stroke-width="3" stroke-linecap="round"/>
+      <!-- 架子上的三管颜料 -->
+      <rect x="22" y="50" width="150" height="7" rx="3" fill="#b98a52"/>
+      <g>
+        <rect x="38" y="18" width="18" height="32" rx="4" fill="#f6f1e6" stroke="#d8cbb2"/>
+        <rect x="42" y="12" width="10" height="8" rx="2" fill="#8a857c"/>
+        <circle cx="47" cy="38" r="5" fill="#d05050"/>
+        <rect x="88" y="18" width="18" height="32" rx="4" fill="#f6f1e6" stroke="#d8cbb2"/>
+        <rect x="92" y="12" width="10" height="8" rx="2" fill="#8a857c"/>
+        <circle cx="97" cy="38" r="5" fill="#e0b14a"/>
+        <rect x="138" y="18" width="18" height="32" rx="4" fill="#f6f1e6" stroke="#d8cbb2"/>
+        <rect x="142" y="12" width="10" height="8" rx="2" fill="#8a857c"/>
+        <circle cx="147" cy="38" r="5" fill="#3d6fb8"/>
+      </g>
+      <!-- 白纸 -->
+      <rect x="21" y="80" width="384" height="147" rx="10" fill="#d9c9a8" opacity=".55"/>
+      <rect x="18" y="76" width="384" height="147" rx="10" fill="#ffffff" stroke="#e4d9c2" stroke-width="2"/>
+      <ellipse cx="52" cy="96" rx="9" ry="5" fill="#e05050" opacity=".18"/>
+      <ellipse cx="378" cy="208" rx="8" ry="5" fill="#3d6fb8" opacity=".15"/>
+      <ellipse cx="330" cy="92" rx="7" ry="4" fill="#e0b14a" opacity=".2"/>
+      <!-- 配方牌 -->
+      <text class="cl-lab" id="mixLab" x="210" y="98">？ + ？ = ？</text>
+      <!-- 左盘 -->
+      <g>
+        <ellipse cx="80" cy="152" rx="46" ry="34" fill="#f7f4ec" stroke="#d8cbb2" stroke-width="2"/>
+        <ellipse cx="80" cy="152" rx="38" ry="27" fill="#eee8da"/>
+        <ellipse class="cl-pool" id="panA" cx="80" cy="152" rx="30" ry="20" fill="#e7e0d2"/>
+        <ellipse class="cl-empty" cx="80" cy="152" rx="30" ry="20" fill="none" stroke="#c9bda4" stroke-width="2" stroke-dasharray="6 6"/>
+        <ellipse cx="70" cy="145" rx="9" ry="4" fill="#ffffff" opacity=".45"/>
+      </g>
+      <!-- 右盘（第二种颜料） -->
+      <g>
+        <ellipse cx="210" cy="152" rx="46" ry="34" fill="#f7f4ec" stroke="#d8cbb2" stroke-width="2"/>
+        <ellipse cx="210" cy="152" rx="38" ry="27" fill="#eee8da"/>
+        <ellipse class="cl-pool" id="panB" cx="210" cy="152" rx="30" ry="20" fill="#e7e0d2"/>
+        <ellipse class="cl-empty" cx="210" cy="152" rx="30" ry="20" fill="none" stroke="#c9bda4" stroke-width="2" stroke-dasharray="6 6"/>
+        <ellipse cx="200" cy="145" rx="9" ry="4" fill="#ffffff" opacity=".45"/>
+      </g>
+      <!-- 混色盘（结果，最大） -->
+      <g>
+        <ellipse cx="344" cy="150" rx="54" ry="40" fill="#f7f4ec" stroke="#d8cbb2" stroke-width="2"/>
+        <ellipse cx="344" cy="150" rx="45" ry="32" fill="#eee8da"/>
+        <ellipse class="cl-pool" id="panMix" cx="344" cy="150" rx="36" ry="24" fill="#e7e0d2"/>
+        <ellipse class="cl-empty" cx="344" cy="150" rx="36" ry="24" fill="none" stroke="#c9bda4" stroke-width="2" stroke-dasharray="6 6"/>
+        <ellipse cx="332" cy="141" rx="11" ry="5" fill="#ffffff" opacity=".45"/>
+      </g>
+      <!-- 加号与等号 -->
+      <circle cx="145" cy="150" r="13" fill="#ffffff" stroke="#d8cbb2" stroke-width="2"/>
+      <text class="cl-lab" x="145" y="155">+</text>
+      <circle cx="277" cy="150" r="13" fill="#ffffff" stroke="#d8cbb2" stroke-width="2"/>
+      <text class="cl-lab" x="277" y="155">=</text>
+      <!-- 盘子名字 -->
+      <text class="cl-sub" x="80" y="205">左盘</text>
+      <text class="cl-sub" x="210" y="205">右盘</text>
+      <text class="cl-sub" x="344" y="207">混出来</text>
+      <!-- 画笔 -->
+      <g id="brush" data-stir="0">
+        <g transform="translate(14,14) rotate(-14 330 216)">
+          <rect x="330" y="211" width="66" height="10" rx="5" fill="#b98a52" stroke="#8a6a40" stroke-width="1.5"/>
+          <rect x="314" y="210" width="18" height="12" rx="2" fill="#9aa4ae"/>
+          <path d="M296 216 L314 210 L314 222 Z" fill="#6b5340"/>
+        </g>
+      </g>
+    </svg>
+    <div class="readout">
+      <div><span>左份</span><b id="leftOut">1</b></div>
+      <div><span>右份</span><b id="rightOut">1</b></div>
+      <div><span>亮度（算）</span><b id="brightOut">——</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">点两张颜色图鉴，右边的大盘会混出新颜色。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="调色主操作">
+    <div>
+      <label for="amtA">左盘份量：<span id="amtALab">1</span></label>
+      <input class="input" id="amtA" type="range" min="1" max="5" value="1" aria-valuetext="1">
+    </div>
+    <div>
+      <label for="amtB">右盘份量：<span id="amtBLab">1</span></label>
+      <input class="input" id="amtB" type="range" min="1" max="5" value="1" aria-valuetext="1">
+    </div>
+    <div class="pick-btns">
+      <button class="btn btn-ghost" type="button" id="clearMix">清空盘子，重新调</button>
+      <button class="btn" type="button" id="setEqual">各 1 份</button>
+      <button class="btn" type="button" id="setHeavy">各 5 份（很暗）</button>
+    </div>
+  </div>
+  <section class="card guess-card" aria-labelledby="guessTitleCl">
+    <h2 id="guessTitleCl">先猜一猜，再混</h2>
+    <p><b>第 1 题：</b>红+黄 各 1 份亮度约 84。改成各 5 份，亮度怎样？</p>
+    <div class="pick-btns" role="group" aria-label="猜亮度">
+      <button class="btn guess-pick" type="button" data-guess1="same" aria-pressed="false">差不多一样亮</button>
+      <button class="btn guess-pick" type="button" data-guess1="dark" aria-pressed="false">更暗（混得越多越暗）</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。先混红+黄各1，再各5。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>左红 5、右黄 1。混出色更偏谁？</p>
+      <div class="pick-btns" role="group" aria-label="猜偏色">
+        <button class="btn guess-pick" type="button" data-guess2="red" aria-pressed="false">更偏红</button>
+        <button class="btn guess-pick" type="button" data-guess2="yellow" aria-pressed="false">更偏黄</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后：红5+黄1 混一次。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>红+蓝各 5 份。亮度会比红+黄各 5 份更亮吗？</p>
+      <div class="pick-btns" role="group" aria-label="猜色相与亮度">
+        <button class="btn guess-pick" type="button" data-guess3="same" aria-pressed="false">一样暗，亮度只看份量</button>
+        <button class="btn guess-pick" type="button" data-guess3="bright" aria-pressed="false">更亮，因为出了紫</button>
+        <button class="btn guess-pick" type="button" data-guess3="darker" aria-pressed="false">更暗，蓝比较沉</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后红+蓝各 5 份混一次，看亮度数。</p>
+    </div>
+  </section>
+          <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">光越加越亮，颜料越叠越暗；混出间色看份量</h2>
+    <p>先点两种原色，看中间是不是出现橙、绿或紫。再点「各 1 份」看一次较亮的间色，再点「各 5 份（很暗）」看是不是更暗。最好再把一边拖到 5、另一边留 1，看间色往哪边倒。</p>
+    <p>颜料像小海绵，各自吃掉一部分光，剩下两边都不吃的那段才回到眼睛。混得越多，能回来的光越少，所以越叠越暗。份量一偏，间色就往份多的那边倒。手电筒的光叠在一起常常更亮——操作都叫「叠」，结果方向相反。没有「颜色自己和好」。</p>
+    <p>舞台上的「亮度 ≈ 100 −（左 + 右）× 8」是本页比较尺子：用来比份量和偏向，不是印刷厂配方，也不是屏幕校色。屏幕 RGB 是小灯加色，打印青品黄是减色近似，不要写成同一桶颜料。颜料不入口，做完洗手。</p>
+  </section>
+
+  <section class="card color-atlas" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">颜色图鉴</h2>
+    <p>先点一种，再点另一种。原色混原色，中间会出现间色。</p>
+    <div class="kid-figure-grid" role="group" aria-label="颜色图鉴：十二种颜色">
+      <button class="kid-figure" type="button" data-cl="red" aria-pressed="false" aria-label="红：原色">
+        <span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M8 56h104a6 6 0 0 1 0 22H20a12 12 0 0 1-12-12z" fill="#e4d2b0" stroke="#5a3a20" stroke-width="1.8"/><circle cx="20" cy="68" r="6.5" fill="#f6efe3" stroke="#5a3a20" stroke-width="1.3"/><circle cx="46" cy="68" r="8" fill="#c43c32" stroke="#7a2020"/><circle cx="70" cy="68" r="6.5" fill="#e0b14a" stroke="#8a6a20"/><circle cx="92" cy="68" r="6.5" fill="#3d6fb8" stroke="#1c3a66"/><rect x="6" y="24" width="8" height="22" fill="#8a2020" stroke="#5a1010"/><path d="M8 24l4-4 4 4M8 46l4 4 4-4" fill="#8a2020"/><rect x="14" y="22" width="48" height="26" rx="3" fill="#c43c32" stroke="#7a2020" stroke-width="1.5"/><rect x="24" y="28" width="26" height="14" rx="1" fill="#fff8e8"/><path d="M62 22l12 6v14l-12 6Z" fill="#e8dcd0" stroke="#5a3a20"/><rect x="74" y="28" width="12" height="14" rx="1" fill="#8a857c" stroke="#5a3a20"/><path d="M86 32q14 2 12 16q-10 6-18-2q-2-8 6-14z" fill="#c43c32" stroke="#7a2020"/><path d="M96 12l16 18" stroke="#c4a06a" stroke-width="5" stroke-linecap="round"/><path d="M112 30l8 8" stroke="#3a2a18" stroke-width="3.4" stroke-linecap="round"/><path d="M118 36l6 2-2 6-7-3z" fill="#c43c32"/></svg></span>
+        <span class="kid-figure-cap">红</span>
+        <span class="kid-figure-fact">红是颜料原色：加黄得橙，加蓝得紫。份量一偏，间色就往某一边倒，不是颜料发脾气。</span>
+      </button>
+      <button class="kid-figure" type="button" data-cl="yellow" aria-pressed="false" aria-label="黄：原色">
+        <span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M12 52h96a8 8 0 0 1 0 24H26a14 14 0 0 1-14-14z" fill="#e4d2b0" stroke="#5a3a20" stroke-width="1.8"/><circle cx="24" cy="66" r="7" fill="#f6efe3" stroke="#5a3a20" stroke-width="1.3"/><circle cx="50" cy="66" r="9" fill="#e0b14a" stroke="#8a6a20"/><circle cx="74" cy="66" r="7" fill="#c43c32" stroke="#7a2020"/><circle cx="96" cy="66" r="7" fill="#3d6fb8" stroke="#1c3a66"/><path d="M22 44L34 8h26l12 36z" fill="#e0b14a" stroke="#8a6a20" stroke-width="1.5"/><rect x="34" y="4" width="26" height="8" rx="1" fill="#e8dcd0" stroke="#5a3a20"/><rect x="43" y="0" width="8" height="5" rx="1" fill="#8a857c"/><path d="M28 36h36" stroke="#fff" stroke-width="1.2" opacity=".35"/><path d="M78 42L102 16" stroke="#c4a06a" stroke-width="5" stroke-linecap="round"/><path d="M102 16l10-7" stroke="#3a2a18" stroke-width="3.6" stroke-linecap="round"/><path d="M108 12l10-4 1 6-10 2z" fill="#e0b14a"/></svg></span>
+        <span class="kid-figure-cap">黄</span>
+        <span class="kid-figure-fact">黄是颜料原色：加红得橙，加蓝得绿。不是屏幕上的小灯，叠涂是减光，会更暗。</span>
+      </button>
+      <button class="kid-figure" type="button" data-cl="blue" aria-pressed="false" aria-label="蓝：原色">
+        <span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M12 52h96a8 8 0 0 1 0 24H26a14 14 0 0 1-14-14z" fill="#e4d2b0" stroke="#5a3a20" stroke-width="1.8"/><circle cx="24" cy="66" r="7" fill="#f6efe3" stroke="#5a3a20" stroke-width="1.3"/><circle cx="52" cy="66" r="9" fill="#3d6fb8" stroke="#1c3a66"/><path d="M22 44L34 8h26l12 36z" fill="#3d6fb8" stroke="#1c3a66" stroke-width="1.5"/><rect x="34" y="4" width="26" height="8" rx="1" fill="#e8dcd0" stroke="#5a3a20"/><rect x="43" y="0" width="8" height="5" rx="1" fill="#8a857c"/><path d="M28 36h36" stroke="#fff" stroke-width="1.2" opacity=".35"/><path d="M78 42L102 16" stroke="#c4a06a" stroke-width="5" stroke-linecap="round"/><path d="M102 16l10-7" stroke="#3a2a18" stroke-width="3.6" stroke-linecap="round"/><path d="M108 12l10-4 1 6-10 2z" fill="#3d6fb8"/></svg></span>
+        <span class="kid-figure-cap">蓝</span>
+        <span class="kid-figure-fact">蓝是颜料原色：加黄得绿，加红得紫。两份差太多就会发灰，不是越混越亮。</span>
+      </button>
+      <button class="kid-figure" type="button" data-cl="green" aria-pressed="false" aria-label="绿：黄加蓝">
+        <span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M12 52h96a8 8 0 0 1 0 24H26a14 14 0 0 1-14-14z" fill="#e4d2b0" stroke="#5a3a20" stroke-width="1.8"/><circle cx="24" cy="66" r="7" fill="#f6efe3" stroke="#5a3a20" stroke-width="1.3"/><circle cx="52" cy="66" r="9" fill="#3d9a58" stroke="#1e4a28"/><path d="M22 44L34 8h26l12 36z" fill="#3d9a58" stroke="#1e4a28" stroke-width="1.5"/><rect x="34" y="4" width="26" height="8" rx="1" fill="#e8dcd0" stroke="#5a3a20"/><rect x="43" y="0" width="8" height="5" rx="1" fill="#8a857c"/><path d="M28 36h36" stroke="#fff" stroke-width="1.2" opacity=".35"/><path d="M78 42L102 16" stroke="#c4a06a" stroke-width="5" stroke-linecap="round"/><path d="M102 16l10-7" stroke="#3a2a18" stroke-width="3.6" stroke-linecap="round"/><path d="M108 12l10-4 1 6-10 2z" fill="#3d9a58"/></svg></span>
+        <span class="kid-figure-cap">绿</span>
+        <span class="kid-figure-fact">绿是间色，黄和蓝混出来。蓝多一点更冷，黄多一点更暖，不是随便和好。</span>
+      </button>
+      <button class="kid-figure" type="button" data-cl="orange" aria-pressed="false" aria-label="橙：红加黄">
+        <span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M12 52h96a8 8 0 0 1 0 24H26a14 14 0 0 1-14-14z" fill="#e4d2b0" stroke="#5a3a20" stroke-width="1.8"/><circle cx="24" cy="66" r="7" fill="#f6efe3" stroke="#5a3a20" stroke-width="1.3"/><circle cx="52" cy="66" r="9" fill="#e07a28" stroke="#8a3a10"/><path d="M22 44L34 8h26l12 36z" fill="#e07a28" stroke="#8a3a10" stroke-width="1.5"/><rect x="34" y="4" width="26" height="8" rx="1" fill="#e8dcd0" stroke="#5a3a20"/><rect x="43" y="0" width="8" height="5" rx="1" fill="#8a857c"/><path d="M28 36h36" stroke="#fff" stroke-width="1.2" opacity=".35"/><path d="M78 42L102 16" stroke="#c4a06a" stroke-width="5" stroke-linecap="round"/><path d="M102 16l10-7" stroke="#3a2a18" stroke-width="3.6" stroke-linecap="round"/><path d="M108 12l10-4 1 6-10 2z" fill="#e07a28"/></svg></span>
+        <span class="kid-figure-cap">橙</span>
+        <span class="kid-figure-fact">橙是间色，红和黄混出来。红多一点更暖。手电筒叠光是另一套，会更亮。</span>
+      </button>
+      <button class="kid-figure" type="button" data-cl="purple" aria-pressed="false" aria-label="紫：蓝加红">
+        <span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M12 52h96a8 8 0 0 1 0 24H26a14 14 0 0 1-14-14z" fill="#e4d2b0" stroke="#5a3a20" stroke-width="1.8"/><circle cx="24" cy="66" r="7" fill="#f6efe3" stroke="#5a3a20" stroke-width="1.3"/><circle cx="52" cy="66" r="9" fill="#7a4aa0" stroke="#4a2868"/><path d="M22 44L34 8h26l12 36z" fill="#7a4aa0" stroke="#4a2868" stroke-width="1.5"/><rect x="34" y="4" width="26" height="8" rx="1" fill="#e8dcd0" stroke="#5a3a20"/><rect x="43" y="0" width="8" height="5" rx="1" fill="#8a857c"/><path d="M28 36h36" stroke="#fff" stroke-width="1.2" opacity=".35"/><path d="M78 42L102 16" stroke="#c4a06a" stroke-width="5" stroke-linecap="round"/><path d="M102 16l10-7" stroke="#3a2a18" stroke-width="3.6" stroke-linecap="round"/><path d="M108 12l10-4 1 6-10 2z" fill="#7a4aa0"/></svg></span>
+        <span class="kid-figure-cap">紫</span>
+        <span class="kid-figure-fact">紫是间色，蓝和红颜料混出来。份量差太多就发灰，不是光混那一套，也不是印刷配方。</span>
+      </button>
+      <button class="kid-figure" type="button" data-cl="white" aria-pressed="false" aria-label="白：几乎都反射">
+        <span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#d7d2c8" width="120" height="90"/><path d="M12 52h96a8 8 0 0 1 0 24H26a14 14 0 0 1-14-14z" fill="#e4d2b0" stroke="#5a3a20" stroke-width="1.8"/><circle cx="24" cy="66" r="7" fill="#f6efe3" stroke="#5a3a20" stroke-width="1.3"/><circle cx="52" cy="66" r="9" fill="#ffffff" stroke="#5a3a20"/><path d="M22 44L34 8h26l12 36z" fill="#ffffff" stroke="#5a3a20" stroke-width="1.5"/><rect x="34" y="4" width="26" height="8" rx="1" fill="#e8dcd0" stroke="#5a3a20"/><rect x="43" y="0" width="8" height="5" rx="1" fill="#8a857c"/><path d="M28 36h36" stroke="#fff" stroke-width="1.2" opacity=".35"/><path d="M78 42L102 16" stroke="#c4a06a" stroke-width="5" stroke-linecap="round"/><path d="M102 16l10-7" stroke="#3a2a18" stroke-width="3.6" stroke-linecap="round"/><path d="M108 12l10-4 1 6-10 2z" fill="#ffffff"/></svg></span>
+        <span class="kid-figure-cap">白</span>
+        <span class="kid-figure-fact">白几乎把光都送回眼睛。往红里掺白会变浅，和叠涂变暗是两件旋钮。</span>
+      </button>
+      <button class="kid-figure" type="button" data-cl="black" aria-pressed="false" aria-label="黑：几乎不反射">
+        <span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M12 52h96a8 8 0 0 1 0 24H26a14 14 0 0 1-14-14z" fill="#e4d2b0" stroke="#5a3a20" stroke-width="1.8"/><circle cx="24" cy="66" r="7" fill="#f6efe3" stroke="#5a3a20" stroke-width="1.3"/><circle cx="52" cy="66" r="9" fill="#2a241c" stroke="#0a0806"/><path d="M22 44L34 8h26l12 36z" fill="#2a241c" stroke="#0a0806" stroke-width="1.5"/><rect x="34" y="4" width="26" height="8" rx="1" fill="#e8dcd0" stroke="#5a3a20"/><rect x="43" y="0" width="8" height="5" rx="1" fill="#8a857c"/><path d="M28 36h36" stroke="#fff" stroke-width="1.2" opacity=".35"/><path d="M78 42L102 16" stroke="#c4a06a" stroke-width="5" stroke-linecap="round"/><path d="M102 16l10-7" stroke="#3a2a18" stroke-width="3.6" stroke-linecap="round"/><path d="M108 12l10-4 1 6-10 2z" fill="#2a241c"/></svg></span>
+        <span class="kid-figure-cap">黑</span>
+        <span class="kid-figure-fact">黑几乎不把光送回来。三种颜料叠在一起吃光的范围叠起来，变成灰泥。</span>
+      </button>
+      <button class="kid-figure" type="button" data-cl="brown" aria-pressed="false" aria-label="棕：红加绿会变脏">
+        <span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M12 52h96a8 8 0 0 1 0 24H26a14 14 0 0 1-14-14z" fill="#e4d2b0" stroke="#5a3a20" stroke-width="1.8"/><circle cx="24" cy="66" r="7" fill="#f6efe3" stroke="#5a3a20" stroke-width="1.3"/><circle cx="52" cy="66" r="9" fill="#8a5a32" stroke="#5a3a20"/><path d="M22 44L34 8h26l12 36z" fill="#8a5a32" stroke="#5a3a20" stroke-width="1.5"/><rect x="34" y="4" width="26" height="8" rx="1" fill="#e8dcd0" stroke="#5a3a20"/><rect x="43" y="0" width="8" height="5" rx="1" fill="#8a857c"/><path d="M28 36h36" stroke="#fff" stroke-width="1.2" opacity=".35"/><path d="M78 42L102 16" stroke="#c4a06a" stroke-width="5" stroke-linecap="round"/><path d="M102 16l10-7" stroke="#3a2a18" stroke-width="3.6" stroke-linecap="round"/><path d="M108 12l10-4 1 6-10 2z" fill="#8a5a32"/></svg></span>
+        <span class="kid-figure-cap">棕</span>
+        <span class="kid-figure-fact">红和绿颜料叠在一起，颜色变脏，因为滤色减光在加，不是越混越亮，也不是颜料有脾气。</span>
+      </button>
+      <button class="kid-figure" type="button" data-cl="pink" aria-pressed="false" aria-label="粉：红加白">
+        <span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M12 52h96a8 8 0 0 1 0 24H26a14 14 0 0 1-14-14z" fill="#e4d2b0" stroke="#5a3a20" stroke-width="1.8"/><circle cx="24" cy="66" r="7" fill="#f6efe3" stroke="#5a3a20" stroke-width="1.3"/><circle cx="52" cy="66" r="9" fill="#d07088" stroke="#8a3048"/><path d="M22 44L34 8h26l12 36z" fill="#d07088" stroke="#8a3048" stroke-width="1.5"/><rect x="34" y="4" width="26" height="8" rx="1" fill="#e8dcd0" stroke="#5a3a20"/><rect x="43" y="0" width="8" height="5" rx="1" fill="#8a857c"/><path d="M28 36h36" stroke="#fff" stroke-width="1.2" opacity=".35"/><path d="M78 42L102 16" stroke="#c4a06a" stroke-width="5" stroke-linecap="round"/><path d="M102 16l10-7" stroke="#3a2a18" stroke-width="3.6" stroke-linecap="round"/><path d="M108 12l10-4 1 6-10 2z" fill="#d07088"/></svg></span>
+        <span class="kid-figure-cap">粉</span>
+        <span class="kid-figure-fact">红颜料里掺进白，就变浅，这是冲淡减浓，和手电筒色光相加变亮不是同一套混法。</span>
+      </button>
+      <button class="kid-figure" type="button" data-cl="gray" aria-pressed="false" aria-label="灰：黑加白">
+        <span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M12 52h96a8 8 0 0 1 0 24H26a14 14 0 0 1-14-14z" fill="#e4d2b0" stroke="#5a3a20" stroke-width="1.8"/><circle cx="24" cy="66" r="7" fill="#f6efe3" stroke="#5a3a20" stroke-width="1.3"/><circle cx="52" cy="66" r="9" fill="#6a6864" stroke="#3a3834"/><path d="M22 44L34 8h26l12 36z" fill="#6a6864" stroke="#3a3834" stroke-width="1.5"/><rect x="34" y="4" width="26" height="8" rx="1" fill="#e8dcd0" stroke="#5a3a20"/><rect x="43" y="0" width="8" height="5" rx="1" fill="#8a857c"/><path d="M28 36h36" stroke="#fff" stroke-width="1.2" opacity=".35"/><path d="M78 42L102 16" stroke="#c4a06a" stroke-width="5" stroke-linecap="round"/><path d="M102 16l10-7" stroke="#3a2a18" stroke-width="3.6" stroke-linecap="round"/><path d="M108 12l10-4 1 6-10 2z" fill="#6a6864"/></svg></span>
+        <span class="kid-figure-cap">灰</span>
+        <span class="kid-figure-fact">黑和白混在一起，不那么暗，得到灰。印刷还要加一管黑才印得出深色。</span>
+      </button>
+      <button class="kid-figure" type="button" data-cl="cyan" aria-pressed="false" aria-label="青：蓝加绿">
+        <span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M12 52h96a8 8 0 0 1 0 24H26a14 14 0 0 1-14-14z" fill="#e4d2b0" stroke="#5a3a20" stroke-width="1.8"/><circle cx="24" cy="66" r="7" fill="#f6efe3" stroke="#5a3a20" stroke-width="1.3"/><circle cx="52" cy="66" r="9" fill="#2a8a8a" stroke="#145454"/><path d="M22 44L34 8h26l12 36z" fill="#2a8a8a" stroke="#145454" stroke-width="1.5"/><rect x="34" y="4" width="26" height="8" rx="1" fill="#e8dcd0" stroke="#5a3a20"/><rect x="43" y="0" width="8" height="5" rx="1" fill="#8a857c"/><path d="M28 36h36" stroke="#fff" stroke-width="1.2" opacity=".35"/><path d="M78 42L102 16" stroke="#c4a06a" stroke-width="5" stroke-linecap="round"/><path d="M102 16l10-7" stroke="#3a2a18" stroke-width="3.6" stroke-linecap="round"/><path d="M108 12l10-4 1 6-10 2z" fill="#2a8a8a"/></svg></span>
+        <span class="kid-figure-cap">青</span>
+        <span class="kid-figure-fact">蓝和绿颜料叠在一起偏青绿。屏幕用红绿蓝小灯拼色，那是光混，不是这桶蜡笔。</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--phys)"
+         data-kid-predict
+         data-kid-predict-explain="红+绿光更亮偏黄感觉；青+品红颜料叠向暗。同一「叠」字，光与颜料账本相反。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🔴</span><b>隔着红色玻璃纸看一片绿叶子，叶子看起来是什么颜色？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：隔着红玻璃纸看绿叶">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="green">还是绿色</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="red">变成红色</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="black" data-kid-predict-correct>差不多是黑色</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：混出间色并看份量</h2>
+    <p>用两种原色混出橙/绿/紫，并试过「各1份」与「各≥4份」两种亮度。</p>
+    <button class="btn btn-primary" type="button" id="finishBtn" disabled>记下这次调色</button>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：点两种原色，混出橙、绿或紫。</p>
+  </section>
+
+  <section class="card" aria-labelledby="detectiveTitle">
+    <h2 id="detectiveTitle">颜色侦探：三原色藏在哪</h2>
+    <p>学会了调色盘，再去家里找找——这套规则天天在你身边上班。</p>
+    <div class="kid-figure-grid" role="group" aria-label="生活里的四个颜色现场">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">青品红黄再加黑</text><rect x="24" y="36" width="72" height="32" fill="#6b7280"/><rect x="32" y="28" width="10" height="12" fill="#0e7490"/><rect x="46" y="28" width="10" height="12" fill="#c026d3"/><rect x="60" y="28" width="10" height="12" fill="#e8b84a"/><rect x="74" y="28" width="10" height="12" fill="#1e2d4a"/></svg></span><span class="kid-figure-cap">打印机</span><span class="kid-figure-sub">只装四管墨</span><p class="kid-figure-fact">青、品红、黄，再加一管黑——彩色照片全是这几种小点拼出来的。印刷用的三原色和画画的红黄蓝略有不同，但规则一样：靠吸光调色。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">白是红绿蓝挤一起</text><rect x="36" y="24" width="48" height="52" rx="4" fill="#1e2d4a"/><rect x="44" y="36" width="8" height="12" fill="#d05050"/><rect x="56" y="36" width="8" height="12" fill="#3d9a58"/><rect x="68" y="36" width="8" height="12" fill="#3d6fb8"/></svg></span><span class="kid-figure-cap">屏幕</span><span class="kid-figure-sub">用放大镜看「白色」</span><p class="kid-figure-fact">屏幕上的白色，凑近了看是红、绿、蓝三种小灯挤在一起。灯光越叠越亮，和颜料正好相反。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#c8dce8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">雨滴把白光排开</text><path d="M20 64 Q60 16 100 64" fill="none" stroke="#d05050" stroke-width="4"/><path d="M24 68 Q60 24 96 68" fill="none" stroke="#e8b84a" stroke-width="4"/><path d="M28 72 Q60 32 92 72" fill="none" stroke="#3d6fb8" stroke-width="4"/></svg></span><span class="kid-figure-cap">彩虹</span><span class="kid-figure-sub">白光拆开来看</span><p class="kid-figure-fact">白色的阳光里装着所有颜色。雨滴把它们按次序排开，你就看到了彩虹——混颜料是往回收，彩虹是拆开看。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#3a2a18" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#f4efe4">黄灯下蓝袜发黑</text><circle cx="28" cy="28" r="8" fill="#e8b84a"/><path d="M64 36 Q72 28 80 36 V72 Q72 80 64 72 Z" fill="#1e2d4a"/></svg></span><span class="kid-figure-cap">路灯下的袜子</span><span class="kid-figure-sub">黄灯下认颜色</span><p class="kid-figure-fact">在只有黄光的路灯下，蓝袜子会发黑——没有蓝光照它，它就没有蓝光可以反射。第二天到太阳下再看看。</p></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="homeTitle">
+    <h2 id="homeTitle">在厨房里开一间调色实验室</h2>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>备料。</b>三个透明杯子装清水，分别滴入红、黄、蓝食用色素。</li>
+      <li data-step="2"><b>两两混。</b>往空杯里各倒一点红和黄——猜一下再看结果。</li>
+      <li data-step="3"><b>做记录。</b>每混一杯，用彩笔在纸上画一个对应的圆，写上配方。</li>
+      <li data-step="4"><b>全倒进去。</b>最后把所有颜色汇进一个杯子。它变亮了还是变暗了？为什么？</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>颜料像小海绵，把一部分光「吃掉」，剩下没吃的光就是你看到的颜色。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>红颜料吃掉别的光、只送回红光；两种颜料一起用，只有它们都不吃的那段光才能回来。混得越多，能回来的光越少，所以颜色越混越暗、越混越脏。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>颜料混合是「减法」（各自吸收，剩下交集），灯光混合是「加法」（光直接叠加）。画画的三原色是红黄蓝、印刷用青品黄、屏幕用红绿蓝——同一个词「三原色」背后是两套完全相反的规则，分清它们，屏幕和画纸的区别就说得通了。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>颜色不是物体的固有属性，而是「光源给了什么光」和「表面留下什么光」共同决定的结果。分清减色与加色两套系统，是从画画通向物理的第一步。</p>
+    <ul class="ask-list">
+      <li>用放大镜看屏幕上白色的地方，你找到了几种颜色的小灯？</li>
+      <li>隔着黄色玻璃纸看蓝色的东西，会发生什么？</li>
+      <li>打印机为什么不需要装绿色的墨？</li>
+    </ul>
+  </section>
+
+
+          <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">先点两种原色混出间色，再改份量看往哪边倒</h2>
+    <p>舞台上先点两种原色，看中间是不是出现橙、绿或紫。再把其中一种加多一点，看间色往哪边偏。再比一次各 1 份和各 5 份，看颜料是不是越叠越暗。这样比，才知道颜色靠份量和吸收，不是自己和好。</p>
+    <p>回家只带两句：「份量会改间色」；「光越加越亮，颜料越叠越暗」。不要写成「颜色会自己和好」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">红加黄会成橙</text><circle cx="40" cy="52" r="16" fill="#d05050"/><circle cx="68" cy="52" r="16" fill="#e8b84a"/><circle cx="54" cy="52" r="8" fill="#ea580c"/></svg></span><span class="kid-figure-cap">红+黄</span><span class="kid-figure-sub">橙</span><p class="kid-figure-fact">红加黄会成橙，红多一点，橙色就更暖。份量会改间色，不是颜料自己想和好。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">黄加蓝会成绿</text><circle cx="40" cy="52" r="16" fill="#e8b84a"/><circle cx="68" cy="52" r="16" fill="#3d6fb8"/><circle cx="54" cy="52" r="8" fill="#3d9a58"/></svg></span><span class="kid-figure-cap">黄+蓝</span><span class="kid-figure-sub">绿</span><p class="kid-figure-fact">黄加蓝会成绿，蓝多一点，绿色就更冷。本页亮度是比较尺子，不是配方。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">蓝加红会成紫</text><circle cx="40" cy="52" r="16" fill="#3d6fb8"/><circle cx="68" cy="52" r="16" fill="#d05050"/><circle cx="54" cy="52" r="8" fill="#7c3aed"/></svg></span><span class="kid-figure-cap">蓝+红</span><span class="kid-figure-sub">紫</span><p class="kid-figure-fact">蓝加红会成紫，两份差太多，就会发灰。颜料混越叠越暗，色光混越加越亮，两套账。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">光叠在一起更亮</text><circle cx="44" cy="48" r="16" fill="#d05050" opacity=".7"/><circle cx="68" cy="48" r="16" fill="#3d6fb8" opacity=".7"/></svg></span><span class="kid-figure-cap">色光</span><span class="kid-figure-sub">越加越亮</span><p class="kid-figure-fact">手电筒的光叠在一起，常常越叠越亮。那是色光相加，跟蜡笔桶减光不是同一套。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">蜡笔叠上去更暗</text><rect x="28" y="36" width="20" height="36" fill="#d05050"/><rect x="50" y="36" width="20" height="36" fill="#3d6fb8"/><rect x="72" y="36" width="20" height="36" fill="#4a5560"/></svg></span><span class="kid-figure-cap">颜料</span><span class="kid-figure-sub">越叠越暗</span><p class="kid-figure-fact">蜡笔叠上去会把更多光吃掉，颜色越叠越暗。划掉「颜料越混越亮」，也划掉「颜料有脾气」。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">屏幕是小灯不是桶</text><rect x="24" y="28" width="72" height="44" fill="#1e2d4a"/><rect x="36" y="40" width="10" height="10" fill="#d05050"/><rect x="54" y="40" width="10" height="10" fill="#3d9a58"/><rect x="72" y="40" width="10" height="10" fill="#3d6fb8"/></svg></span><span class="kid-figure-cap">屏幕</span><span class="kid-figure-sub">编码</span><p class="kid-figure-fact">屏幕用红、绿、蓝小灯拼颜色，不是颜料桶。两套方向正好相反，不要混课。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>点两种原色。</b>看间色出来没有。</li>
+      <li data-step="2"><b>改一份量。</b>看往哪边倒。</li>
+      <li data-step="3"><b>说两套。</b>光亮，颜料暗。</li>
+      <li data-step="4"><b>写完成句。</b>份量，不是和好。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>两种原色加在一起，会跑出中间那种颜色。颜料混得越多越暗。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>哪种加得多，间色就往那边倒。手电筒的光越加越亮，蜡笔越叠越脏——同一句「叠」，两本账。屏幕是小灯，不是颜料桶。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>加色混合提高到达眼睛的光谱功率；减色混合增加吸收，剩余光谱变窄变暗。本页亮度公式只看份量。印刷青品黄和画画红黄蓝不是同一套原色约定。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能混出一种间色并说出份量偏向，且能把「光亮」和「颜料暗」分开。完成看的是对照，不是背「三原色」。</p>
+    <ul class="ask-list">
+      <li>红加黄混出什么？</li>
+      <li>蓝加多一点，绿会怎样？</li>
+      <li>手电筒叠光和蜡笔叠涂一样吗？</li>
+      <li>屏幕上的白是颜料吗？</li>
+    </ul>
+  </section>
+
+
+          <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">滤光片吃掉一截光谱；灰泥是三原色都在抢</h2>
+    <p>同一对原色，先只改份量。颜料各自吃掉一部分光，剩下两边都不吃的那段才回来。混得越多越暗，份多的那边更偏。没有「颜色自己和好」。</p>
+    <p>有色透明片是减色：它放走自己的那一截，吃掉别的。两片叠起来，能走的光更少，所以更暗。隔着红玻璃纸看绿叶子，叶子差不多发黑——没有绿光可以反射。路灯下的蓝袜子也是这一家人。</p>
+    <p>红黄蓝都搅在一起，常常得到灰泥，因为吸收带重叠，剩下的很少。打印机用青品黄近似减色，再加黑版。屏幕用红绿蓝小灯，越叠越亮。不要说「和屏幕三原色是同一桶」。</p>
+    <p>颜料不入口。洗手。本页亮度公式不是印刷配方，也不是屏幕校色。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">滤光片拦掉一些色</text><rect x="20" y="32" width="36" height="40" fill="#e8b84a" opacity=".5"/><rect x="64" y="32" width="36" height="40" fill="#3d6fb8" opacity=".5"/></svg></span><span class="kid-figure-cap">滤光</span><span class="kid-figure-sub">减色</span><p class="kid-figure-fact">滤光片会拦掉一些颜色，能走过去的光就更少。那是减法，和叠涂是亲戚。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">三色叠成灰泥</text><circle cx="40" cy="52" r="14" fill="#d05050"/><circle cx="60" cy="44" r="14" fill="#e8b84a"/><circle cx="76" cy="56" r="14" fill="#3d6fb8"/><circle cx="60" cy="52" r="8" fill="#8a8680"/></svg></span><span class="kid-figure-cap">灰泥</span><span class="kid-figure-sub">三原色</span><p class="kid-figure-fact">三种颜料叠在一起，吃光的范围叠起来，就会变成灰泥，不是彩虹变亮。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">青品红黄再加黑</text><rect x="28" y="40" width="16" height="28" fill="#0e7490"/><rect x="48" y="40" width="16" height="28" fill="#c026d3"/><rect x="68" y="40" width="16" height="28" fill="#e8b84a"/><rect x="86" y="40" width="10" height="28" fill="#1e2d4a"/></svg></span><span class="kid-figure-cap">打印</span><span class="kid-figure-sub">CMY</span><p class="kid-figure-fact">印刷用青、品红、黄，再加一管黑，才印得出深色。这也是减光，本页不是印刷厂配方。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">颜料不入口</text><path d="M60 24 L96 76 H24 Z" fill="#e8b84a" stroke="#c2410c"/><rect x="57" y="40" width="6" height="20" fill="#1e2d4a"/><circle cx="60" cy="68" r="3" fill="#1e2d4a"/></svg></span><span class="kid-figure-cap">入口</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">颜料和试剂都不入口，尝味道不是本页的实验。洗手再离开桌子，颜色不是用舌头认的。</p></div>
+    </div>
+  </section>
+
+
+          <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：光越加越亮 · 颜料越叠越暗 · 「颜色自己和好」</h2>
+    <p>三列先用同一对原色。舞台主戏是颜料：只改份量。光和颜料是两本账，不要叠在同一句里讲完。</p>
+    <p>颜料：份量越大越暗，哪边份多更偏哪边。色光：叠起来常常更亮。「颜色自己和好」整列划掉：没有份量，间色站不稳。</p>
+    <p>屏幕 RGB、印刷 CMY 是加试，另开一行：设备编码不是物质桶。本页「100 −（左 + 右）× 8」用来比较方向，不是配方。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">色光叠了更亮</text><circle cx="60" cy="52" r="18" fill="#3d9a58"/></svg></span><span class="kid-figure-cap">色光</span><span class="kid-figure-sub">更亮</span><p class="kid-figure-fact">色光叠在一起，亮度在加，所以看起来更亮。手电筒对照，不要对着眼睛。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">颜料叠了更暗</text><circle cx="60" cy="52" r="18" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">颜料</span><span class="kid-figure-sub">更暗</span><p class="kid-figure-fact">颜料叠在一起，吃掉的光在加，所以看起来更暗。方向和色光正好相反。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">不是随便和好</text><circle cx="60" cy="52" r="18" fill="#c2410c"/><path d="M28 28 L92 76" stroke="#1e2d4a" stroke-width="3"/></svg></span><span class="kid-figure-cap">和好</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">不是随便和好就会变漂亮，还要看两份各有多少。一行均匀，一行偏一份。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">份量会改间色</text><rect x="22" y="28" width="50" height="44" fill="#f4efe4" stroke="#1e2d4a"/><path d="M82 26 L100 42 L78 74 L60 58 Z" fill="#e8b84a" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">份量改间色</span><p class="kid-figure-fact">回家只记：份量会改间色，色光越加越亮，颜料越叠越暗。泡不是肥皂彩虹。</p></div>
+    </div>
+  </section>
+
+
+          <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「光亮颜料暗」，不记印刷配方</h2>
+    <p>在纸上画两行：两份一样时的间色，偏一份时往哪边跑。两行并排，比背「三原色」有用。</p>
+    <p>口头只要两句：「份量会改间色。」「光越加越亮，颜料越叠越暗。」有人说「颜色会自己和好」，让孩子指着偏一份那一行反驳。屏幕编码若要写，另开一行。</p>
+    <p>颜料不入口，做完洗手。本页数字不要抄成印刷厂配方。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">均匀一行偏一份一行</text><rect x="28" y="24" width="64" height="52" fill="#f4efe4" stroke="#1e2d4a"/><path d="M36 36 H84 M36 48 H84 M36 60 H64" stroke="#1e2d4a" stroke-width="2"/></svg></span><span class="kid-figure-cap">两行</span><span class="kid-figure-sub">均/偏</span><p class="kid-figure-fact">一行记两份一样时的间色，一行记偏一份时往哪边跑。一次只改份量。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">光亮颜料暗相反</text><ellipse cx="56" cy="48" rx="28" ry="16" fill="#f4efe4" stroke="#1e2d4a"/><path d="M44 62 L36 76 L60 64" fill="#f4efe4" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">光亮颜料暗</span><p class="kid-figure-fact">回家说得出：色光越加越亮，颜料越叠越暗，方向正好相反。屏幕是另一课。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">屏幕编码另开一课</text><rect x="20" y="32" width="48" height="36" fill="#1e2d4a"/><rect x="80" y="32" width="24" height="32" fill="#f4efe4" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">RGB</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">屏幕怎么编码颜色是另一课，这一页先比手电筒和蜡笔，不要对着眼睛照。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">颜料不要入口</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">入口</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">颜料不要入口；回家只写两行：份量均匀，和偏一份。本页数字不是配方。</p></div>
+    </div>
+  </section>
+
+
+      <section class="card" aria-labelledby="thickTitle">
+    <h2 id="thickTitle">加色变亮，减色变暗</h2>
+    <p>带走句：光叠在一起越加越亮；颜料叠在一起越加越暗。这是两本账。</p>
+    <p>对照：红光+绿光近黄；青颜料+品红近蓝。屏幕走加色，颜料走减色。</p>
+    <p>完成句禁止只写「好看」：要说出亮了还是暗了、混出哪一色。</p>
+    <p>别把两本账说成一句「颜色魔法」。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「间色靠不靠份量」，就先只改份量这一项。同一对原色，先各 1 份看一次，再各 5 份看一次。偏一份、拿光来对照，是另一次对照，不要和「比亮度」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>份量（各 1 / 各 5）。</li>
+      <li><b>先保持不变：</b>同一对原色、都是颜料。</li>
+      <li><b>要观察的：</b>混出色叫什么，亮了还是暗了。</li>
+      <li><b>另开一行：</b>一边 5 一边 1，间色往哪边倒；手电筒叠光是不是更亮。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>用放大镜看屏幕上白色的地方，能找到几种颜色的小灯？这和蜡笔混色是同一本账吗？</li>
+      <li>隔着红色玻璃纸看绿叶子，叶子看起来怎样？两层滤光片叠起来，为什么更暗？</li>
+      <li>打印机为什么不需要单独装一管绿色的墨？青加黄大约能印出什么？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>两种原色加在一起，会跑出中间那种颜色。颜料混得越多越暗。能说出橙、绿、紫就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>哪种加得多，间色就往那边倒。光越加越亮，颜料越叠越暗。屏幕是小灯，不是颜料桶。本页数字只用来比较。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>加色叠加光谱功率，减色增加吸收。亮度公式是示意尺子。印刷青品黄和画画红黄蓝不是同一套。颜料不入口。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：调色观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：红加黄变成橙"></div>
+      <div><label for="workContent">看见了什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="两种颜料混在一起，比原来更亮还是更暗？"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+            <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>孩子说颜色会自己和好——改份量那一列怎么拆？让他再指一次「红 5 黄 1 更偏红」。</li>
+      <li>光亮颜料暗哪一句能给四岁听？试「手电筒叠光更亮，蜡笔叠涂更脏」。</li>
+      <li>屏幕 RGB 为什么不能当蜡笔完成句？小灯和颜料桶差在哪？</li>
+      <li>颜料入口红线怎么说？洗手了吗？</li>
+      <li>本页能当印刷厂配方吗？亮度数字能抄进说明书吗？</li>
+      <li>隔着红玻璃纸看绿叶子发黑——这能用来证明「滤光片在吃光」吗？</li>
+    </ul>
+  </section>
+
+            <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：颜料各自吸收一部分光，剩下两边都不吃的那段才回到眼睛。混得越多，能回来的光越少，所以越叠越暗。哪边份多，间色就往哪边倒。</p>
+    <p>本页「亮度 ≈ 100 −（左 + 右）× 8」只是比较尺子，用来看见「份量越大越暗、偏一份就偏向」，不是印刷配方，也不是屏幕校色。</p>
+    <p>加色混合在视网膜上叠加光谱功率，越加越亮；减色混合以吸收相乘，剩余通量下降。屏幕 RGB 是小灯加色，印刷青品黄是减色近似，不要写成同一桶。滤光片吃掉一截光谱，两片叠起来更暗。</p>
+    <p>颜料不入口，做完洗手。舞台是屏幕示意，不模拟印刷四色网点。</p>
+  </section>
+
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--kit) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--kit) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">减色公式卡 · 亮度≈100−(左+右)×8（本页尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">份量越大越暗；哪边份多，混出色更偏哪边。家长钉「减色越混越暗」，别和加色（光）搞混。不是印刷配方。颜料不入口。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：份量会改间色；光越加越亮，颜料越叠越暗。光与影看光从哪来、影子怎么成；冷热工坊看同一份东西换样子。</p>
+    <p class="row"><a class="btn btn-ghost" href="light-and-shadow.html">光与影</a><a class="btn btn-ghost" href="heat-lab.html">冷热工坊</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页用简化的颜料三原色模型，不模拟印刷四色或屏幕发光。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+
+  var HEX={red:"#d05050",yellow:"#e0b14a",blue:"#3d6fb8",green:"#3d9a58",orange:"#e07a28",purple:"#7a4aa0",white:"#ffffff",black:"#2a241c",brown:"#8a5a32",pink:"#d07088",gray:"#6a6864",cyan:"#2a8a8a"};
+  var NAME={red:"红",yellow:"黄",blue:"蓝",green:"绿",orange:"橙",purple:"紫",white:"白",black:"黑",brown:"棕",pink:"粉",gray:"灰",cyan:"青"};
+  var PRIMARY={red:1,yellow:1,blue:1};
+  var MIX={"red+yellow":"orange","yellow+red":"orange","yellow+blue":"green","blue+yellow":"green","blue+red":"purple","red+blue":"purple","red+white":"pink","white+red":"pink","black+white":"gray","white+black":"gray","blue+green":"cyan","green+blue":"cyan","red+green":"brown","green+red":"brown"};
+  var RGB={red:[208,80,80],yellow:[224,177,74],blue:[61,111,184],green:[61,154,88],orange:[224,122,40],purple:[122,74,160],white:[255,255,255],black:[42,36,28],brown:[138,90,50],pink:[208,112,136],gray:[106,104,100],cyan:[42,138,138]};
+  var a="",b="",amtA=1,amtB=1,done=false,stirT=0,amtTouched=false;
+  var seen={mix:false,light:false,heavy:false};
+  var guess1="",guess1Done=false,saw11=false,saw55=false;
+  var guess2="",guess2Done=false,sawBias=false,guess3="",guess3Done=false,sawRB55=false;
+  function bright(){ return Math.max(8, Math.round(100-(amtA+amtB)*8)); }
+  function mixHex(){
+    if(!a||!b) return "";
+    var key=MIX[a+"+"+b];
+    var ra=RGB[a], rb=RGB[b];
+    if(!ra||!rb) return key?HEX[key]:"#6b5340";
+    var t=amtB/(amtA+amtB);
+    var r=Math.round(ra[0]*(1-t)+rb[0]*t), g=Math.round(ra[1]*(1-t)+rb[1]*t), bl=Math.round(ra[2]*(1-t)+rb[2]*t);
+    var br=bright()/100;
+    r=Math.round(r*br); g=Math.round(g*br); bl=Math.round(bl*br);
+    return "rgb("+r+","+g+","+bl+")";
+  }
+  function setPool(id,hex){
+    var pool=document.getElementById(id);
+    if(hex){pool.style.fill=hex;pool.classList.add("on");} else pool.classList.remove("on");
+  }
+  function paint(){
+    var mixKey=a&&b?MIX[a+"+"+b]:"";
+    var hex=mixHex();
+    setPool("panA",HEX[a]||""); setPool("panB",HEX[b]||""); setPool("panMix",hex);
+    document.getElementById("mixLab").textContent=(a?NAME[a]:"？")+"×"+amtA+" + "+(b?NAME[b]:"？")+"×"+amtB+" = "+(a&&b?(mixKey?NAME[mixKey]:"脏棕"):"？");
+    var brush=document.getElementById("brush");
+    if(a&&b){brush.setAttribute("data-stir","1");clearTimeout(stirT);stirT=setTimeout(function(){brush.setAttribute("data-stir","0");},1400);}
+    else brush.setAttribute("data-stir","0");
+    var br=bright();
+    document.getElementById("amtALab").textContent=String(amtA);
+    document.getElementById("amtBLab").textContent=String(amtB);
+    document.getElementById("amtA").setAttribute("aria-valuetext",String(amtA));
+    document.getElementById("amtB").setAttribute("aria-valuetext",String(amtB));
+    document.getElementById("leftOut").textContent=String(amtA);
+    document.getElementById("rightOut").textContent=String(amtB);
+    document.getElementById("brightOut").textContent=a&&b?(br+""):"——";
+    var live=document.getElementById("live");
+    if(!a) live.textContent="点两张颜色图鉴。这是颜料：份加多越暗。光越加越亮是另一回事，本页不比。";
+    else if(!b) live.textContent="左盘是"+NAME[a]+"。再点另一种。颜料份加多越暗。";
+    else live.textContent=(mixKey?NAME[mixKey]:"脏棕")+"。颜料份加多越暗，份多的那边更偏。光越加越亮是另一回事，本页不比。";
+    if(mixKey&&PRIMARY[a]&&PRIMARY[b]&&a!==b){seen.mix=true;
+      if(amtA<=1&&amtB<=1){seen.light=true;if(guess1&&!guess1Done&&amtTouched)saw11=true;}
+      if(amtA>=4&&amtB>=4){seen.heavy=true;if(guess1&&!guess1Done&&amtTouched)saw55=true;}
+      if(guess2&&!guess2Done&&a==="red"&&b==="yellow"&&amtA===5&&amtB===1)sawBias=true;
+      if(guess2&&!guess2Done&&a==="yellow"&&b==="red"&&amtB===5&&amtA===1)sawBias=true;
+      if(guess3&&!guess3Done&&((a==="red"&&b==="blue")||(a==="blue"&&b==="red"))&&amtA===5&&amtB===5)sawRB55=true;
+    }
+    checkGuess(); updateTask();
+    var ready=!!(mixKey&&PRIMARY[a]&&PRIMARY[b]&&a!==b);
+    var fin=document.getElementById("finishBtn");
+    if(fin) fin.disabled=!ready||done||!(seen.light&&seen.heavy);
+    return mixKey;
+  }
+  function checkGuess(){
+    if(guess1&&!guess1Done&&saw11&&saw55){
+      guess1Done=true;
+      document.getElementById("guessOut1").innerHTML=(guess1==="dark"?"<b>押对了！</b>":"<b>揭晓：</b>")+"两色都加到 5 份，比各 1 份暗得多。";
+      document.getElementById("guessBlock2").hidden=false;
+    }
+    if(guess2&&!guess2Done&&sawBias){
+      guess2Done=true;
+      document.getElementById("guessOut2").innerHTML=(guess2==="red"?"<b>押对了！</b>":"<b>揭晓：</b>")+"红份多，混出色更偏红。";
+      document.getElementById("guessBlock3").hidden=false;
+    }
+    if(guess3&&!guess3Done&&sawRB55){
+      guess3Done=true;
+      document.getElementById("guessOut3").innerHTML=(guess3==="same"?"<b>押对了！</b>":"<b>揭晓：</b>")+"份量一样多，亮度就一样。本页尺子只看份量，不看是橙还是紫。";
+    }
+  }
+  function updateTask(){
+    var st=document.getElementById("taskStatus"); if(done)return;
+    if(seen.mix&&seen.light&&seen.heavy){
+      st.textContent="混出间色且试过亮/暗份量。可点「记下这次调色」。";
+    } else if(!seen.mix) st.textContent="尚未完成：点两种原色，混出橙、绿或紫。";
+    else if(!seen.light) st.textContent="还差：试各 1 份（较亮）。";
+    else st.textContent="还差：试各 ≥4 份（更暗）。";
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-cl]"),function(btn){
+    btn.addEventListener("click",function(){
+      var key=btn.getAttribute("data-cl");
+      if(!a||(a&&b)){a=key;b="";} else b=key;
+      Array.prototype.forEach.call(document.querySelectorAll("[data-cl]"),function(n){
+        var id=n.getAttribute("data-cl"); n.setAttribute("aria-pressed",(id===a||id===b)?"true":"false");
+      });
+      paint();
+    });
+  });
+  document.getElementById("amtA").addEventListener("input",function(){amtTouched=true;amtA=+this.value;paint();});
+  document.getElementById("amtB").addEventListener("input",function(){amtTouched=true;amtB=+this.value;paint();});
+  document.getElementById("setEqual").addEventListener("click",function(){amtTouched=true;amtA=1;amtB=1;document.getElementById("amtA").value="1";document.getElementById("amtB").value="1";paint();});
+  document.getElementById("setHeavy").addEventListener("click",function(){amtTouched=true;amtA=5;amtB=5;document.getElementById("amtB").value="5";document.getElementById("amtA").value="5";paint();});
+  document.getElementById("clearMix").addEventListener("click",function(){
+    a="";b=""; Array.prototype.forEach.call(document.querySelectorAll("[data-cl]"),function(n){n.setAttribute("aria-pressed","false");}); paint();
+  });
+  document.getElementById("finishBtn").addEventListener("click",function(){
+    var mixKey=paint(); if(!mixKey||done||!(seen.light&&seen.heavy))return;
+    done=true; var evidence=NAME[a]+"×"+amtA+"+"+NAME[b]+"×"+amtB+"→"+NAME[mixKey]+" 亮度"+bright();
+    if(window.Progress)Progress.complete("games/color-lab.html",evidence);
+    document.getElementById("taskStatus").textContent="完成啦："+evidence+"。"; this.disabled=true;
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"),function(btn){
+    btn.addEventListener("click",function(){if(guess1Done)return;guess1=btn.getAttribute("data-guess1");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"),function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut1").textContent="押好了。红+黄先各1再各5。";});});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"),function(btn){
+    btn.addEventListener("click",function(){if(guess2Done)return;guess2=btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"),function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut2").textContent="押好了。红5+黄1。";});});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess3Done)return; guess3=btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut3").textContent="押好了。红+蓝各 5 份。"; });
+  });
+  paint();
+
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/color-lab.html", "调色工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

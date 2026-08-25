@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>家长指南 · 怎么提问、怎么陪 | 少儿数理启蒙</title>
 <meta name="description" content="给 4–12 岁孩子家长的实操手册：提问代替给答案的话术、孩子卡住时怎么办、夸过程不夸天赋、屏幕时间边界、别把数学焦虑传下去、以及项目不合适的信号。附可打印的「饭桌上的 20 个问题」。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=17">
-<link rel="stylesheet" href="../assets/css/kid.css?v=17">
-<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#fff8ec">
-<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
 <style>
   :root {
     color-scheme: light;
@@ -56,18 +56,32 @@
   .section-action { margin: 12px 0 14px; padding: 13px 15px; }
   .section-action h3 { font-size: .92rem; }
   .age-tip { display: inline-block; margin-top: 7px; font-size: .8rem; color: var(--ink-dim); }
-  .toc-wrap { margin-top: 22px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); }
-  .toc-wrap h2 { margin: 0; font-size: 1.05rem; }
-  .toc-wrap > p { margin: 4px 0 0; font-size: .86rem; }
+  .toc-wrap { margin-top: 22px; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+  .toc-wrap > summary {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    min-height: 58px; padding: 13px 16px; cursor: pointer; list-style: none;
+    color: var(--ink); font-weight: 800;
+  }
+  .toc-wrap > summary::-webkit-details-marker { display: none; }
+  .toc-wrap > summary::after {
+    content: "展开 ↓"; flex: none; padding: 4px 10px;
+    border: 1px solid var(--line); border-radius: 999px;
+    color: var(--accent); background: var(--surface-2); font-size: .76rem;
+  }
+  .toc-wrap[open] > summary { border-bottom: 1px solid var(--line-soft); }
+  .toc-wrap[open] > summary::after { content: "收起 ↑"; }
+  .toc-summary-copy { display: grid; gap: 2px; min-width: 0; }
+  .toc-summary-title { font-size: 1.02rem; }
+  .toc-summary-note { color: var(--ink-dim); font-size: .8rem; font-weight: 600; line-height: 1.4; }
   a, button, select { -webkit-tap-highlight-color: rgba(55, 120, 102, .16); }
   .btn, select.input, .toc a, .nav-link, .brand { min-height: 44px; }
   .btn, .toc a, .nav-link, .brand { display: inline-flex; align-items: center; }
-  :where(a, button, select):focus-visible { outline: 3px solid #327966; outline-offset: 3px; box-shadow: 0 0 0 5px rgba(50, 121, 102, .16); }
+  :where(a, button, select, summary):focus-visible { outline: 3px solid #327966; outline-offset: 3px; box-shadow: 0 0 0 5px rgba(50, 121, 102, .16); }
   .btn-primary { background: #377866; border-color: #377866; color: #fff; }
   .btn-ghost { background: #fff; color: var(--ink); border-color: var(--line); }
 
   /* 目录 */
-  .toc { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin: 20px 0 8px; }
+  .toc { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; padding: 14px 16px 16px; }
   .toc a {
     padding: 10px 13px; border-radius: var(--r-sm); font-size: .88rem; font-weight: 600;
     background: var(--surface); border: 1px solid var(--line); color: var(--ink-mid);
@@ -84,10 +98,14 @@
   .sec-lede { max-width: 70ch; }
 
   /* 话术：不要说 / 试着说 */
-  .swap { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 6px; }
+  .swap { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); margin-top: 6px; }
   .swap-col { border-radius: var(--r); border: 1px solid var(--line-soft); padding: 15px 17px; }
-  .swap-no { background: rgba(248,113,113,.05); border-color: rgba(248,113,113,.28); }
-  .swap-yes { background: rgba(74,222,128,.05); border-color: rgba(74,222,128,.28); }
+  /* .swap-yes 原来写死的 rgba(74,222,128,.28) 是为暗底写的绿色高光描边，浅底上只有 1.16:1，
+     等于没画。这一对是「别这么说 / 换成这么说」的对照，两列必须都框得出来、且边的观感一致，
+     所以 .swap-no 一起换成同一套 color-mix 写法（红色那条本来勉强过阈值，但只改一半会让
+     两列边框深浅不一）。不和 --line 混：孩子模式的 --line 是暖棕 #f0c98a，会把红绿都混成灰。 */
+  .swap-no { background: color-mix(in srgb,var(--danger) 5%,var(--surface)); border-color: color-mix(in srgb,var(--danger) 55%,var(--surface)); }
+  .swap-yes { background: color-mix(in srgb,var(--sci) 5%,var(--surface)); border-color: color-mix(in srgb,var(--sci) 55%,var(--surface)); }
   .swap-col h3 { font-size: .86rem; letter-spacing: .04em; margin-bottom: 10px; display: flex; align-items: center; gap: 7px; }
   .swap-no h3 { color: var(--danger); }
   .swap-yes h3 { color: var(--sci); }
@@ -102,7 +120,7 @@
   .mark { font-family: var(--mono); font-weight: 800; font-size: .82rem; }
 
   /* 脚本卡（分场景） */
-  .scripts { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); margin-top: 16px; }
+  .scripts { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr)); margin-top: 16px; }
   .script { padding: 16px 17px; }
   .script h3 { font-size: 1rem; margin-bottom: 4px; }
   .script .when { font-size: .78rem; color: var(--ink-dim); margin-bottom: 10px; }
@@ -138,12 +156,15 @@
   }
   .checks li .mark { flex: none; margin-top: 1px; }
   .checks li b { color: var(--ink); }
-  .checks.warnlist li { background: rgba(251,191,36,.05); border-color: rgba(251,191,36,.25); }
+  /* 原来写死的 rgba(251,191,36,.25) 是为暗底写的描边，浅底上只有 1.12:1，等于没画——
+     警示清单每条就靠这条边和 goodlist 区分。换成和 --surface 混的 --warn。
+     注意本页有页面级 :root 纸色覆盖，--surface 是 #fffdf7。 */
+  .checks.warnlist li { background: color-mix(in srgb,var(--warn) 5%,var(--surface)); border-color: color-mix(in srgb,var(--warn) 55%,var(--surface)); }
   .checks.warnlist .mark { color: var(--warn); }
   .checks.goodlist .mark { color: var(--sci); }
 
   /* 屏幕时间：三档 */
-  .tiers { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 14px; }
+  .tiers { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); margin-top: 14px; }
   .tier { padding: 15px 16px; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); }
   .tier h3 { font-size: .95rem; margin-bottom: 6px; }
   .tier .lvl { font-size: .72rem; letter-spacing: .08em; font-weight: 800; text-transform: uppercase; }
@@ -171,7 +192,7 @@
     margin-top: 22px; padding: 24px clamp(16px, 3vw, 28px);
     background: var(--bg-soft); border: 1px solid var(--line); border-radius: var(--r-lg);
   }
-  .qgrid { display: grid; gap: 10px 22px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin: 0; padding: 0; counter-reset: q; list-style: none; }
+  .qgrid { display: grid; gap: 10px 22px; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); margin: 0; padding: 0; counter-reset: q; list-style: none; }
   .qgrid li {
     counter-increment: q; position: relative; padding: 7px 0 7px 34px;
     font-size: .93rem; color: var(--ink-mid);
@@ -327,7 +348,7 @@
   .topic-chip[aria-pressed="true"] { background: #f6e2bd; border-color: var(--accent); color: #5c3a14; }
   .topic-chip:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(150, 105, 45, .18); }
 
-  .stage-tabs { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 16px 0 0; }
+  .stage-tabs { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); margin: 16px 0 0; }
   .stage-tab {
     display: flex; flex-direction: column; align-items: center; gap: 6px;
     min-height: 104px; padding: 14px 10px;
@@ -343,20 +364,13 @@
   .stage-tab[aria-pressed="true"] small { color: #3d6b58; }
   .stage-tab:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(150, 105, 45, .2); }
   .stage-panel { margin-top: 16px; }
-  .stage-panel[hidden] { display: none; }
-  .stage-cols { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-  .stage-cols h4 { margin: 0 0 8px; font-size: .92rem; letter-spacing: .02em; }
-  .stage-cols ul { list-style: none; margin: 0; padding: 0; }
-  .stage-cols li { padding: 6px 0 6px 18px; position: relative; font-size: .9rem; line-height: 1.68; color: var(--ink-mid); }
-  .stage-cols li::before { content: "·"; position: absolute; left: 4px; top: 4px; color: var(--accent); font-weight: 800; }
 
-  /* ---------- 18 个主题的引导问题卡 ---------- */
-  .topic-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 18px; }
+  /* ---------- 站内主题的引导问题卡（条数随目录增长，由脚本重算） ---------- */
+  .topic-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); margin-top: 18px; }
   .topic-card {
     padding: 15px 17px; border: 3px solid var(--line-soft); border-radius: var(--r-lg);
     background: var(--surface); box-shadow: var(--shadow);
   }
-  .topic-card[hidden] { display: none; }
   .topic-card[data-hit="true"] { border-color: var(--accent); box-shadow: var(--shadow-lg); }
   .topic-card > h3 { display: flex; gap: 9px; align-items: center; margin: 0 0 3px; font-size: 1rem; line-height: 1.4; }
   .topic-card .ic { flex: none; font-size: 1.55rem; line-height: 1; }
@@ -387,13 +401,8 @@
   .myth-body { padding: 12px 15px 15px; }
   .myth-body p { margin: 0 0 9px; font-size: .92rem; line-height: 1.74; color: var(--ink-mid); }
   .myth-body p:last-child { margin-bottom: 0; }
-  .myth-body .say { color: var(--sci); font-weight: 700; }
 
   /* ---------- 离屏延伸与隐私 ---------- */
-  .offscreen-out h4 { margin: 0 0 6px; font-size: 1.02rem; }
-  .offscreen-out p { margin: 0 0 8px; font-size: .92rem; line-height: 1.72; color: var(--ink-mid); }
-  .offscreen-out .kit { font-family: var(--mono); font-size: .8rem; color: var(--ink-dim); }
-  .privacy-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 18px; }
   .switch-line {
     display: flex; gap: 11px; align-items: flex-start;
     min-height: 48px; padding: 13px 15px;
@@ -402,23 +411,16 @@
     font-weight: 700; line-height: 1.6; cursor: pointer;
   }
   .switch-line input { flex: none; width: 26px; height: 26px; margin-top: 1px; accent-color: #2f7159; }
-  .switch-note { margin: 9px 0 0; font-size: .86rem; line-height: 1.7; color: var(--ink-dim); }
-  .data-readout { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); margin-top: 16px; }
-  .data-readout > div {
-    padding: 13px 8px; text-align: center;
-    border: 3px solid var(--line-soft); border-radius: var(--r);
-    background: var(--surface); box-shadow: var(--shadow);
-  }
-  .data-readout b { display: block; font-family: var(--mono); font-size: 1.5rem; color: var(--accent); }
-  .data-readout span { font-size: .8rem; color: var(--ink-dim); }
 
   @media (max-width: 700px) {
     .hero-head { padding-top: 28px; }
-    .topic-grid, .stage-cols, .privacy-grid { grid-template-columns: minmax(0, 1fr); }
-    .stage-tabs { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); }
+    .topic-grid { grid-template-columns: minmax(0, 1fr); }
+    .stage-tabs { grid-template-columns: repeat(auto-fit, minmax(min(128px, 100%), 1fr)); }
     .btn-row .btn { width: 100%; justify-content: center; }
     .toc, .swap, .scripts, .tiers, .grid-2, .qgrid { grid-template-columns: minmax(0, 1fr); }
-    .toc-wrap { padding: 14px; }
+    .toc-wrap { padding: 0; }
+    .toc-wrap > summary { padding-inline: 14px; }
+    .toc { padding: 12px 14px 14px; }
     .toc a { padding: 11px 13px; }
     section.sec { margin-top: 34px; }
     .scene-tool, .print-sheet { padding: 15px; }
@@ -462,16 +464,11 @@
     .qgrid li em { color: #666 !important; font-size: 8pt; }
     .sheet-foot { color: #444 !important; border-top: .5pt solid #999; font-size: 8.5pt; }
     a { color: #000 !important; text-decoration: none !important; }
-    /* 打印引导问题清单时展开全部主题卡与误解块 */
-    body.print-topics #dinner { display: none !important; }
-    body.print-topics #topics { display: block !important; }
-    body.print-topics #topics > :is(.section-action, .filter-row, .btn-row, .live-note) { display: none !important; }
-    body.print-topics .topic-card {
-      display: block !important;
-      border: .75pt solid #999 !important; box-shadow: none !important;
-      break-inside: avoid; margin-bottom: 6pt; padding: 6pt 8pt;
-    }
-    body.print-topics .topic-card .go { display: none !important; }
+    /* 这里原来有一组 body.print-topics 规则（打印引导问题清单时展开全部主题卡）。
+       那个功能已被 print-companion 取代：现存的两个打印按钮
+       #printCompanion 走 classList.add("print-companion")、#printBtn 打整页，
+       全仓库再没有任何地方给 body 加过 print-topics，所以这组规则永远不会命中。
+       删的是孤儿 CSS，不是还在用的功能——没有哪个按钮因此失效。 */
     .myth[open] .myth-body, .myth .myth-body { display: block !important; }
   }
 </style>
@@ -489,6 +486,7 @@
     <a class="nav-link" href="../nature/index.html">探索</a>
     <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html" aria-current="page">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
   </div>
 </div></nav>
 
@@ -508,11 +506,12 @@
     <p class="lede">
       这里不要求你会教。你只需要用短问题让孩子继续想，并在情绪上来时及时停下。下面按当下遇到的情况找一句能直接说的话。
     </p>
-    <div class="toc-wrap">
-      <h2>现在遇到什么？</h2>
-      <p>点最接近的一项，直接跳到可用做法。</p>
+    <details class="toc-wrap">
+      <summary>
+        <span class="toc-summary-copy"><span class="toc-summary-title">现在遇到什么？</span><span class="toc-summary-note">展开目录，按情况直接跳到可用做法</span></span>
+      </summary>
       <nav class="toc" aria-label="按现在遇到的情况浏览">
-        <a href="#young">孩子才 4~5 岁，怎么开始</a>
+        <a href="#young">孩子才 4~5&nbsp;岁，怎么开始</a>
         <a href="#ask">孩子总等我给答案</a>
         <a href="#topics">想知道每个主题问什么</a>
         <a href="#myths">怕自己讲错科学概念</a>
@@ -527,25 +526,24 @@
         <a href="#privacy">担心隐私和联网</a>
         <a href="#dinner">想找饭桌聊天题</a>
       </nav>
-    </div>
+    </details>
   </header>
 
   <!-- ============ 1 · 4~5 岁 ============ -->
   <section class="sec" id="young">
-    <h2><span class="num">01</span> 孩子才 4~5 岁：怎么开始做科学探索</h2>
+    <h2><span class="num">01</span> 孩子才 4~5&nbsp;岁：怎么开始做科学探索</h2>
     <div class="section-action">
       <h3>先做一步</h3>
       <p>今天只做一件事：找一个眼前的现象，问一句<b>“你猜会怎样？”</b>然后一起看结果。不用解释原理。</p>
       <span class="age-tip">这个年龄的目标不是知道答案，是习惯先猜一猜再看一看。</span>
     </div>
     <p class="sec-lede">
-      4~5 岁的孩子还不能用语言完成推理，他们用手、用嘴、用重复来理解世界。所以这个阶段的「科学」不是讲知识，
-      而是<b>把注意力放到一个现象上，猜一下，试一下，再说出来</b>。整个过程 10 到 15 分钟就够，比时长更重要的是它每周会发生几次。
+      4~5&nbsp;岁的孩子还不能用语言完成推理，他们用手、用嘴、用重复来理解世界。所以这个阶段的「科学」不是讲知识，而是<b>把注意力放到一个现象上，猜一下，试一下，再说出来</b>。整个过程 10 到 15&nbsp;分钟就够，比时长更重要的是它每周会发生几次。
     </p>
 
     <div class="fact-row">
       <div class="fact">
-        <b>10–15 分钟</b>
+        <b>10–15&nbsp;分钟</b>
         <span>单次专注的现实上限。到点就停，留一点没做完反而想再来。</span>
       </div>
       <div class="fact">
@@ -570,13 +568,12 @@
       <li><b>说一说。</b><q>刚才发生了什么？</q>他说完你重复一遍他的话，加一个词：<q>对，它浮起来了，因为它很<b>轻</b>。</q>——这是这个阶段唯一需要的「讲解」。</li>
     </ol>
     <p class="note" style="margin-top:14px">
-      <b>四步里最容易漏掉的是「猜」。</b>没有猜测的实验只是表演；有了猜测，孩子才会在意结果。
-      哪怕他猜得完全离谱，也照做，然后一起看差在哪里。
+      <b>四步里最容易漏掉的是「猜」。</b>没有猜测的实验只是表演；有了猜测，孩子才会在意结果。哪怕他猜得完全离谱，也照做，然后一起看差在哪里。
     </p>
 
     <div class="card scene-tool" id="youngPickTool">
       <h3>挑一个今天玩什么</h3>
-      <p class="tool-intro">选一个身边就有的东西，下面会给出开场问题、要看的点和离屏延伸。都是 4~5 岁能直接做的。</p>
+      <p class="tool-intro">选一个身边就有的东西，下面会给出开场问题、要看的点和离屏延伸。都是 4~5&nbsp;岁能直接做的。</p>
       <div class="kid-tiles no-print" role="group" aria-label="4~5 岁可选主题">
         <button class="kid-tile" type="button" data-young-pick="water" aria-pressed="false">
           <span class="kid-tile-art" aria-hidden="true">💧</span>
@@ -611,7 +608,7 @@
     <ul class="checks warnlist">
       <li><span class="mark" aria-hidden="true">!</span><span><b>不必解释原理。</b>「密度」「重力」这些词可以说，但不用要求他理解。他记住的是水面上那个漂着的瓶盖。</span></li>
       <li><span class="mark" aria-hidden="true">!</span><span><b>不必纠正每一个错误说法。</b>「太阳晚上去睡觉了」这种解释先留着，它会在七八岁自己被推翻。当下追问一句「那它睡在哪里？」比纠正有用。</span></li>
-      <li><span class="mark" aria-hidden="true">!</span><span><b>不必写下来。</b>4~5 岁的记录是画、是摆、是说给你听。要求写字会把探索变成作业。</span></li>
+      <li><span class="mark" aria-hidden="true">!</span><span><b>不必写下来。</b>4~5&nbsp;岁的记录是画、是摆、是说给你听。要求写字会把探索变成作业。</span></li>
       <li><span class="mark" aria-hidden="true">!</span><span><b>不必做完。</b>他中途跑掉是正常的注意力，不是态度问题。材料留在桌上，他常常自己会回来。</span></li>
       <li><span class="mark" aria-hidden="true">!</span><span><b>不必超前。</b>提前学加减法、背行星顺序，对这个阶段没有收益，还会占掉动手的时间。</span></li>
     </ul>
@@ -623,14 +620,13 @@
     <div class="section-action">
       <h3>先做一步</h3>
       <p>从下面选中孩子现在的状态，只照结果卡的第一句话说，然后等孩子回应。</p>
-      <span class="age-tip">年龄提示：4–6 岁一次只问一句；7–12 岁可以再追问“你怎么知道？”</span>
+      <span class="age-tip">年龄提示：4–6&nbsp;岁一次只问一句；7–12&nbsp;岁可以再追问“你怎么知道？”</span>
     </div>
     <p class="sec-lede">
-      给答案能省十分钟，代价是孩子学会了「卡住就等大人」。提问累一点，但它把思考的所有权留在孩子那边。
-      一个实用的门槛：<b>在你开口解释之前，先问三个问题。</b>
+      给答案能省十分钟，代价是孩子学会了「卡住就等大人」。提问累一点，但它把思考的所有权留在孩子那边。一个实用的门槛：<b>在你开口解释之前，先问三个问题。</b>
     </p>
     <aside class="young-guide no-print kid-blob-bg" aria-labelledby="youngGuideTitle">
-      <h3 id="youngGuideTitle">4–6 岁可以指着图走：停一下 → 画出来 → 说一说</h3>
+      <h3 id="youngGuideTitle">4–6&nbsp;岁可以指着图走：停一下 → 画出来 → 说一说</h3>
       <p>每次只做一步；孩子回应后，再走到下一格。</p>
       <ol class="kid-steps-visual">
         <li>
@@ -680,7 +676,7 @@
           <li><q>这道题在问什么？用你自己的话说一遍。</q><small>一半的错来自没读懂题。</small></li>
           <li><q>你已经知道哪些信息了？</q><small>把已知摊开，思路常常自己冒出来。</small></li>
           <li><q>能画出来吗？</q><small>万能招。画不出来说明还没理解。</small></li>
-          <li><q>如果数字小一点，比如只有 3 个呢？</q><small>退到简单情形，是真正的数学方法。</small></li>
+          <li><q>如果数字小一点，比如只有 3&nbsp;个呢？</q><small>退到简单情形，是真正的数学方法。</small></li>
           <li><q>你为什么这么想？</q><small>对了也要问，不然它只在错的时候出现。</small></li>
           <li><q>你怎么知道自己对了？</q><small>把检验的责任交回去。</small></li>
         </ul>
@@ -728,23 +724,20 @@
     </div>
 
     <p class="note" style="margin-top:16px">
-      <b>想练手，这两个资源就是干这个的：</b>
-      <a href="https://talkingmathwithkids.com/" target="_blank" rel="noopener">Talking Math with Kids</a>（Christopher Danielson，教家长怎么接住孩子的数学时刻）和
-      <a href="https://bedtimemath.org/" target="_blank" rel="noopener">Bedtime Math</a>（每晚一段故事 + 三档难度的问题，天然的提问素材）。
+      <b>想练手，这两个资源就是干这个的：</b> <a href="https://talkingmathwithkids.com/" target="_blank" rel="noopener">Talking Math with Kids</a>（Christopher Danielson，教家长怎么接住孩子的数学时刻）和 <a href="https://bedtimemath.org/" target="_blank" rel="noopener">Bedtime Math</a>（每晚一段故事 + 三档难度的问题，天然的提问素材）。
     </p>
   </section>
 
   <!-- ============ 3 · 每个主题的引导问题 ============ -->
   <section class="sec" id="topics">
-    <h2><span class="num">03</span> 站内 18 个主题：各问什么</h2>
+    <h2><span class="num">03</span> 站内每个主题：各问什么</h2>
     <div class="section-action">
       <h3>先做一步</h3>
       <p>先按下面的分类挑一个主题，只带走<b>第一个问题</b>。孩子玩的时候你问那一句就够。</p>
       <span class="age-tip">用法：开始前问第 1 句，过程中问第 2 句，结束后问第 3 句。</span>
     </div>
     <p class="sec-lede">
-      每个探索都自带一个要完成的正式任务，但任务本身不会替你提问。下面按主题列出<b>三句现成的引导问题</b>，
-      以及这个主题上孩子最常见的一个误解——知道误解在哪，你就知道该往哪里追问。
+      每个探索都自带一个要完成的正式任务，但任务本身不会替你提问。下面按主题列出<b>三句现成的引导问题</b>，以及这个主题上孩子最常见的一个误解——知道误解在哪，你就知道该往哪里追问。
     </p>
 
     <div class="filter-row no-print" role="group" aria-label="按学科筛选主题">
@@ -755,13 +748,13 @@
       <button class="topic-chip" type="button" data-topic-filter="earth" aria-pressed="false"><span class="ic" aria-hidden="true">🌍</span>地球与太空</button>
       <button class="topic-chip" type="button" data-topic-filter="make" aria-pressed="false"><span class="ic" aria-hidden="true">🎨</span>代码与创作</button>
     </div>
-    <p class="live-note" id="topicStatus" role="status" aria-live="polite">正在显示全部 18 个主题。</p>
+    <p class="live-note" id="topicStatus" role="status" aria-live="polite">正在载入主题列表。</p>
 
     <div class="topic-grid" id="topicGrid">
 
       <article class="topic-card" data-topic-group="math">
         <h3><span class="ic" aria-hidden="true">🧱</span> 数感积木</h3>
-        <p class="meta">数学 · 4–8 岁</p>
+        <p class="meta">数学 · 4–8&nbsp;岁</p>
         <ul>
           <li>这里有几个？你是数出来的，还是一眼看出来的？</li>
           <li>能不能用另一种摆法，还是同样多？</li>
@@ -773,7 +766,7 @@
 
       <article class="topic-card" data-topic-group="math">
         <h3><span class="ic" aria-hidden="true">🍕</span> 分数实验台</h3>
-        <p class="meta">数学 · 7–11 岁</p>
+        <p class="meta">数学 · 7–11&nbsp;岁</p>
         <ul>
           <li>先猜：哪个大？为什么？（猜完再验证）</li>
           <li>1/3 和 1/4，哪个分得多？分母大反而小，说得通吗？</li>
@@ -785,7 +778,7 @@
 
       <article class="topic-card" data-topic-group="math">
         <h3><span class="ic" aria-hidden="true">⚙️</span> 规律机器</h3>
-        <p class="meta">数学 · 6–12 岁</p>
+        <p class="meta">数学 · 6–12&nbsp;岁</p>
         <ul>
           <li>你的猜想是什么？用一句话说出来。</li>
           <li>再输入一个新数字，如果你猜对了，应该出来什么？</li>
@@ -797,7 +790,7 @@
 
       <article class="topic-card" data-topic-group="math">
         <h3><span class="ic" aria-hidden="true">❄️</span> 对称工作室</h3>
-        <p class="meta">数学 · 5–11 岁</p>
+        <p class="meta">数学 · 5–11&nbsp;岁</p>
         <ul>
           <li>如果沿这条线折起来，两边会重合吗？</li>
           <li>这个图案有几条对称轴？你怎么确认没漏？</li>
@@ -809,7 +802,7 @@
 
       <article class="topic-card" data-topic-group="math">
         <h3><span class="ic" aria-hidden="true">🎯</span> 估算站</h3>
-        <p class="meta">数学 · 5–10 岁</p>
+        <p class="meta">数学 · 5–10&nbsp;岁</p>
         <ul>
           <li>不数，先说一个数。太多还是太少？</li>
           <li>你是怎么估的？有没有先分一小堆再乘？</li>
@@ -821,19 +814,19 @@
 
       <article class="topic-card" data-topic-group="make">
         <h3><span class="ic" aria-hidden="true">🐢</span> 海龟几何</h3>
-        <p class="meta">代码 · 7–12 岁</p>
+        <p class="meta">代码 · 7–12&nbsp;岁</p>
         <ul>
           <li>你想让它走出什么形状？先用手比划一遍。</li>
           <li>每次转多少度？转几次才能回到起点？</li>
           <li>它没回到原点，是转角错了还是步数错了？</li>
         </ul>
-        <p class="miss"><b>常见误解：</b>把转角和内角搞混（画正方形时想转 90 度却输入内角）。让他站起来自己转一圈体会。</p>
+        <p class="miss"><b>常见误解：</b>把转角和内角搞混（画正方形时想转 90&nbsp;度却输入内角）。让他站起来自己转一圈体会。</p>
         <a class="go" href="../games/turtle-geometry.html">打开这个探索</a>
       </article>
 
       <article class="topic-card" data-topic-group="make">
         <h3><span class="ic" aria-hidden="true">🎨</span> 彩虹小画室</h3>
-        <p class="meta">创作 · 4–10 岁</p>
+        <p class="meta">创作 · 4–10&nbsp;岁</p>
         <ul>
           <li>你想画什么？先说给我听。</li>
           <li>这两种颜色放一起，你猜会变成什么样？</li>
@@ -845,7 +838,7 @@
 
       <article class="topic-card" data-topic-group="phys">
         <h3><span class="ic" aria-hidden="true">🪶</span> 自由落体</h3>
-        <p class="meta">物理 · 6–12 岁</p>
+        <p class="meta">物理 · 6–12&nbsp;岁</p>
         <ul>
           <li>羽毛和石头，你猜哪个先落地？为什么？</li>
           <li>抽掉空气以后呢？和你想的一样吗？</li>
@@ -857,7 +850,7 @@
 
       <article class="topic-card" data-topic-group="phys">
         <h3><span class="ic" aria-hidden="true">⛰️</span> 斜坡滚球</h3>
-        <p class="meta">物理 · 7–12 岁</p>
+        <p class="meta">物理 · 7–12&nbsp;岁</p>
         <ul>
           <li>先预测：球会停在哪里？做个记号。</li>
           <li>这次你改了什么？只改了一样吗？</li>
@@ -869,7 +862,7 @@
 
       <article class="topic-card" data-topic-group="phys">
         <h3><span class="ic" aria-hidden="true">🔦</span> 光与影</h3>
-        <p class="meta">物理 · 5–10 岁</p>
+        <p class="meta">物理 · 5–10&nbsp;岁</p>
         <ul>
           <li>想让影子变大，该把灯移近还是移远？</li>
           <li>影子的形状为什么和物体不完全一样？</li>
@@ -881,7 +874,7 @@
 
       <article class="topic-card" data-topic-group="phys">
         <h3><span class="ic" aria-hidden="true">🌊</span> 造波机</h3>
-        <p class="meta">物理 · 7–12 岁</p>
+        <p class="meta">物理 · 7–12&nbsp;岁</p>
         <ul>
           <li>两列波撞上以后，你猜会怎样？</li>
           <li>怎么才能让它们互相抵消，变平？</li>
@@ -891,9 +884,273 @@
         <a class="go" href="../games/wave-maker.html">打开这个探索</a>
       </article>
 
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">⚖️</span> 杠杆天平</h3>
+        <p class="meta">物理 · 5–10&nbsp;岁</p>
+        <ul>
+          <li>同样重的砝码，放得远一点还是近一点，更容易压下去？</li>
+          <li>左边 3 格放 2&nbsp;个，右边怎么摆才能平？</li>
+          <li>剪刀、跷跷板，哪一端离转轴更远？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为平衡只比两边谁更重。这一页要让孩子看见「远一点的轻东西」也能抬起「近一点的重东西」。</p>
+        <a class="go" href="../games/balance-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">💡</span> 电路工坊</h3>
+        <p class="meta">物理 · 7–12&nbsp;岁</p>
+        <ul>
+          <li>开关开着时接上灯，它会自己亮吗？</li>
+          <li>两盏灯串在一起，和各走各的路，哪一次更亮？</li>
+          <li>家里一盏灯坏了，另一盏为什么还能亮？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为电像水一样从电池「流完就没了」。先强调「必须走完一圈」，再谈串联分压。</p>
+        <a class="go" href="../games/circuit-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="math">
+        <h3><span class="ic" aria-hidden="true">🕒</span> 时钟工坊</h3>
+        <p class="meta">数学 · 5–8&nbsp;岁</p>
+        <ul>
+          <li>短针在 4 和 5 之间，已经过了 4 点没有？</li>
+          <li>长针指着 6，是 6&nbsp;分钟还是 30&nbsp;分钟？</li>
+          <li>晚饭大约几点？先在这个钟上拨出来。</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>把长针指的数字直接当成分钟。让他数大格：每一格是 5&nbsp;分钟。</p>
+        <a class="go" href="../games/clock-workshop.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">🧲</span> 磁铁工坊</h3>
+        <p class="meta">物理 · 5–10&nbsp;岁</p>
+        <ul>
+          <li>两个红端对在一起，你猜会吸还是推？</li>
+          <li>小针的红端转向哪一端？</li>
+          <li>冰箱贴为什么吸得住铁门，吸不住木头？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为磁铁「什么金属都吸」。拿铜钥匙和铁钉比一次，比讲「铁磁性」更清楚。</p>
+        <a class="go" href="../games/magnet-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="math">
+        <h3><span class="ic" aria-hidden="true">🎲</span> 概率罐子</h3>
+        <p class="meta">数学 · 6–11&nbsp;岁</p>
+        <ul>
+          <li>抽了十次，和罐子里的真实比例一样吗？</li>
+          <li>再抽十次，两次结果会一模一样吗？</li>
+          <li>怎样抽，才更接近真实比例？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为「应该刚好抽到」真实比例。强调一次是随机，很多次才靠近。</p>
+        <a class="go" href="../games/chance-jar.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="math">
+        <h3><span class="ic" aria-hidden="true">📏</span> 测量工坊</h3>
+        <p class="meta">数学 · 5–9&nbsp;岁</p>
+        <ul>
+          <li>同一支笔，用回形针量和用拃量，数字为什么不同？</li>
+          <li>不写单位，这个数字还说得清吗？</li>
+          <li>先估有几个，再摆上去核对。</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为数字大就是东西更长。其实尺子单位更小，同一个东西数字才会变大。</p>
+        <a class="go" href="../games/measure-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="math">
+        <h3><span class="ic" aria-hidden="true">📐</span> 角度工坊</h3>
+        <p class="meta">数学 · 7–11&nbsp;岁</p>
+        <ul>
+          <li>把边画得很长，角会变大吗？</li>
+          <li>直角摸起来像什么？门框、书角？</li>
+          <li>只动一条边，从锐角走到钝角。</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为边画得越长角就越大。角只看两条边张开多少，不看边有多长。</p>
+        <a class="go" href="../games/angle-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="math">
+        <h3><span class="ic" aria-hidden="true">📊</span> 条形统计台</h3>
+        <p class="meta">数学 · 6–10&nbsp;岁</p>
+        <ul>
+          <li>不看数字，只看谁最高？</li>
+          <li>两根一样高，还能说「有一个第一」吗？</li>
+          <li>如果一格代表 2 票，图会怎样？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>用颜色或左右位置判断多少。比较的是同一基准上的高度。</p>
+        <a class="go" href="../games/graph-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="math">
+        <h3><span class="ic" aria-hidden="true">🪙</span> 钱币凑整</h3>
+        <p class="meta">数学 · 6–10&nbsp;岁</p>
+        <ul>
+          <li>同一个数，能用两种摆法凑出来吗？</li>
+          <li>用最少的硬币怎么凑？</li>
+          <li>10&nbsp;个 1 和 1&nbsp;个 10，哪个更多？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为硬币枚数多就是钱多。先比总值够不够，再看能不能换成别的拆法。</p>
+        <a class="go" href="../games/money-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">🎵</span> 声音盒子</h3>
+        <p class="meta">物理 · 5–10&nbsp;岁</p>
+        <ul>
+          <li>弦变短，声音是更高还是更响？</li>
+          <li>只把波形拉高，音高变了吗？</li>
+          <li>高而轻、低而响，能同时做出来吗？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>把「大声」和「高音」当成一回事。这一页就是为了拆开这两件事。</p>
+        <a class="go" href="../games/sound-box.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">🧊</span> 冷热工坊</h3>
+        <p class="meta">物理 · 6–11&nbsp;岁</p>
+        <ul>
+          <li>冰化成水，还是同一份水吗？</li>
+          <li>锅盖上的小水珠从哪来？</li>
+          <li>冬天窗户上的哈气，像这一页的哪一段？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为水开了就「没了」。蒸汽还在，只是逃到空气里，锅盖上会再变成水珠。</p>
+        <a class="go" href="../games/heat-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">🎨</span> 调色工坊</h3>
+        <p class="meta">物理 · 5–10&nbsp;岁</p>
+        <ul>
+          <li>红和黄混在一起，会变成哪一种？</li>
+          <li>把三种颜料都搅进去，还是原来那么亮吗？</li>
+          <li>白纸和黑纸，哪一张把光送回你的眼睛？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为颜色是颜料自己发的光。孩子先看见的是「混在一起会变暗」。 </p>
+        <a class="go" href="../games/color-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">💨</span> 空气工坊</h3>
+        <p class="meta">物理 · 5–10&nbsp;岁</p>
+        <ul>
+          <li>针筒往里推，里面的空气跑到哪去了？</li>
+          <li>松开手，它为什么会自己弹回来一点？</li>
+          <li>吸管为什么能把水「吸」上来？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为空气是「空的」。先让他挤一个袋子，感觉空气占地方，袋子瘪了才是空。</p>
+        <a class="go" href="../games/air-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">💧</span> 水循环工坊</h3>
+        <p class="meta">物理 · 5–11&nbsp;岁</p>
+        <ul>
+          <li>海里的水怎样跑到云里？</li>
+          <li>雨落下之后，会走哪几条路回家？</li>
+          <li>窗上的哈气，更像蒸发还是更像下雨？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为云是「新变出来的水」。指着蒸发和雨，强调是同一份水在搬家。</p>
+        <a class="go" href="../games/water-cycle.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">🔍</span> 透镜工坊</h3>
+        <p class="meta">物理 · 6–11&nbsp;岁</p>
+        <ul>
+          <li>中间厚的镜子，东西看起来更大还是更小？</li>
+          <li>放大镜属于哪一种透镜？</li>
+          <li>把东西拿近再拿远，像会不会反过来？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为所有镜片都会放大。中间薄的凹透镜，常常把东西缩得更小。</p>
+        <a class="go" href="../games/lens-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">⚙️</span> 滑轮工坊</h3>
+        <p class="meta">物理 · 6–11&nbsp;岁</p>
+        <ul>
+          <li>一个滑轮和两个滑轮，哪一次拉起来更轻？</li>
+          <li>省力的时候，绳子是不是要拉得更长？</li>
+          <li>旗杆顶上的轮子，主要在省力还是改方向？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为滑轮一定省力。定滑轮常常只是把方向改成往下拉，并不减轻重量。</p>
+        <a class="go" href="../games/pulley-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">🪞</span> 镜子工坊</h3>
+        <p class="meta">物理 · 5–10&nbsp;岁</p>
+        <ul>
+          <li>举起左手，镜子里是哪一只？</li>
+          <li>镜子是左右对调，还是上下颠倒？</li>
+          <li>勺子凹面和凸面，脸看起来一样吗？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为镜子把人整个倒过来。平面镜主要是左右对调，头还在上面。</p>
+        <a class="go" href="../games/mirror-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">🛷</span> 摩擦工坊</h3>
+        <p class="meta">物理 · 5–10&nbsp;岁</p>
+        <ul>
+          <li>冰和砂纸，哪一个让木块滑得更远？</li>
+          <li>鞋底为什么要做成花纹？</li>
+          <li>只换表面、不推得更用力，结果会变吗？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为越光滑就越「没有力」。光滑面摩擦力更小，所以滑得更远。</p>
+        <a class="go" href="../games/friction-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">🪝</span> 弹簧工坊</h3>
+        <p class="meta">物理 · 6–11&nbsp;岁</p>
+        <ul>
+          <li>砝码加倍，弹簧是不是也加倍长？</li>
+          <li>取下砝码，它会不会完全回去？</li>
+          <li>橡皮筋和弹簧是同一种东西吗？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为拉得越长就越好。超过限度，它就不弹回去了，甚至会坏掉。</p>
+        <a class="go" href="../games/spring-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">🏀</span> 弹性工坊</h3>
+        <p class="meta">物理 · 5–10&nbsp;岁</p>
+        <ul>
+          <li>同一颗球，木板和沙子谁弹得高？</li>
+          <li>球扁了，为什么几乎不弹？</li>
+          <li>只换地面、不换球，弹跳会变吗？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为球自己会弹。地面和球都要把压扁的形状还回去，才弹得起来。</p>
+        <a class="go" href="../games/bounce-lab.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="phys">
+        <h3><span class="ic" aria-hidden="true">🪵</span> 浮沉实验室</h3>
+        <p class="meta">物理 · 5–10&nbsp;岁</p>
+        <ul>
+          <li>同一块黏土，捏成球和捏成船，结果一样吗？</li>
+          <li>木头为什么能浮，石头为什么沉？</li>
+          <li>空盒子会浮吗？如果灌满水呢？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为「重的一定沉」。船很重也能浮，因为它排开了更多水，比的是密度。</p>
+        <a class="go" href="../games/float-sink.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="make">
+        <h3><span class="ic" aria-hidden="true">📶</span> 排序小工厂</h3>
+        <p class="meta">代码 · 7–12&nbsp;岁</p>
+        <ul>
+          <li>你比较的是哪两根？为什么要比相邻的？</li>
+          <li>走完一轮，最大的到哪去了？</li>
+          <li>打乱后再只走一步，发生了什么？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为排序是「一眼看出来」。计算机也是一次只比两个，再换下一对。</p>
+        <a class="go" href="../games/sort-lab.html">打开这个探索</a>
+      </article>
+
       <article class="topic-card" data-topic-group="life">
         <h3><span class="ic" aria-hidden="true">🦖</span> 恐龙与化石</h3>
-        <p class="meta">科学 · 5–12 岁</p>
+        <p class="meta">科学 · 5–12&nbsp;岁</p>
         <ul>
           <li>科学家怎么知道这件事的？证据是什么？</li>
           <li>这一条是挖出来的，还是推测出来的？</li>
@@ -905,7 +1162,7 @@
 
       <article class="topic-card" data-topic-group="earth">
         <h3><span class="ic" aria-hidden="true">🪐</span> 太空站</h3>
-        <p class="meta">太空 · 5–12 岁</p>
+        <p class="meta">太空 · 5–12&nbsp;岁</p>
         <ul>
           <li>这两颗行星最明显的不同是什么？用数字说。</li>
           <li>你站在那上面会更重还是更轻？</li>
@@ -917,7 +1174,7 @@
 
       <article class="topic-card" data-topic-group="life">
         <h3><span class="ic" aria-hidden="true">🐋</span> 海底世界</h3>
-        <p class="meta">科学 · 5–12 岁</p>
+        <p class="meta">科学 · 5–12&nbsp;岁</p>
         <ul>
           <li>这么深的地方还有光吗？那它们怎么找东西？</li>
           <li>往下越深，水压会怎么变？</li>
@@ -929,7 +1186,7 @@
 
       <article class="topic-card" data-topic-group="life">
         <h3><span class="ic" aria-hidden="true">🐞</span> 虫子放大镜</h3>
-        <p class="meta">生物 · 4–11 岁</p>
+        <p class="meta">生物 · 4–11&nbsp;岁</p>
         <ul>
           <li>它有几条腿？分成几段身体？</li>
           <li>它刚才在做什么？你觉得它想去哪儿？</li>
@@ -939,9 +1196,213 @@
         <a class="go" href="../nature/insects.html">打开这个探索</a>
       </article>
 
+      <article class="topic-card" data-topic-group="life">
+        <h3><span class="ic" aria-hidden="true">🪲</span> 甲虫图鉴馆</h3>
+        <p class="meta">生物 · 4–12&nbsp;岁</p>
+        <ul>
+          <li>背上那层硬壳中间有几条缝？飞的时候软翅从哪出来？</li>
+          <li>它的腿更适合挖土、抓握，还是走路？</li>
+          <li>口器在解决什么问题：咬、刮，还是吸？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>把硬壳当成「盔甲装饰」。那是变硬的前翅，飞行用的软翅折在下面。</p>
+        <a class="go" href="../nature/beetles.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="life">
+        <h3><span class="ic" aria-hidden="true">🌱</span> 植物观察站</h3>
+        <p class="meta">生物 · 4–11&nbsp;岁</p>
+        <ul>
+          <li>这片叶子更像勺子、手掌，还是羽毛？</li>
+          <li>边缘是光滑、锯齿，还是裂成几片？</li>
+          <li>为什么观察不用把叶子揪下来？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>先急着查名字。这一页要练的是形状和边缘，名字可以后补。</p>
+        <a class="go" href="../nature/plants.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="life">
+        <h3><span class="ic" aria-hidden="true">🐦</span> 鸟类观察站</h3>
+        <p class="meta">生物 · 5–12&nbsp;岁</p>
+        <ul>
+          <li>这张嘴更像镊子、漏勺、钩子还是钳子？</li>
+          <li>脚是抓树枝的，还是带蹼的？</li>
+          <li>「它吃虫子」是看见了，还是猜的？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>认鸟等于背名字。先看喙和脚解决什么问题，比记住「这是麻雀」更有用。</p>
+        <a class="go" href="../nature/birds.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="life">
+        <h3><span class="ic" aria-hidden="true">🦊</span> 哺乳动物观察站</h3>
+        <p class="meta">生物 · 4–11&nbsp;岁</p>
+        <ul>
+          <li>这两只动物怎么走路、飞或游？差在哪？</li>
+          <li>哪一只的身体更像为了水、为了树，还是为了草地？</li>
+          <li>蝙蝠会飞，它还算哺乳动物吗？凭什么？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为会飞就一定是鸟。蝙蝠喂奶、身上有毛，是会飞的哺乳动物，不是鸟。</p>
+        <a class="go" href="../nature/mammals.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="life">
+        <h3><span class="ic" aria-hidden="true">🐟</span> 鱼类观察站</h3>
+        <p class="meta">生物 · 4–11&nbsp;岁</p>
+        <ul>
+          <li>这两条鱼的鳍长得一样吗？</li>
+          <li>它用鳃还是偶尔用别的办法换气？</li>
+          <li>体形更像鱼雷、扁片，还是直立的小棍子？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为所有鱼都侧着游、都用同样的鳍。先看形状再猜生活方式。</p>
+        <a class="go" href="../nature/fish.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="life">
+        <h3><span class="ic" aria-hidden="true">🍄</span> 真菌观察站</h3>
+        <p class="meta">生物 · 6–12&nbsp;岁</p>
+        <ul>
+          <li>蘑菇是植物吗？它靠什么拿到食物？</li>
+          <li>我们看见的伞盖下面，土里还有什么？</li>
+          <li>为什么不能随便采野蘑菇吃？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>把蘑菇当成一种植物。真菌自己这一家，很多在分解枯叶，并不靠叶子做糖。</p>
+        <a class="go" href="../nature/fungi.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="life">
+        <h3><span class="ic" aria-hidden="true">👁️</span> 五感观察站</h3>
+        <p class="meta">生物 · 4–10&nbsp;岁</p>
+        <ul>
+          <li>眼睛和耳朵侦测的是同一种东西吗？</li>
+          <li>捏住鼻子，食物还香不香？</li>
+          <li>闭上眼还能知道自己有没有歪吗？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为感觉只有五种、而且各自独立。站稳时的平衡，主要靠内耳告诉你歪没歪。</p>
+        <a class="go" href="../nature/senses.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="life">
+        <h3><span class="ic" aria-hidden="true">🦎</span> 爬行动物观察站</h3>
+        <p class="meta">生物 · 4–11&nbsp;岁</p>
+        <ul>
+          <li>这两只怎么走：爬、滑、游，还是几乎不走？</li>
+          <li>身上是细鳞、大甲，还是硬壳？</li>
+          <li>蛇没有脚，它靠什么往前？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>把所有爬行动物都当成「冷血的蜥蜴」。先看它怎么走：爬、滑、游，还是几乎不走。</p>
+        <a class="go" href="../nature/reptiles.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="earth">
+        <h3><span class="ic" aria-hidden="true">🏕️</span> 栖息地观察站</h3>
+        <p class="meta">科学 · 5–11&nbsp;岁</p>
+        <ul>
+          <li>这个地方最缺的是水、热，还是食物？</li>
+          <li>沙漠和湿地，谁更难找到阴凉？</li>
+          <li>城市算栖息地吗？谁住在那里？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为动物可以随便住。身体是对那个地方的方案，换地方常常活不下去。</p>
+        <a class="go" href="../nature/habitats.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="earth">
+        <h3><span class="ic" aria-hidden="true">💎</span> 晶体观察站</h3>
+        <p class="meta">地球 · 6–12&nbsp;岁</p>
+        <ul>
+          <li>这块更像叠起来的盒子，还是一层层薄片？</li>
+          <li>盐和雪花都是晶体，差在哪？</li>
+          <li>为什么不能舔来历不明的晶体？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为只有宝石才叫晶体。厨房的盐粒也是晶体，只是太平常了。</p>
+        <a class="go" href="../nature/crystals.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="earth">
+        <h3><span class="ic" aria-hidden="true">🏞️</span> 河流观察站</h3>
+        <p class="meta">地球 · 5–11&nbsp;岁</p>
+        <ul>
+          <li>山上的水和入海口的水，谁更快？</li>
+          <li>弯道外侧为什么更容易被掏空？</li>
+          <li>沙子为什么堆在河口，而不是一直冲走？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为河一直是直的。弯是外侧冲刷、内侧淤积一起造成的，会越弯越弯。</p>
+        <a class="go" href="../nature/rivers.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="life">
+        <h3><span class="ic" aria-hidden="true">🌳</span> 树木观察站</h3>
+        <p class="meta">生物 · 5–11&nbsp;岁</p>
+        <ul>
+          <li>从中心数到皮，大约几岁？</li>
+          <li>宽圈和窄圈，你猜那年发生了什么？</li>
+          <li>为什么不能剥活树的皮来看年轮？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>把一圈当成精确到天的年龄。温带才比较清楚，而且只是大约。</p>
+        <a class="go" href="../nature/trees.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="earth">
+        <h3><span class="ic" aria-hidden="true">🌙</span> 月亮观察站</h3>
+        <p class="meta">太空 · 5–12&nbsp;岁</p>
+        <ul>
+          <li>月亮自己会发光吗？亮的那一面朝哪？</li>
+          <li>娥眉月和满月，被太阳照亮的是不是同一半？</li>
+          <li>今晚真实的月亮，对照是哪一相？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为月亮有时变成细钩是因为它自己变瘦了。变的是我们看见的那一部分。</p>
+        <a class="go" href="../nature/moon.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="earth">
+        <h3><span class="ic" aria-hidden="true">⭐</span> 星空观察站</h3>
+        <p class="meta">太空 · 5–12&nbsp;岁</p>
+        <ul>
+          <li>哪一颗几乎不搬家，可以拿来找北？</li>
+          <li>北斗和仙后，哪一个像勺子，哪一个像 W？</li>
+          <li>最亮的那颗，一定是最近的吗？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>把「最亮」当成「最近」。天狼星亮，是因为它又热又相对近，不是最近那颗。</p>
+        <a class="go" href="../nature/stars.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="earth">
+        <h3><span class="ic" aria-hidden="true">🪨</span> 岩石与矿物</h3>
+        <p class="meta">地球 · 6–12&nbsp;岁</p>
+        <ul>
+          <li>颗粒、一层层，还是像冷却的熔岩？</li>
+          <li>会闪的那一块，和粗糙的砂岩差在哪？</li>
+          <li>哪一句是看见的，哪一句是猜的？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>把所有石头都叫「石头」。先看颗粒还是一层层，再猜它是怎么来的。</p>
+        <a class="go" href="../nature/rocks.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="earth">
+        <h3><span class="ic" aria-hidden="true">🌋</span> 火山观察站</h3>
+        <p class="meta">地球 · 6–12&nbsp;岁</p>
+        <ul>
+          <li>哪一种火山像平底锅，哪一种像尖塔？</li>
+          <li>熔岩流和火山灰，哪一个走得慢、哪一个冲得快？</li>
+          <li>间歇泉喷出来的是岩浆吗？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为所有火山都会炸。盾状火山的熔岩稀，常常是慢慢流，不一定喷上天。</p>
+        <a class="go" href="../nature/volcano.html">打开这个探索</a>
+      </article>
+
+      <article class="topic-card" data-topic-group="earth">
+        <h3><span class="ic" aria-hidden="true">🟫</span> 土壤观察站</h3>
+        <p class="meta">地球 · 5–11&nbsp;岁</p>
+        <ul>
+          <li>沙子和黏土，谁先把水漏完？</li>
+          <li>枯叶下面是不是更湿？</li>
+          <li>植物的根最喜欢住在哪一层？</li>
+        </ul>
+        <p class="miss"><b>常见误解：</b>以为土就是脏东西。不同土层的空隙大小决定漏水还是保水。</p>
+        <a class="go" href="../nature/soil.html">打开这个探索</a>
+      </article>
+
       <article class="topic-card" data-topic-group="earth">
         <h3><span class="ic" aria-hidden="true">🌍</span> 地球与地震</h3>
-        <p class="meta">地球 · 6–12 岁</p>
+        <p class="meta">地球 · 6–12&nbsp;岁</p>
         <ul>
           <li>震级和深度分别在说什么？</li>
           <li>为什么地震总在这几条线上发生？</li>
@@ -953,7 +1414,7 @@
 
       <article class="topic-card" data-topic-group="earth">
         <h3><span class="ic" aria-hidden="true">🌦️</span> 天气工坊</h3>
-        <p class="meta">地球 · 5–11 岁</p>
+        <p class="meta">地球 · 5–11&nbsp;岁</p>
         <ul>
           <li>你从窗外看到哪两个证据？</li>
           <li>你猜一小时后会怎样？我们记下来对一对。</li>
@@ -965,7 +1426,7 @@
 
       <article class="topic-card" data-topic-group="life">
         <h3><span class="ic" aria-hidden="true">❤️</span> 人体机器</h3>
-        <p class="meta">生物 · 5–12 岁</p>
+        <p class="meta">生物 · 5–12&nbsp;岁</p>
         <ul>
           <li>安静时一分钟跳几次？跑完再数一次。</li>
           <li>为什么活动完心跳会变快？</li>
@@ -987,9 +1448,7 @@
       <span class="age-tip">这些误解都是正常的发展阶段，不是没学好。</span>
     </div>
     <p class="sec-lede">
-      错误的概念不是空白，是孩子自己建起来的一套解释——而且往往在日常经验里说得通。
-      直接告诉他正确答案，通常只会让他背下两套说法。有效的做法是<b>给一个他的解释无法覆盖的现象</b>。
-      下面每条都可以展开看具体怎么接。
+      错误的概念不是空白，是孩子自己建起来的一套解释——而且往往在日常经验里说得通。直接告诉他正确答案，通常只会让他背下两套说法。有效的做法是<b>给一个他的解释无法覆盖的现象</b>。下面每条都可以展开看具体怎么接。
     </p>
 
     <div class="myth-list">
@@ -1016,7 +1475,7 @@
         <div class="myth-body">
           <p>非常合理的推断，但它经不起一个提问：南半球和北半球的夏天不在同一时间。</p>
           <p><b>怎么接：</b>用手电筒照一个球。直射的一小块最亮最集中，斜射的摊开一大片就淡了。倾斜决定了单位面积上分到多少光。</p>
-          <p><b>年龄提示：</b>7 岁以下可以停在「太阳照得斜」，不用引入公转轨道。</p>
+          <p><b>年龄提示：</b>7&nbsp;岁以下可以停在「太阳照得斜」，不用引入公转轨道。</p>
         </div>
       </details>
 
@@ -1024,7 +1483,7 @@
         <summary><span class="tag">数学</span>「乘法一定让数变大」</summary>
         <div class="myth-body">
           <p>在只接触过整数的阶段，这条规律百分之百成立。它会在遇到分数和小数时突然失效。</p>
-          <p><b>怎么接：</b>问「半个 8 是多少？那 8 乘 0.5 呢？」把「乘」翻译成「几倍」，不到一倍就会变小。</p>
+          <p><b>怎么接：</b>问「半个 8 是多少？那 8 乘 0.5 呢？」把「乘」翻译成「几倍」，不到一倍，数就会变小。</p>
           <p><b>同类的还有：</b>「除法一定让数变小」「加法一定变大」——都在同一处断掉。</p>
         </div>
       </details>
@@ -1032,8 +1491,8 @@
       <details class="myth">
         <summary><span class="tag">数学</span>「分母越大，分数越大」</summary>
         <div class="myth-body">
-          <p>孩子在用整数的直觉读分数：4 比 3 大，所以 1/4 比 1/3 大。</p>
-          <p><b>怎么接：</b>回到分东西：「一块饼分给 3 个人和分给 4 个人，哪次你拿到的多？」几乎不需要再解释。</p>
+          <p>孩子在用整数的直觉读分数：看见分母 4 比 3 大，就一口咬定这一份也更大。</p>
+          <p><b>怎么接：</b>回到分东西：「一块饼分给 3&nbsp;个人和分给 4&nbsp;个人，哪次你拿到的多？」几乎不需要再解释。</p>
           <p><b>可以顺手做：</b>用 <a href="../games/fraction-lab.html">分数实验台</a> 把两个分数画出来对齐看。</p>
         </div>
       </details>
@@ -1089,27 +1548,25 @@
       <span class="age-tip">同龄孩子的差异很大，跨一岁半都属正常。别把它当考核表。</span>
     </div>
     <p class="sec-lede">
-      下面不是课程标准，是<b>陪伴时的合理预期</b>：这个年龄的孩子通常能做到什么、你在旁边扮演什么角色、
-      以及哪些事不该在这个阶段要求。年龄写的是大致区间，看孩子的实际状态，不看年级。
+      下面不是课程标准，是<b>陪伴时的合理预期</b>：这个年龄的孩子通常能做到什么、你在旁边扮演什么角色、以及哪些事不该在这个阶段要求。年龄写的是大致区间，看孩子的实际状态，不看年级。
     </p>
 
     <div class="stage-tabs no-print" role="group" aria-label="选择年龄段">
       <button class="stage-tab" type="button" data-stage="4-6" aria-pressed="true" aria-controls="stagePanel">
-        <span class="ic" aria-hidden="true">🧸</span><b>4–6 岁</b><small>用手理解世界</small>
+        <span class="ic" aria-hidden="true">🧸</span><b>4–6&nbsp;岁</b><small>用手理解世界</small>
       </button>
       <button class="stage-tab" type="button" data-stage="7-9" aria-pressed="false" aria-controls="stagePanel">
-        <span class="ic" aria-hidden="true">🔍</span><b>7–9 岁</b><small>开始要证据</small>
+        <span class="ic" aria-hidden="true">🔍</span><b>7–9&nbsp;岁</b><small>开始要证据</small>
       </button>
       <button class="stage-tab" type="button" data-stage="10-12" aria-pressed="false" aria-controls="stagePanel">
-        <span class="ic" aria-hidden="true">🧭</span><b>10–12 岁</b><small>能自己设计</small>
+        <span class="ic" aria-hidden="true">🧭</span><b>10–12&nbsp;岁</b><small>能自己设计</small>
       </button>
     </div>
 
     <div class="stage-panel" id="stagePanel" role="status" aria-live="polite"></div>
 
     <p class="note note-warn" style="margin-top:16px">
-      <b>怎么用这张表：</b>如果孩子在「可以期待」里有一半做不到，往下看一档，不是加练；
-      如果「不必要求」那一列他已经在做了，往上看一档。<a href="paths.html">学习路径</a> 按同样的三段划分。
+      <b>怎么用这张表：</b>如果孩子在「可以期待」里有一半做不到，往下看一档，不是加练；如果「不必要求」那一列他已经在做了，往上看一档。<a href="paths.html">学习路径</a> 按同样的三段划分。
     </p>
   </section>
 
@@ -1118,27 +1575,25 @@
     <h2><span class="num">06</span> 孩子卡住了、或者已经炸了</h2>
     <div class="section-action">
       <h3>先做一步</h3>
-      <p>看孩子还能不能回应：还能说话就等 30 秒；已经哭闹、僵住或推开材料，就先离开桌子喝口水。</p>
+      <p>看孩子还能不能回应：还能说话就等 30&nbsp;秒；已经哭闹、僵住或推开材料，就先离开桌子喝口水。</p>
       <span class="age-tip">年龄提示：越小越先照顾身体状态；大孩子也可以直接问“要提示，还是先停一下？”</span>
     </div>
     <p class="sec-lede">
-      先分清两件事：<b>卡住</b>是认知状态，是好事，说明题目正好在能力边缘；<b>崩溃</b>是情绪状态，此时大脑已经不学习了。
-      两者的处理方式完全相反——卡住要撑住，崩溃要撤。
+      先分清两件事：<b>卡住</b>是认知状态，是好事，说明题目正好在能力边缘；<b>崩溃</b>是情绪状态，此时大脑已经不学习了。两者的处理方式完全相反——卡住要撑住，崩溃要撤。
     </p>
 
     <h3 style="margin-top:22px">还在卡住：按台阶给提示，一次只上一级</h3>
     <ol class="ladder">
-      <li><b>什么都不给，等 30 秒。</b>沉默让人难受，但思考需要它。数到三十再开口。</li>
+      <li><b>什么都不给，等 30&nbsp;秒。</b>沉默让人难受，但思考需要它。数到三十再开口。</li>
       <li><b>把注意力引回题目：</b><q>再读一遍题，读慢点。</q></li>
       <li><b>要求换一种表达：</b><q>画个图？或者用积木摆出来？</q></li>
-      <li><b>缩小问题：</b><q>先不管别的，如果只有 2 个人分会怎样？</q></li>
+      <li><b>缩小问题：</b><q>先不管别的，如果只有 2&nbsp;个人分会怎样？</q></li>
       <li><b>指出区域，不给方法：</b><q>你前两步我觉得对，从第三步再看看。</q></li>
       <li><b>给一个类比的旧题：</b><q>还记得上次那道分饼干的题吗？</q></li>
       <li><b>最后才是一起做一步</b>，然后立刻把笔交回去：<q>下一步你来。</q></li>
     </ol>
     <p class="note note-warn" style="margin-top:14px">
-      <b>撑住是有上限的。</b>挣扎要「有效」得有两个前提：孩子还愿意试，而且手上有可用的工具。
-      两个前提缺一个，继续耗就只是折磨。判断标准很简单——他还在动脑，还是只在等你走开？
+      <b>撑住是有上限的。</b>挣扎要「有效」得有两个前提：孩子还愿意试，而且手上有可用的工具。两个前提缺一个，继续耗就只是折磨。判断标准很简单——他还在动脑，还是只在等你走开？
     </p>
 
     <h3 style="margin-top:26px">已经崩了：先处理人，不处理题</h3>
@@ -1150,8 +1605,7 @@
       <li><span class="mark" aria-hidden="true">5</span><span><b>事后复盘一句就够。</b>「昨天那道题，今天你自己就做出来了。」让他看见挣扎是有回报的。</span></li>
     </ul>
     <p class="note" style="margin-top:14px">
-      <b>如果每周都崩：</b>问题不在孩子的耐性，在难度或节奏配错了。降一档、缩短时长，或者换资源。
-      持续的挫败感不会磨出韧性，只会磨出回避。
+      <b>如果每周都崩：</b>问题不在孩子的耐性，在难度或节奏配错了。降一档、缩短时长，或者换资源。持续的挫败感不会磨出韧性，只会磨出回避。
     </p>
   </section>
 
@@ -1164,9 +1618,7 @@
       <span class="age-tip">观察点：说清孩子做了什么，不评价聪明、快慢或名次。</span>
     </div>
     <p class="sec-lede">
-      「你真聪明」听着无害，但它把成功归给一个固定的东西。孩子接下来会为了保住「聪明」这个标签，
-      避开一切可能失败的事——而所有真正的学习都在可能失败的地方。这是成长型思维（growth mindset）主张里最经得起日常检验的一条，
-      虽然学界对它的整体效应量仍有争论，具体到「怎么开口」上仍然值得照做。
+      「你真聪明」听着无害，但它把成功归给一个固定的东西。孩子接下来会为了保住「聪明」这个标签，避开一切可能失败的事——而所有真正的学习都在可能失败的地方。这是成长型思维（growth mindset）主张里最经得起日常检验的一条，虽然学界对它的整体效应量仍有争论，具体到「怎么开口」上仍然值得照做。
     </p>
 
     <div class="swap">
@@ -1193,8 +1645,7 @@
       </div>
     </div>
     <p class="note note-sci" style="margin-top:16px">
-      <b>顺手的一句反转：</b>孩子说「我做不出来」，你回「你<b>还</b>没做出来」。
-      斯坦福 <a href="https://www.youcubed.org/" target="_blank" rel="noopener">YouCubed</a> 里大量任务和素材就是围绕这个态度设计的，可以直接拿来用。
+      <b>顺手的一句反转：</b>孩子说「我做不出来」，你回「你<b>还</b>没做出来」。斯坦福 <a href="https://www.youcubed.org/" target="_blank" rel="noopener">YouCubed</a> 里大量任务和素材就是围绕这个态度设计的，可以直接拿来用。
     </p>
   </section>
 
@@ -1207,8 +1658,7 @@
       <span class="age-tip">年龄提示：年龄越小，越要把屏幕内容接到积木、画图或口头复述上。</span>
     </div>
     <p class="sec-lede">
-      教育类 App 也是屏幕。真正要区分的不是「学习还是娱乐」，而是<b>孩子在屏幕前是主动的还是被动的</b>。
-      同样 20 分钟，用 Polypad 摆一个自己的图形，和刷一串奖励动画，完全是两件事。
+      教育类 App 也是屏幕。真正要区分的不是「学习还是娱乐」，而是<b>孩子在屏幕前是主动的还是被动的</b>。同样 20&nbsp;分钟，用 Polypad 摆一个自己的图形，和刷一串奖励动画，完全是两件事。
     </p>
 
     <div class="tiers">
@@ -1233,9 +1683,9 @@
     </div>
 
     <ul class="checks goodlist">
-      <li><span class="mark" aria-hidden="true">✓</span><span><b>用「几集 / 几个任务」代替「几分钟」。</b>孩子对「还有 5 分钟」的抗拒远大于「这一集看完」，因为后者有明确的完成点。</span></li>
-      <li><span class="mark" aria-hidden="true">✓</span><span><b>4–6 岁：单次 15 分钟上限，一天不超过两次。</b>越小越需要实物；这个年龄的学习主战场在手上。</span></li>
-      <li><span class="mark" aria-hidden="true">✓</span><span><b>7–12 岁：单次 30–45 分钟可以，但 A 类应该占多数。</b>如果一周的屏幕时间里没有一件他做出来的东西，比例就错了。</span></li>
+      <li><span class="mark" aria-hidden="true">✓</span><span><b>用「几集 / 几个任务」代替「几分钟」。</b>孩子对「还有 5&nbsp;分钟」的抗拒远大于「这一集看完」，因为后者有明确的完成点。</span></li>
+      <li><span class="mark" aria-hidden="true">✓</span><span><b>4–6&nbsp;岁：单次 15&nbsp;分钟上限，一天不超过两次。</b>越小越需要实物；这个年龄的学习主战场在手上。</span></li>
+      <li><span class="mark" aria-hidden="true">✓</span><span><b>7–12&nbsp;岁：单次 30–45&nbsp;分钟可以，但 A 类应该占多数。</b>如果一周的屏幕时间里没有一件他做出来的东西，比例就错了。</span></li>
       <li><span class="mark" aria-hidden="true">✓</span><span><b>睡前一小时不用屏幕类工具。</b>换成 <a href="https://bedtimemath.org/" target="_blank" rel="noopener">Bedtime Math</a> 那种口头的，效果更好还不影响入睡。</span></li>
       <li><span class="mark" aria-hidden="true">✓</span><span><b>关掉能关的连胜、徽章、倒计时。</b>这些机制拉的是使用时长，不是理解深度。计时器尤其容易在数学上制造焦虑。</span></li>
       <li><span class="mark" aria-hidden="true">✓</span><span><b>动手项目优先级高于任何 App。</b>一盒 <a href="https://www.kiwico.co/" target="_blank" rel="noopener">KiwiCo</a>、一个 <a href="https://www.exploratorium.edu/snacks" target="_blank" rel="noopener">Science Snacks</a> 小实验、一块 <a href="https://microbit.org/" target="_blank" rel="noopener">micro:bit</a>，能顶掉好几个小时的滑动。</span></li>
@@ -1251,8 +1701,7 @@
       <span class="age-tip">判断标准：屏幕上看过的东西，能不能在真实世界里再出现一次。</span>
     </div>
     <p class="sec-lede">
-      屏幕上的互动能把看不见的东西变得可见——深海压力、行星大小、波的叠加。但理解要落到手上才稳。
-      下面按材料分组，每一项都能在 15 分钟内开始，不需要采购。
+      屏幕上的互动能把看不见的东西变得可见——深海压力、行星大小、波的叠加。但理解要落到手上才稳。下面按材料分组，每一项都能在 15&nbsp;分钟内开始，不需要采购。
     </p>
 
     <div class="filter-row no-print" role="group" aria-label="按需要的材料筛选离屏活动">
@@ -1262,12 +1711,13 @@
       <button class="topic-chip" type="button" data-off-filter="outdoor" aria-pressed="false"><span class="ic" aria-hidden="true">🌳</span>出门做</button>
       <button class="topic-chip" type="button" data-off-filter="nothing" aria-pressed="false"><span class="ic" aria-hidden="true">💬</span>什么都不用</button>
     </div>
+    <p class="live-note" id="offStatus" role="status" aria-live="polite">正在载入离屏活动。</p>
     <p class="live-note" id="offlineStatus" role="status" aria-live="polite"></p>
 
     <div class="topic-grid" id="offlineGrid">
       <article class="topic-card" data-off-kind="kitchen">
         <h3><span class="ic" aria-hidden="true">🥤</span> 沉浮分类台</h3>
-        <p class="meta">一盆水 + 十件小东西 · 4–8 岁 · 接 <a href="../games/gravity-drop.html">自由落体</a></p>
+        <p class="meta">一盆水 + 十件小东西 · 4–8&nbsp;岁 · 接 <a href="../games/gravity-drop.html">自由落体</a> · <a href="kitchen-science.html#kitchen-experiment-10">厨房：让回形针浮</a></p>
         <ul>
           <li>先把十件东西分成「我猜会浮」「我猜会沉」两堆，再一件件试。</li>
           <li>猜错的单独放一边，最后只看这一堆：它们有什么共同点？</li>
@@ -1276,7 +1726,7 @@
       </article>
       <article class="topic-card" data-off-kind="kitchen">
         <h3><span class="ic" aria-hidden="true">🍕</span> 真的切一次分数</h3>
-        <p class="meta">一张饼或一块面包 · 6–11 岁 · 接 <a href="../games/fraction-lab.html">分数实验台</a></p>
+        <p class="meta">一张饼或一块面包 · 6–11&nbsp;岁 · 接 <a href="../games/fraction-lab.html">分数实验台</a></p>
         <ul>
           <li>三个人分一张饼，怎么切才公平？让孩子自己动刀。</li>
           <li>再问：切成 6 块拿 2 块，和切成 3 块拿 1 块，一样多吗？</li>
@@ -1285,7 +1735,7 @@
       </article>
       <article class="topic-card" data-off-kind="kitchen">
         <h3><span class="ic" aria-hidden="true">🧊</span> 冰块观察日记</h3>
-        <p class="meta">几个冰块 + 三个位置 · 5–10 岁 · 接 <a href="../nature/weather.html">天气工坊</a></p>
+        <p class="meta">几个冰块 + 三个位置 · 5–10&nbsp;岁 · 接 <a href="../nature/weather.html">天气工坊</a> · <a href="kitchen-science.html#kitchen-experiment-12">厨房：钓冰块</a></p>
         <ul>
           <li>同样大的冰块放在窗台、冰箱外、手心，猜哪个先化完。</li>
           <li>每隔五分钟看一次，用画的方式记下三次的样子。</li>
@@ -1294,7 +1744,7 @@
       </article>
       <article class="topic-card" data-off-kind="paper">
         <h3><span class="ic" aria-hidden="true">❄️</span> 对折剪纸找对称轴</h3>
-        <p class="meta">纸 + 剪刀 · 5–11 岁 · 接 <a href="../games/symmetry-studio.html">对称工作室</a></p>
+        <p class="meta">纸 + 剪刀 · 5–11&nbsp;岁 · 接 <a href="../games/symmetry-studio.html">对称工作室</a></p>
         <ul>
           <li>对折一次剪出图案，展开看对称轴在哪；再试对折两次、三次。</li>
           <li>让孩子先预测展开后会有几条轴，再打开验证。</li>
@@ -1303,16 +1753,16 @@
       </article>
       <article class="topic-card" data-off-kind="paper">
         <h3><span class="ic" aria-hidden="true">🐢</span> 当一次人形海龟</h3>
-        <p class="meta">一张纸写指令 · 7–12 岁 · 接 <a href="../games/turtle-geometry.html">海龟几何</a></p>
+        <p class="meta">一张纸写指令 · 7–12&nbsp;岁 · 接 <a href="../games/turtle-geometry.html">海龟几何</a></p>
         <ul>
-          <li>孩子写「前进三步、右转 90 度」这样的指令，你严格照做，不许猜他的意思。</li>
+          <li>孩子写「前进三步、右转 90&nbsp;度」这样的指令，你严格照做，不许猜他的意思。</li>
           <li>目标是让你走出一个闭合图形回到起点。走歪了就一起改指令。</li>
         </ul>
-        <p class="miss"><b>要问的一句：</b>为什么转角加起来一定是 360 度才能回到原地？</p>
+        <p class="miss"><b>要问的一句：</b>为什么转角加起来一定是 360&nbsp;度才能回到原地？</p>
       </article>
       <article class="topic-card" data-off-kind="paper">
         <h3><span class="ic" aria-hidden="true">📏</span> 用绳子量一切</h3>
-        <p class="meta">一根绳子 · 5–10 岁 · 接 <a href="../games/estimation-station.html">估算站</a></p>
+        <p class="meta">一根绳子 · 5–10&nbsp;岁 · 接 <a href="../games/estimation-station.html">估算站</a></p>
         <ul>
           <li>不用尺子，用绳子量桌子、门、孩子自己的身高，剪下来对比长短。</li>
           <li>每次先猜「大概几段绳子」，再量。</li>
@@ -1321,7 +1771,7 @@
       </article>
       <article class="topic-card" data-off-kind="outdoor">
         <h3><span class="ic" aria-hidden="true">🐞</span> 一平方米调查</h3>
-        <p class="meta">四根小棍围一块地 · 4–11 岁 · 接 <a href="../nature/insects.html">虫子放大镜</a></p>
+        <p class="meta">四根小棍围一块地 · 4–11&nbsp;岁 · 接 <a href="../nature/insects.html">虫子放大镜</a></p>
         <ul>
           <li>圈出地上一小块，只看这一块，数数里面有几种生物、几种植物。</li>
           <li>一周后回到同一块地再数一次，比较两次的差别。</li>
@@ -1330,7 +1780,7 @@
       </article>
       <article class="topic-card" data-off-kind="outdoor">
         <h3><span class="ic" aria-hidden="true">🔦</span> 影子一天量三次</h3>
-        <p class="meta">粉笔或小石子 · 5–10 岁 · 接 <a href="../games/light-and-shadow.html">光与影</a></p>
+        <p class="meta">粉笔或小石子 · 5–10&nbsp;岁 · 接 <a href="../games/light-and-shadow.html">光与影</a></p>
         <ul>
           <li>早上、中午、傍晚站在同一个位置，各画一次影子的轮廓。</li>
           <li>三条影子放在一起看：长度和方向怎么变的？</li>
@@ -1339,7 +1789,7 @@
       </article>
       <article class="topic-card" data-off-kind="outdoor">
         <h3><span class="ic" aria-hidden="true">⛰️</span> 找一个真斜坡</h3>
-        <p class="meta">一个球 + 一块板 · 7–12 岁 · 接 <a href="../games/ramp-and-roll.html">斜坡滚球</a></p>
+        <p class="meta">一个球 + 一块板 · 7–12&nbsp;岁 · 接 <a href="../games/ramp-and-roll.html">斜坡滚球</a></p>
         <ul>
           <li>用书垫高一块板，每次只加一本书，量球滚出多远。</li>
           <li>把数字记成一列，看它是均匀变大还是越来越快。</li>
@@ -1348,16 +1798,16 @@
       </article>
       <article class="topic-card" data-off-kind="nothing">
         <h3><span class="ic" aria-hidden="true">❤️</span> 摸自己的脉搏</h3>
-        <p class="meta">不需要材料 · 5–12 岁 · 接 <a href="../nature/human-body.html">人体机器</a></p>
+        <p class="meta">不需要材料 · 5–12&nbsp;岁 · 接 <a href="../nature/human-body.html">人体机器</a></p>
         <ul>
-          <li>安静坐着数 15 秒的脉搏，乘 4；然后原地跳 30 下，再数一次。</li>
+          <li>安静坐着数 15&nbsp;秒的脉搏，乘 4；然后原地跳 30 下，再数一次。</li>
           <li>两个数字都记下来，隔几分钟再数一次，看它怎么回落。</li>
         </ul>
         <p class="miss"><b>要问的一句：</b>心跳变快，身体是在解决什么问题？</p>
       </article>
       <article class="topic-card" data-off-kind="nothing">
         <h3><span class="ic" aria-hidden="true">🪐</span> 走出行星距离</h3>
-        <p class="meta">不需要材料 · 6–12 岁 · 接 <a href="../nature/space.html">太空站</a></p>
+        <p class="meta">不需要材料 · 6–12&nbsp;岁 · 接 <a href="../nature/space.html">太空站</a></p>
         <ul>
           <li>门口当太阳，一步当一个单位，按比例把行星「走」出来。</li>
           <li>走到海王星通常要走出小区——这就是重点。</li>
@@ -1366,7 +1816,7 @@
       </article>
       <article class="topic-card" data-off-kind="nothing">
         <h3><span class="ic" aria-hidden="true">💬</span> 二十个问题猜规律</h3>
-        <p class="meta">不需要材料 · 6–12 岁 · 接 <a href="../games/pattern-machine.html">规律机器</a></p>
+        <p class="meta">不需要材料 · 6–12&nbsp;岁 · 接 <a href="../games/pattern-machine.html">规律机器</a></p>
         <ul>
           <li>你心里想一条规则（比如「双数」），报三个符合的数，让孩子猜。</li>
           <li>他每猜一个数，你只回答「符合」或「不符合」。</li>
@@ -1376,8 +1826,7 @@
     </div>
 
     <p class="note note-sci" style="margin-top:16px">
-      <b>一个通用配方：</b>屏幕上做过的实验，回到现实里都缺一样东西——真实的材料、真实的误差、真实的等待。
-      这三样恰好是科学最难教的部分，而它们在厨房里免费。
+      <b>一个通用配方：</b>屏幕上做过的实验，回到现实里都缺一样东西——真实的材料、真实的误差、真实的等待。这三样恰好是科学最难教的部分，而它们在厨房里免费。本站有一册 42&nbsp;个零成本实验，按年龄和材料就能筛：<a href="kitchen-science.html">打开厨房科学 →</a>家里若有打印机，再到 <a href="print-workshop.html">3D 打印工坊</a> 对照 MakerWorld 上已整理的齿轮、分数塔和太阳系。
     </p>
   </section>
 
@@ -1390,8 +1839,7 @@
       <span class="age-tip">观察点：如果你开始叹气、催速度或抢笔，先暂停，比继续讲更合适。</span>
     </div>
     <p class="sec-lede">
-      家长的数学焦虑会传染，尤其是在陪写作业的时候——这是数学教育研究里被反复讨论的现象。
-      好消息是，你不需要自己擅长数学，只需要注意几句话别说、几件事换个做法。
+      家长的数学焦虑会传染，尤其是在陪写作业的时候——这是数学教育研究里被反复讨论的现象。好消息是，你不需要自己擅长数学，只需要注意几句话别说、几件事换个做法。
     </p>
 
     <ul class="checks warnlist">
@@ -1422,8 +1870,7 @@
       <span class="age-tip">观察点：看连续几周的状态，不用一次闹情绪给项目下结论。</span>
     </div>
     <p class="sec-lede">
-      教材和课程都有适配问题，跟贵不贵、口碑好不好没关系。同一套 Beast Academy，对一个孩子是天堂，对另一个是酷刑。
-      下面这些出现两条以上，就该换，或者至少降档、慢下来。
+      教材和课程都有适配问题，跟贵不贵、口碑好不好没关系。同一套 Beast Academy，对一个孩子是天堂，对另一个是酷刑。下面这些出现两条以上，就该换，或者至少降档、慢下来。
     </p>
 
     <div class="grid-2" style="margin-top:16px">
@@ -1452,10 +1899,7 @@
     </div>
 
     <p class="note" style="margin-top:16px">
-      <b>换之前先降档试一次。</b>很多「不合适」其实是「太难了一点」或者「一次坐太久了」。
-      把每次时长砍半、退回上一个 level 做两周，往往就顺了。真要换，先用免费的试水：
-      <a href="https://www.zearn.org/" target="_blank" rel="noopener">Zearn</a>、<a href="https://nrich.maths.org/" target="_blank" rel="noopener">NRICH</a>、<a href="https://illustrativemathematics.org/" target="_blank" rel="noopener">Illustrative Mathematics</a> 都不花钱。
-      判断一个项目好不好的完整标准，见 <a href="why.html">如何评估一个 STEM 项目</a>。
+      <b>换之前先降档试一次。</b>很多「不合适」其实是「太难了一点」或者「一次坐太久了」。把每次时长砍半、退回上一个 level 做两周，往往就顺了。真要换，先用免费的试水： <a href="https://www.zearn.org/" target="_blank" rel="noopener">Zearn</a>、<a href="https://nrich.maths.org/" target="_blank" rel="noopener">NRICH</a>、<a href="https://illustrativemathematics.org/" target="_blank" rel="noopener">Illustrative Mathematics</a> 都不花钱。判断一个项目好不好的完整标准，见 <a href="why.html">如何评估一个 STEM 项目</a>。
     </p>
   </section>
 
@@ -1482,9 +1926,7 @@
       <span class="age-tip">没有账号、没有登录、没有埋点。想全部删除，随时可以在这一页一键清空。</span>
     </div>
     <p class="sec-lede">
-      这个站点是一组静态网页，可以直接从文件夹双击打开，也可以装成离线应用。它<b>没有服务器</b>，
-      所以孩子的记录既不会上传，也没有地方可上传——全部写在这台设备的浏览器本地存储里，键名是
-      <code>kids-stem:progress:v3</code>。换一台设备、或清掉浏览器数据，记录就没了；这也是唯一的备份方式：自己导出一份 JSON。
+      这个站点是一组静态网页，可以直接从文件夹双击打开，也可以装成离线应用。它<b>没有服务器</b>，所以孩子的记录既不会上传，也没有地方可上传——全部写在这台设备的浏览器本地存储里，键名是 <code>kids-stem:progress:v3</code>。换一台设备、或清掉浏览器数据，记录就没了；这也是唯一的备份方式：自己导出一份 JSON。
     </p>
 
     <div class="grid-2" style="margin-top:18px">
@@ -1510,12 +1952,10 @@
     <div class="card panel-hard" style="margin-top:20px">
       <h3>联网开关：默认关闭</h3>
       <p class="tool-intro">
-        有四个探索页可以顺带取一点真实公开数据：太空站的 NASA 每日天文图与照片、地球与地震的 USGS 近期地震、
-        虫子放大镜的 iNaturalist 观察记录、恐龙与化石的 PaleoBioDB 化石点。这属于向第三方发请求，所以默认是关的。
+        有四个探索页可以顺带取一点真实公开数据：太空站的 NASA 每日天文图与照片、地球与地震的 USGS 近期地震、虫子放大镜的 iNaturalist 观察记录、恐龙与化石的 PaleoBioDB 化石点。这属于向第三方发请求，所以默认是关的。
       </p>
       <p class="tool-intro">
-        <b>关闭时不是功能变少，而是改用内置数据。</b>四个页面都带着离线数据集，任务照样能完整做完；
-        打开只是把「内置的一批」换成「今天的一批」。这个开关只出现在家长区，孩子模式下看不到。
+        <b>关闭时不是功能变少，而是改用内置数据。</b>四个页面都带着离线数据集，任务照样能完整做完；打开只是把「内置的一批」换成「今天的一批」。这个开关只出现在家长区，孩子模式下看不到。
       </p>
       <div class="switch-block">
         <label class="switch-line" for="onlineDataPref">
@@ -1548,22 +1988,20 @@
     </div>
 
     <p class="note" style="margin-top:16px">
-      <b>要给孩子看的一句话：</b>「你写的东西只在这台设备上，没有别人看得到，也不会算分。」
-      这句话本身就是隐私教育——让孩子早点知道「数据存在哪里」是一个可以问的问题。
+      <b>要给孩子看的一句话：</b>「你写的东西只在这台设备上，没有别人看得到，也不会算分。」这句话本身就是隐私教育——让孩子早点知道「数据存在哪里」是一个可以问的问题。
     </p>
   </section>
 
   <!-- ============ 14 · 可打印 ============ -->
   <section class="sec" id="dinner">
-    <h2><span class="num">14</span> 饭桌上的 20 个问题</h2>
+    <h2><span class="num">14</span> 饭桌上的 20&nbsp;个问题</h2>
     <div class="section-action">
       <h3>先做一步</h3>
       <p>今晚只挑一个问题。孩子回答后追问一句：“你怎么想到的？”不知道答案也可以一起猜。</p>
-      <span class="age-tip">年龄提示：4–6 岁选数数、形状或轻重；大孩子可以选估算和假设题。</span>
+      <span class="age-tip">年龄提示：4–6&nbsp;岁选数数、形状或轻重；大孩子可以选估算和假设题。</span>
     </div>
     <p class="sec-lede">
-      不需要教具、不需要准备，一顿饭挑一两个就够。目的不是考察，是让「一起想一件事」变成家里的日常。
-      <span class="no-print">点下面的按钮可以只打印这一页（打印时其余内容会自动隐藏）。</span>
+      不需要教具、不需要准备，一顿饭挑一两个就够。目的不是考察，是让「一起想一件事」变成家里的日常。<span class="no-print">点下面的按钮可以只打印这一页（打印时其余内容会自动隐藏）。</span>
     </p>
 
     <div class="row no-print" style="margin:14px 0 0">
@@ -1573,8 +2011,8 @@
 
     <div class="print-sheet">
       <div class="sheet-head">
-        <h3>饭桌上的 20 个问题</h3>
-        <p>4–12 岁 · 每顿饭挑一两个 · 没有标准答案，答不上来就一起猜</p>
+        <h3>饭桌上的 20&nbsp;个问题</h3>
+        <p>4–12&nbsp;岁 · 每顿饭挑一两个 · 没有标准答案，答不上来就一起猜</p>
       </div>
       <ol class="qgrid">
         <li>今天你看到最大的数字是多少？在哪儿看到的？</li>
@@ -1593,7 +2031,7 @@
         <li>为什么大船那么重却不沉？</li>
         <li>你能不用「大」和「小」这两个词，描述这两个杯子的区别吗？</li>
         <li>如果我给你一根绳子，你能量出这张桌子有多长吗？</li>
-        <li>2 个人握一次手，3 个人要握几次？4 个人呢？</li>
+        <li>2&nbsp;个人握一次手，3&nbsp;个人要握几次？4&nbsp;个人呢？</li>
         <li>你今天遇到最难的一件事是什么？你试了什么办法？</li>
         <li>有什么东西是你以前觉得对、现在觉得不对的？</li>
         <li>如果你可以问科学家一个问题，你问什么？</li>
@@ -1608,13 +2046,15 @@
   <section class="card closing no-print">
     <h2 style="font-size:1.25rem">如果只记一件事</h2>
     <p>
-      孩子对数学和科学的态度，很大程度来自他在家里体验到的气氛：这里是可以慢慢想的，
-      是可以说「我不知道」的，是错了不会被嫌弃的。这个氛围比你选哪套教材重要得多，
-      而它完全在你的控制范围内。
+      孩子对数学和科学的态度，很大程度来自他在家里体验到的气氛：这里是可以慢慢想的，是可以说「我不知道」的，是错了不会被嫌弃的。这个氛围比你选哪套教材重要得多，而它完全在你的控制范围内。
+    </p>
+    <p class="note" style="margin-top:16px">
+      <b>另外一册：</b>孩子生病的时候，陪玩和提问都要先放下。<a href="medicine-cabinet.html">家庭医药箱</a> 按美国儿科学会与《默沙东诊疗手册》整理了婴儿常见病的处理原则、“立刻就医”的红旗信号，以及窒息、烫伤、磕头这类意外的第一步，可离线、可打印。它不构成医疗建议，也不替代医生。
     </p>
     <div class="row" style="margin-top:14px">
       <a class="btn btn-primary" href="paths.html">按年龄看学习路径</a>
       <a class="btn btn-ghost" href="why.html">如何评估一个项目</a>
+      <a class="btn btn-ghost" href="medicine-cabinet.html">家庭医药箱</a>
       <a class="btn btn-ghost" href="../index.html">资源库</a>
     </div>
   </section>
@@ -1628,18 +2068,78 @@
   </div>
 </footer>
 
+<script src="../assets/js/progress.js?v=488"></script>
 <script>
 (function () {"use strict";
-  var scenes={wrong:{title:"猜错时：把错误变成线索",lines:["跟我讲讲你刚才怎么想的。","我们怎么验证这个答案？","答案大概应该落在哪个范围？","我只提示出问题的大概位置，不替你做下一步。"]},stuck:{title:"卡住时：一次只给一级提示",lines:["先安静等 30 秒。","把题用自己的话再说一遍。","画出来，或退到更小的数字。","最后才一起做一步，然后把笔交回去。"]},quit:{title:"不想继续时：先找原因，不讲坚持",lines:["你是累了、觉得太难，还是今天不想做这个？","我们可以只做最后五分钟，也可以今天停下。","要不要换成画图、积木或另一个题目？","如果连续几次都不想做，就降难度或换项目，不把抗拒当懒惰。"]},answer:{title:"只求答案时：把最小一步交还给孩子",lines:["我可以帮你，但先告诉我题目在问什么。","你想要一个小提示，还是一起画张图？","我只做第一小步，下一步你来。","答案出来后，再问：我们怎么知道它合理？"]},upset:{title:"崩溃时：先处理人",lines:["这题确实难，我们先离开五分钟。","我看得出你很烦；现在不用解决它。","今天停下也可以，明天再看。","情绪平稳后只复盘一句，不补一堂课。"]},right:{title:"答对时：把答案变成理解",lines:["你是怎么想到的？","还有别的办法吗？","如果数字换大，方法还成立吗？","你怎么知道自己对了？"]},experiment:{title:"实验时：预测—观察—再改变",lines:["动手前：你猜会发生什么？为什么？","过程中：哪里和预测一样，哪里不同？","一次只改变一个条件。","结束后：用一句话说出你的发现。"]}};
+  var scenes={wrong:{title:"猜错时：把错误变成线索",lines:["跟我讲讲你刚才怎么想的。","我们怎么验证这个答案？","答案大概应该落在哪个范围？","我只提示出问题的大概位置，不替你做下一步。"]},stuck:{title:"卡住时：一次只给一级提示",lines:["先安静等 30\u00a0秒。","把题用自己的话再说一遍。","画出来，或退到更小的数字。","最后才一起做一步，然后把笔交回去。"]},quit:{title:"不想继续时：先找原因，不讲坚持",lines:["你是累了、觉得太难，还是今天不想做这个？","我们可以只做最后五分钟，也可以今天停下。","要不要换成画图、积木或另一个题目？","如果连续几次都不想做，就降难度或换项目，不把抗拒当懒惰。"]},answer:{title:"只求答案时：把最小一步交还给孩子",lines:["我可以帮你，但先告诉我题目在问什么。","你想要一个小提示，还是一起画张图？","我只做第一小步，下一步你来。","答案出来后，再问：我们怎么知道它合理？"]},upset:{title:"崩溃时：先处理人",lines:["这题确实难，我们先离开五分钟。","我看得出你很烦；现在不用解决它。","今天停下也可以，明天再看。","情绪平稳后只复盘一句，不补一堂课。"]},right:{title:"答对时：把答案变成理解",lines:["你是怎么想到的？","还有别的办法吗？","如果数字换大，方法还成立吗？","你怎么知道自己对了？"]},experiment:{title:"实验时：预测—观察—再改变",lines:["动手前：你猜会发生什么？为什么？","过程中：哪里和预测一样，哪里不同？","一次只改变一个条件。","结束后：用一句话说出你的发现。"]}};
   var select=document.getElementById("sceneSelect"),card=document.getElementById("companionCard");
   function render(){var s=scenes[select.value];card.textContent="";var h=document.createElement("h3");h.textContent=s.title;var ol=document.createElement("ol");s.lines.forEach(function(x){var li=document.createElement("li");li.textContent=x;ol.appendChild(li);});card.appendChild(h);card.appendChild(ol);}
-  select.addEventListener("change",render);render();
-  document.getElementById("printCompanion").addEventListener("click",function(){document.body.classList.add("print-companion");window.print();});
-  document.getElementById("printBtn").addEventListener("click",function(){document.body.classList.remove("print-companion");window.print();});
+  if(select&&card){select.addEventListener("change",render);render();}
+  var printC=document.getElementById("printCompanion"),printB=document.getElementById("printBtn");
+  if(printC)printC.addEventListener("click",function(){document.body.classList.add("print-companion");window.print();});
+  if(printB)printB.addEventListener("click",function(){document.body.classList.remove("print-companion");window.print();});
   window.addEventListener("afterprint",function(){document.body.classList.remove("print-companion");});
+
+  function bindChips(attr, cardsSel, statusId, allLabel){
+    var chips=document.querySelectorAll("["+attr+"]");
+    var cards=document.querySelectorAll(cardsSel);
+    var status=document.getElementById(statusId);
+    var total=cards.length;
+    function paint(val){
+      var n=0;
+      Array.prototype.forEach.call(cards,function(c){
+        var key=c.getAttribute(attr==="data-topic-filter"?"data-topic-group":"data-off-kind");
+        var on=val==="all"||key===val;
+        c.hidden=!on;
+        if(on)n+=1;
+      });
+      Array.prototype.forEach.call(chips,function(ch){
+        ch.setAttribute("aria-pressed",ch.getAttribute(attr)===val?"true":"false");
+      });
+      if(status){
+        status.textContent=val==="all"
+          ? "正在显示全部 "+n+"\u00a0个"+(allLabel||"主题")+"。"
+          : "这一类有 "+n+"\u00a0个。";
+      }
+    }
+    Array.prototype.forEach.call(chips,function(ch){
+      ch.addEventListener("click",function(){paint(ch.getAttribute(attr));});
+    });
+    paint("all");
+    return total;
+  }
+  bindChips("data-topic-filter","#topicGrid > .topic-card","topicStatus","主题");
+  bindChips("data-off-filter","[data-off-kind]","offStatus","活动");
+
+  function paintStats(){
+    var d=window.Progress&&Progress.all?Progress.all():{pages:{},completions:{},notes:{},works:[]};
+    var set=function(id,n){var el=document.getElementById(id);if(el)el.textContent=String(n);};
+    set("statVisited",Object.keys(d.pages||{}).length);
+    set("statDone",Object.keys(d.completions||{}).length);
+    set("statNotes",Object.keys(d.notes||{}).length);
+    set("statWorks",(d.works||[]).length);
+    var st=document.getElementById("dataStatus");
+    if(st)st.textContent=window.Progress?"以上数字来自这台设备的本机记录。":"当前浏览器读不到本机记录。";
+  }
+  var refresh=document.getElementById("refreshStats");
+  if(refresh)refresh.addEventListener("click",paintStats);
+  paintStats();
+
+  var box=document.getElementById("onlineDataPref"),note=document.getElementById("onlinePrefStatus");
+  if(box&&window.Progress&&Progress.getPreference){
+    box.checked=!!Progress.getPreference("onlineData");
+    if(note)note.textContent=box.checked?"当前：允许四个探索页向第三方取公开数据。":"当前：默认关闭，四个探索页使用内置数据。";
+    box.addEventListener("change",function(){
+      var ok=Progress.setPreference("onlineData",box.checked);
+      if(!ok){box.checked=!!Progress.getPreference("onlineData");}
+      if(note)note.textContent=box.checked?"已打开：四个探索页可以取公开数据。":"已关闭：四个探索页回到内置数据。";
+    });
+  }else if(note){
+    note.textContent="这一台设备读不到偏好开关。";
+  }
 })();
 </script>
 
-<script src="../assets/js/pwa.js?v=17"></script>
+<script src="../assets/js/pwa.js?v=488"></script>
 </body>
 </html>

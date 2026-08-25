@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>不插电指令 · 排错一张，海龟会自己改路吗？</title>
+<meta name="description" content="用向前、左转、右转、重复这几张指令卡，让海龟走到星星。再改一张卡，看程序怎样走偏或被修好。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/games-lab.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+.kid-mission {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--code) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--code) 12%,var(--surface)),var(--surface) 62%);
+  }
+.mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--code) 36%,var(--line));
+    background: color-mix(in srgb,var(--code) 12%,var(--surface)); font-size: 2.2rem;
+  }
+.cd-art { display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto; }
+.cd-desk { fill: color-mix(in srgb,var(--code) 8%,#f7f1e8); }
+.cd-cell { fill: color-mix(in srgb,var(--surface) 80%,#fff); stroke: color-mix(in srgb,var(--ink) 18%,transparent); stroke-width: 1.4; }
+.cd-rock { fill: color-mix(in srgb,var(--ink) 22%,#b0aaa0); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.6; }
+.cd-star { fill: color-mix(in srgb,var(--warn) 62%,#e0a020); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.4; }
+.cd-turtle-leg { fill: color-mix(in srgb,var(--sci) 40%,#2f7a44); }
+.cd-turtle-shell { fill: color-mix(in srgb,var(--sci) 48%,#3d9a58); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 1.5; }
+.cd-turtle-scute { fill: color-mix(in srgb,var(--sci) 28%,#1e4a28); }
+.cd-turtle-head { fill: color-mix(in srgb,var(--sci) 32%,#5aaa48); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 1.3; }
+.cd-turtle-eye { fill: #1e2d1a; }
+.cd-path { fill: none; stroke: color-mix(in srgb,var(--code) 55%,#c47a12); stroke-width: 3; stroke-dasharray: 6 5; stroke-linecap: round; }
+.cd-lab { fill: var(--ink-mid); font: 700 12px var(--sans, sans-serif); text-anchor: middle; }
+.cd-atlas .kid-figure { --tone: var(--code); }
+.cd-strip {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 56px;
+    padding: 10px; border: 2px dashed color-mix(in srgb,var(--code) 30%,var(--line));
+    border-radius: var(--r); background: color-mix(in srgb,var(--code) 6%,var(--surface));
+  }
+.cd-chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 44px; min-width: 44px; padding: 8px 14px;
+    border: 2px solid color-mix(in srgb,var(--code) 40%,var(--line));
+    border-radius: 999px; background: var(--surface); color: var(--ink);
+    font: 800 .92rem/1 var(--font); cursor: pointer; white-space: nowrap;
+  }
+.cd-chip:hover { border-color: var(--code); }
+.cd-empty { margin: 0; color: var(--ink-dim); font: 750 .92rem/1.4 var(--font); }
+.ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--code) 16%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--code) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+button, .btn { min-height: 44px; min-width: 44px; }
+.stage + .kid-action-strip { margin-top: 8px; }
+.kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+@media (max-width: 480px) {
+    html[data-mode="kid"] .kid-mission { margin: 6px 0 8px; padding: 8px 10px; }
+    html[data-mode="kid"] .kid-mission .row { margin-bottom: .2em; }
+    html[data-mode="kid"] .kid-mission h1 { font-size: 1.38rem; }
+    html[data-mode="kid"] .kid-mission .lead { font-size: .84rem; line-height: 1.4; margin-bottom: .28em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 8px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1rem; margin-bottom: .28em; }
+    html[data-mode="kid"] .cd-art { max-height: 110px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .86rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+    html[data-mode="kid"] [data-playful-sticker] { display: none; }
+  }
+.guess-card { border-color: color-mix(in srgb,var(--code) 45%,var(--line)); }
+.guess-pick[aria-pressed="true"] { border-color: var(--code); background: color-mix(in srgb,var(--code) 18%,var(--surface)); color: var(--ink); }
+</style>
+</head>
+<body data-playful-page="games/code-cards.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-mission">
+    <div>
+      <p class="row"><span class="pill pill-code">编程</span><span class="pill">5–9&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>排错一张，海龟会自己改路吗？</h1>
+      <p class="lead">不插电指令卡把「程序=按顺序执行」做成可触摸的序列：向前走、左转、右转只改朝向，排错一张卡结果就会错——调试就是对照目标找差异再改一条。本页练顺序、方向与迭代；不在行走路径上放障碍物绊倒，不拿尖锐物当「机器人」。</p>
+      <p class="teach-note" data-ad-learn><b>学什么：</b>密码是「符号→意思」的对应表；猜对规则才能解码，不是把图案当装饰。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><svg viewBox="0 0 120 90" width="70" height="52" focusable="false" aria-hidden="true"><rect fill="#e7f0d8" width="120" height="90"/><rect x="16" y="16" width="88" height="64" fill="#f4efe4" stroke="#5a7a3a" stroke-width="1.6"/><path d="M16 37.3h88M16 58.7h88M45.3 16v64M74.7 16v64" stroke="#c5d4a8" stroke-width="1.2"/><ellipse cx="50" cy="62" rx="6" ry="3.4" fill="#2f7a3e"/><ellipse cx="70" cy="62" rx="6" ry="3.4" fill="#2f7a3e"/><ellipse cx="50" cy="46" rx="5.6" ry="3.2" fill="#2f7a3e"/><ellipse cx="70" cy="46" rx="5.6" ry="3.2" fill="#2f7a3e"/><ellipse cx="60" cy="54" rx="16" ry="12" fill="#3d9a58" stroke="#1e4a28" stroke-width="1.6"/><path d="M54 50 L60 44 L66 50 L60 58 Z" fill="#2f7a3e"/><ellipse cx="60" cy="36" rx="8" ry="7.2" fill="#5aaa48" stroke="#1e4a28"/><circle cx="57" cy="34" r="1.5" fill="#1e2d1a"/><circle cx="63" cy="34" r="1.5" fill="#1e2d1a"/><path d="M60 28v-14" stroke="#1c66c2" stroke-width="3" stroke-linecap="round"/><path d="M54 20l6-12 6 12z" fill="#1c66c2"/></svg></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">把海龟送到星星</h2>
+    <svg class="cd-art" id="board" viewBox="0 0 360 360" role="img" aria-labelledby="cdTitle cdDesc">
+      <title id="cdTitle">指令卡格子舞台</title>
+      <desc id="cdDesc">五乘五的格子。海龟从左下角朝上出发，星星在右边偏上。中间有一块石头。</desc>
+      <rect class="cd-desk" width="360" height="360"/>
+      <g id="cells"></g>
+      <rect class="cd-rock" id="rock" x="154" y="154" width="52" height="52" rx="8"/>
+      <polyline class="cd-path" id="trail" points=""/>
+      <polygon class="cd-star" id="star" points="244,86 252,108 276,108 256,122 264,144 244,130 224,144 232,122 212,108 236,108"/>
+      <g id="turtle">
+        <ellipse class="cd-turtle-leg" cx="-8" cy="6" rx="4.6" ry="2.5"/>
+        <ellipse class="cd-turtle-leg" cx="8" cy="6" rx="4.6" ry="2.5"/>
+        <ellipse class="cd-turtle-leg" cx="-7.4" cy="-4.2" rx="4.2" ry="2.3"/>
+        <ellipse class="cd-turtle-leg" cx="7.4" cy="-4.2" rx="4.2" ry="2.3"/>
+        <ellipse class="cd-turtle-shell" cx="0" cy="2" rx="11.2" ry="9"/>
+        <path class="cd-turtle-scute" d="M0 -5 L5.2 2 L0 8.2 L-5.2 2 Z"/>
+        <ellipse class="cd-turtle-head" cx="0" cy="-11" rx="5.2" ry="4.8"/>
+        <circle class="cd-turtle-eye" cx="-1.8" cy="-12.2" r="1.15"/>
+        <circle class="cd-turtle-eye" cx="1.8" cy="-12.2" r="1.15"/>
+      </g>
+      <text class="cd-lab" x="64" y="348">起点</text>
+      <text class="cd-lab" x="244" y="28">星星</text>
+    </svg>
+    <div class="readout">
+      <div><span>朝向</span><b id="dirOut">上</b></div>
+      <div><span>指令张数</span><b id="nOut">0</b></div>
+      <div><span>上次结果</span><b id="resOut">还没走</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">海龟在左下角，脸朝上。先点「向前」排指令，再点「走一遍」。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="指令卡主操作">
+    <div class="pick-btns">
+      <button class="btn btn-primary" type="button" id="addFd">向前</button>
+      <button class="btn" type="button" id="addLt">左转</button>
+      <button class="btn" type="button" id="addRt">右转</button>
+      <button class="btn" type="button" id="addRep">重复×2</button>
+    </div>
+    <div>
+      <p id="stripLabel">指令条（点一张可拿掉）</p>
+      <div class="cd-strip" id="strip" role="list" aria-labelledby="stripLabel"></div>
+    </div>
+    <div class="pick-btns">
+      <button class="btn btn-primary" type="button" id="runBtn">走一遍</button>
+      <button class="btn" type="button" id="undoBtn">拿掉最后一张</button>
+      <button class="btn" type="button" id="clearBtn">清掉卡片</button>
+    </div>
+  </div>
+
+  <section class="card guess-card" aria-labelledby="guessTitleCd">
+    <h2 id="guessTitleCd">先猜一猜，再跑</h2>
+    <p><b>第 1 题：</b>卡片顺序是「前进、左转、前进」。若把前两张对调成「左转、前进、前进」，机器人会？</p>
+    <div class="pick-btns" role="group" aria-label="猜改顺序">
+      <button class="btn guess-pick" type="button" data-guess1="same" aria-pressed="false">路径完全一样，顺序无所谓</button>
+      <button class="btn guess-pick" type="button" data-guess1="diff" aria-pressed="false">路径会变：指令按顺序执行</button>
+      <button class="btn guess-pick" type="button" data-guess1="battery" aria-pressed="false">只有电池决定走法</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。先跑通一次，再改一张卡的顺序重跑对照。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>程序跑偏了，最该先做哪一步？</p>
+      <div class="pick-btns" role="group" aria-label="猜调试">
+        <button class="btn guess-pick" type="button" data-guess2="order" aria-pressed="false">对照目标，检查顺序与某一张卡</button>
+        <button class="btn guess-pick" type="button" data-guess2="magic" aria-pressed="false">怪卡片魔法失灵</button>
+        <button class="btn guess-pick" type="button" data-guess2="all" aria-pressed="false">一次扔掉全部卡片重写</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后完成「送到目标再改卡重跑」任务。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>「重复×2」后面紧跟「向前」。跑一遍时，「向前」会做一遍、连做两遍，还是被取消？</p>
+      <div class="pick-btns" role="group" aria-label="猜重复卡">
+        <button class="btn guess-pick" type="button" data-guess3="1" aria-pressed="false">1&nbsp;次，重复只是装饰</button>
+        <button class="btn guess-pick" type="button" data-guess3="2" aria-pressed="false">2&nbsp;次：下一张连做两遍</button>
+        <button class="btn guess-pick" type="button" data-guess3="0" aria-pressed="false">0&nbsp;次，重复会取消向前</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后加「重复×2」再加「向前」，点走一遍对照。</p>
+    </div>
+  </section>
+
+    <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">只改一张卡，后面全会走偏；先找第一处差异</h2>
+    <p>指令一条接一条执行，没有「魔法跳过」。第&nbsp;3&nbsp;张转错了脸，后面所有「向前」都顺着错脸走，看起来像整条路坏了——其实第一处差异就在那一张。</p>
+    <p>左转、右转只改朝向，格子不动；向前才进一格。把「转」听成「走」，是最常见的走偏。</p>
+    <p>对照星星，圈出第一个分叉的步骤，只改那一张再跑。整叠重洗也许碰巧走到，但说不清是谁修好的。</p>
+    <p>本页是格子上的海龟，不是真机器人遥控。电池、传感器、急停属于另一门课。</p>
+  </section>
+
+  <section class="card cd-atlas" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">指令图鉴</h2>
+    <p>点一张，对照格子上的海龟：哪一张在挪步，哪一张只转身。</p>
+    <div class="kid-figure-grid" role="group" aria-label="指令图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-cd-atlas="fd" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e7f0d8" width="120" height="90"/><rect x="16" y="16" width="88" height="64" fill="#f4efe4" stroke="#5a7a3a" stroke-width="1.6"/><path d="M16 37.3h88M16 58.7h88M45.3 16v64M74.7 16v64" stroke="#c5d4a8" stroke-width="1.2"/><ellipse cx="50" cy="62" rx="6" ry="3.4" fill="#2f7a3e"/><ellipse cx="70" cy="62" rx="6" ry="3.4" fill="#2f7a3e"/><ellipse cx="50" cy="46" rx="5.6" ry="3.2" fill="#2f7a3e"/><ellipse cx="70" cy="46" rx="5.6" ry="3.2" fill="#2f7a3e"/><ellipse cx="60" cy="54" rx="16" ry="12" fill="#3d9a58" stroke="#1e4a28" stroke-width="1.6"/><path d="M54 50 L60 44 L66 50 L60 58 Z" fill="#2f7a3e"/><ellipse cx="60" cy="36" rx="8" ry="7.2" fill="#5aaa48" stroke="#1e4a28"/><circle cx="57" cy="34" r="1.5" fill="#1e2d1a"/><circle cx="63" cy="34" r="1.5" fill="#1e2d1a"/><path d="M60 28v-14" stroke="#1c66c2" stroke-width="3" stroke-linecap="round"/><path d="M54 20l6-12 6 12z" fill="#1c66c2"/></svg></span><span class="kid-figure-cap">向前</span><span class="kid-figure-fact">顺着现在脸的方向走一格，这是一步指令，不是念咒语让海龟自己跑</span></button>
+      <button class="kid-figure" type="button" data-cd-atlas="lt" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f7f1e8" width="120" height="90"/><path d="M78 62 A22 22 0 0 0 48 34" fill="none" stroke="#c47a12" stroke-width="5"/><path d="M40 44 L48 30 L60 40" fill="none" stroke="#c47a12" stroke-width="5"/></svg></span><span class="kid-figure-cap">左转</span><span class="kid-figure-fact">原地向左转，格子不动，只改朝向，下一步才按新脸走，不是念咒语转弯</span></button>
+      <button class="kid-figure" type="button" data-cd-atlas="rt" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f7f1e8" width="120" height="90"/><path d="M42 62 A22 22 0 0 1 72 34" fill="none" stroke="#c47a12" stroke-width="5"/><path d="M80 44 L72 30 L60 40" fill="none" stroke="#c47a12" stroke-width="5"/></svg></span><span class="kid-figure-cap">右转</span><span class="kid-figure-fact">原地向右转一回，人不挪格，指令一步一步走，海龟不会自己另选方向</span></button>
+      <button class="kid-figure" type="button" data-cd-atlas="rep" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f7f1e8" width="120" height="90"/><rect x="22" y="28" width="34" height="34" rx="8" fill="#fff" stroke="#c47a12" stroke-width="3"/><rect x="64" y="28" width="34" height="34" rx="8" fill="#fff" stroke="#c47a12" stroke-width="3"/><text x="39" y="51" text-anchor="middle" font-size="16" font-weight="800" fill="#96600c">2</text></svg></span><span class="kid-figure-cap">重复</span><span class="kid-figure-fact">下一张卡连做两遍，仍是按顺序一步一步，单独一张重复没有咒语可走</span></button>
+      <button class="kid-figure" type="button" data-cd-atlas="seq" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f7f1e8" width="120" height="90"/><circle cx="28" cy="45" r="10" fill="#6ea8fe"/><circle cx="60" cy="45" r="10" fill="#f4bd28"/><circle cx="92" cy="45" r="10" fill="#4ade80"/><path d="M38 45 H50 M70 45 H82" stroke="#5a5348" stroke-width="3"/></svg></span><span class="kid-figure-cap">顺序</span><span class="kid-figure-fact">从左到右，一张做完再做下一张，没有跳过中间的咒语，海龟按卡走不会自己抄近路</span></button>
+      <button class="kid-figure" type="button" data-cd-atlas="miss" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f7f1e8" width="120" height="90"/><polygon points="28,62 22,74 34,74" fill="#3d9a58"/><polygon points="92,22 86,34 98,34" fill="#e0a020"/><path d="M34 64 L70 40" stroke="#be123c" stroke-width="4"/></svg></span><span class="kid-figure-cap">一步错</span><span class="kid-figure-fact">只改一张，后面全会走偏，所以要一步一步核对，不是念咒语整叠重来</span></button>
+      <button class="kid-figure" type="button" data-cd-atlas="fix" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f7f1e8" width="120" height="90"/><rect x="24" y="30" width="28" height="28" rx="6" fill="#fff" stroke="#be123c" stroke-width="3"/><rect x="68" y="30" width="28" height="28" rx="6" fill="#fff" stroke="#0b7a45" stroke-width="3"/><path d="M76 44 L80 50 L90 36" fill="none" stroke="#0b7a45" stroke-width="3"/></svg></span><span class="kid-figure-cap">调试</span><span class="kid-figure-fact">先别全清掉，只改走偏那一张再走一遍，调试是一步一步，不是咒语重抽</span></button>
+      <button class="kid-figure" type="button" data-cd-atlas="goal" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f7f1e8" width="120" height="90"/><polygon points="60,18 66,38 88,38 70,50 76,72 60,58 44,72 50,50 32,38 54,38" fill="#e0a020"/></svg></span><span class="kid-figure-cap">目标</span><span class="kid-figure-fact">海龟踩到星星那一格就算送到，靠指令一步一步走到，不是咒语吸过去</span></button>
+      <button class="kid-figure" type="button" data-cd-atlas="start" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f7f1e8" width="120" height="90"/><rect x="18" y="16" width="84" height="60" fill="#f4efe4" stroke="#5a7a3a"/><path d="M18 36h84M18 56h84M46 16v60M74 16v60" stroke="#c5d4a8"/><ellipse cx="32" cy="68" rx="5" ry="2.6" fill="#2f7a3e"/><ellipse cx="48" cy="68" rx="5" ry="2.6" fill="#2f7a3e"/><ellipse cx="32" cy="54" rx="4.6" ry="2.4" fill="#2f7a3e"/><ellipse cx="48" cy="54" rx="4.6" ry="2.4" fill="#2f7a3e"/><ellipse cx="40" cy="62" rx="12" ry="9" fill="#3d9a58" stroke="#1e4a28" stroke-width="1.3"/><ellipse cx="40" cy="48" rx="5.4" ry="5" fill="#5aaa48" stroke="#1e4a28"/><circle cx="38.2" cy="46.6" r="1.1" fill="#1e2d1a"/><circle cx="41.8" cy="46.6" r="1.1" fill="#1e2d1a"/></svg></span><span class="kid-figure-cap">起点</span><span class="kid-figure-fact">海龟每次都从同一格、同一朝向出发，再按卡片一步一步走，不是咒语传送</span></button>
+      <button class="kid-figure" type="button" data-cd-atlas="wall" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f7f1e8" width="120" height="90"/><rect x="18" y="18" width="20" height="20" fill="#efe4cf" stroke="#8a7a60"/><rect x="40" y="18" width="20" height="20" fill="#8a857c"/><rect x="18" y="40" width="20" height="20" fill="#efe4cf" stroke="#8a7a60"/></svg></span><span class="kid-figure-cap">石头</span><span class="kid-figure-fact">那一格进不去，要绕开，指令一步一步改路，不要拆墙，也不是咒语穿过去</span></button>
+      <button class="kid-figure" type="button" data-cd-atlas="loop3" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f7f1e8" width="120" height="90"/><text x="60" y="54" text-anchor="middle" font-size="28" font-weight="800" fill="#3a2a18">×3</text></svg></span><span class="kid-figure-cap">重复更多</span><span class="kid-figure-fact">同一张卡连做三遍，路会更长，仍是一步一步执行，不是念咒语让它飞</span></button>
+      <button class="kid-figure" type="button" data-cd-atlas="clear" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f7f1e8" width="120" height="90"/><rect x="22" y="30" width="22" height="28" rx="4" fill="#d9d3ea"/><rect x="50" y="30" width="22" height="28" rx="4" fill="#d9d3ea"/><path d="M86 28 L104 56 M104 28 L86 56" stroke="#d05050" stroke-width="5"/></svg></span><span class="kid-figure-cap">清空重来</span><span class="kid-figure-fact">全清掉会回到起点，适合大改；小错只改一张，一步一步调，不是咒语重抽</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照指令条上看顺序和重复。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--code)"
+         data-kid-predict
+         data-kid-predict-explain="程序=顺序执行；改一张卡改结果。调试=找差异改一条。路径安全无绊倒。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🃏</span><b>机器人「做错了」，最该先检查什么？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：指令卡哪里出错">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="magic">卡片魔法失灵了，跟顺序无关</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="order" data-kid-predict-correct>指令顺序或某张卡写错了——程序按顺序执行</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="battery">一定是电池没电，卡片不用改</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：先送到星星，再改一张卡</h2>
+    <p>排好指令，点「走一遍」，让海龟踩到星星。然后改掉一张卡，再走一遍，看它走偏还是被修好。两件事都做过即可完成。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先让海龟走到星星。</p>
+  </section>
+
+
+    <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">先读一遍卡片再走；转不走路，走才进格</h2>
+    <p>舞台上只改一件事：指令条里的一张卡。同一只海龟、同一格起点、同一颗星星。先读完整排卡再点「走一遍」；走到星星以后，只改一张再走。这样比，才知道路偏了是因为那一张，不是海龟「不想听话」。</p>
+    <p>回家只带两句：「转不走路，走才进格」；「只改一张，先找第一处差异」。不要写成「卡片有魔法」或「整叠重洗才算调试」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">一张一条按序走</text><rect x="20" y="28" width="24" height="40" fill="#f4efe4" stroke="#1e2d4a"/><rect x="48" y="28" width="24" height="40" fill="#f4efe4" stroke="#1e2d4a"/><rect x="76" y="28" width="24" height="40" fill="#f4efe4" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">指令卡</span><span class="kid-figure-sub">顺序</span><p class="kid-figure-fact">一张做完才做下一张。没有跳过中间的咒语，海龟也不会自己改路，要按条走完。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">转不走路走才进格</text><circle cx="44" cy="52" r="18" fill="#f4efe4" stroke="#1e2d4a"/><path d="M44 38 L50 52 L44 48 L38 52 Z" fill="#c2410c"/><rect x="76" y="40" width="24" height="24" fill="#c8dce8" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">朝向</span><span class="kid-figure-sub">独立</span><p class="kid-figure-fact">左转、右转只转脸，格子不动。向前才进一格。三张卡一步一步，不是同一种咒语。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">一步一格看得见</text><path d="M28 28 H92 V76 H28 Z" fill="#f4efe4" stroke="#1e2d4a"/><path d="M50 28 V76 M70 28 V76 M28 44 H92 M28 60 H92" stroke="#6b7280"/><circle cx="40" cy="52" r="5" fill="#4a7a32"/></svg></span><span class="kid-figure-cap">网格</span><span class="kid-figure-sub">模型</span><p class="kid-figure-fact">五乘五的格子让一步一效看得见。中间那块石头进不去，要绕开，不要拆墙。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">先圈第一步错</text><circle cx="48" cy="48" r="16" fill="#f4efe4" stroke="#1e2d4a"/><path d="M60 58 L84 76" stroke="#1e2d4a" stroke-width="4"/><rect x="40" y="40" width="10" height="10" fill="#c2410c"/></svg></span><span class="kid-figure-cap">调试</span><span class="kid-figure-sub">找差异</span><p class="kid-figure-fact">对照星星，圈出第一个走偏的步骤。只改那一张再跑，一步一步调，不要整叠重洗。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">小步改再跑一遍</text><path d="M40 32 A20 20 0 1 1 36 60" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M36 60 L28 48 L48 52" fill="#c2410c"/></svg></span><span class="kid-figure-cap">迭代</span><span class="kid-figure-sub">再跑</span><p class="kid-figure-fact">一次只换一张再跑。整叠重洗分不清是哪一张改对了，下次还得重找，不是咒语。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">地上不放绊倒物</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">不安全路径</span><span class="kid-figure-sub">红线</span><p class="kid-figure-fact">真人走路实验要清场地。不拿尖物当机器人，不奔跑追逐，大人看着，一步一步走。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>读序列。</b>口头把每张卡念一遍，再点「走一遍」。</li>
+      <li data-step="2"><b>找差异。</b>对照星星，圈出第一个走偏的步骤。</li>
+      <li data-step="3"><b>改一条。</b>只改那一张再跑，看路有没有被修好。</li>
+      <li data-step="4"><b>写完成句。</b>转不走路；只改一张。划掉「整叠重洗」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>卡片要一张一张按顺序做。转圈不是往前走。错了就找出哪一张不对，改一张再试。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>程序按顺序执行。左转只改朝向，向前才换格。第&nbsp;3&nbsp;张错，后面常常全偏。调试是找第一处差异，不是整叠重洗。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>「重复×2」把后面一张展开两次，是本页尺子，不是编程语言语法。条件、传感器、真机遥控另开一课。本页只练顺序与单变量修改。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能指着指令条说「只改一张、后面才会偏」，并先圈出第一处差异。完成看的是对照，不是背「程序」两个字。拒「重抽直到对」。</p>
+    <ul class="ask-list">
+      <li>卡片是一张一张按顺序走，还是想跳哪张就跳哪张？</li>
+      <li>左转以后，海龟进格了吗？</li>
+      <li>路偏了，先圈哪一张？一次改几张？</li>
+      <li>地上能堆积木当障碍练走吗？</li>
+    </ul>
+  </section>
+
+
+  <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">只改一张卡，后面全会走偏；先找第一处差异</h2>
+    <p>同一条指令条，先只改一张。第&nbsp;2&nbsp;张本该左转却写成右转，海龟的脸从那儿就错了；后面所有「向前」都顺着错脸走，看起来像整条路坏了，其实第一处差异就在那一张。</p>
+    <p>家里也能看见同一家人。按食谱做饼干，漏掉「先预热」这一步，后面拌面、入炉都会怪烤箱；其实第一处差异在预热。搭积木说明书第&nbsp;3&nbsp;步装反，第&nbsp;8&nbsp;步对不上，也该先回到第&nbsp;3&nbsp;步，不要把整盒倒出来重来。</p>
+    <p>「重复×2」是加试，不是主任务：它把后面一张展开两次。单独一张重复没有用。条件判断、传感器、真遥控器，本页不覆盖。本页「重复×n 把后面一张展开 n 次」只是比较尺子，不是编程语言语法。</p>
+    <p>地上走路实验要清场：积木、电线、椅子腿都先拿开。不拿剪刀、铁丝当机器人。本页是格子上的海龟，不是真机遥控课。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">先圈分叉那一张</text><rect x="20" y="32" width="28" height="40" fill="#f4efe4" stroke="#1e2d4a"/><rect x="56" y="32" width="28" height="40" fill="#f4efe4" stroke="#c2410c"/><circle cx="96" cy="36" r="6" fill="#c2410c"/></svg></span><span class="kid-figure-cap">差异点</span><span class="kid-figure-sub">第一个</span><p class="kid-figure-fact">两套卡片从哪一步开始分叉，先圈出那一张。后面偏了常常是前面转错了脸。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">写下第n步起偏</text><rect x="22" y="28" width="50" height="44" fill="#f4efe4" stroke="#1e2d4a"/><path d="M82 26 L100 42 L78 74 L60 58 Z" fill="#e8b84a" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">第&nbsp;n&nbsp;步</span><span class="kid-figure-sub">记录</span><p class="kid-figure-fact">写下「第&nbsp;n&nbsp;步起偏」，只改那一步再跑一遍。一次改三张，分不清是谁修好的。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">先写再走再对照</text><circle cx="36" cy="52" r="12" fill="#f4efe4" stroke="#1e2d4a"/><circle cx="60" cy="52" r="12" fill="#e8b84a"/><circle cx="84" cy="52" r="12" fill="#86efac"/></svg></span><span class="kid-figure-cap">预测</span><span class="kid-figure-sub">三环</span><p class="kid-figure-fact">先写下「下一步会走到哪一格」，再点走一遍，最后对照卡片，指令一步一步对。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">本页只练按顺序</text><rect x="24" y="32" width="32" height="40" fill="#f4efe4" stroke="#1e2d4a"/><rect x="68" y="32" width="32" height="40" fill="#6b7280" opacity=".4"/></svg></span><span class="kid-figure-cap">条件</span><span class="kid-figure-sub">另开一课</span><p class="kid-figure-fact">「如果碰到石头就左转」是以后的课。本页只练按顺序一步一步走，没有传感器。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">留出走路空档</text><rect x="16" y="56" width="88" height="16" fill="#c8dce8"/><rect x="28" y="32" width="16" height="16" fill="#6b7280"/><path d="M48 40 H96" stroke="#c2410c" stroke-width="3"/></svg></span><span class="kid-figure-cap">清场</span><span class="kid-figure-sub">安全</span><p class="kid-figure-fact">地上留出走路空档。积木、电线、椅子腿先拿开，大人看着，一步一步走不奔跑。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">数字和步不要断</text><rect x="28" y="32" width="64" height="40" fill="#f4efe4" stroke="#1e2d4a"/><text x="40" y="58" font-size="16" fill="#1e2d4a">走3步</text></svg></span><span class="kid-figure-cap">n&nbsp;步</span><span class="kid-figure-sub">写在一起</span><p class="kid-figure-fact">纸上写「走&nbsp;3&nbsp;步」时，数字和「步」不要拆开，否则孩子会只看见&nbsp;3，指令要写在一起。</p></div>
+    </div>
+  </section>
+
+
+  <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：只改一张修好 · 整叠重洗 · 「卡片有魔法」</h2>
+    <p>三列用同一只海龟、同一颗星星。先只改一张卡。一次改两样，分不清到底是顺序错还是方向错。</p>
+    <p>只改一张：圈出第一处差异，路常常就被修好。整叠重洗：也许碰巧走到，但说不出哪一张在干活。「卡片有魔法」整列划掉：海龟只听顺序，不听心情。</p>
+    <p>随意口令是加试：大人喊「往那边走」没有固定语义，明天复现不了，找不到第一处差异。真机遥控另开一行：有传感器、延迟和急停，本页不覆盖。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#cfe8b0" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">一步一效可复盘</text><rect x="24" y="28" width="22" height="36" fill="#f4efe4" stroke="#1e2d4a"/><rect x="50" y="28" width="22" height="36" fill="#f4efe4" stroke="#1e2d4a"/><rect x="76" y="28" width="22" height="36" fill="#f4efe4" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">只改一张</span><span class="kid-figure-sub">能调试</span><p class="kid-figure-fact">顺序卡一步一效。圈出分叉那一张，改完再跑，能说清是谁修好的，不是咒语。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f2e6c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">整叠重洗难复现</text><rect x="22" y="30" width="22" height="28" rx="4" fill="#d9d3ea"/><rect x="50" y="30" width="22" height="28" rx="4" fill="#d9d3ea"/><path d="M86 28 L104 56 M104 28 L86 56" stroke="#d05050" stroke-width="5"/></svg></span><span class="kid-figure-cap">整叠重洗</span><span class="kid-figure-sub">不算调试</span><p class="kid-figure-fact">全清掉再碰运气，下次还是不知道该改哪一张。调试是对照差异改一条。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f2e6c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">卡片没有魔法</text><ellipse cx="60" cy="48" rx="28" ry="14" fill="#f4efe4" stroke="#1e2d4a"/><path d="M20 22 L100 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">魔法</span><span class="kid-figure-sub">整列划掉</span><p class="kid-figure-fact">海龟不会因为「想听话」自己改路。顺序错了就走偏，把这句话当否决句。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">本页不覆盖遥控</text><rect x="36" y="32" width="48" height="36" rx="6" fill="#6b7280"/><circle cx="50" cy="48" r="4" fill="#e8b84a"/><circle cx="70" cy="48" r="4" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">真机</span><span class="kid-figure-sub">另开一行</span><p class="kid-figure-fact">真机器人有传感器、延迟和急停。本页只是格子海龟一步一步走，不是编程证书。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">两套不要混着跑</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">混着跑</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">一边改卡一边喊口令，分不清海龟听的是哪一套。一次只改一张，一步一步对。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">一步一格看得见</text><path d="M28 28 H92 V76 H28 Z" fill="#f4efe4" stroke="#1e2d4a"/><path d="M50 28 V76 M70 28 V76 M28 44 H92 M28 60 H92" stroke="#6b7280"/><circle cx="40" cy="52" r="5" fill="#4a7a32"/></svg></span><span class="kid-figure-cap">网格</span><span class="kid-figure-sub">对照用</span><p class="kid-figure-fact">格子让你看见「这一步走到哪」。没有格子，第一处差异很难圈，指令要对着走。</p></div>
+    </div>
+  </section>
+
+
+  <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「只改一张、先找第一处差异」，不记代码词</h2>
+    <p>在纸上画一排空格当指令条。先写一套能到星星的卡，再故意把其中一张改错，旁边写下「第几张起偏」。两套并排，比背「调试」两个字有用。</p>
+    <p>口头只要两句：「转不走路，走才进格。」「只改一张，先找第一处差异。」有人说「整叠重洗才快」或「卡片有魔法」，让孩子指着被圈出来的那一张反驳。</p>
+    <p>若要在地上走，场地先清空，大人看着，不奔跑。海龟几何页用同一套「向前、左转」把图形画出来，可以接着去。本页不是编程语言课，也不连接真机器人。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">每轮只改一张卡</text><circle cx="32" cy="52" r="10" fill="#f4efe4" stroke="#1e2d4a"/><circle cx="60" cy="52" r="10" fill="#f4efe4" stroke="#1e2d4a"/><circle cx="88" cy="52" r="10" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">3&nbsp;轮</span><span class="kid-figure-sub">单卡</span><p class="kid-figure-fact">同一颗星星做三轮。每轮只允许改一张卡，记下改前改后停在哪一格。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">预测一句结果一句</text><rect x="22" y="28" width="50" height="44" fill="#f4efe4" stroke="#1e2d4a"/><path d="M82 26 L100 42 L78 74 L60 58 Z" fill="#e8b84a" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">两句</span><span class="kid-figure-sub">预测 / 结果</span><p class="kid-figure-fact">每轮先写「我猜它会停在哪」，走完再写「它停在哪」。差在哪一张？一步一步对。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">清场成人看顾</text><circle cx="32" cy="52" r="10" fill="#e8d4a8"/><rect x="56" y="56" width="48" height="12" fill="#c8dce8"/></svg></span><span class="kid-figure-cap">清场</span><span class="kid-figure-sub">大人看</span><p class="kid-figure-fact">地上走路要清场。不奔跑，不拿尖物当机器人。本页不是体能课，是一步一步指令。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">前进左转同一套</text><path d="M28 64 H60 V32 H88" fill="none" stroke="#4a7a32" stroke-width="4"/><rect x="84" y="20" width="20" height="14" fill="#f4efe4" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">海龟几何</span><span class="kid-figure-sub">同一套动词</span><p class="kid-figure-fact">这里改方向，隔壁海龟几何用同一套「向前、左转」一步一步把图形画出来。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">一次只换一张</text><rect x="24" y="32" width="28" height="40" fill="#e8b84a" stroke="#1e2d4a"/><rect x="60" y="32" width="28" height="40" fill="#f4efe4" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">只改一</span><span class="kid-figure-sub">纪律</span><p class="kid-figure-fact">一次只换一张，否则分不清是顺序错还是方向错。调试要能指着那一张。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">对照目标再改卡</text><circle cx="60" cy="50" r="20" fill="#f4efe4" stroke="#c2410c"/><circle cx="60" cy="50" r="8" fill="#c2410c"/></svg></span><span class="kid-figure-cap">目标</span><span class="kid-figure-sub">对照</span><p class="kid-figure-fact">先指着星星说「要到这儿」，再回头圈出第一张走偏的卡。那就是一步一步调试。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「路偏了靠不靠那一张卡」，就只改一张。同一只海龟、同一格起点、同一颗星星，先走通一次，再只改一张重走。加「重复×2」、换成口头口令，是另一次对照，不要和「改哪一张」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>指令条里的一张卡（对 / 错，或左右转对调）。</li>
+      <li><b>先保持不变：</b>同一只海龟、同一格起点、同一朝向、同一颗星星。</li>
+      <li><b>要观察的：</b>它停在哪一格，从第几步开始和目标分叉。</li>
+      <li><b>另开一行：</b>同样送到星星，「重复×2&nbsp;+&nbsp;向前」是走一格还是两格。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>把「向前、左转、向前」改成「左转、向前、向前」，海龟还会踩到同一格吗？第一处差异在哪一张？</li>
+      <li>食谱漏了「先预热」，后面烤糊了。该把整本菜谱扔掉重买，还是先回到那一步？和本页像在哪？</li>
+      <li>「重复×2」后面紧跟「向前」，向前会做几遍？单独放一张重复、后面没有卡，海龟会动吗？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把循环和条件提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>卡片要一张一张按顺序做。转圈不是往前走。错了就找出哪一张不对，改一张再试。能指着「这张转错了」就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>程序按顺序执行。第&nbsp;3&nbsp;张错，后面常常全偏。调试是找第一处差异，不是整叠重洗。重复×2 把后面一张做两遍。本页不是真机器人课。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>顺序执行是语义核心；朝向与位移要分开。单变量修改才能定位。条件、传感器、真机联锁另开一课。「重复×n」是本页尺子，不是编程语言语法。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：指令观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：少一张向前就走偏了"></div>
+      <div><label for="workContent">改了一张以后怎样</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下原来的指令顺序、你改了哪一张，以及海龟停在哪一格。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+    <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>海龟走偏时，孩子指的是「第几张卡」，还是在说「它不想听话」？让他再圈一次第一处差异。</li>
+      <li>左转以后格子没动：哪一句四岁听得懂？试「转只是转脸，走才换格」。</li>
+      <li>如果他一次改了三张，路碰巧对了——为什么这句不能当本页的完成句？差在「说不清是谁修好的」。</li>
+      <li>整叠重洗和只改一张，哪边能复盘？食谱漏了预热，该扔书还是回到那一步？</li>
+      <li>「重复×2&nbsp;+&nbsp;向前」会走几格？单独一张重复呢？本页能当编程语言课吗？</li>
+      <li>地上走路实验的红线怎么说？积木、尖物、奔跑？本页格子海龟等于真机器人吗？</li>
+    </ul>
+  </section>
+
+    <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着指令条讲：程序是按顺序执行的一串指令。向前改格子，左转、右转只改朝向。第&nbsp;n&nbsp;张错了，后面所有「向前」都顺着错脸走，所以看起来像整条路坏了——第一处差异往往就在那一张。</p>
+    <p>调试靠最小改动：对照目标，圈出第一个分叉点，只改那一张再跑。整叠重洗也许碰巧走到，但复盘不了。本页「重复×n 把后面一张展开 n 次」只是比较尺子，用来看见「同一张卡连做两遍」，不是编程语言语法，也没有条件判断。</p>
+    <p>朝向和位移要分开，是空间推理里最常见的卡点。口头乱喊「往那边」没有固定语义，明天复现不了。真机器人还有传感器、延迟和急停，本页不覆盖。</p>
+    <p>不插电把思维从屏幕上拿下来，但地上走路仍要清场。不拿尖物当机器人，不奔跑追逐。舞台是格子海龟示意，不是遥控课。</p>
+  </section>
+
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">指令卡公式卡 · 重复×n 把后面一张展开 n 次（本页比较尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">程序按卡顺序走：向前改格，左转/右转改朝向。改一张卡路径就偏；「重复×2 + 向前」= 连续两格。</p>
+    </div>
+
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>同一条线索还可以在隔壁站继续看。</p>
+    <p class="row"><a class="btn btn-ghost" href="turtle-geometry.html">海龟几何</a><a class="btn btn-ghost" href="pattern-machine.html">规律机器</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页是不插电示意：没有编程语言语法，也不连接真实机器人。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var COLS = 5, ROWS = 5, SIZE = 56, OX = 40, OY = 40;
+  var START = { x:0, y:4, dir:0 };
+  var STAR = { x:3, y:1 };
+  var ROCK = { x:2, y:2 };
+  var DIRS = [{x:0,y:-1,name:"上"},{x:1,y:0,name:"右"},{x:0,y:1,name:"下"},{x:-1,y:0,name:"左"}];
+  var NAMES = { fd:"向前", lt:"左转", rt:"右转", rep:"重复×2" };
+  var cards = [];
+  var pose = { x:START.x, y:START.y, dir:START.dir };
+  var seen = { goal:false, changed:false, rerun:false, done:false, repFd:false };
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  var goalKey = "";
+  var lastHit = false;
+  function keyOf(list){ return list.join(","); }
+  function cellC(x, y){
+    return { x: OX + x * SIZE + SIZE / 2, y: OY + y * SIZE + SIZE / 2 };
+  }
+  function blocked(x, y){
+    if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return "edge";
+    if (x === ROCK.x && y === ROCK.y) return "rock";
+    return "";
+  }
+  function expand(list){
+    var out = [];
+    var i;
+    for (i = 0; i < list.length; i += 1) {
+      if (list[i] === "rep") {
+        var next = list[i + 1];
+        if (next && next !== "rep") {
+          out.push(next);
+          out.push(next);
+          i += 1;
+        }
+      } else {
+        out.push(list[i]);
+      }
+    }
+    return out;
+  }
+  function paintCells(){
+    var g = document.getElementById("cells");
+    if (g.childNodes.length) return;
+    var x, y, r, c;
+    for (y = 0; y < ROWS; y += 1) {
+      for (x = 0; x < COLS; x += 1) {
+        r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        r.setAttribute("class", "cd-cell");
+        r.setAttribute("x", String(OX + x * SIZE));
+        r.setAttribute("y", String(OY + y * SIZE));
+        r.setAttribute("width", String(SIZE));
+        r.setAttribute("height", String(SIZE));
+        g.appendChild(r);
+      }
+    }
+    c = cellC(ROCK.x, ROCK.y);
+    document.getElementById("rock").setAttribute("x", String(c.x - 22));
+    document.getElementById("rock").setAttribute("y", String(c.y - 22));
+  }
+  function paintTurtle(){
+    var c = cellC(pose.x, pose.y);
+    var deg = pose.dir * 90;
+    document.getElementById("turtle").setAttribute("transform", "translate("+c.x+" "+c.y+") rotate("+deg+")");
+    var s = cellC(STAR.x, STAR.y);
+    document.getElementById("star").setAttribute("transform", "translate("+(s.x-244)+" "+(s.y-116)+")");
+  }
+  function paintStrip(){
+    var strip = document.getElementById("strip");
+    while (strip.firstChild) strip.removeChild(strip.firstChild);
+    if (!cards.length) {
+      var empty = document.createElement("p");
+      empty.className = "cd-empty";
+      empty.textContent = "还没有指令卡。先点上面的「向前」。";
+      strip.appendChild(empty);
+    } else {
+      cards.forEach(function(kind, index){
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "cd-chip";
+        btn.setAttribute("role", "listitem");
+        btn.setAttribute("aria-label", "第"+(index+1)+"张："+NAMES[kind]+"，点按可拿掉");
+        btn.textContent = NAMES[kind];
+        btn.addEventListener("click", function(){ removeAt(index); });
+        strip.appendChild(btn);
+      });
+    }
+    document.getElementById("nOut").textContent = String(cards.length);
+  }
+  function markChanged(){
+    if (seen.goal && keyOf(cards) !== goalKey) seen.changed = true;
+  }
+  function removeAt(index){
+    cards.splice(index, 1);
+    markChanged();
+    paintStrip();
+    announceExpand();
+    updateTask();
+  }
+  function announceExpand(){
+    var live = document.getElementById("live");
+    if (!cards.length) {
+      live.textContent = "还没有指令卡。先点「向前」。";
+      return;
+    }
+    var n = cards.length, m = expand(cards).length;
+    live.textContent = "卡 "+n+" 张会展开成 "+m+"\u00a0步"+(m>n?"：重复×2 把后面一张连做两遍":"")+"。点「走一遍」。";
+  }
+  function addCard(kind){
+    if (cards.length >= 12) {
+      document.getElementById("live").textContent = "指令条最多 12\u00a0张。先拿掉一张再加。";
+      return;
+    }
+    cards.push(kind);
+    markChanged();
+    paintStrip();
+    announceExpand();
+    updateTask();
+  }
+  function run(){
+    var steps = expand(cards);
+    var x = START.x, y = START.y, dir = START.dir;
+    var pts = [];
+    var c0 = cellC(x, y);
+    pts.push(c0.x + "," + c0.y);
+    var hit = false;
+    var reason = "";
+    var i, step, d, nx, ny, block, c;
+    if (x === STAR.x && y === STAR.y) hit = true;
+    for (i = 0; i < steps.length; i += 1) {
+      step = steps[i];
+      if (step === "lt") dir = (dir + 3) % 4;
+      else if (step === "rt") dir = (dir + 1) % 4;
+      else if (step === "fd") {
+        d = DIRS[dir];
+        nx = x + d.x;
+        ny = y + d.y;
+        block = blocked(nx, ny);
+        if (block) {
+          reason = block;
+          break;
+        }
+        x = nx;
+        y = ny;
+        c = cellC(x, y);
+        pts.push(c.x + "," + c.y);
+        if (x === STAR.x && y === STAR.y) hit = true;
+      }
+    }
+    pose = { x:x, y:y, dir:dir };
+    document.getElementById("trail").setAttribute("points", pts.join(" "));
+    paintTurtle();
+    document.getElementById("dirOut").textContent = DIRS[pose.dir].name;
+    lastHit = hit;
+    var live = document.getElementById("live");
+    var res = document.getElementById("resOut");
+    var note = "卡 "+cards.length+" 张→"+steps.length+"\u00a0步。";
+    if (hit) {
+      res.textContent = "踩到星星";
+      live.textContent = note + (seen.changed
+        ? "改完还能走到。指令按顺序执行，对的顺序会把海龟送到目标。"
+        : "走到星星啦！现在改掉一张指令卡，再走一遍，看它会不会走偏。");
+      if (!seen.goal) {
+        seen.goal = true;
+        goalKey = keyOf(cards);
+      }
+    } else if (reason === "rock") {
+      res.textContent = "撞到石头";
+      live.textContent = note + "前面是石头，海龟停住了。拿掉或改一张卡再试。";
+    } else if (reason === "edge") {
+      res.textContent = "走出格子";
+      live.textContent = note + "再往前就走出格子了。少一张向前，或多转一次。";
+    } else {
+      res.textContent = "没到星星";
+      live.textContent = note + "走完了，可是没踩到星星。改一张卡，或再加一张「向前」。";
+    }
+    if (seen.goal && seen.changed) seen.rerun = true;
+    if (hasRepFd()) seen.repFd = true;
+    updateTask();
+  }
+  function hasRepFd(){
+    var i;
+    for (i = 0; i < cards.length - 1; i += 1) {
+      if (cards[i] === "rep" && cards[i + 1] === "fd") return true;
+    }
+    return false;
+  }
+  function updateTask(){
+    var status = document.getElementById("taskStatus");
+    if (guess1 && !guess1Done && seen.goal && seen.changed) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "diff" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "程序按顺序执行。改顺序或改一张卡，路径就会变。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && seen.goal && seen.changed && seen.rerun) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "order" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "调试=对照目标，找出顺序或某一张卡的差异再试。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && seen.repFd) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "2" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "「重复×2」让下一张连做两遍：向前走了 <b>2</b> 格。";
+    }
+    if (seen.done) return;
+    if (seen.goal && seen.changed && seen.rerun) {
+      seen.done = true;
+      if (window.Progress) Progress.complete("games/code-cards.html", "走到星星，再改一张指令卡");
+      status.textContent = lastHit
+        ? "完成啦：你送到了星星，又改过一张卡，看见它仍能走到。"
+        : "完成啦：你送到了星星，又改过一张卡，看见它走偏了。";
+    } else if (!seen.goal) {
+      status.textContent = "尚未完成：先让海龟走到星星。";
+    } else if (!seen.changed) {
+      status.textContent = "还差：改掉一张指令卡。";
+    } else {
+      status.textContent = "还差：改完后再点「走一遍」。";
+    }
+  }
+  function resetPose(){
+    pose = { x:START.x, y:START.y, dir:START.dir };
+    document.getElementById("trail").setAttribute("points", "");
+    document.getElementById("dirOut").textContent = DIRS[pose.dir].name;
+    document.getElementById("resOut").textContent = "还没走";
+    paintTurtle();
+  }
+  paintCells();
+  paintStrip();
+  resetPose();
+  document.getElementById("addFd").addEventListener("click", function(){ addCard("fd"); });
+  document.getElementById("addLt").addEventListener("click", function(){ addCard("lt"); });
+  document.getElementById("addRt").addEventListener("click", function(){ addCard("rt"); });
+  document.getElementById("addRep").addEventListener("click", function(){ addCard("rep"); });
+  document.getElementById("runBtn").addEventListener("click", run);
+  document.getElementById("undoBtn").addEventListener("click", function(){
+    if (!cards.length) return;
+    cards.pop();
+    markChanged();
+    paintStrip();
+    updateTask();
+  });
+  document.getElementById("clearBtn").addEventListener("click", function(){
+    cards = [];
+    markChanged();
+    paintStrip();
+    resetPose();
+    document.getElementById("live").textContent = "卡片清掉了。重新排一张「向前」吧。";
+    updateTask();
+  });
+  var ATLAS = {
+    fd: "向前：顺着现在的朝向走一格。这是一步指令，不是咒语让海龟自己跑。",
+    lt: "左转：原地向左转，格子不动。只改朝向，下一步才按新脸走，不是念咒语转弯。",
+    rt: "右转：原地向右转，格子不动。指令一步一步走，海龟不会自己另选方向。",
+    rep: "重复：下一张卡连做两遍。仍是按顺序一步一步，单独一张重复没有咒语。",
+    seq: "顺序：从左到右，一张做完才做下一张。指令一步一步，没有跳过中间的咒语。",
+    miss: "一步错：只改一张，后面的路都会偏。要一步一步对，不是念咒语整叠重来。",
+    fix: "调试：先别全清掉，只改走偏那一张再走一遍。一步一步调，不是咒语重抽。",
+    goal: "目标：海龟踩到星星那一格就算送到，靠指令一步一步走到，不是咒语吸过去。",
+    start: "起点：海龟每次都从同一格、同一朝向出发，再按卡片一步一步走，不是传送。",
+    wall: "石头：那一格进不去，要绕开。指令一步一步改路，不要拆墙，不是咒语穿墙。",
+    loop3: "重复更多：同一张卡连做三遍，路会更长，仍是一步一步执行，不是咒语飞。",
+    clear: "清空重来：全清掉会回到起点，适合大改；小错只改一张，不是咒语重抽。"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-cd-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-cd-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-cd-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。先跑通再改顺序对照。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。完成改卡重跑后揭晓。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut3").textContent = "押好了。加「重复×2」再加「向前」，走一遍揭晓。";
+    });
+  });
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/code-cards.html", "不插电指令");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

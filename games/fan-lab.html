@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>开屏工坊 · 互动实验室</title>
+<meta name="description" content="孔雀开屏是把同一把覆羽摊开，面积变大，眼斑露出来。合拢就收回去。本页面积公式是比较尺子，不是孔雀的真实公式。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  html, body { overflow-x:hidden; }
+  button, .btn, .chip, input, select, textarea, .input { min-height:44px; }
+  button, .btn { touch-action:manipulation; }
+  :root { --touch:52px; --touch-lg:64px; }
+  .tag-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .section-kicker { margin:0 0 5px; color:var(--phys); font-size:.76rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+
+  .kid-mission { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; margin:10px 0 8px; padding:clamp(12px,2.4vw,18px); border:1px solid color-mix(in srgb,var(--sci) 34%,var(--line)); border-radius:22px; background:linear-gradient(135deg,color-mix(in srgb,var(--sci) 14%,var(--surface)),var(--surface) 62%); }
+  .mission-copy h1 { margin:.2em 0 .12em; font-size:clamp(1.45rem,4.6vw,2.15rem); line-height:1.12; }
+  .mission-copy p { max-width:52ch; margin:.2em 0 0; color:var(--ink-mid); }
+  .mission-character { width:76px; min-height:76px; display:grid; place-items:center; border:2px solid color-mix(in srgb,var(--sci) 32%,var(--line)); border-radius:50%; background:radial-gradient(circle at 38% 32%,var(--surface),color-mix(in srgb,var(--sci) 18%,var(--surface))); }
+  .mission-character svg { width:52px; height:52px; }
+
+  .kid-visual-stage { position:relative; margin-bottom:14px; padding:clamp(10px,2vw,16px); border:3px solid color-mix(in srgb,var(--sci) 42%,var(--line)); border-radius:24px; background:var(--surface); box-shadow:0 8px 0 color-mix(in srgb,var(--kit) 26%,transparent); }
+  .stage-head { display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-bottom:8px; }
+  .stage-head h2 { margin:0; font-size:clamp(1.1rem,3.6vw,1.4rem); }
+  .stage-head p { margin:2px 0 0; color:var(--ink-mid); font-size:.88rem; }
+  .condition-badge { flex:none; padding:6px 10px; border:1px solid color-mix(in srgb,var(--sci) 45%,var(--line)); border-radius:99px; background:color-mix(in srgb,var(--sci) 12%,var(--surface)); color:var(--ink); font-size:.8rem; font-weight:900; }
+  .fn-art { display:block; width:100%; max-width:960px; height:auto; margin:0 auto; }
+
+  .fn-toys { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:12px 0 0; }
+  .fn-toy { min-height:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:10px 8px; border:3px solid var(--line); border-radius:22px; background:var(--surface-2); color:var(--ink); font-weight:900; font-size:1.05rem; line-height:1.2; }
+  .fn-toy svg { width:72px; height:64px; }
+  .fn-toy[aria-pressed="true"] { border-color:var(--sci); background:color-mix(in srgb,var(--sci) 16%,var(--surface)); }
+  .fn-toy-go { border-color:color-mix(in srgb,var(--sci) 55%,var(--line)); background:color-mix(in srgb,var(--sci) 12%,var(--surface)); }
+  .fn-toy:active { transform:translateY(2px); }
+
+  .kid-speech-row { margin:10px 0 0; }
+  .kid-speech { font-size:1.05rem; font-weight:800; }
+
+  .fn-atlas .kid-figure { display:flex; flex-direction:column; gap:6px; align-items:stretch; margin:0; padding:10px; text-align:center; }
+  .fn-atlas .kid-figure-art { padding:4px; }
+  .fn-atlas .kid-figure-art > svg { width:100%; max-width:128px; height:auto; }
+  .fn-atlas .kid-figure-fact { display:block; }
+
+  .kid-band { margin:0 0 16px; padding:clamp(12px,2.4vw,18px); border:3px solid var(--line); border-radius:24px; background:linear-gradient(158deg,var(--surface),var(--surface-2)); box-shadow:0 6px 0 color-mix(in srgb,var(--kit) 26%,transparent); }
+  .kid-band-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .kid-band-emoji { flex:none; display:grid; place-items:center; width:48px; height:48px; border:3px solid var(--line); border-radius:46% 54% 50% 50%; background:var(--surface); }
+  .kid-band-emoji svg { width:30px; height:30px; }
+  .kid-band-head h2 { margin:0; font-size:clamp(1.05rem,3.4vw,1.32rem); }
+  .kid-band-head p { margin:2px 0 0; color:var(--ink-mid); font-size:.86rem; }
+  .kid-status { display:block; margin:10px 0 0; padding:10px 14px; border:3px solid var(--line-soft); border-radius:999px; background:var(--surface); color:var(--ink); font-size:.95rem; font-weight:800; }
+  .kid-status[data-tone="good"] { border-color:color-mix(in srgb,var(--sci) 55%,var(--line)); background:color-mix(in srgb,var(--sci) 14%,var(--surface)); }
+  .kid-icon-row { display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 0; }
+  .kid-icon-row .kid-icon-btn { flex:1 1 120px; }
+  .kid-icon-btn[aria-pressed="true"], .guess-pick[aria-pressed="true"], .kid-choice[aria-pressed="true"] { border-color:var(--sci); background:color-mix(in srgb,var(--sci) 16%,var(--surface)); color:var(--ink); }
+  .kid-badge-row { display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 0; padding:0; list-style:none; }
+  .kid-badge-row .kid-badge { min-height:48px; opacity:.42; filter:grayscale(.55); }
+  .kid-badge-row .kid-badge[data-earned="true"] { opacity:1; filter:none; border-color:color-mix(in srgb,var(--sci) 65%,var(--line)); background:color-mix(in srgb,var(--sci) 14%,var(--surface)); }
+
+  .parent-sliders { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
+  .readout { display:grid; gap:8px; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); margin-top:8px; }
+  .readout b { display:block; font:800 1.08rem/1.2 var(--mono); color:var(--ink); }
+  .readout span { font-size:.76rem; color:var(--ink-dim); }
+  .fn-ruler { margin:8px 0 0; font-size:.86rem; color:var(--ink-mid); }
+  .guess-out { font-weight:750; color:var(--ink-mid); }
+  .guess-out b { color:var(--ink); }
+  .teach-lead { margin:.2em 0 .7em; color:var(--ink-mid); }
+  .teach-lead b { color:var(--ink); }
+  .teach-points { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0; padding:0; list-style:none; }
+  .teach-points li { padding:12px; border:1px solid var(--line-soft); border-radius:14px; background:var(--surface-2); color:var(--ink-mid); font-size:.9rem; }
+  .teach-points b { display:block; margin-bottom:3px; color:var(--ink); }
+  .var-cards { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 0; padding:0; list-style:none; }
+  .var-cards li { padding:9px 12px; border:1px dashed var(--line); border-radius:12px; background:var(--surface-2); color:var(--ink-mid); font-size:.85rem; font-weight:700; }
+  .var-cards li[data-keep="change"] { border-style:solid; border-color:color-mix(in srgb,var(--warn) 60%,var(--line)); background:color-mix(in srgb,var(--warn) 12%,var(--surface)); color:var(--ink); }
+  .obj-sub { margin-top:2px; color:var(--ink-dim); font:600 .72rem/1.5 var(--mono); }
+  .pick-status { margin:10px 0 0; }
+  .quick-picks { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px; margin:12px 0 0; }
+  .qlist { margin:0; padding-left:1.15em; color:var(--ink-mid); }
+  .qlist li { margin-bottom:.5em; }
+  .ask { counter-reset:q; list-style:none; padding:0; margin:0; }
+  .ask li { position:relative; padding-left:34px; margin-bottom:12px; color:var(--ink-mid); }
+  .ask li::before { counter-increment:q; content:counter(q); position:absolute; left:0; top:1px; width:23px; height:23px; border-radius:50%; display:grid; place-items:center; background:color-mix(in srgb,var(--sci) 16%,var(--surface)); border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line)); color:var(--ink); font:800 .76rem var(--mono); }
+  .parent-age-layers { display:grid; gap:12px; margin-top:14px; }
+  .parent-age-layers details { padding:0 16px; border:2px solid var(--line); border-radius:18px; background:var(--surface); }
+  .parent-age-layers summary { min-height:48px; display:flex; align-items:center; flex-wrap:wrap; gap:8px; cursor:pointer; color:var(--ink); font-weight:900; }
+  .parent-age-layers details > div { padding:0 0 16px; color:var(--ink-mid); }
+  .parent-age-layers .layer-age { display:inline-block; padding:2px 10px; border-radius:999px; background:color-mix(in srgb,var(--sci) 12%,var(--surface)); color:var(--sci); font-size:.74rem; font-weight:900; }
+  .science-note { border-color:color-mix(in srgb,var(--sci) 55%,var(--surface)); background:linear-gradient(135deg,color-mix(in srgb,var(--sci) 9%,var(--surface)),var(--surface-2)); }
+  .why h3 { margin-top:1.1em; }
+  .formal-task form[data-playful-work-form] { margin-top:16px; }
+  .parent-deep-dive { margin-top:16px; }
+
+  .fn-sky { fill:color-mix(in srgb,var(--phys) 18%,#d6eaf6); }
+  .fn-hill { fill:color-mix(in srgb,var(--sci) 22%,#cfe8b0); }
+  .fn-grass { fill:color-mix(in srgb,var(--sci) 40%,#5a8a3a); }
+  .fn-path { fill:color-mix(in srgb,var(--kit) 24%,#d2b48c); }
+  .fn-trunk { fill:color-mix(in srgb,var(--kit) 40%,#8a6038); }
+  .fn-leaf { fill:color-mix(in srgb,var(--sci) 48%,#3a7a32); }
+  .fn-flower { fill:color-mix(in srgb,var(--danger) 40%,#d45a7a); }
+  .fn-flower-y { fill:color-mix(in srgb,var(--warn) 55%,#f0c14a); }
+  .fn-body { fill:color-mix(in srgb,var(--sci) 62%,#0e6b4a); }
+  .fn-breast { fill:color-mix(in srgb,var(--phys) 55%,#1a6a8a); }
+  .fn-neck { fill:color-mix(in srgb,var(--phys) 58%,#0e7490); }
+  .fn-head { fill:color-mix(in srgb,var(--phys) 62%,#0a5f78); }
+  .fn-crest { fill:color-mix(in srgb,var(--sci) 50%,#0e6b4a); }
+  .fn-beak { fill:color-mix(in srgb,var(--warn) 48%,#e08a2a); }
+  .fn-leg { fill:color-mix(in srgb,var(--warn) 35%,#c4a06a); }
+  .fn-eye-white { fill:var(--surface); }
+  .fn-pupil { fill:var(--ink); }
+  .fn-eye-shine { fill:var(--surface); }
+  .fn-happy { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; }
+  .fn-brow { fill:none; stroke:var(--ink); stroke-width:1.6; stroke-linecap:round; }
+  .fn-vane { fill:color-mix(in srgb,var(--sci) 52%,#1f6b3a); }
+  .fn-vane-alt { fill:color-mix(in srgb,var(--phys) 42%,#0e6b5a); }
+  .fn-rachis { stroke:color-mix(in srgb,var(--sci) 30%,#8a9a4a); stroke-width:1.4; }
+  .fn-spot-gold { fill:color-mix(in srgb,var(--warn) 62%,#f0c14a); }
+  .fn-spot-blue { fill:color-mix(in srgb,var(--phys) 70%,#1d4e89); }
+  .fn-spot-green { fill:color-mix(in srgb,var(--sci) 70%,#166534); }
+  .fn-shadow { fill:color-mix(in srgb,var(--ink) 16%,transparent); }
+
+  main :where(.kid-visual-stage,.teach-points,.quick-picks) > * { min-width:0; }
+  @media (max-width:720px) {
+    .mission-character { display:none; }
+    .kid-mission { grid-template-columns:1fr; }
+    .teach-points { grid-template-columns:1fr; }
+    .parent-sliders { grid-template-columns:1fr; }
+  }
+  @media (max-width:520px) {
+    .fn-toys { grid-template-columns:1fr; }
+    .kid-mission .pill:nth-child(n+2) { display:none; }
+    .fn-toy { min-height:72px; flex-direction:row; justify-content:flex-start; padding:8px 12px; }
+    .fn-toy svg { width:52px; height:46px; }
+  }
+
+  /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-mission { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-mission .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-mission h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-mission .lead { font-size: .92rem; line-height: 1.5; margin-bottom: .4em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .fn-art { max-height: 110px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+    html[data-mode="kid"] .readout b { font-size: .95rem; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .88rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 8px 0; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+  }
+
+  .mission-face,.mission-character{overflow:hidden}
+  .mission-face img.photo-real,.mission-character img.photo-real{width:78px;height:78px;object-fit:cover;border-radius:50%;display:block}
+</style>
+</head>
+<body data-playful-page="games/fan-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<a class="skip-link" href="#stage">跳到实验画面</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="kid-mission" aria-labelledby="fnStoryTitle">
+    <div class="mission-copy">
+      <div class="tag-row">
+        <span class="pill pill-phys">物理</span>
+        <span class="pill">6–11&nbsp;岁</span>
+        <span class="pill">约 10&nbsp;分钟</span>
+      </div>
+      <h1 id="fnStoryTitle">屏收起来还是打开才显眼？</h1>
+      <p class="lead">同一把长覆羽，合拢叠成一条窄带子，眼斑藏在褶皱里；打开才把正面摊大，一圈圈点子对着你排出来。这不是换了一把更大的尾巴，也不是颜料一下子变多，更不是因为骄傲自己发光。打开的是背上特别长的覆羽，真尾羽比较短，撑在下面。火鸡也会开扇，零件不同。本页只改张角。真孔雀别追，不拔毛，纸扇扇骨不朝脸。台上数字只比较张角，不是某一种的说明书。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-character" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="kid-visual-stage" id="stage" aria-labelledby="stageTitle">
+    <div class="stage-head">
+      <div>
+        <h2 id="stageTitle">开屏玩具台</h2>
+        <p>点下面三个大按钮，看屏是收起来还是打开。</p>
+      </div>
+      <span class="condition-badge" id="stateBadge">还没开</span>
+    </div>
+
+    <svg class="fn-art" id="fnArt" viewBox="0 0 720 400" role="img" aria-labelledby="fnTitle fnDesc">
+      <title id="fnTitle">花园里的孔雀，覆羽能合拢也能打开</title>
+      <desc id="fnDesc">合拢时尾屏叠成窄带子，眼斑藏住。打开时同一把覆羽摊成扇面，一颗颗眼斑露出来。这是尾巴上面的长覆羽，不是真尾羽，也不能拿来飞。</desc>
+
+      <rect class="fn-sky" width="720" height="400"/>
+      <path class="fn-hill" d="M0 168 Q120 128 240 158 Q360 120 480 150 Q600 122 720 148 L720 400 L0 400 Z"/>
+      <path class="fn-grass" d="M0 300 C180 280 360 310 720 292 L720 400 L0 400 Z"/>
+      <path class="fn-path" d="M240 400 Q320 330 400 400"/>
+
+      <g aria-hidden="true">
+        <rect class="fn-trunk" x="86" y="168" width="16" height="140" rx="4"/>
+        <ellipse class="fn-leaf" cx="78" cy="168" rx="36" ry="22"/>
+        <ellipse class="fn-leaf" cx="110" cy="156" rx="32" ry="20"/>
+        <ellipse class="fn-leaf" cx="96" cy="140" rx="24" ry="16"/>
+        <circle class="fn-flower" cx="600" cy="318" r="6"/>
+        <circle class="fn-flower-y" cx="620" cy="326" r="5"/>
+        <circle class="fn-flower" cx="580" cy="330" r="5"/>
+        <circle class="fn-flower-y" cx="140" cy="328" r="5"/>
+        <circle class="fn-flower" cx="160" cy="336" r="4"/>
+      </g>
+
+      <g id="fan"></g>
+
+      <g id="birdG">
+        <ellipse class="fn-shadow" cx="360" cy="348" rx="48" ry="10"/>
+        <path class="fn-leg" d="M348 318 L340 348" stroke="color-mix(in srgb,var(--warn) 35%,#c4a06a)" stroke-width="4" stroke-linecap="round"/>
+        <path class="fn-leg" d="M372 318 L382 348" stroke="color-mix(in srgb,var(--warn) 35%,#c4a06a)" stroke-width="4" stroke-linecap="round"/>
+        <path class="fn-leg" d="M332 348 H348" stroke="color-mix(in srgb,var(--warn) 35%,#c4a06a)" stroke-width="3" stroke-linecap="round"/>
+        <path class="fn-leg" d="M374 348 H390" stroke="color-mix(in srgb,var(--warn) 35%,#c4a06a)" stroke-width="3" stroke-linecap="round"/>
+        <ellipse class="fn-body" cx="360" cy="292" rx="38" ry="28"/>
+        <ellipse class="fn-breast" cx="372" cy="298" rx="20" ry="16"/>
+        <path class="fn-neck" d="M378 274 Q412 250 428 228"/>
+        <ellipse class="fn-neck" cx="400" cy="258" rx="12" ry="18"/>
+        <ellipse class="fn-head" cx="436" cy="220" rx="18" ry="15"/>
+        <path class="fn-crest" d="M428 208 L424 188"/>
+        <path class="fn-crest" d="M436 206 L436 184"/>
+        <path class="fn-crest" d="M444 208 L450 188"/>
+        <circle class="fn-crest" cx="424" cy="186" r="3"/>
+        <circle class="fn-crest" cx="436" cy="182" r="3.2"/>
+        <circle class="fn-crest" cx="450" cy="186" r="3"/>
+        <path class="fn-beak" d="M452 222 L478 218 L452 228 Z"/>
+        <g id="faceNorm">
+          <ellipse class="fn-eye-white" cx="440" cy="216" rx="5" ry="4.6"/>
+          <circle class="fn-pupil" cx="441.4" cy="216" r="2"/>
+          <circle class="fn-eye-shine" cx="439" cy="214.4" r="1"/>
+        </g>
+        <g id="faceHappy" opacity="0">
+          <path class="fn-happy" d="M434 216 Q440 208 446 216"/>
+          <circle class="fn-eye-shine" cx="438" cy="212" r="1"/>
+        </g>
+        <g id="faceSad" opacity="0">
+          <ellipse class="fn-eye-white" cx="440" cy="218" rx="4.2" ry="3"/>
+          <circle class="fn-pupil" cx="441" cy="219" r="1.5"/>
+          <path class="fn-brow" d="M430 208 L448 216"/>
+        </g>
+      </g>
+    </svg>
+
+    <div class="kid-speech-row">
+      <p class="kid-speech" id="kidSay" role="status" aria-live="polite">先点「合拢」，再点「大开屏」。看眼斑藏住还是露出来。</p>
+    </div>
+
+    <div class="kid-action-strip fn-toys" role="group" aria-label="三个好玩的大按钮">
+      <button class="fn-toy kid-icon-btn" type="button" id="toShut" aria-pressed="false">
+        <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+          <path class="fn-vane" d="M30 58 L36 8 L42 58 Z"/>
+          <ellipse class="fn-body" cx="36" cy="54" rx="10" ry="6"/>
+        </svg>
+        合拢
+      </button>
+      <button class="fn-toy kid-icon-btn" type="button" id="toHalf" aria-pressed="false">
+        <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+          <path class="fn-vane" d="M16 58 Q36 16 36 16 Q36 16 56 58 Z"/>
+          <circle class="fn-spot-gold" cx="36" cy="28" r="5"/>
+          <circle class="fn-spot-green" cx="36" cy="28" r="2.2"/>
+        </svg>
+        打开一点
+      </button>
+      <button class="fn-toy fn-toy-go kid-icon-btn" type="button" id="toOpen" aria-pressed="false">
+        <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+          <path class="fn-vane" d="M6 58 Q36 4 66 58 Z"/>
+          <circle class="fn-spot-gold" cx="24" cy="32" r="4"/>
+          <circle class="fn-spot-gold" cx="36" cy="22" r="5"/>
+          <circle class="fn-spot-gold" cx="48" cy="32" r="4"/>
+          <circle class="fn-spot-green" cx="36" cy="22" r="2.2"/>
+        </svg>
+        大开屏
+      </button>
+    </div>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">还没完成：先大开一次，再合拢一次。</p>
+  </section>
+
+  <section class="kid-band" aria-labelledby="kidGuessTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false"><circle class="fn-head" cx="16" cy="16" r="12"/><ellipse class="fn-eye-white" cx="12" cy="14" rx="3" ry="3"/><ellipse class="fn-eye-white" cx="20" cy="14" rx="3" ry="3"/><circle class="fn-pupil" cx="12.4" cy="14" r="1.2"/><circle class="fn-pupil" cx="20.4" cy="14" r="1.2"/><path class="fn-happy" d="M11 20 Q16 24 21 20"/></svg>
+      </span>
+      <div>
+        <h2 id="kidGuessTitle">先猜一猜</h2>
+        <p>先押，再点按钮看对不对。</p>
+      </div>
+    </div>
+    <p><b>第 1 题：</b>按本页尺子，12 根羽、张角从 80° 开到 160°，面积大约怎样？</p>
+    <div class="kid-icon-row" role="group" aria-label="猜一">
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="same" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><path class="fn-vane" d="M8 36 Q24 16 40 36"/></svg></span>
+        <span class="kid-tile-label">差不多</span>
+      </button>
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="double" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><path class="fn-vane" d="M4 36 Q24 4 44 36"/></svg></span>
+        <span class="kid-tile-label">大约翻倍</span>
+      </button>
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="half" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><path class="fn-vane" d="M16 36 Q24 24 32 36"/></svg></span>
+        <span class="kid-tile-label">减半</span>
+      </button>
+    </div>
+    <p class="guess-out kid-status" id="guessOut1" role="status" aria-live="polite">先押一个，再点「打开一点」和「大开屏」。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>张角仍 160°。羽数从 12 减到 6，露出来的眼斑会怎样？</p>
+      <div class="kid-icon-row" role="group" aria-label="猜二">
+        <button class="kid-icon-btn guess-pick" type="button" data-guess2="12" aria-pressed="false">
+          <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><circle class="fn-spot-gold" cx="12" cy="16" r="4"/><circle class="fn-spot-gold" cx="24" cy="12" r="4"/><circle class="fn-spot-gold" cx="36" cy="16" r="4"/></svg></span>
+          <span class="kid-tile-label">还是 12</span>
+        </button>
+        <button class="kid-icon-btn guess-pick" type="button" data-guess2="6" aria-pressed="false">
+          <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><circle class="fn-spot-gold" cx="18" cy="16" r="5"/><circle class="fn-spot-gold" cx="32" cy="16" r="5"/></svg></span>
+          <span class="kid-tile-label">大约 6</span>
+        </button>
+        <button class="kid-icon-btn guess-pick" type="button" data-guess2="0" aria-pressed="false">
+          <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><path class="fn-vane" d="M8 28 H40"/></svg></span>
+          <span class="kid-tile-label">0</span>
+        </button>
+      </div>
+      <p class="guess-out kid-status" id="guessOut2" role="status" aria-live="polite">押好后点图鉴「眼斑露出来」。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>12 根羽、合拢到 20°。眼斑还露得见吗？</p>
+      <div class="kid-icon-row" role="group" aria-label="猜三">
+        <button class="kid-icon-btn guess-pick" type="button" data-guess3="still" aria-pressed="false"><span class="kid-tile-label">还是 12&nbsp;颗全露</span></button>
+        <button class="kid-icon-btn guess-pick" type="button" data-guess3="hide" aria-pressed="false"><span class="kid-tile-label">几乎藏住</span></button>
+        <button class="kid-icon-btn guess-pick" type="button" data-guess3="gone" aria-pressed="false"><span class="kid-tile-label">面积变成 0</span></button>
+      </div>
+      <p class="guess-out kid-status" id="guessOut3" role="status" aria-live="polite">押好后点「合拢」，对照面积和眼斑。</p>
+    </div>
+  </section>
+
+  <section class="kid-band fn-atlas" aria-labelledby="atlasTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false"><path class="fn-vane" d="M4 28 Q16 4 28 28"/><circle class="fn-spot-gold" cx="16" cy="16" r="4"/></svg>
+      </span>
+      <div>
+        <h2 id="atlasTitle">开屏图鉴</h2>
+        <p>点一张卡，舞台马上演给你看。谁让眼斑露出来，谁让它们藏住。</p>
+      </div>
+    </div>
+    <div class="kid-figure-grid" role="group" aria-label="开屏图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-fn-atlas="open" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">打开扇面</span>
+        <span class="kid-figure-fact">同一把覆羽摊开，对着你的面积变大，眼斑排出来，不是换了一把更大的尾巴。</span>
+      </button>
+      <button class="kid-figure" type="button" data-fn-atlas="shut" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">合上扇面</span>
+        <span class="kid-figure-fact">还是那一把覆羽，叠成一条窄带子，眼斑藏在褶皱里，点子没有消失，只是不对着你。</span>
+      </button>
+      <button class="kid-figure" type="button" data-fn-atlas="area" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">面积变大</span>
+        <span class="kid-figure-fact">同样一把覆羽，摊开占的地方更多，显眼靠张角，不是颜料一下子变多。</span>
+      </button>
+      <button class="kid-figure" type="button" data-fn-atlas="spots" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">眼斑露出来</span>
+        <span class="kid-figure-fact">点子本来就在羽毛上，打开才一排排对着你，合拢就藏进褶皱里，不是魔法开关。</span>
+      </button>
+      <button class="kid-figure" type="button" data-fn-atlas="same" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">同一把屏</span>
+        <span class="kid-figure-fact">比的是开还是合，不是换一把更大的尾巴。打开的是覆羽，不是真尾羽。</span>
+      </button>
+      <button class="kid-figure" type="button" data-fn-atlas="angle" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">对着你</span>
+        <span class="kid-figure-fact">扇面转到正面，点子才看得见；侧面再大，对着你的面积也变小，显眼靠朝向。</span>
+      </button>
+      <button class="kid-figure" type="button" data-fn-atlas="shine" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">转一转换色</span>
+        <span class="kid-figure-fact">蓝绿随角度变，是细格子把光弹开，不是厚颜料，也不是因为骄傲发光。</span>
+      </button>
+      <button class="kid-figure" type="button" data-fn-atlas="paint" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">颜料对照</span>
+        <span class="kid-figure-fact">颜料是涂上去的，转了还是那个颜色；结构色会随角度变，两套不要混。</span>
+      </button>
+      <button class="kid-figure" type="button" data-fn-atlas="paper" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">纸扇对照</span>
+        <span class="kid-figure-fact">纸扇是人做的；孔雀用自己背上特别长的覆羽摊开，不是真尾巴变长。</span>
+      </button>
+      <button class="kid-figure" type="button" data-fn-atlas="turkey" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">火鸡对照</span>
+        <span class="kid-figure-fact">火鸡也会开扇，可那是短而棕的真尾巴，不是孔雀那种长覆羽尾屏，零件不要混。</span>
+      </button>
+      <button class="kid-figure" type="button" data-fn-atlas="fly" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">不是翅膀</span>
+        <span class="kid-figure-fact">尾屏太长太沉，不是用来飞的；带飞的是翅膀上另一套羽毛，飞时屏要收。</span>
+      </button>
+      <button class="kid-figure" type="button" data-fn-atlas="wild" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">别拔真毛</span>
+        <span class="kid-figure-fact">园里只远远看，不追、不拔毛、不投喂。本页用模型，纸扇扇骨不朝脸，也不是驯鸟课。</span>
+      </button>
+    </div>
+    <p class="kid-status" id="atlasSay" role="status" aria-live="polite">合拢藏住眼斑，大开才露出来。点一张卡对照舞台。</p>
+  </section>
+
+  <section class="kid-band" aria-labelledby="kidSawTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false"><ellipse class="fn-eye-white" cx="16" cy="16" rx="12" ry="8"/><circle class="fn-pupil" cx="16" cy="16" r="4"/><circle class="fn-eye-shine" cx="13.5" cy="13.5" r="1.6"/></svg>
+      </span>
+      <div>
+        <h2 id="kidSawTitle">我看到了</h2>
+        <p>点最像你刚才看见的。</p>
+      </div>
+    </div>
+    <div class="kid-icon-row" role="group" aria-label="我看到了">
+      <button class="kid-icon-btn" type="button" data-saw="open" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><path class="fn-vane" d="M4 36 Q24 4 44 36"/></svg></span>
+        <span class="kid-tile-label">屏打开了</span>
+      </button>
+      <button class="kid-icon-btn" type="button" data-saw="shut" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><path class="fn-vane" d="M22 36 L24 6 L26 36 Z"/></svg></span>
+        <span class="kid-tile-label">屏收起来</span>
+      </button>
+      <button class="kid-icon-btn" type="button" data-saw="spots" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><circle class="fn-spot-gold" cx="16" cy="16" r="6"/><circle class="fn-spot-green" cx="16" cy="16" r="2.4"/><circle class="fn-spot-gold" cx="32" cy="18" r="5"/></svg></span>
+        <span class="kid-tile-label">眼斑露出来</span>
+      </button>
+      <button class="kid-icon-btn" type="button" data-saw="hide" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><path class="fn-vane" d="M10 28 H38"/></svg></span>
+        <span class="kid-tile-label">点子藏住了</span>
+      </button>
+    </div>
+    <p class="kid-status" id="kidSawStatus" role="status" aria-live="polite">可以多选。</p>
+  </section>
+
+  <section class="kid-band" aria-labelledby="kidBadgeTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false"><circle class="fn-spot-gold" cx="16" cy="16" r="12"/><circle class="fn-spot-green" cx="16" cy="16" r="5"/></svg>
+      </span>
+      <div>
+        <h2 id="kidBadgeTitle">我的贴纸</h2>
+        <p>做到就会亮。</p>
+      </div>
+    </div>
+    <ul class="kid-badge-row" aria-label="四个进度贴纸">
+      <li class="kid-badge" data-kid-badge="guess" data-earned="false">猜过了</li>
+      <li class="kid-badge" data-kid-badge="open" data-earned="false">大开屏</li>
+      <li class="kid-badge" data-kid-badge="shut" data-earned="false">合拢了</li>
+      <li class="kid-badge" data-kid-badge="compare" data-earned="false">两边都试</li>
+    </ul>
+    <p class="kid-status" id="kidBadgeStatus" role="status" aria-live="polite">还没有亮的贴纸。先猜一猜，再开一次屏。</p>
+  </section>
+
+      <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">同一把屏，大开才显眼，合拢几乎看不见眼斑</h2>
+    <p>先点「大开屏」，看对着你的面积变宽、一圈圈眼斑排出来。再点「合拢」，看还是那一把叠成窄带子、点子藏住。最好再点一次「打开一点」：半开时，正面比合拢大、比大开小，点子只露出一部分。</p>
+    <p>摊开是把同一把覆羽展成更大的正面，眼斑本来就画在羽毛上，只是合拢时叠在褶皱里看不见。打开不是换了一把更大的尾巴，也不是桶里又倒了一层漆。颜色不会因为「骄傲」自己发光。尾屏太长太沉，不是用来飞的；飞的时候这套屏要收起来。</p>
+    <p>舞台上的「面积份」是本页比较尺子：面积份≈羽数×张角÷160，用来比较「摊开」和「合拢」，不是真孔雀的羽数表。真鸟别追、不拔毛。纸扇扇骨不朝脸。本页是开屏示意，不是驯鸟课。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--sci)"
+         data-kid-predict
+         data-kid-predict-explain="同一把覆羽，摊开才显眼。合拢叠成窄带，眼斑藏住；打开，对着你的面积变大，点子露出来。不是换了一把更大的尾巴。尾屏太沉，不是用来飞的。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🦚</span><b>同一把孔雀覆羽，合拢和打开，哪边更容易让对面看见眼斑？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：开屏显眼还是合拢">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="same">合拢打开一样显眼，只是心情不同</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="open" data-kid-predict-correct>打开才把面积摊大、眼斑一排排露出来；合拢叠住就藏住</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="swap">打开等于换了一把更大的尾巴</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：大开和合拢都试</h2>
+    <p>先把张角调到 120° 或更大开一次，再调到 20° 或更小开一次。两头都开过即可完成。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <p class="section-kicker">怎样才算公平</p>
+    <h2 id="fairTitle">设计一次公平的比较</h2>
+    <p>想知道「眼斑露不露靠不靠打开」，就只改张角这一项。同一把覆羽、同一只孔雀，先合拢看一次，再打开看一次。改羽数、换一只鸟，是另一次对照，不要和「开 / 合」叠在同一档里讲。</p>
+    <ul class="var-cards" aria-label="公平比较里的变量安排">
+      <li data-keep="change">只改这一项：合拢 / 打开</li>
+      <li>保持不变：同一把覆羽</li>
+      <li>保持不变：还是这只孔雀</li>
+      <li>要观察的：眼斑藏住，还是露出来；对着你的面积谁大</li>
+    </ul>
+    <p>另开一行：同样打开，转一转看蓝绿会不会随角度变。那是结构色，不要和「颜料变多」叠在同一档里讲。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="pickTitle">
+    <p class="section-kicker">不用打字也能回答</p>
+    <h2 id="pickTitle">选一句你的发现</h2>
+    <div class="quick-picks" role="group" aria-labelledby="pickTitle">
+      <button class="kid-choice" type="button" data-fn-phrase="打开时同一把覆羽摊开，眼斑露出来。" aria-pressed="false">打开，点子露出来</button>
+      <button class="kid-choice" type="button" data-fn-phrase="合拢就叠成窄带子，眼斑藏住。" aria-pressed="false">合拢，点子藏住</button>
+      <button class="kid-choice" type="button" data-fn-phrase="羽数×张角/160 只是本页比较尺子，不是孔雀的真实公式。" aria-pressed="false">公式是本页尺子</button>
+      <button class="kid-choice" type="button" data-fn-phrase="尾屏不是用来飞的，蓝绿也不是厚颜料。" aria-pressed="false">不飞，也不是颜料</button>
+    </div>
+    <p class="obj-sub pick-status" id="pickStatus" role="status" aria-live="polite">还没有选。也可以在作品表单里自己写。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <p class="section-kicker">继续追问</p>
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol class="qlist">
+      <li>同一把折扇，打开和合上，哪边更容易让对面的人看见上面的画？孔雀是换了一把更大的尾巴，还是把同一把覆羽摊开？</li>
+      <li>打开的那把大扇子，是真正的尾巴骨，还是尾巴上面那一层特别长的覆羽？火鸡开的短棕扇，零件一样吗？</li>
+      <li>尾屏是不是用来飞的？蓝绿转一转会不会变？那是厚颜料，还是羽毛上的细格子把光弹开？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停。</p>
+    <div class="parent-age-layers">
+      <details>
+        <summary><span class="layer-age">6–7&nbsp;岁</span>合拢藏住，打开才看得见</summary>
+        <div>
+          <p>孔雀把同一把长羽毛摊开，一圈圈点子才露出来。合拢就叠回去，点子藏住。</p>
+          <p>能说出「打开 / 合拢」和「看得见 / 藏住」就够了。不必说覆羽。真鸟别追，不拔毛。</p>
+        </div>
+      </details>
+      <details>
+        <summary><span class="layer-age">8–9&nbsp;岁</span>同一把，摊开面积变大</summary>
+        <div>
+          <p>打开不是换了一把更大的尾巴，也不是颜料一下子变多。对着看的人的面积变大，眼斑才排出来。本页「羽数×张角/160」只是比较尺子。</p>
+          <p>尾屏太长太沉，不是用来飞的。飞的时候这套屏要收起来。</p>
+        </div>
+      </details>
+      <details>
+        <summary><span class="layer-age">10–11&nbsp;岁</span>长覆羽、结构色</summary>
+        <div>
+          <p>开屏用的是尾巴上面那一层特别长的覆羽，不是真正的尾羽。真尾羽比较短，撑在下面。眼斑的蓝绿会随角度变，是羽毛上的细格子把光弹开（结构色），不是厚厚涂上去的颜料。</p>
+          <p>火鸡开的是短而棕的真尾巴，零件不同。不要去数真孔雀到底有多少根羽。本页量表只是示意。园里远观，不追拍、不投喂、不拔毛。</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="rulerTitle">
+    <h2 id="rulerTitle">给家长的本页尺子</h2>
+    <p class="fn-ruler">本页尺子：摊开面积变大、眼斑露出来；合拢就收回去。用来比较「摊开」和「合拢」，不是孔雀尾屏的真实公式。孩子主操作是上面三个大按钮；滑杆留给想自己调的大人。</p>
+    <div class="parent-sliders">
+      <div><label for="angle">张开多大：<span id="angleLab">20°</span></label>
+        <input class="input" id="angle" type="range" min="0" max="160" value="20" step="5" aria-valuetext="20 度"></div>
+      <div><label for="feathers">几根覆羽：<span id="featherLab">12</span></label>
+        <input class="input" id="feathers" type="range" min="6" max="18" value="12" aria-valuetext="12 根"></div>
+    </div>
+    <div class="readout">
+      <div><span>张角</span><b id="angOut">20°</b></div>
+      <div><span>本页尺子</span><b id="areaOut">——</b></div>
+      <div><span>眼斑</span><b id="spotOut">——</b></div>
+    </div>
+  </section>
+
+  <section class="task formal-task parent-deep-dive" data-audience="parent" aria-labelledby="formalTaskTitle">
+    <h2 class="task-title" id="formalTaskTitle">正式长任务与作品记录</h2>
+    <p>预测：打开会怎样，合拢会怎样。比较两次看到的。可选反思写在下面。</p>
+    <div><label for="fnReflection">可选反思</label>
+      <textarea class="input" id="fnReflection" rows="2" placeholder="可选：用自己的话讲讲打开和合上差在哪。"></textarea></div>
+    <p id="fnPlayfulFeedback" data-playful-feedback></p>
+    <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+      <h3 class="work-card-title" id="workTitle">作品表单：开屏观察</h3>
+      <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+      <div class="work-card-fields">
+        <div><label for="workType">作品类型</label>
+          <select class="input" id="workType" name="type">
+            <option value="observation">观察记录</option>
+            <option value="prediction">预测卡</option>
+            <option value="explanation">我的解释</option>
+          </select>
+        </div>
+        <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：打开面积大，合上点子藏住"></div>
+        <div><label for="workContent">开和合差在哪</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下打开和合上时，对着你的面积谁大，眼斑是露出来还是叠住。"></textarea></div>
+        <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+      </div>
+      <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+    </form>
+  </section>
+
+
+      <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">同一把屏，先大开再合拢，看面积和眼斑</h2>
+    <p>舞台上只改一件事：张角。同一把覆羽、同一圈眼斑、还是这只孔雀。先看大开时正面变宽、点子排出来；再看合拢时叠成窄带子、点子藏住。这样比，才知道显眼靠的是摊开，不是换了一把更大的尾巴，也不是颜料一下子变多。改羽数、换一只鸟，是另一次对照，不要和「开 / 合」叠在同一档里讲。</p>
+    <p>回家只带两句：「摊开面积大，眼斑才露出来」；「合拢就藏住」。不要写成「颜色自己会发光」或「它比较骄傲所以变亮」。点子本来就在羽毛上，摊开才排成一排对着你。真鸟别追，纸扇扇骨不朝脸。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">大开</span><span class="kid-figure-sub">张角大</span><p class="kid-figure-fact">同一把覆羽摊开，正面变宽，一圈圈眼斑都露出来，不是换了一把更大的尾巴。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">合拢</span><span class="kid-figure-sub">张角小</span><p class="kid-figure-fact">还是那一把覆羽，叠成窄带子，眼斑藏在褶皱里，点子没有被擦掉，也没有被关掉。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">面积</span><span class="kid-figure-sub">给别人看的</span><p class="kid-figure-fact">对着你的面积变大。不是桶里又倒了一层漆，也不是颜色因为骄傲自己亮。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">眼斑</span><span class="kid-figure-sub">同一圈</span><p class="kid-figure-fact">点子本来就在羽毛上。摊开才排成一排对着你，合拢就藏住，不是魔法。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">变亮</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">颜色不会因为「骄傲」自己发光。张角不是开关，结构色随角度变，细格子在弹光。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art atlas-ban" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">扇骨</span><span class="kid-figure-sub">不戳眼</span><p class="kid-figure-fact">真鸟别追、不拔毛、不投喂。纸扇扇骨也不要朝脸，本页不是驯鸟课，只看张角对照。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>大开一次。</b>看对着你的面积，点子有没有排出来。</li>
+      <li data-step="2"><b>合拢一次。</b>看还剩多少正面，点子藏没藏住。</li>
+      <li data-step="3"><b>对张角。</b>是换了一把尾巴，还是同一把摊开？</li>
+      <li data-step="4"><b>写完成句。</b>摊开才显眼。划掉「自己发光」和「颜料变多」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>屏打开才好看清楚；合上就几乎看不见那些圆点。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>摊开是把同一把覆羽展宽。颜色没变多，只是给别人看的面积变大。这把屏太沉，不是用来飞的。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>显示面积随张角增大。开屏是长覆羽，不是真尾羽。眼斑是结构色，合拢被褶皱遮挡，不是发光开关。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能对大开和合拢各说面积或眼斑是否可见，并否定「颜色自己发光」和「换了一把更大的尾巴」。完成看的是对照，不是背「开屏」两个字。</p>
+    <ul class="ask-list">
+      <li>大开看见什么？点子是新长出来的吗？</li>
+      <li>合拢还剩多少正面？</li>
+      <li>颜料变多了吗？是自己发光吗？</li>
+      <li>这把屏是用来飞的吗？真鸟能追吗？</li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">开屏是长覆羽摊开，不是真尾羽，也不是厚颜料</h2>
+    <p>同一把覆羽，先只改张角。打开不是换了一把更大的尾巴，是把背上那一层特别长的覆羽摊开。真尾羽比较短，撑在下面。火鸡也会开扇，可那是短而棕的真尾巴，零件不同，不要和孔雀尾屏混成一把。</p>
+    <p>眼斑的蓝绿转一转会变，是羽毛上的细格子把光弹开（结构色），不是厚厚涂上去的颜料。张角变大不会让颜色「自己发光」，也不会让桶里的漆变多。鹦鹉身上许多鲜色才更靠近颜料账，不要和尾屏混名。</p>
+    <p>尾屏太长太沉，不是用来飞的。带飞的是翅膀上另一套羽毛。飞的时候这套屏要收起来。本页「面积份 ≈ 羽数 × 张角 ÷ 160」只是比较尺子，用来看见「摊开」和「合拢」，不是真孔雀的羽数表，也不要去数园里那只到底有多少根。</p>
+    <p>园里只远远看：不追拍、不投喂、不拔活孔雀的毛。纸扇扇骨不朝脸。舞台是开屏示意，不是驯鸟课，更不是拔毛课。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">长覆羽</span><span class="kid-figure-sub">不是真尾羽</span><p class="kid-figure-fact">打开的大扇子主要是背上那一层特别长的覆羽。真尾巴比较短，不要写成真尾羽张开。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">火鸡</span><span class="kid-figure-sub">短棕真尾</span><p class="kid-figure-fact">火鸡也会开扇，扇短、是棕色真尾巴，不是长覆羽尾屏。两套零件，不要写成同一种扇。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">结构色</span><span class="kid-figure-sub">细格子弹光</span><p class="kid-figure-fact">蓝绿随角度变，是细格子把光弹开，不是厚颜料，也不是肥皂彩虹，更不是骄傲发光。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">飞行</span><span class="kid-figure-sub">不靠这把屏</span><p class="kid-figure-fact">屏太沉。带飞的是翅膀上另一套羽毛。飞时屏要收，开屏是给别人看，不是为了飞。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">纸扇</span><span class="kid-figure-sub">人做的</span><p class="kid-figure-fact">人做的扇子能比「打开面积变大」。孔雀用自己长出来的覆羽，不是道具。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">拔毛</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">不拔活孔雀的毛。园里远观，不追拍、不投喂，完成看的是张角对照，不是驯鸟。</p></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：大开眼斑露 · 合拢点子藏 · 「颜色自己发光」</h2>
+    <p>三列用同一把覆羽、同一只孔雀。先只改张角这一项：大开看一次，合拢看一次。一次既改张角又改羽数，分不清到底是摊开还是换了羽毛让点子露出来，这次比较就不公平。</p>
+    <p>大开：面积变大，眼斑排出来。合拢：叠成带子，点子藏住。「颜色自己发光」整列划掉：张角不是开关，颜料也没有变多。长覆羽不是真尾羽，火鸡另开一行，零件不同。</p>
+    <p>转角度看蓝绿是加试，不是主任务：结构色随角度看，不是倒了一桶新漆。本页羽数公式用来比较方向，不是羽数表，也不要抄成真孔雀的说明书。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">大开</span><span class="kid-figure-sub">点子露</span><p class="kid-figure-fact">同一把摊开，对着你的面积变大，眼斑排成一排，不是换尾巴，也不是倒漆。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">合拢</span><span class="kid-figure-sub">点子藏</span><p class="kid-figure-fact">还是那一把覆羽，叠回去，眼斑藏在褶皱里，点子还在羽毛上，只是不对着你。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">自己发光</span><span class="kid-figure-sub">整列划掉</span><p class="kid-figure-fact">颜色不会因为骄傲自己亮，也不是颜料变多，张角只改面积和朝向，不是发光开关。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">长覆羽</span><span class="kid-figure-sub">零件</span><p class="kid-figure-fact">打开的是覆羽，不是真尾羽张开。火鸡是另一套零件，短而棕的真尾巴。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">本页尺子</span><span class="kid-figure-sub">不是羽数表</span><p class="kid-figure-fact">面积份 ≈ 羽数 × 张角 ÷ 160。用来比开合方向，不要去数真孔雀，也不是羽数成绩表。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">拔毛</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">不拔毛、不追鸟、不投喂。本页不是驯鸟课，纸扇扇骨也不要朝脸，园里只远观。</p></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「摊开才显眼」，不记羽数</h2>
+    <p>在纸上画两把扇：一把大开，点子排成一排；一把合拢，只剩一条带子。旁边写「同一把」。两张图并排，比背「覆羽」有用。有人说「换了一把更大的尾巴」，让孩子指着第二张图：还是那一把，只是叠回去了。</p>
+    <p>口头只要两句：「摊开面积大，眼斑才露出来。」「合拢就藏住。」有人说「颜色自己发光」或「它比较骄傲所以变亮」，让孩子再说一遍：点子本来就在羽毛上，摊开才对着你。</p>
+    <p>园里远观，不追拍、不投喂、不拔毛。纸扇扇骨不朝脸。本页数字不要抄成真孔雀的羽数表，也不要当驯鸟课教案。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">两把扇</span><span class="kid-figure-sub">开 / 合</span><p class="kid-figure-fact">一张大开点子露，一张合拢点子藏。对照比抄张角数字清楚，尺子不是定律。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">摊开才显眼</span><p class="kid-figure-fact">回家说得出：摊开面积大，合拢就藏住。不是自己发光，也不是倒了一桶漆。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">发光 / 颜料</span><span class="kid-figure-sub">否决句</span><p class="kid-figure-fact">划掉「自己发光」和「倒了一桶新漆」，也划掉「打开的是真尾羽」。显眼靠摊开面积。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/peacock.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">真鸟</span><span class="kid-figure-sub">远观</span><p class="kid-figure-fact">不追、不喂、不拔毛。纸扇扇骨也不要朝脸，园里只远远看模型或真鸟，完成看张角。</p></div>
+    </div>
+  </section>
+
+      <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>大开时孩子指的是面积和眼斑，还是在说「它比较骄傲所以变亮」？让他再指一次同一把覆羽。</li>
+      <li>合拢看不见眼斑，哪一句四岁听得懂？试「叠回去了，点子藏在带子里」。</li>
+      <li>打开是换了一把更大的尾巴，还是同一把摊开？火鸡那把短棕扇，零件一样吗？</li>
+      <li>蓝绿转一转会变：是厚颜料，还是细格子把光弹开？张角是发光开关吗？</li>
+      <li>真鸟、拔毛、扇骨戳眼：红线怎么说？本页能当驯鸟课吗？</li>
+      <li>羽数×张角÷160，是真孔雀的羽数表还是本页比较尺子？尾屏能拿来飞吗？</li>
+    </ul>
+  </section>
+
+      <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：开屏是几何展开。张角增大，对着观察者的投影面积增大，眼斑从褶皱中露出来。打开的大扇子主要是尾巴上面那一层特别长的覆羽，不是真正的尾羽；真尾羽比较短，撑在下面。</p>
+    <p>眼斑的蓝绿是结构色（structural color）：羽毛小枝上的细格子把光弹开，随角度变，不是厚厚涂上去的颜料。张角变大不会让颜色「自己发光」。本页「面积份 ≈ 羽数 × 张角 ÷ 160」只是比较尺子，用来看见「摊开」和「合拢」，不是真孔雀的羽数表。</p>
+    <p>火鸡开的是短而棕的真尾巴，零件不同。尾屏太长太沉，不是飞行面；带飞的是翅膀上另一套。飞的时候这套屏要收起来。</p>
+    <p>园里远观，不追拍、不投喂、不拔活孔雀的毛。纸扇扇骨不朝脸。舞台是开屏示意，不是驯鸟课。</p>
+  </section>
+
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">开屏公式卡 · 面积份≈羽数×张角÷160</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">同一把羽：合拢面积小、眼斑藏；张开面积大、眼斑露。本页尺子只比摊开与合拢。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：摊开面积大，眼斑才露出来；合拢就藏住。不是换了一把更大的尾巴，也不是颜色自己发光。孔雀观察站看真屏；鳞缝工坊看另一套换色；羽毛观察站看零件。</p>
+    <p class="row"><a class="btn btn-ghost" href="../nature/peacocks.html">孔雀观察站</a><a class="btn btn-ghost" href="chroma-lab.html">鳞缝工坊</a><a class="btn btn-ghost" href="../nature/feathers.html">羽毛观察站</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为眼斑要张开才露出来、拔毛毁的是它的屏，所以不要拔活孔雀的毛。本页只比较打开和合上。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var angle=20, feathers=12, did=false, lastA=0, lastS=0, focus="";
+  var seen={open:false,shut:false,done:false};
+  var guess1="",guess1Done=false,saw80=false,saw160=false,guess2="",guess2Done=false,saw6=false,guess3="",guess3Done=false,saw20=false;
+  var sawPick={};
+
+  function el(id){ return document.getElementById(id); }
+  function area(){ return Math.round(feathers * angle / 160 * 10) / 10; }
+  function spots(){ return Math.round(feathers * angle / 160); }
+  function motionOff(){
+    if (window.Playful && typeof Playful.motionReduced === "function" && Playful.motionReduced()) return true;
+    return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+  function setOp(id, v){ var n=el(id); if(n) n.setAttribute("opacity", String(v)); }
+  function faces(mode){
+    setOp("faceNorm", mode==="norm" ? 1 : 0);
+    setOp("faceHappy", mode==="happy" ? 1 : 0);
+    setOp("faceSad", mode==="sad" ? 1 : 0);
+  }
+  function kidVoice(kind){
+    var a=area(), s=spots();
+    var ruler="面积份="+feathers+"×"+angle+"÷160="+a+"，点子约"+s+"。";
+    if(kind==="open") return ruler+"打开啦，眼斑对着你。";
+    if(kind==="half") return ruler+"打开一点，点子开始露出来。";
+    if(kind==="shut") return ruler+"合拢了，点子藏在带子里。";
+    if(kind==="spots") return ruler+"羽少一点，点子也少一点。";
+    if(kind==="shine") return ruler+"转一转，蓝绿会变。不是厚颜料。";
+    if(kind==="fly") return ruler+"这把屏太沉了，不是用来飞的。";
+    if(kind==="turkey") return ruler+"火鸡也会开扇，那是短而棕的真尾巴。";
+    return ruler+"先点「合拢」，再点「大开屏」。";
+  }
+  function pressBtns(which){
+    ["toShut","toHalf","toOpen"].forEach(function(id){
+      var n=el(id); if(n) n.setAttribute("aria-pressed", id===which ? "true" : "false");
+    });
+  }
+
+  function draw(){
+    var g=el("fan"); while(g.firstChild) g.removeChild(g.firstChild);
+    var NS="http://www.w3.org/2000/svg";
+    var a=Math.max(angle, 6);
+    var showSpot = angle>36;
+    var cx=360, cy=286;
+    var len = angle<24 ? 118 : 168;
+    for(var i=0;i<feathers;i++){
+      var t = -a/2 + (feathers==1?0: a*(i/(feathers-1)));
+      var rad=t*Math.PI/180;
+      var x2=cx+Math.sin(rad)*len;
+      var y2=cy-Math.cos(rad)*len;
+      var mid=0.55;
+      var xm=cx+Math.sin(rad)*len*mid;
+      var ym=cy-Math.cos(rad)*len*mid;
+      var w = angle<24 ? 7 : (10 + Math.min(8, angle/20));
+      var px=Math.cos(rad)*w, py=Math.sin(rad)*w;
+      var path=document.createElementNS(NS,"path");
+      path.setAttribute("d",
+        "M "+(cx+px*0.2)+" "+(cy+py*0.2)+
+        " Q "+(xm+px)+" "+(ym+py)+" "+x2+" "+y2+
+        " Q "+(xm-px)+" "+(ym-py)+" "+(cx-px*0.2)+" "+(cy-py*0.2)+" Z");
+      path.setAttribute("class", i%2 ? "fn-vane-alt" : "fn-vane");
+      path.setAttribute("opacity", angle<16 ? "0.92" : "0.88");
+      g.appendChild(path);
+      var rachis=document.createElementNS(NS,"line");
+      rachis.setAttribute("x1", String(cx)); rachis.setAttribute("y1", String(cy));
+      rachis.setAttribute("x2", String(x2)); rachis.setAttribute("y2", String(y2));
+      rachis.setAttribute("class", "fn-rachis");
+      rachis.setAttribute("fill", "none");
+      g.appendChild(rachis);
+      if(showSpot){
+        var sx=cx+Math.sin(rad)*len*0.78;
+        var sy=cy-Math.cos(rad)*len*0.78;
+        var r1= angle>90 ? 8.5 : 6.2;
+        var c1=document.createElementNS(NS,"circle");
+        c1.setAttribute("cx", String(sx)); c1.setAttribute("cy", String(sy));
+        c1.setAttribute("r", String(r1)); c1.setAttribute("class", "fn-spot-gold");
+        g.appendChild(c1);
+        var c2=document.createElementNS(NS,"circle");
+        c2.setAttribute("cx", String(sx)); c2.setAttribute("cy", String(sy));
+        c2.setAttribute("r", String(r1*0.55)); c2.setAttribute("class", "fn-spot-blue");
+        g.appendChild(c2);
+        var c3=document.createElementNS(NS,"circle");
+        c3.setAttribute("cx", String(sx)); c3.setAttribute("cy", String(sy));
+        c3.setAttribute("r", String(r1*0.28)); c3.setAttribute("class", "fn-spot-green");
+        g.appendChild(c3);
+      }
+    }
+  }
+
+  function render(fromUser){
+    draw();
+    el("angOut").textContent=angle+"°";
+    el("areaOut").textContent=area()+" 份";
+    el("spotOut").textContent=spots()+"\u00a0颗";
+    el("angleLab").textContent=angle+"°";
+    el("angle").setAttribute("aria-valuetext",angle+"\u00a0度");
+    el("angle").value=String(angle);
+    el("featherLab").textContent=String(feathers);
+    el("feathers").setAttribute("aria-valuetext",feathers+" 根");
+    el("feathers").value=String(feathers);
+
+    var opened = did && lastA>=8;
+    var shut = did && lastA<8;
+    if(opened) faces("happy");
+    else if(shut) faces("norm");
+    else faces("norm");
+
+    var bird=el("birdG");
+    if(bird){
+      if(opened) bird.setAttribute("transform", "translate(0 -4)");
+      else bird.setAttribute("transform", "");
+    }
+
+    var badge=el("stateBadge");
+    var line=did?(opened?"大开屏":"合拢了"):(angle>=80?"打开了":(angle<=20?"合拢着":"半开"));
+    if(badge) badge.textContent=line;
+
+    var say=el("kidSay");
+    if(say){
+      if(focus==="shine") say.textContent=kidVoice("shine");
+      else if(focus==="fly") say.textContent=kidVoice("fly");
+      else if(focus==="turkey") say.textContent=kidVoice("turkey");
+      else if(focus==="spots") say.textContent=kidVoice("spots");
+      else if(did && opened && feathers<=6) say.textContent=kidVoice("spots");
+      else if(did && opened && angle>=140) say.textContent=kidVoice("open");
+      else if(did && opened) say.textContent=kidVoice("half");
+      else if(did && shut) say.textContent=kidVoice("shut");
+      else say.textContent=kidVoice("");
+    }
+
+    if(fromUser&&did){
+      if(angle>=120)seen.open=true;
+      if(angle<=20)seen.shut=true;
+      if(guess1&&!guess1Done&&angle===80&&feathers===12)saw80=true;
+      if(guess1&&!guess1Done&&angle===160&&feathers===12)saw160=true;
+      if(guess2&&!guess2Done&&angle===160&&feathers===6)saw6=true;
+      if(guess3&&!guess3Done&&angle<=20&&feathers===12)saw20=true;
+      checkGuess(); updateTask(); updateBadges();
+    } else {
+      updateBadges();
+    }
+  }
+
+  function checkGuess(){
+    if(guess1&&!guess1Done&&saw80&&saw160){
+      guess1Done=true;
+      el("guessOut1").innerHTML=(guess1==="double"?"<b>押对了！</b>":"<b>揭晓：</b>")+"按本页尺子，角翻倍、羽数不变，面积大约翻倍。";
+      el("guessBlock2").hidden=false;
+    }
+    if(guess2&&!guess2Done&&saw6){
+      guess2Done=true;
+      el("guessOut2").innerHTML=(guess2==="6"?"<b>押对了！</b>":"<b>揭晓：</b>")+"眼斑颗数跟着羽数走，大约 6 颗。这是本页尺子，不是去数真孔雀。";
+      el("guessBlock3").hidden=false;
+    }
+    if(guess3&&!guess3Done&&saw20){
+      guess3Done=true;
+      el("guessOut3").innerHTML=(guess3==="hide"?"<b>押对了！</b>":"<b>揭晓：</b>")+"屏合得很窄，面积大约只剩 <b>1.5</b>。屏还在所以不是 0；太窄，眼斑几乎藏住。";
+    }
+  }
+  function updateTask(){
+    var st=el("taskStatus"); if(!st||seen.done) return;
+    if(seen.open&&seen.shut){
+      seen.done=true;
+      if(window.Progress) Progress.complete("games/fan-lab.html","试过开屏和合拢");
+      st.textContent="完成啦：张角越大面积越大，眼斑越多。";
+    } else if(!seen.open){
+      st.textContent=seen.shut?"还差：张角调到 120° 以上再开。":"还没完成：先大开一次，再合拢一次。";
+    } else {
+      st.textContent="还差：张角调到 20° 或更小再开。";
+    }
+  }
+  function updateBadges(){
+    function earn(name, on){
+      var n=document.querySelector('[data-kid-badge="'+name+'"]');
+      if(n) n.setAttribute("data-earned", on?"true":"false");
+    }
+    earn("guess", !!(guess1||guess2));
+    earn("open", seen.open);
+    earn("shut", seen.shut);
+    earn("compare", seen.done);
+    var bs=el("kidBadgeStatus");
+    if(!bs) return;
+    var n=(guess1?1:0)+(seen.open?1:0)+(seen.shut?1:0)+(seen.done?1:0);
+    if(n===0) bs.textContent="还没有亮的贴纸。先猜一猜，再开一次屏。";
+    else if(seen.done){ bs.textContent="四张贴纸都亮啦。"; bs.setAttribute("data-tone","good"); }
+    else bs.textContent="已经亮了 "+n+"\u00a0张。";
+  }
+
+  function show(){ did=true; lastA=area(); lastS=spots(); render(true); }
+  function doShut(){ did=false; angle=20; feathers=12; focus="shut"; pressBtns("toShut"); show(); }
+  function doHalf(){ did=false; angle=80; feathers=12; focus="half"; pressBtns("toHalf"); show(); }
+  function doOpen(){ did=false; angle=160; feathers=12; focus="open"; pressBtns("toOpen"); show(); }
+
+  el("angle").addEventListener("input", function(){ did=false; angle=+this.value; focus=""; render(false); });
+  el("feathers").addEventListener("input", function(){ did=false; feathers=+this.value; focus=""; render(false); });
+  el("toShut").addEventListener("click", doShut);
+  el("toHalf").addEventListener("click", doHalf);
+  el("toOpen").addEventListener("click", doOpen);
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if(guess1Done) return;
+      guess1=btn.getAttribute("data-guess1");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(x){ x.setAttribute("aria-pressed", x===btn?"true":"false"); });
+      el("guessOut1").textContent="押好了。先点「打开一点」，再点「大开屏」。";
+      updateBadges();
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if(guess2Done) return;
+      guess2=btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(x){ x.setAttribute("aria-pressed", x===btn?"true":"false"); });
+      el("guessOut2").textContent="押好了。点图鉴「眼斑露出来」。";
+      updateBadges();
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if(guess3Done) return;
+      guess3=btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(x){ x.setAttribute("aria-pressed", x===btn?"true":"false"); });
+      el("guessOut3").textContent="押好了。点「合拢」，对照面积和眼斑。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-fn-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      Array.prototype.forEach.call(document.querySelectorAll("[data-fn-atlas]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+      el("atlasSay").textContent=(btn.querySelector(".kid-figure-fact")||{}).textContent||"";
+      var key=btn.getAttribute("data-fn-atlas");
+      focus=key;
+      if(key==="open"||key==="area"||key==="angle"){ angle=160; feathers=12; did=true; lastA=area(); lastS=spots(); }
+      else if(key==="spots"){ angle=160; feathers=6; did=true; lastA=area(); lastS=spots(); }
+      else if(key==="shut"){ angle=20; feathers=12; did=true; lastA=area(); lastS=spots(); }
+      else { did=false; }
+      el("angle").value=String(angle);
+      el("feathers").value=String(feathers);
+      render(!!did);
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-saw]"), function(btn){
+    btn.addEventListener("click", function(){
+      var k=btn.getAttribute("data-saw");
+      var on=btn.getAttribute("aria-pressed")!=="true";
+      btn.setAttribute("aria-pressed", on?"true":"false");
+      sawPick[k]=on;
+      var bits=[];
+      if(sawPick.open) bits.push("屏打开了");
+      if(sawPick.shut) bits.push("屏收起来");
+      if(sawPick.spots) bits.push("眼斑露出来");
+      if(sawPick.hide) bits.push("点子藏住了");
+      el("kidSawStatus").textContent=bits.length?("你看到："+bits.join("、")+"。"):"可以多选。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-fn-phrase]"), function(btn){
+    btn.addEventListener("click", function(){
+      Array.prototype.forEach.call(document.querySelectorAll("[data-fn-phrase]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+      var phrase=btn.getAttribute("data-fn-phrase")||"";
+      el("pickStatus").textContent="记下了："+phrase;
+      var box=el("fnReflection"); if(box && !box.value) box.value=phrase;
+      var content=el("workContent"); if(content && !content.value) content.value=phrase;
+    });
+  });
+
+  document.addEventListener("playful:preference", function(){ render(false); });
+  render(false);
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/fan-lab.html", "开屏工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

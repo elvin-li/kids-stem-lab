@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>电路工坊 · 开关断开，灯为什么不亮？</title>
+<meta name="description" content="电池、导线、开关、灯连成闭合圈，灯才亮。开关断开，路没走完就灭。短路绕过灯又危险，只在舞台上示意。低压电池成人看管，不拆家电，不接市电。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  .hero { padding: 28px 0 10px; }
+  .hero h1 { margin: .15em 0 .3em; }
+  .lead { max-width: 58ch; color: var(--ink-mid); }
+  .kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--code) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--code) 12%,var(--surface)),var(--surface) 62%);
+  }
+  .mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--code) 36%,var(--line));
+    background: color-mix(in srgb,var(--code) 12%,var(--surface)); font-size: 2.2rem;
+  }
+  .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .ck-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+  .ck-board { fill: color-mix(in srgb,var(--sci) 8%,#f4f7f1); }
+  .ck-wire { fill: none; stroke: color-mix(in srgb,var(--ink) 48%,#4a5560); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+  .ck-wire.on { stroke: color-mix(in srgb,var(--warn) 70%,#c47a12); }
+  .ck-batt { fill: color-mix(in srgb,var(--ink) 18%,#d8dde3); stroke: color-mix(in srgb,var(--ink) 46%,transparent); stroke-width: 2; }
+  .ck-plus { fill: var(--danger); }
+  .ck-minus { fill: var(--ink-mid); }
+  .ck-sw { fill: var(--surface); stroke: color-mix(in srgb,var(--ink) 50%,transparent); stroke-width: 3; }
+  .ck-bulb { fill: color-mix(in srgb,var(--ink) 12%,#e8e4d8); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 2; }
+  .ck-bulb.lit { fill: #ffe08a; }
+  .ck-bulb.dim { fill: #f3d27a; }
+  .ck-glow { fill: #ffe08a; opacity: 0; }
+  .ck-glow.lit { opacity: .45; }
+  .ck-glow.dim { opacity: .22; }
+  .kid-action-strip { display: grid; gap: 10px; margin: 12px 0; grid-template-columns: repeat(auto-fit,minmax(min(180px,100%),1fr)); }
+  .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+  .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+  .ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--code) 12%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--code) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+  button, .btn { min-height: 44px; }
+  .stage + .kid-action-strip { margin-top: 8px; }
+  .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+  @media (max-width: 640px) {
+    .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+
+  .readout { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); margin-top: 10px; }
+  .readout b { display: block; font: 800 1.12rem/1.2 var(--mono); color: var(--ink); }
+  .readout span { font-size: .78rem; color: var(--ink-dim); }
+
+  .guess-card { border-color: color-mix(in srgb,var(--phys) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--phys); background: color-mix(in srgb,var(--phys) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 6px 0 8px; padding: 8px 10px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .2em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.35rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .88rem; line-height: 1.4; margin-bottom: .3em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 8px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1rem; margin-bottom: .25em; }
+    html[data-mode="kid"] .ck-art { max-height: 132px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+    html[data-mode="kid"] .readout b { font-size: .95rem; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .86rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; gap: 6px; }
+    html[data-mode="kid"] .kid-action-strip label { font-size: .86rem; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+  }
+
+.ad-photo-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 10px;align-items:end}.ad-photo-strip figure{margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface-2)}.ad-photo-strip img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}.ad-photo-strip figcaption{padding:6px 8px;font-size:.78rem;font-weight:800;color:var(--ink-mid);line-height:1.35}.ad-photo-strip .is-contrast figcaption{color:color-mix(in srgb,var(--warn) 70%,var(--ink))}@media (max-width:480px){.ad-photo-strip{gap:6px}.ad-photo-strip figcaption{font-size:.7rem;padding:4px 6px}}
+</style>
+</head>
+<body data-playful-page="games/circuit-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-hero-scene">
+    <div>
+      <p class="row"><span class="pill pill-phys">物理</span><span class="pill">7–12&nbsp;岁</span><span class="pill">约 12&nbsp;分钟</span></p>
+      <h1>开关断开，灯为什么不亮？</h1>
+      <p class="lead">电池、导线、开关、灯连成一圈，灯才会亮；开关一开，路没走完，灯就灭。两盏串在一起常常更暗，并在一起一盏坏了另一盏还能亮。本页只示意玩具电池，不拆家电，不接墙上的电。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/electric-eel.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">让灯亮起来</h2>
+    <div class="ad-photo-strip" role="group" aria-label="真实现象参照"><figure><img class="photo-real" src="../assets/photos/electric-eel.jpg" alt="" width="640" height="360" loading="lazy"><figcaption>生活里能看见的参照</figcaption></figure><figure><img class="photo-real" src="../assets/photos/electric-eel.jpg" alt="" width="640" height="360" loading="lazy"><figcaption>再看台上的结构图：零件对上号</figcaption></figure></div>
+<p>先闭合开关，再决定第二盏灯怎么接。</p>
+    <svg class="ck-art" viewBox="0 0 640 280" role="img" aria-labelledby="ckTitle ckDesc">
+      <title id="ckTitle">电路舞台</title>
+      <desc id="ckDesc">左边电池格跟着电压叠高。亮时光圈随格数变大。串联两盏分电压，每盏更暗；并联各拿满格。断开就拿不到。</desc>
+      <rect class="ck-board" width="640" height="280"/>
+      <path id="wireMain" class="ck-wire" d="M120 200 H520 V80 H200"/>
+      <path id="wireBranch" class="ck-wire" d="M400 200 V140 H520" hidden></path>
+      <g id="battStack"></g>
+      <rect class="ck-plus" x="148" y="184" width="8" height="32"/>
+      <rect class="ck-minus" x="84" y="190" width="8" height="20"/>
+      <text x="120" y="248" text-anchor="middle" font-size="11" fill="#3a2a18" font-weight="700" id="battLab">6&nbsp;格</text>
+      <rect class="ck-sw" x="188" y="62" width="54" height="36" rx="8"/>
+      <line id="swArm" x1="198" y1="80" x2="232" y2="68" stroke="#4a5560" stroke-width="5" stroke-linecap="round"/>
+      <circle class="ck-glow" id="glowA" cx="400" cy="80" r="34"/>
+      <ellipse class="ck-bulb" id="bulbA" cx="400" cy="80" rx="22" ry="26"/>
+      <g id="lampB">
+        <circle class="ck-glow" id="glowB" cx="520" cy="140" r="30"/>
+        <ellipse class="ck-bulb" id="bulbB" cx="520" cy="140" rx="20" ry="24"/>
+      </g>
+    </svg>
+    <div class="readout">
+      <div><span>电压</span><b id="voltOut">6</b></div>
+      <div><span>接法</span><b id="layoutOut">断路</b></div>
+      <div><span>每灯亮度</span><b id="brightOut">——</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">开关是开着的，电流走不通，灯都是暗的。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="电路主操作">
+    <div>
+      <label for="volt">电池电压：<span id="voltLab">6 V</span></label>
+      <input class="input" id="volt" type="range" min="1" max="12" value="6" aria-valuetext="6">
+    </div>
+    <div class="pick-btns">
+      <button class="btn btn-primary" type="button" id="toggleSw" aria-pressed="false">闭合开关</button>
+      <button class="btn" type="button" id="toggleLamp" aria-pressed="true">接上第二盏灯</button>
+      <button class="btn" type="button" id="toggleLayout" aria-pressed="false">改成并联</button>
+    </div>
+  </div>
+  <section class="card guess-card" aria-labelledby="guessTitleCk">
+    <h2 id="guessTitleCk">先猜一猜，再接</h2>
+    <p><b>第 1 题：</b>电压 6 V、两盏串联。每灯会比单独一盏更暗，还是一样亮？</p>
+    <div class="pick-btns" role="group" aria-label="猜串联">
+      <button class="btn guess-pick" type="button" data-guess1="3" aria-pressed="false">大约 3（减半）</button>
+      <button class="btn guess-pick" type="button" data-guess1="6" aria-pressed="false">还是 6</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。6 V，闭合开关，两盏串联。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>同样 6 V，改成并联。每灯还能拿满电压吗？</p>
+      <div class="pick-btns" role="group" aria-label="猜并联">
+        <button class="btn guess-pick" type="button" data-guess2="6" aria-pressed="false">大约 6（各拿满电压）</button>
+        <button class="btn guess-pick" type="button" data-guess2="3" aria-pressed="false">大约 3</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后改成并联再看读数。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>并联还接着。点「断开开关」。灯还会亮吗？</p>
+      <div class="pick-btns" role="group" aria-label="猜断路">
+        <button class="btn guess-pick" type="button" data-guess3="on" aria-pressed="false">还亮，电压还在</button>
+        <button class="btn guess-pick" type="button" data-guess3="off" aria-pressed="false">灭了，路没走完</button>
+        <button class="btn guess-pick" type="button" data-guess3="dim" aria-pressed="false">暗一点但还亮</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后保持并联，点「断开开关」。</p>
+    </div>
+  </section>
+              <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">灯要亮，电必须走完一圈；抄近路绕过灯叫短路</h2>
+    <p>先点「闭合开关」，只留一盏灯，看它亮不亮。再接上第二盏，先串联看是不是更暗，再改成并联看是不是都亮。最好用手指从电池描到灯、再描回电池，路有没有断。</p>
+    <p>电荷要沿闭合路径持续走，灯才亮。开关断开，路径缺一段，灯拿不到。两盏串在同一条路上，电压被分开，通常更暗；并联各走各的，每盏都能拿到差不多整份电压。抄近路绕过灯叫短路：灯不亮，电池却可能发热。</p>
+    <p>舞台上的亮度和电压格是本页比较尺子，用来对照单灯、串联、并联，不是电工手册，也不是自然定律。玩具电池成人收，不拆家电，不接市电，真电池正负极不要用导线直接短接。</p>
+  </section>
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">电路图鉴</h2>
+    <p>点一张，对照上面的接法：路通不通，灯亮不亮。</p>
+    <div class="kid-figure-grid" role="group" aria-label="电路图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-ck-atlas="batt" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f4f7f1" width="120" height="90"/><rect x="6" y="38" width="32" height="20" rx="3" fill="#d8dde3" stroke="#3a2a18" stroke-width="1.8"/><rect x="10" y="40" width="18" height="8" fill="#3a7a48"/><rect x="6" y="38" width="6" height="20" rx="2" fill="#6a7078"/><rect x="32" y="38" width="6" height="20" fill="#c43c32"/><rect x="36" y="43" width="6" height="10" rx="1" fill="#d0d4d8" stroke="#3a2a18"/><path d="M8 48h4" stroke="#fff" stroke-width="1.5"/><path d="M39 45v6M36 48h6" stroke="#c43c32" stroke-width="1.4"/><path d="M10 48H4V12H52" fill="none" stroke="#c47a12" stroke-width="3" stroke-linecap="round"/><path d="M10 56H4V78H90V58" fill="none" stroke="#c47a12" stroke-width="3" stroke-linecap="round"/><circle cx="52" cy="12" r="3" fill="#e8c060" stroke="#3a2a18"/><circle cx="78" cy="12" r="3" fill="#e8c060" stroke="#3a2a18"/><path d="M52 12L78 8" stroke="#5a5348" stroke-width="3.2" stroke-linecap="round"/><path d="M78 12H90V28" fill="none" stroke="#c47a12" stroke-width="3" stroke-linecap="round"/><path d="M78 28C78 16 100 16 100 28C100 36 94 40 94 48H84C84 40 78 36 78 28Z" fill="#ffe08a" stroke="#5a3a20" stroke-width="1.6"/><path d="M86 28q5 8 8 0" fill="none" stroke="#b04040" stroke-width="1.6" stroke-linecap="round"/><rect x="84" y="48" width="10" height="12" rx="1" fill="#c4a06a" stroke="#5a3a20"/><path d="M85.5 52h7M85.5 56h7" stroke="#5a3a20" stroke-width="1.1"/></svg></span><span class="kid-figure-cap">电池</span><span class="kid-figure-fact">两端有电压，回路闭合以后才推得动电荷，台上灯才亮，不是电自己找到灯</span></button>
+      <button class="kid-figure" type="button" data-ck-atlas="wire" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f4f7f1" width="120" height="90"/><path d="M8 48h30" stroke="#c47a12" stroke-width="6.5" stroke-linecap="round"/><path d="M36 48h48" stroke="#3d6fb8" stroke-width="11" stroke-linecap="round"/><path d="M82 48h30" stroke="#c47a12" stroke-width="6.5" stroke-linecap="round"/><path d="M38 48h44" stroke="#d8dde3" stroke-width="3"/><circle cx="10" cy="48" r="3.2" fill="#e8c060" stroke="#5a3a20"/><circle cx="110" cy="48" r="3.2" fill="#e8c060" stroke="#5a3a20"/><path d="M36 42v12M84 42v12" stroke="#1c3a66" stroke-width="1.2"/></svg></span><span class="kid-figure-cap">导线</span><span class="kid-figure-fact">金属芯里能走电荷，把电池、开关和灯连成路，看台上接法，不是电会认路</span></button>
+      <button class="kid-figure" type="button" data-ck-atlas="sw" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f4f7f1" width="120" height="90"/><circle cx="36" cy="48" r="6" fill="#5a3a20"/><circle cx="84" cy="48" r="6" fill="#5a3a20"/><path d="M36 48 L78 28" fill="none" stroke="#5a3a20" stroke-width="5"/></svg></span><span class="kid-figure-cap">开关</span><span class="kid-figure-fact">开关打开就断路，合上才成圈，灯才拿得到电，不是电会绕过去自己找灯</span></button>
+      <button class="kid-figure" type="button" data-ck-atlas="bulb" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f4f7f1" width="120" height="90"/><circle cx="60" cy="40" r="18" fill="#ffe08a" stroke="#5a3a20"/><rect x="52" y="56" width="16" height="14" fill="#8a857c"/></svg></span><span class="kid-figure-cap">小灯泡</span><span class="kid-figure-fact">有电流穿过才会亮，路断了它自己不会发光，台上亮度空着，不是灯害羞</span></button>
+      <button class="kid-figure" type="button" data-ck-atlas="open" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f4f7f1" width="120" height="90"/><path d="M16 60 H48 M72 60 H104" fill="none" stroke="#4a5560" stroke-width="6"/><circle cx="60" cy="32" r="12" fill="#e8e4d8" stroke="#5a3a20"/></svg></span><span class="kid-figure-cap">断路</span><span class="kid-figure-fact">路没走完一圈，灯拿不到电，所以台上不亮，不是电去别的地方自己玩了</span></button>
+      <button class="kid-figure" type="button" data-ck-atlas="series" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f4f7f1" width="120" height="90"/><circle cx="40" cy="44" r="12" fill="#f3d27a" stroke="#5a3a20"/><circle cx="80" cy="44" r="12" fill="#f3d27a" stroke="#5a3a20"/><path d="M16 44 H28 M52 44 H68 M92 44 H104" fill="none" stroke="#4a5560" stroke-width="5"/></svg></span><span class="kid-figure-cap">串联</span><span class="kid-figure-fact">两盏走同一条路，电压被分开，台上每灯通常更暗，不是灯们在互相让着</span></button>
+      <button class="kid-figure" type="button" data-ck-atlas="parallel" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f4f7f1" width="120" height="90"/><circle cx="60" cy="28" r="10" fill="#ffe08a" stroke="#5a3a20"/><circle cx="60" cy="62" r="10" fill="#ffe08a" stroke="#5a3a20"/><path d="M20 28 H50 M70 28 H100 M20 62 H50 M70 62 H100 M20 28 V62 M100 28 V62" fill="none" stroke="#4a5560" stroke-width="4"/></svg></span><span class="kid-figure-cap">并联</span><span class="kid-figure-fact">并联各走各的路，一盏坏了另一盏还能亮，看台上接法，不是电更喜欢那盏</span></button>
+      <button class="kid-figure" type="button" data-ck-atlas="home" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f4f7f1" width="120" height="90"/><path d="M20 48 L60 20 L100 48 V78 H20 Z" fill="#fff" stroke="#5a3a20"/><rect x="52" y="54" width="16" height="24" fill="#ffe08a"/></svg></span><span class="kid-figure-cap">家里的灯</span><span class="kid-figure-fact">家里的灯多半是并联，所以一盏坏了走廊还亮，不要去拆开关盒接市电</span></button>
+      <button class="kid-figure" type="button" data-ck-atlas="loop" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f4f7f1" width="120" height="90"/><path d="M28 62 H92 V28 H28 Z" fill="none" stroke="#4a5560" stroke-width="6"/><circle cx="60" cy="28" r="10" fill="#ffe08a" stroke="#5a3a20"/></svg></span><span class="kid-figure-cap">闭合回路</span><span class="kid-figure-fact">电必须走完一圈回到电池，灯才会持续亮，台上接法写通路，不是电认灯</span></button>
+      <button class="kid-figure" type="button" data-ck-atlas="insul" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f4f7f1" width="120" height="90"/><path d="M16 48 H104" fill="none" stroke="#c47a12" stroke-width="10" stroke-linecap="round"/><path d="M40 48 H80" fill="none" stroke="#8a857c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">绝缘皮</span><span class="kid-figure-fact">塑料皮不让电跑出来，破皮的线不要用，更不要剥家里的电线玩火花</span></button>
+      <button class="kid-figure" type="button" data-ck-atlas="short" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f4f7f1" width="120" height="90"/><circle cx="36" cy="44" r="12" fill="#e8e4d8" stroke="#5a3a20"/><path d="M16 44 H24 M48 44 H104 M48 44 L96 20" fill="none" stroke="#d05050" stroke-width="5"/></svg></span><span class="kid-figure-cap">短路</span><span class="kid-figure-fact">电抄近路不经过灯，灯不亮，电池还可能发热，只在舞台示意，禁止拿电池短路</span></button>
+      <button class="kid-figure" type="button" data-ck-atlas="cell2" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f4f7f1" width="120" height="90"/><rect x="16" y="34" width="36" height="22" rx="3" fill="#d8dde3" stroke="#5a3a20"/><rect x="52" y="38" width="6" height="14" fill="#d05050"/><rect x="64" y="34" width="36" height="22" rx="3" fill="#d8dde3" stroke="#5a3a20"/><rect x="100" y="38" width="6" height="14" fill="#d05050"/></svg></span><span class="kid-figure-cap">两节电池</span><span class="kid-figure-fact">两节顺着接，电压相加，台上灯通常更亮一点，不拆真电池，也不接市电</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照上面的接法。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--phys)"
+         data-kid-predict
+         data-kid-predict-explain="回路闭合 → 灯可亮；断开 → 灭；短路绕过负载 → 危险示意。不是「电喜欢走」。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">💡</span><b>开关断开时，灯为什么不亮？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：开关断开为什么不亮">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="tired">电池累了，自己睡着</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="open" data-kid-predict-correct>回路断开，电荷没有完整路径</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="afraid">灯害怕黑暗，不肯亮</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：单灯、串联、并联都算</h2>
+    <p>闭合开关下：只留一盏、两盏串联、两盏并联都试过。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先闭合开关，让至少一盏灯亮起来。</p>
+  </section>
+
+
+              <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">先闭合让一盏亮，再试串联和并联</h2>
+    <p>舞台上先只改路通不通。闭合开关，只留一盏，看它亮；再接第二盏，先串联看是不是更暗，再并联看是不是都亮。用手指从电池描到灯、再描回电池，圈有没有断。</p>
+    <p>回家只带两句：「路要走完一圈，灯才亮」；「并联各走各的」。不要写成「电池睡着了」或「灯害怕黑暗」，也不要去拆插座。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">两端有压差才推</text><rect x="36" y="36" width="48" height="28" rx="4" fill="#3d9a58"/><rect x="76" y="44" width="8" height="12" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">电池</span><span class="kid-figure-sub">电压</span><p class="kid-figure-fact">两端有压差，回路闭合以后才推得动。电压还在，灯不一定拿得到，不是电会找灯。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">电流穿过才亮</text><circle cx="60" cy="40" r="14" fill="#e8b84a"/><rect x="54" y="54" width="12" height="16" fill="#6b7280"/></svg></span><span class="kid-figure-cap">灯</span><span class="kid-figure-sub">负载</span><p class="kid-figure-fact">有电流穿过才会亮。路断了，灯自己不会因为害怕黑暗而不亮，看台上亮度。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">打开断合上成圈</text><rect x="28" y="40" width="64" height="20" rx="4" fill="#6b7280"/><circle cx="72" cy="50" r="8" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">开关</span><span class="kid-figure-sub">通断</span><p class="kid-figure-fact">打开就断路，合上才成圈。先查这一段，再怪电池累了，不是电自己睡着了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">两盏通常更暗</text><rect x="16" y="44" width="20" height="12" fill="#3d9a58"/><circle cx="52" cy="50" r="8" fill="#e8b84a"/><circle cx="80" cy="50" r="8" fill="#e8b84a"/><path d="M36 50 H44 M60 50 H72" stroke="#1e2d4a" stroke-width="3"/></svg></span><span class="kid-figure-cap">串联</span><span class="kid-figure-sub">同一条路</span><p class="kid-figure-fact">两盏走同一条路，电压被分开，台上每盏通常更暗，不是灯们在互相谦让。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">一盏坏另一还能亮</text><rect x="16" y="44" width="16" height="12" fill="#3d9a58"/><circle cx="60" cy="32" r="7" fill="#e8b84a"/><circle cx="60" cy="64" r="7" fill="#e8b84a"/><path d="M32 50 H48 V32 H52 M48 50 V64 H52" stroke="#1e2d4a" stroke-width="3"/></svg></span><span class="kid-figure-cap">并联</span><span class="kid-figure-sub">各走各的</span><p class="kid-figure-fact">各走各的路，一盏坏了另一盏还能亮。家里的灯多半这样，不要去拆开关盒。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">不经过灯又危险</text><path d="M60 24 L96 76 H24 Z" fill="#e8b84a" stroke="#c2410c"/><rect x="57" y="40" width="6" height="20" fill="#1e2d4a"/><circle cx="60" cy="68" r="3" fill="#1e2d4a"/></svg></span><span class="kid-figure-cap">短路</span><span class="kid-figure-sub">抄近路</span><p class="kid-figure-fact">电不经过灯，灯不亮，电池还可能发热。只在舞台上示意，禁止拿电池短路玩火花。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>只留一盏。</b>闭合开关，看灯亮不亮。</li>
+      <li data-step="2"><b>两盏串联。</b>看每盏是不是更暗。</li>
+      <li data-step="3"><b>两盏并联。</b>看是不是都亮，一盏坏了另一盏怎样。</li>
+      <li data-step="4"><b>写完成句。</b>路要走完一圈。划掉「电池睡着了」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>电要跑一圈才能让灯亮。线断了，灯就灭。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>两盏串在一起常常更暗；并在一起，一盏坏了另一盏还能亮。家里的灯多半是并联。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>短路把电源两端直接连上，电流很大、灯不亮，玩具电池也会发热。本页亮度是比较尺子。市电绝不能这样玩。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能描出闭合圈，区分串并联，并说出短路危险。完成看的是对照，不是背「回路」两个字。</p>
+    <ul class="ask-list">
+      <li>开关断开、电压还在电池上：灯为什么灭？电压跑到灯上了吗？</li>
+      <li>6&nbsp;V、两盏串联：每盏通常比单独一盏更亮还是更暗？</li>
+      <li>改成并联以后，一盏如果坏了，另一盏还会亮吗？家里的灯更像哪一种？</li>
+      <li>电会不会因为「喜欢走」自己抄近路？短路为什么危险？</li>
+    </ul>
+  </section>
+
+
+            <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">绝缘皮不让电跑出来；两节顺着接通常更亮</h2>
+    <p>塑料皮是绝缘，金属芯才是路。破皮的线不要用。两节电池顺着接，电压相加，灯通常更亮；接反可能不亮。本页不教拆真电池。</p>
+    <p>短路示意只在舞台上：电抄近路不经过灯。真电池正负极不要用导线直接短接，会发热。磁铁工坊看的是另一套力，不要和电流混成一句。</p>
+    <p>市电、插座、家电内部是另一世界。本页只谈玩具电池回路。电压格不是电工手册上的伏特校准。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">电不该跑出来</text><rect x="24" y="44" width="72" height="10" fill="#c2410c"/><rect x="36" y="46" width="48" height="6" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">绝缘皮</span><span class="kid-figure-sub">挡住</span><p class="kid-figure-fact">塑料皮不让电跑出来。破皮的线不要用，更不要去剥家里的电线，也不接市电。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">顺着通常更亮</text><rect x="20" y="40" width="36" height="20" rx="3" fill="#3d9a58"/><rect x="64" y="40" width="36" height="20" rx="3" fill="#3d9a58"/></svg></span><span class="kid-figure-cap">两节</span><span class="kid-figure-sub">顺着</span><p class="kid-figure-fact">两节顺着接，电压相加，灯通常更亮。接反可能不亮。不拆真电池，不接市电。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">真电池不要这样</text><rect x="28" y="40" width="28" height="20" fill="#3d9a58"/><path d="M56 50 H92" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">短接</span><span class="kid-figure-sub">发热</span><p class="kid-figure-fact">真电池正负极不要用导线直接连。短路只在舞台上示意，禁止拿电池短路玩火花。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">不拆家电</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">市电</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">墙上的电、插座、家电内部都不碰。玩具电池由大人看管，禁止去接市电。</p></div>
+    </div>
+  </section>
+
+
+          <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：通路亮 · 断路灭 · 电池睡着了</h2>
+    <p>三列用同一盏灯。先只改路通不通：通路亮，断路灭。「电池睡着了」整列划掉：先查圈有没有断。</p>
+    <p>串联和并联是加试：同一电压，接法不同，每盏拿到的不一样。不要和「开关断开」叠在同一档里讲。</p>
+    <p>短路不是「电喜欢走」。它绕过灯，灯不亮，还可能发热。只示意，不模仿。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">走完一圈才亮</text><circle cx="60" cy="52" r="18" fill="#3d9a58"/></svg></span><span class="kid-figure-cap">通路</span><span class="kid-figure-sub">亮</span><p class="kid-figure-fact">电走完一圈回到电池，灯才持续亮。先做出这一档，看台上接法写通路。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">缺一段就灭</text><circle cx="60" cy="52" r="18" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">断路</span><span class="kid-figure-sub">灭</span><p class="kid-figure-fact">路缺一段，灯拿不到电。电压还可以留在电池上，不是电自己跑去找灯。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">先查回路</text><circle cx="60" cy="52" r="18" fill="#c2410c"/><path d="M28 28 L92 76" stroke="#1e2d4a" stroke-width="3"/></svg></span><span class="kid-figure-cap">睡着</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">先查回路有没有断。把「电池睡着了」整列划掉，也划掉「电会自己找到灯」。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">写清闭合或并联</text><rect x="22" y="28" width="50" height="44" fill="#f4efe4" stroke="#1e2d4a"/><path d="M82 26 L100 42 L78 74 L60 58 Z" fill="#e8b84a" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">闭合或并联</span><p class="kid-figure-fact">回家写清：路要闭合才亮；并联各走各的。不是电喜欢走，也不是电会找灯。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">单灯、串联、并联三行记下亮暗</h2>
+    <p>在纸上画三行：单灯、串联、并联。各写亮还是暗，以及一盏坏了另一盏怎样。三行并排，比背公式有用。</p>
+    <p>口头只要两句：「路要走完一圈。」「并联各走各的。」有人说电池睡着了，让孩子指着断开的开关反驳。</p>
+    <p>玩具电池大人收。不拆家电，不接市电。打印只留三行接法，不要抄电压格当电工手册。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">单灯串联并联</text><rect x="28" y="24" width="64" height="52" fill="#f4efe4" stroke="#1e2d4a"/><path d="M36 36 H84 M36 48 H84 M36 60 H64" stroke="#1e2d4a" stroke-width="2"/></svg></span><span class="kid-figure-cap">三行</span><span class="kid-figure-sub">接法</span><p class="kid-figure-fact">三行：单灯、串联、并联。各写亮暗，以及一盏坏了另一盏怎样，对照台上接法。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">手指描回电源</text><circle cx="36" cy="56" r="8" fill="#e8d4a8"/><path d="M44 48 Q70 24 88 48 Q70 72 44 56" fill="none" stroke="#c2410c" stroke-width="3"/></svg></span><span class="kid-figure-cap">描圈</span><span class="kid-figure-sub">口令</span><p class="kid-figure-fact">用手指从电池描到灯、再描回电池。圈断了，灯就灭，不是电绕道去找灯。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">一盏坏别的还亮</text><path d="M24 48 L60 24 L96 48 V76 H24 Z" fill="#f4efe4" stroke="#1e2d4a"/><circle cx="44" cy="60" r="5" fill="#e8b84a"/><circle cx="76" cy="60" r="5" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">家里</span><span class="kid-figure-sub">并联</span><p class="kid-figure-fact">家里的灯多半并联，所以一盏坏了走廊还亮。不要去拆开关盒，也不接市电。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">玩具电池即可</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">市电</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">玩具电池即可。墙上的电、插座、家电内部一律不碰，禁止接市电玩火花。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「灯亮不亮靠不靠走完一圈」，就先只改开关这一项。同一节电池、同一盏灯，先闭合看亮，再断开看灭。串联和并联是另一次对照，不要和「开关通断」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>开关闭合还是断开；或只改接法（串联 / 并联）。</li>
+      <li><b>先保持不变：</b>同一电压、同一批灯，一次不要同时拧两样。</li>
+      <li><b>要观察的：</b>灯亮不亮、每盏更亮还是更暗。</li>
+      <li><b>另开一行：</b>用手指描一圈，路在哪一段断了。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>走廊一盏灯坏了，客厅为什么还亮？这和本页的并联像在哪？能不能因此去拆家里的开关盒？</li>
+      <li>手电筒不亮，先查电池，还是先查开关有没有接通、灯泡有没有拧紧？哪一句先说？</li>
+      <li>两节电池顺着装和一节电池，灯通常谁更亮？接反了会怎样？为什么本页不教拆真电池？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把「分压」提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>电要跑一圈灯才亮。线断了，灯就灭。能用手指描一圈就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>串联通常更暗，并联各走各的。家里的灯多半并联。短路危险，只看舞台。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>闭合回路才有持续电流。串联近似分压，并联各支路电压相近。本页亮度是比较尺子。市电、家电不在范围。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：电路观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：并联的两盏灯一样亮"></div>
+      <div><label for="workContent">你看见了什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下开关、串联、并联时灯的样子，再说说电流为什么那样走。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+              <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>开关断开、灯灭了：孩子说的是「路没走完」，还是「电池睡着了」？让他再指一次开关臂。</li>
+      <li>6&nbsp;V 两盏串联更暗，哪一句四岁听得懂？试「两盏分这一份电，每盏就少一点」。</li>
+      <li>家里一盏灯坏了走廊还亮：这和本页并联像在哪？为什么仍不能去拆开关盒？</li>
+      <li>短路灯不亮还可能发热：差在电有没有经过灯？真电池能用导线把两端直接连上吗？</li>
+      <li>玩具电池谁来收？墙上的插座、市电、家电内部：红线怎么说？</li>
+      <li>本页电压格和亮度数字，能抄进电工手册当真伏特吗？</li>
+    </ul>
+  </section>
+
+              <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：电池两端有电压；导线提供路径；开关管通断；灯是负载。电荷要沿闭合路径持续走，灯才亮。开关一开，路径缺一段，灯拿不到。</p>
+    <p>单灯或并联时，本页把每灯亮度近似写成电压；串联写成电压除以盏数。这是比较尺子，用来看见「串联更暗、并联各拿一份」，不是自然定律，也不是电工手册。舞台忽略导线电阻、接触不良和电池内阻。</p>
+    <p>短路绕过负载，电流可以变得很大，灯不亮，电池发热。只示意，不模仿。绝缘皮限制电荷离开导体。磁铁、静电是邻居机制，不要和这条回路混成一句。</p>
+    <p>市电、插座、家电内部不在本页范围。玩具电池由大人看管，正负极不要短接。</p>
+  </section>
+
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))" data-audience="parent">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">电路公式卡 · 单灯/并联≈电压；串联≈电压÷盏数（本页比较尺子，不是自然定律）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">开关闭合才有亮度。串联分压变暗；并联各拿满电压。用来比较接法，不是电工手册，也不是说明书。短路只示意。低压玩具电池由成人看管，不拆家电，不接市电。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：路要走完一圈，灯才亮；并联各走各的。磁铁工坊看另一套力；光与影看灯亮了以后影子怎么走；静电工坊看电荷停着不走的时候。</p>
+    <p class="row"><a class="btn btn-ghost" href="magnet-lab.html">磁铁工坊</a><a class="btn btn-ghost" href="light-and-shadow.html">光与影</a><a class="btn btn-ghost" href="static-lab.html">静电工坊</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页是理想化直流电路模型，忽略导线电阻、接触不良和电池内阻。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+
+  var sw=false, two=true, parallel=false, volt=6;
+  var seen={one:false,series:false,parallel:false,done:false};
+  var guess1="",guess1Done=false,sawSeries=false;
+  var guess2="",guess2Done=false,sawPar=false,guess3="",guess3Done=false,sawOpen=false;
+  function brightEach(){
+    if(!sw) return 0;
+    if(!two) return volt;
+    if(parallel) return volt;
+    return Math.round(volt/2);
+  }
+  function setPressed(id,on,onLabel,offLabel){
+    var el=document.getElementById(id);
+    el.setAttribute("aria-pressed",on?"true":"false");
+    el.textContent=on?onLabel:offLabel;
+  }
+  function applyBulb(el,glow,mode,b){
+    el.classList.remove("lit","dim"); glow.classList.remove("lit","dim");
+    if(mode){el.classList.add(mode);glow.classList.add(mode);}
+    glow.setAttribute("r", mode ? String(16 + Math.min(22, (b||0) * 1.6)) : "22");
+  }
+  function drawBatt(){
+    var NS="http://www.w3.org/2000/svg";
+    var g=document.getElementById("battStack");
+    while(g.firstChild) g.removeChild(g.firstChild);
+    var h=5, i, y0=232;
+    for(i=0;i<volt;i++){
+      var r=document.createElementNS(NS,"rect");
+      r.setAttribute("x","86");
+      r.setAttribute("y", String(y0 - (i+1)*h));
+      r.setAttribute("width","62");
+      r.setAttribute("height", String(h-1));
+      r.setAttribute("rx","1");
+      r.setAttribute("fill", i===volt-1 ? "#c45a3a" : "#3a7a48");
+      r.setAttribute("stroke","#1f2937");
+      r.setAttribute("stroke-width","0.7");
+      g.appendChild(r);
+    }
+    var lab=document.getElementById("battLab");
+    if(lab) lab.textContent=volt+"\u00a0格";
+  }
+  function modeFor(b){
+    if(b<=0) return null;
+    if(b>=volt && volt>=5) return "lit";
+    if(b>=8) return "lit";
+    if(b>=volt) return "lit";
+    return b>=4?"lit":"dim";
+  }
+  function render(){
+    var b=brightEach();
+    var wire=document.getElementById("wireMain"), branch=document.getElementById("wireBranch");
+    var arm=document.getElementById("swArm"), lampB=document.getElementById("lampB");
+    var aMode=null,bMode=null, layout="断路";
+    if(!sw){layout="断路";}
+    else if(!two){layout="单灯"; aMode=b>=5?"lit":(b>0?"dim":null); seen.one=true;}
+    else if(parallel){layout="并联"; aMode=bMode=(b>=5?"lit":(b>0?"dim":null)); seen.parallel=true; if(guess2&&!guess2Done&&volt===6)sawPar=true;}
+    else {layout="串联"; aMode=bMode=(b>=5?"lit":(b>0?"dim":null)); seen.series=true; if(guess1&&!guess1Done&&volt===6)sawSeries=true;}
+    wire.className.baseVal=sw?"ck-wire on":"ck-wire";
+    branch.hidden=!(two&&parallel);
+    branch.className.baseVal=(sw&&two&&parallel)?"ck-wire on":"ck-wire";
+    arm.setAttribute("x2",sw?"228":"232"); arm.setAttribute("y2",sw?"80":"68");
+    lampB.style.display=two?"":"none";
+    drawBatt();
+    applyBulb(document.getElementById("bulbA"),document.getElementById("glowA"),aMode,b);
+    applyBulb(document.getElementById("bulbB"),document.getElementById("glowB"),bMode,b);
+    document.getElementById("voltLab").textContent=volt+" V";
+    document.getElementById("volt").setAttribute("aria-valuetext",String(volt));
+    document.getElementById("voltOut").textContent=volt+" V";
+    document.getElementById("layoutOut").textContent=layout;
+    document.getElementById("brightOut").textContent=sw?(b+""):"0";
+    document.getElementById("live").textContent=sw
+      ? (two
+          ? (parallel
+              ? "并联：每盏都拿到整份电压，一样亮。"
+              : "串联：两盏分电压，每盏更暗。")
+          : "只有一盏，路走完了，灯亮。")
+      : "开关断开，路没走完，灯拿不到电。闭合后再比串联与并联。";
+    setPressed("toggleSw",sw,"断开开关","闭合开关");
+    setPressed("toggleLamp",two,"只留一盏灯","接上第二盏灯");
+    setPressed("toggleLayout",parallel,"改成串联","改成并联");
+    document.getElementById("toggleLayout").disabled=!two;
+    checkGuess(); updateTask();
+  }
+  function checkGuess(){
+    if(guess1&&!guess1Done&&sawSeries){
+      guess1Done=true;
+      document.getElementById("guessOut1").innerHTML=(guess1==="3"?"<b>押对了！</b>":"<b>揭晓：</b>")+"串联两盏，电压对半分，每盏更暗。";
+      document.getElementById("guessBlock2").hidden=false;
+    }
+    if(guess2&&!guess2Done&&sawPar){
+      guess2Done=true;
+      document.getElementById("guessOut2").innerHTML=(guess2==="6"?"<b>押对了！</b>":"<b>揭晓：</b>")+"并联每灯都能拿到整份电压，一样亮。";
+      document.getElementById("guessBlock3").hidden=false;
+    }
+    if(guess3&&!guess3Done&&sawOpen){
+      guess3Done=true;
+      document.getElementById("guessOut3").innerHTML=(guess3==="off"?"<b>押对了！</b>":"<b>揭晓：</b>")+"开关断开，路没走完，亮度 = <b>0</b>。电压还在电池上，灯拿不到。";
+    }
+  }
+  function updateTask(){
+    var st=document.getElementById("taskStatus"); if(seen.done)return;
+    if(seen.one&&seen.series&&seen.parallel){
+      seen.done=true;
+      if(window.Progress)Progress.complete("games/circuit-lab.html","亮度随电压与串并联计算");
+      st.textContent="完成啦：串联分压变暗，并联各拿满电压。";
+    } else if(!seen.one) st.textContent="尚未完成：闭合开关，只留一盏灯看亮度。";
+    else if(!seen.series) st.textContent="还差：两盏串联看亮度减半。";
+    else st.textContent="还差：改成并联再比一次。";
+  }
+  document.getElementById("volt").addEventListener("input",function(){volt=+this.value;render();});
+  document.getElementById("toggleSw").addEventListener("click",function(){
+    sw=!sw;
+    if(guess3&&!guess3Done&&!sw&&two&&parallel)sawOpen=true;
+    render();
+  });
+  document.getElementById("toggleLamp").addEventListener("click",function(){two=!two;if(!two)parallel=false;render();});
+  document.getElementById("toggleLayout").addEventListener("click",function(){if(two)parallel=!parallel;render();});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if(guess1Done)return; guess1=btn.getAttribute("data-guess1");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut1").textContent="押好了。6 V，闭合开关，两盏串联。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if(guess2Done)return; guess2=btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut2").textContent="押好了。改成并联再看读数。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if(guess3Done)return; guess3=btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut3").textContent="押好了。保持并联，点「断开开关」。";
+    });
+  });
+  var ATLAS = {
+    batt:"两端有电压，回路闭合以后才推得动电荷，台上灯才亮，不是电自己找到灯",
+    wire:"金属芯里能走电荷，把电池、开关和灯连成路，看台上接法，不是电会认路",
+    sw:"开关打开就断路，合上才成圈，灯才拿得到电，不是电会绕过去自己找灯",
+    bulb:"有电流穿过才会亮，路断了它自己不会发光，台上亮度空着，不是灯害羞",
+    open:"路没走完一圈，灯拿不到电，所以台上不亮，不是电去别的地方自己玩了",
+    series:"两盏走同一条路，电压被分开，台上每灯通常更暗，不是灯们在互相让着",
+    parallel:"并联各走各的路，一盏坏了另一盏还能亮，看台上接法，不是电更喜欢那盏",
+    home:"家里的灯多半是并联，所以一盏坏了走廊还亮，不要去拆开关盒接市电",
+    loop:"电必须走完一圈回到电池，灯才会持续亮，台上接法写通路，不是电认灯",
+    insul:"塑料皮不让电跑出来，破皮的线不要用，更不要剥家里的电线玩火花",
+    short:"电抄近路不经过灯，灯不亮，电池还可能发热，只在舞台示意，禁止拿电池短路",
+    cell2:"两节顺着接，电压相加，台上灯通常更亮一点，不拆真电池，也不接市电"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-ck-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key=btn.getAttribute("data-ck-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-ck-atlas]"), function(n){n.setAttribute("aria-pressed",n===btn?"true":"false");});
+      document.getElementById("atlasSay").textContent=ATLAS[key]||"";
+      if(key==="series"){ two=true; parallel=false; sw=true; }
+      if(key==="parallel"){ two=true; parallel=true; sw=true; }
+      if(key==="open"){ sw=false; }
+      if(key==="sw"){ sw=true; }
+      render();
+    });
+  });
+  render();
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/circuit-lab.html", "电路工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

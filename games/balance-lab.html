@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>杠杆天平 · 横梁要平，是谁更重，还是力乘力臂？</title>
+<meta name="description" content="同一根梁，只改砝码和离支点的格数。力矩=个数×格数；平衡⇔左右力矩相等。读数是本页比较尺子，不是谁更重要。不把人当砝码。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/games-lab.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+.kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--phys) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--phys) 12%,var(--surface)),var(--surface) 62%);
+  }
+.mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--phys) 36%,var(--line));
+    background: color-mix(in srgb,var(--phys) 12%,var(--surface)); font-size: 2.2rem;
+  }
+.beam-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+.bl-sky { fill: color-mix(in srgb,var(--video) 10%,#eef7ff); }
+.bl-floor { fill: color-mix(in srgb,var(--kit) 16%,#efe0c8); }
+.bl-post { fill: color-mix(in srgb,var(--ink) 28%,#b9a078); }
+.bl-fulcrum { fill: color-mix(in srgb,var(--phys) 62%,#8a5a2a); }
+.bl-beam { fill: color-mix(in srgb,var(--warn) 28%,#f3e0b0); stroke: color-mix(in srgb,var(--ink) 42%,transparent); stroke-width: 2; }
+.bl-peg { fill: color-mix(in srgb,var(--ink) 46%,#6b5340); }
+.bl-w { fill: color-mix(in srgb,var(--math) 46%,#6ea8fe); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 1.4; }
+.bl-num { fill: var(--ink); font: 800 13px var(--mono); text-anchor: middle; }
+.side-row { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit,minmax(min(220px,100%),1fr)); }
+.peg-card { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); }
+.peg-card h3 { margin: 0; font-size: 1rem; }
+.peg-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.readout b { display: block; font: 800 1.2rem/1.2 var(--mono); color: var(--ink); }
+.log { margin: 0; padding-left: 1.2em; color: var(--ink-mid); }
+button, .btn { min-height: 44px; }
+.stage + .kid-action-strip { margin-top: 8px; }
+.kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+@media (max-width: 640px) {
+    .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+@media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .92rem; line-height: 1.5; margin-bottom: .4em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .beam-art { max-height: 150px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+    html[data-mode="kid"] .kid-visual-stage > p:not(.live-text) { font-size: .9rem; margin: .1em 0 .4em; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .92rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 8px 0; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+  }
+.guess-card { border-color: color-mix(in srgb,var(--math) 45%,var(--line)); }
+.guess-pick[aria-pressed="true"] { border-color: var(--math); background: color-mix(in srgb,var(--math) 18%,var(--surface)); color: var(--ink); }
+</style>
+</head>
+<body data-playful-page="games/balance-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-hero-scene">
+    <div>
+      <p class="row"><span class="pill pill-phys">物理</span><span class="pill">5–10&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>横梁要平，是谁更重，还是力乘力臂？</h1>
+      <p class="lead">天平与跷跷板讲同一句话：力矩——力乘力臂。重的一方靠近支点，轻的一方走远，也能平衡。本页只调砝码和位置，不把重物砸脚，也不把人当砝码。平不平不看谁更重要。</p>
+      <p class="teach-note" data-ad-learn><b>学什么：</b>两边力矩（力×力臂）才能比平衡；只比谁重、不比距离，会判错。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><svg viewBox="0 0 120 90" width="70" height="52" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><rect y="84" width="120" height="6" fill="#c8d6a8"/><rect x="30" y="78" width="60" height="8" rx="1" fill="#c4a06a" stroke="#5a3a20"/><rect x="54" y="52" width="12" height="28" fill="#8a6a40" stroke="#5a3a20"/><path d="M57 56v20" stroke="#d8b07a" stroke-width="1.3"/><polygon points="60,32 42,56 78,56" fill="#a07040" stroke="#3a2a18" stroke-width="1.8"/><polygon points="60,26 55,36 65,36" fill="#d8c090" stroke="#3a2a18"/><rect x="4" y="28" width="112" height="10" rx="2" fill="#f3e0b0" stroke="#5a3a20" stroke-width="1.8"/><path d="M18 28v10M32 28v10M46 28v10M74 28v10M88 28v10M102 28v10" stroke="#6b5340" stroke-width="1.25"/><path d="M16 38v12M24 38v12M96 38v12M104 38v12" stroke="#6b5340" stroke-width="1.5"/><path d="M10 50h20l-3 10H13Z" fill="#c9d4e0" stroke="#3a4a58" stroke-width="1.3"/><path d="M90 50h20l-3 10H93Z" fill="#c9d4e0" stroke="#3a4a58" stroke-width="1.3"/><rect x="14" y="42" width="12" height="10" rx="1" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="94" y="42" width="12" height="10" rx="1" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/></svg></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">先让它歪，再让它平</h2>
+    <p>每个挂钩离支点的格数不同。远一点的砝码，力气更大。</p>
+    <svg class="beam-art" id="beamArt" viewBox="0 0 640 260" role="img" aria-labelledby="beamTitle beamDesc">
+      <title id="beamTitle">杠杆天平舞台</title>
+      <desc id="beamDesc">一根横梁架在中间支点上，左右各有三个挂钩可以挂砝码。</desc>
+      <rect class="bl-sky" width="640" height="260"/>
+      <rect class="bl-floor" y="210" width="640" height="50"/>
+      <rect class="bl-post" x="308" y="148" width="24" height="70"/>
+      <polygon class="bl-fulcrum" points="320,148 292,188 348,188"/>
+      <g id="beamGroup" transform="rotate(0 320 148)">
+        <rect class="bl-beam" x="70" y="140" width="500" height="16" rx="6"/>
+        <circle class="bl-peg" cx="140" cy="140" r="6"/>
+        <circle class="bl-peg" cx="200" cy="140" r="6"/>
+        <circle class="bl-peg" cx="260" cy="140" r="6"/>
+        <circle class="bl-peg" cx="380" cy="140" r="6"/>
+        <circle class="bl-peg" cx="440" cy="140" r="6"/>
+        <circle class="bl-peg" cx="500" cy="140" r="6"/>
+        <text class="bl-num" x="140" y="128">3</text>
+        <text class="bl-num" x="200" y="128">2</text>
+        <text class="bl-num" x="260" y="128">1</text>
+        <text class="bl-num" x="380" y="128">1</text>
+        <text class="bl-num" x="440" y="128">2</text>
+        <text class="bl-num" x="500" y="128">3</text>
+        <g id="weightsLayer"></g>
+      </g>
+    </svg>
+    <div class="readout">
+      <div><span>左边力矩</span><b id="leftOut">0</b></div>
+      <div><span>右边力矩</span><b id="rightOut">0</b></div>
+      <div><span>现在的样子</span><b id="tiltOut">还没放砝码</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">点挂钩上的「放一个」，看横梁往哪边沉。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="在挂钩上放砝码">
+    <div class="side-row">
+      <article class="peg-card">
+        <h3>左边 · 离支点 3&nbsp;格</h3>
+        <div class="peg-btns">
+          <button class="btn btn-primary" type="button" data-side="L" data-arm="3" data-delta="1">放一个</button>
+          <button class="btn btn-ghost" type="button" data-side="L" data-arm="3" data-delta="-1">拿走一个</button>
+        </div>
+        <p id="cL3">0&nbsp;个</p>
+      </article>
+      <article class="peg-card">
+        <h3>左边 · 离支点 2&nbsp;格</h3>
+        <div class="peg-btns">
+          <button class="btn btn-primary" type="button" data-side="L" data-arm="2" data-delta="1">放一个</button>
+          <button class="btn btn-ghost" type="button" data-side="L" data-arm="2" data-delta="-1">拿走一个</button>
+        </div>
+        <p id="cL2">0&nbsp;个</p>
+      </article>
+      <article class="peg-card">
+        <h3>左边 · 离支点 1&nbsp;格</h3>
+        <div class="peg-btns">
+          <button class="btn btn-primary" type="button" data-side="L" data-arm="1" data-delta="1">放一个</button>
+          <button class="btn btn-ghost" type="button" data-side="L" data-arm="1" data-delta="-1">拿走一个</button>
+        </div>
+        <p id="cL1">0&nbsp;个</p>
+      </article>
+      <article class="peg-card">
+        <h3>右边 · 离支点 1&nbsp;格</h3>
+        <div class="peg-btns">
+          <button class="btn btn-primary" type="button" data-side="R" data-arm="1" data-delta="1">放一个</button>
+          <button class="btn btn-ghost" type="button" data-side="R" data-arm="1" data-delta="-1">拿走一个</button>
+        </div>
+        <p id="cR1">0&nbsp;个</p>
+      </article>
+      <article class="peg-card">
+        <h3>右边 · 离支点 2&nbsp;格</h3>
+        <div class="peg-btns">
+          <button class="btn btn-primary" type="button" data-side="R" data-arm="2" data-delta="1">放一个</button>
+          <button class="btn btn-ghost" type="button" data-side="R" data-arm="2" data-delta="-1">拿走一个</button>
+        </div>
+        <p id="cR2">0&nbsp;个</p>
+      </article>
+      <article class="peg-card">
+        <h3>右边 · 离支点 3&nbsp;格</h3>
+        <div class="peg-btns">
+          <button class="btn btn-primary" type="button" data-side="R" data-arm="3" data-delta="1">放一个</button>
+          <button class="btn btn-ghost" type="button" data-side="R" data-arm="3" data-delta="-1">拿走一个</button>
+        </div>
+        <p id="cR3">0&nbsp;个</p>
+      </article>
+    </div>
+    <div class="row">
+      <button class="btn btn-ghost" type="button" id="clearAll">全部拿走</button>
+      <button class="btn btn-primary" type="button" id="keepBalance" disabled>记下这种平衡</button>
+    </div>
+  </div>
+
+  <section class="card guess-card" aria-labelledby="guessTitleBl">
+    <h2 id="guessTitleBl">先猜一猜，再放</h2>
+    <p><b>第 1 题：</b>左边离支点 3&nbsp;格放 2&nbsp;个（力矩 2×3=6）。右边要在 2&nbsp;格放几个，才能打平？</p>
+    <div class="pick-btns" role="group" aria-label="猜力矩平衡">
+      <button class="btn guess-pick" type="button" data-guess1="two" aria-pressed="false">2&nbsp;个（只数个数一样）</button>
+      <button class="btn guess-pick" type="button" data-guess1="three" aria-pressed="false">3&nbsp;个（3×2=6）</button>
+      <button class="btn guess-pick" type="button" data-guess1="six" aria-pressed="false">6&nbsp;个（格数不管）</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。左边 3&nbsp;格放 2&nbsp;个，右边 2&nbsp;格试个数，看力矩读数。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>力矩已经一样。如果只把右边砝码往支点挪近一格，横梁会？</p>
+      <div class="pick-btns" role="group" aria-label="猜力臂变短">
+        <button class="btn guess-pick" type="button" data-guess2="still" aria-pressed="false">仍然平衡</button>
+        <button class="btn guess-pick" type="button" data-guess2="left" aria-pressed="false">左边更沉</button>
+        <button class="btn guess-pick" type="button" data-guess2="right" aria-pressed="false">右边更沉</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后先摆出力矩相等，再把右边挪近。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>左边 1&nbsp;格放 6&nbsp;个（1×6=6）。右边 3&nbsp;格要几个才能打平？</p>
+      <div class="pick-btns" role="group" aria-label="猜 1×6 与 2×3">
+        <button class="btn guess-pick" type="button" data-guess3="six" aria-pressed="false">6&nbsp;个（只数个数一样）</button>
+        <button class="btn guess-pick" type="button" data-guess3="two" aria-pressed="false">2&nbsp;个（2×3=6，也能打平）</button>
+        <button class="btn guess-pick" type="button" data-guess3="one" aria-pressed="false">1&nbsp;个就够</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后左边 1&nbsp;格放 6，右边 3&nbsp;格试个数。</p>
+    </div>
+  </section>
+
+              <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">同一根梁：重的靠近、轻的走远，两种摆法都能平</h2>
+    <p>先在一边多放几个，看横梁歪向哪边。再改另一边的个数或格数，调到两边力矩读数一样，点「记下这种平衡」。然后换一种摆法再平一次：两边砝码个数可以不同，只要力×力臂一样就算成功。</p>
+    <p>力矩是个数乘离支点的格数。远一点的砝码，往下压的劲更大。不是「谁更重谁更重要」，也不是「重的那边一定下去」：重的若靠轴很近，轻的走远也能把它抬起来。</p>
+    <p>舞台上的力矩按个数×格数算，是本页比较尺子：用来比「近而多」和「远而少」，不是游乐设施说明书，更不是谁比较努力。砝码不入口。梁下不伸手。不把人当砝码。</p>
+  </section>
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">杠杆图鉴</h2>
+    <p>点一张，对照上面的横梁：远一点的砝码，力气更大。</p>
+    <div class="kid-figure-grid" role="group" aria-label="杠杆图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-bl-atlas="fulcrum" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect y="84" width="120" height="6" fill="#c8d6a8"/><rect x="30" y="78" width="60" height="8" rx="1" fill="#c4a06a" stroke="#5a3a20"/><rect x="54" y="52" width="12" height="28" fill="#8a6a40" stroke="#5a3a20"/><path d="M57 56v20" stroke="#d8b07a" stroke-width="1.3"/><polygon points="60,32 42,56 78,56" fill="#a07040" stroke="#3a2a18" stroke-width="1.8"/><polygon points="60,26 55,36 65,36" fill="#d8c090" stroke="#3a2a18"/><rect x="4" y="28" width="112" height="10" rx="2" fill="#f3e0b0" stroke="#5a3a20" stroke-width="1.8"/><path d="M18 28v10M32 28v10M46 28v10M74 28v10M88 28v10M102 28v10" stroke="#6b5340" stroke-width="1.25"/><path d="M16 38v12M24 38v12M96 38v12M104 38v12" stroke="#6b5340" stroke-width="1.5"/><path d="M10 50h20l-3 10H13Z" fill="#c9d4e0" stroke="#3a4a58" stroke-width="1.3"/><path d="M90 50h20l-3 10H93Z" fill="#c9d4e0" stroke="#3a4a58" stroke-width="1.3"/><rect x="14" y="42" width="12" height="10" rx="1" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="94" y="42" width="12" height="10" rx="1" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/></svg></span><span class="kid-figure-cap">支点</span><span class="kid-figure-fact">支点是中间撑住横梁的那个点，力矩从这儿算出力臂；一乘六和二乘三都对着它。</span></button>
+      <button class="kid-figure" type="button" data-bl-atlas="arm" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="14" y="36" width="92" height="8" rx="3" fill="#f3e0b0" stroke="#5a3a20"/><polygon points="60,44 50,66 70,66" fill="#8a5a2a"/><path d="M60 28 H96" stroke="#c81769" stroke-width="3"/><path d="M88 22 L96 28 L88 34" fill="none" stroke="#c81769" stroke-width="3"/><circle cx="96" cy="40" r="5" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">力臂</span><span class="kid-figure-fact">力臂是砝码离支点的格数，力矩等于力乘力臂；走远一格，往下压的劲就变大。</span></button>
+      <button class="kid-figure" type="button" data-bl-atlas="nearheavy" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="16" y="38" width="88" height="8" rx="3" fill="#f3e0b0" stroke="#5a3a20"/><polygon points="60,46 48,70 72,70" fill="#8a5a2a"/><rect x="42" y="48" width="14" height="10" fill="#6ea8fe"/><rect x="42" y="58" width="14" height="10" fill="#6ea8fe"/><rect x="42" y="68" width="14" height="10" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">近而重</span><span class="kid-figure-fact">离支点近，力臂短，要更重才能压下去；二乘三能对上远处那一枚的一乘六。</span></button>
+      <button class="kid-figure" type="button" data-bl-atlas="farlight" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="16" y="38" width="88" height="8" rx="3" fill="#f3e0b0" stroke="#5a3a20"/><polygon points="60,46 48,70 72,70" fill="#8a5a2a"/><rect x="90" y="48" width="14" height="10" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">远而轻</span><span class="kid-figure-fact">离得远，力臂变长，轻码也有力气；看一乘六压得住近处堆着的二乘三。</span></button>
+      <button class="kid-figure" type="button" data-bl-atlas="unequal" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="12" y="36" width="96" height="8" rx="3" fill="#f3e0b0" stroke="#5a3a20"/><polygon points="60,44 48,68 72,68" fill="#8a5a2a"/><rect x="20" y="46" width="12" height="8" fill="#6ea8fe"/><rect x="20" y="54" width="12" height="8" fill="#6ea8fe"/><rect x="84" y="46" width="12" height="8" fill="#6ea8fe"/><rect x="84" y="54" width="12" height="8" fill="#6ea8fe"/><rect x="84" y="62" width="12" height="8" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">两边个数不同也能平</span><span class="kid-figure-fact">两边枚数可以不同，只要力乘力臂对上就平；一乘六能对上二乘三，梁停住。</span></button>
+      <button class="kid-figure" type="button" data-bl-atlas="torque" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><text x="60" y="52" text-anchor="middle" font-size="18" font-weight="800" fill="#1c66c2">2×3</text></svg></span><span class="kid-figure-cap">力矩</span><span class="kid-figure-fact">力矩是个数乘格数，才是往下压的劲；一乘六和二乘三对上，台上梁就停住。</span></button>
+      <button class="kid-figure" type="button" data-bl-atlas="left" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><g transform="rotate(-12 60 46)"><rect x="16" y="40" width="88" height="8" rx="3" fill="#f3e0b0" stroke="#5a3a20"/><rect x="22" y="50" width="14" height="10" fill="#6ea8fe"/><rect x="22" y="60" width="14" height="10" fill="#6ea8fe"/></g><polygon points="60,48 48,74 72,74" fill="#8a5a2a"/></svg></span><span class="kid-figure-cap">左边</span><span class="kid-figure-fact">左边力乘力臂更大，梁就往左沉；不是左边更重要，看台上读数哪边更大。</span></button>
+      <button class="kid-figure" type="button" data-bl-atlas="right" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><g transform="rotate(12 60 46)"><rect x="16" y="40" width="88" height="8" rx="3" fill="#f3e0b0" stroke="#5a3a20"/><rect x="84" y="50" width="14" height="10" fill="#6ea8fe"/><rect x="84" y="60" width="14" height="10" fill="#6ea8fe"/></g><polygon points="60,48 48,74 72,74" fill="#8a5a2a"/></svg></span><span class="kid-figure-cap">右边</span><span class="kid-figure-fact">右边力乘力臂更大，梁就往右沉；不是右边更重要，看二乘三有没有超过。</span></button><button class="kid-figure" type="button" data-bl-atlas="even" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="16" y="40" width="88" height="8" rx="3" fill="#f3e0b0" stroke="#5a3a20"/><rect x="22" y="50" width="14" height="10" fill="#6ea8fe"/><rect x="84" y="50" width="14" height="10" fill="#6ea8fe"/><polygon points="60,48 48,74 72,74" fill="#8a5a2a"/></svg></span><span class="kid-figure-cap">两边一样</span><span class="kid-figure-fact">两边力乘力臂一样，横梁就平平的；一乘六对上二乘三，台上梁会停住。</span></button><button class="kid-figure" type="button" data-bl-atlas="center" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="16" y="40" width="88" height="8" rx="3" fill="#f3e0b0" stroke="#5a3a20"/><rect x="53" y="28" width="14" height="12" fill="#6ea8fe"/><polygon points="60,48 48,74 72,74" fill="#8a5a2a"/></svg></span><span class="kid-figure-cap">放中间</span><span class="kid-figure-fact">砝码贴着支点，力臂几乎是零，再重也压不动；力矩等于力乘力臂，缺臂就没劲。</span></button><button class="kid-figure" type="button" data-bl-atlas="three" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="16" y="40" width="88" height="8" rx="3" fill="#f3e0b0" stroke="#5a3a20"/><rect x="22" y="50" width="12" height="8" fill="#6ea8fe"/><rect x="22" y="58" width="12" height="8" fill="#6ea8fe"/><rect x="84" y="50" width="12" height="16" fill="#6ea8fe"/><polygon points="60,48 48,74 72,74" fill="#8a5a2a"/></svg></span><span class="kid-figure-cap">三个砝码</span><span class="kid-figure-fact">三个砝码也能平，只要两边力乘力臂对上；枚数不同，一乘六仍可对二乘三。</span></button><button class="kid-figure" type="button" data-bl-atlas="tip" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><g transform="rotate(20 60 46)"><rect x="16" y="40" width="88" height="8" rx="3" fill="#f3e0b0" stroke="#5a3a20"/><rect x="84" y="50" width="16" height="18" fill="#6ea8fe"/></g><polygon points="60,48 48,74 72,74" fill="#8a5a2a"/></svg></span><span class="kid-figure-cap">差点翘起</span><span class="kid-figure-fact">一边力乘力臂太大，另一边会翘起来；不是谁更重要，把远近调到一乘六对二乘三。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照横梁往哪边沉。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--math)"
+         data-kid-predict
+         data-kid-predict-explain="平衡≈左边力矩总和等于右边；质量加倍可把力臂减半来补偿。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">⚖️</span><b>天平要平衡，左右只要砝码个数一样就行吗？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：天平何时平衡">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="count">对，两边个数一祥就一定平</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="torque" data-kid-predict-correct>要看力矩：格数×个数，两边相等才平</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="color">砝码颜色更深的那边一定沉</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：找出两种不同的平衡</h2>
+    <p>先让天平平衡一次，点「记下这种平衡」。然后换一种摆法，再平衡一次。两边砝码个数可以不同，只要力矩一样就算成功。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <ol class="log" id="balanceLog"></ol>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：还差 2&nbsp;种不同的平衡摆法。</p>
+  </section>
+
+
+                <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">同一根梁，先记下一种平衡，再换摆法平第二次</h2>
+    <p>舞台上比的是力矩：个数乘离支点的格数。同一根梁、同一个支点。先调到横梁水平，点「记下这种平衡」；再改距离或枚数，用另一种摆法再平一次。这样比，才知道平靠的是力×力臂，不是谁更重、谁更重要。</p>
+    <p>回家只带两句：「重的靠近、轻的走远，也能平」；「个数乘格数，两边一样就平」。不要写成「重的那边一定下去」或「重的比较努力」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M14 28 L106 52" stroke="#c4a06a" stroke-width="8"/><path d="M60 40 L50 80 H70 Z" fill="#8a5a28"/><rect x="18" y="16" width="16" height="16" fill="#3b82f6"/><rect x="88" y="44" width="10" height="10" fill="#3b82f6"/></svg></span><span class="kid-figure-cap">先歪</span><span class="kid-figure-sub">不平衡</span><p class="kid-figure-fact">两边往下压的劲不一样，台上横梁就会先歪向力矩更大的一边，不是谁更重要。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="20" width="18" height="50" fill="#c4a06a"/><path d="M16 36 H104" stroke="#e8b84a" stroke-width="8"/><path d="M60 36 L50 78 H70 Z" fill="#8a5a28"/><rect x="24" y="28" width="12" height="12" fill="#3b82f6"/><rect x="84" y="28" width="12" height="12" fill="#3b82f6"/></svg></span><span class="kid-figure-cap">第一种平</span><span class="kid-figure-sub">记下</span><p class="kid-figure-fact">第一种平：砝码个数乘离支点的格数，两边对上台上就平，力×力臂对上。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="20" width="18" height="50" fill="#c4a06a"/><path d="M16 36 H104" stroke="#e8b84a" stroke-width="8"/><path d="M60 36 L50 78 H70 Z" fill="#8a5a28"/><rect x="20" y="28" width="10" height="10" fill="#3b82f6"/><rect x="78" y="28" width="10" height="10" fill="#3b82f6"/><rect x="90" y="28" width="10" height="10" fill="#3b82f6"/></svg></span><span class="kid-figure-cap">第二种平</span><span class="kid-figure-sub">换摆</span><p class="kid-figure-fact">第二种平：一边码少、离得远，一边码多、离得近，枚数可以不同。力矩是力乘力臂对上才平。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="20" width="18" height="50" fill="#c4a06a"/><path d="M16 36 H104" stroke="#e8b84a" stroke-width="8"/><path d="M60 36 L50 78 H70 Z" fill="#8a5a28"/><rect x="50" y="28" width="12" height="14" fill="#3b82f6"/><circle cx="60" cy="20" r="4" fill="#c2410c"/></svg></span><span class="kid-figure-cap">靠近轴</span><span class="kid-figure-sub">力臂短</span><p class="kid-figure-fact">同样的砝码挪到靠近支点，力臂变短，台上往下压的劲就变小，看梁抬起来。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M16 40 H104" stroke="#c4a06a" stroke-width="8"/><path d="M60 40 L50 78 H70 Z" fill="#8a5a28"/><rect x="18" y="28" width="10" height="12" fill="#3b82f6"/><circle cx="96" cy="18" r="7" fill="#e8c4a0"/><path d="M96 25 V38" stroke="#3a2a18" stroke-width="3"/></svg></span><span class="kid-figure-cap">走远</span><span class="kid-figure-sub">力臂长</span><p class="kid-figure-fact">轻一点的码走到远处，力臂变长，台上也能把横梁扳回来，看1×6压得住。力矩等于力乘力臂才扳得回。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="20" width="18" height="50" fill="#c4a06a"/><path d="M16 36 H104" stroke="#e8b84a" stroke-width="8"/><path d="M60 36 L50 78 H70 Z" fill="#8a5a28"/><rect x="78" y="24" width="16" height="16" fill="#c2410c"/><path d="M16 14 L104 76" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">一定下去</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">「重的一定下去」「谁更重要」都不对：还要看它坐在离支点多远。力矩是力乘力臂不是谁重要。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>先让它歪，再调到平。</b>记下第一种摆法。</li>
+      <li data-step="2"><b>换个数或格数。</b>用另一种摆法再平一次。</li>
+      <li data-step="3"><b>说乘积。</b>力×力臂两边一样，不是个数一样。</li>
+      <li data-step="4"><b>写完成句。</b>力矩，不是谁更重就倒。划掉「谁更重要」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>重的坐近一点，轻的坐远一点，板子也能平。不是谁更重要。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>两边砝码可以不一样多，只要「力气×距离」一样。码多一倍，就坐到一半远，也能平。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>力矩平衡 Στ=0。力臂是到支点的垂直距离。等臂才退化成质量相等。本页允许不等臂。读数是比较尺子，不是游乐设施手册。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能给出两种不同平衡，并否定「重的一定下去」和「谁更重要」。完成看的是对照，不是背「力矩」两个字。</p>
+    <ul class="ask-list">
+      <li>第一种怎么平？两边个数一定一样吗？</li>
+      <li>换摆法还能平吗？差在哪一格？</li>
+      <li>轻的走远，为什么也能把重的抬起来？</li>
+      <li>平不平，是在比谁更重要吗？</li>
+    </ul>
+  </section>
+
+
+              <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">力矩是力乘力臂，不是「谁更重要」</h2>
+    <p>同一根梁，先只改一边的个数或格数。用手按梁、把人坐上去，都是另一回事，能让梁动，但那不是本页要验收的平衡。本页只认：个数×格数，两边对上就平。</p>
+    <p>家里也能看见同一家人。公园跷跷板：大人往里坐，小孩坐外头，也能玩——不是大人比较重要，是大人离支点更近。扳手越长越省力，也是力臂。称重工坊先归零、两边克数相等，那是等臂特例：两边一样远，才退化成比谁更重。</p>
+    <p>本页故意让距离上场。1×6 与 2×3 能打平，说明「远而少」和「近而多」可以是同一力矩。不要讲成「轻的更努力」或「重的更有资格」。</p>
+    <p>梁下不伸手。不把人吊上去，不把人当砝码。本页是整数格数的示意，不模拟摩擦和梁的弹性形变。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M60 18 V70" stroke="#3a2a18" stroke-width="4"/><path d="M24 18 H96" stroke="#3a2a18" stroke-width="4"/><path d="M28 18 L16 42 H40 Z" fill="#c4a06a" stroke="#3a2a18"/><path d="M92 18 L80 42 H104 Z" fill="#c4a06a" stroke="#3a2a18"/><rect x="48" y="70" width="24" height="8" fill="#6b4328"/></svg></span><span class="kid-figure-cap">称重页</span><span class="kid-figure-sub">等臂</span><p class="kid-figure-fact">两边力臂一样长时，才退化成比克数才会平，那是称重页的算法，不是本页主戏。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M16 50 L104 30" stroke="#c4a06a" stroke-width="8"/><path d="M60 40 L50 78 H70 Z" fill="#8a5a28"/><circle cx="28" cy="36" r="8" fill="#e8c4a0"/><circle cx="92" cy="22" r="10" fill="#e8c4a0"/></svg></span><span class="kid-figure-cap">跷跷板</span><span class="kid-figure-sub">生活版</span><p class="kid-figure-fact">大人往里坐、小孩坐外头，两边也能平，看力×力臂对上，不是谁比较重要。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M28 70 L86 24" stroke="#8a857c" stroke-width="10" stroke-linecap="round"/><path d="M78 12 h18 v18 h-8 v-8 h-10 z" fill="#8a857c"/><circle cx="96" cy="18" r="5" fill="#f6efe3"/></svg></span><span class="kid-figure-cap">扳手</span><span class="kid-figure-sub">长臂</span><p class="kid-figure-fact">扳手越长越省力，也是力臂：手柄远，同样的手劲力矩更大，看螺母更肯转。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="10" y="34" width="100" height="24" rx="3" fill="#f0c14a" stroke="#3a2a18" stroke-width="2"/><path d="M22 34 V52 M34 34 V46 M46 34 V52 M58 34 V46 M70 34 V52 M82 34 V46 M94 34 V52" stroke="#3a2a18" stroke-width="2"/></svg></span><span class="kid-figure-cap">本页尺子</span><span class="kid-figure-sub">不是手册</span><p class="kid-figure-fact">力矩等于个数乘格数，只用来比较哪种摆法能平，不是游乐设施说明书。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="20" width="18" height="50" fill="#c4a06a"/><path d="M16 36 H104" stroke="#e8b84a" stroke-width="8"/><path d="M60 36 L50 78 H70 Z" fill="#8a5a28"/><text x="24" y="24" font-size="11" font-weight="800" fill="#3a2a18">1×6</text><text x="78" y="24" font-size="11" font-weight="800" fill="#3a2a18">2×3</text></svg></span><span class="kid-figure-cap">同一力矩</span><span class="kid-figure-sub">1×6</span><p class="kid-figure-fact">1×6 与 2×3 能打平，台上梁会停住：远而少、近而多，可以是同一句话。力乘力臂对上就会停住。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M16 36 H104" stroke="#c4a06a" stroke-width="8"/><path d="M60 36 L50 70 H70 Z" fill="#8a5a28"/><circle cx="60" cy="78" r="8" fill="#e8c4a0"/><path d="M16 14 L104 76" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">梁下</span><span class="kid-figure-sub">不伸手</span><p class="kid-figure-fact">横梁底下不要伸手去检查，更不要把自己当砝码坐上去复现这一页。</p></div>
+    </div>
+  </section>
+
+
+              <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：两种平衡 · 轻的走远 · 「重的一定下去」</h2>
+    <p>三列用同一根梁、同一个支点。先只改码和距离，找出两种平。一次改两样，分不清到底是个数还是格数在干活。</p>
+    <p>两种摆法都能平：只要两边力矩读数一样。轻的走远：力臂够长，力矩就够。「重的一定下去」「谁更重要」整列划掉：重的靠轴很近，照样被抬起。</p>
+    <p>等臂称重是加试，不是主任务：两边一样远，才退化成比克数。本页故意让距离上场，不要把它背成「两边必须一样重」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="20" width="18" height="50" fill="#c4a06a"/><path d="M16 36 H104" stroke="#e8b84a" stroke-width="8"/><path d="M60 36 L50 78 H70 Z" fill="#8a5a28"/><rect x="22" y="28" width="12" height="12" fill="#3b82f6"/><rect x="84" y="28" width="12" height="12" fill="#3b82f6"/></svg></span><span class="kid-figure-cap">两种平</span><span class="kid-figure-sub">力矩等</span><p class="kid-figure-fact">对照栏里两种摆法都能平，只要两边往下压的劲一样，个数可以不同。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="20" width="18" height="50" fill="#c4a06a"/><path d="M16 36 H104" stroke="#e8b84a" stroke-width="8"/><path d="M60 36 L50 78 H70 Z" fill="#8a5a28"/><rect x="16" y="28" width="10" height="10" fill="#3b82f6"/><rect x="88" y="28" width="14" height="14" fill="#3b82f6"/></svg></span><span class="kid-figure-cap">轻走远</span><span class="kid-figure-sub">臂长</span><p class="kid-figure-fact">对照栏里轻码走到远处，力臂够长，就能把沉下去的那边扳回来，看梁抬起。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="20" width="18" height="50" fill="#c4a06a"/><path d="M16 36 H104" stroke="#e8b84a" stroke-width="8"/><path d="M60 36 L50 78 H70 Z" fill="#8a5a28"/><rect x="78" y="22" width="18" height="18" fill="#c2410c"/><path d="M16 14 L104 76" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">一定下去</span><span class="kid-figure-sub">划掉</span><p class="kid-figure-fact">只看谁更重不够，还要看谁离支点更远；「重的一定下去」整句划掉。力矩还要乘力臂才算。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M60 18 V70" stroke="#3a2a18" stroke-width="4"/><path d="M24 18 H96" stroke="#3a2a18" stroke-width="4"/><path d="M28 18 L16 42 H40 Z" fill="#c4a06a" stroke="#3a2a18"/><path d="M92 18 L80 42 H104 Z" fill="#c4a06a" stroke="#3a2a18"/><rect x="48" y="70" width="24" height="8" fill="#6b4328"/></svg></span><span class="kid-figure-cap">等臂</span><span class="kid-figure-sub">加试</span><p class="kid-figure-fact">两边一样远，才退化成比克数。那是称重页，本页先让距离上场。力矩还要乘上力臂才算。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="10" y="34" width="100" height="24" rx="3" fill="#f0c14a" stroke="#3a2a18" stroke-width="2"/><path d="M22 34 V52 M34 34 V46 M46 34 V52 M58 34 V46 M70 34 V52 M82 34 V46 M94 34 V52" stroke="#3a2a18" stroke-width="2"/></svg></span><span class="kid-figure-cap">本页尺子</span><span class="kid-figure-sub">不是手册</span><p class="kid-figure-fact">本页尺子仍是个数乘格数，拿来对两种摆法，不是游乐设施说明书上的公斤。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="22" y="14" width="58" height="60" fill="#fff" stroke="#3a2a18" stroke-width="2"/><path d="M30 28 H72 M30 40 H72 M30 52 H56" stroke="#3a2a18" stroke-width="2"/><path d="M76 56 L102 38 L108 46 L82 64 Z" fill="#f0c14a" stroke="#3a2a18"/></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">力×力臂</span><p class="kid-figure-fact">回家只记：码多一倍就坐到一半远，1×6 能对上 2×3，两边也能平。力乘力臂对上枚数可以不同。</p></div>
+    </div>
+  </section>
+
+
+              <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「力乘力臂」，不记谁更重要</h2>
+    <p>在纸上画两根梁：甲是左边 3 格放 2&nbsp;个、右边 2 格放 3&nbsp;个；乙是左边 1 格放 6&nbsp;个、右边 3 格放 2&nbsp;个。两行都写「力矩 6=6」。对照比背公式有用。</p>
+    <p>口头只要两句：「重的靠近、轻的走远，也能平。」「个数乘格数，两边一样就平。」有人说「重的一定下去」或「重的更重要」，让孩子指着轻码走远那一行反驳。</p>
+    <p>公园跷跷板只许坐在座位上，不要站到梁中间试。本页数字不要抄进游乐设施说明书。梁下不伸手，不把人当砝码。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="32" y="14" width="56" height="68" rx="4" fill="#c4a06a" stroke="#3a2a18"/><rect x="38" y="26" width="44" height="48" fill="#fff"/><rect x="48" y="8" width="24" height="12" rx="2" fill="#8a857c"/><path d="M46 40 H74 M46 52 H74 M46 64 H64" stroke="#3a2a18" stroke-width="2"/></svg></span><span class="kid-figure-cap">两行</span><span class="kid-figure-sub">甲/乙</span><p class="kid-figure-fact">一行写左边几枚、几格，一行写右边几枚、几格。两种摆法都记下。再核对力乘力臂是否对上。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="62" cy="36" rx="36" ry="22" fill="#fff" stroke="#3a2a18" stroke-width="3"/><path d="M50 54 L40 78 L70 56" fill="#fff" stroke="#3a2a18" stroke-width="3"/><path d="M44 32 H80 M48 44 H72" stroke="#3a2a18" stroke-width="3" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">力乘力臂</span><p class="kid-figure-fact">回家说得出：重的不一定下去，还要看力臂有多长。不是谁更重要。力矩要对上才平，枚数可以不同。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M60 18 V70" stroke="#3a2a18" stroke-width="4"/><path d="M24 18 H96" stroke="#3a2a18" stroke-width="4"/><path d="M28 18 L16 42 H40 Z" fill="#c4a06a" stroke="#3a2a18"/><path d="M92 18 L80 42 H104 Z" fill="#c4a06a" stroke="#3a2a18"/><rect x="48" y="70" width="24" height="8" fill="#6b4328"/><text x="96" y="18" font-size="11" fill="#3a2a18">另</text></svg></span><span class="kid-figure-cap">称重</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">称重是两边一样远才比克数，跟这一页的远近对调不是同一句。本页比的是力乘力臂。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M16 50 L104 30" stroke="#c4a06a" stroke-width="8"/><path d="M60 40 L50 78 H70 Z" fill="#8a5a28"/><circle cx="28" cy="36" r="8" fill="#e8c4a0"/><circle cx="92" cy="22" r="10" fill="#e8c4a0"/><circle cx="60" cy="46" r="30" fill="none" stroke="#c2410c" stroke-width="5"/><path d="M38 26 L82 66" stroke="#c2410c" stroke-width="5"/></svg></span><span class="kid-figure-cap">当人</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">不要把人当砝码坐上横梁复现，也不要伸手到梁下去检查谁沉。力矩在台上用码演示即可。</p></div>
+    </div>
+  </section>
+
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「平靠不靠力乘力臂」，就先只改一边的个数或格数。同一根梁、同一个支点，先记下一种平衡，再换摆法平第二次。不要一边改个数、一边改格数还同时换梁。</p>
+    <ul>
+      <li><b>只改这一项：</b>一边的个数，或一边离支点的格数。</li>
+      <li><b>先保持不变：</b>同一根梁、同一个支点。</li>
+      <li><b>要观察的：</b>左右力矩读数是否相等，横梁是否水平。</li>
+      <li><b>另开一行：</b>第二种不同的摆法，力矩是不是仍能对上。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>公园跷跷板：大人往里坐、小孩坐外头，也能玩。这是谁更重要，还是力臂在补偿质量？</li>
+      <li>称重工坊两边一样远才比克数。本页为什么故意让距离上场？1×6 和 2×3 像在哪？</li>
+      <li>扳手越长越省力。如果只换更重的手、不换更长的柄，还是不是同一家人？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>重的坐近一点，轻的坐远一点，板子也能平。不是谁更重要。能指着「下去 / 平了」就够了，不必说力矩。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>两边砝码可以不一样多，只要个数×格数一样。码多一倍，就坐到一半远。本页数字只用来比较，不是游乐设施手册。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>刚体转动平衡要求净力矩为零。力臂是到转轴的垂直距离。等臂天平是特例。不要写成「重的更有资格」或「本页等于游乐场说明书」。</p></div>
+    </div>
+  </section>
+
+      <section class="card" aria-labelledby="thickTitle">
+    <h2 id="thickTitle">力矩平衡与安全放码</h2>
+    <p>带走句：平衡看力矩，不看谁「比较努力」。</p>
+    <p>等距等码；倍码半距。</p>
+    <p>力臂是到支点的距离。</p>
+    <p>安全：防砸脚，不踩高板。</p>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：记下这次平衡</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：3&nbsp;格放 2&nbsp;个，等于 2&nbsp;格放 3&nbsp;个"></div>
+      <div><label for="workContent">两边怎么摆，为什么能平</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下左右挂钩上的个数，再用一句话说出力矩为什么相等。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+                <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>横梁水平时，孩子指的是两边力矩一样，还是在说「重的比较重要」？让他再报一次个数和格数。</li>
+      <li>轻的走远也能平：哪一句四岁听得懂？试「重的坐近一点，轻的坐远一点」。</li>
+      <li>如果两边个数一样、格数不一样——为什么「个数一样」不能当本页完成句？差在力臂。</li>
+      <li>称重页两边一样远才比克数，和本页差在哪？1×6 与 2×3 能帮他看见什么？</li>
+      <li>把人当砝码、梁下伸手：红线怎么说？本页能当游乐设施说明书吗？</li>
+      <li>跷跷板上大人往里坐，和本页的「重的靠近」像在哪？这是谁更重要，还是力臂在补偿？</li>
+    </ul>
+  </section>
+
+                <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：往下压的劲是力矩（torque）——个数乘离支点的格数。两边力矩一样，横梁才平。远钩上的一个砝码，顶得住近钩上的好几个。1×6 与 2×3 能打平。</p>
+    <p>刚体转动平衡要求净力矩为零。力臂是力到转轴的垂直距离。质量不等仍可通过力臂补偿。本页「力矩=个数×格数」只是比较尺子，用来让孩子看见「远而少、近而多」，不是游乐设施手册，也不写摩擦和梁的弹性。</p>
+    <p>等臂天平是特例：两边一样远，才退化成比质量。称重工坊走那一条。本页故意让距离上场。用手按梁、把人坐上去，属于外力，先不算。</p>
+    <p>跷跷板、扳手、天平，都是同一家族的不同尺度。不要写成「谁更重要」或「房间里的板等于游乐场」。梁下不伸手，不把人当载荷。</p>
+  </section>
+
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--math) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--math) 8%,var(--surface))" data-audience="parent">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">杠杆公式卡 · 力矩=个数×格数；平衡⇔左右力矩相等（本页尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">远钩上的一个砝码，顶得住近钩上的好几个。1×6 与 2×3 能打平。用来比较摆法，不是谁更重要，也不是游乐设施说明书。梁下不伸手，不把人当砝码。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：平看力矩，不看谁更重要；重的靠近、轻的走远，也能平。斜坡滚球看力沿斜面；测量工坊看怎样公平地比。</p>
+    <p class="row"><a class="btn btn-ghost" href="ramp-and-roll.html">斜坡滚球</a><a class="btn btn-ghost" href="measure-lab.html">测量工坊</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页用整数砝码和整数格数演示力矩，不涉及摩擦和梁的弹性形变。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var state = { L:{1:0,2:0,3:0}, R:{1:0,2:0,3:0} };
+  var kept = [];
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  var seenBal = { tor6:false, leftHeavy:false, oneSix:false };
+  var MAX = 6;
+  var NS = "http://www.w3.org/2000/svg";
+  function torque(side){ return side[1]*1 + side[2]*2 + side[3]*3; }
+  function keyOf(){
+    return "L1:"+state.L[1]+",L2:"+state.L[2]+",L3:"+state.L[3]+"|R1:"+state.R[1]+",R2:"+state.R[2]+",R3:"+state.R[3];
+  }
+  function drawWeights(){
+    var layer = document.getElementById("weightsLayer");
+    while (layer.firstChild) layer.removeChild(layer.firstChild);
+    var map = { L:{1:260,2:200,3:140}, R:{1:380,2:440,3:500} };
+    ["L","R"].forEach(function(side){
+      [1,2,3].forEach(function(arm){
+        var n = state[side][arm], i, cx = map[side][arm];
+        for (i = 0; i < n; i += 1) {
+          var r = document.createElementNS(NS,"rect");
+          r.setAttribute("class","bl-w");
+          r.setAttribute("x", String(cx-12));
+          r.setAttribute("y", String(156 + i*16));
+          r.setAttribute("width","24");
+          r.setAttribute("height","14");
+          r.setAttribute("rx","3");
+          layer.appendChild(r);
+        }
+      });
+    });
+  }
+  function render(){
+    var L = torque(state.L), R = torque(state.R);
+    var total = L + R;
+    var tilt = 0;
+    if (total) tilt = Math.max(-12, Math.min(12, (R-L)*1.6));
+    document.getElementById("beamGroup").setAttribute("transform","rotate("+tilt.toFixed(1)+" 320 148)");
+    document.getElementById("leftOut").textContent = String(L);
+    document.getElementById("rightOut").textContent = String(R);
+    var balanced = total > 0 && L === R;
+    document.getElementById("tiltOut").textContent = !total ? "还没放砝码" : balanced ? "平衡了" : (L>R ? "左边更沉" : "右边更沉");
+    if (L === 6 && R === 6) seenBal.tor6 = true;
+    if (L > R && total > 0) seenBal.leftHeavy = true;
+    if (state.L[1] === 6 && state.R[3] === 2 && L === 6 && R === 6) seenBal.oneSix = true;
+    if (guess1 && !guess1Done && seenBal.tor6) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "three" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "力矩 = 个数 × 格数。2×3=6，右边 2\u00a0格要 3\u00a0个才打平。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && seenBal.tor6 && seenBal.leftHeavy) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "left" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "力臂变短，右边力矩变小，左边更沉。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && seenBal.oneSix) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "two" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "1×6=2×3=6。同一力矩，近而多和远而少都能打平。";
+    }
+    document.getElementById("keepBalance").disabled = !balanced;
+    ["L","R"].forEach(function(side){
+      [1,2,3].forEach(function(arm){
+        document.getElementById("c"+side+arm).textContent = state[side][arm] + "\u00a0个";
+      });
+    });
+    drawWeights();
+    var live = document.getElementById("live");
+    if (!total) live.textContent = "点挂钩上的「放一个」，看横梁往哪边沉。";
+    else if (balanced) live.textContent = "两边力矩都是 "+L+"（个数×格数）。可以记下这种摆法。";
+    else live.textContent = "左边力矩 "+L+"，右边力矩 "+R+"（力矩=个数×格数）。再挪一挪。";
+  }
+  function change(side, arm, delta){
+    var next = state[side][arm] + delta;
+    if (next < 0 || next > MAX) return;
+    state[side][arm] = next;
+    render();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-side]"), function(btn){
+    btn.addEventListener("click", function(){
+      change(btn.getAttribute("data-side"), Number(btn.getAttribute("data-arm")), Number(btn.getAttribute("data-delta")));
+    });
+  });
+  document.getElementById("clearAll").addEventListener("click", function(){
+    state = { L:{1:0,2:0,3:0}, R:{1:0,2:0,3:0} };
+    render();
+  });
+  document.getElementById("keepBalance").addEventListener("click", function(){
+    var L = torque(state.L), R = torque(state.R);
+    if (!(L && L === R)) return;
+    var key = keyOf();
+    if (kept.some(function(item){ return item.key === key; })) {
+      document.getElementById("live").textContent = "这种摆法已经记过了，换一组个数再试。";
+      return;
+    }
+    kept.push({ key:key, L:L });
+    var li = document.createElement("li");
+    li.textContent = "第 "+kept.length+"\u00a0种：左边力矩 "+L+"，右边力矩 "+R+"。";
+    document.getElementById("balanceLog").appendChild(li);
+    var status = document.getElementById("taskStatus");
+    if (kept.length < 2) {
+      status.textContent = "已记下 1\u00a0种。再换一种不同的摆法。";
+    } else {
+      var evidence = "两种平衡：力矩分别为 "+kept[0].L+" 与 "+kept[1].L;
+      if (window.Progress) Progress.complete("games/balance-lab.html", evidence);
+      status.textContent = "完成啦：已经找到两种不同的平衡摆法。";
+    }
+  });
+  var ATLAS = {
+    fulcrum:"支点撑住梁，力矩从这儿量出力臂；一乘六和二乘三都对着这个点来算。",
+    arm:"力臂看离支点几格，力矩等于力乘力臂；走远一格，同样的码更压得动。",
+    nearheavy:"靠近支点力臂短，要加码才压得下去；二乘三就是近而多的一种摆法。",
+    farlight:"走到远处力臂变长，轻码也能把梁扳回来；一乘六就是远而少的摆法。",
+    unequal:"枚数不同也能平，只要力乘力臂对上；看一乘六对上二乘三，梁停住，看力臂。",
+    torque:"往下压的劲是个数乘格数；一乘六等于二乘三，台上横梁才会平，看力臂。",
+    left:"左边读数更大，梁往左沉；不是左边更重要，把右边调到力乘力臂对上。",
+    right:"右边读数更大，梁往右沉；不是右边更重要，用一乘六去对上二乘三，看梁停。",
+    even:"两边力乘力臂一样，梁就平；一乘六对上二乘三，不是谁更重要谁坐下。",
+    center:"贴着支点几乎没有力臂，再重也抬不动那边；缺了臂，力乘力臂就是零。",
+    three:"三枚也能平，只要两边力矩对上；枚数不同没关系，看一乘六能否对二乘三。",
+    tip:"一边力矩太大，另一边翘起来；把远近调到力乘力臂相等，梁才会回来。"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-bl-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-bl-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-bl-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。去舞台上对照读数验证。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。继续对照舞台验证。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut3").textContent = "押好了。左边 1 格放 6，右边 3 格试 2\u00a0个。";
+    });
+  });
+  render();
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/balance-lab.html", "杠杆天平");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

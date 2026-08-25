@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>毛细工坊 · 互动实验室</title>
+<meta name="description" content="毛细爬升 h∝1/r：半径减半，示意高度约加倍。先猜毫米读数，再拖细粗管对照。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/games-lab.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+.kid-mission {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--video) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--video) 12%,var(--surface)),var(--surface) 62%);
+  }
+.mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--video) 36%,var(--line));
+    background: color-mix(in srgb,var(--video) 12%,var(--surface)); font-size: 2.2rem;
+  }
+.cp-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+.cp-desk { fill: color-mix(in srgb,var(--kit) 10%,#f6efe3); }
+.cp-floor { fill: color-mix(in srgb,var(--kit) 28%,#c4a06a); }
+.cp-bowl { fill: color-mix(in srgb,var(--video) 22%,#8ec5e8); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 2; }
+.cp-water { fill: color-mix(in srgb,var(--video) 42%,#4aa0c8); }
+.cp-tube { fill: #e8f4fa; stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 2; }
+.cp-column { fill: color-mix(in srgb,var(--video) 48%,#3a90b8); }
+.cp-meniscus { fill: none; stroke: color-mix(in srgb,var(--ink) 28%,transparent); stroke-width: 1.5; }
+.cp-lab { fill: var(--ink); font: 700 13px var(--mono); }
+.guess-card { border-color: color-mix(in srgb,var(--video) 45%,var(--line)); }
+.guess-pick[aria-pressed="true"] { border-color: var(--video); background: color-mix(in srgb,var(--video) 18%,var(--surface)); color: var(--ink); }
+.cp-atlas .kid-figure { --tone: var(--video); }
+.cp-atlas .kid-figure-art { padding: 6px; }
+.cp-atlas .kid-figure-art > svg { width: 100%; max-width: 120px; height: auto; }
+.cp-atlas .kid-figure-fact { display: block; }
+.ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--video) 16%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--video) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+@media (max-width: 480px) {
+    html[data-mode="kid"] .kid-mission { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-mission .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-mission h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-mission .lead { font-size: .88rem; line-height: 1.5; margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .cp-art { max-height: 120px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .92rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+    html[data-mode="kid"] [data-playful-sticker] { display: none; }
+  }
+.ad-photo-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 10px;align-items:end}.ad-photo-strip figure{margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface-2)}.ad-photo-strip img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}.ad-photo-strip figcaption{padding:6px 8px;font-size:.78rem;font-weight:800;color:var(--ink-mid);line-height:1.35}.ad-photo-strip .is-contrast figcaption{color:color-mix(in srgb,var(--warn) 70%,var(--ink))}@media (max-width:480px){.ad-photo-strip{gap:6px}.ad-photo-strip figcaption{font-size:.7rem;padding:4px 6px}}
+</style>
+</head>
+<body data-playful-page="games/capillary-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-mission">
+    <div>
+      <p class="row"><span class="pill pill-phys">物理</span><span class="pill">6–11&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>水会往上爬，还是只待在碗里？</h1>
+      <p class="lead">细管子插进水里，水面会自己往上爬一截；管子越粗，爬得越矮。不是管子会魔法吸水，是管壁和水互相拽。纸巾、毛巾、植物茎里的细缝，走的是同一家人。玻璃管归大人拿；墨水别沾衣服；实验水不喝。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/trees.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">同一碗水，换管子粗细</h2>
+    <div class="ad-photo-strip" role="group" aria-label="真实现象参照"><figure><img class="photo-real" src="../assets/photos/trees.jpg" alt="" width="640" height="360" loading="lazy"><figcaption>生活里能看见的参照</figcaption></figure><figure><img class="photo-real" src="../assets/photos/trees.jpg" alt="" width="640" height="360" loading="lazy"><figcaption>再看台上的结构图：零件对上号</figcaption></figure></div>
+<svg class="cp-art" viewBox="0 0 640 280" role="img" aria-labelledby="cpTitle cpDesc">
+      <title id="cpTitle">毛细上升舞台</title>
+      <desc id="cpDesc">碗里有水。拖动滑杆改变玻璃管粗细：管子越细，水柱爬得越高。</desc>
+      <rect class="cp-desk" width="640" height="280"/>
+      <rect class="cp-floor" y="232" width="640" height="48"/>
+      <path class="cp-bowl" d="M170 210 H470 L450 248 H190 Z"/>
+      <path class="cp-water" id="bowlWater" d="M186 222 H454 L444 244 H196 Z"/>
+      <rect class="cp-tube" id="tube" x="300" y="40" width="28" height="190"/>
+      <rect class="cp-column" id="column" x="304" y="120" width="20" height="110"/>
+      <path class="cp-meniscus" id="meniscus" d="M304 120 Q314 112 324 120"/>
+      <text class="cp-lab" id="hLab" x="360" y="80">爬升：中等</text>
+    </svg>
+    <div class="readout">
+      <div><span>半径 r</span><b id="rOut">1.12&nbsp;毫米</b></div>
+      <div><span>爬升 h</span><b id="hOut">43&nbsp;毫米</b></div>
+      <div><span>表面</span><b id="sOut">玻璃，亲水</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">细管把水爬上去；管越细爬得越高。先试细管，再试粗管。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="毛细主操作">
+    <div>
+      <label for="wide">管子有多粗：<span id="wideLabel">不粗不细</span></label>
+      <input class="input" id="wide" type="range" min="0" max="100" value="50" aria-valuetext="不粗不细">
+    </div>
+    <div class="pick-btns">
+      <button class="btn btn-primary" type="button" id="toThin">试试细管</button>
+      <button class="btn" type="button" id="toThick">试试粗管</button>
+      <button class="btn" type="button" id="toSoap">加点肥皂</button>
+      <button class="btn" type="button" id="toGlass">换回清水玻璃</button>
+    </div>
+  </div>
+
+  <section class="card guess-card" aria-labelledby="guessTitleCp">
+    <h2 id="guessTitleCp">先猜一猜，再爬</h2>
+    <p><b>第 1 题：</b>清水玻璃。管子大约加粗一倍，爬高会差不多、减半，还是变成四分之一？</p>
+    <div class="pick-btns" role="group" aria-label="猜粗管爬高">
+      <button class="btn guess-pick" type="button" data-guess1="same" aria-pressed="false">还是约 96&nbsp;毫米</button>
+      <button class="btn guess-pick" type="button" data-guess1="half" aria-pressed="false">大约 48&nbsp;毫米，随 1/r 变矮</button>
+      <button class="btn guess-pick" type="button" data-guess1="quarter" aria-pressed="false">大约 24&nbsp;毫米，跟半径平方成反比</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。先点「试试细管」，再点「试试粗管」，对照读数里的 h≈。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>同样粗细，加点肥皂，爬高会怎样？</p>
+      <div class="pick-btns" role="group" aria-label="猜肥皂对爬高">
+        <button class="btn guess-pick" type="button" data-guess2="taller" aria-pressed="false">明显更高</button>
+        <button class="btn guess-pick" type="button" data-guess2="shorter" aria-pressed="false">明显更矮</button>
+        <button class="btn guess-pick" type="button" data-guess2="same" aria-pressed="false">几乎不变</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后细管再点「加点肥皂」，看 h≈。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>最粗管再点蜡面图鉴。h 会变成 0 吗？</p>
+      <div class="pick-btns" role="group" aria-label="猜蜡面粗管">
+        <button class="btn guess-pick" type="button" data-guess3="low" aria-pressed="false">不会，只是更矮，不是 0</button>
+        <button class="btn guess-pick" type="button" data-guess3="zero" aria-pressed="false">变成 0</button>
+        <button class="btn guess-pick" type="button" data-guess3="tall" aria-pressed="false">还是约 96</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后管调最粗，再点「蜡面」，看 h≈。</p>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">细管把水拽得更高，粗管几乎不爬</h2>
+    <p>先点「试试细管」，看蓝色水柱爬到多高。再点「试试粗管」，看它是不是矮了一大截。同一碗水，只改管子粗细。再点「加点肥皂」：水面不那么喜欢抱成团，爬高通常变矮。</p>
+    <p>管壁和水互相拽（润湿）。缝越细，这种拽相对重力越明显，水就爬得越高。蜡面不爱水，爬高会变矮，但本页通常不会变成绝对的 0。不是管子有一张小嘴在「吸」。</p>
+    <p>读数里的毫米是本页比较尺子，用来看见「细高粗矮」，不是某根玻璃管在实验室量出来的朱伦公式答案。玻璃管归大人拿，破口防划，水槽防滑，实验水不喝，墨水别沾衣服。</p>
+  </section>
+
+  <section class="card cp-atlas" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">毛细图鉴</h2>
+    <p>点一张，对照舞台：谁让水爬得更高，谁几乎不爬。</p>
+    <div class="kid-figure-grid" role="group" aria-label="毛细图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-cp-atlas="thin" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect y="84" width="120" height="6" fill="#c4a06a"/><path d="M14 58h92l-8 26H22Z" fill="#d5eaf4" stroke="#2a5a78" stroke-width="1.8"/><path d="M20 62h80l-6 18H26Z" fill="#3a90b8"/><path d="M14 58h92" stroke="#7eb8d0" stroke-width="2"/><rect x="30" y="8" width="10" height="58" fill="#eaf6fb" stroke="#3a2a18" stroke-width="1.5"/><rect x="32" y="10" width="2.4" height="54" fill="#fff" opacity=".45"/><path d="M31 62V18q4 7 8 0V62Z" fill="#3a90b8"/><path d="M31 18q5 8 8 0" fill="none" stroke="#1e5a78" stroke-width="1.4"/><rect x="70" y="28" width="24" height="38" fill="#eaf6fb" stroke="#3a2a18" stroke-width="1.5"/><rect x="72" y="30" width="3.5" height="34" fill="#fff" opacity=".4"/><rect x="72" y="56" width="20" height="8" fill="#3a90b8"/><path d="M72 56q10 4 20 0" fill="none" stroke="#1e5a78" stroke-width="1.3"/></svg></span><span class="kid-figure-cap">细管</span><span class="kid-figure-fact">管子越细，水被管壁拉得越高，这是定性对照，不是细管子口渴在喝水。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="thick" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect y="84" width="120" height="6" fill="#c4a06a"/><path d="M14 62h92l-8 22H22z" fill="#d5eaf4" stroke="#2a5a78" stroke-width="1.6"/><path d="M20 66h80l-6 14H26z" fill="#3a90b8"/><rect x="42" y="10" width="36" height="58" fill="#eaf6fb" stroke="#3a2a18" stroke-width="1.6"/><rect x="45" y="12" width="5" height="52" fill="#fff" opacity=".4"/><rect x="44" y="54" width="32" height="12" fill="#3a90b8"/><path d="M44 54q16 4 32 0" fill="none" stroke="#1e5a78" stroke-width="1.4"/></svg></span><span class="kid-figure-cap">粗管</span><span class="kid-figure-fact">管子一粗，管壁还在拉，可是水几乎不往上爬，不是粗管子不愿意喝水。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="water" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M30 50 H90 L82 74 H38 Z" fill="#3a90b8"/></svg></span><span class="kid-figure-cap">水</span><span class="kid-figure-fact">水会粘在玻璃上，也会自己拉在一起；管壁一拉，细管里才会爬高，不是管子喝。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="glass" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect y="84" width="120" height="6" fill="#c4a06a"/><path d="M14 58h92l-8 26H22Z" fill="#d5eaf4" stroke="#2a5a78" stroke-width="1.6"/><path d="M20 62h80l-6 18H26Z" fill="#3a90b8"/><rect x="48" y="8" width="24" height="58" fill="#eaf6fb" stroke="#3a2a18" stroke-width="1.5"/><rect x="51" y="10" width="4" height="52" fill="#fff" opacity=".4"/><path d="M50 62V22q12 10 20 0V62Z" fill="#3a90b8"/><path d="M50 22q12 12 20 0" fill="none" stroke="#1e5a78" stroke-width="1.4"/></svg></span><span class="kid-figure-cap">玻璃</span><span class="kid-figure-fact">玻璃亲水，管壁会拉着水往上；管越细通常爬得越高，不是玻璃管在喝水。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="towel" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="36" y="18" width="48" height="56" fill="#f4ecd8" stroke="#3a2a18"/><path d="M36 70 H84" stroke="#3a90b8" stroke-width="8"/></svg></span><span class="kid-figure-cap">餐巾纸</span><span class="kid-figure-fact">纤维之间有许多细缝，像一束细管，管壁把水拉上去，不是纸巾口渴喝。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="stem" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="54" y="20" width="12" height="56" fill="#6aaa58"/><ellipse cx="60" cy="18" rx="18" ry="10" fill="#7aaa58"/></svg></span><span class="kid-figure-cap">植物茎</span><span class="kid-figure-fact">茎里的细管子把水送到叶子，仍是管壁在拉，不是茎自己在喝水玩儿。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="soil" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="20" y="40" width="80" height="36" fill="#8b5b42"/><path d="M30 40 V70 M50 40 V70 M70 40 V70 M90 40 V70" stroke="#c4a06a"/></svg></span><span class="kid-figure-cap">土壤缝</span><span class="kid-figure-fact">土壤细缝能把水拉上来，也能留住；缝越细往往爬得越高，不是土在喝。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="ink" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="44" y="16" width="10" height="50" fill="#4a3a28"/><rect x="40" y="64" width="18" height="10" fill="#3a90b8"/></svg></span><span class="kid-figure-cap">墨水</span><span class="kid-figure-fact">细缝里的水被管壁拉着走，颜色跟着上去，不是墨水自己会爬着喝水。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="meniscus" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="40" y="20" width="40" height="54" fill="#e8f4fa" stroke="#3a2a18"/><path d="M44 48 Q60 36 76 48 V70 H44 Z" fill="#3a90b8"/></svg></span><span class="kid-figure-cap">弯月面</span><span class="kid-figure-fact">水面中间凹下去，贴着管壁更高，这是管壁在拉，不是管子把水喝进去。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="soap" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="38" y="30" width="44" height="28" rx="8" fill="#e8eef6" stroke="#3a2a18"/><circle cx="80" cy="28" r="8" fill="#d5ebf8"/></svg></span><span class="kid-figure-cap">肥皂</span><span class="kid-figure-fact">肥皂减弱水的拉力，爬升变矮，证明是拉力在工作，不是管子不想喝水。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="wax" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="48" y="16" width="24" height="58" fill="#f4e4b8" stroke="#3a2a18"/><rect x="50" y="58" width="20" height="14" fill="#3a90b8"/></svg></span><span class="kid-figure-cap">蜡面</span><span class="kid-figure-fact">蜡面不亲水，水更不愿意往上爬；材料变了，不是水改主意，也不是管子喝够。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="sponge" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="30" y="28" width="60" height="40" rx="8" fill="#e0c878" stroke="#3a2a18"/><circle cx="48" cy="44" r="5" fill="#f6efe3"/><circle cx="70" cy="52" r="6" fill="#f6efe3"/></svg></span><span class="kid-figure-cap">海绵</span><span class="kid-figure-fact">海绵许多细孔连在一起，管壁把水拉进去，挤干是赶出来，不是海绵在喝。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照舞台上看水爬多高。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--phys)"
+         data-kid-predict
+         data-kid-predict-explain="更细且润湿的通道 → 爬得更高/更快倾向；拒水材料爬升差。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🧪</span><b>同样亲水细管，管更细时水位通常怎样？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：毛细上升">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="lower">更细升得更低，水怕窄缝</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="higher" data-kid-predict-correct>更细往往升得更高：壁面拉力相对更明显</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="pump">细管里藏着小水泵</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：细管和粗管都试</h2>
+    <p>把管子调得很细一次，再调得很粗一次。比较水爬得谁更高。两头都试过即可完成。也可以顺手点「加点肥皂」，看爬升变矮。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先试一次很细的管子，或一次很粗的管子。</p>
+  </section>
+
+
+            <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">细管试一次，粗管再试一次，比谁爬得高</h2>
+    <p>舞台上只改一件事：管子有多粗。同一碗水、同一种管壁。先点「试试细管」，看蓝色水柱爬到多高；再点「试试粗管」，看它是不是几乎和碗面齐平。这样比，才知道爬高靠的是细缝在拽，不是管子口渴。</p>
+    <p>回家只带两句：「缝越细，水被拽得越高」；「不是管子会喝水」。不要写成「管子有一张小嘴」。肥皂和蜡面是另一次对照，不要和「粗细」叠在同一档里讲。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">管子越细爬越高</text><rect x="16" y="64" width="88" height="12" fill="#4a90c0"/><rect x="54" y="20" width="8" height="52" fill="#d8e8f0" stroke="#1e2d4a"/><rect x="55" y="28" width="6" height="36" fill="#4a90c0"/></svg></span><span class="kid-figure-cap">细管</span><span class="kid-figure-sub">爬高</span><p class="kid-figure-fact">管子越细，水爬得越高，液柱会明显高于碗里的水面。缝细，拽才压过水柱重量。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">粗了几乎不爬</text><rect x="16" y="64" width="88" height="12" fill="#4a90c0"/><rect x="44" y="28" width="28" height="44" fill="#d8e8f0" stroke="#1e2d4a"/><rect x="46" y="58" width="24" height="10" fill="#4a90c0"/></svg></span><span class="kid-figure-cap">粗管</span><span class="kid-figure-sub">几乎不爬</span><p class="kid-figure-fact">管子一粗，水几乎不往上爬，和碗里的水面差不多齐。不是换了一种懒水。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">同一碗只换管</text><ellipse cx="60" cy="64" rx="32" ry="12" fill="#4a90c0"/><rect x="36" y="28" width="8" height="36" fill="#d8e8f0" stroke="#1e2d4a"/><rect x="72" y="36" width="18" height="28" fill="#d8e8f0" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">同一碗</span><span class="kid-figure-sub">没换水</span><p class="kid-figure-fact">还是同一碗水，只换管子粗细，不是换了一种会爬的水。一次只改这一项才公平。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">细缝像一束管</text><rect x="32" y="24" width="56" height="48" fill="#f4efe4" stroke="#1e2d4a"/><path d="M40 28 V68 M52 28 V68 M64 28 V68 M76 28 V68" stroke="#4a90c0" stroke-width="2"/></svg></span><span class="kid-figure-cap">纸巾</span><span class="kid-figure-sub">亲戚</span><p class="kid-figure-fact">纸巾里有许多细缝，像一束细管，也会把水拽上去。和细管是同一家人。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">涂蜡就不亲水</text><rect x="16" y="64" width="88" height="12" fill="#4a90c0"/><rect x="52" y="24" width="12" height="48" fill="#f4efe4" stroke="#1e2d4a"/><rect x="52" y="24" width="12" height="10" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">蜡管</span><span class="kid-figure-sub">对照</span><p class="kid-figure-fact">管壁涂了蜡就不亲水，水更不愿意往上爬。材料决定爬不爬，不是水换了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">不是管子口渴</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">会喝水</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">不是管子口渴在喝水，是管壁把水往上拽。换蜡面就不爬，证明不是嘴。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>细管插。</b>记爬多高。</li>
+      <li data-step="2"><b>粗管插。</b>记几乎不爬。</li>
+      <li data-step="3"><b>说缝。</b>更细，拽的效果更明显。</li>
+      <li data-step="4"><b>写完成句。</b>细缝拽，不是喝水。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>细管子里的水会往上爬一截，粗管子不怎么爬。不是管子口渴。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>管壁和水互相拽。缝越细，相对重力越明显，爬得越高。肥皂让水面不那么抱团，同一根管通常变矮。蜡面不爱水，也会变矮。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>示意 h∝1/r：半径加倍，爬高约减半。这是本页尺子，不是朱伦公式的精确解。亲水接触角小才上升；疏水可变矮甚至反向。虹吸是邻居，要先灌满一条过顶的管子。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能把「爬得高」连到细管，把「几乎齐平」连到粗管，并否定「管子口渴」。完成看的是对照，不是背「毛细」两个字。</p>
+    <ul class="ask-list">
+      <li>细管和粗管，哪一根里的水爬得更高？碗里的水换了吗？</li>
+      <li>加点肥皂，同一根细管通常变高还是变矮？</li>
+      <li>纸巾一角点水，水线往上走，和细管像在哪？</li>
+      <li>破了的玻璃管，谁来拿？染色水能喝吗？</li>
+    </ul>
+  </section>
+
+
+          <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">植物导管是细缝亲戚；油和水在管壁上表现不同</h2>
+    <p>草茎能把水送上叶，一部分靠细管把水拽上去。大树有多高，还要叶子蒸腾把水往上拉，不能把本页当成植物生理课的全部，也不当本页完成句。</p>
+    <p>油在有的管壁上摊开，水在蜡上缩成珠。材料决定爬不爬：玻璃亲水，蜡面疏水，同一碗水换了内壁，爬高就会变矮。肥皂让水面不那么抱团，同一根管通常也变矮。</p>
+    <p>毛巾、海绵、纸巾都是一束细缝。挤干不是把管子变粗，而是把缝里的水赶出来。虹吸是邻居：要先灌满一条过顶的管子，水才从高处流到低处，不是插进去就爬一截。</p>
+    <p>破玻璃成人处理。实验水和染色水不入口。墨水别沾衣服。本页毫米是比较尺子，不是某根玻璃管的出厂说明书。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">茎里细缝送水</text><rect x="54" y="28" width="10" height="48" fill="#2f7a3e"/><ellipse cx="59" cy="24" rx="16" ry="10" fill="#3d9a58"/><path d="M59 36 V68" stroke="#4a90c0" stroke-width="2"/></svg></span><span class="kid-figure-cap">草茎</span><span class="kid-figure-sub">细缝</span><p class="kid-figure-fact">草茎里的细缝能把水送上去，仍是管壁在拉；大树还要靠叶子蒸腾帮忙，不是茎在喝。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">蜡面几乎不爬</text><rect x="50" y="28" width="16" height="36" fill="#f4efe4" stroke="#1e2d4a"/><path d="M58 20 V28" stroke="#e8b84a" stroke-width="3"/><rect x="16" y="68" width="88" height="10" fill="#4a90c0"/></svg></span><span class="kid-figure-cap">蜡</span><span class="kid-figure-sub">不亲水</span><p class="kid-figure-fact">蜡面不亲水，同一碗水在蜡管里几乎不爬。材料变了，不是水自己改主意。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">细孔连在一起</text><rect x="28" y="32" width="64" height="40" rx="8" fill="#e8b84a"/><circle cx="44" cy="48" r="4" fill="#4a90c0"/><circle cx="60" cy="56" r="4" fill="#4a90c0"/><circle cx="76" cy="44" r="4" fill="#4a90c0"/></svg></span><span class="kid-figure-cap">海绵</span><span class="kid-figure-sub">一束缝</span><p class="kid-figure-fact">海绵是许多细孔连在一起；挤干是把拉进去的水赶出来，不是海绵口渴喝饱。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">破玻璃大人拿</text><path d="M60 24 L96 76 H24 Z" fill="#e8b84a" stroke="#c2410c"/><rect x="57" y="40" width="6" height="20" fill="#1e2d4a"/><circle cx="60" cy="68" r="3" fill="#1e2d4a"/></svg></span><span class="kid-figure-cap">破口</span><span class="kid-figure-sub">成人拿</span><p class="kid-figure-fact">细管和染色水都不要入口，破了的玻璃只给大人拿。墨水也别沾衣服。</p></div>
+    </div>
+  </section>
+
+
+          <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：细管爬高 · 粗管不爬 · 管子会喝水</h2>
+    <p>三列用同一碗水、同一种管壁。先只改管子粗细。一次改粗细又加肥皂，分不清到底是谁让它变矮的。</p>
+    <p>细管：蓝色水柱明显高于碗面。粗管：几乎与碗面齐。「管子会喝水」整列划掉：换成蜡面内壁，同一碗水几乎不爬，说明是管壁在拽，不是它口渴。</p>
+    <p>肥皂是加试：同一根细管，水面不那么抱团，爬高通常变矮。本页 h≈48÷r（毫米）只是比较尺子，用来看见「细高粗矮」，不是朱伦公式的精确解。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">细管明显高于碗</text><circle cx="60" cy="52" r="18" fill="#3d9a58"/></svg></span><span class="kid-figure-cap">细管</span><span class="kid-figure-sub">爬高</span><p class="kid-figure-fact">细管里的水明显高于碗面，这才是管壁把水拉上去，不是玻璃破了，也不是管子喝。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">粗管几乎齐平</text><circle cx="60" cy="52" r="18" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">粗管</span><span class="kid-figure-sub">不爬</span><p class="kid-figure-fact">粗管几乎和碗面齐平，水没有被拽上去。缝一粗，拽就压不过水柱重量。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">不是管子口渴</text><circle cx="60" cy="52" r="18" fill="#c2410c"/><path d="M28 28 L92 76" stroke="#1e2d4a" stroke-width="3"/></svg></span><span class="kid-figure-cap">喝水</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">「管子会喝水」不对：是管壁在拽，不是它口渴。蜡面那一列可以反驳这句喝水。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">缝越细拽得越高</text><rect x="22" y="28" width="50" height="44" fill="#f4efe4" stroke="#1e2d4a"/><path d="M82 26 L100 42 L78 74 L60 58 Z" fill="#e8b84a" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">细缝拽得高</span><p class="kid-figure-fact">回家只记：缝越细，液柱通常就会更高，这是定性，不是管子口渴在喝水。</p></div>
+    </div>
+  </section>
+
+
+          <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">细管、粗管两行记下爬升</h2>
+    <p>在纸上画两行：一行写细管、爬高；一行写粗管、几乎齐平。两行并排，比背公式有用。肥皂或蜡面若要另比，再开一行，不要和「粗细」叠在一起。</p>
+    <p>口头只要两句：「缝越细，水被拽得越高。」「不是管子口渴。」有人说「管子会喝水」，让孩子指着蜡面那一行反驳。纸巾若要写，另开一行：许多细缝连在一起。</p>
+    <p>破玻璃成人拿。染色水不要喝、不要舔。本页毫米不要抄成水管说明书。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">细高一行粗不爬</text><rect x="28" y="24" width="64" height="52" fill="#f4efe4" stroke="#1e2d4a"/><path d="M36 36 H84 M36 48 H84 M36 60 H64" stroke="#1e2d4a" stroke-width="2"/></svg></span><span class="kid-figure-cap">两行</span><span class="kid-figure-sub">细/粗</span><p class="kid-figure-fact">一行记细管爬高，一行记粗管几乎不爬。对照比抄毫米数清楚，不是谁爱喝。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">是管壁在拽</text><ellipse cx="56" cy="48" rx="28" ry="16" fill="#f4efe4" stroke="#1e2d4a"/><path d="M44 62 L36 76 L60 64" fill="#f4efe4" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">不是喝水</span><p class="kid-figure-fact">回家说得出：不是管子在喝，是管壁把水拉上去。缝越细，通常爬得越高。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">纸巾细缝另记</text><rect x="20" y="28" width="40" height="44" fill="#f4efe4" stroke="#1e2d4a"/><path d="M28 32 V68 M36 32 V68 M44 32 V68" stroke="#4a90c0" stroke-width="2"/><rect x="76" y="32" width="24" height="32" fill="#f4efe4" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">纸巾</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">纸巾另记一行：许多细缝连在一起，管壁也会把水拉上去，不是纸口渴。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">破管大人收拾</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">破口</span><span class="kid-figure-sub">成人</span><p class="kid-figure-fact">破口的玻璃管让大人收拾，染色水也不要喝、不要舔，毛细不是让人学喝管子。</p></div>
+    </div>
+  </section>
+
+
+      <section class="card" aria-labelledby="thickTitle">
+    <h2 id="thickTitle">细缝把水往上拽</h2>
+    <p>带走句：毛细是管壁拉水和表面张力一起把液面抬高，不是水自己会爬。</p>
+    <p>对照：材料不同爬高不同；毛巾吸水是同一家族。</p>
+    <p>本页尺子：管越细往往爬得越高。这是比较，不是水管说明书。</p>
+    <p>安全：不尝实验水；桌面垫纸防污。</p>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：毛细观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：细管爬得更高"></div>
+      <div><label for="workContent">粗细和爬升</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下细管和粗管里，水分别爬到哪里，加点肥皂以后有没有变矮。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「爬高靠不靠管子粗细」，就只改粗细这一项。同一碗水、同一种管壁，先细管看一次，再粗管看一次。肥皂和蜡面是另一次对照。</p>
+    <ul>
+      <li><b>只改这一项：</b>管子有多粗。</li>
+      <li><b>保持不变：</b>同一碗清水、先用玻璃亲水面。</li>
+      <li><b>要观察的：</b>蓝色水柱明显高于碗面，还是几乎齐平。</li>
+      <li><b>另开一行：</b>同样粗细，加点肥皂或换成蜡面，爬高变不变矮。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>纸巾一角点到水洼里，水线为什么会往上爬？如果换成蜡纸，还会爬吗？</li>
+      <li>毛巾吸水、海绵挤干，和细管里的水柱像在哪？挤干是在改变粗细，还是把缝里的水赶出来？</li>
+      <li>大树把水运到树冠，本页的细管够不够当全部答案？蒸腾还要补哪一句？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲当前那一层。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>细管子里的水会往上爬一截，粗管子不怎么爬。不是管子口渴。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>管壁和水互相拽，缝越细爬得越高。肥皂和蜡面都会让它变矮。纸巾是一束细缝。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>h∝1/r 是本页尺子。亲水上升、疏水变矮。虹吸要过顶，不是同一套验收。大树还要蒸腾。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>孩子说「管子口渴」——换成蜡面以后，同一碗水还爬吗？让他改口「管壁爱不爱水」，再指一次细管那一列。</li>
+      <li>细缝拽得高：哪一句四岁听得懂？试「缝越细，水和壁越能拽住」。他能不能不用「毛细」两个字讲清楚。</li>
+      <li>加点肥皂变矮：他能不能不用公式，只说「水面不那么抱团了」？一次改粗细又加肥皂，还公平吗？</li>
+      <li>大树蒸腾为什么不能当本页完成句？本页只验收细缝这一环。树有多高，还要补哪一句？</li>
+      <li>破玻璃、染色水、墨水衣服：红线怎么说？毫米数能当水管说明书吗？本页能当朱伦公式课吗？</li>
+      <li>虹吸工坊要先灌满过顶的管子。和本页「插进去就爬一截」差在哪？纸巾一角点水，和细管像在哪？</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着细管讲：管壁和水互相拽（润湿），水面在细缝里弯成弯月面，水就被抬高一截。缝越细，这种拽相对水柱的重量越明显，所以爬得越高。不是管子有一张小嘴在「吸」，也不是水自己会爬。</p>
+    <p>本页尺子 h≈48÷r（毫米），肥皂再乘 0.55，蜡面再打折。用来比较「细高粗矮、肥皂变矮」，不是朱伦公式的精确解，也不是某根玻璃管的出厂说明书。接触角由管壁材料决定：玻璃亲水，蜡面疏水。</p>
+    <p>纸巾、毛巾、海绵、植物茎里的导管，都是细缝亲戚。大树还要靠叶子蒸腾把水往上拉，不能把本页当成植物生理课的全部。虹吸是邻居：要先灌满一条过顶的管子，水才从高处流到低处。</p>
+    <p>破玻璃归大人。实验水和染色水不喝。墨水别沾衣服。舞台忽略蒸发，也不模拟虹吸过顶。</p>
+  </section>
+
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))" data-audience="parent">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">毛细公式卡 · h≈48÷r（毫米）；肥皂×0.55（本页尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">半径加倍，爬高大约减半。肥皂减弱表面张力，同一管里变矮。这是比较用的示意，不是实验室的朱伦公式。不是虹吸，也不用先灌满。破玻璃归大人。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：细缝把水往上拽，不是管子口渴。虹吸工坊看「先灌满过顶」的另一套；荷花观察站看蜡面为什么不爱水。</p>
+    <p class="row"><a class="btn btn-ghost" href="siphon-lab.html">虹吸工坊</a><a class="btn btn-ghost" href="filter-lab.html">过滤工坊</a><a class="btn btn-ghost" href="../nature/lotus.html">荷花观察站</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为细管才把水拽得更高、玻璃管一断会割手，所以细玻璃管请由大人拿。本页忽略蒸发和虹吸，只比较管子粗细和爬升高度。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var slide = 50;
+  var soap = false;
+  var wax = false;
+  var seen = { thin:false, thick:false, done:false };
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  var soapTried = false, sawWaxThick = false, sawThin1 = false, sawThick1 = false;
+  function wordWide(t){
+    if (t >= 78) return "很粗";
+    if (t >= 62) return "比较粗";
+    if (t <= 22) return "很细";
+    if (t <= 38) return "比较细";
+    return "不粗不细";
+  }
+  function radiusMm(){
+    return 0.25 + (slide / 100) * 1.75;
+  }
+  function heightMm(){
+    var h = 48 / radiusMm();
+    if (soap) h *= 0.55;
+    if (wax) h *= 0.4;
+    if (h < 8) h = 8;
+    if (h > 220) h = 220;
+    return h;
+  }
+  function fmtMm(n){
+    return (Math.round(n * 10) / 10).toFixed(1).replace(/\.0$/, "") + "\u00a0毫米";
+  }
+  function heightFactor(){
+    return Math.min(0.92, Math.max(0.08, heightMm() / 120));
+  }
+  function setSlide(n){
+    slide = n;
+    if (slide < 0) slide = 0;
+    if (slide > 100) slide = 100;
+    document.getElementById("wide").value = String(slide);
+    render();
+  }
+  function checkGuess(){
+    if (guess1 && !guess1Done && sawThin1 && sawThick1 && !soap && !wax) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "half" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "管子越细，水爬得越高；管子加倍粗，爬升大约矮一半。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && soapTried) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "shorter" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "肥皂减弱表面张力，同一根管里水爬得更矮。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && sawWaxThick) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "low" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "蜡面不亲水，水爬得更矮，但不是变成 0。";
+    }
+  }
+  function render(){
+    var w = 12 + slide * 0.36;
+    var x = 320 - w / 2;
+    var bowlY = 222;
+    var top = 36;
+    var hVis = heightFactor();
+    var colTop = bowlY - 12 - hVis * (bowlY - 12 - top);
+    var rMm = radiusMm();
+    var hMm = heightMm();
+    document.getElementById("tube").setAttribute("x", x.toFixed(1));
+    document.getElementById("tube").setAttribute("width", w.toFixed(1));
+    document.getElementById("tube").setAttribute("y", String(top));
+    document.getElementById("tube").setAttribute("height", String(bowlY - top + 8));
+    document.getElementById("column").setAttribute("x", (x + 3).toFixed(1));
+    document.getElementById("column").setAttribute("width", Math.max(4, w - 6).toFixed(1));
+    document.getElementById("column").setAttribute("y", colTop.toFixed(1));
+    document.getElementById("column").setAttribute("height", (bowlY - colTop).toFixed(1));
+    var mid = x + w / 2;
+    document.getElementById("meniscus").setAttribute("d",
+      "M"+(x+3).toFixed(1)+" "+colTop.toFixed(1)+" Q"+mid.toFixed(1)+" "+(colTop-8).toFixed(1)+" "+(x+w-3).toFixed(1)+" "+colTop.toFixed(1));
+    var wideWord = wordWide(slide);
+    document.getElementById("wideLabel").textContent = wideWord;
+    document.getElementById("wide").setAttribute("aria-valuetext", wideWord + "，r≈" + fmtMm(rMm));
+    document.getElementById("rOut").textContent = fmtMm(rMm);
+    document.getElementById("hOut").textContent = fmtMm(hMm);
+    if (guess3 && !guess3Done && wax && rMm >= 1.9) sawWaxThick = true;
+    document.getElementById("sOut").textContent = wax ? "蜡面，不亲水" : soap ? "加了肥皂" : "玻璃，亲水";
+    document.getElementById("hLab").textContent = soap ? "肥皂，爬得矮" : wax ? "蜡面，不太爬" : (slide <= 20 ? "细管，爬得高" : slide >= 40 ? "粗管，爬得矮" : "不粗不细");
+    document.getElementById("live").textContent =
+      "细管把水爬上去；管越细爬得越高。" + (soap?"肥皂让爬升变矮。":wax?"蜡面更不愿意往上爬。":"") +
+      (slide <= 20 ? "现在是细管。" : slide >= 40 ? "现在是粗管。" : "");
+    if (slide <= 20) { seen.thin = true; if (guess1 && !guess1Done && !soap && !wax) sawThin1 = true; }
+    if (slide >= 40) { seen.thick = true; if (guess1 && !guess1Done && !soap && !wax) sawThick1 = true; }
+    if (guess2 && !guess2Done && soap) soapTried = true;
+    checkGuess();
+    var status = document.getElementById("taskStatus");
+    if (seen.done) return;
+    if (seen.thin && seen.thick) {
+      seen.done = true;
+      if (window.Progress) Progress.complete("games/capillary-lab.html", "试过细管和粗管，比较过爬升高度");
+      status.textContent = "完成啦：管越细爬得越高，管越粗爬得越矮。";
+    } else if (!seen.thin && !seen.thick) {
+      status.textContent = "尚未完成：先试一次很细的管子，或一次很粗的管子。";
+    } else if (!seen.thin) {
+      status.textContent = "还差：再把滑杆推到很细，或点「试试细管」。";
+    } else {
+      status.textContent = "还差：再把滑杆推到很粗，或点「试试粗管」。";
+    }
+  }
+
+  document.getElementById("wide").addEventListener("input", function(){
+    slide = Number(this.value);
+    render();
+  });
+  document.getElementById("toThin").addEventListener("click", function(){ soap = false; wax = false; setSlide(14); });
+  document.getElementById("toThick").addEventListener("click", function(){ soap = false; wax = false; setSlide(43); });
+  document.getElementById("toSoap").addEventListener("click", function(){ soap = true; wax = false; render(); });
+  document.getElementById("toGlass").addEventListener("click", function(){ soap = false; wax = false; render(); });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。先细管再粗管（清水），对照 h≈。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。细管再点「加点肥皂」。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess3Done)return; guess3=btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut3").textContent="押好了。最粗管，再点蜡面。"; });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-cp-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-cp-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-cp-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = (btn.querySelector(".kid-figure-fact")||{}).textContent || "";
+      if (key === "thin" || key === "stem" || key === "towel" || key === "sponge") { soap = false; wax = false; setSlide(14); }
+      else if (key === "thick") { soap = false; wax = false; setSlide(43); }
+      else if (key === "soap") { soap = true; wax = false; render(); }
+      else if (key === "wax") { wax = true; soap = false; render(); }
+      else if (key === "glass" || key === "water" || key === "meniscus") { soap = false; wax = false; render(); }
+      else render();
+    });
+  });
+  render();
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/capillary-lab.html", "毛细工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

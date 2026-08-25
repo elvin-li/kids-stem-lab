@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>火山观察站 · 慢流与爆发 | 少儿数理启蒙</title>
+<meta name="description" content="比较十二种火山和热泉，看熔岩是慢慢流还是猛地喷。离线即可使用。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+ .hero { padding: 28px 0 10px; }
+ .hero h1 { margin: .15em 0 .3em; }
+ .lead { max-width: 58ch; color: var(--ink-mid); }
+ .kid-hero-scene {
+ display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+ margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+ border: 1px solid color-mix(in srgb,var(--kit) 40%,var(--line));
+ border-radius: var(--r-lg);
+ background: linear-gradient(135deg,color-mix(in srgb,var(--kit) 14%,var(--surface)),var(--surface) 62%);
+ }
+ .mission-face {
+ width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+ border: 2px solid color-mix(in srgb,var(--kit) 42%,var(--line));
+ background: color-mix(in srgb,var(--kit) 12%,var(--surface)); font-size: 2.2rem;
+ }
+ .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+ .vo-art { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+ .vo-sky { fill: color-mix(in srgb,var(--kit) 12%,#f6ead4); }
+ .vo-ground { fill: color-mix(in srgb,var(--kit) 36%,#8b5b42); }
+ .vo-cone { fill: color-mix(in srgb,var(--ink) 28%,#69431f); }
+ .vo-lava { fill: #e07a28; }
+ .vo-ash { fill: #888; }
+ .kid-action-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+ .volcano-atlas .kid-figure { --tone: var(--kit); }
+ .volcano-atlas .kid-figure-art { padding: 6px; }
+ .volcano-atlas .kid-figure-art > svg { width: 100%; max-width: 132px; height: auto; }
+ .volcano-atlas .kid-figure-fact { display: block; }
+ .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+ .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+ .ask li::before {
+ counter-increment: q; content: counter(q);
+ position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+ display: grid; place-items: center; background: color-mix(in srgb,var(--kit) 12%,var(--surface));
+ border: 1px solid color-mix(in srgb,var(--kit) 40%,var(--line)); color: var(--ink);
+ font: 800 .76rem var(--mono);
+ }
+ button, .btn { min-height: 44px; }
+ .stage + .kid-action-strip { margin-top: 8px; }
+ .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+ @media (max-width: 640px) {
+ .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+ .mission-face { display: none; }
+ .stage { padding: 10px; }
+ .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+ .lead { max-width: none; }
+ }
+
+ .vo-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+ .vo-lab-panel { margin: 12px 0; padding: 10px; border: 1px solid color-mix(in srgb,var(--sci) 36%,var(--line)); border-radius: var(--r-lg); background: color-mix(in srgb,var(--sci) 8%,var(--surface)); }
+ .vo-lab-panel .readout { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0; }
+ .vo-lab-panel .readout div { padding:8px; border-radius:var(--r); background:var(--surface); border:1px solid var(--line); }
+ .vo-lab-panel .readout span { display:block; font-size:.78rem; color:var(--ink-mid); }
+ .vo-lab-panel .readout b { font:800 1.05rem var(--mono); color:var(--ink); }
+ .vo-lab-panel label { display:block; font-weight:700; margin-top:8px; }
+ .vo-lab-panel input[type="range"] { width:100%; min-height:44px; }
+ .vo-lab-panel .kid-action-strip { flex-direction:column; align-items:stretch; gap:4px; margin:8px 0; }
+ .vo-guess .pick-btns { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+ .guess-card { border-color: color-mix(in srgb,var(--sci) 45%,var(--line)); }
+ .guess-pick[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 18%,var(--surface)); color: var(--ink); }
+ .guess-out { font-weight: 750; color: var(--ink-mid); }
+ .guess-out b { color: var(--ink); }
+ @media (max-width:640px){
+ .hero .lead { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+ .vo-lab-panel > p { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+ }
+ @media (max-width:480px){
+ [data-playful-companion], [data-playful-sticker] { display:none !important; }
+ .vo-lab-panel .readout { grid-template-columns:1fr; }
+ }
+
+</style>
+</head>
+<body data-playful-page="nature/volcano.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+ <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+ <div class="row" aria-label="主导航">
+ <a class="nav-link" href="../index.html">资源库</a>
+ <a class="nav-link" href="../pages/paths.html">学习路径</a>
+ <a class="nav-link" href="../games/index.html">互动实验</a>
+ <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+ <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+ <a class="nav-link" href="../pages/parents.html">家长指南</a>
+ <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+ </div>
+</div></nav>
+<main id="main" class="wrap">
+ <header class="hero">
+ <div>
+ <p class="row"><span class="pill pill-kit">地球</span><span class="pill">6–12&nbsp;岁</span><span class="pill">本地观察</span></p>
+ <h1>火山观察站</h1>
+ <p class="lead">地底下还没喷出来的叫岩浆，一出地表才叫熔岩。熔岩稀，气泡容易溜走，就顺着山坡慢慢流；熔岩稠，气泡被堵住，压力攒够了才会猛喷。本页是比较尺子，不是逃难手册——真火山口要远离，听当地疏散。</p>
+ <div data-playful-companion></div>
+ <span data-playful-sticker></span>
+ </div>
+ <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="78" height="78"></div>
+ </header>
+
+
+ <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+ <h2 id="stageTitle">它是慢慢流，还是猛地喷</h2>
+ <svg class="vo-art" viewBox="0 0 420 220" role="img" aria-labelledby="voTitle voDesc">
+ <title id="voTitle">火山舞台</title>
+ <desc id="voDesc">一座山和橙色熔岩。点图鉴后会变成盾状、尖塔或热泉。</desc>
+ <rect class="vo-sky" width="420" height="220"/>
+ <rect class="vo-ground" y="168" width="420" height="52"/>
+ <g id="voActor">
+ <path class="vo-cone" d="M90 168 L190 48 H230 L330 168 Z"/>
+ <path class="vo-lava" d="M190 48 H230 L218 78 H202 Z"/>
+ </g>
+ </svg>
+ <p class="live-text" id="live" role="status" aria-live="polite">点一张图鉴，看熔岩、灰，还是热水在动。</p>
+ <div class="kid-action-strip" role="group" aria-label="不翻页也能换一座火山">
+ <button class="btn btn-primary" type="button" id="stageNextVo">换一座火山</button>
+ </div>
+ </section>
+
+<section class="card vo-lab-panel" aria-labelledby="voLabTitle">
+ <h2 id="voLabTitle">火山喷力台 · 真参数</h2>
+ <p>调<strong>气体压强</strong>与<strong>通道畅通</strong>。溶解在岩浆里的气体往上推；通道越通，气越容易带着岩浆出来。通道一堵，气就闷在里面，再打开会更猛。山不会发脾气，喷不喷看的是气和通道。</p>
+ <div class="kid-action-strip" role="group" aria-label="真参数主操作">
+ <label for="voA">气体压强：<span id="voALab">…</span></label>
+ <input class="input" id="voA" type="range" min="4" max="36" value="16" aria-valuetext="16">
+ <label for="voB">通道畅通：<span id="voBLab">…</span></label>
+ <input class="input" id="voB" type="range" min="2" max="20" value="8" aria-valuetext="8">
+ </div>
+ <svg class="vo-art" viewBox="0 0 640 220" role="img" aria-labelledby="voLabSvgTitle voLabSvgDesc">
+ <title id="voLabSvgTitle">气压推岩浆；不是山在生气</title>
+ <desc id="voLabSvgDesc">气体把岩浆顶上来。右边生气脸被划掉：山不会喷火发脾气。</desc>
+ <rect fill="#c8d8e8" width="640" height="220"/>
+ <path d="M160 180 L240 80 L320 180 Z" fill="#6a5a4a"/>
+ <path id="voPlume" d="M230 80 Q240 40 260 70" fill="#e07040" opacity=".85"/>
+ <g id="voMad" opacity="0.28">
+ <circle cx="560" cy="44" r="20" fill="#e8c040"/>
+ <path d="M548 38 L556 42 M572 38 L564 42" stroke="#1a2a20" stroke-width="3"/>
+ <path d="M548 54 Q560 46 572 54" fill="none" stroke="#1a2a20" stroke-width="3"/>
+ <path d="M536 20 L584 68 M584 20 L536 68" stroke="#c2410c" stroke-width="4"/>
+ </g>
+ <rect id="voBar" x="20" y="70" width="14" height="90" fill="#1a5a3a"/>
+ <text fill="#1a2a20" style="font:800 13px monospace" x="16" y="28">喷力台</text>
+ <text id="voStateLab" fill="#1a2a20" style="font:700 12px monospace" x="160" y="28">气压推岩浆</text>
+ </svg>
+ <div class="readout" aria-live="polite">
+ <div><span>气压</span><b id="voAOut">…</b></div>
+ <div><span>喷力（算）</span><b id="voSOut">…</b></div>
+ <div><span>喷出？</span><b id="voOkOut">…</b></div>
+ </div>
+ <p class="live-text" id="voLabLive" role="status" aria-live="polite">气体把岩浆顶上来。冷却以后变成岩石。山不会生气。</p>
+ </section>
+ <section class="card guess-card vo-guess" aria-labelledby="voGuessTitle">
+ <h2 id="voGuessTitle">先猜一猜，再拖滑杆</h2>
+ <p><b>第 1 题：</b>气压够、通道够（气压 32、通道 10）。喷的是气体推岩浆，还是山在生气？</p>
+ <div class="pick-btns" role="group" aria-label="猜喷力">
+ <button class="btn guess-pick" type="button" data-vo-g1="20" aria-pressed="false">气压推岩浆</button>
+ <button class="btn guess-pick" type="button" data-vo-g1="28" aria-pressed="false">山在喷火生气</button>
+ </div>
+ <p class="guess-out" id="voGuessOut1" role="status" aria-live="polite">押好了</p>
+ <div id="voGuessBlock2" hidden>
+ <p><b>第 2 题：</b>气压 5、通道 3，还喷出吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜够不够">
+ <button class="btn guess-pick" type="button" data-vo-g2="yes" aria-pressed="false">喷出</button>
+ <button class="btn guess-pick" type="button" data-vo-g2="no" aria-pressed="false">偏闷</button>
+ </div>
+ <p class="guess-out" id="voGuessOut2" role="status" aria-live="polite">押好了</p>
+ </div>
+ <div id="voGuessBlock3" hidden>
+ <p><b>第 3 题：</b>气压最少 4、通道最弱 2。还能明显喷出吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜最低档">
+ <button class="btn guess-pick" type="button" data-vo-g3="yes" aria-pressed="false">能，还在</button>
+ <button class="btn guess-pick" type="button" data-vo-g3="no" aria-pressed="false">不能，两边都太弱</button>
+ <button class="btn guess-pick" type="button" data-vo-g3="zero" aria-pressed="false">变成 0，没了</button>
+ </div>
+ <p class="guess-out" id="voGuessOut3" role="status" aria-live="polite">押好了</p>
+ </div>
+ </section>
+
+ <section class="card volcano-atlas" aria-labelledby="atlasTitle">
+ <h2 id="atlasTitle">火山图鉴</h2>
+ <p>点两张不同脾气的卡：一座慢慢流，一座猛地喷。</p>
+ <div class="kid-figure-grid" role="group" aria-label="火山图鉴：十二种样子">
+ <button class="kid-figure" type="button" data-vo="shield" aria-pressed="false" aria-label="盾状火山：像平底锅">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/shield-volcano.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">盾状火山</span>
+ <span class="kid-figure-fact">盾状火山像平底锅，稀熔岩是岩浆到了地表，慢慢流，不是这座山在生气。</span>
+ </button>
+ <button class="kid-figure" type="button" data-vo="strato" aria-pressed="false" aria-label="层状火山：像尖塔">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">层状火山</span>
+ <span class="kid-figure-fact">层状火山一层灰一层岩，气体憋不住就猛喷，请远观，不要去踩新熔岩。</span>
+ </button>
+ <button class="kid-figure" type="button" data-vo="cinder" aria-pressed="false" aria-label="渣锥：小而陡">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/cinder-cone.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">渣锥</span>
+ <span class="kid-figure-fact">渣锥小而陡，喷出的是冷却渣块，熔岩是岩浆到了地表，远观不要靠近。</span>
+ </button>
+ <button class="kid-figure" type="button" data-vo="caldera" aria-pressed="false" aria-label="破火山口：塌成大锅">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/caldera.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">破火山口</span>
+ <span class="kid-figure-fact">喷空以后山顶塌成一口大锅，叫破火山口，不是山生完气以后坐下去。</span>
+ </button>
+ <button class="kid-figure" type="button" data-vo="lava" aria-pressed="false" aria-label="熔岩流：慢慢爬">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/lava.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">熔岩流</span>
+ <span class="kid-figure-fact">稀的熔岩是岩浆到了地表，像糖浆慢慢爬，流过仍烫，千万不要伸脚去踩。</span>
+ </button>
+ <button class="kid-figure" type="button" data-vo="ash" aria-pressed="false" aria-label="火山灰：冲上天">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcanic-ash.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">火山灰</span>
+ <span class="kid-figure-fact">火山灰是细粉末冲上天，走得又高又远，会伤肺，不要凑近去闻那一口。</span>
+ </button>
+ <button class="kid-figure" type="button" data-vo="geyser" aria-pressed="false" aria-label="间歇泉：喷热水不是岩浆">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/geyser.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">间歇泉</span>
+ <span class="kid-figure-fact">间歇泉喷的是热水和蒸汽，不是岩浆，更不是熔岩流，站远一点看就够。</span>
+ </button>
+ <button class="kid-figure" type="button" data-vo="spring" aria-pressed="false" aria-label="温泉：慢慢冒热">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/hotspring.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">温泉</span>
+ <span class="kid-figure-fact">温泉是地下水被底下的热烤暖，慢慢冒，不是岩浆，也别伸手进去试烫。</span>
+ </button>
+ <button class="kid-figure" type="button" data-vo="dome" aria-pressed="false" aria-label="熔岩穹丘：稠得堆成馒头">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/lava-dome.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">熔岩穹丘</span>
+ <span class="kid-figure-fact">熔岩太稠走不动，堆成一个馒头穹丘，仍是岩浆到了地表，千万不要去踩。</span>
+ </button>
+ <button class="kid-figure" type="button" data-vo="fissure" aria-pressed="false" aria-label="裂隙喷发：地上裂开往外流">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/lava.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">裂隙喷发</span>
+ <span class="kid-figure-fact">地上裂开一条缝，熔岩慢慢流出来，仍是到了地表的岩浆，请站远观望。</span>
+ </button>
+ <button class="kid-figure" type="button" data-vo="bomb" aria-pressed="false" aria-label="火山弹：喷出的大石块">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcanic-bomb.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">火山弹</span>
+ <span class="kid-figure-fact">喷出的大石块还没凉，会在空中变形，落地仍烫，千万不要伸手去捡它。</span>
+ </button>
+ <button class="kid-figure" type="button" data-vo="pillow" aria-pressed="false" aria-label="枕状熔岩：海底挤出来的枕头">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/pillow-lava.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">枕状熔岩</span>
+ <span class="kid-figure-fact">海底挤出来的熔岩被水一浇就鼓成枕头，仍是到了地表的岩浆，别踩。</span>
+ </button>
+ </div>
+ <p class="live-text" id="atlasSay" role="status" aria-live="polite">还没选。先点一座慢慢流的，再点一座猛地喷的。</p>
+ </section>
+
+ <section class="card" aria-labelledby="predictTitle">
+ <h2 id="predictTitle">猜一猜</h2>
+ <div class="kid-predict" style="--tone:var(--danger)"
+ data-kid-predict
+ data-kid-predict-explain="摇过的可乐一开盖，气体带着液体猛喷出来，和猛喷的火山一个道理。岩浆更稠更容易炸，更稀更容易流，流出来也危险。火山不是在生气。"
+ data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+ data-kid-predict-again="押好了">
+ <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🥤</span><b>使劲摇过的可乐瓶，猛地拧开盖会发生什么？这和火山有什么关系？</b></p>
+ <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：摇过的可乐">
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="calm">和平时一样，慢慢冒泡</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="burst" data-kid-predict-correct>猛地喷出来——和猛喷的火山一个道理</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="freeze">可乐会变凉</button>
+ </div>
+ <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+ <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+ </div>
+ </section>
+
+ <section class="task" aria-labelledby="taskTitle">
+ <h2 class="task-title" id="taskTitle">任务：分清慢流和猛喷</h2>
+ <p>点两张脾气不一样的图鉴，再说出哪一个更慢、更温和。</p>
+ <div class="kid-action-strip" role="group" aria-label="哪一种更温和">
+ <button class="btn" type="button" data-mood="gentle">更温和、慢慢流</button>
+ <button class="btn" type="button" data-mood="wild">更猛、会喷灰</button>
+ </div>
+ <button class="btn btn-primary" type="button" id="finishBtn" disabled>记下这次比较</button>
+ <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+ <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+ <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先点两张图鉴，再选出更温和的那种。</p>
+ </section>
+
+ <section class="card" aria-labelledby="numsTitle">
+ <h2 id="numsTitle">火山的惊人数字</h2>
+ <div class="kid-figure-grid" role="group" aria-label="四个关于火山的数字">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">约&nbsp;1000&nbsp;度</span><span class="kid-figure-sub">流出的熔岩有多热</span><p class="kid-figure-fact">家里烤箱最高约 250&nbsp;度，熔岩比它热四倍，红亮得能在夜里照亮整条山坡。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">约&nbsp;1500&nbsp;座</span><span class="kid-figure-sub">全球可能再喷发的活火山</span><p class="kid-figure-fact">大多数排在太平洋边上，围成一圈「火环」。海底还有更多没数进来的活火山。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">从海底数约&nbsp;9&nbsp;千米</span><span class="kid-figure-sub">夏威夷冒纳凯阿的真实身高</span><p class="kid-figure-fact">从海底山脚量到山顶，它比珠穆朗玛峰还高——只是大半个身子泡在海里。整座岛就是火山一层层流出来的。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/pumice.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">能浮在水上</span><span class="kid-figure-sub">浮石：装满气泡的石头</span><p class="kid-figure-fact">猛喷时岩浆里的气泡被瞬间冻住，就成了满身小孔的浮石——世界上少有的能漂在水面的石头。</p></div>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="howTitle">
+ <h2 id="howTitle">厨房里的两种火山</h2>
+ <p>先只改「有多稠」，再另开一行加气泡。两杯并排，才分得清是黏度在挡气，还是气本身变多了。小苏打和白醋必须大人操作，孩子只看气泡怎么走，不凑脸、不自己倒。</p>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>做稀岩浆。</b>小杯里倒蜂蜜，斜着托盘让它流——流得慢但顺畅。这杯像稀熔岩：气还跑得掉。</li>
+ <li data-step="2"><b>做稠岩浆。</b>另一杯蜂蜜拌进面粉再斜一次——几乎不动了，气泡会被堵住。</li>
+ <li data-step="3"><b>加气泡。</b>大人在旁边用小苏打加一点白醋，看气泡把「岩浆」顶起来。同一稠度，气多会更猛。</li>
+ <li data-step="4"><b>下结论。</b>稀的让气跑、稠的憋着气。两杯都讲给家长听，并划掉「山生气了」。</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>地底下的石头烫化了，找到缝就往外冒。稀的慢慢流，稠的容易把气憋住再喷。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>稀岩浆让气泡顺利跑掉，就顺着山坡流；稠岩浆把气憋住，压力越攒越大，最后连灰带石块一起冲出来。厨房里的蜂蜜只借「稠不稠」，不能拿来预报真火山。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>二氧化硅越多，岩浆越黏。扁平的盾状火山多半由稀熔岩一层层摊出来；陡峭的层状火山常由黏岩浆和火山灰交替堆成。看形状可以反推历史上更常流还是更常喷，但这是倾向，不是每一次喷发的时刻表。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>用一个可控变量（稠度）解释流与喷两种结果，再学会从山形反推原因。厨房模型只迁移「气逃不逃」，不是逃难演练。</p>
+ <ul class="ask-list">
+ <li>蜂蜜和加了面粉的蜂蜜，哪个更像会猛喷的火山？气逃得掉吗？</li>
+ <li>为什么夏威夷的山又矮又扁，有的岛弧火山又高又尖？</li>
+ <li>火山灰能飘得很远，靠的是什么？它是软灰吗？</li>
+ </ul>
+ </section>
+
+
+ <section class="card" aria-labelledby="teachWhatTitle">
+ <h2 id="teachWhatTitle">稀的会流，稠的易憋气再猛喷</h2>
+ <p>先点一张慢慢流的图鉴，再点一张猛地喷的。地底下还没出来的叫岩浆，喷出地表才叫熔岩。稀熔岩里的气泡比较容易逃走，整团就顺着山坡往下流；稠熔岩把气憋住，压力一大，连灰带石块一起冲出来。</p>
+ <p>气体多少是第二只旋钮：同样很稠，气很少往往更闷，气很多才更猛。通道堵住像塞子，打开时泄压更急。火山灰不是壁炉里的软灰，是尖利的碎玻璃屑，会伤肺、刮坏引擎。</p>
+ <p>喷力台上的数字是本页比较尺子：喷力≈气压×通道÷16，喷力≥10 更易喷。用来比较「气够不够、通道通不通」，不是哪一天会喷的预报，更不是逃难手册。真火山口要远离，听到疏散就跟着走。</p>
+ </section>
+
+ <section class="card" aria-labelledby="lookTitle">
+ <h2 id="lookTitle">稀会流，稠易憋气再猛喷</h2>
+ <p>同一座山，先只改熔岩稀还是稠，问气泡逃不逃得掉。稀的更容易沿地面流；稠的更容易把气憋住。气体多少另开一行：同样很稠，气少更闷，气多更猛。一次改两样，分不清到底是谁让它喷。</p>
+ <p>完成句写「黏度管气泡逃不逃」或「稠加上气多更猛」，不要写「火山生气了」。本页比较尺子不能预报哪一天会喷，也不能当逃难手册。</p>
+ <div class="kid-figure-grid" role="group" aria-label="主题细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/lava.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">稀熔岩</span><span class="kid-figure-sub">易流</span><p class="kid-figure-fact">稀熔岩里的气泡比较容易逃走，整团就顺着山坡往下流；流过的路仍会被烫坏。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">稠熔岩</span><span class="kid-figure-sub">难流</span><p class="kid-figure-fact">稠熔岩把气泡憋在里面，压力越攒越高，最后连灰带石块一起猛喷出来。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">气体</span><span class="kid-figure-sub">第二旋钮</span><p class="kid-figure-fact">气多更猛、气少更闷，这是第二只旋钮，要和稀还是稠分开问，不能混成一句。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">通道</span><span class="kid-figure-sub">通畅与否</span><p class="kid-figure-fact">通道堵住像塞子，一旦打开，压住的气会突然冲出来；这是几何，不是脾气。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">火山灰</span><span class="kid-figure-sub">尖利碎屑</span><p class="kid-figure-fact">火山灰是尖利的碎玻璃屑，会伤肺、刮坏引擎，绝不是壁炉里那种软灰。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">疏散</span><span class="kid-figure-sub">听指令</span><p class="kid-figure-fact">本页只比较稀稠和气体，不能预报哪天会喷；真火山口要远离，听到疏散就走。</p></div>
+ </div>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>选稀或稠。</b>先问气泡逃得掉吗，不要先说山生气了。</li>
+ <li data-step="2"><b>加气体。</b>同一黏度，气多会不会更猛，气少会不会更闷。</li>
+ <li data-step="3"><b>看灰。</b>它是软烟，还是尖利的碎玻璃屑？</li>
+ <li data-step="4"><b>写完成句。</b>黏度管逃逸；划掉「火山生气了」。真火山口远离。</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>稀的岩浆比较会流，稠的容易把气憋住再喷出来。山不会生气。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>黏度高，气泡难逃，压力积起来才猛喷。灰是尖的，要遮口鼻。本页数字只用来比较，不是预报。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>硅含量和晶体会提高黏度。挥发分减压出溶，推动岩浆上升。喷力≈气压×通道÷16 是示意尺子，不是预警产品。汽水猛摇只借「气逃不逃」，不能标定火山。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能用黏度和气体逃逸解释流与喷的倾向，否定「山在生气」，并分清本页尺子和官方疏散。</p>
+ <ul class="ask-list">
+ <li>稠熔岩为什么更常猛喷？气逃得掉吗？</li>
+ <li>火山灰是壁炉里那种软灰吗？摸一摸行不行？</li>
+ <li>本页能预报哪天喷吗？真火山口该靠近吗？</li>
+ </ul>
+ </section>
+
+
+ <section class="card" aria-labelledby="deepTitle">
+ <h2 id="deepTitle">气从岩浆里跑出来，通道一堵会更猛</h2>
+ <p>岩浆在地下被压着，气体溶解在里面。压力一减，气就跑出来（出溶），像开汽水盖，气泡把岩浆往上推。稠熔岩阻碍气泡合并和逃走，气更容易憋在通道里。</p>
+ <p>通道堵塞像塞子：气还在往上挤，出口却窄了，压力再抬一截；一旦打开，泄压更急。这是通道几何，不是山在发脾气，也不要写成「它忍无可忍」。</p>
+ <p>火山灰棱角锋利，能伤肺、刮坏飞机引擎。湿手帕只是权宜，真正要听官方疏散。稀熔岩流看起来「温和」，仍能埋掉路径上的房子和路——流不等于安全。</p>
+ <p>喷力台上的「喷力≈气压×通道÷16」只是让孩子看见「气够、通道通才更易喷」。它不是实验室的火山爆发指数，也不能告诉你明天该不该走。真火山口、落石和有毒气体，一律远离。</p>
+ <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">出溶</span><span class="kid-figure-sub">减压</span><p class="kid-figure-fact">压力一减，溶解在岩浆里的气就会跑出来，气泡把岩浆往上推，像开汽水盖。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">堵塞</span><span class="kid-figure-sub">压力</span><p class="kid-figure-fact">通道被堵住再打开，一下子泄压，喷得更猛；这是通道几何，不是山的脾气。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">火山灰</span><span class="kid-figure-sub">锋利</span><p class="kid-figure-fact">灰的棱角锋利，能伤肺、刮坏机器，不要当成软灰去扬，也不要凑近去闻。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">比较尺子</span><span class="kid-figure-sub">教学</span><p class="kid-figure-fact">喷力这把尺子用来比较气和通道，不能拿来预报火山哪一天会喷，更不是逃难手册。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="fieldTitle">
+ <h2 id="fieldTitle">对照：稀流 · 稠喷倾向 · 「山在生气」</h2>
+ <p>三列用同一座山。先只改熔岩稀还是稠，气体多少另记一行。一次改两样，分不清是黏度还是气让它猛了。</p>
+ <p>稀：气泡更容易逃走，更常沿着地面流，可是流过的房子和路仍会被埋掉。稠：气泡更难逃，更常猛烈喷发。「山在生气」整列划掉：山没有脾气，喷不喷看的是黏度和气体。</p>
+ <p>火山灰是另一列危害：伤肺、伤机器，和稀稠分开记。本页喷力数字只比较方向，不要背成自然常数，更不要拿去跟预警比谁更准。</p>
+ <div class="kid-figure-grid" role="group" aria-label="三列对照">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">稀</span><span class="kid-figure-sub">流场</span><p class="kid-figure-fact">稀熔岩里气比较容易逃走，更常沿着地面流，可是仍能埋掉房子，流不等于安全。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">稠</span><span class="kid-figure-sub">憋压</span><p class="kid-figure-fact">稠熔岩把气憋住，更常猛烈喷发；这是黏度在挡气泡，不要写成火山生气了。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">灰</span><span class="kid-figure-sub">伤肺</span><p class="kid-figure-fact">灰是尖利碎屑，要遮口鼻、听疏散，和稀还是稠分开记，不要当成软烟去闻。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">气体</span><span class="kid-figure-sub">同列旋钮</span><p class="kid-figure-fact">不管稀还是稠，都要再问一句气是多还是少；两只旋钮叠在一起会分不清。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="moreTitle">
+ <h2 id="moreTitle">回家只记「稀流稠喷」，不把本页当预警</h2>
+ <p>在纸上画两座山：一座扁，箭头顺着坡往下流，写「稀，气跑得掉」；一座尖，头顶一蓬灰，写「稠，气被憋住」。旁边再写一句：听到疏散，跟着工作人员走。</p>
+ <p>汽水猛摇再开盖，只借「气逃不逃」这一句。不要把瓶盖喷出来的高度，拿去猜真火山哪一天会喷。复查完成句：有没有拟人「生气」，有没有把喷力数字抄成预报。</p>
+ <p>真火山口、落石、有毒气体一律远离。本页是示意模型，不是逃难手册，也不能代替当地预警。</p>
+ <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">两句</span><span class="kid-figure-sub">稀稠</span><p class="kid-figure-fact">稀的会顺着山坡流，稠的爱把气憋住再喷，两句分开记，不要合成「山生气」。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">汽水</span><span class="kid-figure-sub">迁移</span><p class="kid-figure-fact">猛摇汽水再开盖，只借「气逃不逃」这一句，瓶盖喷多高不能拿来预报火山。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">疏散</span><span class="kid-figure-sub">口令</span><p class="kid-figure-fact">真遇到疏散，跟着当地工作人员走，不要自己往活动区跑，本页不是逃难手册。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/volcano.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">不说生气</span><span class="kid-figure-sub">复查</span><p class="kid-figure-fact">火山不是在生气，是熔岩稀稠和气体在决定流还是喷；务必把「生气」划掉。</p></div>
+ </div>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+ <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+ <p>想知道「流还是喷靠不靠熔岩有多稠」，就只改稀稠这一项。同一座山、同一通道，先看稀熔岩气泡逃不逃得掉，再看稠熔岩气憋不憋得住。气体多少是另一次对照，不要和「变稠」叠在同一档里讲。</p>
+ <ul>
+ <li><b>只改这一项：</b>熔岩稀还是稠（气泡逃不逃得掉）。</li>
+ <li><b>先保持不变：</b>同一座山、同一条通道、先不改气多气少。</li>
+ <li><b>要观察的：</b>熔岩是顺着坡流，还是连灰带石块猛喷。</li>
+ <li><b>另开一行：</b>同样很稠，气很少和气很多，结局差在哪。</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+ <h2 id="askMoreTitle">还可以问下去</h2>
+ <ol>
+ <li>摇过的汽水一开盖会猛喷。这和稠岩浆把气憋住，像在哪？瓶盖喷多高，能拿来预报真火山吗？</li>
+ <li>夏威夷的山又矮又扁，有的岛弧火山又高又尖。山形是履历还是脾气？看形状能推出「下一次哪天喷」吗？</li>
+ <li>稀熔岩流过村庄，为什么不能写成「温和所以安全」？流和喷，伤人的方式差在哪？</li>
+ </ol>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+ <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+ <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+ <div class="age-tiers" aria-label="给家长的分层讲法">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>地底下的石头烫化了，稀的慢慢流，稠的容易把气憋住再喷。山不会生气。能指着图鉴说「这张在流、那张在喷」就够了，不必说黏度。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>岩浆还在地下，熔岩已经喷出地表。黏度高，气泡难逃，压力积起来才猛喷。灰是尖的碎屑。本页喷力数字只用来比较气和通道，不是预报，真火山口要远离。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>硅含量和晶体提高黏度；挥发分减压出溶驱动上升。喷力≈气压×通道÷16 是示意尺子，不是火山爆发指数。山形记录的是历史上更常流还是更常喷，不要写成「这座山明天一定喷」。</p></div>
+ </div>
+ </section>
+
+ <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+ <h2 class="work-card-title" id="workTitle">作品表单：火山观察</h2>
+ <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+ <div class="work-card-fields">
+ <div><label for="workType">作品类型</label>
+ <select class="input" id="workType" name="type">
+ <option value="observation">观察记录</option>
+ <option value="prediction">预测卡</option>
+ <option value="explanation">我的解释</option>
+ </select>
+ </div>
+ <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：盾状火山像平底锅"></div>
+ <div><label for="workContent">看见了什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="哪一座更尖、哪一座更扁，熔岩和灰谁走得远。"></textarea></div>
+ <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+ </div>
+ <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+ </form>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+ <h2 id="askTitle">给家长的问题</h2>
+ <ul class="ask">
+ <li>孩子说「火山生气了」——你用稀稠还是气体替换这个情绪词？让他再指一次慢慢流和猛地喷。</li>
+ <li>同样很稠，气很少和气很多，结局差在哪？一次只改气，还是连稠度一起改？</li>
+ <li>稀熔岩流过村庄，为什么不能写成「温和所以安全」？流和喷伤人的方式差在哪？</li>
+ <li>灰和烟，你让他用哪一种手感区分？壁炉软灰能不能拿来比？</li>
+ <li>本页喷力数字和官方疏散，谁能决定走不走？本页能当逃难手册吗？</li>
+ <li>地底下叫岩浆，喷出地表叫熔岩。他能不用「火」字，把这两个词分开吗？</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+ <h2 id="whyTitle">背后的原理</h2>
+ <p>舞台上先让孩子用眼睛分「流」和「喷」。家长可以补：还在地下的叫岩浆，喷出地表的叫熔岩。硅含量和晶体会提高黏度；黏度高，气泡难合并、难逃走，压力更容易积聚，喷发更偏猛烈。低黏度更易以熔岩流把气放掉，但流过之处仍能烧毁、掩埋。</p>
+ <p>挥发分（水、二氧化碳等）减压出溶，是把岩浆往上推的重要驱动，像开汽水盖。通道变窄或被堵，泄压路径改变，打开时更猛。这是流体和几何，不是山的情绪。</p>
+ <p>火山灰是破碎的玻璃质与矿物碎屑，棱角锋利，能伤肺、损伤航空引擎。喷力≈气压×通道÷16、喷力≥10 更易喷，只是本页比较尺子，用来看见「气够、通道通才更易喷」，不是火山爆发指数，也不是哪一天会喷的预报。</p>
+ <p>本页是教学对照，不是监测产品，更不是逃难手册。真火山口、落石、有毒气体一律远离，活动区听从官方疏散，不自行探险。</p>
+ </section>
+
+ <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))" data-audience="parent">
+ <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">火山公式卡 · 喷力≈气压×通道÷16；喷力≥10 更易喷（本页尺子）</p>
+ <p style="margin:0;color:var(--ink-mid);line-height:1.55">用来比较「气够、通道通才更易喷」，不是哪一天会喷的预报，也不是逃难手册。稀熔岩让气泡逃走所以更常流，稠熔岩把气憋住所以更常猛喷；山不会生气。地下叫岩浆，出地表叫熔岩。真火山口、落石和有毒气体一律远离，听官方疏散。</p>
+ </div>
+
+
+<section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+ <h2 id="nextTitle">接下来可以去</h2>
+ <p>带走句：稀的会流，稠的易憋气再猛喷；山不会生气。本页不是逃难手册，真火山口要远离。岩石页看冷却后的石头；冰川页看另一种会动的固体。</p>
+ <p class="row"><a class="btn btn-ghost" href="rocks.html">岩石与矿物</a><a class="btn btn-ghost" href="glaciers.html">冰川观察站</a></p>
+ </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页是示意模型。因为气体和落石会伤人，所以看示意，不自行靠近活动区。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+ "use strict";
+ var INFO = {
+ shield: { name:"盾状火山", mood:"gentle", say:"盾状火山：稀熔岩到了地表像平底锅慢慢流，请远观，不要踩还烫的新熔岩。" },
+ strato: { name:"层状火山", mood:"wild", say:"层状火山：一层灰一层岩叠起来，气一憋就猛喷，不是这座山在发脾气。" },
+ cinder: { name:"渣锥", mood:"wild", say:"渣锥：小而陡，喷出来的是渣块，熔岩到了地表才叫熔岩，请离远一点看。" },
+ caldera: { name:"破火山口", mood:"wild", say:"破火山口：喷空以后山顶塌成一口大锅，这是塌陷，不是山生完气坐下。" },
+ lava: { name:"熔岩流", mood:"gentle", say:"熔岩流：稀的熔岩像糖浆慢慢爬，仍是到了地表的岩浆，千万不要去踩。" },
+ ash: { name:"火山灰", mood:"wild", say:"火山灰：细粉末冲上天走得又高又远，会伤到肺，不要当软灰去扬开来。" },
+ geyser: { name:"间歇泉", mood:"gentle", say:"间歇泉：喷的是热水和蒸汽，不是岩浆，也不是山在吐火，请远观就够了。" },
+ spring: { name:"温泉", mood:"gentle", say:"温泉：地下水被底下的热烤暖，慢慢冒上来，不是岩浆，手不要伸进去试。" },
+ dome: { name:"熔岩穹丘", mood:"gentle", say:"熔岩穹丘：太稠走不动，堆成一个馒头，仍是到了地表的岩浆，别伸脚去踩。" },
+ fissure: { name:"裂隙喷发", mood:"gentle", say:"裂隙喷发：地上裂开一条缝，熔岩慢慢流，请远观，不要踩新铺的那一层。" },
+ bomb: { name:"火山弹", mood:"wild", say:"火山弹：喷出的大石块还没凉，会在空中变形，落地仍烫，不要伸手去捡它。" },
+ pillow: { name:"枕状熔岩", mood:"gentle", say:"枕状熔岩：海底挤出来，被水一浇就鼓成枕头，仍叫到了地表的那层熔岩。" }
+ };
+ var first = "", second = "", mood = "", done = false;
+ Array.prototype.forEach.call(document.querySelectorAll("[data-vo]"), function(btn){
+ btn.addEventListener("click", function(){
+ var key = btn.getAttribute("data-vo");
+ if (first && first !== key) second = first;
+ first = key;
+ Array.prototype.forEach.call(document.querySelectorAll("[data-vo]"), function(n){
+ var id = n.getAttribute("data-vo");
+ n.setAttribute("aria-pressed", (id === first || id === second) ? "true" : "false");
+ });
+ document.getElementById("live").textContent = INFO[key].say;
+ document.getElementById("atlasSay").textContent = second
+ ? INFO[second].name+"是"+ (INFO[second].mood==="gentle"?"慢慢流":"猛地喷") +"，"+INFO[key].name+"是"+(INFO[key].mood==="gentle"?"慢慢流":"猛地喷")+"。"
+ : INFO[key].say+"再点另一张来比较。";
+ sync();
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mood]"), function(btn){
+ btn.addEventListener("click", function(){
+ mood = btn.getAttribute("data-mood");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mood]"), function(n){
+ n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+ });
+ sync();
+ });
+ });
+ function sync(){
+ var ready = first && second && first !== second && mood;
+ document.getElementById("finishBtn").disabled = !ready || done;
+ if (done) return;
+ document.getElementById("taskStatus").textContent = ready
+ ? "选好了。点「记下这次比较」就会记进足迹。"
+ : "尚未完成：先点两张图鉴，再选出更温和的那种。";
+ }
+ document.getElementById("finishBtn").addEventListener("click", function(){
+ if (!first || !second || !mood || done) return;
+ done = true;
+ var evidence = INFO[second].name+"和"+INFO[first].name+"，判断："+(mood==="gentle"?"更温和、慢慢流":"更猛、会喷灰");
+ if (window.Progress) Progress.complete("nature/volcano.html", evidence);
+ document.getElementById("taskStatus").textContent = "完成啦："+evidence+"。";
+ this.disabled = true;
+ });
+ var stageIdx = -1;
+ document.getElementById("stageNextVo").addEventListener("click", function(){
+ var list = document.querySelectorAll("[data-vo]");
+ if (!list.length) return;
+ stageIdx = (stageIdx + 1) % list.length;
+ list[stageIdx].click();
+ });
+})();
+</script>
+<script>
+
+(function(){
+ "use strict";
+ var a = document.getElementById("voA");
+ var b = document.getElementById("voB");
+ if (!a || !b) return;
+ var g1 = "", g2 = "", g3 = "";
+ var g1Done = false, g2Done = false, g3Done = false;
+ function score(){ return Math.round(Number(a.value) * Number(b.value) / 16); }
+ function paint(){
+ var s = score();
+ var ok = s >= 10;
+ document.getElementById("voALab").textContent = a.value;
+ document.getElementById("voBLab").textContent = b.value;
+ a.setAttribute("aria-valuetext", a.value);
+ b.setAttribute("aria-valuetext", b.value);
+ document.getElementById("voAOut").textContent = a.value;
+ document.getElementById("voSOut").textContent = String(s);
+ document.getElementById("voOkOut").textContent = ok ? "喷出" : "偏闷";
+ document.getElementById("voStateLab").textContent = ok ? "气压推岩浆" : "气闷着，喷不出";
+ document.getElementById("voLabLive").textContent = ok
+ ? "气体把岩浆顶上来。冷却以后变成岩石。山不会生气。"
+ : "气压弱或通道堵，气闷在里面。";
+ var mad = document.getElementById("voMad");
+ if (mad) mad.setAttribute("opacity", ok ? "0.12" : "0.4");
+ 
+ document.getElementById("voPlume").setAttribute("opacity", String(0.3 + Number(a.value) / 50));
+ var bh = 30 + s * 2.5;
+ document.getElementById("voBar").setAttribute("height", String(bh));
+ document.getElementById("voBar").setAttribute("y", String(180 - bh));
+
+ if (g1 && !g1Done && Number(a.value) === 32 && Number(b.value) === 10 && s === 20) {
+ g1Done = true;
+ document.getElementById("voGuessOut1").innerHTML = (g1 === "20" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "气体把岩浆顶上来。冷却变岩石。不是山在生气。";
+ document.getElementById("voGuessBlock2").hidden = false;
+ }
+ if (g2 && !g2Done && Number(a.value) <= 5 && Number(b.value) <= 3 && !ok) {
+ g2Done = true;
+ document.getElementById("voGuessOut2").innerHTML = (g2 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "气压弱、通道堵，气闷在里面。";
+ document.getElementById("voGuessBlock3").hidden = false;
+ }
+ if (g3 && !g3Done && Number(a.value) === 4 && Number(b.value) === 2) {
+ g3Done = true;
+ document.getElementById("voGuessOut3").innerHTML = (g3 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "气压最低、通道最堵，喷不出来。";
+ }
+}
+ a.addEventListener("input", paint); b.addEventListener("input", paint);
+ Array.prototype.forEach.call(document.querySelectorAll("[data-vo-g1]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g1Done) return;
+ g1 = btn.getAttribute("data-vo-g1");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-vo-g1]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("voGuessOut1").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-vo-g2]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g2Done) return;
+ g2 = btn.getAttribute("data-vo-g2");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-vo-g2]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("voGuessOut2").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-vo-g3]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g3Done) return;
+ g3 = btn.getAttribute("data-vo-g3");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-vo-g3]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("voGuessOut3").textContent = "押好了";
+ });
+ });
+ paint();
+})();
+
+</script>
+<script>if (window.Progress) Progress.visit("nature/volcano.html", "火山观察站");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

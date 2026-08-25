@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>条形统计台 · 柱子更高，就是票更多吗？</title>
+<meta name="description" content="四种水果一票一票投，柱子跟着长高。柱高表示票数，颜色只是装饰。本页一格一票、从零起，用来比多少，不是把底抬高的唬人图。投票是课堂游戏，不记名，不嘲笑。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  .hero { padding: 28px 0 10px; }
+  .hero h1 { margin: .15em 0 .3em; }
+  .lead { max-width: 58ch; color: var(--ink-mid); }
+  .kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--math) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--math) 12%,var(--surface)),var(--surface) 62%);
+  }
+  .mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--math) 36%,var(--line));
+    background: color-mix(in srgb,var(--math) 12%,var(--surface)); font-size: 2.2rem;
+  }
+  .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .gh-art { display: block; width: 100%; max-width: 520px; height: auto; margin: 0 auto; }
+  .gh-paper { fill: #fdfcf6; }
+  .gh-grid { stroke: #e2ebf4; stroke-width: 1; }
+  .gh-axis { fill: none; stroke: #55606e; stroke-width: 2.5; }
+  .gh-tick { fill: #5a6472; font: 600 10px var(--mono); text-anchor: end; }
+  .gh-name { fill: var(--ink); font: 700 13px var(--mono); text-anchor: middle; }
+  .gh-cnt { fill: var(--ink); font: 800 15px var(--mono); text-anchor: middle; }
+  .gh-bar { stroke: color-mix(in srgb,var(--ink) 30%,transparent); stroke-width: 1.2; }
+  .gh-a { fill: #6ea0e8; } .gh-b { fill: #5cc07a; } .gh-c { fill: #f5c93e; } .gh-d { fill: #e8788a; }
+  /* 柱子带回弹地长高，数字标签跟着柱顶走 */
+  .gh-barg { transform: scaleY(0); transform-box: view-box; transform-origin: 0 198px; transition: transform .5s cubic-bezier(.34,1.56,.64,1); }
+  .gh-cntg { transition: transform .5s cubic-bezier(.34,1.56,.64,1); transform-box: view-box; }
+  #crown { opacity: 0; transform: translateY(-8px); transform-box: view-box; transition: opacity .4s var(--ease), transform .45s cubic-bezier(.34,1.56,.64,1); }
+  #crown.show { opacity: 1; transform: translateY(0); }
+  html[data-playful-motion="reduced"] .gh-art * { transition: none !important; }
+  .kid-action-strip { display: grid; gap: 8px; margin: 12px 0; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); }
+  .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+  .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+  .ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--math) 12%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--math) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+  button, .btn { min-height: 44px; }
+  .stage + .kid-action-strip { margin-top: 8px; }
+  .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+  @media (max-width: 640px) {
+    .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .92rem; line-height: 1.5; margin-bottom: .4em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] html[data-mode="kid"] .gh-art { max-height: 140px; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .88rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 8px 0; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+    html[data-mode="kid"] .gh-art { max-height: 140px; }
+  }
+
+
+  .guess-card { border-color: color-mix(in srgb,var(--math) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--math); background: color-mix(in srgb,var(--math) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pick-btns .btn { white-space: nowrap; }
+
+  .mission-face { overflow: hidden; }
+  .mission-face img.photo-real { width: 78px; height: 78px; object-fit: cover; border-radius: 50%; display: block; }
+  .mission-character { overflow: hidden; }
+  .mission-character img.photo-real { width: 76px; height: 76px; object-fit: cover; border-radius: 50%; display: block; }
+  .story-guide img.photo-real { width: 72px; height: 72px; object-fit: cover; border-radius: 50%; display: block; }
+  .kid-figure-art img.photo-real { width: 100%; max-width: 240px; height: auto; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; display: block; }
+
+</style>
+</head>
+<body data-playful-page="games/graph-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+<main id="main" class="wrap">
+  <header class="hero kid-hero-scene">
+    <div>
+      <p class="row"><span class="pill pill-math">数学</span><span class="pill">6–10&nbsp;岁</span><span class="pill">约 8&nbsp;分钟</span></p>
+      <h1>柱子更高，就是票更多吗？</h1>
+      <p class="lead">四种水果一票一票投，柱子跟着往上长。柱顶数字和高度要一起变；颜色只是涂上去的，不决定谁赢。本页一格一票、从零起，用来比多少，不是广告里那种把底抬高的唬人图。投票是课堂游戏，不记名，也不嘲笑谁选了什么。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">四种水果，投出一张图</h2>
+    <svg class="gh-art" viewBox="0 0 420 240" role="img" aria-labelledby="ghTitle ghDesc">
+      <title id="ghTitle">水果投票条形图</title>
+      <desc id="ghDesc">一张网格纸上画着条形图：四根彩色柱子分别代表苹果、香蕉、橙子和草莓的票数，柱顶写着数字，柱脚画着对应的水果。</desc>
+      <rect class="gh-paper" width="420" height="240"/>
+      <!-- 网格纸 -->
+      <g class="gh-grid">
+        <path d="M48 182 H400 M48 166 H400 M48 150 H400 M48 134 H400 M48 118 H400 M48 102 H400 M48 86 H400 M48 70 H400 M48 54 H400 M48 38 H400"/>
+        <path d="M88 22 V198 M128 22 V198 M168 22 V198 M208 22 V198 M248 22 V198 M288 22 V198 M328 22 V198 M368 22 V198"/>
+      </g>
+      <!-- 纵轴刻度：一格一票 -->
+      <text class="gh-tick" x="42" y="202">0</text>
+      <text class="gh-tick" x="42" y="170">2</text>
+      <text class="gh-tick" x="42" y="138">4</text>
+      <text class="gh-tick" x="42" y="106">6</text>
+      <text class="gh-tick" x="42" y="74">8</text>
+      <text class="gh-tick" x="42" y="42">10</text>
+      <path class="gh-axis" d="M48 20 V198 H400"/>
+      <path d="M48 20 l-4 7 h8 Z M400 198 l-7 -4 v8 Z" fill="#55606e"/>
+      <!-- 四根柱子（画满高，用 scaleY 长高） -->
+      <g class="gh-barg"><rect class="gh-bar gh-a" x="70" y="28" width="48" height="170" rx="5"/></g>
+      <g class="gh-barg"><rect class="gh-bar gh-b" x="150" y="28" width="48" height="170" rx="5"/></g>
+      <g class="gh-barg"><rect class="gh-bar gh-c" x="230" y="28" width="48" height="170" rx="5"/></g>
+      <g class="gh-barg"><rect class="gh-bar gh-d" x="310" y="28" width="48" height="170" rx="5"/></g>
+      <!-- 柱顶数字 -->
+      <g class="gh-cntg"><text class="gh-cnt" id="cnt0" x="94" y="192">0</text></g>
+      <g class="gh-cntg"><text class="gh-cnt" id="cnt1" x="174" y="192">0</text></g>
+      <g class="gh-cntg"><text class="gh-cnt" id="cnt2" x="254" y="192">0</text></g>
+      <g class="gh-cntg"><text class="gh-cnt" id="cnt3" x="334" y="192">0</text></g>
+      <!-- 冠军皇冠（判对以后才出现） -->
+      <g id="crownPos" transform="translate(94,20)">
+        <g id="crown">
+          <path d="M-11 4 L-13 -8 L-5 -2 L0 -11 L5 -2 L13 -8 L11 4 Z" fill="#f5c93e" stroke="#c9941a" stroke-width="1.6" stroke-linejoin="round"/>
+        </g>
+      </g>
+      <!-- 柱脚的水果图标与名字 -->
+      <g aria-hidden="true">
+        <circle cx="78" cy="212" r="7" fill="#e05050"/><path d="M78 205 q1 -4 4 -5" fill="none" stroke="#5a4632" stroke-width="1.6"/><path d="M81 204 q5 -2 6 3 q-5 2 -6 -3 Z" fill="#4f9e58"/>
+        <path d="M150 208 q8 11 17 7" fill="none" stroke="#e8b91f" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="238" cy="212" r="7" fill="#ef8a30"/><path d="M238 205 l2 -4" stroke="#4f9e58" stroke-width="2"/><circle cx="236" cy="210" r="1" fill="#c96a14"/><circle cx="241" cy="213" r="1" fill="#c96a14"/>
+        <path d="M318 206 q-7 1 -6 8 q1 6 6 8 q5 -2 6 -8 q1 -7 -6 -8 Z" fill="#d84a72"/><path d="M314 205 h8 l-4 4 Z" fill="#4f9e58"/><circle cx="316" cy="213" r=".9" fill="#f7d9e0"/><circle cx="320" cy="215" r=".9" fill="#f7d9e0"/>
+      </g>
+      <text class="gh-name" x="102" y="217">苹果</text>
+      <text class="gh-name" x="182" y="217">香蕉</text>
+      <text class="gh-name" x="262" y="217">橙子</text>
+      <text class="gh-name" x="342" y="217">草莓</text>
+    </svg>
+    <p class="live-text" id="live" role="status" aria-live="polite">还没有票。点下面的水果，柱子会往上长。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="给水果投票">
+    <button class="btn btn-primary" type="button" data-i="0"><span aria-hidden="true">🍎</span> 苹果 +1</button>
+    <button class="btn btn-primary" type="button" data-i="1"><span aria-hidden="true">🍌</span> 香蕉 +1</button>
+    <button class="btn btn-primary" type="button" data-i="2"><span aria-hidden="true">🍊</span> 橙子 +1</button>
+    <button class="btn btn-primary" type="button" data-i="3"><span aria-hidden="true">🍓</span> 草莓 +1</button>
+    <button class="btn" type="button" id="resetVotes">全部清零</button>
+  </div>
+
+  <section class="card guess-card" aria-labelledby="guessTitleGh">
+    <h2 id="guessTitleGh">先猜一猜，再投</h2>
+    <p><b>第 1 题：</b>苹果投到 6 票、香蕉投到 8 票。谁的柱子更高？</p>
+    <div class="pick-btns" role="group" aria-label="猜谁更高">
+      <button class="btn guess-pick" type="button" data-guess1="apple" aria-pressed="false">苹果更高</button>
+      <button class="btn guess-pick" type="button" data-guess1="banana" aria-pressed="false">香蕉更高</button>
+      <button class="btn guess-pick" type="button" data-guess1="same" aria-pressed="false">一样高，因为都是水果</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。把苹果投到 6、香蕉投到 8，看柱顶数字。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>两根柱顶数字一样时，高度会？</p>
+      <div class="pick-btns" role="group" aria-label="猜一样高">
+        <button class="btn guess-pick" type="button" data-guess2="same" aria-pressed="false">一样高：一格一票</button>
+        <button class="btn guess-pick" type="button" data-guess2="color" aria-pressed="false">颜色不同就会一高一矮</button>
+        <button class="btn guess-pick" type="button" data-guess2="name" aria-pressed="false">名字长的柱子更高</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后让两根票数相同，对照高度。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>苹果 6 票、香蕉 8 票。差几票？</p>
+      <div class="pick-btns" role="group" aria-label="猜票差">
+        <button class="btn guess-pick" type="button" data-guess3="2" aria-pressed="false">2 票（8−6）</button>
+        <button class="btn guess-pick" type="button" data-guess3="14" aria-pressed="false">14 票（6+8）</button>
+        <button class="btn guess-pick" type="button" data-guess3="1" aria-pressed="false">1 票，因为只差一点</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后对照两柱顶数字相减。</p>
+    </div>
+  </section>
+
+          
+  <section class="card" aria-labelledby="corrTitle-graph_lab">
+    <h2 id="corrTitle-graph_lab">常见误解 · 先划掉</h2>
+    <p>先认清「不是什么」，再记「是什么」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="纠错对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="120" height="90" focusable="false" aria-hidden="true"><rect fill="#fde8e8" width="120" height="90"/><path d="M30 30 L90 70 M90 30 L30 70" stroke="#c2410c" stroke-width="6" stroke-linecap="round"/><text x="60" y="84" text-anchor="middle" font-size="10" fill="#c2410c">划掉</text></svg></span><span class="kid-figure-cap">颜色更深票更多</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">柱高才表示票数，颜色只是装饰。</p></div>
+    </div>
+  </section>
+
+<section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">柱子有多高，就是那种水果有多少票；颜色只是涂上去的</h2>
+    <p>先给四种水果各投几票，看柱子往上长。投满 8&nbsp;票以后，指着最高的那一根说出水果名字，再核对柱顶数字是不是跟高度一起变。两根一样高，就是并列，不必硬选出一个冠军。</p>
+    <p>图是在替我们数：同样的一格代表同样多的一票，从零开始往上长。颜色、名字长短、谁更好看，都不改高度。广告里如果把纵轴底抬高，同样差 2&nbsp;票也能画得「差很多」——那是图在唬人，不是票自己变了。</p>
+    <p>舞台上的格子是本页比较尺子：一格一票，用来对照高低，不是正式选举，更不是测谁更聪明。投票是课堂游戏，不记名到人，也不嘲笑谁选了什么。</p>
+  </section>
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">条形图图鉴</h2>
+    <p>点一张，对照上面的柱子：先看谁高，再回头对票数。</p>
+    <div class="kid-figure-grid" role="group" aria-label="条形图图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-gh-atlas="tallest" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">最高柱</span><span class="kid-figure-fact">最高的那根柱，位置表示票最多，不是把数字画成更好看的形状，先对柱顶数字。</span></button>
+      <button class="kid-figure" type="button" data-gh-atlas="same" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">一样高</span><span class="kid-figure-fact">两根一样高，位置表示一样多，不必因为颜色好看硬选出一个冠军，位置对上才算。</span></button>
+      <button class="kid-figure" type="button" data-gh-atlas="empty" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">空柱</span><span class="kid-figure-fact">还没票，柱子贴着底；这个位置表示零，不是漏画了一截好看的柱，零也是一对量。</span></button>
+      <button class="kid-figure" type="button" data-gh-atlas="unit" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">一格一票</span><span class="kid-figure-fact">长高一格，就是多了一票；柱的位置表示数量，不是画成好看的形状，一对量对上一格。</span></button>
+      <button class="kid-figure" type="button" data-gh-atlas="height" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">先看高度</span><span class="kid-figure-fact">先看谁高，再回头对柱顶数字；对不上就再数，不要只盯颜色好不好看。</span></button>
+      <button class="kid-figure" type="button" data-gh-atlas="tie" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">平手</span><span class="kid-figure-fact">最高的有好几根，位置一样高就一起第一，不必只留一个更好看的名字。</span></button>
+      <button class="kid-figure" type="button" data-gh-atlas="reset" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">清零再投</span><span class="kid-figure-fact">全部清零，四根都贴回底，图又变回平的；位置回到零，不是擦掉好看的画。</span></button>
+      <button class="kid-figure" type="button" data-gh-atlas="chart" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">图比数字</span><span class="kid-figure-fact">四根柱的位置一起比，比四个数字清楚，不是把票数画成好看的形状。</span></button><button class="kid-figure" type="button" data-gh-atlas="zero" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">零票</span><span class="kid-figure-fact">一根贴着底，这个位置就是还没票，不是那根忘了涂颜色，零票也要占一个位置。</span></button><button class="kid-figure" type="button" data-gh-atlas="pair" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">两根比</span><span class="kid-figure-fact">先看谁高：柱的位置更高，那种票更多，不是名字更长或颜色更好看，位置表示那一对量。</span></button><button class="kid-figure" type="button" data-gh-atlas="gap" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">差多少</span><span class="kid-figure-fact">两根顶上的空档，就是差了几票；空档也是位置，不是装饰用的缺口，空档也对应差多少。</span></button><button class="kid-figure" type="button" data-gh-atlas="order" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">从高到矮</span><span class="kid-figure-fact">从高到矮排好，一眼看出第一名；比的是位置对应的票，不是谁更好看。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照柱子的高低。</p>
+  </section>
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--math)"
+         data-kid-predict
+         data-kid-predict-explain="横轴右移时，若折线整体向上，多半是同向变化；若上下乱跳，先别急着讲故事。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">📊</span><b>同样是「苹果 6 票、香蕉 8 票」，两张图画出来的柱子差距可能一张很小、一张巨大。这可能吗？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：同样的数据不同的图">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="no">不可能，数据一样图就一样</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="yes" data-kid-predict-correct>可能，纵轴起点不同就行</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="color">只有换颜色才能做到</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：投满 8&nbsp;票，再说谁最多</h2>
+    <p>至少投 8&nbsp;票，让图上出现高低。然后点出目前最高的那一种。</p>
+    <div class="kid-tiles" id="winnerPicks" role="group" aria-label="谁最多"></div>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先投满 8&nbsp;票。</p>
+  </section>
+
+  <section class="card" aria-labelledby="lifeTitle">
+    <h2 id="lifeTitle">统计就在家里</h2>
+    <p>不用等数学课，家里到处是能数、能画、能比的东西。</p>
+    <div class="kid-figure-grid" role="group" aria-label="四个家里的统计现场">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">袜子普查</span><span class="kid-figure-sub">按颜色分堆</span><p class="kid-figure-fact">把全家的袜子按颜色排成一列列，谁最多一眼就看出来——排整齐的实物，本身就是一张条形图。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">窗口数车</span><span class="kid-figure-sub">五分钟一次调查</span><p class="kid-figure-fact">数五分钟窗外经过的车：红的、白的、黑的各画「正」字。明天同一时间再数一次，两天一样吗？</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">天气日历</span><span class="kid-figure-sub">一个月的记录</span><p class="kid-figure-fact">每天在日历上贴一个太阳、云朵或雨滴贴纸。月底数一数，这个月到底是晴天多还是雨天多——记忆常常会骗人，记录不会。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">身高刻度</span><span class="kid-figure-sub">门框上的折线</span><p class="kid-figure-fact">每个生日在门框上画一道身高线。这些线连起来就是一张「折线图」——条形图比多少，折线图看变化。</p></div>
+    </div>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>把东西排整齐再比高矮，谁多谁少一眼就看见。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>条形图是「排整齐」的正式版：每格代表一样多，柱子越高数量越多。画图前先分类、再计数，图只是把数出来的结果摆得好看清楚。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>图是有立场的：纵轴不从 0 开始、每格代表的数量不同、甚至柱子的顺序，都会改变「看上去」的结论而不改变数据。会画图之后，更要会挑图的毛病——先问纵轴，再问单位，最后才看高矮。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>数据要先分类、计数，才轮到比较；而同一份数据可以被画得「显得」不同。既会做图、也会质疑图，两种能力一起长。</p>
+    <ul class="ask-list">
+      <li>袜子按颜色分完，还能按什么分？分法变了，「第一名」会变吗？</li>
+      <li>如果广告里的柱子看起来差很多，你会先检查什么？</li>
+      <li>想知道「全班最喜欢的水果」，问 3&nbsp;个人够吗？问几个才踏实？</li>
+    </ul>
+  </section>
+
+
+          <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">投满 8&nbsp;票，指着最高的柱说谁最多</h2>
+    <p>舞台上先只改一件事：每种水果有几票。同一张图、同一把尺子，一票一票投，看柱子长高。投满 8&nbsp;票以后，指着最高的那一根说出名字，再核对柱顶数字。这样比，才知道赢的是高度，不是颜色。</p>
+    <p>回家只带两句：「最高的柱，票最多」；「两根一样高，就一起第一」。不要写成「颜色好看的赢」，也不要把这一页当成正式选举。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">柱高</span><span class="kid-figure-sub">就是票</span><p class="kid-figure-fact">柱子越高，那种水果的票就越多；柱的位置表示数量，再回头对柱顶数字。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">柱顶</span><span class="kid-figure-sub">数字</span><p class="kid-figure-fact">柱顶上的数字要和高度一起变；对不上就再数一遍，不要只盯谁更好看。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">四种</span><span class="kid-figure-sub">对照</span><p class="kid-figure-fact">四种水果排成四根柱，比的是位置谁更高、票谁多，不是谁更好看、名字更长。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">平票</span><span class="kid-figure-sub">并列</span><p class="kid-figure-fact">两根一样高就是并列第一，位置一样就一样多，不必硬选出一个冠军来交差。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">颜色</span><span class="kid-figure-sub">装饰</span><p class="kid-figure-fact">柱子涂什么颜色只是装饰，红柱矮了仍是少数；不是把数字画成好看的形状。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">嘲笑</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">不要笑别人选了哪一种。投票只看柱的位置有多高，不记名到人，位置不是装饰。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>投满 8&nbsp;票。</b>看四根柱谁高谁矮。</li>
+      <li data-step="2"><b>指最高。</b>说出那种水果的名字。</li>
+      <li data-step="3"><b>对数字。</b>柱顶和高度是不是一起变。</li>
+      <li data-step="4"><b>写完成句。</b>最高柱票最多。划掉「好看的赢」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>哪一根柱子最高，那种水果票最多。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>本页一格一票，从零往上长。柱顶数字要跟高度对得上。两根一样高就并列，颜色不改结论。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>条形图把计数映射到长度。纵轴不从零起、每格代表的数量不同，都会改变「看上去」而不改数据。折线看变化，饼图看份，本页主视觉是柱。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能指着最高柱说出最多者，核对柱顶数字，并否定「颜色好看的赢」。完成看的是对照，不是背「统计」两个字。</p>
+    <ul class="ask-list">
+      <li>投满以后，最高的柱是哪一种？柱顶数字对得上吗？</li>
+      <li>两根一样高，一定要硬选出一个冠军吗？</li>
+      <li>如果有人只看「谁更红」就说「谁更多」，你用哪一根柱反驳他？</li>
+      <li>能因为别人选了草莓就笑话他吗？</li>
+    </ul>
+  </section>
+
+
+          <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">图是关系不是装饰；纵轴从零起，才不会唬人</h2>
+    <p>图要回答的是「谁跟谁有什么关系」。本页的关系很单纯：柱高跟着票数走。颜色、阴影、皇冠，都是装饰，不承载票数。把装饰当成结论，图就变成海报，不再是尺子。</p>
+    <p>如果连续几天投，折线更适合看谁在涨。饼图看「占多少份」。本页一次投满，用柱最清楚。三种图不要糊成一句。纵轴从 0 开始，一格一票；底一抬高，差 2&nbsp;票也能画得「差很多」。</p>
+    <p>两件事一起变，只说明相关，不自动说明谁造成谁。冰淇淋卖得多的日子溺水也多，常常是因为天气热，不是冰淇淋害的。本页水果投票更简单：柱高就是票，不要顺口编故事。</p>
+    <p>不记名到人，不嘲笑谁选了什么。本页是课堂游戏，不是正式选举，也不是智商测验。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">折线</span><span class="kid-figure-sub">看变化</span><p class="kid-figure-fact">折线上每个点表示一对量，不是把数字画成好看的形状；和今天比高低的柱图另开。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">饼图</span><span class="kid-figure-sub">看份</span><p class="kid-figure-fact">饼图问的是占了多少份，不要和「有几票」的柱高挤在同一句，两张图各管各的。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">从零起</span><span class="kid-figure-sub">不骗人</span><p class="kid-figure-fact">柱子从零开始长，长高一格就是多了一票；把底抬高会唬人，位置就假了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">嘲笑</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">这一页不记谁投了什么，只记四根柱的位置各有多少，也不拿来笑人。</p></div>
+    </div>
+  </section>
+
+
+          <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：最高柱最多 · 平票并列 · 颜色好看的赢</h2>
+    <p>三列用同一张图、同一把尺子。先只读书，不看书好看不好看。一次改票数又改「谁更好看」的说法，分不清到底是谁让结论变了。</p>
+    <p>最高柱：票最多，柱顶数字对得上。两根一样高：并列第一，不必只留一个名字。「颜色好看的赢」整列划掉：红柱矮了仍是少数，涂色是装饰。</p>
+    <p>如果有人把纵轴底抬高，同样的票差也会显得巨大。那是另一档唬人图，不要和本页「从零起、一格一票」叠在同一句里讲。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">最高柱</span><span class="kid-figure-sub">最多</span><p class="kid-figure-fact">最高的那根柱，就是票最多的那一种；位置表示数量，柱顶数字还要核对一遍。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">一样高</span><span class="kid-figure-sub">并列</span><p class="kid-figure-fact">好几根一样高，就一起第一，位置相同就票数相同，不必只留一个名字来交差。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">好看</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">「颜色好看所以赢」不对。赢的是位置更高的那根柱，不是画得更好看的那根。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">最高柱=最多票</span><p class="kid-figure-fact">回家只记：最高的柱票最多，柱顶数字还要对得上；不是把数字画成好看的形状。</p></div>
+    </div>
+  </section>
+
+
+          <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「最高柱票最多」，不记颜色传说</h2>
+    <p>在纸上画四根柱，旁边各写一个数。最高的那根圈出来；如果两根一样高，两个名字都写。两张图并排——一张从零起，一张把底抬高——比抄「统计」两个字有用。</p>
+    <p>口头只要两句：「看柱子，不看颜色。」「一样高就一起第一。」有人说红的一定赢，让孩子指着更矮的红柱反驳。</p>
+    <p>家里也可以用积木或贴纸做一张真的条形图。不要追问谁投了什么，更不要拿柱高去笑人。本页票数不要写成正式选举结果。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">四数</span><span class="kid-figure-sub">加最多</span><p class="kid-figure-fact">写下四根柱的票数，并列第一就把两个名字都写上，不要只留一个更好看的。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">看柱子</span><p class="kid-figure-fact">回家说得出：看柱子位置有多高，不看涂了什么颜色，数字还要对得上。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">折线</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">折线每个点表示一对量，用来看一天天怎么变；和今天比高低的柱图不要挤在同一行。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" width="78" height="58" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><text x="8" y="14" font-size="9" font-weight="800" fill="#1c3a66">柱高=票数</text><path d="M16 74 H108 M16 74 V14" fill="none" stroke="#5a3a20" stroke-width="2"/><rect x="24" y="48" width="20" height="26" fill="#6ea8fe" stroke="#1c3a66"/><rect x="50" y="16" width="20" height="58" fill="#3d9a58" stroke="#1c3a20"/><rect x="76" y="40" width="20" height="34" fill="#e8b84a" stroke="#6a5a20"/><polygon points="60,16 54,24 66,24" fill="#c2410c"/><text x="60" y="12" text-anchor="middle" font-size="8" font-weight="800" fill="#c2410c">最高</text><text x="34" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">甲</text><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">乙</text><text x="86" y="84" text-anchor="middle" font-size="8" fill="#5a3a20">丙</text></svg></span><span class="kid-figure-cap">嘲笑</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">不要追问谁投了什么，更不要拿柱的高低去笑人。这不是正式选举，图只表示数量。</p></div>
+    </div>
+  </section>
+
+
+      <section class="card" aria-labelledby="thickTitle">
+    <h2 id="thickTitle">读点、趋势与「相关不是因果」</h2>
+    <p>如果以后看见点图：一个点是一对数字，横轴是你改的量，纵轴是你读的量。多数点往同一个方向走，才叫趋势；上下乱跳，先别急着讲故事。</p>
+    <p>本页舞台是柱，不是散点。柱高编码票数，点编码一对读数，折线编码变化——三种关系，三张图，不要混成一句「图看起来很厉害」。</p>
+    <p>两列数字一起变，只说明相关，不自动说明谁造成谁。纵轴从哪里起、一格代表多少，都会改「看上去」，不改数据本身。</p>
+    <p>不拿数据嘲讽同伴。图是尺子，不是用来给人贴标签的。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「柱子更高是不是票更多」，就只改票数这一项。同一张图、同一把尺子、纵轴从零起，先投满再指最高。颜色、名字、皇冠都不要同时拿来当理由。</p>
+    <ul>
+      <li><b>只改这一项：</b>每种水果有几票。</li>
+      <li><b>先保持不变：</b>同一张图、一格一票、从零起、四种都在。</li>
+      <li><b>要观察的：</b>哪一根最高，柱顶数字对不对得上。</li>
+      <li><b>另开一行：</b>两根一样高时，是不是并列，而不是硬选冠军。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>广告里两根柱看起来差很多，纵轴却从 90 开始。数据还是差很多吗？你怎么跟七岁讲清楚？</li>
+      <li>连续一周记录天气，用柱还是用折线更清楚？本页的水果投票为什么更适合用柱？</li>
+      <li>冰淇淋卖得多的日子溺水也多。这两列一起变，能直接说「冰淇淋害人」吗？和本页的柱高像在哪、又不像在哪？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把「相关不是因果」提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>哪一根柱子最高，那种水果票最多。能指着最高柱说出名字就够了，不必说频数。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>一格一票，从零往上长。柱顶数字要跟高度对得上。颜色是装饰。两根一样高就并列。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>长度编码计数。纵轴起点和刻度会改「看上去」。折线看变化，饼图看份。相关不是因果。本页不是正式选举。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：统计观察</h2>
+    <p class="work-card-meta">只保存文字。家里也可以用积木或贴纸做一张真的条形图。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="explanation">我的解释</option>
+          <option value="drawing">发现画</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：香蕉那根最高"></div>
+      <div><label for="workContent">图上看到了什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下四种水果的票数，以及你怎么一眼看出谁最多。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+            <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>投满以后，孩子指的是最高的那根柱，还是在说「红的比较好看所以赢」？让他再指一次柱顶数字。</li>
+      <li>一格一票，哪一句四岁听得懂？试「长高一格，就是多了一票」。</li>
+      <li>两根一样高，他硬要选一个冠军——为什么这句不能当本页的完成句？差在「票是不是一样多」。</li>
+      <li>如果有人把纵轴底抬高，同样差 2&nbsp;票也会显得巨大。他能不能不用公式，只用「尺子被挪了」讲清楚？</li>
+      <li>饼图、折线为什么不能当本页第一完成句？差在「这张图在问什么」。</li>
+      <li>嘲笑谁选了草莓：红线怎么说？本页票数能写成正式选举结果吗？</li>
+    </ul>
+  </section>
+
+            <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：柱子的高度在编码票数（频数）；柱顶数字是同一份计数的另一种写法。本页一格一票、从零起，长度和票数成正比。颜色、名字、皇冠是装饰通道，不承载本页变量。</p>
+    <p>图要回答的是关系，不是「好不好看」。纵轴不从零起、每格代表的数量不同，都会改变「看上去」而不改变数据。差＝高柱−矮柱，总数＝各柱之和。并列是计数相等，不是缺冠军。</p>
+    <p>折线适合看变化，饼图适合看份，散点适合看一对数字怎么走。相关只说明一起变，不自动说明谁造成谁。本页水果投票更单纯：柱高就是票，不要顺口编因果故事。</p>
+    <p>课堂游戏不记名，不嘲笑选择。舞台是示意投票，不是正式选举，也不是智商测验。</p>
+  </section>
+
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--math) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--math) 8%,var(--surface))" data-audience="parent">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">条形图公式卡 · 柱高∝票数；差＝高柱−矮柱（本页尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">本页一格一票、从零起，用来对照谁多谁少，不是广告里那种把底抬高的唬人图。比多少先看柱顶，再读数字。总数＝各柱之和。颜色是装饰，不决定输赢。相关不是因果。投票是课堂游戏，不记名，不嘲笑。</p>
+    </div>
+
+<section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：最高的柱票最多；颜色只是涂上去的。概率罐子看「还没数完时，机会有多大」；估算站练不逐个点完也能说出大约多少；排序小工厂看怎么把高低排整齐。</p>
+    <p class="row"><a class="btn btn-ghost" href="chance-jar.html">概率罐子</a><a class="btn btn-ghost" href="estimation-station.html">估算站</a><a class="btn btn-ghost" href="sort-lab.html">排序小工厂</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页票数只留在内存里，刷新即清空，不写入足迹以外的任何存储。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var NAMES = ["苹果","香蕉","橙子","草莓"];
+  var votes = [0,0,0,0];
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  var seenGh = { sixEight:false, tie:false };
+  var done = false;
+  var SCALE = 16;
+  function total(){ return votes[0]+votes[1]+votes[2]+votes[3]; }
+  function maxIdx(){
+    var m = Math.max.apply(null, votes), i, hits = [];
+    for (i = 0; i < 4; i += 1) if (votes[i] === m) hits.push(i);
+    return hits;
+  }
+  var barGroups = document.querySelectorAll(".gh-barg");
+  function hideCrown(){
+    document.getElementById("crown").classList.remove("show");
+  }
+  function render(){
+    if (votes[0] >= 6 && votes[1] >= 8) seenGh.sixEight = true;
+    if (votes[0] > 0 && votes[0] === votes[1]) seenGh.tie = true;
+    if (guess1 && !guess1Done && seenGh.sixEight) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "banana" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "本页一格一票。8 > 6，香蕉柱更高。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && seenGh.tie) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "same" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "票数相同 → 柱高相同。颜色和名字不改高度。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && seenGh.sixEight) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "2" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "8 − 6 = <b>2</b> 票。柱顶空档就是差了几票。";
+    }
+    votes.forEach(function(v, i){
+      var h = v * SCALE;
+      if (h > 170) h = 170;
+      barGroups[i].style.transform = "scaleY(" + (h / 170) + ")";
+      var cnt = document.getElementById("cnt" + i);
+      cnt.parentNode.style.transform = "translateY(" + (-h) + "px)";
+      cnt.textContent = String(v);
+    });
+    var t = total();
+    document.getElementById("live").textContent = t
+      ? "一共 "+t+"\u00a0票（一格一票）。苹果 "+votes[0]+"，香蕉 "+votes[1]+"，橙子 "+votes[2]+"，草莓 "+votes[3]+"。"
+      : "还没有票。点下面的水果，柱子会往上长。一格一票。";
+    if (!done && t < 8) document.getElementById("taskStatus").textContent = "尚未完成：先投满 8\u00a0票。";
+    else if (!done) document.getElementById("taskStatus").textContent = "已有 "+t+"\u00a0票。看图，点出最高的那一种。";
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-i]"), function(btn){
+    btn.addEventListener("click", function(){
+      var i = Number(btn.getAttribute("data-i"));
+      if (votes[i] < 10) votes[i] += 1;
+      hideCrown();
+      render();
+    });
+  });
+  document.getElementById("resetVotes").addEventListener("click", function(){
+    votes = [0,0,0,0];
+    done = false;
+    hideCrown();
+    render();
+  });
+  var box = document.getElementById("winnerPicks");
+  NAMES.forEach(function(name, i){
+    var b = document.createElement("button");
+    b.className = "kid-tile"; b.type = "button";
+    b.innerHTML = '<span class="kid-tile-label">'+name+'最多</span>';
+    b.addEventListener("click", function(){
+      Array.prototype.forEach.call(box.querySelectorAll(".kid-tile"), function(n){ n.setAttribute("aria-pressed", n===b?"true":"false"); });
+      if (done) return;
+      if (total() < 8) {
+        document.getElementById("taskStatus").textContent = "票还不够，先投满 8\u00a0票再判断。";
+        return;
+      }
+      var hits = maxIdx();
+      if (hits.indexOf(i) < 0) {
+        document.getElementById("taskStatus").textContent = "再比一比柱子的高度，换一根最高的。";
+        return;
+      }
+      done = true;
+      if (window.Progress) Progress.complete("games/graph-lab.html", "投了 "+total()+"\u00a0票，最多的是"+name);
+      var h = Math.min(170, votes[i] * SCALE);
+      document.getElementById("crownPos").setAttribute("transform", "translate(" + (94 + 80 * i) + "," + (198 - h - 26) + ")");
+      document.getElementById("crown").classList.add("show");
+      document.getElementById("taskStatus").textContent = hits.length > 1
+        ? "完成啦：最高的有好几根，"+name+"是其中之一。"
+        : "完成啦：从图上看，"+name+"最多。";
+    });
+    box.appendChild(b);
+  });
+  var ATLAS = {
+    tallest:"最高柱：最高的那根柱，位置表示票最多，不是把数字画成更好看的形状，先对柱顶数字。",
+    same:"一样高：两根一样高，位置表示一样多，不必因为颜色好看硬选出一个冠军，位置对上才算。",
+    empty:"空柱：还没票，柱子贴着底；这个位置表示零，不是漏画了一截好看的柱，零也是一对量。",
+    unit:"一格一票：长高一格，就是多了一票；柱的位置表示数量，不是画成好看的形状，一对量对上一格。",
+    height:"先看高度：先看谁高，再回头对柱顶数字；对不上就再数，不要只盯颜色好不好看。",
+    tie:"平手：最高的有好几根，位置一样高就一起第一，不必只留一个更好看的名字。",
+    reset:"清零再投：全部清零，四根都贴回底，图又变回平的；位置回到零，不是擦掉好看的画。",
+    chart:"图比数字：四根柱的位置一起比，比四个数字清楚，不是把票数画成好看的形状。",
+    zero:"零票：一根贴着底，这个位置就是还没票，不是那根忘了涂颜色，零票也要占一个位置。",
+    pair:"两根比：先看谁高：柱的位置更高，那种票更多，不是名字更长或颜色更好看，位置表示那一对量。",
+    gap:"差多少：两根顶上的空档，就是差了几票；空档也是位置，不是装饰用的缺口，空档也对应差多少。",
+    order:"从高到矮：从高到矮排好，一眼看出第一名；比的是位置对应的票，不是谁更好看。"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-gh-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-gh-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-gh-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。去舞台上对照验证。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。继续对照舞台。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut3").textContent = "押好了。对照 6 与 8 的差。";
+    });
+  });
+  render();
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/graph-lab.html", "条形统计台");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

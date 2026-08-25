@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>棱镜工坊 · 彩虹是棱镜涂上去的，还是白光里本来就有？</title>
+<meta name="description" content="同一束白光，只换工具。展宽≈入射角×工具系数：棱镜约 1.2，滤色片和镜子是 0。白光里本来就有各色，棱镜只是按波长摊开，不是涂颜料。不对着太阳直看。本页读数是比较尺子，不是光谱仪。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/games-lab.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+.kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--phys) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--phys) 12%,var(--surface)),var(--surface) 62%);
+  }
+.mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--phys) 36%,var(--line));
+    background: color-mix(in srgb,var(--phys) 12%,var(--surface)); font-size: 2.2rem;
+  }
+.pr-art { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+.pr-lab { fill: var(--ink); font: 700 13px var(--mono); text-anchor: middle; }
+.pr-tool, .pr-out { opacity: 0; transform: translateY(-8px); transform-box: view-box; transition: opacity .4s var(--ease), transform .4s var(--ease); }
+.pr-art[data-tool="prism"] .pr-tool-prism, .pr-art[data-tool="filter"] .pr-tool-filter, .pr-art[data-tool="mirror"] .pr-tool-mirror,
+  .pr-art[data-tool="prism"] .pr-out-prism, .pr-art[data-tool="filter"] .pr-out-filter, .pr-art[data-tool="mirror"] .pr-out-mirror { opacity: 1; transform: none; }
+.pr-band { transform: scaleX(0); transform-box: view-box; transform-origin: 224px 127px; transition: transform .55s var(--ease); }
+.pr-band:nth-of-type(2) { transition-delay: .06s; }
+.pr-band:nth-of-type(3) { transition-delay: .12s; }
+.pr-band:nth-of-type(4) { transition-delay: .18s; }
+.pr-band:nth-of-type(5) { transition-delay: .24s; }
+.pr-band:nth-of-type(6) { transition-delay: .3s; }
+.pr-art[data-tool="prism"] .pr-band { transform: scaleX(1); }
+.pr-out-none { opacity: 1; transition: opacity .35s var(--ease); }
+.pr-art[data-tool="prism"] .pr-out-none, .pr-art[data-tool="filter"] .pr-out-none, .pr-art[data-tool="mirror"] .pr-out-none { opacity: 0; }
+.pr-star { opacity: .45; transition: opacity .4s var(--ease); }
+.pr-halo { opacity: 0; transition: opacity .45s var(--ease); }
+.pr-art[data-tool="mirror"] .pr-star { opacity: 1; }
+.pr-art[data-tool="mirror"] .pr-halo { opacity: .55; }
+html[data-playful-motion="reduced"] .pr-art * { transition: none !important; }
+.pr-atlas .kid-figure { --tone: var(--phys); }
+.pr-atlas .kid-figure-art { padding: 6px; }
+.pr-atlas .kid-figure-art > svg { width: 100%; max-width: 120px; height: auto; }
+.pr-atlas .kid-figure-fact { display: block; }
+button, .btn { min-height: 44px; }
+.stage + .kid-action-strip { margin-top: 8px; }
+.kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+@media (max-width: 640px) {
+    .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+@media (max-width: 480px) {
+    html[data-mode="kid"] .playful-companion { display: none; }
+    html[data-mode="kid"] [data-playful-sticker] { display: none; }
+    html[data-mode="kid"] .kid-hero-scene { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .88rem; line-height: 1.5; margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .pr-art { max-height: 120px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .92rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; }
+  }
+#prArt[data-tool="prism"] #outPrism { transform-origin: 220px 140px; transform: scaleY(calc(var(--pr-spread, 1))); }
+</style>
+</head>
+<body data-playful-page="games/prism-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-hero-scene">
+    <div>
+      <p class="row"><span class="pill pill-phys">物理</span><span class="pill">6–11&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>彩虹是棱镜涂上去的，还是白光里本来就有？</h1>
+      <p class="lead">白光里本来就藏着许多颜色。棱镜让紫光弯得多、红光弯得少，于是摊成一条彩虹——不是棱镜涂颜料。滤色片只筛下一色，镜子只把白光弹回去。本页只换工具、调入射角；读数是比较尺子，不是光谱仪。不对着太阳或强激光直看。</p>
+      <p class="live-text" data-edu-point role="note"><b>这一页在学：</b>彩虹是棱镜涂上去的，还是白光里本来就有？ 看结构图/真图，别被「凡是金属都吸」这类错话带跑。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/glass.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">同一束白光，用棱镜还是滤色片</h2>
+    <figure class="lab-photo-strip" style="margin:0 0 8px;padding:0"><img class="photo-real" src="../assets/photos/glass.jpg" alt="" width="640" height="360" style="display:block;width:100%;max-height:200px;object-fit:cover;border-radius:12px"><figcaption class="live-text" style="margin:.35em 0 0">棱镜拆的是白光里的颜色，不是给光涂色</figcaption></figure>
+<svg class="pr-art" id="prArt" viewBox="0 0 420 280" role="img" aria-labelledby="prTitle prDesc" data-tool="">
+      <title id="prTitle">棱镜分光舞台</title>
+      <desc id="prDesc">明亮的光学台。左边的手电筒射出一束白光；放上棱镜，白光在右侧白屏上摊开成六色彩虹；换滤色片，屏上只剩一条橙色；换镜子，光弹回墙上的纸星星。</desc>
+      <!-- 房间背景 -->
+      <rect width="420" height="232" fill="#f7ecd6"/>
+      <rect width="420" height="58" fill="#f0dfbe"/>
+      <rect y="56" width="420" height="3" fill="#e3cda0"/>
+      <!-- 墙上的纸星星（镜子模式的目标） -->
+      <g class="pr-star">
+        <circle class="pr-halo" cx="64" cy="42" r="24" fill="#ffe9a0"/>
+        <path d="M64 24 L69 36 L82 37 L72 46 L75 59 L64 52 L53 59 L56 46 L46 37 L59 36 Z" fill="#f2c93e" stroke="#c99b1f" stroke-width="2" stroke-linejoin="round"/>
+        <rect x="58" y="20" width="12" height="6" rx="2" fill="#e8e0cc" opacity=".9"/>
+      </g>
+      <!-- 工作台与地面 -->
+      <rect y="196" width="420" height="8" fill="#e8c288"/>
+      <rect y="204" width="420" height="28" fill="#d9ac6e"/>
+      <rect y="232" width="420" height="48" fill="#b98a52"/>
+      <path d="M34 248 h58 M128 260 h70 M252 252 h54 M338 264 h50" stroke="#a5763f" stroke-width="3" stroke-linecap="round"/>
+      <!-- 白屏板：出射结果落在这里 -->
+      <rect x="346" y="200" width="8" height="12" fill="#8a6a40"/>
+      <rect x="392" y="200" width="8" height="12" fill="#8a6a40"/>
+      <rect x="336" y="58" width="76" height="144" rx="6" fill="#caa36a"/>
+      <rect x="342" y="64" width="64" height="132" rx="3" fill="#ffffff"/>
+      <!-- 手电筒（一直亮着） -->
+      <rect x="24" y="146" width="9" height="52" fill="#8a6a40"/>
+      <rect x="50" y="146" width="9" height="52" fill="#8a6a40"/>
+      <rect x="12" y="110" width="50" height="34" rx="10" fill="#5f7186"/>
+      <rect x="22" y="104" width="14" height="8" rx="3" fill="#e8862e"/>
+      <path d="M62 110 L78 102 V152 L62 144 Z" fill="#47586b"/>
+      <ellipse cx="80" cy="127" rx="5" ry="25" fill="#fff6c8"/>
+      <ellipse cx="88" cy="127" rx="12" ry="27" fill="#ffedb0" opacity=".45"/>
+      <!-- 入射白光 -->
+      <path d="M80 116 L178 114 L178 140 L80 138 Z" fill="#fff3c2" opacity=".95"/>
+      <path d="M80 124 L178 123 L178 131 L80 130 Z" fill="#fffdf0"/>
+      <circle cx="108" cy="126" r="2" fill="#ffffff" opacity=".65"/>
+      <circle cx="134" cy="123" r="2" fill="#ffffff" opacity=".55"/>
+      <circle cx="158" cy="128" r="2" fill="#ffffff" opacity=".6"/>
+      <!-- 出射：彩虹（棱镜），色带一路铺到白屏上 -->
+      <g id="outRainbow" class="pr-out pr-out-prism">
+        <path class="pr-band" fill="#e04848" d="M224 127 L342 70 L342 86 Z"/>
+        <path class="pr-band" fill="#ec8a2c" d="M224 127 L342 88 L342 104 Z"/>
+        <path class="pr-band" fill="#f2c93e" d="M224 127 L342 106 L342 122 Z"/>
+        <path class="pr-band" fill="#4f9e58" d="M224 127 L342 124 L342 140 Z"/>
+        <path class="pr-band" fill="#3f86c8" d="M224 127 L342 142 L342 158 Z"/>
+        <path class="pr-band" fill="#7a55b0" d="M224 127 L342 160 L342 176 Z"/>
+        <rect class="pr-band" fill="#e04848" x="344" y="70" width="60" height="15" rx="3"/>
+        <rect class="pr-band" fill="#ec8a2c" x="344" y="88" width="60" height="15" rx="3"/>
+        <rect class="pr-band" fill="#f2c93e" x="344" y="106" width="60" height="15" rx="3"/>
+        <rect class="pr-band" fill="#4f9e58" x="344" y="124" width="60" height="15" rx="3"/>
+        <rect class="pr-band" fill="#3f86c8" x="344" y="142" width="60" height="15" rx="3"/>
+        <rect class="pr-band" fill="#7a55b0" x="344" y="160" width="60" height="15" rx="3"/>
+      </g>
+      <!-- 出射：滤色片只剩橙色 -->
+      <g id="outFilter" class="pr-out pr-out-filter">
+        <path fill="#ef8a30" opacity=".92" d="M212 120 L342 114 L342 140 L212 134 Z"/>
+        <ellipse cx="372" cy="127" rx="19" ry="26" fill="#ef8a30" opacity=".85"/>
+      </g>
+      <!-- 出射：镜子弹回墙上 -->
+      <g id="outMirror" class="pr-out pr-out-mirror">
+        <path fill="#fff3c2" opacity=".95" d="M204 118 L76 50 L88 42 L216 126 Z"/>
+      </g>
+      <!-- 没放工具：白光一路照到白屏上 -->
+      <g class="pr-out-none">
+        <path fill="#fff3c2" opacity=".95" d="M178 114 L342 111 L342 143 L178 140 Z"/>
+        <ellipse cx="368" cy="127" rx="20" ry="28" fill="#fff6cf" stroke="#eadfb8" stroke-width="2"/>
+      </g>
+      <!-- 工具：三棱镜 -->
+      <g id="toolPrism" class="pr-tool pr-tool-prism">
+        <rect x="150" y="182" width="96" height="16" rx="4" fill="#b98a52"/>
+        <path d="M198 88 L156 182 H240 Z" fill="#d3ecf9" opacity=".95" stroke="#6b93ad" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M198 88 L240 182 H214 Z" fill="#aed3e8" opacity=".9"/>
+        <path d="M195 96 L162 172" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+      </g>
+      <!-- 工具：滤色片 -->
+      <g id="toolFilter" class="pr-tool pr-tool-filter">
+        <rect x="176" y="182" width="44" height="16" rx="4" fill="#b98a52"/>
+        <rect x="194" y="150" width="8" height="34" fill="#8a6a40"/>
+        <rect x="180" y="92" width="36" height="80" rx="5" fill="#ef8a30" opacity=".92" stroke="#b45f14" stroke-width="2"/>
+        <rect x="190" y="84" width="16" height="10" rx="3" fill="#6b7280"/>
+      </g>
+      <!-- 工具：镜子 -->
+      <g id="toolMirror" class="pr-tool pr-tool-mirror">
+        <rect x="176" y="182" width="52" height="16" rx="4" fill="#b98a52"/>
+        <path d="M210 92 L236 190 L220 196 L194 98 Z" fill="#93a9bd"/>
+        <path d="M206 90 L230 186 L218 191 L194 95 Z" fill="#e2ecf5" stroke="#7d94a8" stroke-width="2"/>
+      </g>
+      <!-- 状态牌 -->
+      <rect x="204" y="14" width="112" height="28" rx="14" fill="#ffffff" stroke="#e2cfa8" stroke-width="1.5"/>
+      <text class="pr-lab" id="stateLab" x="260" y="33">还没选工具</text>
+    </svg>
+    <div class="readout">
+      <div><span>工具</span><b id="toolOut">还没选</b></div>
+      <div><span>出光</span><b id="outOut">——</b></div>
+      <div><span>白光</span><b id="whiteOut">还在灯里</b></div>
+      <div><span>入射角</span><b id="angleOut">40°</b></div>
+      <div><span>工具系数</span><b id="coefOut">——</b></div>
+      <div><span>展宽（算）</span><b id="spreadOut">——</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">先用一次棱镜，再用一次滤色片。看谁会把白光拆成许多颜色。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="棱镜主操作">
+    <div>
+      <label for="angle">入射角：<span id="angleLab">40°</span></label>
+      <input class="input" id="angle" type="range" min="10" max="70" value="40" aria-valuetext="40 度">
+    </div>
+    <div class="pick-btns">
+      <button class="btn btn-primary" type="button" id="toPrism">用棱镜 · 系数 1.2</button>
+      <button class="btn" type="button" id="toFilter">用滤色片 · 0</button>
+      <button class="btn" type="button" id="toMirror">用镜子 · 0</button>
+      <button class="btn" type="button" id="toClear">拿走工具</button>
+    </div>
+  </div>
+  <section class="card guess-card" aria-labelledby="guessTitlePr">
+    <h2 id="guessTitlePr">先猜一猜，再照</h2>
+    <p><b>第 1 题：</b>棱镜、入射角 20° 展宽约 24。角改成 60°，展宽怎样？</p>
+    <div class="pick-btns" role="group" aria-label="猜展宽">
+      <button class="btn guess-pick" type="button" data-guess1="same" aria-pressed="false">差不多一样</button>
+      <button class="btn guess-pick" type="button" data-guess1="triple" aria-pressed="false">大约变三倍（更开）</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。用棱镜，先 20° 再 60°。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>同一入射角，换成滤色片。白光还会被拆开成一条彩虹吗？</p>
+      <div class="pick-btns" role="group" aria-label="猜滤色">
+        <button class="btn guess-pick" type="button" data-guess2="zero" aria-pressed="false">不会，只留一色，不拆开</button>
+        <button class="btn guess-pick" type="button" data-guess2="same" aria-pressed="false">会，和棱镜一样宽</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后点「用滤色片」。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>换成镜子、同一入射角。白光会被拆成彩虹吗？</p>
+      <div class="pick-btns" role="group" aria-label="猜镜子展宽">
+        <button class="btn guess-pick" type="button" data-guess3="zero" aria-pressed="false">不会，白光弹回不拆开</button>
+        <button class="btn guess-pick" type="button" data-guess3="same" aria-pressed="false">会，和棱镜一样宽</button>
+        <button class="btn guess-pick" type="button" data-guess3="more" aria-pressed="false">会，比棱镜更开</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后点「用镜子」。</p>
+    </div>
+  </section>
+    <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">同一束白光：棱镜摊开，滤色片筛掉，镜子照回</h2>
+    <p>先点「用棱镜」，看白屏上有没有摊成彩虹。再点「用滤色片」，看是不是只剩一色。最好再点一次「用镜子」：白光弹回去，几乎不拆开。</p>
+    <p>白光是许多波长叠在一起，看起来才白。棱镜里短波（偏紫）弯得更多，长波（偏红）弯得更少，颜色按固定顺序排队——不是棱镜把颜料涂上去。滤色片吸收大部分、只放行窄带，是减法筛子。镜子把各色几乎按同一角度弹回，成分几乎不变。</p>
+    <p>舞台上的展宽按「入射角×工具系数」来算：棱镜记 1.2，滤色片和镜子记 0。这是本页比较尺子，用来比「谁拆开、谁不拆」，不是光谱仪读数，更不是波长纳米。不对着太阳或强激光直看。儿童实验只用弱灯光。</p>
+  </section>
+
+  <section class="card pr-atlas" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">分光图鉴</h2>
+    <p>点一张，对照舞台：谁会把白光拆开，谁只会挡住或弹回。</p>
+    <div class="kid-figure-grid" role="group" aria-label="分光图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-pr-atlas="prism" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="2" y="36" width="20" height="16" rx="2" fill="#8a857c" stroke="#3a2a18"/><circle cx="12" cy="44" r="4.2" fill="#f4e27a"/><rect x="22" y="40" width="8" height="8" fill="#4a4a4a"/><path d="M30 44h22" stroke="#f4e7a0" stroke-width="5" stroke-linecap="round"/><path d="M50 74L70 16L90 74Z" fill="#d8eef8" stroke="#3a2a18" stroke-width="1.6" stroke-linejoin="round"/><path d="M90 74L102 66L82 10L70 16Z" fill="#b7d4e8" stroke="#3a2a18" stroke-width="1.4" stroke-linejoin="round"/><path d="M58 50L72 28" stroke="#fff" stroke-width="2" opacity=".6"/><path d="M88 34L118 16" stroke="#e05050" stroke-width="3" stroke-linecap="round"/><path d="M88 38L118 28" stroke="#e07a28" stroke-width="3" stroke-linecap="round"/><path d="M88 42L118 42" stroke="#e0c028" stroke-width="3" stroke-linecap="round"/><path d="M88 46L118 54" stroke="#3a9a48" stroke-width="3" stroke-linecap="round"/><path d="M88 50L118 64" stroke="#3a86c8" stroke-width="3" stroke-linecap="round"/><path d="M88 54L118 74" stroke="#6b4aa0" stroke-width="3" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">三棱镜</span><span class="kid-figure-fact">白光被拆开，是因为不同色走得不一样，才看成彩虹，不是玻璃把光染上色。</span></button>
+      <button class="kid-figure" type="button" data-pr-atlas="filter" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="4" y="38" width="22" height="16" rx="2" fill="#8a857c" stroke="#3a2a18"/><circle cx="14" cy="46" r="4" fill="#f4e27a"/><path d="M26 46h22" stroke="#f4e7a0" stroke-width="5" stroke-linecap="round"/><rect x="48" y="16" width="18" height="58" rx="2" fill="#e07a28" stroke="#7c2d12" stroke-width="1.6"/><rect x="51" y="22" width="12" height="46" fill="#fdba74" opacity=".45"/><path d="M66 46h40" stroke="#e07a28" stroke-width="6" stroke-linecap="round"/><path d="M26 38h20M26 54h16" stroke="#fff6c8" stroke-width="2" opacity=".4"/></svg></span><span class="kid-figure-cap">滤色片</span><span class="kid-figure-fact">滤色片只放行一种颜色，其余减掉，不会像棱镜那样按走法拆开，也不是染色。</span></button>
+      <button class="kid-figure" type="button" data-pr-atlas="mirror" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M62 12 L96 70 L80 78 L46 20 Z" fill="#6b5344" stroke="#3a2a18" stroke-width="1.6"/><path d="M66 16 L90 66 L78 72 L54 22 Z" fill="#c5d8ee" stroke="#3a4a58"/><ellipse cx="70" cy="32" rx="6" ry="4" fill="#fff" opacity=".5"/><path d="M12 48h34" stroke="#c2410c" stroke-width="3" stroke-linecap="round"/><polygon points="46,42 58,48 46,54" fill="#c2410c"/><path d="M86 40h22" stroke="#3d6fb8" stroke-width="3" stroke-linecap="round"/><polygon points="86,34 74,40 86,46" fill="#3d6fb8"/></svg></span><span class="kid-figure-cap">镜子</span><span class="kid-figure-fact">镜子把光弹回去，各色走同一条回头路，颜色还是原来那样，不是玻璃染色。</span></button>
+      <button class="kid-figure" type="button" data-pr-atlas="white" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#1f2937" width="120" height="90"/><rect x="8" y="34" width="22" height="16" rx="2" fill="#8a857c"/><circle cx="18" cy="42" r="4.2" fill="#fff7cc"/><path d="M30 42h78" stroke="#fff6c8" stroke-width="8" stroke-linecap="round"/><path d="M46 34h8M62 34h8M78 34h8M94 34h8" stroke="#e05050" stroke-width="2" opacity=".5"/><path d="M46 50h8M62 50h8M78 50h8M94 50h8" stroke="#3a86c8" stroke-width="2" opacity=".5"/></svg></span><span class="kid-figure-cap">白光</span><span class="kid-figure-fact">看起来是白的，里面藏着许多颜色；棱镜只是把它们拆开给你看，不是染上色。</span></button>
+      <button class="kid-figure" type="button" data-pr-atlas="red" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M24 74 L50 16 L70 74Z" fill="#d8eef8" stroke="#3a2a18" stroke-width="1.5"/><path d="M8 52h28" stroke="#fff6c8" stroke-width="5" stroke-linecap="round"/><path d="M68 40 L110 24" stroke="#e05050" stroke-width="5" stroke-linecap="round"/><path d="M68 48 L108 48" stroke="#e0c028" stroke-width="3" stroke-linecap="round" opacity=".35"/><path d="M68 56 L108 70" stroke="#6b4aa0" stroke-width="3" stroke-linecap="round" opacity=".35"/></svg></span><span class="kid-figure-cap">红光</span><span class="kid-figure-fact">红光在棱镜里走得弯得比较少，所以摊开时靠一边，不是玻璃给它涂了红。</span></button>
+      <button class="kid-figure" type="button" data-pr-atlas="violet" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M24 74 L50 16 L70 74Z" fill="#d8eef8" stroke="#3a2a18" stroke-width="1.5"/><path d="M8 40h28" stroke="#fff6c8" stroke-width="5" stroke-linecap="round"/><path d="M68 34 L108 18" stroke="#e05050" stroke-width="3" stroke-linecap="round" opacity=".35"/><path d="M68 42 L108 42" stroke="#e0c028" stroke-width="3" stroke-linecap="round" opacity=".35"/><path d="M68 50 L110 74" stroke="#6b4aa0" stroke-width="5" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">紫光</span><span class="kid-figure-fact">紫光在棱镜里走得弯得比较多，摊开时靠另一边，不是玻璃给它涂了紫。</span></button>
+      <button class="kid-figure" type="button" data-pr-atlas="rainbow" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#cfe8f6" width="120" height="90"/><rect y="62" width="120" height="28" fill="#86efac"/><path d="M16 62 A44 28 0 0 1 104 62" fill="none" stroke="#e05050" stroke-width="4"/><path d="M22 62 A38 24 0 0 1 98 62" fill="none" stroke="#e07a28" stroke-width="4"/><path d="M28 62 A32 20 0 0 1 92 62" fill="none" stroke="#e0c028" stroke-width="4"/><path d="M34 62 A26 16 0 0 1 86 62" fill="none" stroke="#3a9a48" stroke-width="4"/><path d="M40 62 A20 12 0 0 1 80 62" fill="none" stroke="#3a86c8" stroke-width="4"/><circle cx="22" cy="18" r="8" fill="#fde68a"/></svg></span><span class="kid-figure-cap">光谱</span><span class="kid-figure-fact">拆开以后按走得不一样排成一排颜色，这是色散，不是玻璃把白光染成彩带。</span></button>
+      <button class="kid-figure" type="button" data-pr-atlas="drop" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#cfe8f6" width="120" height="90"/><path d="M0 70 Q30 58 60 70 T120 70 V90 H0Z" fill="#38bdf8"/><path d="M60 10 C40 42 40 62 60 74 C80 62 80 42 60 10 Z" fill="#7dd3fc" stroke="#155e75" stroke-width="1.6"/><path d="M54 28 L66 22 M52 40 L70 34 M50 52 L72 46" stroke="#e05050" stroke-width="1.5"/><path d="M54 32 L66 38 M52 44 L70 50" stroke="#3a86c8" stroke-width="1.5"/><ellipse cx="52" cy="28" rx="4" ry="3" fill="#fff" opacity=".5"/></svg></span><span class="kid-figure-cap">雨滴</span><span class="kid-figure-fact">雨滴像天上的小棱镜，不同色走得不一样才出彩虹，不是把天空染上颜料。</span></button>
+      <button class="kid-figure" type="button" data-pr-atlas="glass" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="38" width="20" height="14" rx="2" fill="#8a857c"/><circle cx="18" cy="45" r="3.4" fill="#f4e27a"/><path d="M28 45h18" stroke="#fff6c8" stroke-width="5" stroke-linecap="round"/><path d="M46 18h40l8 54H38Z" fill="#d8eef8" stroke="#3a2a18" stroke-width="1.6"/><path d="M50 22h4v46" stroke="#fff" stroke-width="2" opacity=".4"/><path d="M86 40 L110 28" stroke="#e05050" stroke-width="2.4"/><path d="M86 48 L110 48" stroke="#e0c028" stroke-width="2.4"/><path d="M86 56 L110 68" stroke="#6b4aa0" stroke-width="2.4"/></svg></span><span class="kid-figure-cap">玻璃砖</span><span class="kid-figure-fact">光会弯一下，厚的才容易把不同色拆开；薄砖弯得少，不是玻璃自己会染色。</span></button>
+      <button class="kid-figure" type="button" data-pr-atlas="mix" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#1f2937" width="120" height="90"/><path d="M8 50 L40 28" stroke="#e05050" stroke-width="4" stroke-linecap="round"/><path d="M8 50 L40 50" stroke="#e0c028" stroke-width="4" stroke-linecap="round"/><path d="M8 50 L40 72" stroke="#3a86c8" stroke-width="4" stroke-linecap="round"/><circle cx="78" cy="50" r="22" fill="#fff6c8" stroke="#e5e7eb"/><path d="M40 28 L62 44" stroke="#e05050" stroke-width="3"/><path d="M40 50 H56" stroke="#e0c028" stroke-width="3"/><path d="M40 72 L62 56" stroke="#3a86c8" stroke-width="3"/></svg></span><span class="kid-figure-cap">再混回去</span><span class="kid-figure-fact">许多色光叠在一起，又会看起来白；拆开和叠回是同一套光，不是染色再洗掉。</span></button>
+      <button class="kid-figure" type="button" data-pr-atlas="shadow" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="18" cy="28" r="10" fill="#fde68a"/><path d="M18 14v-6M8 22l-6-4M28 22l6-4" stroke="#fde68a" stroke-width="2"/><path d="M28 32 L52 40 L52 78 L28 70Z" fill="#fff6c8" opacity=".7"/><rect x="50" y="28" width="14" height="50" fill="#8a6a40" stroke="#3a2a18"/><rect x="72" y="40" width="28" height="38" fill="#4b5563"/><path d="M64 36 L72 40 L72 78 L64 70Z" fill="#374151"/></svg></span><span class="kid-figure-cap">影子</span><span class="kid-figure-fact">影子是光被挡住的地方，各色一起没了，不是把颜色拆开，更不是玻璃染色。</span></button>
+      <button class="kid-figure" type="button" data-pr-atlas="lens" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="6" y="80" width="108" height="6" fill="#8a857c"/><rect x="54" y="70" width="12" height="12" fill="#5a5348"/><ellipse cx="60" cy="44" rx="11" ry="32" fill="#b9d8f2" stroke="#3a2a18" stroke-width="2"/><path d="M8 44h42M70 44h38" stroke="#c47a12" stroke-width="2.4" stroke-linecap="round"/><path d="M8 24h42L70 44M8 64h42L70 44" stroke="#c47a12" stroke-width="2" stroke-linecap="round"/><circle cx="102" cy="44" r="4.5" fill="#d05050"/></svg></span><span class="kid-figure-cap">透镜</span><span class="kid-figure-fact">透镜把光聚到一点，主要不是按颜色拆开；偶尔有彩边，也不要对着太阳看。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照棱镜和滤色片有什么不同。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--phys)"
+         data-kid-predict
+         data-kid-predict-explain="棱镜=色散分波长；滤色=吸收选通；镜=反射。非涂色。不直视日/强激光。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🌈</span><b>白光穿过棱镜出现彩虹，主要因为什么？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：彩虹从哪来">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="dye">棱镜把颜色「染」到白光上</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="split" data-kid-predict-correct>白光里本来就有各色；棱镜色散摊开，滤色片系数 0 不拆</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="mirror">镜子和棱镜一样都会拆成彩虹</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：棱镜与滤色片都算</h2>
+    <p>用棱镜试过入射角≤25 与≥55，再用一次滤色片。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先用一次棱镜，或一次滤色片。</p>
+  </section>
+
+
+      <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">同一束白光，先过棱镜，再换滤色片</h2>
+    <p>舞台上只改一件事：挡在光路上的是什么。同一束白光、同一块白屏。先用棱镜看彩虹摊不摊得开；再换滤色片看是不是只剩一色。这样比，才知道彩虹来自白光里本来就有的颜色，不是工具在涂颜料。</p>
+    <p>回家只带两句：「白光里本来就有各色，棱镜只是拆开排队。」「滤色片筛掉，镜子照回，都不拆成彩虹。」不要写成「棱镜把颜色染上去」或「镜子也会摊彩虹」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M24 74 L60 14 L96 74 Z" fill="#d8e8f0" stroke="#3a2a18" stroke-width="3"/><path d="M8 46 H36" stroke="#fff" stroke-width="5"/><path d="M78 40 L110 24" stroke="#c2410c" stroke-width="3"/><path d="M78 46 L112 46" stroke="#f0c14a" stroke-width="3"/><path d="M78 52 L110 68" stroke="#7c3aed" stroke-width="3"/></svg></span><span class="kid-figure-cap">色散</span><span class="kid-figure-sub">偏折差</span><p class="kid-figure-fact">不同波长偏折角不同，紫光通常比红光弯得更厉害，台上才会摊成一条带。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="36" width="28" height="18" fill="#fff" stroke="#3a2a18"/><path d="M44 45 H70" stroke="#fff" stroke-width="8"/><path d="M70 16 L96 74 L44 74 Z" fill="#d8e8f0" stroke="#3a2a18"/></svg></span><span class="kid-figure-cap">白光</span><span class="kid-figure-sub">叠加</span><p class="kid-figure-fact">白光是许多波长叠在一起，棱镜把成分摊开给你看，不是把光染上色。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="48" y="16" width="24" height="58" fill="#c2410c" opacity=".85" stroke="#3a2a18"/><path d="M8 46 H48" stroke="#fff" stroke-width="6"/><path d="M72 46 H112" stroke="#c2410c" stroke-width="6"/></svg></span><span class="kid-figure-cap">滤色</span><span class="kid-figure-sub">减法</span><p class="kid-figure-fact">滤色片吸掉大部分，只透过窄带，台上不是完整分光谱，也不是在染色。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="34" y="10" width="52" height="70" rx="6" fill="#d5ebf8" stroke="#8a857c" stroke-width="5"/><path d="M44 24 L72 24 L72 36" fill="none" stroke="#fff" stroke-width="3"/><path d="M16 70 L40 40 M86 40 L104 24" stroke="#f0c14a" stroke-width="3"/></svg></span><span class="kid-figure-cap">镜子</span><span class="kid-figure-sub">反射</span><p class="kid-figure-fact">镜子近乎镜面反射，各色按同一角度返回，不展成彩带，这不是棱镜分光。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M26 74 L26 22 L96 74" fill="none" stroke="#3a2a18" stroke-width="4" stroke-linecap="round"/><path d="M26 50 A24 24 0 0 1 50 74" fill="none" stroke="#c2410c" stroke-width="3"/></svg></span><span class="kid-figure-cap">展宽</span><span class="kid-figure-sub">读数</span><p class="kid-figure-fact">本页展宽跟入射角和工具有关，棱镜非零，滤色片和镜子接近零，只用来比较。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="40" cy="40" r="16" fill="#f0c14a"/><path d="M40 18 V12 M16 40 H10 M40 62 V68 M64 40 H70" stroke="#f0c14a" stroke-width="3"/><circle cx="60" cy="46" r="30" fill="none" stroke="#c2410c" stroke-width="5"/><path d="M38 26 L82 66" stroke="#c2410c" stroke-width="5"/></svg></span><span class="kid-figure-cap">直视日</span><span class="kid-figure-sub">红线</span><p class="kid-figure-fact">不对着太阳或强激光直看，儿童实验用弱灯光就够，强光会伤到眼睛。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>用棱镜。</b>看白屏上有没有摊成彩虹，展宽是不是大于 0。</li>
+      <li data-step="2"><b>换滤色片。</b>只剩一色，展宽是不是 0。再换镜子，白光弹回。</li>
+      <li data-step="3"><b>说顺序。</b>紫弯得多、红弯得少，不是紫更重要。</li>
+      <li data-step="4"><b>写完成句。</b>白光本有各色，棱镜只是拆开。划掉「涂颜料」。不对着太阳看。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>白光里有很多颜色；三棱镜把它们弯成彩虹。滤色片像筛子只留下一种色，镜子只是照回去。不要对着太阳看。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>色散是不同波长弯得不一样；滤色是吸收选通；镜子是反射。棱镜不涂颜料。展宽数字只用来比较，不是波长。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>折射率随波长变，短波通常弯得更多。展宽≈入射角×系数是教学尺子：棱镜 1.2，滤色/镜 0，不是精密光谱仪。颜料减法与色光加法不要并成一句。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能对棱镜、滤色片、镜子各报一个动词（摊开 / 筛掉 / 照回），并否定「棱镜涂色」。完成看的是对照，不是背「色散」两个字。不对着太阳或强激光直看。</p>
+    <ul class="ask-list">
+      <li>棱镜把白光怎样了？颜色是涂上去的吗？</li>
+      <li>滤色片为什么摊不成彩虹？</li>
+      <li>镜子改了光路，成分变了吗？</li>
+      <li>能拿棱镜对着太阳看吗？</li>
+    </ul>
+  </section>
+
+
+  <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">折射率色散：为什么紫弯得多，不是紫更重要</h2>
+    <p>同一束白光，先只换工具。玻璃对短波（偏紫）的折射率通常更大，偏折角更大；长波（偏红）弯得更少。顺序固定，可以预测——这是检验理解的关键，不是「紫色比较重要」。</p>
+    <p>天上的彩虹是同一家人：雨滴里也有折射和反射，按波长分开，只是路径更弯、更复杂。CD 片上的彩纹更接近光栅分光，也不是涂颜料。颜料混色是减法，色光叠加是加法，不要并成一句。</p>
+    <p>精密光谱要狭缝和校准。本页「展宽≈入射角×系数」只是比较尺子：棱镜 1.2，滤色/镜 0，不是实验室的纳米读数。实验光源用 LED 或白炽弱光，记下类型即可，不要声称精确波长。</p>
+    <p>不对着太阳或强激光直看。棱镜、放大镜都能把阳光聚到一点，伤眼、也能烧纸。儿童实验只用弱灯光，成人看着。</p>
+    <div class="kid-figure-grid" role="group" aria-label="专属事实卡">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M24 74 L60 14 L96 74 Z" fill="#d8e8f0" stroke="#3a2a18" stroke-width="3"/><path d="M8 46 H36" stroke="#fff" stroke-width="5"/><path d="M78 40 L110 24" stroke="#c2410c" stroke-width="3"/><path d="M78 46 L112 46" stroke="#f0c14a" stroke-width="3"/><path d="M78 52 L110 68" stroke="#7c3aed" stroke-width="3"/><circle cx="104" cy="68" r="8" fill="#7c3aed"/></svg></span><span class="kid-figure-cap">短波</span><span class="kid-figure-sub">偏折大</span><p class="kid-figure-fact">紫光波长更短，在玻璃里通常弯得更多，所以摊开时多在带子的另一头。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="22" y="14" width="58" height="60" fill="#fff" stroke="#3a2a18" stroke-width="2"/><path d="M30 28 H72 M30 40 H72 M30 52 H56" stroke="#3a2a18" stroke-width="2"/><path d="M76 56 L102 38 L108 46 L82 64 Z" fill="#f0c14a" stroke="#3a2a18"/></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">非更重要</span><p class="kid-figure-fact">用自己的话写：白光被拆开才能看见成分，不是棱镜给它染上了颜色。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="10" y="34" width="100" height="24" rx="3" fill="#f0c14a" stroke="#3a2a18" stroke-width="2"/><path d="M22 34 V52 M34 34 V46 M46 34 V52 M58 34 V46 M70 34 V52 M82 34 V46 M94 34 V52" stroke="#3a2a18" stroke-width="2"/></svg></span><span class="kid-figure-cap">模型</span><span class="kid-figure-sub">近似</span><p class="kid-figure-fact">本页展宽是比较尺子，用来看谁摊得更开，不是实验室测波长的仪器。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M16 78 Q60 8 104 78" fill="none" stroke="#c2410c" stroke-width="5"/><path d="M22 78 Q60 16 98 78" fill="none" stroke="#f0c14a" stroke-width="5"/><path d="M28 78 Q60 24 92 78" fill="none" stroke="#3a7a48" stroke-width="5"/><path d="M34 78 Q60 32 86 78" fill="none" stroke="#3b82f6" stroke-width="5"/><path d="M40 78 Q60 40 80 78" fill="none" stroke="#7c3aed" stroke-width="5"/></svg></span><span class="kid-figure-cap">彩虹</span><span class="kid-figure-sub">连</span><p class="kid-figure-fact">彩虹里水滴多次折射反射也按波长分开，路径更复杂，不是颜料洒在天上。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="40" r="20" fill="#f0c14a" stroke="#3a2a18" stroke-width="2"/><rect x="52" y="58" width="16" height="16" fill="#8a857c"/><path d="M54 76 H66" stroke="#3a2a18" stroke-width="3"/><path d="M56 36 Q60 46 64 36" fill="none" stroke="#3a2a18" stroke-width="2"/></svg></span><span class="kid-figure-cap">弱光</span><span class="kid-figure-sub">LED</span><p class="kid-figure-fact">实验光源用灯珠或白炽弱光，记下类型就行，不要声称已经精确到纳米。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="40" cy="40" r="14" fill="#f0c14a"/><path d="M70 20 L100 70 H40 Z" fill="#c2410c" opacity=".8"/><path d="M16 14 L104 76" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">直视</span><span class="kid-figure-sub">强源</span><p class="kid-figure-fact">不对着太阳或强激光看，弱灯光就够把白光拆开，强光一样会伤眼睛。</p></div>
+    </div>
+  </section>
+
+
+  <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：棱镜摊开 · 滤色筛掉 · 「棱镜涂色」</h2>
+    <p>三列用同一束白光、同一入射角。先只换工具。一次改两样，分不清到底是谁让彩虹出现的。</p>
+    <p>棱镜：色散，摊成一条带，展宽系数本页约&nbsp;1.2。滤色片：吸收选通，只留窄带，展宽近&nbsp;0。镜子：镜面反射，各色同角返回，展宽近&nbsp;0。「棱镜涂色」整列划掉：颜色在白光里，不在玻璃上。</p>
+    <p>入射角加大是加试：棱镜下彩虹更开，滤色和镜子仍然接近 0。本页系数不要背成自然常数。</p>
+    <div class="kid-figure-grid" role="group" aria-label="对照与细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M24 74 L60 14 L96 74 Z" fill="#d8e8f0" stroke="#3a2a18" stroke-width="3"/><path d="M8 46 H36" stroke="#fff" stroke-width="5"/><path d="M78 40 L110 24" stroke="#c2410c" stroke-width="3"/><path d="M78 46 L112 46" stroke="#f0c14a" stroke-width="3"/><path d="M78 52 L110 68" stroke="#7c3aed" stroke-width="3"/></svg></span><span class="kid-figure-cap">棱镜</span><span class="kid-figure-sub">摊开</span><p class="kid-figure-fact">棱镜靠色散把白光展成一条带，本页系数只是教学尺子，不是出厂说明书。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="48" y="16" width="24" height="58" fill="#c2410c" opacity=".85" stroke="#3a2a18"/><path d="M8 46 H48" stroke="#fff" stroke-width="6"/><path d="M72 46 H112" stroke="#c2410c" stroke-width="6"/></svg></span><span class="kid-figure-cap">滤色</span><span class="kid-figure-sub">筛掉</span><p class="kid-figure-fact">滤色片靠吸收选通，透过窄带，展宽接近零，不是把白光完整拆开给你看。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="34" y="10" width="52" height="70" rx="6" fill="#d5ebf8" stroke="#8a857c" stroke-width="5"/><path d="M44 24 L72 24 L72 36" fill="none" stroke="#fff" stroke-width="3"/></svg></span><span class="kid-figure-cap">镜</span><span class="kid-figure-sub">照回</span><p class="kid-figure-fact">镜子把各色按同一角度弹回，展宽接近零，台上不会摊成一条彩虹带。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="24" y="16" width="72" height="58" fill="#fff" stroke="#3a2a18"/><path d="M36 32 H84 M36 46 H84 M36 60 H68" stroke="#3a2a18" stroke-width="2"/></svg></span><span class="kid-figure-cap">动词</span><span class="kid-figure-sub">各一</span><p class="kid-figure-fact">每张对照卡只留一个动作词：拆开、挡住或弹回，方便以后复查谁对谁错。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M14 70 L32 30 L50 70 Z" fill="#d8e8f0" stroke="#3a2a18"/><rect x="54" y="28" width="16" height="40" fill="#c2410c"/><rect x="78" y="22" width="28" height="44" rx="4" fill="#d5ebf8" stroke="#8a857c" stroke-width="3"/><path d="M16 14 L104 76 M104 14 L16 76" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">混</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">不要把「拆开」「挡住」「弹回」说成同一件事，棱镜、滤色片和镜子各做各的活。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M26 74 L26 22 L96 74" fill="none" stroke="#3a2a18" stroke-width="4" stroke-linecap="round"/><path d="M26 50 A24 24 0 0 1 50 74" fill="none" stroke="#c2410c" stroke-width="3"/><text x="78" y="28" font-size="11" fill="#3a2a18">1.2</text></svg></span><span class="kid-figure-cap">系数</span><span class="kid-figure-sub">教学</span><p class="kid-figure-fact">棱镜系数用来比谁展得更开，滤色片和镜子接近零，不是出厂说明书。</p></div>
+    </div>
+  </section>
+
+
+  <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「白光本有各色」，不记涂色传说</h2>
+    <p>在纸上画三格：棱镜后面画一条彩虹，滤色片后面画一色，镜子后面画一束白光弹回。三张图并排，比背系数有用。</p>
+    <p>口头只要两句：「白光里本来就有各色，棱镜只是拆开排队。」「滤色片筛掉，镜子照回。」有人说「棱镜把颜色染上去」，让孩子指着滤色片那一格反驳：筛子不会造出彩虹。</p>
+    <p>只用弱灯光。不要拿棱镜对着太阳。颜料混色是减法，棱镜拆白光是另一套，不要并成一句。本页数字不要抄进光谱仪说明书。</p>
+    <div class="kid-figure-grid" role="group" aria-label="加厚事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M22 36 H88 M74 22 L88 36 L74 50" fill="none" stroke="#0e7490" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M98 66 H32 M46 52 L32 66 L46 80" fill="none" stroke="#c2410c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="kid-figure-cap">两轮</span><span class="kid-figure-sub">预测</span><p class="kid-figure-fact">同一入射角做两轮：先预测滤色/棱镜/镜结果，再对照本页读数，各改 1&nbsp;个参数。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M18 68 L82 28 L94 36 L30 76 Z" fill="#f0c14a" stroke="#3a2a18" stroke-width="1.5"/><path d="M82 28 L94 36 L88 18 Z" fill="#e8dcc8" stroke="#3a2a18"/><path d="M18 68 L30 76 L14 78 Z" fill="#c45a7a" stroke="#3a2a18"/></svg></span><span class="kid-figure-cap">2&nbsp;句</span><span class="kid-figure-sub">我猜</span><p class="kid-figure-fact">每轮先写两句「我猜」再写实际看到的展宽，不要事后改口来充当预测。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="28" y="40" width="64" height="16" rx="8" fill="#8a857c"/><circle cx="84" cy="48" r="14" fill="#3a2a18"/><circle cx="84" cy="48" r="6" fill="#f0c14a"/></svg></span><span class="kid-figure-cap">1&nbsp;个</span><span class="kid-figure-sub">参数</span><p class="kid-figure-fact">比色散时一次只拧一个钮，否则分不清是角度还是材料让展宽变了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="40" r="20" fill="#f0c14a" stroke="#3a2a18" stroke-width="2"/><rect x="52" y="58" width="16" height="16" fill="#8a857c"/><path d="M54 76 H66" stroke="#3a2a18" stroke-width="3"/><path d="M56 36 Q60 46 64 36" fill="none" stroke="#3a2a18" stroke-width="2"/></svg></span><span class="kid-figure-cap">弱光</span><span class="kid-figure-sub">必须</span><p class="kid-figure-fact">只用弱灯光做拆开实验，不要拿棱镜对着太阳直看，强光会伤到眼睛。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="20" y="50" width="28" height="22" fill="#c2410c"/><rect x="48" y="50" width="28" height="22" fill="#3a7a48"/><rect x="76" y="50" width="24" height="22" fill="#3b82f6"/><path d="M16 30 H50" stroke="#fff" stroke-width="6"/><path d="M50 20 L80 20 L80 40 L96 28" fill="none" stroke="#c2410c" stroke-width="3"/><path d="M80 24 L96 20 M80 32 L96 40" stroke="#f0c14a" stroke-width="3"/></svg></span><span class="kid-figure-cap">颜料</span><span class="kid-figure-sub">光</span><p class="kid-figure-fact">颜料混色是减法，棱镜拆白光是另一套加法摊开，不要并成一句染色。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M26 74 L26 22 L96 74" fill="none" stroke="#3a2a18" stroke-width="4" stroke-linecap="round"/><path d="M26 50 A24 24 0 0 1 50 74" fill="none" stroke="#c2410c" stroke-width="3"/></svg></span><span class="kid-figure-cap">读数</span><span class="kid-figure-sub">对照</span><p class="kid-figure-fact">每轮先写「我猜」，再对照台上的展宽读数，看它到底是摊开、挡住还是弹回。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「谁会把白光拆开」，就只换工具这一项。同一束白光、同一入射角，先棱镜试一次，再滤色片试一次。镜子是另一次对照；改入射角也另开一行，不要和「换工具」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>棱镜 / 滤色片 / 镜子。</li>
+      <li><b>先保持不变：</b>同一束白光、入射角先固定。</li>
+      <li><b>要观察的：</b>白屏上是彩虹、一色，还是白光弹回；展宽读数是不是 0。</li>
+      <li><b>另开一行：</b>仍用棱镜，入射角从 20° 改到 60°，展宽是不是更开。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>天上的彩虹和水滴有什么关系？和桌上的三棱镜像在哪，路径又差在哪？</li>
+      <li>若只有滤色片、没有棱镜，能不能从白光得到一条完整彩虹？差在「摊开」还是「筛掉」。</li>
+      <li>调色盘上红加绿变深色，手电筒红光加绿光看起来浅。哪一句是颜料减法，哪一句是色光加法？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把「折射率」提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>白光里有很多颜色，三棱镜把它们弯成彩虹。滤色片像筛子只留下一种色。镜子只是照回去。不要对着太阳看。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>棱镜色散摊开，滤色片吸收选通，镜子反射不拆色。颜色不是涂上去的。本页展宽只用来比较，不是波长。不对着太阳或激光看。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>折射率随波长变，短波通常弯得更多。展宽≈角×系数是示意尺子。彩虹、光栅、颜料减法是同一家族的不同机制，不要写成「桌上的棱镜等于天上的虹」。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：分光观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。不要拿棱镜对着太阳看。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：棱镜拆开了，滤色片只剩橙色"></div>
+      <div><label for="workContent">谁拆开了谁没拆</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下棱镜和滤色片对同一束白光做了什么。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+      <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>棱镜下孩子指的是「白光被拆开」，还是在说「玻璃把颜色涂上去了」？让他再指一次还没放工具时的白光。</li>
+      <li>滤色片只剩一色：哪一句四岁听得懂？试「筛子只留下一种，不会造出一条彩虹」。</li>
+      <li>镜子改了光路，白屏上为什么还是白的？他能不能不用数字，只用「弹回去，没拆开」讲清楚。</li>
+      <li>天上的彩虹和桌上的棱镜像在哪？若他说「云把颜料洒在天上」，怎么纠正？</li>
+      <li>对着太阳、激光笔照眼睛或航路：红线怎么说？本页能当光学实验室手册吗？</li>
+      <li>调色盘混色和手电筒叠光：哪一句是减法，哪一句是加法？本页数字能抄进光谱仪吗？</li>
+    </ul>
+  </section>
+
+      <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：白光是许多波长的叠加。玻璃的折射率随波长略变，短波通常弯得更多，于是连续光谱被摊开——这叫色散。颜色在入射光里，不在棱镜的颜料里。</p>
+    <p>滤色片是吸收选通：大部分波长被吃掉，只透过窄带，所以展不成彩虹。镜子近镜面反射，各色几乎同角返回，光路变了、成分几乎不变。三件工具三件任务，混名会导致错误预测。</p>
+    <p>本页「展宽≈入射角×工具系数」（棱镜 1.2，滤色/镜 0）只是比较尺子，用来让孩子看见「谁拆开、谁不拆」。它不是精密光谱仪，也不是波长纳米。真实色散曲线更弯，本页不写。</p>
+    <p>强光加光学件能聚焦，伤眼也能烧纸。不对着太阳或激光直看。彩虹、水滴、光栅是同一家族的不同路径，不要写成「桌上的棱镜等于天上的虹」。</p>
+  </section>
+
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))" data-audience="parent">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">色散公式卡 · 展宽≈入射角×系数（本页尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">棱镜系数记 1.2，滤色片和镜子记 0，用来比较「谁拆开、谁不拆」，不是光谱仪，也不是波长纳米。白光里本来就有各色，棱镜只是按波长排队，不是涂颜料。不对着太阳或强激光直看。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：白光里本来就有各色，棱镜只是拆开排队，不是涂颜料。彩虹观察站看天上的水滴；颜色工坊看颜料减法和色光加法不要并成一句；透镜工坊看聚光，主要不是拆颜色。</p>
+    <p class="row"><a class="btn btn-ghost" href="../nature/rainbow.html">彩虹观察站</a><a class="btn btn-ghost" href="color-lab.html">颜色工坊</a><a class="btn btn-ghost" href="lens-lab.html">透镜工坊</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">不要拿棱镜对着太阳看。本页只比较拆开和挡住，不讲波长公式。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+
+  var tool="", angle=40;
+  var seen={prismLo:false,prismHi:false,filter:false,done:false};
+  var guess1="",guess1Done=false,saw20=false,saw60=false;
+  var guess2="",guess2Done=false,sawFilter=false,guess3="",guess3Done=false,saw40=false;
+  function coef(){ return tool==="prism"?1.2:0; }
+  function spread(){ return Math.round(angle*coef()); }
+  function render(){
+    var c=coef(), s=spread();
+    document.getElementById("prArt").setAttribute("data-tool", tool);
+    document.getElementById("prArt").style.setProperty("--pr-spread", tool==="prism"?String(0.55+angle/100):"1");
+    var toolWord=tool==="prism"?"三棱镜":tool==="filter"?"滤色片":tool==="mirror"?"镜子":"还没选";
+    document.getElementById("toolOut").textContent=toolWord;
+    document.getElementById("outOut").textContent=tool==="prism"?("彩虹展宽 "+s):tool==="filter"?"只剩一种颜色":tool==="mirror"?"白光弹回":"——";
+    document.getElementById("whiteOut").textContent=tool==="prism"?"被拆开了":tool==="filter"?"大部分被挡住":tool==="mirror"?"几乎没拆开":"还在灯里";
+    document.getElementById("stateLab").textContent=toolWord==="还没选"?"还没选工具":toolWord;
+    document.getElementById("angleLab").textContent=angle+"°";
+    document.getElementById("angle").setAttribute("aria-valuetext",angle+"\u00a0度");
+    document.getElementById("angleOut").textContent=angle+"°";
+    document.getElementById("coefOut").textContent=tool?String(c):"——";
+    document.getElementById("spreadOut").textContent=tool?(s+""):"——";
+    if(tool==="prism") document.getElementById("live").textContent="角越大，彩虹摊得越开。紫弯得更多。";
+    else if(tool==="filter") document.getElementById("live").textContent="滤色片只留一色，不拆开。展宽是 0。";
+    else if(tool==="mirror") document.getElementById("live").textContent="镜子把白光弹回，几乎不色散。展宽是 0。";
+    else document.getElementById("live").textContent="选工具并调入射角。棱镜才把白光拆开。";
+    if(tool==="prism"&&angle<=25)seen.prismLo=true;
+    if(tool==="prism"&&angle>=55)seen.prismHi=true;
+    if(tool==="filter")seen.filter=true;
+    if(guess1&&!guess1Done&&tool==="prism"&&angle===20)saw20=true;
+    if(guess1&&!guess1Done&&tool==="prism"&&angle===60)saw60=true;
+    if(guess2&&!guess2Done&&tool==="filter")sawFilter=true;
+    if(guess3&&!guess3Done&&tool==="mirror")saw40=true;
+    checkGuess(); updateTask();
+  }
+  function checkGuess(){
+    if(guess1&&!guess1Done&&saw20&&saw60){
+      guess1Done=true;
+      document.getElementById("guessOut1").innerHTML=(guess1==="triple"?"<b>押对了！</b>":"<b>揭晓：</b>")+"顶角更大，彩虹大约变宽三倍。";
+      document.getElementById("guessBlock2").hidden=false;
+    }
+    if(guess2&&!guess2Done&&sawFilter){
+      guess2Done=true;
+      document.getElementById("guessOut2").innerHTML=(guess2==="zero"?"<b>押对了！</b>":"<b>揭晓：</b>")+"滤色片不色散，展不成彩虹。";
+      document.getElementById("guessBlock3").hidden=false;
+    }
+    if(guess3&&!guess3Done&&saw40){
+      guess3Done=true;
+      document.getElementById("guessOut3").innerHTML=(guess3==="zero"?"<b>押对了！</b>":"<b>揭晓：</b>")+"镜子只把白光弹回去，不拆成彩虹，展宽是 <b>0</b>。";
+    }
+  }
+  function updateTask(){
+    var st=document.getElementById("taskStatus"); if(seen.done)return;
+    if(seen.prismLo&&seen.prismHi&&seen.filter){
+      seen.done=true;
+      if(window.Progress)Progress.complete("games/prism-lab.html","展宽≈角×系数，棱镜与滤色对照");
+      st.textContent="完成啦：棱镜展宽随角变大；滤色片展宽为 0。";
+    } else if(!(seen.prismLo&&seen.prismHi)) st.textContent="还差：棱镜下试小角(≤25)和大角(≥55)。";
+    else st.textContent="还差：再用一次滤色片。";
+  }
+  var ATLAS={prism:"三棱镜把白光拆开，是因为不同色走得不一样，不是这块玻璃会染色。",filter:"滤色片只放行窄带，其余减掉，不会拆成一条彩虹，也不是在给光染色。",mirror:"镜子把各色按同一角度弹回，颜色还是原来那样，不是玻璃染了又洗掉。",white:"白光看起来是白的，里面藏着许多颜色，棱镜只是摊开给你看，不是添颜料。",red:"红光在棱镜里走得比较直，弯得少，所以靠带子一头，不是被玻璃染红。",violet:"紫光在棱镜里走得更弯一些，靠带子另一头，不是玻璃给它涂上紫色。",rainbow:"光谱是拆开以后按走法排成一排颜色，不是玻璃把白光涂成了彩带。",drop:"雨滴把不同色走散开来，彩虹常常从这里来，不是天上洒了一桶颜料。",glass:"玻璃砖厚了才容易拆开不同色，薄的只弯一下，不是砖头自己会染色。",mix:"许多色光再叠回去，又会看起来白，说明刚才是拆开，不是染上又洗掉。",shadow:"影子只是光被挡住了，不是把颜色拆开，更不要对着眼或对着太阳看。",lens:"透镜主要是把光聚到一点，不是拆开颜色；不要对着眼或对着太阳看。"};
+  document.getElementById("angle").addEventListener("input",function(){angle=+this.value;render();});
+  document.getElementById("toPrism").addEventListener("click",function(){tool="prism";render();});
+  document.getElementById("toFilter").addEventListener("click",function(){tool="filter";render();});
+  document.getElementById("toMirror").addEventListener("click",function(){tool="mirror";render();});
+  document.getElementById("toClear").addEventListener("click",function(){tool="";render();});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"),function(btn){
+    btn.addEventListener("click",function(){if(guess1Done)return;guess1=btn.getAttribute("data-guess1");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"),function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut1").textContent="押好了。棱镜先 20° 再 60°。";});});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"),function(btn){
+    btn.addEventListener("click",function(){if(guess2Done)return;guess2=btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"),function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut2").textContent="押好了。点「用滤色片」。";});});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"),function(btn){
+    btn.addEventListener("click",function(){if(guess3Done)return;guess3=btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"),function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut3").textContent="押好了。点「用镜子」。";});});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-pr-atlas]"),function(btn){
+    btn.addEventListener("click",function(){
+      var key=btn.getAttribute("data-pr-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-pr-atlas]"),function(n){n.setAttribute("aria-pressed",n===btn?"true":"false");});
+      document.getElementById("atlasSay").textContent=ATLAS[key]||key;
+      if(key==="prism"||key==="rainbow"||key==="red"||key==="violet"||key==="drop"||key==="glass")tool="prism";
+      else if(key==="filter"||key==="shadow")tool="filter";
+      else if(key==="mirror")tool="mirror";
+      else if(key==="white"||key==="mix"||key==="lens")tool="";
+      render();
+    });
+  });
+  render();
+
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/prism-lab.html", "棱镜工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

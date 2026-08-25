@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>食物网观察站 · 谁吃谁 | 少儿数理启蒙</title>
+<meta name="description" content="比较太阳、草、动物和蘑菇。箭头表示谁吃谁，太阳是起点。选一个生产者和一个消费者。离线即可使用。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+ .hero { padding: 28px 0 10px; }
+ .hero h1 { margin: .15em 0 .3em; }
+ .lead { max-width: 58ch; color: var(--ink-mid); }
+ .kid-hero-scene {
+ display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+ margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+ border: 1px solid color-mix(in srgb,var(--kit) 36%,var(--line));
+ border-radius: var(--r-lg);
+ background: linear-gradient(135deg,color-mix(in srgb,var(--kit) 12%,var(--surface)),var(--surface) 62%);
+ }
+ .mission-face {
+ width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+ border: 2px solid color-mix(in srgb,var(--kit) 40%,var(--line));
+ background: color-mix(in srgb,var(--kit) 12%,var(--surface)); font-size: 2.2rem;
+ }
+ .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+ .fw-art { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+ .fw-sky { fill: color-mix(in srgb,var(--video) 10%,#e8f4ff); }
+ .fw-ground { fill: color-mix(in srgb,var(--sci) 28%,#8fbf6a); }
+ .fw-sun { fill: color-mix(in srgb,var(--warn) 55%,#f0c040); }
+ .fw-ray { fill: none; stroke: color-mix(in srgb,var(--warn) 50%,#d8a020); stroke-width: 2; stroke-linecap: round; }
+ .fw-grass { fill: color-mix(in srgb,var(--sci) 48%,#4f9a48); }
+ .fw-rabbit { fill: color-mix(in srgb,var(--surface) 40%,#efe4d2); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.3; }
+ .fw-fox { fill: color-mix(in srgb,var(--kit) 42%,#c47a3a); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.3; }
+ .fw-mush-cap { fill: color-mix(in srgb,var(--kit) 40%,#c9844a); stroke: color-mix(in srgb,var(--ink) 30%,transparent); stroke-width: 1.2; }
+ .fw-mush-stem { fill: color-mix(in srgb,var(--surface) 70%,#efe4d2); stroke: color-mix(in srgb,var(--ink) 28%,transparent); stroke-width: 1.1; }
+ .fw-eagle { fill: color-mix(in srgb,var(--ink-mid) 28%,#8a7a68); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.3; }
+ .fw-bug { fill: color-mix(in srgb,var(--sci) 28%,#6a8a48); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.2; }
+ .fw-human { fill: color-mix(in srgb,var(--phys) 22%,#d0b090); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.3; }
+ .fw-shirt { fill: color-mix(in srgb,var(--math) 36%,#6a90b8); }
+ .fw-eye { fill: var(--ink); }
+ .fw-arrow { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+ .fw-arrow-head { fill: var(--ink); }
+ .fw-arrow-lab { fill: var(--ink); font: 800 13px var(--mono); }
+ .fw-ring { fill: none; stroke: var(--kit); stroke-width: 3; opacity: 0; }
+ .fw-ring.on { opacity: 1; }
+ .fw-label { fill: var(--ink); font: 800 13px var(--mono); }
+ .kid-action-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+ .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+ .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+ .ask li::before {
+ counter-increment: q; content: counter(q);
+ position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+ display: grid; place-items: center; background: color-mix(in srgb,var(--kit) 12%,var(--surface));
+ border: 1px solid color-mix(in srgb,var(--kit) 40%,var(--line)); color: var(--ink);
+ font: 800 .76rem var(--mono);
+ }
+ button, .btn { min-height: 44px; }
+ .stage + .kid-action-strip { margin-top: 8px; }
+ .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+ .fw-atlas .kid-figure { --tone: var(--kit); }
+ .fw-atlas .kid-figure[data-fw="sun"] { --tone: var(--warn); }
+ .fw-atlas .kid-figure[data-fw="grass"] { --tone: var(--sci); }
+ .fw-atlas .kid-figure[data-fw="rabbit"] { --tone: var(--ink-mid); }
+ .fw-atlas .kid-figure[data-fw="fox"] { --tone: var(--kit); }
+ .fw-atlas .kid-figure[data-fw="mush"] { --tone: var(--kit); }
+ .fw-atlas .kid-figure[data-fw="eagle"] { --tone: var(--ink-mid); }
+ .fw-atlas .kid-figure[data-fw="bug"] { --tone: var(--sci); }
+ .fw-atlas .kid-figure[data-fw="human"] { --tone: var(--phys); }
+ .fw-atlas .kid-figure-art { padding: 6px; }
+ .fw-atlas .kid-figure-art > svg { width: 100%; max-width: 132px; height: auto; }
+ .fw-atlas .kid-figure-fact { display: block; }
+ .fw-mini-sky { fill: color-mix(in srgb, var(--video) 10%, #e8f4ff); }
+ .fw-mini-ground { fill: color-mix(in srgb, var(--sci) 24%, #c4d48a); }
+ .fw-choice-row { display: grid; gap: 8px; margin: 10px 0; }
+ .fw-choice-row .kid-choice { margin: 0; }
+ .fw-choice-row .kid-choice button { white-space: nowrap; }
+ @media (max-width: 640px) {
+ .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+ .mission-face { display: none; }
+ .stage { padding: 10px; }
+ .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+ .lead { max-width: none; }
+ }
+
+ .fw-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+ .fw-lab-panel { margin: 12px 0; padding: 10px; border: 1px solid color-mix(in srgb,var(--sci) 36%,var(--line)); border-radius: var(--r-lg); background: color-mix(in srgb,var(--sci) 8%,var(--surface)); }
+ .fw-lab-panel .readout { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0; }
+ .fw-lab-panel .readout div { padding:8px; border-radius:var(--r); background:var(--surface); border:1px solid var(--line); }
+ .fw-lab-panel .readout span { display:block; font-size:.78rem; color:var(--ink-mid); }
+ .fw-lab-panel .readout b { font:800 1.05rem var(--mono); color:var(--ink); }
+ .fw-lab-panel label { display:block; font-weight:700; margin-top:8px; }
+ .fw-lab-panel input[type="range"] { width:100%; min-height:44px; }
+ .fw-lab-panel .kid-action-strip { flex-direction:column; align-items:stretch; gap:4px; margin:8px 0; }
+ .fw-guess .pick-btns { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+ .guess-card { border-color: color-mix(in srgb,var(--sci) 45%,var(--line)); }
+ .guess-pick[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 18%,var(--surface)); color: var(--ink); }
+ .guess-out { font-weight: 750; color: var(--ink-mid); }
+ .guess-out b { color: var(--ink); }
+ @media (max-width:640px){
+ .hero .lead { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+ .fw-lab-panel > p { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+ }
+ @media (max-width:480px){
+ [data-playful-companion], [data-playful-sticker] { display:none !important; }
+ .fw-lab-panel .readout { grid-template-columns:1fr; }
+ }
+
+</style>
+</head>
+<body data-playful-page="nature/foodweb.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+ <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+ <div class="row" aria-label="主导航">
+ <a class="nav-link" href="../index.html">资源库</a>
+ <a class="nav-link" href="../pages/paths.html">学习路径</a>
+ <a class="nav-link" href="../games/index.html">互动实验</a>
+ <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+ <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+ <a class="nav-link" href="../pages/parents.html">家长指南</a>
+ <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+ </div>
+</div></nav>
+<main id="main" class="wrap">
+ <header class="hero">
+ <div>
+ <p class="row"><span class="pill pill-sci">生命</span><span class="pill">5–11&nbsp;岁</span><span class="pill">本地观察</span></p>
+ <h1>食物网观察站</h1>
+ <p class="lead">食物网不是「谁更大谁吃谁」的排名。箭头从被吃的指向去吃的：草自己用光做糖，是整张网的底座；兔、虫、狐、鹰去吃已经做好的食物；蘑菇把落叶和遗体拆开，养分回到土里。太阳给光，不是菜单上的一口吃食。大象体型大，营养级也不一定最高。台上「传递」读数只比较草够不够厚、环节稳不稳，不是野外普查。画反箭头，故事就反了。不把投喂野生动物当成「加一条箭头」的游戏。</p>
+ <div data-playful-companion></div>
+ <span data-playful-sticker></span>
+ </div>
+ <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/sun.jpg" alt="" width="78" height="78"></div>
+ </header>
+
+
+ <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+ <h2 id="stageTitle">画出一条谁吃谁</h2>
+ <svg class="fw-art" viewBox="0 0 560 240" role="img" aria-labelledby="fwTitle fwDesc">
+ <title id="fwTitle">食物网比较舞台</title>
+ <desc id="fwDesc">太阳在天上。你点中的两张卡会站到左边和右边，中间画出箭头，表示谁吃谁，或光往哪里走。</desc>
+ <rect class="fw-sky" width="560" height="240"/>
+ <path class="fw-ground" d="M0 176 H560 V240 H0 Z"/>
+ <circle class="fw-sun" cx="280" cy="36" r="18"/>
+ <path class="fw-ray" d="M280 10 V4 M302 18 L310 12 M312 36 H320 M302 54 L310 60 M280 62 V70 M258 54 L250 60 M248 36 H240 M258 18 L250 12"/>
+ <path class="fw-arrow" id="fwArrow" d="" hidden/>
+ <polygon class="fw-arrow-head" id="fwHead" points="" hidden/>
+ <text class="fw-arrow-lab" id="fwArrowLab" x="280" y="128" text-anchor="middle"></text>
+ <ellipse class="fw-ring" id="ringA" cx="140" cy="124" rx="88" ry="56"/>
+ <ellipse class="fw-ring" id="ringB" cx="420" cy="124" rx="88" ry="56"/>
+ <g id="slotA" transform="translate(60 64)"></g>
+ <g id="slotB" transform="translate(340 64)"></g>
+ <text class="fw-label" id="labA" x="140" y="228" text-anchor="middle">左边还空着</text>
+ <text class="fw-label" id="labB" x="420" y="228" text-anchor="middle">右边还空着</text>
+ </svg>
+ <p class="live-text" id="live" role="status" aria-live="polite">两边都空着。先点一张自己做食物的，再点一张要吃东西的。</p>
+ </section>
+
+ <div class="kid-action-strip" role="group" aria-label="比较生产者和消费者">
+ <span>点一张生产者、一张消费者，再说谁在做食物、谁在吃</span>
+ <button class="btn" type="button" id="clearPick">清空选择</button>
+ </div>
+
+<section class="card fw-lab-panel" aria-labelledby="fwLabTitle">
+ <h2 id="fwLabTitle">食物网传递台 · 真参数</h2>
+ <p>调<strong>生产者基数</strong>与<strong>环节稳定</strong>。草/藻造糖垫底；环节别断，能量才传得动——吃与被吃是网，不是一条直线口号。</p>
+ <div class="kid-action-strip" role="group" aria-label="真参数主操作">
+ <label for="fwA">生产者基数：<span id="fwALab">…</span></label>
+ <input class="input" id="fwA" type="range" min="4" max="36" value="16" aria-valuetext="16">
+ <label for="fwB">环节稳定：<span id="fwBLab">…</span></label>
+ <input class="input" id="fwB" type="range" min="2" max="20" value="9" aria-valuetext="9">
+ </div>
+ <svg class="fw-art" viewBox="0 0 640 220" role="img" aria-labelledby="fwLabSvgTitle fwLabSvgDesc">
+ <title id="fwLabSvgTitle">草垫底，能量才往上走；太阳不是一口吃食</title>
+ <desc id="fwLabSvgDesc">太阳只给光。草圈最大，兔较小，狐更小。蘑菇把落叶送回土。盘子上的太阳被划掉：太阳不是菜单。</desc>
+ <rect fill="#e8f0d8" width="640" height="220"/>
+ <circle id="fwSun" cx="80" cy="48" r="16" fill="#f0c040"/>
+ <path id="fwRay" d="M80 24 V16 M98 32 L106 26 M104 48 H112 M98 64 L106 70 M80 72 V80 M62 64 L54 70 M48 48 H40 M62 32 L54 26" stroke="#f0c040" stroke-width="2" fill="none"/>
+ <circle id="fwProd" cx="160" cy="140" r="28" fill="#5a9a3a"/>
+ <text x="160" y="144" text-anchor="middle" fill="#f4f8e8" style="font:800 11px monospace">草</text>
+ <circle id="fwHerb" cx="280" cy="108" r="18" fill="#c9844a"/>
+ <text x="280" y="112" text-anchor="middle" fill="#fff8ec" style="font:800 11px monospace">兔</text>
+ <circle id="fwCarn" cx="390" cy="88" r="12" fill="#6a7a8a"/>
+ <text x="390" y="92" text-anchor="middle" fill="#f4f0e8" style="font:800 10px monospace">狐</text>
+ <ellipse id="fwDecomp" cx="240" cy="176" rx="22" ry="10" fill="#8a6a40"/>
+ <text x="240" y="180" text-anchor="middle" fill="#fff8ec" style="font:700 10px monospace">菇</text>
+ <path id="fwArr1" d="M188 128 L258 114" stroke="#4a5a40" stroke-width="3" fill="none"/>
+ <path id="fwArr2" d="M298 100 L372 90" stroke="#4a5a40" stroke-width="3" fill="none"/>
+ <path id="fwArr3" d="M176 162 L220 172" stroke="#6a5a30" stroke-width="2" fill="none"/>
+ <path id="fwHeat1" d="M278 90 L266 68" stroke="#c2410c" stroke-width="3" fill="none"/>
+ <path id="fwHeat2" d="M390 74 L378 52" stroke="#c2410c" stroke-width="3" fill="none"/>
+ <text id="fwHeatLab" x="300" y="64" fill="#9a3412" style="font:700 11px monospace">热散掉</text>
+ <g id="fwSunFood" opacity="0.28">
+ <ellipse cx="560" cy="52" rx="28" ry="12" fill="#f8e8c8" stroke="#c4a06a"/>
+ <circle cx="560" cy="48" r="10" fill="#f0c040"/>
+ <path d="M540 36 L580 68 M580 36 L540 68" stroke="#c2410c" stroke-width="4"/>
+ </g>
+ <rect id="fwBar" x="500" y="90" width="14" height="90" fill="#1a5a3a"/>
+ <text fill="#1a2a20" style="font:800 13px monospace" x="16" y="28">传递台</text>
+ <text id="fwStateLab" fill="#1a2a20" style="font:700 12px monospace" x="200" y="28">草垫底，能量才往上走</text>
+ </svg>
+ <div class="readout" aria-live="polite">
+ <div><span>生产者</span><b id="fwAOut">…</b></div>
+ <div><span>传递（算）</span><b id="fwSOut">…</b></div>
+ <div><span>够稳？</span><b id="fwOkOut">…</b></div>
+ </div>
+ <p class="live-text" id="fwLabLive" role="status" aria-live="polite">草这一层必须够厚，能量才往上走。每一级都会散掉热。</p>
+ </section>
+ <section class="card guess-card fw-guess" aria-labelledby="fwGuessTitle">
+ <h2 id="fwGuessTitle">先猜一猜，再拖滑杆</h2>
+ <p><b>第 1 题：</b>生产者够、环节够（生产者 30、环节 12）。能量往上走，是因为草垫底，还是因为谁更凶？</p>
+ <div class="pick-btns" role="group" aria-label="猜传递">
+ <button class="btn guess-pick" type="button" data-fw-g1="20" aria-pressed="false">草垫底，不是谁更凶</button>
+ <button class="btn guess-pick" type="button" data-fw-g1="15" aria-pressed="false">谁更凶谁就垫底</button>
+ </div>
+ <p class="guess-out" id="fwGuessOut1" role="status" aria-live="polite">先押一个，再拖到 生产者基数 30、环节稳定 12。</p>
+ <div id="fwGuessBlock2" hidden>
+ <p><b>第 2 题：</b>生产者 6、环节 4，还够稳吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜够不够">
+ <button class="btn guess-pick" type="button" data-fw-g2="yes" aria-pressed="false">够稳</button>
+ <button class="btn guess-pick" type="button" data-fw-g2="no" aria-pressed="false">偏断</button>
+ </div>
+ <p class="guess-out" id="fwGuessOut2" role="status" aria-live="polite">押好后拖到 生产者基数 6、环节稳定 4。</p>
+ </div>
+ <div id="fwGuessBlock3" hidden>
+ <p><b>第 3 题：</b>生产者最少 4、环节最弱 2。还能明显够稳吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜最低档">
+ <button class="btn guess-pick" type="button" data-fw-g3="yes" aria-pressed="false">能，还在</button>
+ <button class="btn guess-pick" type="button" data-fw-g3="no" aria-pressed="false">不能，两边都太弱</button>
+ <button class="btn guess-pick" type="button" data-fw-g3="zero" aria-pressed="false">变成 0，没了</button>
+ </div>
+ <p class="guess-out" id="fwGuessOut3" role="status" aria-live="polite">押好后生产者 4、环节 2。</p>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="teachWhatTitle">
+ <h2 id="teachWhatTitle">食物网里谁生产、谁消费，箭头该朝哪</h2>
+ <p>先贴角色，再画箭头。草、树、藻自己用光做糖，是生产者，整张网的底座。兔、虫去吃叶子，是初级消费者；狐、鹰再去吃它们，能量已经过了一层。蘑菇和许多菌是分解者，把落叶和遗体拆开，养分才能回到土里给草再用。没有分解者，落叶会堆成运不走的仓库。</p>
+ <p>箭头从被吃的指向去吃的：草→兔→狐。画反了，故事就从头反着讲。太阳给光，驱动生产者做糖，可它不是菜单上的一口吃食，不要画成「被谁吃」。体型大不一定站在最高营养级：大象很大，吃的仍是草。每一级都有很大一部分能量变成热散掉，所以草这一层必须够厚，上面才吃得上。</p>
+ <p>因为投喂会改野生动物找人要吃的习惯，所以不把投喂当成「加一条箭头」的游戏。台上「传递≈生产者×环节稳÷18」是本页比较尺子：草够厚、环节不断，数字变大；两边都弱，链就偏断。阈值 10 只是本页分界，不是野外普查，更不是「谁更凶谁垫底」。</p>
+ </section>
+
+ <section class="card fw-atlas" aria-labelledby="fwAtlasTitle">
+ <h2 id="fwAtlasTitle">食物网图鉴</h2>
+ <p>下面有 12&nbsp;张卡。任务是点一张生产者和一张消费者。太阳是起点，蘑菇是分解者，可以先点来看，但不算完成。</p>
+ <div class="kid-figure-grid" id="fwAtlasGrid" role="group" aria-label="食物网图鉴：十二种角色">
+ <button class="kid-figure" type="button" id="fwFigSun" data-fw="sun" aria-pressed="false" aria-label="太阳：整张网的起点" data-say="太阳：不吃东西，也不被吃。它把光和热送给植物，整张网从这里开始。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/sun.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">太阳</span>
+ <span class="kid-figure-fact">太阳只给光、不进谁吃谁的菜单；草接到光才自己做糖，不是天上掉下来的饼干</span>
+ </button>
+ <button class="kid-figure" type="button" id="fwFigGrass" data-fw="grass" aria-pressed="false" aria-label="草：生产者，自己用光做食物" data-say="草：自己用阳光做食物，是生产者。兔子、虫和人都会来吃它。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/grass.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">草</span>
+ <span class="kid-figure-fact">草和树自己用光做糖，这一层垫底；它不吃别人，也不是「最大的才排第一」</span>
+ </button>
+ <button class="kid-figure" type="button" id="fwFigRabbit" data-fw="rabbit" aria-pressed="false" aria-label="兔子：消费者，吃草" data-say="兔子：吃草，是消费者。它自己不会做食物，所以要去找草。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rabbit.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">兔子</span>
+ <span class="kid-figure-fact">兔子啃绿叶，自己不会造糖；台上能看见咬痕，不是「它比较勤快才排前面」</span>
+ </button>
+ <button class="kid-figure" type="button" id="fwFigFox" data-fw="fox" aria-pressed="false" aria-label="狐：消费者，吃兔子和虫" data-say="狐：吃兔子、也吃虫，是消费者。箭头从兔子指到狐，表示狐去吃兔子。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/fox.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">狐</span>
+ <span class="kid-figure-fact">狐狸吃已经做好的食物，能量过了一层更少；不是体型大就自动站最高</span>
+ </button>
+ <button class="kid-figure" type="button" id="fwFigMush" data-fw="mush" aria-pressed="false" aria-label="蘑菇分解：分解者，不追活的" data-say="蘑菇分解：不自己做食物，也不追着活的吃。它拆开死去的东西，把养分还回土里。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/mushroom.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">蘑菇分解</span>
+ <span class="kid-figure-fact">蘑菇把落叶和遗体拆开，养分回土给草再用；不是装饰小伞，也不是吃剩的垃圾</span>
+ </button>
+ <button class="kid-figure" type="button" id="fwFigEagle" data-fw="eagle" aria-pressed="false" aria-label="鹰：消费者，吃兔子、狐和虫" data-say="鹰：飞得高，吃兔子、狐和虫，是消费者。它站在网的靠上边。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/eagle.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">鹰</span>
+ <span class="kid-figure-fact">鹰能吃兔、狐和虫，箭头仍从被吃的指向它；不是「谁更凶谁就自动站在塔尖」</span>
+ </button>
+ <button class="kid-figure" type="button" id="fwFigBug" data-fw="bug" aria-pressed="false" aria-label="虫：消费者，吃草" data-say="虫：吃草或更小的东西，是消费者。它也可能被狐、鹰和人吃掉。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/grasshopper.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">虫</span>
+ <span class="kid-figure-fact">虫子啃叶子，自己也可能被吃；一片缺角的叶就是证据，不是「虫子不算正餐」</span>
+ </button>
+ <button class="kid-figure" type="button" id="fwFigHuman" data-fw="human" aria-pressed="false" aria-label="人：消费者，吃草也吃动物" data-say="人：吃草、吃兔子、也吃别的动物，是消费者。人也在这张网里，不是站在网外面。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/human-body.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">人</span>
+ <span class="kid-figure-fact">有的动物又吃草又吃肉，箭头会跨两层；不是只能画一条直线才算对</span>
+ </button>
+ <button class="kid-figure" type="button" id="fwFigTree" data-fw="tree" aria-pressed="false" aria-label="树：生产者，自己用光做食物" data-say="树：自己用阳光做食物，是生产者。叶子比草更高，仍是整张网的起点之一。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/pine.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">树</span>
+ <span class="kid-figure-fact">树叶和草同一层：自己用光做糖；叶子绿不等于已经是食物，先认生产者</span>
+ </button>
+ <button class="kid-figure" type="button" id="fwFigOwl" data-fw="owl" aria-pressed="false" aria-label="猫头鹰：消费者，夜里去捉" data-say="猫头鹰：吃老鼠、也吃虫，是消费者。它自己不会做食物，夜里去捉已经做好的。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/owl.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">猫头鹰</span>
+ <span class="kid-figure-fact">猫头鹰夜里捉鼠和虫，吃的是别人做好的；不是「夜里出来的都在造糖」</span>
+ </button>
+ <button class="kid-figure" type="button" id="fwFigMouse" data-fw="mouse" aria-pressed="false" aria-label="老鼠：消费者，吃草籽" data-say="老鼠：吃草籽和残渣，是消费者。它也可能被猫头鹰和狐吃掉。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/mouse.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">老鼠</span>
+ <span class="kid-figure-fact">鸟啄草籽，自己也会被更高一层吃掉；籽不是自己长出来的糖，是生产者做的</span>
+ </button>
+ <button class="kid-figure" type="button" id="fwFigWorm" data-fw="worm" aria-pressed="false" aria-label="蚯蚓：分解者，拆开落叶" data-say="蚯蚓：不自己做食物，也不追着活的吃。它把落叶和死去的东西拆开，把养分还回土里。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/earthworm.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">蚯蚓</span>
+ <span class="kid-figure-fact">菌把落叶拆开，土才有养分给草再用；落叶堆着不是仓库装满，是还没拆完</span>
+ </button>
+ </div>
+ <p class="live-text" id="fwAtlasSay" role="status" aria-live="polite">还没选。点一张生产者，再点一张消费者。</p>
+ </section>
+
+
+ <section class="card" aria-labelledby="predictTitle">
+ <h2 id="predictTitle">猜一猜</h2>
+ <div class="kid-predict" style="--tone:var(--sci)"
+ data-kid-predict
+ data-kid-predict-explain="生产者固定光能；消费者异养；分解者回流养分。箭头：被吃的→去吃的。太阳给光，不是猎物。"
+ data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+ data-kid-predict-again="押好了，点「看答案」。">
+ <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">☀️</span><b>食物网箭头从草指向兔，表示什么？太阳要不要画成「被吃」？</b></p>
+ <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：箭头和太阳的角色">
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="sun-eat">太阳也要被草吃掉，所以箭头指向太阳</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="eaten-to-eater" data-kid-predict-correct>箭头从被吃的指向去吃的；太阳给光，不进入「谁吃谁」</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="random">箭头方向随便画都行</button>
+ </div>
+ <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+ <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+ </div>
+ </section>
+
+ <section class="task" aria-labelledby="taskTitle">
+ <h2 class="task-title" id="taskTitle">任务：选一个生产者和一个消费者</h2>
+ <p>先点两张图鉴卡：一张必须是自己做食物的生产者，一张必须是要吃东西的消费者。再给每一张挑角色，然后点「记下这次比较」。</p>
+ <div class="fw-choice-row">
+ <p id="roleACap">第一张的角色</p>
+ <div class="kid-choice" id="roleA" role="group" aria-labelledby="roleACap">
+ <button type="button" data-slot="a" data-role="producer" aria-pressed="false">生产者</button>
+ <button type="button" data-slot="a" data-role="consumer" aria-pressed="false">消费者</button>
+ </div>
+ </div>
+ <div class="fw-choice-row">
+ <p id="roleBCap">第二张的角色</p>
+ <div class="kid-choice" id="roleB" role="group" aria-labelledby="roleBCap">
+ <button type="button" data-slot="b" data-role="producer" aria-pressed="false">生产者</button>
+ <button type="button" data-slot="b" data-role="consumer" aria-pressed="false">消费者</button>
+ </div>
+ </div>
+ <button class="btn btn-primary" type="button" id="confirmBtn" disabled>记下这次比较</button>
+ <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+ <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+ <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先点一张生产者和一张消费者。</p>
+ </section>
+
+
+ <section class="card" aria-labelledby="lookTitle">
+ <h2 id="lookTitle">箭头指向「谁被谁吃」；太阳不是被吃的，是供能的</h2>
+ <p>同一张图，先只改「角色」这一项：草、兔、狐、蘑菇各贴一种角色，再画箭头。箭头尾巴在被吃的，箭头尖在去吃的。再检查有没有把太阳画成「被谁吃」——太阳给光，不是菜单上的一口。这样比，才知道网不是「谁更大谁吃谁」的排名。</p>
+ <p>完成句写「箭头从被吃的指向去吃的」或「太阳不是一口吃食」，不要写「大的吃小的」。大象体型大，营养级也不一定最高。不把投喂野生动物当成加箭头游戏。</p>
+ <div class="kid-figure-grid" role="group" aria-label="主题细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">生产者</span><span class="kid-figure-sub">光合</span><p class="kid-figure-fact">草、树、藻自己用光做糖，这一层垫住整张网；太阳只供光，不是菜单上的一口吃食</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rabbit.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">初级消费</span><span class="kid-figure-sub">植食</span><p class="kid-figure-fact">兔和许多虫吃的是叶子或种子，自己不会造糖；咬痕能指着看，不是「它们比较小所以垫底」</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/fox.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">更高消费</span><span class="kid-figure-sub">肉食/杂食</span><p class="kid-figure-fact">狐吃兔或虫，能量过了一层到嘴里更少；台上「传递」比的是稳不稳，不是谁更凶</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/mushroom.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">分解者</span><span class="kid-figure-sub">回流</span><p class="kid-figure-fact">蘑菇和菌把遗体拆开，养分才回土给草再用；没有它们，落叶会堆成运不走的仓</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/grasshopper.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">箭头</span><span class="kid-figure-sub">方向</span><p class="kid-figure-fact">箭头从被吃的指向去吃的；画反了，故事就反成「草去咬兔」，先找谁被吃</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/sun.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">太阳</span><span class="kid-figure-sub">光</span><p class="kid-figure-fact">太阳给光让草做糖，不是被谁吃的一口食；不要画成「鹰吃太阳」那种反故事</p></div>
+ </div>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>贴角色。</b>草、兔、狐、蘑菇各贴一种角色。</li>
+ <li data-step="2"><b>画箭头。</b>至少画对&nbsp;3&nbsp;条被吃→去吃。</li>
+ <li data-step="3"><b>排除太阳。</b>说明太阳为何不进菜单。</li>
+ <li data-step="4"><b>谈体型。</b>举例「体型大但营养级不一定最高」。</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>草自己用光做食物；兔吃草，狐吃兔；蘑菇帮忙把落叶变回土里的养分。箭头从被吃的指向去吃的。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>先贴生产者、消费者、分解者，再画箭头。太阳只供光。大象体型大，营养级也不一定最高。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>每上一层能量漏掉许多，所以草必须最多。杂食会跨级。网比链多几条路，一条断了还不至于全塌。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子应能指出谁在生产、谁在消费，并把箭头从被吃的指向去吃的；太阳不是菜单上的一口，体型大也不等于站在最高营养级。</p>
+ <ul class="ask-list">
+ <li>谁在自己用光做食物？草少了，上面谁先饿？</li>
+ <li>箭头从被吃的指向去吃的，还是反过来？</li>
+ <li>蘑菇吃不吃草？它把什么送回土里？</li>
+ <li>太阳能画进「被谁吃」吗？为什么不能？</li>
+ </ul>
+ </section>
+
+
+ <section class="card" aria-labelledby="deepTitle">
+ <h2 id="deepTitle">三条箭头纠错</h2>
+ <p>故意留一条画反的箭头。先找被吃的，再找去吃的，改对并说出理由。完成句写「箭头从被吃的指向去吃的」。再补一条分解者：落叶被拆开，养分回到土里给草用。没有这一条，落叶会堆成运不走的仓库。</p>
+ <p>杂食会跨级：熊既吃浆果又吃鱼，箭头可以有两条，不要强迫它只站在一层。网比链多几条路，一条断了还不至于全塌。金字塔图适合讲「越往上越少」，食物网适合讲「谁和谁有关系」——两张图可以并用，但不要假装它们是同一张图。</p>
+ <p>因为投喂会改野生动物找人要吃的习惯，所以不把投喂当加箭头游戏。台上传递数字只比较草够不够厚、环节稳不稳，不是「谁更凶」的排名，也不是野外说明书。</p>
+ <div class="kid-figure-grid" role="group" aria-label="专属事实卡">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rabbit.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">画反</span><span class="kid-figure-sub">纠错</span><p class="kid-figure-fact">故意留&nbsp;1&nbsp;条画反的箭头，先指被吃的再指去吃的；改对了故事才正，不是比谁画得好看</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/mushroom.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">分解</span><span class="kid-figure-sub">回流</span><p class="kid-figure-fact">落叶被菌拆开，养分才回到土里给植物用；堆着的黄叶不是「已经吃完的垃圾」</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/fox.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">口诀</span><span class="kid-figure-sub">完成</span><p class="kid-figure-fact">先找谁被咬、再画箭头尖指向谁去吃；画反不是「方向随便」，故事会整段反掉</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">土壤</span><span class="kid-figure-sub">连</span><p class="kid-figure-fact">没有分解者，落叶会堆成运不走的仓库；蘑菇不是摆设，是把养分送回家的那一环</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/sun.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">太阳</span><span class="kid-figure-sub">排除</span><p class="kid-figure-fact">太阳给生产者能量，不是网里的一只动物；不要给它画一张嘴，它不进谁吃谁</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-ban" aria-hidden="true"><img class="photo-real" src="../assets/photos/fox.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">投喂野生</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">投喂会改野生动物找人要吃的习惯，不是「加一条箭头」的游戏；远远看就够</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="fieldTitle">
+ <h2 id="fieldTitle">对照卡：链 vs 网 vs 金字塔示意</h2>
+ <p>三列回答三个不同问题。甲：链是一条线，谁吃谁好讲，可是太简单，容易漏掉真实分支。乙：网有很多箭头，更接近野外谁和谁有关系。丙：金字塔适合讲「越往上数量越少」，不画具体谁吃谁。否决句：「谁更大谁就站在最上面。」</p>
+ <p>完成句各写「什么时候用它教」。箭头仍然从被吃的指向去吃的。本页传递读数只比较草和环节，不是三种图的说明书，更不是「大吃小」的排名。</p>
+ <div class="kid-figure-grid" role="group" aria-label="对照与细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">链</span><span class="kid-figure-sub">单路径</span><p class="kid-figure-fact">链是一条线，好讲入门，但野外很少只有一条路；别把示意链当成普查完了</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/owl.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">网</span><span class="kid-figure-sub">多路径</span><p class="kid-figure-fact">网有很多箭头，一只动物常连好几条；更接近真实关系，不是为了把图画乱</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/ospreys.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">金字塔</span><span class="kid-figure-sub">层级</span><p class="kid-figure-fact">金字塔适合讲越往上数量越少，因为每层漏掉许多热；不是「上面的更尊贵」</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/pine.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">何时用</span><span class="kid-figure-sub">各一</span><p class="kid-figure-fact">讲谁连谁用网，讲多少用金字塔，入门用链；三种图各管一事，不要混成一张</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/fox.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">箭头</span><span class="kid-figure-sub">仍要</span><p class="kid-figure-fact">箭头尾巴贴在被吃的身上，尖指向去吃的；指着台上核对，不要凭「谁看起来更凶」</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rabbit.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">只记名字</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">只背兔子狐狸的名字不够，要能指着说箭头朝哪；名字对、方向反，故事仍是错的</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="moreTitle">
+ <h2 id="moreTitle">阳台/公园角色贴标签三分钟</h2>
+ <p>看大约三分钟：找到至少一个自己用光做糖的（绿叶子多半是），再找到一片被咬过的叶子——那就是消费者来过的证据。先贴「生产者」和「去吃」，再收工。户外只贴标签，不采集，不吓动物。</p>
+ <p>口头只要两句：「草自己用光做食物。」「箭头从被吃的指向去吃的。」有人说「谁更大谁吃谁」，让孩子指着大象吃草反驳。</p>
+ <p>保护物种和私人花园规则优先于「为了完成任务」。不把投喂当成加箭头游戏。本页传递数字不要抄进野外清单。</p>
+ <div class="kid-figure-grid" role="group" aria-label="加厚事实">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dandelion.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">3&nbsp;分钟</span><span class="kid-figure-sub">观察</span><p class="kid-figure-fact">阳台或公园看大约&nbsp;3&nbsp;分钟，找谁在晒太阳做糖、谁留下咬痕；不是出门去抓一只来数</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">生产者</span><span class="kid-figure-sub">至少</span><p class="kid-figure-fact">绿叶子多半在自己造糖，先贴「生产者」；绿不等于已经是别人的饭，先认谁在做糖</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/grasshopper.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">消费迹象</span><span class="kid-figure-sub">至少</span><p class="kid-figure-fact">一片缺角的叶子，就是有消费者来过的证据；看不见动物也能先记下「有谁去吃」</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-ban" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">乱采</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">只贴标签，不采受保护的植物，也不吓走正在吃的动物；观察不是把园子搬回家</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/pine.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">标签</span><span class="kid-figure-sub">角色</span><p class="kid-figure-fact">阳台或公园先写谁造糖、谁去吃，再收工；不必画完整张野外网，也不必投喂凑箭头</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/earthworm.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">箭头</span><span class="kid-figure-sub">课内</span><p class="kid-figure-fact">户外只找造糖和咬痕当证据，箭头仍从被吃指向去吃；不要另编一张「更好看」的新网</p></div>
+ </div>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+ <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+ <p>想知道「箭头该朝哪」，就只改方向这一项。同一对草和兔，先画「被吃的→去吃的」，再故意画反一次，看故事会不会从头反着讲。把「谁更大」叠进同一档，分不清到底是方向错了，还是把网当成了排名。</p>
+ <ul>
+ <li><b>只改这一项：</b>箭头从被吃的指向去吃的，还是反过来。</li>
+ <li><b>先保持不变：</b>同一对角色、同一张示意。</li>
+ <li><b>要观察的：</b>谁在造糖，谁在去吃；太阳有没有被画进菜单。</li>
+ <li><b>另开一行：</b>分解者回流、体型不等于营养级、投喂不是加箭头，各记各的。</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+ <h2 id="askMoreTitle">还可以问下去</h2>
+ <ol>
+ <li>草少了，上面谁先饿？能量每一级漏掉的是「脾气」，还是变成热散掉了？</li>
+ <li>大象很大，为什么营养级不一定最高？「谁更大谁吃谁」错在哪一张图？</li>
+ <li>蘑菇吃不吃草？没有分解者，落叶会怎样？为什么不能把投喂野生动物当成加一条箭头？</li>
+ <li>指着台上一条箭头：尾巴在谁身上、尖指向谁？若画反，故事哪一句先反掉？</li>
+ <li>太阳要不要画进「被谁吃」？关掉光，草还能不能自己做糖？</li>
+ <li>链、网、金字塔各回答哪一个问题：谁连谁、有多少、还是入门好讲？</li>
+ </ol>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+ <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+ <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把营养级效率提前塞进四岁耳朵。</p>
+ <div class="age-tiers" aria-label="给家长的分层讲法">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>草自己用光做食物；兔吃草，狐吃兔；蘑菇把落叶变回土里的养分。箭头从被吃的指向去吃的。太阳不是被吃的。我们不投喂野生动物。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>先贴生产者、消费者、分解者，再画箭头。太阳只供光。大象体型大，营养级也不一定最高。本页数字只比较传递，不是谁更凶。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>每一级能量漏掉许多，所以草必须最多。杂食会跨级。网比链多几条路。传递≈生产者×环节稳÷18 是示意尺子。投喂会改野生动物找人要吃的习惯。</p></div>
+ </div>
+ </section>
+
+ <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+ <h2 class="work-card-title" id="workTitle">作品表单：食物网观察</h2>
+ <p class="work-card-meta">只保存文字，存在这台设备上。晚饭桌上的菜也可以画成一条小网。</p>
+ <div class="work-card-fields">
+ <div><label for="workType">作品类型</label>
+ <select class="input" id="workType" name="type">
+ <option value="observation">观察记录</option>
+ <option value="explanation">我的解释</option>
+ <option value="model">模型说明</option>
+ </select>
+ </div>
+ <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：草是生产者，兔子是消费者"></div>
+ <div><label for="workContent">谁吃谁</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下箭头从谁指到谁，以及太阳、草、动物、蘑菇各在做什么。"></textarea></div>
+ <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+ </div>
+ <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+ </form>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+ <h2 id="askTitle">给家长的问题</h2>
+ <ul class="ask">
+ <li><b>先猜：</b>若分解者消失，土壤养分循环会怎样？</li>
+ <li><b>对照：</b>食物链直线与食物网多线，哪个更接近野外？</li>
+ <li><b>任务：</b>孩子能否纠正一条画反的箭头？</li>
+ <li><b>杂食：</b>熊既吃浆果又吃鱼，箭头怎么画才不乱？</li>
+ <li><b>伦理：</b>为何不把投喂野生动物当「加一条箭头」游戏？</li>
+ <li><b>误会：</b>「最大的动物在最高营养级」如何反例？</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+ <h2 id="whyTitle">背后的原理</h2>
+ <p>能量沿营养级往上走，每一级都有很大一部分变成热散掉，所以高层通常生物量更少。草这一层必须够厚，上面才吃得上。</p>
+ <p>网状连接提供备用路线，单线链更容易断。分解者把物质送回土里，和「谁吃谁」的箭头是一套，不是装饰。</p>
+ <p>示意图是教学压缩，不是野外普查。常见误会是箭头随便画、把太阳当猎物、或觉得分解者无关紧要。</p>
+ <p>因为投喂会改野生动物找人要吃的习惯，所以不把投喂当成「加一条箭头」的游戏。</p>
+ </section>
+
+ <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))" data-audience="parent">
+ <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">食物网公式卡 · 传递≈生产者×环节稳÷18（本页比较尺子）</p>
+ <p style="margin:0;color:var(--ink-mid);line-height:1.55">能量每层都会损耗。讲故事时保留分解者。因为投喂会改野生动物找人要吃的习惯，所以不把投喂当加箭头游戏。</p>
+ </div>
+
+
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+ <h2 id="nextTitle">接下来可以去</h2>
+ <p>带走句：因为投喂会改野生动物找人要吃的习惯，所以不把投喂当加箭头游戏。草垫底，能量才往上走；太阳不是一口吃食。栖息地页把「吃」写成四格里的一格；植物页看光怎么变成糖。</p>
+ <p class="row"><a class="btn btn-ghost" href="habitats.html">栖息地观察站</a><a class="btn btn-ghost" href="plants.html">植物观察站</a></p>
+ </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为投喂会改野生动物找人要吃的习惯，所以不把投喂当加箭头游戏。本页是示意模型，真实食物网更密。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+ "use strict";
+ var NS = "http://www.w3.org/2000/svg";
+ var NAMES = { sun:"太阳", grass:"草", rabbit:"兔子", fox:"狐", mush:"蘑菇分解", eagle:"鹰", bug:"虫", human:"人", tree:"树", owl:"猫头鹰", mouse:"老鼠", worm:"蚯蚓" };
+ var ROLES = { producer:"生产者", consumer:"消费者" };
+ var KIND = { sun:"energy", grass:"producer", rabbit:"consumer", fox:"consumer", mush:"decomp", eagle:"consumer", bug:"consumer", human:"consumer", tree:"producer", owl:"consumer", mouse:"consumer", worm:"decomp" };
+ var ART = {
+ sun: '<circle class="fw-sun" cx="80" cy="70" r="28"/><path class="fw-ray" d="M80 28 V12 M112 42 L126 30 M124 70 H140 M112 98 L126 110 M80 112 V128 M48 98 L34 110 M36 70 H20 M48 42 L34 30"/>',
+ grass: '<path class="fw-grass" d="M36 120 Q28 48 50 120 Z"/><path class="fw-grass" d="M62 122 Q66 36 82 122 Z"/><path class="fw-grass" d="M92 120 Q108 44 118 120 Z"/><path class="fw-grass" d="M120 122 Q136 64 144 122 Z"/>',
+ rabbit: '<ellipse class="fw-rabbit" cx="78" cy="96" rx="32" ry="18"/><ellipse class="fw-rabbit" cx="110" cy="82" rx="14" ry="11"/><ellipse class="fw-rabbit" cx="104" cy="52" rx="6" ry="20"/><ellipse class="fw-rabbit" cx="118" cy="54" rx="5" ry="18"/><circle class="fw-eye" cx="116" cy="78" r="2.1"/>',
+ fox: '<ellipse class="fw-fox" cx="78" cy="94" rx="32" ry="16"/><ellipse class="fw-fox" cx="112" cy="84" rx="16" ry="11"/><path class="fw-fox" d="M50 94 Q22 62 36 102"/><path class="fw-fox" d="M102 74 L96 52 L112 68 M116 74 L126 50 L122 74"/><circle class="fw-eye" cx="118" cy="80" r="2"/>',
+ mush: '<ellipse class="fw-mush-cap" cx="80" cy="78" rx="40" ry="16"/><rect class="fw-mush-stem" x="68" y="78" width="24" height="32"/>',
+ eagle: '<path class="fw-eagle" d="M16 80 Q80 36 144 80 Q80 62 16 80"/><ellipse class="fw-eagle" cx="80" cy="74" rx="14" ry="11"/><circle class="fw-eye" cx="86" cy="70" r="2"/>',
+ bug: '<ellipse class="fw-bug" cx="78" cy="90" rx="26" ry="16"/><circle class="fw-bug" cx="108" cy="84" r="10"/><path class="fw-bug" d="M60 78 L40 60 M60 102 L40 118 M96 78 L118 58 M96 102 L118 118" fill="none" stroke-width="3"/><circle class="fw-eye" cx="114" cy="80" r="1.8"/>',
+ human: '<circle class="fw-human" cx="80" cy="48" r="18"/><path class="fw-shirt" d="M56 68 Q80 58 104 68 L110 118 H50 Z"/><path class="fw-human" d="M62 118 V146 M98 118 V146" fill="none" stroke-width="8" stroke-linecap="round"/><circle class="fw-eye" cx="74" cy="46" r="2"/><circle class="fw-eye" cx="86" cy="46" r="2"/>',
+ tree: '<rect class="fw-mush-stem" x="104" y="86" width="16" height="60"/><ellipse class="fw-grass" cx="112" cy="78" rx="44" ry="38"/>',
+ owl: '<ellipse class="fw-eagle" cx="112" cy="86" rx="32" ry="36"/><circle class="fw-eagle" cx="112" cy="56" r="20"/><circle class="fw-eye" cx="104" cy="54" r="2.4"/><circle class="fw-eye" cx="120" cy="54" r="2.4"/><path class="fw-eagle" d="M82 78 L50 100 M142 78 L174 100"/>',
+ mouse: '<ellipse class="fw-rabbit" cx="100" cy="108" rx="32" ry="16"/><ellipse class="fw-rabbit" cx="134" cy="98" rx="14" ry="11"/><path class="fw-rabbit" d="M72 112 Q40 130 56 142"/><circle class="fw-eye" cx="140" cy="96" r="2"/>',
+ worm: '<path class="fw-mush-stem" d="M36 110 C72 86 96 132 132 104 C152 88 168 124 184 110" fill="none" stroke-width="10" stroke-linecap="round"/><ellipse class="fw-grass" cx="52" cy="86" rx="14" ry="8"/>'
+ };
+ var picked = [];
+ var roles = { a:"", b:"" };
+ var done = false;
+ var slotA = document.getElementById("slotA");
+ var slotB = document.getElementById("slotB");
+
+ function setPressed(sel, on){
+ Array.prototype.forEach.call(document.querySelectorAll(sel), function(n){
+ n.setAttribute("aria-pressed", on(n) ? "true" : "false");
+ });
+ }
+ function fillSlot(slot, id){
+ while (slot.firstChild) slot.removeChild(slot.firstChild);
+ if (!id || !ART[id]) return;
+ var wrap = document.createElementNS(NS, "g");
+ wrap.innerHTML = ART[id];
+ slot.appendChild(wrap);
+ }
+ function pairSay(a, b){
+ var ka = KIND[a], kb = KIND[b];
+ if ((ka === "energy" && kb === "producer") || (kb === "energy" && ka === "producer")) return "太阳把光给草";
+ if ((ka === "producer" && kb === "consumer") || (kb === "producer" && ka === "consumer")) {
+ var eater = ka === "consumer" ? a : b;
+ var food = ka === "producer" ? a : b;
+ return NAMES[eater]+"吃"+NAMES[food];
+ }
+ if (ka === "decomp" || kb === "decomp") return "蘑菇分解死去的东西";
+ if (ka === "energy" || kb === "energy") return "太阳是起点，还要接到草或动物上";
+ if (ka === "consumer" && kb === "consumer") return NAMES[a]+"和"+NAMES[b]+"都要吃东西";
+ return "箭头表示谁吃谁";
+ }
+ function paintArrow(on){
+ var line = document.getElementById("fwArrow");
+ var head = document.getElementById("fwHead");
+ var lab = document.getElementById("fwArrowLab");
+ if (!on) {
+ line.setAttribute("hidden", "hidden");
+ head.setAttribute("hidden", "hidden");
+ line.setAttribute("d", "");
+ head.setAttribute("points", "");
+ lab.textContent = "";
+ return;
+ }
+ line.removeAttribute("hidden");
+ head.removeAttribute("hidden");
+ line.setAttribute("d", "M210 118 H350");
+ head.setAttribute("points", "350,110 368,118 350,126");
+ lab.textContent = pairSay(picked[0], picked[1]);
+ }
+ function paintStage(){
+ var a = picked[0] || "";
+ var b = picked[1] || "";
+ fillSlot(slotA, a);
+ fillSlot(slotB, b);
+ document.getElementById("labA").textContent = a ? NAMES[a] : "左边还空着";
+ document.getElementById("labB").textContent = b ? NAMES[b] : "右边还空着";
+ document.getElementById("ringA").setAttribute("class", a ? "fw-ring on" : "fw-ring");
+ document.getElementById("ringB").setAttribute("class", b ? "fw-ring on" : "fw-ring");
+ document.getElementById("roleACap").textContent = a ? NAMES[a]+"的角色" : "第一张的角色";
+ document.getElementById("roleBCap").textContent = b ? NAMES[b]+"的角色" : "第二张的角色";
+ paintArrow(!!(a && b));
+ var live = document.getElementById("live");
+ if (!a) live.textContent = "两边都空着。先点一张自己做食物的，再点一张要吃东西的。";
+ else if (!b) live.textContent = NAMES[a]+"站到了左边。再点另一张，站到右边。";
+ else live.textContent = pairSay(a, b)+"。给它们各选一个角色。";
+ }
+ function hasPair(){
+ if (picked.length < 2) return false;
+ var kinds = [KIND[picked[0]], KIND[picked[1]]];
+ return kinds.indexOf("producer") >= 0 && kinds.indexOf("consumer") >= 0;
+ }
+ function rolesMatch(){
+ return roles.a && roles.b && roles.a === KIND[picked[0]] && roles.b === KIND[picked[1]];
+ }
+ function sync(){
+ var status = document.getElementById("taskStatus");
+ var btn = document.getElementById("confirmBtn");
+ if (done) {
+ btn.disabled = true;
+ return;
+ }
+ if (picked.length < 2) {
+ btn.disabled = true;
+ status.textContent = "尚未完成：先点一张生产者和一张消费者。";
+ return;
+ }
+ if (!hasPair()) {
+ btn.disabled = true;
+ status.textContent = "这两张还不是「生产者 + 消费者」。草和树是生产者；兔子、狐、鹰、虫、人、猫头鹰、老鼠是消费者。太阳是起点，蘑菇和蚯蚓是分解者。";
+ return;
+ }
+ if (!roles.a || !roles.b) {
+ btn.disabled = true;
+ status.textContent = "生产者和消费者都点到了。再给每一张挑角色。";
+ return;
+ }
+ if (roles.a === roles.b) {
+ btn.disabled = true;
+ status.textContent = "两个角色现在一样。要一个生产者、一个消费者。";
+ return;
+ }
+ if (!rolesMatch()) {
+ btn.disabled = true;
+ status.textContent = "再看一看：谁自己做食物，谁要吃东西？";
+ return;
+ }
+ btn.disabled = false;
+ status.textContent = NAMES[picked[0]]+"是"+ROLES[roles.a]+"，"+NAMES[picked[1]]+"是"+ROLES[roles.b]+"。点「记下这次比较」。";
+ }
+ Array.prototype.forEach.call(document.querySelectorAll("[data-fw]"), function(btn){
+ btn.addEventListener("click", function(){
+ var id = btn.getAttribute("data-fw");
+ var i = picked.indexOf(id);
+ if (i >= 0) picked.splice(i, 1);
+ else {
+ if (picked.length >= 2) picked.shift();
+ picked.push(id);
+ }
+ setPressed("[data-fw]", function(n){ return picked.indexOf(n.getAttribute("data-fw")) >= 0; });
+ document.getElementById("fwAtlasSay").textContent = btn.getAttribute("data-say") || "";
+ if (i >= 0) {
+ if (picked.length < 2) roles.b = "";
+ if (picked.length < 1) roles.a = "";
+ }
+ setPressed("#roleA [data-role]", function(n){ return n.getAttribute("data-role") === roles.a; });
+ setPressed("#roleB [data-role]", function(n){ return n.getAttribute("data-role") === roles.b; });
+ paintStage();
+ sync();
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-slot]"), function(btn){
+ btn.addEventListener("click", function(){
+ var slot = btn.getAttribute("data-slot");
+ var role = btn.getAttribute("data-role");
+ if (slot === "a" && !picked[0]) return;
+ if (slot === "b" && !picked[1]) return;
+ roles[slot] = role;
+ setPressed(slot === "a" ? "#roleA [data-role]" : "#roleB [data-role]", function(n){ return n.getAttribute("data-role") === role; });
+ sync();
+ });
+ });
+ document.getElementById("clearPick").addEventListener("click", function(){
+ if (done) return;
+ picked = [];
+ roles = { a:"", b:"" };
+ setPressed("[data-fw]", function(){ return false; });
+ setPressed("[data-slot]", function(){ return false; });
+ document.getElementById("fwAtlasSay").textContent = "还没选。点一张生产者，再点一张消费者。";
+ paintStage();
+ sync();
+ });
+ document.getElementById("confirmBtn").addEventListener("click", function(){
+ if (done || !hasPair() || !rolesMatch()) return;
+ done = true;
+ var evidence = NAMES[picked[0]]+"（"+ROLES[roles.a]+"）和"+NAMES[picked[1]]+"（"+ROLES[roles.b]+"）";
+ if (window.Progress) Progress.complete("nature/foodweb.html", evidence);
+ document.getElementById("taskStatus").textContent = "完成啦：你选出了生产者"+ (KIND[picked[0]]==="producer"?NAMES[picked[0]]:NAMES[picked[1]]) +"和消费者"+(KIND[picked[0]]==="consumer"?NAMES[picked[0]]:NAMES[picked[1]])+"。";
+ this.disabled = true;
+ });
+ paintStage();
+ sync();
+})();
+</script>
+<script>
+
+(function(){
+ "use strict";
+ var a = document.getElementById("fwA");
+ var b = document.getElementById("fwB");
+ if (!a || !b) return;
+ var g1 = "", g2 = "", g3 = "";
+ var g1Done = false, g2Done = false, g3Done = false;
+ function score(){ return Math.round(Number(a.value) * Number(b.value) / 18); }
+ function paint(){
+ var s = score();
+ var ok = s >= 10;
+ document.getElementById("fwALab").textContent = a.value;
+ document.getElementById("fwBLab").textContent = b.value;
+ a.setAttribute("aria-valuetext", a.value);
+ b.setAttribute("aria-valuetext", b.value);
+ document.getElementById("fwAOut").textContent = a.value;
+ document.getElementById("fwSOut").textContent = String(s);
+ document.getElementById("fwOkOut").textContent = ok ? "够稳" : "偏断";
+ document.getElementById("fwStateLab").textContent = ok ? "草垫底，能量才往上走" : "底座空了，上面先饿";
+ document.getElementById("fwProd").setAttribute("r", String(16 + Number(a.value) * 0.55));
+ var herb = document.getElementById("fwHerb");
+ if (herb) herb.setAttribute("r", String(10 + Number(a.value) * 0.28));
+ var carn = document.getElementById("fwCarn");
+ if (carn) carn.setAttribute("r", String(7 + Number(a.value) * 0.16));
+ var decomp = document.getElementById("fwDecomp");
+ if (decomp) decomp.setAttribute("opacity", String(0.35 + Number(b.value) / 28));
+ var arr1 = document.getElementById("fwArr1");
+ var arr2 = document.getElementById("fwArr2");
+ var arr3 = document.getElementById("fwArr3");
+ var linkOp = String(0.22 + Number(b.value) / 24);
+ if (arr1) arr1.setAttribute("opacity", linkOp);
+ if (arr2) arr2.setAttribute("opacity", linkOp);
+ if (arr3) arr3.setAttribute("opacity", linkOp);
+ var heatOp = String(0.35 + Number(a.value) / 50);
+ var h1 = document.getElementById("fwHeat1");
+ var h2 = document.getElementById("fwHeat2");
+ var hl = document.getElementById("fwHeatLab");
+ if (h1) h1.setAttribute("opacity", heatOp);
+ if (h2) h2.setAttribute("opacity", heatOp);
+ if (hl) hl.setAttribute("opacity", heatOp);
+ document.getElementById("fwLabLive").textContent = ok
+ ? "草这一层必须够厚，能量才往上走。每一级都会散掉热，所以狐比草少。太阳给光，不是一口吃食。"
+ : "底座空了，或环节不稳，上面先饿。热还是会散，网更容易断。";
+ var sunFood = document.getElementById("fwSunFood");
+ if (sunFood) sunFood.setAttribute("opacity", ok ? "0.12" : "0.42");
+ var bh = 30 + s * 2.5;
+ document.getElementById("fwBar").setAttribute("height", String(bh));
+ document.getElementById("fwBar").setAttribute("y", String(180 - bh));
+
+ if (g1 && !g1Done && Number(a.value) === 30 && Number(b.value) === 12 && s === 20) {
+ g1Done = true;
+ document.getElementById("fwGuessOut1").innerHTML = (g1 === "20" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "草垫底，能量才往上走。不是谁更凶。";
+ document.getElementById("fwGuessBlock2").hidden = false;
+ }
+ if (g2 && !g2Done && Number(a.value) <= 6 && Number(b.value) <= 4 && !ok) {
+ g2Done = true;
+ document.getElementById("fwGuessOut2").innerHTML = (g2 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "草少、环节不稳，网会断。";
+ document.getElementById("fwGuessBlock3").hidden = false;
+ }
+ if (g3 && !g3Done && Number(a.value) === 4 && Number(b.value) === 2) {
+ g3Done = true;
+ document.getElementById("fwGuessOut3").innerHTML = (g3 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "生产者最少、环节最脆，传不下去。";
+ }
+}
+ a.addEventListener("input", paint); b.addEventListener("input", paint);
+ Array.prototype.forEach.call(document.querySelectorAll("[data-fw-g1]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g1Done) return;
+ g1 = btn.getAttribute("data-fw-g1");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-fw-g1]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("fwGuessOut1").textContent = "押好了。拖到 30 与 12。";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-fw-g2]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g2Done) return;
+ g2 = btn.getAttribute("data-fw-g2");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-fw-g2]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("fwGuessOut2").textContent = "押好了。拖到 6 与 4。";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-fw-g3]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g3Done) return;
+ g3 = btn.getAttribute("data-fw-g3");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-fw-g3]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("fwGuessOut3").textContent = "押好了。生产者 4、环节 2。";
+ });
+ });
+ paint();
+})();
+
+</script>
+<script>if (window.Progress) Progress.visit("nature/foodweb.html", "食物网观察站");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

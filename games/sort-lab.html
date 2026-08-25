@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>排序小工厂 · 颜色好看就算排好了，还是要先定规则？</title>
+<meta name="description" content="自己对调 6 到 8 根彩条，或一步步看冒泡排序。数比较次数，排好后再判断有没有比过每一对邻居。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  .hero { padding: 28px 0 10px; }
+  .hero h1 { margin: .15em 0 .3em; }
+  .lead { max-width: 58ch; color: var(--ink-mid); }
+  .kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--code) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--code) 12%,var(--surface)),var(--surface) 62%);
+  }
+  .mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--code) 36%,var(--line));
+    background: color-mix(in srgb,var(--code) 12%,var(--surface)); font-size: 2.2rem;
+  }
+  .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .sl-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+  .sl-sky { fill: color-mix(in srgb,var(--video) 10%,#eef7ff); }
+  .sl-floor { fill: color-mix(in srgb,var(--kit) 16%,#efe0c8); }
+  .sl-post { fill: color-mix(in srgb,var(--ink) 28%,#b9a078); }
+  .sl-beam { fill: color-mix(in srgb,var(--warn) 28%,#f3e0b0); stroke: color-mix(in srgb,var(--ink) 42%,transparent); stroke-width: 2; }
+  .sl-belt { fill: color-mix(in srgb,var(--ink) 16%,#c8b89a); }
+  .sl-gear { fill: color-mix(in srgb,var(--code) 42%,#e8c08a); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 1.6; }
+  .sl-lamp { fill: color-mix(in srgb,var(--warn) 46%,#ffe08a); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.4; }
+  .sl-hook { fill: none; stroke: color-mix(in srgb,var(--ink) 46%,transparent); stroke-width: 2; }
+  .sl-label { fill: var(--ink); font: 800 13px var(--mono); text-anchor: middle; }
+  .bar-scroller { overflow-x: auto; margin-top: 8px; }
+  .bar-row {
+    display: flex; align-items: flex-end; justify-content: center; gap: 8px;
+    width: max(100%, min-content); min-height: 160px; padding: 8px 4px 4px;
+  }
+  .bar-btn {
+    flex: 0 0 auto; width: 48px; min-width: 44px; min-height: 44px;
+    display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px;
+    padding: 6px 4px; border: 2px solid var(--line); border-radius: var(--r);
+    background: var(--surface); color: var(--ink); cursor: pointer;
+  }
+  .bar-btn:disabled { cursor: default; opacity: .92; }
+  .bar-btn.pick { border-color: var(--warn); border-style: dashed; box-shadow: 0 0 0 3px color-mix(in srgb,var(--warn) 22%,transparent); }
+  .bar-btn.pair { border-color: var(--code); box-shadow: 0 0 0 3px color-mix(in srgb,var(--code) 22%,transparent); }
+  .bar-shaft {
+    display: block; width: 100%; max-width: 32px; border-radius: 8px 8px 4px 4px;
+    border: 1px solid color-mix(in srgb,var(--ink) 28%,transparent);
+  }
+  .bar-h { font: 800 .92rem/1 var(--mono); color: var(--ink); white-space: nowrap; }
+  .readout { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); margin-top: 10px; }
+  .readout b { display: block; font: 800 1.2rem/1.2 var(--mono); color: var(--ink); }
+  .readout span { font-size: .78rem; color: var(--ink-dim); }
+  .kid-action-strip {
+    display: grid; gap: 10px; margin: 12px 0;
+    grid-template-columns: repeat(auto-fit,minmax(min(160px,100%),1fr));
+  }
+  .strip-kicker { grid-column: 1 / -1; }
+  .mode-label { white-space: nowrap; }
+  .reflect { display: grid; gap: 8px; margin-top: 12px; padding: 12px; border: 1px dashed color-mix(in srgb,var(--code) 40%,var(--line)); border-radius: var(--r); background: color-mix(in srgb,var(--code) 8%,var(--surface)); }
+  .reflect[hidden] { display: none; }
+  .reflect-q { margin: 0; color: var(--ink); font-weight: 800; }
+  .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+  .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+  .ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--code) 12%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--code) 40%,var(--line)); color:var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+  button, .btn { min-height: 44px; }
+  .stage + .kid-action-strip { margin-top: 8px; }
+  .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+  @media (max-width: 640px) {
+    .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+  /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+    @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 6px 0 8px; padding: 8px 10px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .2em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.35rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .86rem; line-height: 1.4; margin-bottom: .25em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 8px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1rem; margin-bottom: .25em; }
+    html[data-mode="kid"] .sl-art { display: none; }
+    html[data-mode="kid"] .kid-visual-stage > p { display: none; }
+    html[data-mode="kid"] .bar-scroller { max-height: 70px; margin: 0; }
+    html[data-mode="kid"] .readout { display: none; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .82rem; margin-bottom: 0; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+    html[data-mode="kid"] .kid-action-strip { margin: 4px 0; gap: 4px; }
+    html[data-mode="kid"] .kid-action-strip .strip-kicker { display: none; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+  }
+
+  .guess-card { border-color: color-mix(in srgb,var(--code) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--code); background: color-mix(in srgb,var(--code) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pick-btns .btn { white-space: nowrap; }
+</style>
+</head>
+<body data-playful-page="games/sort-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-hero-scene">
+    <div>
+      <p class="row"><span class="pill pill-code">编程</span><span class="pill">7–12&nbsp;岁</span><span class="pill">约 12&nbsp;分钟</span></p>
+      <h1>颜色好看就算排好了，还是要先定规则？</h1>
+      <p class="lead">本页先把规则钉死：从矮到高，高度写在每根底下，不只靠颜色认。一次只跟邻居换；排完还要按同一条标准检查每一对。好的分类别人能照着复做；中途改规则，刚才比过的都不算了。不是「分成两堆就行」，也不是「颜色好看就排好了」。台上比较次数是本页比较尺子，不是考试题量。条不打人，小片防误吞。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/shells.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">把彩条从矮到高排好</h2>
+    <p>左边应该最矮，右边应该最高。高度写在每根彩条底下，不只靠颜色认。</p>
+    <svg class="sl-art" id="factoryArt" viewBox="0 0 640 150" role="img" aria-labelledby="factoryTitle factoryDesc">
+      <title id="factoryTitle">排序小工厂舞台</title>
+      <desc id="factoryDesc">一座浅色小工厂：房梁、传送带和齿轮。高低不同的彩条排在传送带上，要从矮到高排好。</desc>
+      <rect class="sl-sky" width="640" height="150"/>
+      <rect class="sl-floor" y="118" width="640" height="32"/>
+      <rect class="sl-post" x="36" y="28" width="14" height="92"/>
+      <rect class="sl-post" x="590" y="28" width="14" height="92"/>
+      <rect class="sl-beam" x="28" y="22" width="584" height="16" rx="5"/>
+      <line class="sl-hook" x1="160" y1="38" x2="160" y2="58"/>
+      <line class="sl-hook" x1="320" y1="38" x2="320" y2="58"/>
+      <line class="sl-hook" x1="480" y1="38" x2="480" y2="58"/>
+      <ellipse class="sl-lamp" cx="160" cy="64" rx="10" ry="8"/>
+      <ellipse class="sl-lamp" cx="320" cy="64" rx="10" ry="8"/>
+      <ellipse class="sl-lamp" cx="480" cy="64" rx="10" ry="8"/>
+      <rect class="sl-belt" x="70" y="104" width="500" height="14" rx="7"/>
+      <circle class="sl-gear" cx="86" cy="111" r="11"/>
+      <circle class="sl-gear" cx="554" cy="111" r="11"/>
+      <text class="sl-label" x="320" y="98">从矮 → 高</text>
+    </svg>
+    <div class="bar-scroller">
+      <div class="bar-row" id="barRow" role="group" aria-label="待排序的彩条"></div>
+    </div>
+    <div class="readout">
+      <div><span>比较次数</span><b id="cmpOut">0</b></div>
+      <div><span>已比过的相邻对</span><b id="nbrOut">0</b></div>
+      <div><span>现在的样子</span><b id="stateOut">还没排好</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">点两根彩条，对调它们的位置。高的请往右挪。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="工厂主操作">
+    <span class="strip-kicker">工厂操作</span>
+    <button class="btn btn-primary mode-label" type="button" id="modeSelf" aria-pressed="true">自己对调</button>
+    <button class="btn mode-label" type="button" id="modeBubble" aria-pressed="false">看冒泡一步</button>
+    <button class="btn" type="button" id="stepBtn" disabled>看一步冒泡</button>
+    <button class="btn btn-ghost" type="button" id="resetBtn">换一批彩条</button>
+  </div>
+
+  <section class="card guess-card" aria-labelledby="guessTitleSt">
+    <h2 id="guessTitleSt">先猜一猜，再冒泡</h2>
+    <p><b>第 1 题：</b>相邻两根左边更高。点一次「换邻居」或对调后，这一对会？</p>
+    <div class="pick-btns" role="group" aria-label="猜换邻居">
+      <button class="btn guess-pick" type="button" data-guess1="swap" aria-pressed="false">对调：矮的到左边</button>
+      <button class="btn guess-pick" type="button" data-guess1="far" aria-pressed="false">跳去换最远的两根</button>
+      <button class="btn guess-pick" type="button" data-guess1="color" aria-pressed="false">只改颜色，高度不变</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。找到左高右矮的邻居，换一次，看高度。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>怎样才比较有把握说整列已经排好？</p>
+      <div class="pick-btns" role="group" aria-label="猜确认有序">
+        <button class="btn guess-pick" type="button" data-guess2="neighbors" aria-pressed="false">每一对邻居都比过（冒泡一轮）</button>
+        <button class="btn guess-pick" type="button" data-guess2="one" aria-pressed="false">只换过一次就够</button>
+        <button class="btn guess-pick" type="button" data-guess2="pretty" aria-pressed="false">颜色好看就排好了</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后排好整列，再检查邻居。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>传送带上有 <b id="guessNHint">n</b>&nbsp;根彩条。走完一轮冒泡，比较次数大约是？</p>
+      <div class="pick-btns" role="group" aria-label="猜一轮比较次数">
+        <button class="btn guess-pick" type="button" data-guess3="n1" aria-pressed="false">n−1&nbsp;次（每一对邻居各比一次）</button>
+        <button class="btn guess-pick" type="button" data-guess3="n" aria-pressed="false">正好 n 次</button>
+        <button class="btn guess-pick" type="button" data-guess3="1" aria-pressed="false">只比 1&nbsp;次就够</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后切到「看冒泡一步」，走完一整轮，看比较次数增加多少。</p>
+    </div>
+  </section>
+
+              <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">先说清规则，再只跟邻居换；排好还要按同一条标准检查</h2>
+    <p>本页规则先钉死：从矮到高，高度写在每根底下，不只靠颜色认。自己对调两根，或点「看一步冒泡」每次只比相邻一对。排好以后，再从左到右检查每一对邻居：左边不比右边高。漏一对，整列就不能说已经排好。</p>
+    <p>分类、排序都要先把标准说清楚。同一堆东西，按高矮和按颜色会排出两种队——规则不同，对错不同。中途改规则，刚才比过的都不算了，别人也无法核对。不是「分对了就行、不用检查」，也不是「颜色好看就排好了」。跳着对调离得远的两根，有时也能排好，但邻居没有全部检查过——排好了不等于每一对都比过。</p>
+    <p>一轮冒泡，每一对邻居各比一次，比较次数大约增加 n−1。台上的次数是比较尺子，用来看见「一轮要比几对」，不是编程竞赛讲义，也不是复杂度证明。比较和交换要分开数。条不打人。小片防误吞。</p>
+  </section>
+
+  <section class="card" data-edu-compare aria-labelledby="eduCompareTitle">
+    <h2 id="eduCompareTitle">像 · 不像（纠错对照）</h2>
+    <p>分类要同一条规则（大小/形状/材质）；不是只看谁好看。</p>
+    <div class="kid-figure-grid" role="group" aria-label="像与不像对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/shells.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">像 · 本页</span><span class="kid-figure-sub">要对的</span><p class="kid-figure-fact">回到舞台，用同一把尺子试。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#fff4f0" width="120" height="90"/><circle cx="60" cy="44" r="24" fill="#fecaca"/><path d="M42 28 L78 60 M78 28 L42 60" stroke="#b91c1c" stroke-width="4"/><text x="60" y="82" text-anchor="middle" font-size="8" font-weight="800" fill="#b91c1c">颜色好看优先</text></svg></span><span class="kid-figure-cap">不像 · 颜色好看优先</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">先划掉这句，再去台上试正确条件。</p></div>
+    </div>
+  </section>
+
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">排序图鉴</h2>
+    <p>点一张，对照传送带上的彩条：比的是邻居，换的也是邻居。</p>
+    <div class="kid-figure-grid" role="group" aria-label="排序图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-sl-atlas="neighbor" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/><rect x="18" y="28" width="22" height="46" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="29.0" y="59.3" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">3</text><rect x="48" y="44" width="22" height="30" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="59.0" y="64.4" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">1</text><rect x="78" y="20" width="22" height="54" rx="3" fill="#e08a80" stroke="#3a2a18" stroke-width="1.2"/><text x="89.0" y="56.7" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">5</text><path d="M40 22 H48 M44 18 V26" stroke="#c81769" stroke-width="2.4"/><rect x="16" y="26" width="56" height="50" fill="none" stroke="#c81769" stroke-width="2" stroke-dasharray="3 2"/></svg></span><span class="kid-figure-cap">相邻比较</span><span class="kid-figure-fact">只比挨着的两根谁更高，按同一条规则比高矮，不是把条乱丢进堆里。</span></button>
+      <button class="kid-figure" type="button" data-sl-atlas="swap" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/><rect x="16" y="22" width="24" height="52" rx="3" fill="#e08a80" stroke="#3a2a18" stroke-width="1.2"/><text x="28.0" y="57.4" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">5</text><rect x="80" y="40" width="24" height="34" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="92.0" y="63.1" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">2</text><path d="M44 34 H76" stroke="#1c66c2" stroke-width="2.6"/><polygon points="76,28 86,34 76,40" fill="#1c66c2"/><path d="M76 56 H44" stroke="#1c66c2" stroke-width="2.6"/><polygon points="44,50 34,56 44,62" fill="#1c66c2"/><rect x="48" y="8" width="16" height="16" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="56.0" y="18.9" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">4</text></svg></span><span class="kid-figure-cap">交换</span><span class="kid-figure-fact">左边更高就对调位置，这一对才符合从矮到高的规则，不是乱丢成堆。</span></button>
+      <button class="kid-figure" type="button" data-sl-atlas="pass" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="14" y="48" width="12" height="26" fill="#6ea8fe"/><rect x="32" y="36" width="12" height="38" fill="#4ade80"/><rect x="50" y="28" width="12" height="46" fill="#f4bd28"/><rect x="68" y="40" width="12" height="34" fill="#e08a80"/><rect x="86" y="20" width="12" height="54" fill="#c4a06a"/><path d="M14 16 H98" stroke="#c81769" stroke-width="3"/><path d="M88 10 L98 16 L88 22" fill="none" stroke="#c81769" stroke-width="3"/></svg></span><span class="kid-figure-cap">一轮</span><span class="kid-figure-fact">从左扫到右，每一对邻居都按同一条规则比过，漏一对这一轮就不算完。</span></button>
+      <button class="kid-figure" type="button" data-sl-atlas="sink" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="16" y="50" width="14" height="24" fill="#6ea8fe"/><rect x="36" y="42" width="14" height="32" fill="#4ade80"/><rect x="56" y="34" width="14" height="40" fill="#f4bd28"/><rect x="86" y="16" width="16" height="58" fill="#e08a80"/><path d="M72 28 L92 28" stroke="#c81769" stroke-width="3"/><path d="M86 20 L92 28 L86 36" fill="none" stroke="#c81769" stroke-width="3"/></svg></span><span class="kid-figure-cap">最大沉底</span><span class="kid-figure-fact">一轮结束，最高的沉到最右边，是按同一条规则冒过去的，不是随便丢。</span></button>
+      <button class="kid-figure" type="button" data-sl-atlas="shuffle" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="16" y="24" width="14" height="50" fill="#e08a80"/><rect x="36" y="48" width="14" height="26" fill="#6ea8fe"/><rect x="56" y="18" width="14" height="56" fill="#f4bd28"/><rect x="76" y="40" width="14" height="34" fill="#4ade80"/><rect x="96" y="30" width="14" height="44" fill="#c4a06a"/></svg></span><span class="kid-figure-cap">打乱</span><span class="kid-figure-fact">高低还乱放着，还没按同一条规则排好，这不算分堆完成，也不是乱丢就算。</span></button>
+      <button class="kid-figure" type="button" data-sl-atlas="step" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="16" y="44" width="12" height="30" fill="#d8dde3"/><rect x="36" y="28" width="16" height="46" fill="#6ea8fe" stroke="#c81769" stroke-width="3"/><rect x="58" y="40" width="16" height="34" fill="#f4bd28" stroke="#c81769" stroke-width="3"/><rect x="82" y="36" width="12" height="38" fill="#d8dde3"/></svg></span><span class="kid-figure-cap">只走一步</span><span class="kid-figure-fact">一次只比一对邻居，别的先不动，按同一条规则换位，不是把整排乱丢。</span></button>
+      <button class="kid-figure" type="button" data-sl-atlas="count" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="18" y="28" width="50" height="38" rx="6" fill="#fff" stroke="#1c66c2" stroke-width="3"/><text x="43" y="54" text-anchor="middle" font-size="22" font-weight="800" fill="#1c66c2">6</text><rect x="80" y="48" width="10" height="26" fill="#6ea8fe"/><rect x="96" y="36" width="10" height="38" fill="#f4bd28"/></svg></span><span class="kid-figure-cap">比较次数</span><span class="kid-figure-fact">比了几次要数着，交换另算一笔；同一条规则没换，不要和乱丢混在一起。</span></button>
+      <button class="kid-figure" type="button" data-sl-atlas="sorted" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="14" y="58" width="14" height="16" fill="#6ea8fe"/><rect x="34" y="48" width="14" height="26" fill="#4ade80"/><rect x="54" y="38" width="14" height="36" fill="#f4bd28"/><rect x="74" y="28" width="14" height="46" fill="#c4a06a"/><rect x="94" y="18" width="14" height="56" fill="#e08a80"/></svg></span><span class="kid-figure-cap">排好</span><span class="kid-figure-fact">从左到右一根比一根高，才算按同一条规则排好了，不是随便乱丢成堆。</span></button><button class="kid-figure" type="button" data-sl-atlas="reverse" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="14" y="18" width="14" height="56" fill="#e08a80"/><rect x="34" y="28" width="14" height="46" fill="#c4a06a"/><rect x="54" y="38" width="14" height="36" fill="#f4bd28"/><rect x="74" y="48" width="14" height="26" fill="#4ade80"/><rect x="94" y="58" width="14" height="16" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">反着排</span><span class="kid-figure-fact">从高到矮是另一条规则，最高的在最左边；规则一换，堆的顺序就会变。</span></button><button class="kid-figure" type="button" data-sl-atlas="pair" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="30" y="30" width="18" height="40" fill="#6ea8fe"/><rect x="72" y="42" width="18" height="28" fill="#4ade80"/><path d="M50 48 H70" stroke="#d05050" stroke-width="3"/></svg></span><span class="kid-figure-cap">只比一对</span><span class="kid-figure-fact">一次只看挨着的两根，远处的先不管；按同一条规则比，不是乱丢再分。</span></button><button class="kid-figure" type="button" data-sl-atlas="bubble" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="18" y="40" width="14" height="32" fill="#6ea8fe"/><rect x="40" y="50" width="14" height="22" fill="#4ade80"/><rect x="62" y="28" width="14" height="44" fill="#f4bd28"/><rect x="88" y="18" width="16" height="54" fill="#e08a80"/></svg></span><span class="kid-figure-cap">冒泡</span><span class="kid-figure-fact">大的像气泡，一轮一轮按同一条规则冒到右边，不是被人随便乱丢过去。</span></button><button class="kid-figure" type="button" data-sl-atlas="left" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="18" y="50" width="14" height="22" fill="#8a857c"/><rect x="40" y="36" width="14" height="36" fill="#6ea8fe"/><rect x="62" y="26" width="14" height="46" fill="#4ade80"/><rect x="84" y="18" width="14" height="54" fill="#f4bd28"/></svg></span><span class="kid-figure-cap">还没比的</span><span class="kid-figure-fact">左边灰色那截还没按同一条规则扫到，先别当成已经分好的那一堆。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照传送带上怎样比、怎样换。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--code)"
+         data-kid-predict
+         data-kid-predict-explain="只按颜色分与只按形状分，同一块积木会进不同组——规则决定分组，不是积木「自己属于」。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">📊</span><b>怎样才比较有把握说「整列已经排好」？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：怎样确认已排序">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="far">只对调离得很远的两根就够了</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="neighbors" data-kid-predict-correct>要把每一对邻居都比过；冒泡一轮就是在做这件事</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="color">颜色好看就表示排好了</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：排好，再检查邻居</h2>
+    <p>把 6–8&nbsp;根彩条从矮到高排好。然后回答：你有没有把每一对相邻彩条都比过至少一次？也可以改用「看冒泡」模式，完整走完一轮。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <div class="reflect" id="reflectBox" hidden>
+      <p class="reflect-q" id="reflectQ">每一对相邻彩条，你都比过至少一次了吗？</p>
+      <div class="row">
+        <button class="btn btn-primary mode-label" type="button" id="reflectYes">都比过了</button>
+        <button class="btn mode-label" type="button" id="reflectNo">还有没比过的</button>
+      </div>
+    </div>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先把彩条从矮到高排好。</p>
+  </section>
+
+
+              <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">同一排彩条：先按「从矮到高」排，再按同一条标准检查</h2>
+    <p>舞台上只认一条主规则：从矮到高。先把彩条放进格子，或一步步冒泡；再从左到右看每一对邻居，左边不得比右边高。这样比，才知道「排好」靠的是标准加检查，不是「分成两堆看起来顺眼」。不要中途改成按颜色，也不要把「从高到矮」叠进同一局。</p>
+    <p>回家只带两句：「先说清规则，再动手。」「每一对邻居都要检查。」不要写成「分对了就行」或「颜色好看就排好了」。想按从高到矮玩，另开一局，不要中途翻规则。有人说「颜色好看就排好了」，让孩子指着底下的高度数字反驳。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/><rect x="12" y="52" width="16" height="26" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="20.0" y="69.7" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">1</text><rect x="32" y="44" width="16" height="34" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="40.0" y="67.1" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">2</text><rect x="52" y="36" width="16" height="42" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="60.0" y="64.6" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">3</text><rect x="72" y="28" width="16" height="50" rx="3" fill="#c4a06a" stroke="#3a2a18" stroke-width="1.2"/><text x="80.0" y="62.0" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">4</text></svg></span><span class="kid-figure-cap">规则</span><span class="kid-figure-sub">先说清</span><p class="kid-figure-fact">先说清规则：从矮到高排；规则一换堆就变，不是谁颜色鲜谁就排在前。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/><rect x="28" y="28" width="22" height="46" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="39.0" y="59.3" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">3</text><rect x="58" y="44" width="22" height="30" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="69.0" y="64.4" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">1</text><path d="M50 36 H58" stroke="#c81769" stroke-width="3"/><rect x="24" y="24" width="62" height="54" fill="none" stroke="#c81769" stroke-dasharray="3 2"/><rect x="90" y="50" width="14" height="24" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="97.0" y="66.3" text-anchor="middle" font-size="9" font-weight="800" fill="#1c1c1c">2</text></svg></span><span class="kid-figure-cap">邻居</span><span class="kid-figure-sub">只比一对</span><p class="kid-figure-fact">一次只比挨着的两根，左边若更高就对调；远处先不管，不是把整排乱丢。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/><rect x="12" y="52" width="16" height="26" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="20.0" y="69.7" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">1</text><rect x="32" y="44" width="16" height="34" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="40.0" y="67.1" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">2</text><rect x="52" y="28" width="16" height="50" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="60.0" y="62.0" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">4</text><rect x="72" y="20" width="16" height="58" rx="3" fill="#e08a80" stroke="#3a2a18" stroke-width="1.2"/><text x="80.0" y="59.4" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">5</text></svg></span><span class="kid-figure-cap">冒泡</span><span class="kid-figure-sub">一步一对</span><p class="kid-figure-fact">一轮一轮只比邻居，最高的会慢慢挪到最右边。这叫冒泡，不是乱丢变整齐。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/><rect x="14" y="50" width="16" height="24" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="22.0" y="66.3" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">1</text><rect x="36" y="40" width="16" height="34" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="44.0" y="63.1" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">2</text><rect x="58" y="30" width="16" height="44" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="66.0" y="59.9" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">3</text><rect x="80" y="20" width="16" height="54" rx="3" fill="#e08a80" stroke="#3a2a18" stroke-width="1.2"/><text x="88.0" y="56.7" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">5</text><path d="M18 16 L26 24 L38 10" fill="none" stroke="#2f7a3e" stroke-width="3"/><path d="M40 16 L48 24 L60 10" fill="none" stroke="#2f7a3e" stroke-width="3"/></svg></span><span class="kid-figure-cap">检查</span><span class="kid-figure-sub">整排扫</span><p class="kid-figure-fact">排完还要再扫一整排，看有没有哪一对邻居反了。标准还是从矮到高。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/><rect x="14" y="30" width="16" height="44" rx="3" fill="#e08a80" stroke="#3a2a18" stroke-width="1.2"/><text x="22.0" y="59.9" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">5</text><rect x="36" y="50" width="16" height="24" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="44.0" y="66.3" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">1</text><rect x="58" y="20" width="16" height="54" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="66.0" y="56.7" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">4</text><rect x="80" y="40" width="16" height="34" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="88.0" y="63.1" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">2</text><path d="M20 16 L100 16" stroke="#c81769" stroke-width="2" stroke-dasharray="4 3"/><text x="60" y="12" text-anchor="middle" font-size="8" fill="#c81769">改规则</text></svg></span><span class="kid-figure-cap">中途改</span><span class="kid-figure-sub">会乱</span><p class="kid-figure-fact">排到一半改规则，格子就对不上，刚才比过的都不算了。另开一局再排。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="20" y="40" width="20" height="30" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="30.0" y="60.4" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">2</text><rect x="44" y="30" width="20" height="40" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="54.0" y="57.2" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">3</text><rect x="76" y="36" width="20" height="34" rx="3" fill="#e08a80" stroke="#3a2a18" stroke-width="1.2"/><text x="86.0" y="59.1" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">5</text><circle cx="60" cy="46" r="26" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M42 28 L78 64" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">分对就行</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">只分成两堆还不够；不检查整排每一对邻居，就会漏掉反着的一对，那叫乱丢。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>说规则。</b>本页是从矮到高，不是按颜色。</li>
+      <li data-step="2"><b>放进格子。</b>或一步冒泡，只换邻居。</li>
+      <li data-step="3"><b>查邻居。</b>每一对都按同一条标准看。</li>
+      <li data-step="4"><b>写完成句。</b>规则先说，还要检查。划掉「分对了就行」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>先说清楚谁站前面，再排队。排完还要看看邻居对不对。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>一次只换旁边两个，大的会慢慢走到右边。规则中途不能改，刚才比过的就不算了。颜色不是本页标准。排完还要检查每一对邻居。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>比较排序的正确性依赖全序与相邻交换的传递。检查是线性扫描逆序对。一轮比较次数≈n−1。不当竞赛讲义。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能说出规则、排完按同一条标准检查邻居，并否定「分对了就行」和「颜色好看就排好」。完成看的是对照，不是背「冒泡」两个字。</p>
+    <ul class="ask-list">
+      <li>本页规则是什么？按颜色排能当完成句吗？</li>
+      <li>邻居怎么查？漏一对会怎样？</li>
+      <li>一轮冒泡大约比几次？比较和交换是一回事吗？</li>
+      <li>中途改成从高到矮，刚才比过的还算数吗？</li>
+    </ul>
+  </section>
+
+
+            <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">字典按字母、书包按科目，都是先说规则再动手</h2>
+    <p>同一堆书，按厚薄和按书名会排出两种队。规则不同，对错不同。好的分类别人能照着复做；中途改规则就无法核对。本页把这条用看得见的高矮练一遍：先说清「从矮到高」，再动手，再检查。</p>
+    <p>电脑排序也是先定比较键，再一对一对比。本页用高度当键，颜色只是涂层，不是标准。跳着对调离得远的两根，有时也能排好，但邻居没有全部检查过——排好了不等于每一对都比过。字典按字母、书包按科目，都是先说规则再动手。</p>
+    <p>从高到矮也是合法规则，但本页任务写的是从矮到高。不要中途翻过来。一轮冒泡比较次数大约 n−1，是比较尺子，用来看见「每一对邻居各比一次」，不是复杂度证明，也不当快速排序课。</p>
+    <p>条不打人。小片收好，免得误吞或扎到眼睛。本页不当编程竞赛讲义，也不要把比较次数背成算法口令。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="18" y="20" width="14" height="54" fill="#6ea8fe" stroke="#3a2a18"/><rect x="34" y="28" width="14" height="46" fill="#4ade80" stroke="#3a2a18"/><rect x="50" y="16" width="14" height="58" fill="#f4bd28" stroke="#3a2a18"/><rect x="66" y="24" width="14" height="50" fill="#e08a80" stroke="#3a2a18"/><text x="25" y="50" font-size="8" font-weight="800" fill="#1c1c1c">1</text><text x="41" y="54" font-size="8" font-weight="800" fill="#1c1c1c">2</text><text x="57" y="48" font-size="8" font-weight="800" fill="#1c1c1c">3</text><text x="73" y="52" font-size="8" font-weight="800" fill="#1c1c1c">4</text><rect x="86" y="36" width="22" height="38" fill="#c4a06a" stroke="#3a2a18"/><path d="M8 78 H112" stroke="#8a6a40" stroke-width="4"/></svg></span><span class="kid-figure-cap">书</span><span class="kid-figure-sub">先定键</span><p class="kid-figure-fact">排书也要先定按什么排：按厚薄，还是按书名。规则没说清，别人复做不了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="14" width="88" height="58" rx="4" fill="#1c3a66"/><rect x="22" y="20" width="76" height="46" fill="#eef3fb"/><rect x="28" y="28" width="14" height="32" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="35.0" y="49.8" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">3</text><rect x="48" y="36" width="14" height="24" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="55.0" y="52.3" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">1</text><rect x="68" y="24" width="14" height="36" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="75.0" y="48.5" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">2</text><path d="M42 40 H48" stroke="#c81769" stroke-width="2"/><rect x="20" y="76" width="80" height="8" fill="#4a4a58"/></svg></span><span class="kid-figure-cap">电脑</span><span class="kid-figure-sub">同一理</span><p class="kid-figure-fact">电脑排序也是同一件事：先定比较的键，再一对一对比。本页键是高度。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/><rect x="12" y="20" width="16" height="58" rx="3" fill="#e08a80" stroke="#3a2a18" stroke-width="1.2"/><text x="20.0" y="59.4" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">5</text><rect x="32" y="28" width="16" height="50" rx="3" fill="#c4a06a" stroke="#3a2a18" stroke-width="1.2"/><text x="40.0" y="62.0" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">4</text><rect x="52" y="36" width="16" height="42" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="60.0" y="64.6" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">3</text><rect x="72" y="44" width="16" height="34" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="80.0" y="67.1" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">2</text><rect x="92" y="52" width="16" height="26" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="100.0" y="69.7" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">1</text></svg></span><span class="kid-figure-cap">反过来</span><span class="kid-figure-sub">另一规则</span><p class="kid-figure-fact">要从高到矮排，另开一局，不要排到一半把规则翻过来，否则无法核对。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="36" y="30" width="22" height="40" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="47.0" y="57.2" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">3</text><rect x="62" y="40" width="22" height="30" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="73.0" y="60.4" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">1</text><circle cx="60" cy="46" r="26" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M42 28 L78 64" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">打人</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">小片不要扔向人，用完收进盒子，免得扎到眼睛，也防误吞，这不是玩具枪。</p></div>
+    </div>
+  </section>
+
+
+          <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：邻居都对 · 中途改乱 · 「分对了就行」</h2>
+    <p>三列用同一排彩条、同一条规则。先只看有没有先说规则、有没有按同一条标准检查每一对邻居。邻居都对：从左到右不降。中途改规则：格子对不上，刚才比过的都不算了。</p>
+    <p>「分对了就行」整列划掉：漏一对邻居就会错。「颜色好看」也划掉：颜色只是涂层，本页键是高度。跳着对调离得远的两根，也不能代替「每一对邻居都比过」。</p>
+    <p>从高到矮是另一条合法规则，另开一局，不要和「检查」叠在同一档里讲。一轮比较次数≈n−1 只比较方向，不要背成算法竞赛公式，也不要把比较和交换混成一次。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/><rect x="14" y="50" width="16" height="24" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="22.0" y="66.3" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">1</text><rect x="36" y="40" width="16" height="34" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="44.0" y="63.1" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">2</text><rect x="58" y="30" width="16" height="44" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="66.0" y="59.9" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">3</text><rect x="80" y="20" width="16" height="54" rx="3" fill="#e08a80" stroke="#3a2a18" stroke-width="1.2"/><text x="88.0" y="56.7" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">5</text><path d="M18 16 L26 24 L38 10" fill="none" stroke="#2f7a3e" stroke-width="3"/><path d="M40 16 L48 24 L60 10" fill="none" stroke="#2f7a3e" stroke-width="3"/></svg></span><span class="kid-figure-cap">查邻居</span><span class="kid-figure-sub">都对</span><p class="kid-figure-fact">每一对邻居都是左边不比右边高，这一排才算排好。漏一对就不算完。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/><rect x="14" y="30" width="16" height="44" rx="3" fill="#e08a80" stroke="#3a2a18" stroke-width="1.2"/><text x="22.0" y="59.9" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">5</text><rect x="36" y="50" width="16" height="24" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="44.0" y="66.3" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">1</text><rect x="58" y="20" width="16" height="54" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="66.0" y="56.7" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">4</text><rect x="80" y="40" width="16" height="34" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="88.0" y="63.1" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">2</text><path d="M20 16 L100 16" stroke="#c81769" stroke-width="2" stroke-dasharray="4 3"/><text x="60" y="12" text-anchor="middle" font-size="8" fill="#c81769">改规则</text></svg></span><span class="kid-figure-cap">中途改</span><span class="kid-figure-sub">会乱</span><p class="kid-figure-fact">规则中途一改，刚才排好的顺序就会乱掉，无法核对。另开一局，不要硬改。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="20" y="40" width="20" height="30" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="30.0" y="60.4" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">2</text><rect x="44" y="30" width="20" height="40" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="54.0" y="57.2" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">3</text><rect x="76" y="36" width="20" height="34" rx="3" fill="#e08a80" stroke="#3a2a18" stroke-width="1.2"/><text x="86.0" y="59.1" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">5</text><circle cx="60" cy="46" r="26" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M42 28 L78 64" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">分对就行</span><span class="kid-figure-sub">整列划掉</span><p class="kid-figure-fact">「分成两堆就行」不对，还要检查每一对邻居是不是都符合同一条规则。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/><rect x="16" y="30" width="20" height="44" rx="3" fill="#d05050" stroke="#3a2a18" stroke-width="1.2"/><text x="26.0" y="59.9" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c"> </text><rect x="40" y="40" width="20" height="34" rx="3" fill="#3d6fb8" stroke="#3a2a18" stroke-width="1.2"/><text x="50.0" y="63.1" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c"> </text><rect x="70" y="36" width="20" height="38" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="80.0" y="61.8" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">2</text><rect x="94" y="24" width="18" height="50" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="103.0" y="58.0" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">4</text><path d="M16 16 L56 16" stroke="#c2410c" stroke-width="3"/><text x="36" y="12" text-anchor="middle" font-size="8" fill="#c2410c">色不是键</text></svg></span><span class="kid-figure-cap">按颜色</span><span class="kid-figure-sub">不是本页标准</span><p class="kid-figure-fact">颜色只是涂层，不是比较的键。本页只认高度，按颜色分堆就会变成另一局。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/><rect x="12" y="40" width="14" height="34" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="19.0" y="63.1" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">1</text><rect x="30" y="32" width="14" height="42" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="37.0" y="60.6" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">2</text><rect x="48" y="24" width="14" height="50" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="55.0" y="58.0" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">3</text><rect x="66" y="36" width="14" height="38" rx="3" fill="#c4a06a" stroke="#3a2a18" stroke-width="1.2"/><text x="73.0" y="61.8" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">2</text><rect x="84" y="16" width="16" height="58" rx="3" fill="#e08a80" stroke="#3a2a18" stroke-width="1.2"/><text x="92.0" y="55.4" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">5</text><path d="M12 12 H100" stroke="#c81769" stroke-width="2"/><text x="60" y="10" text-anchor="middle" font-size="8" fill="#c81769">n−1</text></svg></span><span class="kid-figure-cap">一轮</span><span class="kid-figure-sub">n−1&nbsp;次</span><p class="kid-figure-fact">n&nbsp;根彩条，一轮邻居比较大约 n−1&nbsp;次。比较和交换要分开数，不要混成乱丢一笔。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="24" y="12" width="72" height="66" fill="#fff" stroke="#3a2a18" stroke-width="1.6"/><rect x="24" y="12" width="72" height="10" fill="#d7eefc"/><path d="M34 34 H84 M34 46 H84 M34 58 H70" stroke="#8a857c" stroke-width="2"/><rect x="32" y="36" width="16" height="28" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="40.0" y="55.0" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">1</text><rect x="52" y="30" width="16" height="34" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="60.0" y="53.1" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">2</text><rect x="72" y="24" width="16" height="40" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="80.0" y="51.2" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">3</text></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">规则先于动手</span><p class="kid-figure-fact">先说规则再动手，排完还要看每一对邻居都对。别人才能照着复做，不是乱丢。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「先说规则再检查」，不记竞赛口令</h2>
+    <p>从左到右写一列高度。每一对邻居打勾或叉。页眉写上本局规则：「从矮到高」。两行并排，比背公式有用。有人说「分对了就行」，让孩子指着没打勾的那一对反驳。</p>
+    <p>口头只要两句：「先说清规则，再动手。」「每一对邻居都要检查。」有人说「颜色好看就排好了」，让孩子指着底下的高度数字：本页键是高度，颜色只是涂层。</p>
+    <p>从高到矮若要玩，另开一局，不要中途翻规则。条不打人，小片收好。本页不当编程竞赛讲义，也不要把 n−1 背成竞赛口令。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="24" y="12" width="72" height="66" fill="#fff" stroke="#3a2a18" stroke-width="1.6"/><rect x="24" y="12" width="72" height="10" fill="#d7eefc"/><rect x="36" y="28" width="16" height="18" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="44.0" y="40.2" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">1</text><rect x="36" y="48" width="16" height="22" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="44.0" y="63.0" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">2</text><path d="M58 36 L66 44 L78 28" fill="none" stroke="#2f7a3e" stroke-width="3"/><path d="M58 56 L66 64 L78 48" fill="none" stroke="#2f7a3e" stroke-width="3"/><path d="M34 26 H86" stroke="#8a857c"/></svg></span><span class="kid-figure-cap">一列</span><span class="kid-figure-sub">高度</span><p class="kid-figure-fact">画一列从矮到高，并在每一对邻居旁边打勾。漏勾的那对先改，不要假装分好堆。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="36" cy="32" rx="24" ry="16" fill="#fff" stroke="#3a2a18"/><path d="M32 48 L24 64 L44 50" fill="#fff" stroke="#3a2a18"/><text x="36" y="36" text-anchor="middle" font-size="8" font-weight="800" fill="#1c3a66">先说</text><rect x="68" y="28" width="18" height="40" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="77.0" y="55.2" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">1</text><rect x="90" y="40" width="18" height="28" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="99.0" y="59.0" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">3</text><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">先说规则</span><p class="kid-figure-fact">回家只记：先说清从矮到高，再动手换位置。颜色好看不算排好，那是另一条规则。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="6" fill="#c4a06a"/><rect x="12" y="20" width="16" height="58" rx="3" fill="#e08a80" stroke="#3a2a18" stroke-width="1.2"/><text x="20.0" y="59.4" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">5</text><rect x="32" y="28" width="16" height="50" rx="3" fill="#c4a06a" stroke="#3a2a18" stroke-width="1.2"/><text x="40.0" y="62.0" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">4</text><rect x="52" y="36" width="16" height="42" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="60.0" y="64.6" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">3</text><rect x="72" y="44" width="16" height="34" rx="3" fill="#4ade80" stroke="#3a2a18" stroke-width="1.2"/><text x="80.0" y="67.1" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">2</text><rect x="92" y="52" width="16" height="26" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="100.0" y="69.7" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">1</text></svg></span><span class="kid-figure-cap">反过来</span><span class="kid-figure-sub">另局</span><p class="kid-figure-fact">想反过来排，等这一局结束再开新的，不要中途翻规则，否则无法核对。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="36" y="30" width="22" height="40" rx="3" fill="#6ea8fe" stroke="#3a2a18" stroke-width="1.2"/><text x="47.0" y="57.2" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">3</text><rect x="62" y="40" width="22" height="30" rx="3" fill="#f4bd28" stroke="#3a2a18" stroke-width="1.2"/><text x="73.0" y="60.4" text-anchor="middle" font-size="13" font-weight="800" fill="#1c1c1c">1</text><circle cx="60" cy="46" r="26" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M42 28 L78 64" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">打人</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">排序用的小片收好，不要拿来打人，也不要往嘴里放，用完立刻收进盒子。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「排好靠不靠先说规则、再按同一条标准检查」，就先把规则钉死。同一排彩条，先按从矮到高排好，再只检查邻居。不要中途改成按颜色，也不要把「从高到矮」叠进同一局。</p>
+    <ul>
+      <li><b>只改这一项：</b>有没有按「从矮到高」检查每一对邻居。</li>
+      <li><b>先保持不变：</b>同一排彩条、同一条规则。</li>
+      <li><b>要观察的：</b>左边是否都不比右边高，比较次数增加多少。</li>
+      <li><b>另开一行：</b>中途改规则会不会乱；只分成两堆够不够。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>同一堆积木，先按颜色分、再按形状分，同一块会进不同组。这和本页「规则决定对错」像在哪？</li>
+      <li>跳着对调离得远的两根，有时也能排好。为什么仍不能说「每一对邻居都比过」？</li>
+      <li>字典按字母、书包按科目。如果有人中途改成按厚薄，别人还核对得了吗？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>先说清楚谁站前面，再排队。排完看看邻居对不对。不要拿条子打人。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>一次只换旁边两个。规则中途不能改。颜色不是本页标准。排好了还要检查每一对。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>全序上相邻交换消逆序。一轮比较≈n−1。检查是线性扫描。不当快速排序或复杂度课。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：记下这次排序</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：7&nbsp;根彩条，一轮冒泡比了 6&nbsp;次"></div>
+      <div><label for="workContent">你怎么排的，比了几次</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下用的是自己对调还是看冒泡，比较了几次，有没有每一对邻居都比过。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+              <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>孩子说分对了就行——漏一对邻居怎么拆？让他再从左扫到右指一次。</li>
+      <li>一次只比旁边两个，哪一句四岁听得懂？试「先看这两根谁更高」。</li>
+      <li>按颜色排为什么不能当本页完成句？差在「标准是什么」。</li>
+      <li>中途改成从高到矮，刚才比过的还算数吗？别人还核对得了吗？</li>
+      <li>条打人、小片误吞：红线怎么说？本页能当编程竞赛讲义吗？</li>
+      <li>排好了，却还有邻居没比过。完成句该写「已经有序」，还是「还没检查完」？</li>
+    </ul>
+  </section>
+
+              <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：先把规则钉死，再一对邻居、一对邻居地比。左边更高就换。排完再扫一遍，看还有没有逆序。漏一对，就不能说整列已经排好。</p>
+    <p>全序上的冒泡以相邻交换消逆序。算法正确性依赖比较关系在过程中不变——中途改规则，就无法验收。一轮邻居比较次数≈n−1，只是比较尺子，用来看见「每一对邻居各比一次」，不是渐进复杂度记号，也不当快速排序课。</p>
+    <p>分类按标准：同一块积木按颜色和按形状会进不同组。本页用高度当键，颜色不是标准。跳着对调离得远的两根，有时也能排好，但那不等于每一对邻居都比过。</p>
+    <p>条不打人。小片收好，免得误吞或扎到眼睛。舞台是彩条示意，不当竞赛讲义，也不要把比较次数背成算法口令。</p>
+  </section>
+
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">冒泡公式卡 · 一轮邻居比较次数 = n−1（本页比较尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">每轮只比相邻对；大的逐步冒到右侧。整轮走完，比较次数大约增加 n−1（n 为彩条数）。</p>
+    </div>
+
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：先说清规则，再动手；排完按同一条标准检查每一对邻居。不是「分对了就行」。规律机器看模式怎么重复；海龟几何看一步一步的指令。</p>
+    <p class="row"><a class="btn btn-ghost" href="pattern-machine.html">规律机器</a><a class="btn btn-ghost" href="turtle-geometry.html">海龟几何</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页用相邻比较演示冒泡排序，不涉及快速排序、稳定性证明或渐进复杂度记号。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var bars = [];
+  var mode = "swap";
+  var picked = -1;
+  var hi = [];
+  var cmp = 0;
+  var neighbors = {};
+  var bubbleI = 0;
+  var fullPass = false;
+  var answered = false;
+  var done = false;
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  var passStartCmp = -1, sawFullPassDelta = false;
+  var liveMsg = "点两根彩条，对调它们的位置。高的请往右挪。";
+
+  function isSortedList(list){
+    var i;
+    for (i = 1; i < list.length; i += 1) {
+      if (list[i - 1] > list[i]) return false;
+    }
+    return true;
+  }
+  function isSorted(){
+    var i;
+    for (i = 1; i < bars.length; i += 1) {
+      if (bars[i - 1].h > bars[i].h) return false;
+    }
+    return true;
+  }
+  function shuffle(arr){
+    var i, j, t;
+    for (i = arr.length - 1; i > 0; i -= 1) {
+      j = Math.floor(Math.random() * (i + 1));
+      t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+  function nbrCount(){
+    var i, c = 0;
+    for (i = 0; i < bars.length - 1; i += 1) {
+      if (neighbors[i]) c += 1;
+    }
+    return c;
+  }
+  function badNeighborPairs(){
+    var i, c = 0;
+    for (i = 0; i < bars.length - 1; i += 1) {
+      if (bars[i].h > bars[i + 1].h) c += 1;
+    }
+    return c;
+  }
+  function allNeighbors(){
+    return bars.length > 1 && nbrCount() === bars.length - 1;
+  }
+  function deal(){
+    var n = 6 + Math.floor(Math.random() * 3);
+    var hs = [];
+    var i;
+    for (i = 1; i <= n; i += 1) hs.push(i);
+    do { shuffle(hs); } while (isSortedList(hs));
+    bars = [];
+    for (i = 0; i < hs.length; i += 1) bars.push({ h: hs[i] });
+    picked = -1;
+    hi = [];
+    cmp = 0;
+    neighbors = {};
+    bubbleI = 0;
+    fullPass = false;
+    answered = false;
+    liveMsg = "点两根彩条，对调它们的位置。高的请往右挪。";
+  }
+  function markNeighbor(i){
+    if (i >= 0 && i < bars.length - 1) neighbors[i] = true;
+  }
+  function swapAt(a, b){
+    var t = bars[a];
+    bars[a] = bars[b];
+    bars[b] = t;
+    if (guess1 && !guess1Done) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "swap" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "冒泡只换相邻：左高就对调，矮的到左边。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+  }
+  function comparePair(i){
+    if (i < 0 || i >= bars.length - 1) return false;
+    cmp += 1;
+    markNeighbor(i);
+    hi = [i, i + 1];
+    var taller = bars[i].h > bars[i + 1].h;
+    if (taller) swapAt(i, i + 1);
+    return taller;
+  }
+  function tryComplete(){
+    if (done || !isSorted()) return;
+    if (!(fullPass || answered)) return;
+    done = true;
+    var allN = allNeighbors();
+    var evidence = bars.length + "\u00a0根从矮到高排好，比较 " + cmp + "\u00a0次；" + (allN ? "每一对邻居都比过" : "没有比过每一对邻居");
+    if (window.Progress) Progress.complete("games/sort-lab.html", evidence);
+    if (guess2 && !guess2Done) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "neighbors" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "要确定有序，需把每一对邻居都比过；冒泡一轮就是在做这件事。";
+      document.getElementById("guessBlock3").hidden = false;
+      document.getElementById("guessNHint").textContent = String(bars.length);
+      if (guess3 && !guess3Done) {
+        document.getElementById("guessOut3").textContent = "已押。换一批或重置后，走完一整轮冒泡再揭晓。";
+      }
+    }
+  }
+  function render(){
+    var row = document.getElementById("barRow");
+    var sortedNow = isSorted();
+    var i, btn, shaft, lab, cls, inHi;
+    while (row.firstChild) row.removeChild(row.firstChild);
+    for (i = 0; i < bars.length; i += 1) {
+      inHi = (hi[0] === i || hi[1] === i);
+      cls = "bar-btn sl-c" + bars[i].h;
+      if (picked === i) cls += " pick";
+      if (inHi) cls += " pair";
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.id = "bar-" + i;
+      btn.className = cls;
+      btn.disabled = mode === "bubble";
+      btn.setAttribute("aria-pressed", picked === i ? "true" : "false");
+      btn.setAttribute("aria-label", "第 " + (i + 1) + "\u00a0根，高度 " + bars[i].h);
+      shaft = document.createElement("span");
+      shaft.className = "bar-shaft";
+      shaft.setAttribute("aria-hidden", "true");
+      shaft.style.height = String(18 + bars[i].h * 12) + "px";
+      lab = document.createElement("span");
+      lab.className = "bar-h";
+      lab.textContent = String(bars[i].h);
+      btn.appendChild(shaft);
+      btn.appendChild(lab);
+      btn.addEventListener("click", onBarClick(i));
+      row.appendChild(btn);
+    }
+    document.getElementById("cmpOut").textContent = String(cmp);
+    document.getElementById("nbrOut").textContent = nbrCount() + "\u00a0/\u00a0" + (bars.length - 1);
+    document.getElementById("stateOut").textContent = sortedNow ? "已经排好" : "还没排好";
+    var bad = badNeighborPairs();
+    var liveExtra = " 还剩 " + bad + "\u00a0对邻居左高右矮。";
+    if (sortedNow) liveExtra = " 邻居都已左矮右高。";
+    document.getElementById("live").textContent = liveMsg + liveExtra;
+    document.getElementById("modeSelf").setAttribute("aria-pressed", mode === "swap" ? "true" : "false");
+    document.getElementById("modeBubble").setAttribute("aria-pressed", mode === "bubble" ? "true" : "false");
+    document.getElementById("stepBtn").disabled = mode !== "bubble";
+    var reflect = document.getElementById("reflectBox");
+    var showReflect = sortedNow && !done && !fullPass && !answered;
+    reflect.hidden = !showReflect;
+    var status = document.getElementById("taskStatus");
+    if (done) {
+      status.textContent = "完成啦：彩条已经从矮到高排好。你一共比了 " + cmp + "\u00a0次。";
+    } else if (!sortedNow) {
+      status.textContent = "尚未完成：先把彩条从矮到高排好。";
+    } else if (fullPass) {
+      status.textContent = "排好了，并且已经走完一轮冒泡。";
+    } else {
+      status.textContent = "排好了。请回答：每一对相邻彩条，你都比过至少一次了吗？也可以再走完一轮冒泡。";
+    }
+  }
+  function onBarClick(index){
+    return function(){
+      if (mode !== "swap") return;
+      if (picked < 0) {
+        picked = index;
+        hi = [];
+        liveMsg = "选中了第 " + (index + 1) + "\u00a0根。再点另一根，两根会对调。";
+        render();
+        return;
+      }
+      if (picked === index) {
+        picked = -1;
+        liveMsg = "取消选中。再点两根不同的彩条。";
+        render();
+        return;
+      }
+      var a = picked;
+      var b = index;
+      cmp += 1;
+      if (Math.abs(a - b) === 1) markNeighbor(Math.min(a, b));
+      swapAt(a, b);
+      hi = [a, b];
+      picked = -1;
+      liveMsg = "对调了第 " + (a + 1) + "\u00a0根和第 " + (b + 1) + "\u00a0根。比较次数 " + cmp + "\u00a0次。";
+      if (isSorted()) liveMsg += " 已经从矮到高排好了。";
+      tryComplete();
+      render();
+    };
+  }
+  function setMode(next){
+    mode = next;
+    picked = -1;
+    if (mode === "swap") {
+      liveMsg = "自己对调：点两根彩条交换位置。";
+    } else {
+      liveMsg = "看冒泡：点「看一步冒泡」，每次只比相邻的一对。";
+    }
+    render();
+  }
+  document.getElementById("modeSelf").addEventListener("click", function(){ setMode("swap"); });
+  document.getElementById("modeBubble").addEventListener("click", function(){ setMode("bubble"); });
+  document.getElementById("stepBtn").addEventListener("click", function(){
+    if (mode !== "bubble" || bars.length < 2) return;
+    if (bubbleI >= bars.length - 1) bubbleI = 0;
+    if (bubbleI === 0 && guess3 && !guess3Done && passStartCmp < 0) passStartCmp = cmp;
+    var i = bubbleI;
+    var swapped = comparePair(i);
+    bubbleI += 1;
+    if (bubbleI >= bars.length - 1) {
+      fullPass = true;
+      bubbleI = 0;
+      if (passStartCmp >= 0 && guess3 && !guess3Done) {
+        var delta = cmp - passStartCmp;
+        if (delta === bars.length - 1) {
+          sawFullPassDelta = true;
+          guess3Done = true;
+          document.getElementById("guessOut3").innerHTML = (guess3 === "n1" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+            bars.length + "\u00a0根彩条，一轮冒泡比较 " + (bars.length - 1) + "\u00a0次（每一对邻居各一次）。刚才 +"+delta+"。";
+        }
+        passStartCmp = -1;
+      }
+      liveMsg = swapped
+        ? "第 " + (i + 1) + "\u00a0根比第 " + (i + 2) + "\u00a0根高，对调。这一轮冒泡走完了，每一对邻居都比过一遍。"
+        : "第 " + (i + 1) + "\u00a0根不比第 " + (i + 2) + "\u00a0根高，不用换。这一轮冒泡走完了，每一对邻居都比过一遍。";
+    } else {
+      liveMsg = swapped
+        ? "冒泡：第 " + (i + 1) + "\u00a0根比第 " + (i + 2) + "\u00a0根高，对调。"
+        : "冒泡：第 " + (i + 1) + "\u00a0根不比第 " + (i + 2) + "\u00a0根高，不用换。";
+    }
+    if (isSorted()) liveMsg += " 已经从矮到高排好了。";
+    tryComplete();
+    render();
+  });
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    deal();
+    if (mode === "bubble") liveMsg = "新的一批。点「看一步冒泡」，每次只比相邻的一对。";
+    render();
+  });
+  function answer(saidAll){
+    if (done || !isSorted()) return;
+    answered = true;
+    var allN = allNeighbors();
+    if (saidAll && allN) liveMsg = "记录属实：每一对相邻彩条都比过至少一次。";
+    else if (!saidAll && !allN) liveMsg = "说得对：还有相邻的两根没比过。排好了不等于每一对邻居都检查过。";
+    else if (saidAll && !allN) liveMsg = "其实还有相邻的两根没比过。跳着对调也能排好，但邻居没有全部检查。";
+    else liveMsg = "其实每一对相邻彩条都已经比过了。";
+    tryComplete();
+    render();
+  }
+  document.getElementById("reflectYes").addEventListener("click", function(){ answer(true); });
+  document.getElementById("reflectNo").addEventListener("click", function(){ answer(false); });
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-sl-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-sl-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-sl-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = (btn.querySelector(".kid-figure-fact")||{}).textContent || "";
+    });
+  });
+  deal();
+  render();
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "已押。去换一对邻居验证。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "已押。排好并检查邻居后揭晓。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessNHint").textContent = String(bars.length);
+      document.getElementById("guessOut3").textContent = "已押。切到冒泡，从左端开始走完一整轮（比较应 +"+(bars.length-1)+"）。";
+      passStartCmp = -1;
+      sawFullPassDelta = false;
+    });
+  });
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/sort-lab.html", "排序小工厂");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

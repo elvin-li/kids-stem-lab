@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>地图观察站 · 缩小的模型 | 少儿数理启蒙</title>
+<meta name="description" content="比较平面图、指南针玫瑰、比例尺、等高线、河流符号、图例、北和缩小的房间。选两个符号，说出它们代表什么。离线即可使用。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+ .hero { padding: 28px 0 10px; }
+ .hero h1 { margin: .15em 0 .3em; }
+ .lead { max-width: 58ch; color: var(--ink-mid); }
+ .kid-hero-scene {
+ display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+ margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+ border: 1px solid color-mix(in srgb,var(--kit) 40%,var(--line));
+ border-radius: var(--r-lg);
+ background: linear-gradient(135deg,color-mix(in srgb,var(--kit) 14%,var(--surface)),var(--surface) 62%);
+ }
+ .mission-face {
+ width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+ border: 2px solid color-mix(in srgb,var(--kit) 42%,var(--line));
+ background: color-mix(in srgb,var(--kit) 12%,var(--surface)); font-size: 2.2rem;
+ }
+ .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+ .mp-art { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+ .mp-paper { fill: color-mix(in srgb,var(--kit) 8%,#f6efe3); }
+ .mp-land { fill: color-mix(in srgb,var(--sci) 16%,#dce8c8); }
+ .mp-room { fill: color-mix(in srgb,var(--surface) 70%,#fff); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 2; }
+ .mp-wall { fill: none; stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 3; }
+ .mp-river { fill: none; stroke: color-mix(in srgb,var(--math) 48%,#4a90c0); stroke-width: 5; stroke-linecap: round; }
+ .mp-pool { fill: color-mix(in srgb,var(--math) 40%,#6aa8d4); }
+ .mp-contour { fill: none; stroke: color-mix(in srgb,var(--kit) 42%,#8a5a28); stroke-width: 1.4; }
+ .mp-rose { fill: var(--surface); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 2; }
+ .mp-n { fill: color-mix(in srgb,var(--danger) 52%,#c05050); }
+ .mp-s { fill: color-mix(in srgb,var(--ink) 28%,#8a8680); }
+ .mp-scale { fill: var(--ink); }
+ .mp-scale-box { fill: var(--surface); stroke: var(--ink); stroke-width: 1.4; }
+ .mp-legend { fill: var(--surface); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.4; }
+ .mp-dot { fill: color-mix(in srgb,var(--math) 48%,#4a90c0); }
+ .mp-label { fill: var(--ink); font: 800 13px var(--mono); }
+ .mp-tiny { fill: var(--ink); font: 700 11px var(--mono); }
+ .mp-ring { fill: none; stroke: var(--kit); stroke-width: 3; opacity: 0; }
+ .mp-ring.on { opacity: 1; }
+ .kid-action-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+ .map-atlas .kid-figure { --tone: var(--kit); }
+ .map-atlas .kid-figure[data-mp="rose"] { --tone: var(--danger); }
+ .map-atlas .kid-figure[data-mp="scale"] { --tone: var(--ink-mid); }
+ .map-atlas .kid-figure[data-mp="contour"] { --tone: var(--kit); }
+ .map-atlas .kid-figure[data-mp="river"] { --tone: var(--math); }
+ .map-atlas .kid-figure[data-mp="legend"] { --tone: var(--phys); }
+ .map-atlas .kid-figure[data-mp="north"] { --tone: var(--danger); }
+ .map-atlas .kid-figure[data-mp="room"] { --tone: var(--sci); }
+ .map-atlas .kid-figure-art { padding: 6px; }
+ .map-atlas .kid-figure-art > svg { width: 100%; max-width: 132px; height: auto; }
+ .map-atlas .kid-figure-fact { display: block; }
+ .mp-mini-paper { fill: color-mix(in srgb,var(--kit) 8%,#f6efe3); }
+ .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+ .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+ .ask li::before {
+ counter-increment: q; content: counter(q);
+ position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+ display: grid; place-items: center; background: color-mix(in srgb,var(--kit) 12%,var(--surface));
+ border: 1px solid color-mix(in srgb,var(--kit) 40%,var(--line)); color: var(--ink);
+ font: 800 .76rem var(--mono);
+ }
+ button, .btn { min-height: 44px; }
+ .stage + .kid-action-strip { margin-top: 8px; }
+ .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+ @media (max-width: 640px) {
+ .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+ .mission-face { display: none; }
+ .stage { padding: 10px; }
+ .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+ .lead { max-width: none; }
+ }
+
+ .mp-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+ .mp-lab-panel { margin: 12px 0; padding: 10px; border: 1px solid color-mix(in srgb,var(--sci) 36%,var(--line)); border-radius: var(--r-lg); background: color-mix(in srgb,var(--sci) 8%,var(--surface)); }
+ .mp-lab-panel .readout { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0; }
+ .mp-lab-panel .readout div { padding:8px; border-radius:var(--r); background:var(--surface); border:1px solid var(--line); }
+ .mp-lab-panel .readout span { display:block; font-size:.78rem; color:var(--ink-mid); }
+ .mp-lab-panel .readout b { font:800 1.05rem var(--mono); color:var(--ink); }
+ .mp-lab-panel label { display:block; font-weight:700; margin-top:8px; }
+ .mp-lab-panel input[type="range"] { width:100%; min-height:44px; }
+ .mp-lab-panel .kid-action-strip { flex-direction:column; align-items:stretch; gap:4px; margin:8px 0; }
+ .mp-guess .pick-btns { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+ .guess-card { border-color: color-mix(in srgb,var(--sci) 45%,var(--line)); }
+ .guess-pick[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 18%,var(--surface)); color: var(--ink); }
+ .guess-out { font-weight: 750; color: var(--ink-mid); }
+ .guess-out b { color: var(--ink); }
+ @media (max-width:640px){
+ .hero .lead { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+ .mp-lab-panel > p { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+ }
+ @media (max-width:480px){
+ [data-playful-companion], [data-playful-sticker] { display:none !important; }
+ .mp-lab-panel .readout { grid-template-columns:1fr; }
+ }
+
+
+/* hn-photo-strip */
+.hn-photo-strip { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0 12px; }
+.hn-photo-strip figure { margin:0; border:1px solid color-mix(in srgb,var(--sci) 28%,var(--line)); border-radius:var(--r-lg); overflow:hidden; background:var(--surface); }
+.hn-photo-strip img { display:block; width:100%; height:140px; object-fit:cover; }
+.hn-photo-strip figcaption { padding:6px 8px; font:700 .85rem var(--mono); color:var(--ink); }
+@media (max-width:520px){ .hn-photo-strip { grid-template-columns:1fr; } .hn-photo-strip img { height:120px; } }
+</style>
+</head>
+<body data-playful-page="nature/maps.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+ <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+ <div class="row" aria-label="主导航">
+ <a class="nav-link" href="../index.html">资源库</a>
+ <a class="nav-link" href="../pages/paths.html">学习路径</a>
+ <a class="nav-link" href="../games/index.html">互动实验</a>
+ <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+ <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+ <a class="nav-link" href="../pages/parents.html">家长指南</a>
+ <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+ </div>
+</div></nav>
+<main id="main" class="wrap">
+ <header class="hero">
+ <div>
+ <p class="row"><span class="pill pill-kit">地球</span><span class="pill">6–12&nbsp;岁</span><span class="pill">本地观察</span></p>
+ <h1>地图观察站</h1>
+ <p class="lead">地图不是把整座城市压扁贴在纸上，而是缩小、简化的模型：符号替河、山、房间说话，图例告诉你符号什么意思，比例尺告诉你纸上&nbsp;1&nbsp;厘米大约等于实地多远，指南针玫瑰帮你找北。卫星照片也是一种图，公交示意图却常常故意不按真实公里数。本页练「模型≠实物」：同一张纸，先读图例再量比例。因为路改了以后旧图可能害人，所以出门认路要有大人陪伴，现场安全优先于纸上的线。舞台上的「定位」数字只是比较尺子，用来比「标记够不够、比例清不清」，不是导航仪，更不是精确测距。</p>
+ <div data-playful-companion></div>
+ <span data-playful-sticker></span>
+ </div>
+ <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="78" height="78"></div>
+ </header>
+
+
+ <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+ <h2 id="stageTitle">一张纸上的小世界</h2>
+ <div class="hn-photo-strip" role="group" aria-label="真图对照：地图符号 与 定向工具对照">
+  <figure>
+   <img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="320" height="180" loading="lazy">
+   <figcaption>地图符号</figcaption>
+  </figure>
+  <figure>
+   <img class="photo-real" src="../assets/photos/earth.jpg" alt="" width="320" height="180" loading="lazy">
+   <figcaption>定向工具对照</figcaption>
+  </figure>
+ </div>
+<svg class="mp-art" viewBox="0 0 560 240" role="img" aria-labelledby="mpTitle mpDesc">
+ <title id="mpTitle">地图符号舞台</title>
+ <desc id="mpDesc">一张浅色地图纸。你点中的两种符号会出现在左边和右边。</desc>
+ <rect class="mp-paper" width="560" height="240"/>
+ <rect class="mp-land" x="16" y="16" width="528" height="168" rx="8"/>
+ <path class="mp-contour" d="M70 70 C110 50 150 90 190 70"/>
+ <path class="mp-contour" d="M80 88 C120 68 156 108 198 86"/>
+ <path class="mp-river" d="M240 36 C280 80 300 90 340 140 C360 168 400 176 520 168"/>
+ <rect class="mp-room" x="48" y="120" width="70" height="46"/>
+ <circle class="mp-rose" cx="500" cy="48" r="22"/>
+ <polygon class="mp-n" points="500,30 494,50 506,50"/>
+ <polygon class="mp-s" points="500,66 494,50 506,50"/>
+ <text class="mp-tiny" x="500" y="28" text-anchor="middle">N</text>
+ <ellipse class="mp-ring" id="ringA" cx="170" cy="118" rx="88" ry="62"/>
+ <ellipse class="mp-ring" id="ringB" cx="390" cy="118" rx="88" ry="62"/>
+ <g id="slotA" transform="translate(90 56)"></g>
+ <g id="slotB" transform="translate(310 56)"></g>
+ <text class="mp-label" id="labA" x="170" y="226" text-anchor="middle">左边还空着</text>
+ <text class="mp-label" id="labB" x="390" y="226" text-anchor="middle">右边还空着</text>
+ </svg>
+ <p class="live-text" id="live" role="status" aria-live="polite">地图纸还空着。到图鉴里点两个不一样的符号，说出它们代表什么。</p>
+ </section>
+
+ <div class="kid-action-strip" role="group" aria-label="图鉴比较主操作">
+ <span>到图鉴点两个不同的符号来比</span>
+ <button class="btn" type="button" id="comparePickReset">清空重选</button>
+ </div>
+
+<section class="card mp-lab-panel" aria-labelledby="mpLabTitle">
+ <h2 id="mpLabTitle">地图定位台 · 真参数</h2>
+ <p>调<strong>地标标记</strong>与<strong>比例清楚</strong>。地图把大世界缩小；记号够、比例对，才更容易找对路——不是画得好看就等于会认路。</p>
+ <div class="kid-action-strip" role="group" aria-label="真参数主操作">
+ <label for="mpA">地标标记：<span id="mpALab">…</span></label>
+ <input class="input" id="mpA" type="range" min="4" max="36" value="16" aria-valuetext="16">
+ <label for="mpB">比例清楚：<span id="mpBLab">…</span></label>
+ <input class="input" id="mpB" type="range" min="2" max="20" value="8" aria-valuetext="8">
+ </div>
+ <svg class="mp-art" viewBox="0 0 640 220" role="img" aria-labelledby="mpLabSvgTitle mpLabSvgDesc">
+ <title id="mpLabSvgTitle">图例标记和比例尺一起工作</title>
+ <desc id="mpLabSvgDesc">地标越多，纸上越知道那是什么；比例尺越清楚，纸上1厘米才能换成实地多远。两样都糊就会迷路。</desc>
+ <rect fill="#f0ead8" width="640" height="220"/>
+ <rect x="48" y="40" width="360" height="150" fill="#d8e8c8" stroke="#6a7a50" stroke-width="2"/>
+ <g id="mpMarks"></g>
+ <path d="M80 160 L360 70" stroke="#4a6a8a" stroke-width="2" stroke-dasharray="6 4"/>
+ <g id="mpScaleG">
+ <rect x="60" y="168" width="120" height="14" fill="#fff8ec" stroke="#1a2a20"/>
+ <text id="mpScaleLab" fill="#1a2a20" style="font:700 11px monospace" x="64" y="179">1厘米≈？</text>
+ </g>
+ <circle id="mpPin" cx="200" cy="110" r="10" fill="#c45a3a"/>
+ <g id="mpPhoto" opacity="0.28">
+ <rect x="520" y="24" width="96" height="64" fill="#9bb8d0" stroke="#1a2a20"/>
+ <circle cx="548" cy="44" r="8" fill="#fff8ec"/>
+ <path d="M512 16 L624 96 M624 16 L512 96" stroke="#c2410c" stroke-width="4"/>
+ </g>
+ <rect id="mpBar" x="20" y="70" width="14" height="90" fill="#1a5a3a"/>
+ <text fill="#1a2a20" style="font:800 13px monospace" x="16" y="28">定位台</text>
+ <text id="mpStateLab" fill="#1a2a20" style="font:700 12px monospace" x="160" y="28">先图例，再量比例</text>
+ </svg>
+ <div class="readout" aria-live="polite">
+ <div><span>标记</span><b id="mpAOut">…</b></div>
+ <div><span>定位（算）</span><b id="mpSOut">…</b></div>
+ <div><span>找对？</span><b id="mpOkOut">…</b></div>
+ </div>
+ <p class="live-text" id="mpLabLive" role="status" aria-live="polite">标记告诉你「那是什么」；比例尺告诉你「纸上1厘米等于实地多远」。两样都糊，就会猜谜。</p>
+ </section>
+ <section class="card guess-card mp-guess" aria-labelledby="mpGuessTitle">
+ <h2 id="mpGuessTitle">先猜一猜，再拖滑杆</h2>
+ <p><b>第 1 题：</b>标记够、比例够（标记 32、比例 10），定位会更明显吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜定位">
+ <button class="btn guess-pick" type="button" data-mp-g1="15" aria-pressed="false">几乎不变</button>
+ <button class="btn guess-pick" type="button" data-mp-g1="20" aria-pressed="false">会更明显</button>
+ <button class="btn guess-pick" type="button" data-mp-g1="28" aria-pressed="false">会过头</button>
+ </div>
+ <p class="guess-out" id="mpGuessOut1" role="status" aria-live="polite">先押一个，再拖到 地标标记 32、比例清楚 10。</p>
+ <div id="mpGuessBlock2" hidden>
+ <p><b>第 2 题：</b>标记 5、比例 3，还找对吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜够不够">
+ <button class="btn guess-pick" type="button" data-mp-g2="yes" aria-pressed="false">找对</button>
+ <button class="btn guess-pick" type="button" data-mp-g2="no" aria-pressed="false">偏迷</button>
+ </div>
+ <p class="guess-out" id="mpGuessOut2" role="status" aria-live="polite">押好后拖到 地标标记 5、比例清楚 3。</p>
+ </div>
+ <div id="mpGuessBlock3" hidden>
+ <p><b>第 3 题：</b>标记最少 4、比例最弱 2。还能明显找对吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜最低档">
+ <button class="btn guess-pick" type="button" data-mp-g3="yes" aria-pressed="false">能，还在</button>
+ <button class="btn guess-pick" type="button" data-mp-g3="no" aria-pressed="false">不能，两边都太弱</button>
+ <button class="btn guess-pick" type="button" data-mp-g3="zero" aria-pressed="false">变成 0，没了</button>
+ </div>
+ <p class="guess-out" id="mpGuessOut3" role="status" aria-live="polite">押好后标记 4、比例 2。</p>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="teachWhatTitle">
+ <h2 id="teachWhatTitle">地图怎样用符号和比例尺讲清「在哪、有多远」</h2>
+ <p>先点「图例」，再对照「比例尺」。地图会丢掉气味、噪音和楼有多高，只留下这次要看的远近和方向。纸上的小房子不是真房子被压扁贴上去，而是约定好的符号。换一张图，同一颜色不一定还是水，必须以这张图自己的图例为准。</p>
+ <p>纸上&nbsp;1&nbsp;厘米乘上比例，才等于外面有多远。指南针玫瑰或指北箭头帮你把图和实地对齐，左右才不会对反。卫星照片也是一种图，仍有云、拍摄时刻和变形；公交示意图更常故意不按真实公里数，好把换乘画清楚。</p>
+ <p>因为路改了以后旧图可能害人，所以现场安全优先于纸上的线。出门认路要有大人陪伴。舞台上的「定位」读数只比较「标记够不够、比例清不清」，不是导航成绩单，更不是精确测距。</p>
+ </section>
+
+ <section class="card map-atlas" aria-labelledby="atlasTitle">
+ <h2 id="atlasTitle">地图图鉴</h2>
+ <p>下面有 12&nbsp;张卡。点两个符号，再说出它们代表方向、远近、高低，还是真实地方。</p>
+ <div class="kid-figure-grid" role="group" aria-label="地图图鉴：十二种符号">
+ <button class="kid-figure" type="button" data-mp="plan" aria-pressed="false" aria-label="平面图：从上往下看">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">平面图</span>
+ <span class="kid-figure-fact">平面图是从上往下看的缩小模型，用符号讲位置，不是把地面压成一张照片。</span>
+ </button>
+ <button class="kid-figure" type="button" data-mp="rose" aria-pressed="false" aria-label="指南针玫瑰：标出东南西北">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">指南针玫瑰</span>
+ <span class="kid-figure-fact">花形指针标出东南西北，帮你把图和实地对齐；北不总是印在纸的上方。</span>
+ </button>
+ <button class="kid-figure" type="button" data-mp="scale" aria-pressed="false" aria-label="比例尺：纸上多长等于外面多远">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">比例尺</span>
+ <span class="kid-figure-fact">纸上短短一截等于外面多远，乘上它才换算；没有它，「看起来近」不算数。</span>
+ </button>
+ <button class="kid-figure" type="button" data-mp="contour" aria-pressed="false" aria-label="等高线：越密山越陡">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">等高线</span>
+ <span class="kid-figure-fact">一圈一圈是等高线，线挤得越密山就越陡；它讲高低，不是把山拍成照片。</span>
+ </button>
+ <button class="kid-figure" type="button" data-mp="river" aria-pressed="false" aria-label="河流符号：弯弯的蓝线">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/river.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">河流符号</span>
+ <span class="kid-figure-fact">弯弯的蓝线常代表一条真河，仍要先读这张图自己的图例，不要当照片猜。</span>
+ </button>
+ <button class="kid-figure" type="button" data-mp="legend" aria-pressed="false" aria-label="图例：符号说明书">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">图例</span>
+ <span class="kid-figure-fact">图例是这张图自己的符号说明书，告诉你记号代表什么；换图颜色就可能变。</span>
+ </button>
+ <button class="kid-figure" type="button" data-mp="north" aria-pressed="false" aria-label="北：地图朝哪一边">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">北</span>
+ <span class="kid-figure-fact">箭头指北，地图才知道该朝哪边；北不总是纸的上方，把图转过来北仍在北。</span>
+ </button>
+ <button class="kid-figure" type="button" data-mp="room" aria-pressed="false" aria-label="缩小的房间：家具也画小">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">缩小的房间</span>
+ <span class="kid-figure-fact">床和门也画小，仍是房间的模型，用符号加比例，不是把屋子拍扁贴上去。</span>
+ </button>
+ <button class="kid-figure" type="button" data-mp="path" aria-pressed="false" aria-label="小路：细线代表能走的路">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">小路</span>
+ <span class="kid-figure-fact">细线常代表能走的路，仍要先读图例；它是约定符号，不是地面的照片。</span>
+ </button>
+ <button class="kid-figure" type="button" data-mp="lake" aria-pressed="false" aria-label="湖泊：蓝色色块代表一洼水">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">湖泊</span>
+ <span class="kid-figure-fact">蓝色色块常代表一洼水，仍以这张图的图例为准，换图蓝色不一定还是湖。</span>
+ </button>
+ <button class="kid-figure" type="button" data-mp="hill" aria-pressed="false" aria-label="小山：几圈等高线挤在一起">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">小山</span>
+ <span class="kid-figure-fact">几圈等高线挤在一起，就是更陡的坡；它讲坡度，不是把小山拍成一张照片。</span>
+ </button>
+ <button class="kid-figure" type="button" data-mp="grid" aria-pressed="false" aria-label="方格：方便数格子找位置">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">方格</span>
+ <span class="kid-figure-fact">格子帮你说出在第几行第几列，是找位置的约定，不是把地面切成照片块。</span>
+ </button>
+ </div>
+ <p class="live-text" id="atlasSay" role="status" aria-live="polite">还没选。先点两个符号，再说出它们代表什么。</p>
+ </section>
+
+
+ <section class="card" aria-labelledby="predictTitle">
+ <h2 id="predictTitle">猜一猜</h2>
+ <div class="kid-predict" style="--tone:var(--math)"
+ data-kid-predict
+ data-kid-predict-explain="地图用符号、图例和比例尺（有时还有方向标）来讲空间。它会缩小并省掉细节，不是把楼房压成一张纸。"
+ data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+ data-kid-predict-again="押好了，点「看答案」。">
+ <p class="kid-predict-q"><b>地图上的小房子符号，是不是真房子缩到纸上？</b></p>
+ <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：地图符号是什么">
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="tiny">是真房子被压扁贴在纸上</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="symbol" data-kid-predict-correct>是约定符号：用图形代表真实地物</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="photo">地图必须是卫星照片才能用</button>
+ </div>
+ <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+ <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+ </div>
+ </section>
+
+ <section class="task" aria-labelledby="taskTitle">
+ <h2 class="task-title" id="taskTitle">任务：选两个符号，说出代表什么</h2>
+ <p>点两张不一样的图鉴，再说出它们代表方向、远近、高低，还是真实地方。</p>
+ <div class="kid-action-strip" role="group" aria-label="符号代表什么">
+ <button class="btn" type="button" data-mean="dir" aria-pressed="false">表示方向</button>
+ <button class="btn" type="button" data-mean="dist" aria-pressed="false">表示远近</button>
+ <button class="btn" type="button" data-mean="height" aria-pressed="false">表示高低</button>
+ <button class="btn" type="button" data-mean="place" aria-pressed="false">表示真实地方</button>
+ </div>
+ <button class="btn btn-primary" type="button" id="finishBtn" disabled>记下这次比较</button>
+ <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+ <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+ <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先点两个符号，再说出它们代表什么。</p>
+ </section>
+
+
+ <section class="card" aria-labelledby="lookTitle">
+ <h2 id="lookTitle">先读图例，再用比例尺量，地图不是缩小照片</h2>
+ <p>同一张纸，先只改这一件事：有没有先读图例。先找图例，再读符号，最后用比例尺估距离。没有图例就不要武断「蓝的一定是水」——那是约定，要以这张图自己的说明书为准。这样比，才知道地图是模型，不是把世界压扁的照片。</p>
+ <p>完成句写「先读图例再量比例」或「地图不是缩小照片」。禁止「蓝线全世界都是河」。对照卫星影像与公交示意图：一张偏「看见地表长什么样」，一张偏「谁和谁能换乘」。目的不同，能不能拿来量实地公里数也不同。因为路改了以后旧图可能害人，所以现场安全优先于纸上的线。</p>
+ <div class="kid-figure-grid" role="group" aria-label="主题细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">模型</span><span class="kid-figure-sub">≠实物</span><p class="kid-figure-fact">地图省略高度、气味、噪音，只保留这次任务需要的空间关系，不是把城市压扁贴在纸上。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">图例</span><span class="kid-figure-sub">解码</span><p class="kid-figure-fact">图例是这张图自己的符号词典。没有它，就不要猜蓝线一定是河，换图会变。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">比例尺</span><span class="kid-figure-sub">换算</span><p class="kid-figure-fact">纸上 1&nbsp;厘米对应实地多少，写进估算；没有它，「看起来很近」变不成步行时间。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">北</span><span class="kid-figure-sub">方向</span><p class="kid-figure-fact">玫瑰或指北箭头帮你把图和实地对齐，左右才不会对反，走路才不会偏。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/earth.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">卫星图</span><span class="kid-figure-sub">也是图</span><p class="kid-figure-fact">照片仍有投影、云和拍摄时刻，不是「绝对真相」，也常常没有图例告诉你名字。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">过时图</span><span class="kid-figure-sub">红线</span><p class="kid-figure-fact">路改了以后旧图可能害人。出门认路要有大人，现场安全优先于纸上的线。</p></div>
+ </div>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>找图例。</b>指出三种符号各代表什么，不要先猜颜色。</li>
+ <li data-step="2"><b>估距离。</b>量纸面厘米，乘比例，写出「大约实地多远」。</li>
+ <li data-step="3"><b>对北。</b>把图北与实际北大致对齐，再说左右。</li>
+ <li data-step="4"><b>说模型。</b>举一个地图故意丢掉的细节，例如气味或楼有多高。</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>地图用小符号代表真的河和路；先看图例再猜意思。量一量纸上多长，再想真实世界有多远。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>地图是信息模型，不是缩小照片。图例负责解码符号，比例尺负责把纸面厘米换成实地距离，指北负责把图和实地对齐。卫星图也是图，仍会变形、会过时。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>投影会让面积或方向变形；专题图故意丢掉与任务无关的信息。线段式比例尺比「1:10000」更直观，但弯曲道路用直线量会偏短——先承认误差来源，再谈「估」不是「骗」。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能先读图例再用比例尺量距离，并否定「地图是缩小照片」和「蓝线全世界都是河」。完成看的是模型对照，不是背「比例尺」三个字。因为路改了以后旧图可能害人，所以现场安全优先于纸上的线。</p>
+ <ul class="ask-list">
+ <li>符号是谁约定的？换一张图，同一颜色还一定代表河吗？</li>
+ <li>纸上 1&nbsp;厘米，在这张图上大约等于实地多远？</li>
+ <li>没有图例，还能不能武断「蓝=水」？</li>
+ <li>卫星照片是不是「最好的地图」？它最擅长回答哪一类问题？</li>
+ </ul>
+ </section>
+
+
+ <section class="card" aria-labelledby="deepTitle">
+ <h2 id="deepTitle">比例尺换算：纸上厘米怎样变成实地距离</h2>
+ <p>选定图上两点，先量纸面大约几厘米，再乘上这张图自己的比例，才得到实地估算。完成句写成「纸面&nbsp;…&nbsp;厘米 ≈ 实地&nbsp;…」，并标上比例。大约&nbsp;90&nbsp;秒换算一次就够，估错也要写下误差从哪来。</p>
+ <p>弯曲道路用直线量会偏短，量尺也会差一点：这是误差，不是骗人。孩子写等式时允许用「大约」。测量页也是先量再换算，单位说法要一样。</p>
+ <p>线段式比例尺比「1:10000」更直观，但没有它，「看起来很近」变不成步行时间。本页「定位」读数只比较方向，不是导航仪上的精确米数。</p>
+ <p>因为路改了以后旧图可能害人，所以换算完仍要看现场。出门认路请用可靠地图并有大人陪伴。</p>
+ <div class="kid-figure-grid" role="group" aria-label="专属事实卡">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">量纸面</span><span class="kid-figure-sub">厘米</span><p class="kid-figure-fact">先量纸上两点之间大约几厘米，这是换算的第一步，还不是实地距离。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">乘比例</span><span class="kid-figure-sub">实地</span><p class="kid-figure-fact">厘米乘上这张图自己的比例，才换成实地大约多远，不能拿别的图来乘。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">等式</span><span class="kid-figure-sub">完成</span><p class="kid-figure-fact">写下「纸上大约几厘米 ≈ 实地大约多远」，并标上这张图自己的比例，允许用大约。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">弯曲</span><span class="kid-figure-sub">误差</span><p class="kid-figure-fact">弯路用直线量会偏短，量尺也会差一点：这是误差，不是骗人，要写下来。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">测量</span><span class="kid-figure-sub">连</span><p class="kid-figure-fact">测量页也是先量再换算，厘米和米的说法要一样，别把另一张图的比例混进来。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">90&nbsp;秒</span><span class="kid-figure-sub">练习</span><p class="kid-figure-fact">大约&nbsp;90&nbsp;秒换算一次就够。估错也要写下误差从哪来，不要装成精确测距。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="fieldTitle">
+ <h2 id="fieldTitle">对照卡：卫星影像 · 交通示意 · 房间平面</h2>
+ <p>三类图服务不同问题。公平比法是各写一句「它最擅长回答什么」，不要写成「一张图能回答所有问题」。</p>
+ <p>卫星影像偏地表外观，受云、拍摄时刻和分辨率限制，也不自动告诉你名字。交通示意图偏谁和谁能换乘，站距常常故意不按真实比例。房间平面偏家具与墙的相对位置，要按比例，才能看出桌子过不过得去。</p>
+ <p>若用交通图估实地公里数，会得到荒唐答案——这恰好证明「图的目的」决定「能不能拿来量」。三种图都要先读图例。本页读数只比较方向，不是说明书。</p>
+ <div class="kid-figure-grid" role="group" aria-label="对照与细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/earth.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">卫星</span><span class="kid-figure-sub">外观</span><p class="kid-figure-fact">卫星影像像照片，看地表长什么样，却不自动告诉你名字，也会被云挡住。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">交通</span><span class="kid-figure-sub">连通</span><p class="kid-figure-fact">交通图常故意不按比例，好把换乘画清楚；拿它量实地公里数会荒唐。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">平面</span><span class="kid-figure-sub">家具</span><p class="kid-figure-fact">房间平面要按比例画家具和墙，才能看出桌子过不过得去，不是随手示意图。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">擅长问</span><span class="kid-figure-sub">各一</span><p class="kid-figure-fact">问外形用卫星，问换乘用交通图，问家具用平面，三类问题不要叠在一张图上。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">图例</span><span class="kid-figure-sub">仍要</span><p class="kid-figure-fact">三种图都要先读图例。符号是约定，不是随便画的装饰，换图颜色可能改。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">一种图打天下</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">没有一张图能回答所有问题。换问题就要换图，别把交通图当测距尺。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="moreTitle">
+ <h2 id="moreTitle">回家只记「先读图例」，不把密码画进图</h2>
+ <p>在家里画一张简易寻宝图，大约&nbsp;4&nbsp;分钟：至少&nbsp;3&nbsp;个符号，再手写图例和指北。让家人按图找到物品，再讨论哪一处符号含糊。图例含糊时，寻宝的人会卡住，画图的人就知道哪一笔要改。</p>
+ <p>口头只要两句：「先读图例，再用比例尺量。」「地图不是缩小照片。」有人说「蓝的一定是河」，让孩子指着图例反驳。</p>
+ <p>门锁密码和隐私角落一律不进图。别人家的精确地址也不要随手公开。本页数字不要抄进导航手册。出门认路请用可靠地图并有大人陪伴。</p>
+ <div class="kid-figure-grid" role="group" aria-label="加厚事实">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">4&nbsp;分钟</span><span class="kid-figure-sub">寻宝</span><p class="kid-figure-fact">大约&nbsp;4&nbsp;分钟画完，让家人按图找到物品，再讨论哪处符号含糊，图例要写清。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">图例</span><span class="kid-figure-sub">手写</span><p class="kid-figure-fact">图例含糊时，寻宝的人会卡住，画图的人就知道哪一笔要改，这不是失败。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">指北</span><span class="kid-figure-sub">加上</span><p class="kid-figure-fact">图上要画指北，不然左右会对反；北不总在纸上方，家人按图走会偏到另一边。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">含糊处</span><span class="kid-figure-sub">讨论</span><p class="kid-figure-fact">寻宝卡住不是失败，而是在告诉你：符号说明书还没写清楚，回去补图例。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">隐私</span><span class="kid-figure-sub">勿画</span><p class="kid-figure-fact">门锁密码和隐私角落不要画进图，别人家的精确地址也不要公开，只画能找的符号。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/maps.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">3&nbsp;符号</span><span class="kid-figure-sub">至少</span><p class="kid-figure-fact">至少画&nbsp;3&nbsp;个符号，并写上图例，家人才能按图找到东西，含糊的记号先改清。</p></div>
+ </div>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+ <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+ <p>想知道「地图是不是缩小照片」，就只改「有没有图例、能不能换算」这一项。同一张纸，先读图例再量比例。把「卫星一定最准」叠进同一档，分不清到底是模型，还是照片。</p>
+ <ul>
+ <li><b>只改这一项：</b>有没有先读图例（或纸上厘米乘不乘比例）。</li>
+ <li><b>先保持不变：</b>同一张图、同一对点、同一个指北。</li>
+ <li><b>要观察的：</b>符号代表什么；纸上&nbsp;1&nbsp;厘米大约等于实地多远。</li>
+ <li><b>另开一行：</b>交通图能不能拿来量公里数，不要和「蓝线是不是河」叠在一起。</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+ <h2 id="askMoreTitle">还可以问下去</h2>
+ <ol>
+ <li>没有图例，蓝线一定是河吗？换一张图，同一颜色还代表水吗？</li>
+ <li>公交示意图上两站看起来很近，实地走起来为什么可能很远？图的目的改了，还能不能拿来量？</li>
+ <li>图北和实北对不齐时，按图往左走，人会偏到哪一边？</li>
+ </ol>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+ <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+ <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把投影变形提前塞进四岁耳朵。</p>
+ <div class="age-tiers" aria-label="给家长的分层讲法">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>地图用小符号代表真的河和路；先看图例再猜意思。量一量纸上多长，再想真实世界有多远。出门认路要有大人。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>地图是信息模型，不是缩小照片。图例负责解码符号，比例尺负责把纸面厘米换成实地距离，指北负责把图和实地对齐。卫星图也是图，仍会变形、会过时。本页数字只用来比较，不是导航仪。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>投影会让面积或方向变形；专题图故意丢掉与任务无关的信息。线段式比例尺比「1:10000」更直观，但弯曲道路用直线量会偏短——先承认误差来源，再谈「估」不是「骗」。旧图可能害人，现场安全优先。</p></div>
+ </div>
+ </section>
+
+ <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+ <h2 class="work-card-title" id="workTitle">作品表单：地图观察</h2>
+ <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+ <div class="work-card-fields">
+ <div><label for="workType">作品类型</label>
+ <select class="input" id="workType" name="type">
+ <option value="observation">观察记录</option>
+ <option value="model">模型说明</option>
+ <option value="explanation">我的解释</option>
+ </select>
+ </div>
+ <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：蓝线是河，箭头指北"></div>
+ <div><label for="workContent">符号代表什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="两个符号各代表什么？地图和真房间差在哪？"></textarea></div>
+ <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+ </div>
+ <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+ </form>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+ <h2 id="askTitle">给家长的问题</h2>
+ <ul class="ask">
+ <li>若没有图例，孩子还说「蓝线一定是河」——让他指着图例再讲一次，换一张图还成立吗？</li>
+ <li>房间平面图与城市交通图，各省略了什么？哪一张能拿来量实地公里数？</li>
+ <li>孩子能否用比例尺完成一次距离估算，并允许写成「大约」？弯路用直线量会怎样偏？</li>
+ <li>图北与实北对不齐时，按图往左走，人会偏到哪一边？</li>
+ <li>为什么不能把别人家精确地址、门锁密码随手画进图或公开传播？</li>
+ <li>「地图越细越好」——何时反而更难用？本页「定位」读数能当导航仪吗？</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+ <h2 id="whyTitle">背后的原理</h2>
+ <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：地图是信息模型，用约定符号代替像素级真实，不是把城市压扁贴在纸上。图例是这张图自己的词典；比例尺把纸面厘米换成实地距离；指北把自我中心视角转成共享坐标系。</p>
+ <p>本页「定位≈标记×比例÷16」只是比较尺子，用来让孩子看见「标记够、比例清才找得对」，不是导航仪，也不是精确测距。弯曲道路用直线量会偏短，这是误差，不是骗人。</p>
+ <p>卫星照片仍有投影、云和拍摄时刻；交通示意图常故意不按比例。不同投影在大范围上必然变形，教学层先建立「有变形」意识，不要写成「卫星就是绝对真相」。</p>
+ <p>常见误会：地图绝对准确、符号全球统一、旧图永远能用。纠正。因为路改了以后旧图可能害人，所以现场安全优先于纸上的线。出门认路请用可靠地图并有大人陪伴。本页不提供导航。</p>
+ </section>
+
+ <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))" data-audience="parent">
+ <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">地图公式卡 · 定位≈标记×比例÷16；定位≥10 更易找对；缩小≠认路自动</p>
+ <p style="margin:0;color:var(--ink-mid);line-height:1.55">先认图例与方向。户外带孩子认真实地标，不替代大人看路。</p>
+ </div>
+
+
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+ <h2 id="nextTitle">接下来可以去</h2>
+ <p>带走句：先读图例，再用比例尺量；地图不是缩小照片。地球页看大地怎么转；河流页看蓝线是不是真的河，仍要先对图例。</p>
+ <p class="row"><a class="btn btn-ghost" href="earth.html">地球与地震</a><a class="btn btn-ghost" href="rivers.html">河流观察站</a></p>
+ </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页是读图模型，不提供导航或精确测距。出门认路请用可靠地图并有大人陪伴。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+ "use strict";
+ var NS = "http://www.w3.org/2000/svg";
+ var INFO = {
+ plan: { name:"平面图", say:"平面图：从上往下看的缩小模型，用符号讲位置，不是把地面压成一张照片。" },
+ rose: { name:"指南针玫瑰", say:"指南针玫瑰：花形指针标出东南西北；北不总是印在纸的上方。" },
+ scale: { name:"比例尺", say:"比例尺：纸上短短一截等于外面多远，乘上它才换算，看起来近不算数。" },
+ contour: { name:"等高线", say:"等高线：一圈一圈，线越密山越陡，讲高低，不是把山拍成照片。" },
+ river: { name:"河流符号", say:"河流符号：弯弯的蓝线常代表真河，仍要先读这张图自己的图例。" },
+ legend: { name:"图例", say:"图例：这张图自己的符号说明书，换图以后颜色就可能变。" },
+ north: { name:"北", say:"北：箭头指北，地图才知道朝哪边；北不总是纸的上方。" },
+ room: { name:"缩小的房间", say:"缩小的房间：床和门也画小，仍是模型，不是把屋子拍扁贴上去。" },
+ path: { name:"小路", say:"小路：细线常代表能走的路，仍要先读图例，不是地面的照片。" },
+ lake: { name:"湖泊", say:"湖泊：蓝色色块常代表一洼水，仍以这张图的图例为准。" },
+ hill: { name:"小山", say:"小山：几圈线挤在一起就是更陡，讲坡度，不是把小山拍成照片。" },
+ grid: { name:"方格", say:"方格：格子帮你说出第几行第几列，是找位置的约定。" }
+ };
+ var ART = {
+ plan: '<rect class="mp-land" x="8" y="8" width="144" height="100" rx="6"/><path class="mp-river" d="M16 28 C56 44 84 20 140 48"/><rect class="mp-room" x="24" y="56" width="40" height="28"/>',
+ rose: '<circle class="mp-rose" cx="80" cy="64" r="36"/><polygon class="mp-n" points="80,32 72,64 88,64"/><polygon class="mp-s" points="80,96 72,64 88,64"/><text class="mp-tiny" x="80" y="28" text-anchor="middle">N</text>',
+ scale: '<rect class="mp-scale-box" x="12" y="52" width="136" height="22"/><rect class="mp-scale" x="12" y="52" width="34" height="22"/><rect class="mp-scale" x="80" y="52" width="34" height="22"/><text class="mp-tiny" x="12" y="92">0</text><text class="mp-tiny" x="148" y="92" text-anchor="end">100</text>',
+ contour: '<ellipse class="mp-contour" cx="80" cy="64" rx="54" ry="38"/><ellipse class="mp-contour" cx="80" cy="64" rx="36" ry="24"/><ellipse class="mp-contour" cx="80" cy="64" rx="16" ry="10"/>',
+ river: '<path class="mp-river" d="M12 28 C48 60 72 20 108 64 C128 86 140 70 156 92"/><circle class="mp-dot" cx="16" cy="28" r="5"/>',
+ legend: '<rect class="mp-legend" x="20" y="20" width="120" height="88" rx="6"/><path class="mp-river" d="M32 44 H60" stroke-width="5"/><text class="mp-tiny" x="68" y="48">河</text><rect class="mp-room" x="32" y="64" width="24" height="16"/><text class="mp-tiny" x="68" y="76">房</text>',
+ north: '<polygon class="mp-n" points="80,16 66,64 94,64"/><rect class="mp-s" x="74" y="64" width="12" height="32"/><text class="mp-label" x="80" y="114" text-anchor="middle">N</text>',
+ room: '<rect class="mp-room" x="20" y="16" width="120" height="96"/><rect class="mp-legend" x="30" y="26" width="28" height="18"/><rect class="mp-legend" x="92" y="70" width="32" height="28"/><circle class="mp-dot" cx="48" cy="80" r="7"/>',
+ path: '<rect class="mp-land" x="8" y="8" width="144" height="100" rx="6"/><path class="mp-wall" d="M20 92 C48 48 90 64 140 24" fill="none" stroke-width="5"/>',
+ lake: '<rect class="mp-land" x="8" y="8" width="144" height="100" rx="6"/><ellipse class="mp-pool" cx="80" cy="62" rx="40" ry="22"/>',
+ hill: '<ellipse class="mp-contour" cx="80" cy="64" rx="52" ry="34" fill="none" stroke-width="2"/><ellipse class="mp-contour" cx="80" cy="64" rx="32" ry="20" fill="none" stroke-width="2"/><ellipse class="mp-contour" cx="80" cy="64" rx="14" ry="8" fill="none" stroke-width="2"/>',
+ grid: '<path class="mp-wall" d="M24 16 V112 M56 16 V112 M88 16 V112 M120 16 V112 M16 32 H144 M16 60 H144 M16 88 H144" fill="none" stroke-width="1.6"/><circle class="mp-dot" cx="56" cy="60" r="7"/>'
+ };
+ var MEANS = { dir:"表示方向", dist:"表示远近", height:"表示高低", place:"表示真实地方" };
+ var first = "", second = "", mean = "", done = false;
+
+ function fillSlot(slot, id){
+ while (slot.firstChild) slot.removeChild(slot.firstChild);
+ if (!id || !ART[id]) return;
+ var wrap = document.createElementNS(NS, "g");
+ wrap.innerHTML = ART[id];
+ slot.appendChild(wrap);
+ }
+ function paintStage(){
+ fillSlot(document.getElementById("slotA"), first);
+ fillSlot(document.getElementById("slotB"), second);
+ document.getElementById("labA").textContent = first ? INFO[first].name : "左边还空着";
+ document.getElementById("labB").textContent = second ? INFO[second].name : "右边还空着";
+ document.getElementById("ringA").setAttribute("class", first ? "mp-ring on" : "mp-ring");
+ document.getElementById("ringB").setAttribute("class", second ? "mp-ring on" : "mp-ring");
+ }
+ function sync(){
+ var ready = first && second && first !== second && mean;
+ document.getElementById("finishBtn").disabled = !ready || done;
+ if (done) return;
+ document.getElementById("taskStatus").textContent = ready
+ ? "选好了。点「记下这次比较」就会记进足迹。"
+ : "尚未完成：先点两个符号，再说出它们代表什么。";
+ }
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mp]"), function(btn){
+ btn.addEventListener("click", function(){
+ var key = btn.getAttribute("data-mp");
+ if (first && first !== key) second = first;
+ first = key;
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mp]"), function(n){
+ var id = n.getAttribute("data-mp");
+ n.setAttribute("aria-pressed", (id === first || id === second) ? "true" : "false");
+ });
+ document.getElementById("live").textContent = INFO[key].say;
+ document.getElementById("atlasSay").textContent = second
+ ? INFO[second].name+"和"+INFO[key].name+"都选好了。再说出它们代表什么。"
+ : INFO[key].say+"再点另一个符号来比较。";
+ paintStage();
+ sync();
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mean]"), function(btn){
+ btn.addEventListener("click", function(){
+ mean = btn.getAttribute("data-mean");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mean]"), function(n){
+ n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+ });
+ sync();
+ });
+ });
+ document.getElementById("finishBtn").addEventListener("click", function(){
+ if (!first || !second || !mean || done) return;
+ done = true;
+ var evidence = INFO[second].name+"和"+INFO[first].name+"，判断："+MEANS[mean];
+ if (window.Progress) Progress.complete("nature/maps.html", evidence);
+ document.getElementById("taskStatus").textContent = "完成啦："+evidence+"。";
+ this.disabled = true;
+ });
+ document.getElementById("comparePickReset").addEventListener("click", function(){
+ if (done) return;
+ first = ""; second = ""; mean = "";
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mp], [data-mean]"), function(n){
+ n.setAttribute("aria-pressed", "false");
+ });
+ document.getElementById("atlasSay").textContent = "还没选。先点两个符号，再说出它们代表什么。";
+ paintStage();
+ sync();
+ });
+ paintStage();
+})();
+</script>
+<script>
+
+(function(){
+ "use strict";
+ var a = document.getElementById("mpA");
+ var b = document.getElementById("mpB");
+ if (!a || !b) return;
+ var g1 = "", g2 = "", g3 = "";
+ var g1Done = false, g2Done = false, g3Done = false;
+ function score(){ return Math.round(Number(a.value) * Number(b.value) / 16); }
+ function paint(){
+ var s = score();
+ var ok = s >= 10;
+ document.getElementById("mpALab").textContent = a.value;
+ document.getElementById("mpBLab").textContent = b.value;
+ a.setAttribute("aria-valuetext", a.value);
+ b.setAttribute("aria-valuetext", b.value);
+ document.getElementById("mpAOut").textContent = a.value;
+ document.getElementById("mpSOut").textContent = String(s);
+ document.getElementById("mpOkOut").textContent = ok ? "找对" : "偏迷";
+ document.getElementById("mpStateLab").textContent = ok ? "先图例，再量比例" : "标记糊，比例也糊";
+ document.getElementById("mpLabLive").textContent = ok
+ ? "标记告诉你那是什么，比例尺把纸上 1\u00a0厘米换成实地多远。不是缩小照片。"
+ : "标记少、比例糊，只能猜谜。";
+ var photo = document.getElementById("mpPhoto");
+ if (photo) photo.setAttribute("opacity", ok ? "0.12" : "0.4");
+ document.getElementById("mpPin").setAttribute("r", String(6 + Number(a.value) * 0.2));
+ var marks = document.getElementById("mpMarks");
+ while (marks.firstChild) marks.removeChild(marks.firstChild);
+ var nM = 1 + Math.floor(Number(a.value) / 6);
+ var spots = [[90,80],[140,120],[190,70],[250,130],[300,90],[340,140],[120,150],[280,60]];
+ var i;
+ for (i = 0; i < nM && i < spots.length; i++) {
+ var d = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+ d.setAttribute("cx", String(spots[i][0]));
+ d.setAttribute("cy", String(spots[i][1]));
+ d.setAttribute("r", "5");
+ d.setAttribute("fill", "#4a6aa8");
+ marks.appendChild(d);
+ }
+ var scaleN = Math.max(50, Math.round(Number(b.value) * 12));
+ document.getElementById("mpScaleLab").textContent = "1厘米≈" + scaleN + "米";
+ var bh = 30 + s * 2.5;
+ document.getElementById("mpBar").setAttribute("height", String(bh));
+ document.getElementById("mpBar").setAttribute("y", String(180 - bh));
+
+ if (g1 && !g1Done && Number(a.value) === 32 && Number(b.value) === 10 && s === 20) {
+ g1Done = true;
+ document.getElementById("mpGuessOut1").innerHTML = (g1 === "20" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "标记够多、比例够清，才找得对。不是缩小照片。";
+ document.getElementById("mpGuessBlock2").hidden = false;
+ }
+ if (g2 && !g2Done && Number(a.value) <= 5 && Number(b.value) <= 3 && !ok) {
+ g2Done = true;
+ document.getElementById("mpGuessOut2").innerHTML = (g2 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "标记少、比例糊，会迷路。";
+ document.getElementById("mpGuessBlock3").hidden = false;
+ }
+ if (g3 && !g3Done && Number(a.value) === 4 && Number(b.value) === 2) {
+ g3Done = true;
+ document.getElementById("mpGuessOut3").innerHTML = (g3 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "几乎没标记、比例最糊，找不到。";
+ }
+}
+ a.addEventListener("input", paint); b.addEventListener("input", paint);
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mp-g1]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g1Done) return;
+ g1 = btn.getAttribute("data-mp-g1");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mp-g1]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("mpGuessOut1").textContent = "押好了。拖到 32 与 10。";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mp-g2]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g2Done) return;
+ g2 = btn.getAttribute("data-mp-g2");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mp-g2]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("mpGuessOut2").textContent = "押好了。拖到 5 与 3。";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mp-g3]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g3Done) return;
+ g3 = btn.getAttribute("data-mp-g3");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mp-g3]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("mpGuessOut3").textContent = "押好了。标记 4、比例 2。";
+ });
+ });
+ paint();
+})();
+
+</script>
+<script>if (window.Progress) Progress.visit("nature/maps.html", "地图观察站");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

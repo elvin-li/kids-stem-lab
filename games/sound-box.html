@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>声音盒子 · 箱子会唱歌，还是东西在抖？</title>
+<meta name="description" content="声音是东西在振动：停住就不响。弯弯多少是音高，波有多高是音量，两根滑杆要分开拨。真空里没有空气可推，声音走不过去。音量过大伤耳，不对着耳朵猛拨。本页示意 Hz 是比较尺子，不是调音师手册。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/games-lab.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+.mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--phys) 36%,var(--line));
+    background: color-mix(in srgb,var(--phys) 12%,var(--surface)); font-size: 2.2rem;
+  }
+.sb-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+.sb-sky { fill: color-mix(in srgb,var(--video) 10%,#eef7ff); }
+.sb-floor { fill: color-mix(in srgb,var(--kit) 16%,#efe0c8); }
+.sb-band { fill: color-mix(in srgb,var(--phys) 8%,var(--surface)); }
+.sb-post { fill: color-mix(in srgb,var(--ink) 28%,#b9a078); }
+.sb-peg { fill: color-mix(in srgb,var(--ink) 46%,#6b5340); }
+.sb-glass { fill: color-mix(in srgb,var(--video) 16%,#d7eef6); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 2; }
+.sb-water { fill: color-mix(in srgb,var(--math) 42%,#6ea8fe); }
+.sb-wave { fill: none; stroke: color-mix(in srgb,var(--phys) 72%,#3d4a9a); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+.sb-guide { fill: none; stroke: color-mix(in srgb,var(--ink) 22%,transparent); stroke-width: 1.4; stroke-dasharray: 5 6; }
+.sb-label { fill: var(--ink); font: 800 13px var(--mono); text-anchor: middle; }
+.sb-caption { fill: var(--ink-mid); font: 700 12px var(--sans,sans-serif); text-anchor: middle; }
+.readout b { display: block; font: 800 1.2rem/1.2 var(--mono); color: var(--ink); }
+.side-row { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit,minmax(min(220px,100%),1fr)); }
+.peg-card { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); }
+.peg-card h3 { margin: 0; font-size: 1rem; }
+.log { margin: 0; padding-left: 1.2em; color: var(--ink-mid); }
+@media (max-width: 480px) {
+    html[data-mode="kid"] .kid-mission { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-mission .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-mission h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-mission .lead { font-size: .88rem; line-height: 1.5; margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .sb-art { max-height: 90px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+    html[data-mode="kid"] .readout b { font-size: .95rem; }
+    html[data-mode="kid"] .kid-visual-stage > p:not(.live-text) { display: none; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .88rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+    html[data-mode="kid"] [data-playful-sticker] { display: none; }
+  }
+</style>
+</head>
+<body data-playful-page="games/sound-box.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-mission">
+    <div>
+      <p class="row"><span class="pill pill-phys">物理</span><span class="pill">5–10&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>箱子会唱歌，还是东西在抖？</h1>
+      <p class="lead">声音是东西在振动：弦、气柱、鼓膜停住，就不响。弯弯多少是音高，波有多高是音量，两根滑杆要分开拨。真空里没有空气可推，声音走不过去。音量过大伤耳，不对着耳朵猛拨。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">先看弯弯，再分高低</h2>
+    <p>弯弯多是音高高，波很高是音量大。两根滑杆要分开拨。</p>
+    <svg class="sb-art" id="waveArt" viewBox="0 0 640 280" role="img" aria-labelledby="waveTitle waveDesc">
+      <title id="waveTitle">声音盒子舞台</title>
+      <desc id="waveDesc">上面是橡皮筋或瓶子，下面一条声波：弯弯多少表示音高，上下高低表示响度。</desc>
+      <rect class="sb-sky" width="640" height="280"/>
+      <rect class="sb-floor" y="214" width="640" height="66"/>
+      <rect class="sb-band" x="36" y="168" width="568" height="78" rx="10"/>
+      <line class="sb-guide" id="waveGuide" x1="56" y1="207" x2="584" y2="207"/>
+      <path class="sb-wave" id="soundWave" d="M56 207 H584"/>
+      <text class="sb-caption" x="320" y="248">弯弯多 = 更高　波更高 = 更响</text>
+      <g id="stringScene">
+        <rect class="sb-post" id="leftPost" x="86" y="36" width="18" height="118" rx="4"/>
+        <rect class="sb-post" id="rightPost" x="536" y="36" width="18" height="118" rx="4"/>
+        <circle class="sb-peg" id="leftPeg" cx="95" cy="72" r="6"/>
+        <circle class="sb-peg" id="rightPeg" cx="545" cy="72" r="6"/>
+        <path class="sb-wave" id="stringWave" d="M104 72 H536"/>
+        <text class="sb-label" id="stringLenLab" x="320" y="28">橡皮筋</text>
+      </g>
+      <g id="airScene" hidden>
+        <rect class="sb-glass" x="292" y="22" width="56" height="22" rx="4"/>
+        <rect class="sb-glass" x="248" y="42" width="144" height="116" rx="12"/>
+        <rect class="sb-water" id="bottleWater" x="252" y="110" width="136" height="44" rx="8"/>
+        <line class="sb-guide" id="airGuide" x1="320" y1="50" x2="320" y2="110"/>
+        <path class="sb-wave" id="airWave" d="M320 50 V110"/>
+        <text class="sb-label" id="airLenLab" x="320" y="28">空气柱</text>
+      </g>
+    </svg>
+    <div class="readout">
+      <div><span>音高（弯弯多少）</span><b id="pitchRead">中</b></div>
+      <div><span>示意频率</span><b id="hzRead">约 450&nbsp;Hz</b></div>
+      <div><span>响度（波有多高）</span><b id="loudRead">中</b></div>
+      <div><span>现在的弯弯</span><b id="wiggleRead">4&nbsp;个</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">拨「有多长」或「拉多紧」看弯弯与 Hz 量级；拨「有多响」只改变波的高低。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="改弦、气柱和响度">
+    <div class="row">
+      <button class="btn btn-primary" type="button" id="modeString" aria-pressed="true">橡皮筋弦</button>
+      <button class="btn" type="button" id="modeAir" aria-pressed="false">瓶子气柱</button>
+    </div>
+    <div class="side-row">
+      <article class="peg-card">
+        <h3 id="lengthTitle">有多长</h3>
+        <label for="length">越短，弯弯越多，音越高</label>
+        <input class="input" id="length" type="range" min="1" max="10" value="5" aria-valuetext="中等长">
+        <p id="lengthVal">5&nbsp;格</p>
+      </article>
+      <article class="peg-card" id="tensionCard">
+        <h3>拉多紧</h3>
+        <label for="tension">越紧，弯弯越多，音越高</label>
+        <input class="input" id="tension" type="range" min="1" max="10" value="5" aria-valuetext="松紧适中">
+        <p id="tensionVal">5&nbsp;档</p>
+      </article>
+      <article class="peg-card">
+        <h3>有多响</h3>
+        <label for="amp">只改波有多高，不改弯弯多少</label>
+        <input class="input" id="amp" type="range" min="1" max="10" value="5" aria-valuetext="中等响">
+        <p id="ampVal">5&nbsp;档</p>
+      </article>
+    </div>
+    <div class="row">
+      <button class="btn btn-primary" type="button" id="pluck">弹一下（可选）</button>
+    </div>
+    <p>可选蜂鸣默认关闭。想听的话，请家长在「我的足迹」打开允许声音；不打开也能做完任务。</p>
+  </div>
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">声音图鉴</h2>
+    <p>点一张，分清「有多高」和「有多响」是两件事。</p>
+    <div class="kid-figure-grid" role="group" aria-label="声音图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-sb-atlas="high" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><ellipse cx="26" cy="60" rx="16" ry="13" fill="#c4a06a" stroke="#5a3a20" stroke-width="1.5"/><ellipse cx="26" cy="40" rx="12" ry="11" fill="#c4a06a" stroke="#5a3a20" stroke-width="1.5"/><circle cx="26" cy="42" r="6" fill="#e8dcc8" stroke="#5a3a20"/><circle cx="26" cy="42" r="2.2" fill="#5a3a20"/><rect x="22" y="8" width="8" height="24" fill="#8a6a40"/><rect x="18" y="4" width="16" height="8" rx="1" fill="#6a5340"/><path d="M24 10 V68 M28 10 V68" stroke="#efe7d4" stroke-width="0.9"/><path d="M48 46 Q51 34 54 46 T60 46 T66 46 T72 46 T78 46 T84 46 T90 46 T96 46 T102 46 T108 46 T114 46" fill="none" stroke="#7c3aed" stroke-width="2.2"/><path d="M48 54 Q50.5 46 53 54 T58 54 T63 54 T68 54 T73 54 T78 54 T83 54 T88 54" fill="none" stroke="#7c3aed" stroke-width="1.6" opacity=".7"/></svg></span><span class="kid-figure-cap">高音</span><span class="kid-figure-fact">弯弯又密又多，振动更快，听起来更尖，箱子只把已经有的振动送得更远</span></button>
+      <button class="kid-figure" type="button" data-sb-atlas="low" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><ellipse cx="26" cy="62" rx="16" ry="13" fill="#c4a06a" stroke="#5a3a20"/><ellipse cx="26" cy="42" rx="12" ry="11" fill="#c4a06a" stroke="#5a3a20"/><circle cx="26" cy="44" r="6" fill="#e8dcc8" stroke="#5a3a20"/><rect x="22" y="10" width="8" height="24" fill="#8a6a40"/><path d="M48 50 Q58 18 68 50 T88 50 T108 50" fill="none" stroke="#7c3aed" stroke-width="3"/></svg></span><span class="kid-figure-cap">低音</span><span class="kid-figure-fact">弯弯又疏又少，振动更慢，听起来更低，空腔大小会把音色慢慢改掉一点</span></button>
+      <button class="kid-figure" type="button" data-sb-atlas="loud" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><ellipse cx="26" cy="60" rx="16" ry="13" fill="#c4a06a" stroke="#5a3a20"/><ellipse cx="26" cy="40" rx="12" ry="11" fill="#c4a06a" stroke="#5a3a20"/><circle cx="26" cy="42" r="6" fill="#e8dcc8"/><rect x="22" y="8" width="8" height="24" fill="#8a6a40"/><path d="M48 46 Q56 8 64 46 T80 46 T96 46 T112 46" fill="none" stroke="#7c3aed" stroke-width="4.4"/><path d="M88 18l10-8M96 28l12-4" stroke="#7c3aed" stroke-width="2.4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">大声</span><span class="kid-figure-fact">波更高，振幅更大，听起来更响，不是箱子空着就比较响的那句空口号</span></button>
+      <button class="kid-figure" type="button" data-sb-atlas="soft" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><ellipse cx="26" cy="60" rx="16" ry="13" fill="#c4a06a" stroke="#5a3a20"/><ellipse cx="26" cy="40" rx="12" ry="11" fill="#c4a06a" stroke="#5a3a20"/><circle cx="26" cy="42" r="6" fill="#e8dcc8"/><rect x="22" y="8" width="8" height="24" fill="#8a6a40"/><path d="M48 48 Q56 40 64 48 T80 48 T96 48 T112 48" fill="none" stroke="#7c3aed" stroke-width="2.2"/><path d="M92 22 Q100 18 108 22" fill="none" stroke="#a78bfa" stroke-width="1.6"/></svg></span><span class="kid-figure-cap">小声</span><span class="kid-figure-fact">波更扁，振幅更小，听起来更轻，空箱不会自己把音量旋钮往大处去拧</span></button>
+      <button class="kid-figure" type="button" data-sb-atlas="string" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><line x1="16" y1="45" x2="104" y2="45" stroke="#5a3a20" stroke-width="3"/><circle cx="16" cy="45" r="5" fill="#8a857c"/><circle cx="104" cy="45" r="5" fill="#8a857c"/></svg></span><span class="kid-figure-cap">橡皮筋弦</span><span class="kid-figure-fact">弦越短或越紧，音通常越高，调子写在弦上，不在「空箱比较响」那一句里</span></button>
+      <button class="kid-figure" type="button" data-sb-atlas="air" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><rect x="44" y="16" width="32" height="58" rx="6" fill="#9ec8e8" stroke="#5a3a20"/><rect x="46" y="46" width="28" height="26" fill="#3a86c8"/></svg></span><span class="kid-figure-cap">瓶子气柱</span><span class="kid-figure-fact">空气柱越短，音通常越高，空腔大小改变音色，不定音高那一句空口号</span></button>
+      <button class="kid-figure" type="button" data-sb-atlas="drum" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><ellipse cx="60" cy="36" rx="28" ry="12" fill="#c4a06a" stroke="#5a3a20"/><path d="M32 36 V64 Q60 78 88 64 V36" fill="#c47a3a" stroke="#5a3a20"/></svg></span><span class="kid-figure-cap">鼓</span><span class="kid-figure-fact">膜振得大就响，振得快就高，箱子共鸣把已经有的振动往更远的地方送</span></button>
+      <button class="kid-figure" type="button" data-sb-atlas="quiet" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><ellipse cx="26" cy="60" rx="16" ry="13" fill="#c4a06a" stroke="#5a3a20"/><ellipse cx="26" cy="40" rx="12" ry="11" fill="#c4a06a" stroke="#5a3a20"/><circle cx="26" cy="42" r="6" fill="#e8dcc8"/><rect x="22" y="8" width="8" height="24" fill="#8a6a40"/><path d="M48 48h66" stroke="#8a857c" stroke-width="3"/><path d="M86 20 L104 38 M104 20 L86 38" stroke="#c2410c" stroke-width="3"/></svg></span><span class="kid-figure-cap">几乎不响</span><span class="kid-figure-fact">一条平线：振幅接近零，几乎不响，空箱子不会自己开口出来唱一首歌</span></button>
+      <button class="kid-figure" type="button" data-sb-atlas="vib" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><line x1="20" y1="45" x2="100" y2="45" stroke="#5a3a20" stroke-width="3"/><path d="M36 28 Q60 12 84 28 M36 62 Q60 78 84 62" fill="none" stroke="#7c3aed" stroke-width="3"/></svg></span><span class="kid-figure-cap">振动</span><span class="kid-figure-fact">声音都是东西在抖，停住就不响，箱子只是把振动推得更满也送得更远</span></button>
+      <button class="kid-figure" type="button" data-sb-atlas="echo" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><path d="M18 28 Q40 45 18 62" fill="none" stroke="#7c3aed" stroke-width="4"/><rect x="88" y="16" width="10" height="58" fill="#8a857c"/><path d="M78 32 Q58 45 78 58" fill="none" stroke="#7c3aed" stroke-width="3" stroke-dasharray="4 3"/></svg></span><span class="kid-figure-cap">回声</span><span class="kid-figure-fact">声波碰到墙会折回来，那是回声，不是箱子越大就越好听的一句口号</span></button>
+      <button class="kid-figure" type="button" data-sb-atlas="vac" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><circle cx="60" cy="45" r="26" fill="#fff" stroke="#5a3a20" stroke-width="3"/><path d="M42 32 L78 58 M78 32 L42 58" fill="none" stroke="#c05050" stroke-width="4"/></svg></span><span class="kid-figure-cap">真空</span><span class="kid-figure-fact">没有空气，声音走不过去，真空里对着人喊，对方也听不见你在远处叫喊</span></button>
+      <button class="kid-figure" type="button" data-sb-atlas="long" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><line x1="10" y1="32" x2="110" y2="32" stroke="#5a3a20" stroke-width="3"/><line x1="36" y1="62" x2="84" y2="62" stroke="#5a3a20" stroke-width="3"/><circle cx="10" cy="32" r="4" fill="#8a857c"/><circle cx="110" cy="32" r="4" fill="#8a857c"/><circle cx="36" cy="62" r="4" fill="#8a857c"/><circle cx="84" cy="62" r="4" fill="#8a857c"/></svg></span><span class="kid-figure-cap">长弦低音</span><span class="kid-figure-fact">弦越长，弯弯越少，音通常越低，长弦低音不靠把箱子掏空来骗更大的响度</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照上面的弯弯。</p>
+  </section>
+
+  <section class="card guess-card" aria-labelledby="guessTitleSb">
+    <h2 id="guessTitleSb">先猜一猜，再拨</h2>
+    <p><b>第 1 题：</b>橡皮筋弦调得很短、很紧。示意频率（Hz）大约会？</p>
+    <div class="pick-btns" role="group" aria-label="猜短紧弦的 Hz">
+      <button class="btn guess-pick" type="button" data-guess1="down" aria-pressed="false">Hz 变低，弯弯变少</button>
+      <button class="btn guess-pick" type="button" data-guess1="up" aria-pressed="false">Hz 变高，弯弯变多</button>
+      <button class="btn guess-pick" type="button" data-guess1="same" aria-pressed="false">Hz 不变，只改外观</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。选橡皮筋弦，把「有多长」拨短、「拉多紧」拨紧，看 Hz 读数。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>只把「有多响」拨大，示意 Hz 会怎样？</p>
+      <div class="pick-btns" role="group" aria-label="猜响度与 Hz">
+        <button class="btn guess-pick" type="button" data-guess2="up" aria-pressed="false">Hz 跟着变高</button>
+        <button class="btn guess-pick" type="button" data-guess2="same" aria-pressed="false">Hz 不变，只是波更高</button>
+        <button class="btn guess-pick" type="button" data-guess2="down" aria-pressed="false">Hz 一定变低</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后只拨响度，对照「示意频率」和波高。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>弦最长又最松。示意 Hz 会掉到最低附近，还是仍约 730？</p>
+      <div class="pick-btns" role="group" aria-label="猜最低音">
+        <button class="btn guess-pick" type="button" data-guess3="low" aria-pressed="false">掉到最低附近，弯弯变少</button>
+        <button class="btn guess-pick" type="button" data-guess3="high" aria-pressed="false">还是约 730</button>
+        <button class="btn guess-pick" type="button" data-guess3="zero" aria-pressed="false">变成 0，不响了</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后弦拨最长、最松，看 Hz 读数。</p>
+    </div>
+  </section>
+
+            <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">先做出高而轻，再做出低而响；箱子不定调</h2>
+    <p>先把「有多长」拨短、「拉多紧」拨紧、「有多响」拨低，看弯弯变多、波却很矮——这就是高而轻。再把弦拨长、拨松、响度拨高，看弯弯变少、波却很高——这就是低而响。看画面就算数，不必开声音。</p>
+    <p>声音是东西在抖：抖得快，弯弯更密，音更高；抖得猛，波更高，音更响。空箱子把已经有的振动推给更多空气，听感更满，不自动改尖或低。真空没有空气可推，振动传不过去。不拨弦、不敲膜，箱子自己不会唱歌。</p>
+    <p>舞台上的「示意 Hz」按本页尺子走，只用来比较「短而紧更高」，不是调音师的真实频率。可选蜂鸣默认关闭。护耳，不对着耳朵猛拨，不拆家用音箱，不砸箱子。</p>
+  </section>
+
+  <section class="card" data-edu-compare aria-labelledby="eduCompareTitle">
+    <h2 id="eduCompareTitle">像 · 不像（纠错对照）</h2>
+    <p>声音是振动；箱壁/空气跟着抖才传出来，不是箱子会唱歌。</p>
+    <div class="kid-figure-grid" role="group" aria-label="像与不像对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">像 · 本页</span><span class="kid-figure-sub">要对的</span><p class="kid-figure-fact">回到舞台，用同一把尺子试。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#fff4f0" width="120" height="90"/><circle cx="60" cy="44" r="24" fill="#fecaca"/><path d="M42 28 L78 60 M78 28 L42 60" stroke="#b91c1c" stroke-width="4"/><text x="60" y="82" text-anchor="middle" font-size="8" font-weight="800" fill="#b91c1c">箱子自己唱歌</text></svg></span><span class="kid-figure-cap">不像 · 箱子自己唱歌</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">先划掉这句，再去台上试正确条件。</p></div>
+    </div>
+  </section>
+
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--phys)"
+         data-kid-predict
+         data-kid-predict-explain="有箱体耦合 → 更响；只改拨力主要改响度；改弦长/管长才主要改音高。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🔊</span><b>画面上弯弯很多、但波很矮，听起来通常是怎样的？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：弯弯多波矮是什么声">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="loud-low">又低又响</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="high-soft" data-kid-predict-correct>又高又轻：弯弯管音高，波高管音量</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="same">弯弯和波高是一回事，分不开</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：做出高而轻，再做出低而响</h2>
+    <p>先调出一种弯弯很多、波却很矮的声音（高而轻）；再调出一种弯弯很少、波却很高的声音（低而响）。看画面就算数，不必开声音。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <ol class="log" id="soundLog"></ol>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：还差一种高而轻，和一种低而响。</p>
+  </section>
+
+
+            <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">做出高而轻，再做出低而响，看两个旋钮分开没有</h2>
+    <p>舞台上比的是两根滑杆能不能分开拨。先把弦拨短、拨紧、响度拨低，看弯弯多、波很矮；再把弦拨长、拨松、响度拨高，看弯弯少、波很高。这样比，才知道音高和音量是两件事，不是箱子在唱歌。</p>
+    <p>回家只带两句：「东西在抖，才有声音。」「弯弯管音高，波高管音量。」不要写成「箱子会唱歌」或「越响就越尖」。真空没有空气，声音走不过去，另记一行。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><path d="M8 50 Q20 18 32 50 T56 50 T80 50 T104 50 T128 50" fill="none" stroke="#7c3aed" stroke-width="3"/><path d="M8 50 Q20 42 32 50 T56 50 T80 50" fill="none" stroke="#7c3aed" stroke-width="2" opacity=".5"/></svg></span><span class="kid-figure-cap">高而轻</span><span class="kid-figure-sub">快且弱</span><p class="kid-figure-fact">弯弯又密又多，可是力气很小，听起来又尖又轻。这是音高高、音量小，两件分开。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><ellipse cx="60" cy="32" rx="28" ry="12" fill="#c4a06a" stroke="#5a3a20"/><path d="M32 32 V62 Q60 78 88 62 V32" fill="#c47a3a" stroke="#5a3a20"/><ellipse cx="60" cy="32" rx="22" ry="8" fill="#e8dcc8"/><path d="M8 78 Q30 70 52 78 T96 78" fill="none" stroke="#7c3aed" stroke-width="4"/></svg></span><span class="kid-figure-cap">低而响</span><span class="kid-figure-sub">慢且强</span><p class="kid-figure-fact">弯弯又疏又少，可是力气很大，听起来又低又响。这是音高低、音量大，两件分开。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><rect x="28" y="28" width="64" height="44" rx="4" fill="#c4a06a" stroke="#5a3a20" stroke-width="2"/><path d="M28 40 H92" stroke="#5a3a20" stroke-width="2"/><circle cx="60" cy="58" r="8" fill="#e8dcc8" stroke="#5a3a20"/></svg></span><span class="kid-figure-cap">箱子</span><span class="kid-figure-sub">更满</span><p class="kid-figure-fact">空箱子共鸣只是把已经有的振动送得更远，不会自己改尖或低，也不是「空的比较响」。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><ellipse cx="44" cy="56" rx="22" ry="18" fill="#c47a3a" stroke="#5a3a20"/><ellipse cx="58" cy="44" rx="14" ry="12" fill="#c47a3a" stroke="#5a3a20"/><rect x="68" y="18" width="8" height="36" rx="2" fill="#8a6a40"/><circle cx="44" cy="56" r="8" fill="#3a2a18"/></svg></span><span class="kid-figure-cap">弦长</span><span class="kid-figure-sub">管音高</span><p class="kid-figure-fact">弦或气柱更短、更紧，弯弯常常更密，音通常更高。响度滑杆不动，箱子不定调。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><circle cx="60" cy="46" r="28" fill="#1e1b4b"/><circle cx="44" cy="36" r="3" fill="#f8fafc"/><circle cx="70" cy="30" r="2" fill="#f8fafc"/><circle cx="78" cy="50" r="2.5" fill="#f8fafc"/><circle cx="50" cy="58" r="2" fill="#f8fafc"/><path d="M18 14 L102 76 M102 14 L18 76" stroke="#f8fafc" stroke-width="4"/></svg></span><span class="kid-figure-cap">真空</span><span class="kid-figure-sub">走不过去</span><p class="kid-figure-fact">没有空气可推，振动传不过去。月亮上对着人喊，对方听不见，箱子也帮不上忙。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><rect x="28" y="28" width="64" height="44" rx="4" fill="#c4a06a" stroke="#5a3a20" stroke-width="2"/><path d="M28 40 H92" stroke="#5a3a20" stroke-width="2"/><circle cx="60" cy="58" r="8" fill="#e8dcc8" stroke="#5a3a20"/><circle cx="60" cy="46" r="30" fill="none" stroke="#c2410c" stroke-width="5"/><path d="M38 26 L82 66" stroke="#c2410c" stroke-width="5"/></svg></span><span class="kid-figure-cap">会唱歌</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">空箱子不会自己唱歌：不拨弦、不敲膜，里面就没有音，空的也不会自己变响。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>做出高而轻。</b>弦短而紧、响度低，看弯弯多、波很矮。</li>
+      <li data-step="2"><b>做出低而响。</b>弦长而松、响度高，看弯弯少、波很高。</li>
+      <li data-step="3"><b>只拨响度。</b>看示意 Hz 动不动：波更高，弯弯不该自己变多。</li>
+      <li data-step="4"><b>写完成句。</b>东西在抖；弯弯管高，波高管响。划掉「箱子会唱歌」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>轻轻拨是小声，重重拨是大声。快是尖，慢是低。东西不抖，就不响。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>空箱子让声音更饱满，但不决定尖还是低。真空没有空气，声音走不过去。音量过大伤耳。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>响度近似振幅，音高近似频率，两根轴正交。共鸣箱改变辐射效率，不把振子固有频率「唱」出来。示意 Hz 是比较尺子，不是校音器。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能做出高而轻和低而响，说出「东西在抖」，并否定「箱子会唱歌」和「越响就越尖」。完成看的是对照，不是背「频率」两个字。</p>
+    <ul class="ask-list">
+      <li>怎样做出高而轻？弯弯和波高谁在变？</li>
+      <li>怎样做出低而响？</li>
+      <li>只拨响度，Hz 该不该跟着跑？</li>
+      <li>真空里对着人喊，对方听得见吗？能对耳朵猛拨吗？</li>
+    </ul>
+  </section>
+
+
+          <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">声音是振动；真空不传；音量过大伤耳</h2>
+    <p>音叉几乎没有箱子，敲一下仍有清楚的音高：调子在叉子自己抖的快慢上。加上共鸣箱，只是把已经有的振动推给更多空气，听感更满、更响，不自动改尖或低。吉他肚子、小提琴的空箱，都是这一家人。</p>
+    <p>喉咙也有「箱子」：胸腔让说话更满，音高仍由声带松紧决定。回声是声音碰到墙折回来，迟到了一拍，不是箱子在定调。真空里没有空气可推，振动传不过去——月亮上对着人喊，对方听不见。</p>
+    <p>只拨「有多响」，波更高，示意 Hz 可以几乎不动：这就是音量不等于音高。越响不等于越尖。音量过大伤耳，距离越近伤害越大。</p>
+    <p>护耳。不对着耳朵猛拨，不拆家用音箱，不砸箱子。可选蜂鸣默认关闭，不打开也能做完任务。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><path d="M40 78 V40 M52 78 V18 M64 78 V40 M52 40 V78" stroke="#8a857c" stroke-width="5" stroke-linecap="round"/><path d="M40 40 H64" stroke="#8a857c" stroke-width="5"/></svg></span><span class="kid-figure-cap">音叉</span><span class="kid-figure-sub">无箱也有高</span><p class="kid-figure-fact">音叉几乎没有箱子，敲一下仍有清楚的音高。调子在叉子自己抖，不在空腔口号。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><circle cx="44" cy="28" r="8" fill="#e8c4a0"/><path d="M44 36 V70 M28 80 L44 54 L60 80 M28 48 H64" stroke="#3a2a18" stroke-width="3"/><ellipse cx="78" cy="52" rx="22" ry="16" fill="#c4a06a" opacity=".7"/><path d="M66 52 Q78 36 90 52 T114 52" fill="none" stroke="#7c3aed" stroke-width="2"/></svg></span><span class="kid-figure-cap">胸腔</span><span class="kid-figure-sub">更满</span><p class="kid-figure-fact">胸腔让说话更饱满，尖或低仍由声带松紧决定；空腔大小改变音色，箱子不定调。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><circle cx="60" cy="46" r="28" fill="#1e1b4b"/><circle cx="44" cy="36" r="3" fill="#f8fafc"/><circle cx="70" cy="30" r="2" fill="#f8fafc"/><circle cx="78" cy="50" r="2.5" fill="#f8fafc"/><circle cx="50" cy="58" r="2" fill="#f8fafc"/></svg></span><span class="kid-figure-cap">真空</span><span class="kid-figure-sub">不传</span><p class="kid-figure-fact">没有空气可推，振动走不过去。太空里对着人喊，对方听不见，不是没带一只箱子。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><circle cx="60" cy="28" r="10" fill="#e8c4a0"/><path d="M50 36 V58" stroke="#e8c4a0" stroke-width="8"/><ellipse cx="32" cy="46" rx="14" ry="18" fill="#3a2a18"/><ellipse cx="88" cy="46" rx="14" ry="18" fill="#3a2a18"/><path d="M46 30 H74" stroke="#3a2a18" stroke-width="8" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">护耳</span><span class="kid-figure-sub">限幅</span><p class="kid-figure-fact">音量过大伤耳。不要对着耳朵猛拨，也不要拆开喇叭或电器去找「空的比较响」。</p></div>
+    </div>
+  </section>
+
+
+          <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：高而轻 · 低而响 · 「箱子会唱歌」</h2>
+    <p>三列用同一根弦、同一套滑杆。先只改快慢和力气，做出两种对照。一次改两样还改箱子，分不清到底是谁让音变的。</p>
+    <p>高而轻：抖得快、力气小，弯弯多、波矮。低而响：抖得慢、力气大，弯弯少、波高。「箱子会唱歌」整列划掉：空箱不拨，根本没有音。</p>
+    <p>只拨响度是加试：波更高，示意 Hz 可以几乎不动。真空是邻居对照：没有空气，声音走不过去。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><path d="M8 50 Q20 18 32 50 T56 50 T80 50 T104 50 T128 50" fill="none" stroke="#7c3aed" stroke-width="3"/></svg></span><span class="kid-figure-cap">高而轻</span><span class="kid-figure-sub">快弱</span><p class="kid-figure-fact">把振动拧快、力气拧小，就能做出又尖又轻的声音，箱子只负责把振动送远。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><path d="M8 50 Q28 8 48 50 T88 50 T128 50" fill="none" stroke="#7c3aed" stroke-width="5"/></svg></span><span class="kid-figure-cap">低而响</span><span class="kid-figure-sub">慢强</span><p class="kid-figure-fact">把振动拧慢、力气拧大，就能做出又低又响的声音，不是把箱子掏空就会响。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><rect x="28" y="28" width="64" height="44" rx="4" fill="#c4a06a" stroke="#5a3a20" stroke-width="2"/><path d="M28 40 H92" stroke="#5a3a20" stroke-width="2"/><circle cx="60" cy="58" r="8" fill="#e8dcc8" stroke="#5a3a20"/><path d="M16 14 L104 76" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">会唱歌</span><span class="kid-figure-sub">划掉</span><p class="kid-figure-fact">空箱不拨，根本没有音。箱子不会自己唱歌，也不会因为空着就比较响。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><rect x="22" y="14" width="58" height="60" fill="#fff" stroke="#3a2a18" stroke-width="2"/><path d="M30 28 H72 M30 40 H72 M30 52 H56" stroke="#3a2a18" stroke-width="2"/><path d="M76 56 L102 38 L108 46 L82 64 Z" fill="#f0c14a" stroke="#3a2a18"/></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">东西在抖</span><p class="kid-figure-fact">东西在抖才有声音。弯弯管音高，波高管音量，空腔改音色，箱子不定调。</p></div>
+    </div>
+  </section>
+
+
+          <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「东西在抖」，不记 Hz 数字</h2>
+    <p>在纸上画两行波：一行弯弯又密又矮，写「高而轻」；一行弯弯又疏又高，写「低而响」。两张图并排，比抄示意 Hz 有用。</p>
+    <p>口头只要两句：「东西在抖，才有声音。」「弯弯管音高，波高管音量。」有人说「箱子会唱歌」或「越响就越尖」，让孩子指着两行图反驳。音叉、真空若要写，各另开一行。</p>
+    <p>护耳。不对着耳朵猛拨，不拆电器，不砸箱子。本页数字不要抄进调音手册。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><rect x="32" y="14" width="56" height="68" rx="4" fill="#c4a06a" stroke="#3a2a18"/><rect x="38" y="26" width="44" height="48" fill="#fff"/><rect x="48" y="8" width="24" height="12" rx="2" fill="#8a857c"/><path d="M46 40 H74 M46 52 H74 M46 64 H64" stroke="#3a2a18" stroke-width="2"/></svg></span><span class="kid-figure-cap">两行</span><span class="kid-figure-sub">高轻 / 低响</span><p class="kid-figure-fact">一行记高而轻，一行记低而响，看快慢和力气是不是两件事，别写成空箱更响。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><ellipse cx="62" cy="36" rx="36" ry="22" fill="#fff" stroke="#3a2a18" stroke-width="3"/><path d="M50 54 L40 78 L70 56" fill="#fff" stroke="#3a2a18" stroke-width="3"/><path d="M44 32 H80 M48 44 H72" stroke="#3a2a18" stroke-width="3" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">东西在抖</span><p class="kid-figure-fact">回家说得出：东西在抖才响。箱子共鸣把振动送远，空腔大小改音色，不定尖或低。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><path d="M40 78 V40 M52 78 V18 M64 78 V40 M52 40 V78" stroke="#8a857c" stroke-width="5" stroke-linecap="round"/><path d="M40 40 H64" stroke="#8a857c" stroke-width="5"/><text x="90" y="24" font-size="11" fill="#3a2a18">另</text></svg></span><span class="kid-figure-cap">音叉</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">音叉几乎没箱子，也能敲出固定的音高。调子在叉子上，不在「空的比较响」那句口号。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f3eefb" width="120" height="90"/><circle cx="60" cy="28" r="10" fill="#e8c4a0"/><ellipse cx="32" cy="46" rx="14" ry="18" fill="#3a2a18"/><ellipse cx="88" cy="46" rx="14" ry="18" fill="#3a2a18"/><path d="M46 30 H74" stroke="#3a2a18" stroke-width="8" stroke-linecap="round"/><circle cx="60" cy="46" r="30" fill="none" stroke="#c2410c" stroke-width="5"/><path d="M38 26 L82 66" stroke="#c2410c" stroke-width="5"/></svg></span><span class="kid-figure-cap">对耳</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">音量过大伤耳。不要拆开喇叭，也不要对着耳朵猛拨，空箱不是音量旋钮。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「音高和音量是不是两件事」，就先做出高而轻，再做出低而响。同一根弦、同一套滑杆，一次只认准两根轴：快慢管音高，力气管音量。只拨响度、看 Hz 动不动，是另一次对照，不要和「改弦长」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一组：</b>先短紧且轻，再长松且响。</li>
+      <li><b>先保持不变：</b>同一根橡皮筋或同一只瓶子，先不要换模式。</li>
+      <li><b>要观察的：</b>弯弯多少、波有多高、示意 Hz 跟哪一根滑杆走。</li>
+      <li><b>另开一行：</b>只拨响度，Hz 是不是几乎不动。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>音叉几乎没有箱子，敲一下为什么仍有清楚的音高？调子在叉子上，还是在桌子上？</li>
+      <li>把响度拨到最大，示意 Hz 会不会跟着变高？越响是不是就越尖？</li>
+      <li>真空里没有空气。对着人喊，对方听得见吗？声音走的是空气，还是「空箱子的魔法」？</li>
+      <li>回声工坊里的「迟到一拍」，和本页的箱子定调，是不是一件事？差在哪？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把「辐射阻抗」提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>东西在抖，才有声音。轻轻拨是小声，重重拨是大声。快是尖，慢是低。能指着弯弯和波高分开说就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>空箱子让声音更饱满，但不决定尖还是低。真空没有空气，声音走不过去。音量过大伤耳。示意 Hz 只用来比较，不是校音器。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>频率与振幅是正交控制量。共鸣腔提高某些频段的辐射效率，改变响度包络，不把振子固有频率「唱」出来。开孔与体积移动共鸣峰，音色改变不等于音高旋钮。功放是另一套能量故事。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：记下这次声音</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：高而轻和低而响不是一回事"></div>
+      <div><label for="workContent">弯弯和波高各说明什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下两种对比：哪一次弯弯多、哪一次波更高，再用一句话说明音高不等于音量。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+            <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>高而轻时，孩子指的是弯弯又密、波却很矮，还是在说「箱子比较高兴、自己在唱歌」？让他再指一次弯弯和波高。</li>
+      <li>低而响：哪一句四岁听得懂？试「抖得慢、力气大，听着又低又响」。</li>
+      <li>如果他只把响度拨大、就说「变尖了」——差在哪一根量？示意 Hz 动了没有？</li>
+      <li>真空里对着人喊：为什么听不见？空气在干什么？箱子还能不能当完成句？</li>
+      <li>音叉几乎没箱子，为什么仍有音高？回声页的「迟到」为什么不能当本页完成句？</li>
+      <li>对着耳朵猛拨、拆喇叭、砸箱子：红线怎么说？本页 Hz 能抄进调音手册吗？</li>
+    </ul>
+  </section>
+
+            <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：声音是机械振动在介质里传播。弦或气柱抖得快，频率高，弯弯更密，听着尖；抖得猛，振幅大，波更高，听着响。两根轴正交，可以做出高而轻、也可以做出低而响。</p>
+    <p>空箱子、吉他肚子、胸腔，是把已经有的振动更有效地交给空气，听感更满。它们改变辐射效率，不把振子固有频率「唱」出来。开孔与体积会移动共鸣峰，音色变了，不等于音高旋钮。不拨、不敲，箱子里没有音。</p>
+    <p>真空没有介质，振动传不过去。回声是反射迟到，不是箱子在定调。本页「示意 Hz≈170+音高条×560」只是比较尺子，用来让孩子看见「短而紧更高」，不是校音器，也不是调音师手册。</p>
+    <p>音量过大伤耳，距离越近伤害越大。可选蜂鸣默认关闭。不拆电器，不砸箱子，不对着耳朵猛拨。舞台不测量真实频率。</p>
+  </section>
+
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">音高公式卡 · 示意 Hz≈170+音高条×560；响度只改波高</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">弦更短更紧 → 示意 Hz 更高。响度只改波高，不等于音高。真空不传声。音量过大伤耳。家长钉「东西在抖、Hz 跟音高走」，箱子不定调。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：东西在抖，才有声音。弯弯管音高，波高管音量。真空不传；音量过大伤耳。</p>
+    <p class="row"><a class="btn btn-ghost" href="wave-maker.html">造波机</a><a class="btn btn-ghost" href="echo-lab.html">回声工坊</a><a class="btn btn-ghost" href="doppler-lab.html">多普勒工坊</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页是示意模型，不测量真实频率。可选蜂鸣默认关闭，由「允许声音」偏好门禁，不做任务也可以保持安静。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var mode = "string";
+  var length = 5;
+  var tension = 5;
+  var amp = 5;
+  var seen = { highQuiet:false, lowLoud:false, done:false };
+  var audioCtx = null;
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  var sawLo = false;
+  var seenSb = { shortTight:false, loudOnly:false };
+
+  function soundOn(){
+    try {
+      if (window.Playful && typeof Playful.getPreference === "function") {
+        return Playful.getPreference("soundEnabled") === true;
+      }
+      if (window.Progress && typeof Progress.getPreference === "function") {
+        return Progress.getPreference("soundEnabled") === true;
+      }
+    } catch (err) { /* 偏好读不到就保持安静 */ }
+    return false;
+  }
+
+  function pitchNorm(){
+    var lenScore = (11 - length) / 10;
+    if (mode === "air") return lenScore;
+    return 0.55 * lenScore + 0.45 * (tension / 10);
+  }
+
+  function pitchBand(n){
+    if (n >= 0.72) return "高";
+    if (n <= 0.36) return "低";
+    return "中";
+  }
+
+  function loudBand(){
+    if (amp >= 8) return "响";
+    if (amp <= 3) return "轻";
+    return "中";
+  }
+
+  function howLong(){
+    if (length <= 3) return "很短";
+    if (length >= 8) return "很长";
+    return "中等长";
+  }
+
+  function howTight(){
+    if (tension >= 8) return "很紧";
+    if (tension <= 3) return "很松";
+    return "松紧适中";
+  }
+
+  function howLoud(){
+    if (amp >= 8) return "很响";
+    if (amp <= 3) return "很轻";
+    return "中等响";
+  }
+
+  function waveD(x0, x1, y, height, cycles){
+    var n = 48, i, t, x, yy, parts = [];
+    for (i = 0; i <= n; i += 1) {
+      t = i / n;
+      x = x0 + (x1 - x0) * t;
+      yy = y + Math.sin(t * cycles * Math.PI * 2) * height;
+      parts.push((i === 0 ? "M" : "L") + x.toFixed(1) + " " + yy.toFixed(1));
+    }
+    return parts.join(" ");
+  }
+
+  function waveV(cx, y0, y1, width, cycles){
+    var n = 40, i, t, x, y, parts = [];
+    for (i = 0; i <= n; i += 1) {
+      t = i / n;
+      y = y0 + (y1 - y0) * t;
+      x = cx + Math.sin(t * cycles * Math.PI * 2) * width;
+      parts.push((i === 0 ? "M" : "L") + x.toFixed(1) + " " + y.toFixed(1));
+    }
+    return parts.join(" ");
+  }
+
+  function setPressed(id, on){
+    var el = document.getElementById(id);
+    el.setAttribute("aria-pressed", on ? "true" : "false");
+    el.className = on ? "btn btn-primary" : "btn";
+  }
+
+  function pitchHz(){
+    return Math.round(170 + pitchNorm() * 560);
+  }
+
+  function render(){
+    var n = pitchNorm();
+    var cycles = 2 + Math.round(n * 6);
+    var height = 6 + amp * 4.4;
+    var pLabel = pitchBand(n);
+    var lLabel = loudBand();
+    var hz = pitchHz();
+    if (guess3 && !guess3Done && mode === "string" && length >= 10 && tension <= 1) sawLo = true;
+    var stringOn = mode === "string";
+    var span = 220 + length * 22;
+    var mid = 320;
+    var x0 = mid - span / 2;
+    var x1 = mid + span / 2;
+    var waterH = 22 + (11 - length) * 8;
+    var waterY = 154 - waterH;
+    var airTop = 50;
+    var airSwing = Math.min(46, 6 + amp * 3.6);
+
+    document.getElementById("stringScene").hidden = !stringOn;
+    document.getElementById("airScene").hidden = stringOn;
+    document.getElementById("tensionCard").hidden = !stringOn;
+    document.getElementById("lengthTitle").textContent = stringOn ? "弦有多长" : "气柱有多长";
+    document.getElementById("pluck").textContent = stringOn ? "弹一下（可选）" : "吹一下（可选）";
+    setPressed("modeString", stringOn);
+    setPressed("modeAir", !stringOn);
+
+    document.getElementById("leftPost").setAttribute("x", String(x0 - 18));
+    document.getElementById("rightPost").setAttribute("x", String(x1));
+    document.getElementById("leftPeg").setAttribute("cx", String(x0 - 9));
+    document.getElementById("rightPeg").setAttribute("cx", String(x1 + 9));
+    document.getElementById("stringWave").setAttribute("d", waveD(x0, x1, 72, Math.min(28, 4 + amp * 2.2), cycles));
+    document.getElementById("stringLenLab").textContent = stringOn ? ("橡皮筋 · " + howLong() + (tension >= 8 ? " · 很紧" : tension <= 3 ? " · 很松" : "")) : "橡皮筋";
+
+    document.getElementById("bottleWater").setAttribute("y", String(waterY));
+    document.getElementById("bottleWater").setAttribute("height", String(waterH));
+    document.getElementById("airGuide").setAttribute("y2", String(waterY));
+    document.getElementById("airWave").setAttribute("d", waveV(320, airTop, waterY, airSwing, cycles));
+    document.getElementById("airLenLab").textContent = "空气柱 · " + howLong();
+
+    document.getElementById("soundWave").setAttribute("d", waveD(56, 584, 207, height, cycles));
+    document.getElementById("pitchRead").textContent = pLabel;
+    document.getElementById("hzRead").textContent = "约 " + hz + "\u00a0Hz";
+    document.getElementById("loudRead").textContent = lLabel;
+    document.getElementById("wiggleRead").textContent = cycles + "\u00a0个";
+    document.getElementById("lengthVal").textContent = length + "\u00a0格 · " + howLong();
+    document.getElementById("tensionVal").textContent = tension + "\u00a0档 · " + howTight();
+    document.getElementById("ampVal").textContent = amp + "\u00a0档 · " + howLoud();
+    document.getElementById("length").setAttribute("aria-valuetext", howLong());
+    document.getElementById("tension").setAttribute("aria-valuetext", howTight());
+    document.getElementById("amp").setAttribute("aria-valuetext", howLoud());
+
+    if (guess1 && !guess1Done && mode === "string" && length <= 3 && tension >= 8) seenSb.shortTight = true;
+    if (guess2 && !guess2Done && amp >= 8) seenSb.loudOnly = true;
+    if (guess1 && !guess1Done && seenSb.shortTight) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "up" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "弦更短更紧 → 振动更快 → 示意 Hz 升高，弯弯变多。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && seenSb.loudOnly) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "same" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "响度只改波高（振幅）。Hz 跟音高走，不跟响度走——读数可以几乎不动。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && sawLo) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "low" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "最长最松：示意 Hz 掉到约 <b>226</b>，弯弯变少。松了不是不响，是更低。";
+    }
+
+    live.textContent = "音高是" + pLabel + "（约 " + hz + "\u00a0Hz，" + cycles + "\u00a0个弯弯），响度是" + lLabel + "（波" + howLoud() + "）。" +
+      (pLabel === "高" && lLabel === "轻" ? "这就是高而轻。" :
+       pLabel === "低" && lLabel === "响" ? "这就是低而响。" :
+       "高音可以很轻，低音可以很响。Hz 只跟音高走，不跟响度走。");
+
+    if (pLabel === "高" && lLabel === "轻") mark("highQuiet", "高而轻：弯弯多、波很矮。这是尖尖的小声。");
+    if (pLabel === "低" && lLabel === "响") mark("lowLoud", "低而响：弯弯少、波很高。这是沉沉的大声。");
+    updateTask();
+  }
+
+  function mark(key, line){
+    if (seen[key]) return;
+    seen[key] = true;
+    var li = document.createElement("li");
+    li.textContent = line;
+    document.getElementById("soundLog").appendChild(li);
+  }
+
+  function updateTask(){
+    var status = document.getElementById("taskStatus");
+    if (seen.done) return;
+    if (seen.highQuiet && seen.lowLoud) {
+      seen.done = true;
+      if (window.Progress) Progress.complete("games/sound-box.html", "做出过高而轻和低而响，说明音高不等于音量");
+      status.textContent = "完成啦：你已经做出高而轻和低而响，音高不等于音量。";
+    } else if (!seen.highQuiet && !seen.lowLoud) {
+      status.textContent = "尚未完成：还差一种高而轻，和一种低而响。";
+    } else if (!seen.highQuiet) {
+      status.textContent = "还差：一种弯弯很多、波却很矮的高而轻。";
+    } else {
+      status.textContent = "还差：一种弯弯很少、波却很高的低而响。";
+    }
+  }
+
+  function beep(){
+    if (!soundOn()) {
+      document.getElementById("live").textContent = document.getElementById("live").textContent + " 画面已经够用；声音仍关着。";
+      return;
+    }
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!audioCtx) audioCtx = new AC();
+      if (audioCtx.state === "suspended" && audioCtx.resume) audioCtx.resume();
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      var now = audioCtx.currentTime;
+      var freq = pitchHz();
+      var vol = 0.03 + (amp / 10) * 0.16;
+      osc.type = mode === "string" ? "triangle" : "sine";
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(vol, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.36);
+    } catch (err) { /* 没有音频也没关系 */ }
+  }
+
+  document.getElementById("modeString").addEventListener("click", function(){ mode = "string"; render(); });
+  document.getElementById("modeAir").addEventListener("click", function(){ mode = "air"; render(); });
+  document.getElementById("length").addEventListener("input", function(){ length = Number(this.value); render(); });
+  document.getElementById("tension").addEventListener("input", function(){ tension = Number(this.value); render(); });
+  document.getElementById("amp").addEventListener("input", function(){ amp = Number(this.value); render(); });
+  document.getElementById("pluck").addEventListener("click", function(){ render(); beep(); });
+  var ATLAS = {
+    high:"高音：弯弯又密又多，振动更快，听起来更尖，箱子只把已经有的振动送得更远。",
+    low:"低音：弯弯又疏又少，振动更慢，听起来更低，空腔大小会把音色慢慢改掉一点。",
+    loud:"大声：波更高，振幅更大，听起来更响，不是箱子空着就比较响的那句空口号。",
+    soft:"小声：波更扁，振幅更小，听起来更轻，空箱不会自己把音量旋钮往大处去拧。",
+    string:"橡皮筋弦：弦越短或越紧，音通常越高，调子写在弦上，不在「空箱比较响」那一句里。",
+    air:"瓶子气柱：空气柱越短，音通常越高，空腔大小改变音色，不定音高那一句空口号。",
+    drum:"鼓：膜振得大就响，振得快就高，箱子共鸣把已经有的振动往更远的地方送。",
+    quiet:"几乎不响：一条平线：振幅接近零，几乎不响，空箱子不会自己开口出来唱一首歌。",
+    vib:"振动：声音都是东西在抖，停住就不响，箱子只是把振动推得更满也送得更远。",
+    echo:"回声：声波碰到墙会折回来，那是回声，不是箱子越大就越好听的一句口号。",
+    vac:"真空：没有空气，声音走不过去，真空里对着人喊，对方也听不见你在远处叫喊。",
+    long:"长弦低音：弦越长，弯弯越少，音通常越低，长弦低音不靠把箱子掏空来骗更大的响度。"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-sb-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-sb-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-sb-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。弦拨短、拨紧，看示意 Hz。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。只拨响度，对照 Hz 是否几乎不动。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess3Done)return; guess3=btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut3").textContent="押好了。弦拨最长、最松。"; });
+  });
+  render();
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/sound-box.html", "声音盒子");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

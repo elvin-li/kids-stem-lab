@@ -127,8 +127,13 @@
     return newlyUnlocked;
   }
   function albumHref() {
-    try { return new URL("../pages/progress.html?view=cards#collectionPanel", global.location.href).href; }
-    catch (e) { return "../pages/progress.html?view=cards#collectionPanel"; }
+    var nested = false;
+    try {
+      nested = /\/(games|nature|pages)\/[^/]*$/i.test(String((global.location && global.location.pathname) || ""));
+    } catch (e) { nested = false; }
+    var rel = (nested ? "../pages/" : "pages/") + "progress.html?view=cards#collectionPanel";
+    try { return new URL(rel, global.location.href).href; }
+    catch (e) { return rel; }
   }
   function closeCardDialog() {
     if (!cardDialog) return;

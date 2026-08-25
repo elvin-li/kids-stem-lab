@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>冻结工坊 · 互动实验室</title>
+<meta name="description" content="水要结冰，得把热量交出去。越冷越快，滴越大越久。本页用 滴×36÷(0−温度) 当比较尺子，不是某一滴水的真实秒数。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  html, body { overflow-x:hidden; }
+  button, .btn, .chip, input, select, textarea, .input { min-height:44px; }
+  button, .btn { touch-action:manipulation; }
+  :root { --touch:52px; --touch-lg:64px; }
+  .tag-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .kid-mission { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; margin:10px 0 8px; padding:clamp(12px,2.4vw,18px); border:1px solid color-mix(in srgb,var(--phys) 34%,var(--line)); border-radius:22px; background:linear-gradient(135deg,color-mix(in srgb,var(--phys) 14%,var(--surface)),var(--surface) 62%); }
+  .mission-copy h1 { margin:.2em 0 .12em; font-size:clamp(1.45rem,4.6vw,2.15rem); line-height:1.12; }
+  .mission-copy p { max-width:52ch; margin:.2em 0 0; color:var(--ink-mid); }
+  .mission-character { width:76px; min-height:76px; display:grid; place-items:center; border:2px solid color-mix(in srgb,var(--phys) 32%,var(--line)); border-radius:50%; background:radial-gradient(circle at 38% 32%,var(--surface),color-mix(in srgb,var(--phys) 18%,var(--surface))); overflow:hidden; }
+  .mission-character img.photo-real { width:76px; height:76px; object-fit:cover; border-radius:50%; display:block; }
+  .mission-character svg { width:52px; height:52px; }
+  .kid-visual-stage { position:relative; margin-bottom:14px; padding:clamp(10px,2vw,16px); border:3px solid color-mix(in srgb,var(--phys) 42%,var(--line)); border-radius:24px; background:var(--surface); box-shadow:0 8px 0 color-mix(in srgb,var(--kit) 26%,transparent); }
+  .stage-head { display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-bottom:8px; }
+  .stage-head h2 { margin:0; font-size:clamp(1.1rem,3.6vw,1.4rem); }
+  .stage-head p { margin:2px 0 0; color:var(--ink-mid); font-size:.88rem; }
+  .condition-badge { flex:none; padding:6px 10px; border:1px solid color-mix(in srgb,var(--phys) 45%,var(--line)); border-radius:99px; background:color-mix(in srgb,var(--phys) 12%,var(--surface)); color:var(--ink); font-size:.8rem; font-weight:900; }
+  .fz-art { display:block; width:100%; max-width:960px; height:auto; margin:0 auto; }
+  .fz-toys { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:12px 0 0; }
+  .fz-toy { min-height:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:10px 8px; border:3px solid var(--line); border-radius:22px; background:var(--surface-2); color:var(--ink); font-weight:900; font-size:1.05rem; line-height:1.2; }
+  .fz-toy svg { width:72px; height:64px; }
+  .fz-toy[aria-pressed="true"] { border-color:var(--phys); background:color-mix(in srgb,var(--phys) 16%,var(--surface)); }
+  .fz-toy-go { border-color:color-mix(in srgb,var(--warn) 55%,var(--line)); background:color-mix(in srgb,var(--warn) 12%,var(--surface)); }
+  .fz-toy:active { transform:translateY(2px); }
+  .kid-speech-row { margin:10px 0 0; }
+  .kid-speech { font-size:1.05rem; font-weight:800; }
+  .fz-atlas .kid-figure { display:flex; flex-direction:column; gap:6px; align-items:stretch; margin:0; padding:10px; text-align:center; }
+  .fz-atlas .kid-figure-art { padding:4px; }
+  .fz-atlas .kid-figure-art > svg { width:100%; max-width:128px; height:auto; }
+  .fz-atlas .kid-figure-fact { display:block; }
+  .kid-band { margin:0 0 16px; padding:clamp(12px,2.4vw,18px); border:3px solid var(--line); border-radius:24px; background:linear-gradient(158deg,var(--surface),var(--surface-2)); box-shadow:0 6px 0 color-mix(in srgb,var(--kit) 26%,transparent); }
+  .kid-band-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .kid-band-emoji { flex:none; display:grid; place-items:center; width:48px; height:48px; border:3px solid var(--line); border-radius:46% 54% 50% 50%; background:var(--surface); }
+  .kid-band-emoji svg { width:30px; height:30px; }
+  .kid-band-head h2 { margin:0; font-size:clamp(1.05rem,3.4vw,1.32rem); }
+  .kid-band-head p { margin:2px 0 0; color:var(--ink-mid); font-size:.86rem; }
+  .kid-status { display:block; margin:10px 0 0; padding:10px 14px; border:3px solid var(--line-soft); border-radius:999px; background:var(--surface); color:var(--ink); font-size:.95rem; font-weight:800; }
+  .kid-icon-row { display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 0; }
+  .kid-icon-row .kid-icon-btn { flex:1 1 120px; }
+  .kid-icon-btn[aria-pressed="true"], .guess-pick[aria-pressed="true"] { border-color:var(--phys); background:color-mix(in srgb,var(--phys) 16%,var(--surface)); color:var(--ink); }
+  .parent-sliders { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
+  .readout { display:grid; gap:8px; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); margin-top:8px; }
+  .readout b { display:block; font:800 1.08rem/1.2 var(--mono); color:var(--ink); }
+  .readout span { font-size:.76rem; color:var(--ink-dim); }
+  .fz-ruler { margin:8px 0 0; font-size:.86rem; color:var(--ink-mid); }
+  .guess-out { font-weight:750; color:var(--ink-mid); }
+  .guess-out b { color:var(--ink); }
+  .teach-lead { margin:.2em 0 .7em; color:var(--ink-mid); }
+  .teach-lead b { color:var(--ink); }
+  .teach-points { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0; padding:0; list-style:none; }
+  .teach-points li { padding:12px; border:1px solid var(--line-soft); border-radius:14px; background:var(--surface-2); color:var(--ink-mid); font-size:.9rem; }
+  .teach-points b { display:block; margin-bottom:3px; color:var(--ink); }
+  .ask { counter-reset:q; list-style:none; padding:0; margin:0; }
+  .ask li { position:relative; padding-left:34px; margin-bottom:12px; color:var(--ink-mid); }
+  .ask li::before { counter-increment:q; content:counter(q); position:absolute; left:0; top:1px; width:23px; height:23px; border-radius:50%; display:grid; place-items:center; background:color-mix(in srgb,var(--phys) 16%,var(--surface)); border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line)); color:var(--ink); font:800 .76rem var(--mono); }
+  .parent-deep-dive { margin-top:16px; }
+  .science-note { border-color:color-mix(in srgb,var(--sci) 55%,var(--surface)); background:linear-gradient(135deg,color-mix(in srgb,var(--sci) 9%,var(--surface)),var(--surface-2)); }
+  .why h3 { margin-top:1.1em; }
+  .kid-action-strip { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pick-btns .btn { white-space: nowrap; }
+
+
+  .fz-room { fill:color-mix(in srgb,var(--phys) 10%,#e8eef4); }
+  .fz-floor { fill:color-mix(in srgb,var(--kit) 28%,#c4a06a); }
+  .fz-floor-top { fill:color-mix(in srgb,var(--kit) 16%,#e2c48a); }
+  .fz-box { fill:color-mix(in srgb,var(--phys) 28%,#8ab4d0); stroke:color-mix(in srgb,var(--ink) 40%,#2a3a48); stroke-width:3; }
+  .fz-box-in { fill:color-mix(in srgb,var(--phys) 22%,#c5dce8); }
+  .fz-glass { fill:none; stroke:color-mix(in srgb,var(--ink) 36%,#3a4a58); stroke-width:3; }
+  .fz-thermo { fill:color-mix(in srgb,var(--surface) 70%,#f4efe6); stroke:color-mix(in srgb,var(--ink) 40%,#3a2a18); stroke-width:1.8; }
+  .fz-merc { fill:color-mix(in srgb,var(--danger) 55%,#c45a3a); }
+  .fz-heat { fill:none; stroke:color-mix(in srgb,var(--warn) 70%,#c47a12); stroke-width:3; stroke-linecap:round; }
+  .fz-crystal { fill:none; stroke:color-mix(in srgb,var(--phys) 40%,#4a6a80); stroke-width:2.2; stroke-linecap:round; }
+  .fz-frost { fill:color-mix(in srgb,var(--surface) 82%,#e8f4fa); }
+  .fz-sun { fill:color-mix(in srgb,var(--warn) 55%,#f0c14a); }
+  .fz-sun-ray { stroke:color-mix(in srgb,var(--warn) 60%,#f0c14a); stroke-width:2.4; stroke-linecap:round; }
+  .fz-hail { fill:none; stroke:color-mix(in srgb,var(--phys) 40%,#4a6a80); stroke-width:2.2; }
+  .fz-drop { fill:color-mix(in srgb,var(--phys) 48%,#7eb6d4); stroke:color-mix(in srgb,var(--ink) 30%,#3a6a80); stroke-width:2; }
+  .fz-ice { fill:color-mix(in srgb,var(--phys) 12%,#e8f4fa); stroke:color-mix(in srgb,var(--ink) 28%,#4a6a80); stroke-width:2; }
+  .fz-core { fill:color-mix(in srgb,var(--surface) 80%,#e8f4fa); }
+  .fz-metal { fill:color-mix(in srgb,var(--ink) 22%,#8a96a8); stroke:color-mix(in srgb,var(--ink) 40%,#1f2937); stroke-width:1.6; }
+  .fz-skin { fill:color-mix(in srgb,var(--kit) 18%,#f0c8a8); }
+  .fz-hair { fill:color-mix(in srgb,var(--ink) 42%,#5a3a28); }
+  .fz-shirt { fill:color-mix(in srgb,var(--phys) 42%,#4a8ab0); }
+  .fz-eye-white { fill:var(--surface); }
+  .fz-pupil { fill:var(--ink); }
+  .fz-brow { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; }
+  .fz-happy { fill:none; stroke:var(--ink); stroke-width:2; stroke-linecap:round; }
+  .fz-shadow { fill:color-mix(in srgb,var(--ink) 14%,transparent); }
+  .fz-art[data-cold="1"] .fz-box-in { fill:color-mix(in srgb,var(--phys) 36%,#9ec4dc); }
+  .fz-art[data-warm="1"] .fz-box-in { fill:color-mix(in srgb,var(--warn) 18%,#f0e0c8); }
+  .fz-art[data-warm="1"] .fz-room { fill:color-mix(in srgb,var(--warn) 12%,#f6efe3); }
+  .fz-crystals { opacity:0; }
+  .fz-art[data-ice="1"] .fz-crystals { opacity:1; }
+  .fz-art[data-ice="1"] .fz-drop { fill:color-mix(in srgb,var(--phys) 10%,#e8f4fa); }
+  .fz-heats { opacity:0; }
+  .fz-art[data-ice="1"] .fz-heats { opacity:1; }
+  .fz-frosts { opacity:0; }
+  .fz-art[data-cold="1"] .fz-frosts { opacity:1; }
+  .fz-suns { opacity:0; }
+  .fz-art[data-warm="1"] .fz-suns { opacity:1; }
+  .fz-hails { opacity:0; }
+  .fz-art[data-hail="1"] .fz-hails { opacity:1; }
+  .fz-metals { opacity:0; }
+  .fz-art[data-metal="1"] .fz-metals { opacity:1; }
+  @media (prefers-reduced-motion: reduce) {
+    .fz-toy:active { transform:none; }
+  }
+  main :where(.kid-visual-stage,.teach-points) > * { min-width:0; }
+  @media (max-width:720px) {
+    .mission-character { display:none; }
+    .kid-mission { grid-template-columns:1fr; }
+    .teach-points { grid-template-columns:1fr; }
+    .parent-sliders { grid-template-columns:1fr; }
+  }
+  @media (max-width:520px) {
+    .fz-toys { grid-template-columns:1fr; }
+    .kid-mission .pill:nth-child(n+2) { display:none; }
+    .fz-toy { min-height:72px; flex-direction:row; justify-content:flex-start; padding:8px 12px; }
+    .fz-toy svg { width:52px; height:46px; }
+  }
+
+  /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-mission { margin: 6px 0 8px; padding: 8px 10px; }
+    html[data-mode="kid"] .kid-mission .row { margin-bottom: .2em; }
+    html[data-mode="kid"] .kid-mission h1 { font-size: 1.35rem; }
+    html[data-mode="kid"] .kid-mission .lead { font-size: .86rem; line-height: 1.4; margin-bottom: .25em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 8px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1rem; margin-bottom: .25em; }
+    html[data-mode="kid"] .fz-art { max-height: 96px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+    html[data-mode="kid"] .readout b { font-size: .95rem; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .86rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; gap: 6px; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+  }
+</style>
+</head>
+<body data-playful-page="games/freeze-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<a class="skip-link" href="#stage">跳到实验画面</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="kid-mission" aria-labelledby="fzStoryTitle">
+    <div class="mission-copy">
+      <div class="tag-row">
+        <span class="pill pill-phys">物理</span>
+        <span class="pill">6–11&nbsp;岁</span>
+        <span class="pill">约 10&nbsp;分钟</span>
+      </div>
+      <h1 id="fzStoryTitle">水会冻成冰，还是还是水？</h1>
+      <p class="lead">同一滴水，先放到够冷的地方：热往外走，水才一点点变硬。再拿到暖处：热回来，硬块又化开。不是有人往杯子里灌冷气。盐会把结冰点压低，要更冷才冻。湖面常先结冰，底下往往还是水。不舔金属、不吞实验冰。台上秒数是本页比较尺子，不是冰箱说明书。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-character" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="kid-visual-stage" id="stage" aria-labelledby="stageTitle">
+    <div class="stage-head">
+      <div>
+        <h2 id="stageTitle">冻结玩具台</h2>
+        <p>点下面三个大按钮，看水滴长不长冰晶，热往哪跑。</p>
+      </div>
+      <span class="condition-badge" id="stateBadge">还没放</span>
+    </div>
+
+    <svg class="fz-art" id="fzArt" viewBox="0 0 720 400" role="img" aria-labelledby="fzTitle fzDesc">
+      <title id="fzTitle">冷箱里的一滴水，够冷时长出冰晶，暖处仍是水</title>
+      <desc id="fzDesc">中间一只冷箱。够冷时箱壁结霜，水滴长出冰晶，橙色箭头表示热往外跑。暖处有太阳，水还是液体。秒数是本页比较尺子，不是某一滴水的真实时间。干净的水有时低于通常说的冰点还不冻，本页不比那个。</desc>
+      <rect class="fz-room" width="720" height="400"/>
+      <rect class="fz-floor" y="318" width="720" height="82"/>
+      <rect class="fz-floor-top" y="308" width="720" height="16" rx="3"/>
+
+      <g id="thermo">
+        <rect class="fz-thermo" x="36" y="70" width="22" height="168" rx="11"/>
+        <rect class="fz-merc" id="merc" x="41" y="150" width="12" height="80" rx="6"/>
+        <circle class="fz-merc" cx="47" cy="236" r="14"/>
+      </g>
+
+      <g class="fz-suns" id="sunG">
+        <circle class="fz-sun" id="sun" cx="640" cy="56" r="22"/>
+        <path class="fz-sun-ray" d="M640 22 L640 10"/>
+        <path class="fz-sun-ray" d="M640 90 L640 102"/>
+        <path class="fz-sun-ray" d="M606 56 L594 56"/>
+        <path class="fz-sun-ray" d="M674 56 L686 56"/>
+        <path class="fz-sun-ray" d="M616 32 L606 22"/>
+        <path class="fz-sun-ray" d="M664 80 L674 90"/>
+      </g>
+
+      <rect class="fz-box" x="120" y="48" width="400" height="250" rx="22"/>
+      <rect class="fz-box-in" id="chamber" x="136" y="64" width="368" height="218" rx="16"/>
+      <rect class="fz-glass" x="120" y="48" width="400" height="250" rx="22"/>
+
+      <g class="fz-frosts" id="frostG">
+        <circle class="fz-frost" cx="156" cy="84" r="5"/>
+        <circle class="fz-frost" cx="178" cy="74" r="3.4"/>
+        <circle class="fz-frost" cx="470" cy="86" r="5"/>
+        <circle class="fz-frost" cx="492" cy="250" r="4"/>
+        <circle class="fz-frost" cx="160" cy="256" r="4.2"/>
+        <circle class="fz-frost" cx="454" cy="72" r="3"/>
+        <circle class="fz-frost" cx="200" cy="80" r="2.6"/>
+        <circle class="fz-frost" cx="430" cy="260" r="3.2"/>
+      </g>
+
+      <g id="dropG">
+        <ellipse class="fz-shadow" id="dropSh" cx="320" cy="268" rx="36" ry="8"/>
+        <circle class="fz-drop" id="drop" cx="320" cy="186" r="36"/>
+        <circle class="fz-core" id="core" cx="308" cy="174" r="10"/>
+      </g>
+      <g class="fz-crystals" id="crystalG">
+        <path class="fz-crystal" d="M320 146 L320 226"/>
+        <path class="fz-crystal" d="M286 166 L354 206"/>
+        <path class="fz-crystal" d="M286 206 L354 166"/>
+        <path class="fz-crystal" d="M320 136 L320 236"/>
+        <path class="fz-crystal" d="M274 170 L366 202"/>
+        <path class="fz-crystal" d="M274 202 L366 170"/>
+        <path class="fz-crystal" d="M300 150 L340 222"/>
+        <path class="fz-crystal" d="M340 150 L300 222"/>
+      </g>
+      <circle id="rim" cx="320" cy="186" r="46" fill="none" stroke="#4a6a80" stroke-width="5" opacity="0"/>
+      <g class="fz-hails" id="hailG">
+        <circle class="fz-hail" cx="320" cy="186" r="22"/>
+        <circle class="fz-hail" cx="320" cy="186" r="32"/>
+        <circle class="fz-hail" cx="320" cy="186" r="42"/>
+      </g>
+      <g class="fz-heats" id="heatG">
+        <path class="fz-heat" d="M280 150 L250 112"/>
+        <path class="fz-heat" d="M320 136 L320 96"/>
+        <path class="fz-heat" d="M360 150 L390 112"/>
+        <path class="fz-heat" d="M268 186 L228 186"/>
+        <path class="fz-heat" d="M372 186 L412 186"/>
+        <path class="fz-heat" d="M286 222 L256 252"/>
+        <path class="fz-heat" d="M354 222 L384 252"/>
+      </g>
+      <g class="fz-metals" id="metalG">
+        <rect class="fz-metal" x="230" y="248" width="180" height="16" rx="4"/>
+      </g>
+
+      <g id="kidG">
+        <ellipse class="fz-shadow" cx="640" cy="316" rx="28" ry="7"/>
+        <rect class="fz-shirt" x="622" y="268" width="36" height="40" rx="10"/>
+        <circle class="fz-skin" cx="640" cy="248" r="18"/>
+        <path class="fz-hair" d="M624 246 Q640 226 656 246 Q652 236 640 232 Q628 236 624 246 Z"/>
+        <g id="faceNorm">
+          <ellipse class="fz-eye-white" cx="634" cy="246" rx="3.4" ry="3.2"/>
+          <ellipse class="fz-eye-white" cx="646" cy="246" rx="3.4" ry="3.2"/>
+          <circle class="fz-pupil" cx="634.6" cy="246" r="1.3"/>
+          <circle class="fz-pupil" cx="646.6" cy="246" r="1.3"/>
+          <path class="fz-happy" d="M634 256 Q640 260 646 256"/>
+        </g>
+        <g id="faceHappy" opacity="0">
+          <path class="fz-happy" d="M628 246 Q634 240 640 246"/>
+          <path class="fz-happy" d="M640 246 Q646 240 652 246"/>
+          <path class="fz-happy" d="M632 256 Q640 264 648 256"/>
+        </g>
+        <g id="faceSad" opacity="0">
+          <ellipse class="fz-eye-white" cx="634" cy="248" rx="3" ry="2.2"/>
+          <ellipse class="fz-eye-white" cx="646" cy="248" rx="3" ry="2.2"/>
+          <circle class="fz-pupil" cx="634.4" cy="248.4" r="1.1"/>
+          <circle class="fz-pupil" cx="646.4" cy="248.4" r="1.1"/>
+          <path class="fz-brow" d="M628 240 L640 246"/>
+          <path class="fz-brow" d="M652 240 L640 246"/>
+          <path class="fz-happy" d="M634 260 Q640 254 646 260"/>
+        </g>
+      </g>
+    </svg>
+
+    <div class="kid-speech-row">
+      <p class="kid-speech" id="kidSay" role="status" aria-live="polite">先点「放进冷箱」，看冰晶长出来、热往外跑。再点「拿到暖处」，看它还是水。</p>
+    </div>
+
+    <div class="kid-action-strip fz-toys" role="group" aria-label="三个好玩的大按钮">
+      <button class="fz-toy" type="button" id="toCold" aria-pressed="false">
+        <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+          <rect class="fz-box" x="10" y="8" width="52" height="40" rx="6"/>
+          <circle class="fz-ice" cx="36" cy="28" r="10"/>
+          <path class="fz-crystal" d="M36 16 L36 40 M26 22 L46 34 M26 34 L46 22"/>
+        </svg>
+        放进冷箱
+      </button>
+      <button class="fz-toy" type="button" id="toWarm" aria-pressed="false">
+        <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+          <circle class="fz-sun" cx="50" cy="16" r="8"/>
+          <ellipse class="fz-drop" cx="30" cy="36" rx="12" ry="14"/>
+        </svg>
+        拿到暖处
+      </button>
+      <button class="fz-toy fz-toy-go" type="button" id="toBig">
+        <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+          <rect class="fz-box" x="8" y="10" width="56" height="44" rx="6"/>
+          <circle class="fz-ice" cx="36" cy="32" r="16"/>
+          <path class="fz-crystal" d="M36 14 L36 50 M20 24 L52 40 M20 40 L52 24"/>
+        </svg>
+        更大一滴
+      </button>
+    </div>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先冷处放一次，或暖处放一次。</p>
+  </section>
+
+  <section class="kid-band" aria-labelledby="guessTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false"><circle class="fz-skin" cx="16" cy="16" r="12"/><ellipse class="fz-eye-white" cx="12" cy="14" rx="3" ry="3"/><ellipse class="fz-eye-white" cx="20" cy="14" rx="3" ry="3"/><circle class="fz-pupil" cx="12.4" cy="14" r="1.2"/><circle class="fz-pupil" cx="20.4" cy="14" r="1.2"/><path class="fz-happy" d="M11 20 Q16 24 21 20"/></svg>
+      </span>
+      <div>
+        <h2 id="guessTitle">先猜一猜</h2>
+        <p>先押，再点按钮看对不对。</p>
+      </div>
+    </div>
+    <p><b>第 1 题：</b>滴都是 6&nbsp;毫米。从 −5℃ 再冷到 −10℃，结冰会快一倍、差不多，还是更慢？</p>
+    <div class="kid-icon-row" role="group" aria-label="猜结冰时间">
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="43" aria-pressed="false"><span class="kid-tile-label">还是 43&nbsp;秒</span></button>
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="22" aria-pressed="false"><span class="kid-tile-label">大约 22&nbsp;秒，快一倍</span></button>
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="86" aria-pressed="false"><span class="kid-tile-label">大约 86&nbsp;秒，更慢</span></button>
+    </div>
+    <p class="guess-out kid-status" id="guessOut1" role="status" aria-live="polite">押一个。先点「放进冷箱」，再点图鉴「冷处」。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>温度 5℃（高于 0），会结冰吗？</p>
+      <div class="kid-icon-row" role="group" aria-label="猜零上">
+        <button class="kid-icon-btn guess-pick" type="button" data-guess2="yes" aria-pressed="false"><span class="kid-tile-label">会，等久一点</span></button>
+        <button class="kid-icon-btn guess-pick" type="button" data-guess2="no" aria-pressed="false"><span class="kid-tile-label">不会，热差反了</span></button>
+      </div>
+      <p class="guess-out kid-status" id="guessOut2" role="status" aria-live="polite">押好后点「拿到暖处」。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>温度刚好调到 0℃。会结冰吗？</p>
+      <div class="pick-btns" role="group" aria-label="猜刚好零度">
+        <button class="btn guess-pick" type="button" data-guess3="no" aria-pressed="false">不结：热差是 0</button>
+        <button class="btn guess-pick" type="button" data-guess3="yes" aria-pressed="false">会结，0℃ 就是冰</button>
+        <button class="btn guess-pick" type="button" data-guess3="wait" aria-pressed="false">还是约 22&nbsp;秒</button>
+      </div>
+      <p class="guess-out kid-status" id="guessOut3" role="status" aria-live="polite">押好后温度调到 0℃，再点一次冷箱。</p>
+    </div>
+  </section>
+
+              <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">冷处热量出走才结冰，暖处又化回水</h2>
+    <p>先点「放进冷箱」，看冰晶长出来、橙色箭头往外跑。再点「拿到暖处」，看它还是水。最好再点一次「更大一滴」：同样够冷，滴越大，本页尺子上的秒数越久。</p>
+    <p>同一滴水，放到冷处看它结不结冰，再放到暖处看冰化不化。结冰不是「冷气灌进去」，是热往外走。冰晶常从边缘或杂质处先长。盐会把结冰点压低，本页主戏仍是冷处对暖处。</p>
+    <p>舞台上的秒数＝滴毫米×36÷(0−温度)，0℃ 或以上按本页不冻。这是比较尺子，不是某一滴水的真实秒数。干净的水有时低于 0℃ 还不冻（过冷），不要对孩子说「一定 0℃ 结冰」。真冰箱成人开关。不把舌头粘在冰上。碎冰不投人。</p>
+  </section>
+
+  <section class="kid-band fz-atlas" aria-labelledby="atlasTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false"><circle class="fz-ice" cx="16" cy="16" r="10"/><path class="fz-crystal" d="M16 6 L16 26 M8 12 L24 20 M8 20 L24 12"/></svg>
+      </span>
+      <div>
+        <h2 id="atlasTitle">点一张贴纸卡，舞台就演戏</h2>
+        <p>冷处、暖处、冰雹、金属，点哪张演哪幕。</p>
+      </div>
+    </div>
+    <div class="kid-figure-grid" role="group" aria-label="冻结图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-fz-atlas="cold" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">冷处</span><span class="kid-figure-fact">冷处把热吸走，水才从边上冻硬，不是水生气了才变硬。</span></button>
+      <button class="kid-figure" type="button" data-fz-atlas="warm" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">暖处</span><span class="kid-figure-fact">拿到暖处，热回来，硬块又化开，还是同一份水。</span></button>
+      <button class="kid-figure" type="button" data-fz-atlas="rim" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">新冰圈</span><span class="kid-figure-fact">冻住以后外面多出来一层，结冰体积变大，从冷处往外长，不是水发脾气胀</span></button>
+      <button class="kid-figure" type="button" data-fz-atlas="heat" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">热量出走</span><span class="kid-figure-fact">冷处把热吸走，水才能排成冰，看台上新冰圈，不是有人往杯子里灌冷气</span></button>
+      <button class="kid-figure" type="button" data-fz-atlas="seed" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">冰核</span><span class="kid-figure-fact">里面那一小粒是冰核，新冰贴着它从冷处长出来，不是整滴同时变硬</span></button>
+      <button class="kid-figure" type="button" data-fz-atlas="liquid" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">液态水</span><span class="kid-figure-fact">还能流动，说明热量还没走完，台上仍是液体，不是水自己不肯结成冰</span></button>
+      <button class="kid-figure" type="button" data-fz-atlas="zero" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">大约 0&nbsp;℃</span><span class="kid-figure-fact">干净的水通常在大约 0&nbsp;℃ 附近开始结冰，看台上温度，不是一定立刻变硬</span></button>
+      <button class="kid-figure" type="button" data-fz-atlas="hail" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">冰雹</span><span class="kid-figure-fact">冰雹是同一滴水被托进冷云，一层层冻，和本页从冷处长冰是邻居，不是水生气</span></button>
+      <button class="kid-figure" type="button" data-fz-atlas="box" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">冰箱</span><span class="kid-figure-fact">冰箱是家里的冷处，格子里一次冻成方块，只观察，不把玻璃瓶灌满水硬冻</span></button>
+      <button class="kid-figure" type="button" data-fz-atlas="salt" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">盐</span><span class="kid-figure-fact">盐会让水更难结冰，本页先不比这个，不是盐把冰吃掉，看台上冷处就够</span></button>
+      <button class="kid-figure" type="button" data-fz-atlas="metal" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">金属</span><span class="kid-figure-fact">金属传走热量很快，冬天别用舌头碰，舌头会被粘住，实验冰也不要舔</span></button>
+      <button class="kid-figure" type="button" data-fz-atlas="samew" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">同一滴水</span><span class="kid-figure-fact">同一滴水比的是冷处还是暖处，看台上有没有冰圈，不是谁的冰块更大</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照水为什么会冻、或还是液体。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--sci)"
+         data-kid-predict
+         data-kid-predict-explain="结冰要把热量交出去；够冷才长冰晶，暖处仍是液体。盐降冰点，不是盐在发热。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">❄️</span><b>同样大的水滴，放在够冷的地方和暖处，主要差别是什么？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：结冰要什么">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="wait">暖处等久一点也会结冰，不用变冷</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="heat" data-kid-predict-correct>结冰要把热量交出去；够冷才长冰晶，暖处仍是液体</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="magic">水想冻就冻，和冷热无关</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：冷处和暖处都放</h2>
+    <p>先把温度调到 −5℃ 或更冷放一次，再调到 5℃ 或更暖放一次。两头都放过即可完成。点「放进冷箱」和「拿到暖处」就会记上。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="rulerTitle">
+    <h2 id="rulerTitle">给家长的本页尺子</h2>
+    <p class="fz-ruler">本页比较尺子：0℃ 或以上不冻；否则秒数 = 滴毫米 × 36 ÷ (0 − 温度)。这不是某一滴水的真实秒数。干净的水有时还会低于 0℃ 还不冻（过冷），本页不比那个。不要对孩子说「一定 0℃ 结冰」。孩子主操作是上面三个大按钮；滑杆留给想自己调的大人。</p>
+    <div class="parent-sliders">
+      <div><label for="temp">周围温度：<span id="tempLab">−5℃</span></label>
+        <input class="input" id="temp" type="range" min="-15" max="20" value="-5" aria-valuetext="负 5 摄氏度"></div>
+      <div><label for="dropSz">水滴多大：<span id="dropLab">6&nbsp;毫米</span></label>
+        <input class="input" id="dropSz" type="range" min="2" max="12" value="6" aria-valuetext="6 毫米"></div>
+    </div>
+    <div class="readout">
+      <div><span>温度</span><b id="tOut">−5℃</b></div>
+      <div><span>本页尺子</span><b id="secOut">——</b></div>
+      <div><span>刚才</span><b id="didOut">还没放</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">越冷结得越快。0℃以上不冻。点上面的大按钮。</p>
+  </section>
+
+
+              <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">冷处放一次，暖处再放一次，看冻还是化</h2>
+    <p>舞台上只改一件事：周围有多冷。同一滴水。先点「放进冷箱」，看冰晶长出来、橙色箭头往外跑；再点「拿到暖处」，看它还是水。这样比，才知道结冰靠的是热出走，不是「冷气灌进去」。</p>
+    <p>回家只带两句：「热走出去才结冰」；「暖处又化回水」。不要写成「到了 0℃ 就一定冻」。干净的水有时低于 0℃ 还不冻（过冷），本页不比那个。0℃ 在本页尺子上热差是 0，按本页不冻——那是分界，不是「已经结成冰」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">冷处</span><span class="kid-figure-sub">结冰</span><p class="kid-figure-fact">够冷以后，热往外走，水才一点点变硬，台上冻出一圈，不是有人往里灌冷气。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">暖处</span><span class="kid-figure-sub">化开</span><p class="kid-figure-fact">拿到暖处，热又回来，硬块变软化开，还是原来那点水，不是水消气了才软。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">冰晶</span><span class="kid-figure-sub">先长边</span><p class="kid-figure-fact">冰晶常从边角或杂质处先长出细针，从冷处长，不是整杯同时变硬，也不是水生气。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">盐水</span><span class="kid-figure-sub">更难冻</span><p class="kid-figure-fact">水里加了盐，要更冷才会结冰，结冰点被压低了，不是盐把冰吃掉，本页先不比这个。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">体积</span><span class="kid-figure-sub">胀一点</span><p class="kid-figure-fact">结冰后比液态略占地方，所以装满水的瓶子会胀。儿童不要做胀瓶，只看冰箱格子。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">舔冰</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">不要用舌头舔冰或金属，舌头会被粘住。实验冰也不要吞，冰箱让大人开。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>冷处放。</b>点「放进冷箱」，看冰晶长不长、热往哪跑。</li>
+      <li data-step="2"><b>暖处放。</b>点「拿到暖处」，看还是不是水。</li>
+      <li data-step="3"><b>说热。</b>走出去才冻，走进来才化。0℃ 不是「已经是冰」。</li>
+      <li data-step="4"><b>写完成句。</b>热出走，不是灌冷气。划掉「一定 0℃ 结冰」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>放到够冷的地方，水会变成硬冰块；拿到暖处，又化成水。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>结冰要把热交出去。暖处热差反了，不冻。0℃ 是本页分界，不是「碰到 0 就一定冻」。盐会让结冰更难。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>相变时温度停在冰点附近，潜热进出。盐降低凝固点。干净水可过冷，本页不比。秒数＝滴×36÷(0−T) 是比较尺子。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能指着舞台说「冷处热出走才冻、暖处不冻」，并否定「灌冷气」和「一定 0℃ 结冰」。完成看的是对照，不是背冰点数字。</p>
+    <ul class="ask-list">
+      <li>冷处热往哪走？暖处呢？</li>
+      <li>刚好 0℃，按本页会结冰吗？为什么？</li>
+      <li>能说「水一到 0℃ 就一定冻」吗？</li>
+      <li>能舔冰块或金属吗？</li>
+    </ul>
+  </section>
+
+
+            <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">湖面先结冰，底下的鱼还能游；密闭瓶会胀裂</h2>
+    <p>同一滴水，先只改冷处还是暖处。水在结冰前先在 4℃ 附近最密，所以湖面先冻、底下仍是水，鱼还能过冬。这是邻居账，本页主戏仍是冷暖对照，不要写成「房间里的杯子等于整座湖」。</p>
+    <p>密闭玻璃瓶装满水再冻，体积胀一点就会裂。儿童不做这一条。霜是水汽直接成冰，不是杯子里的那摊水。不要混成一句「都是冰」。</p>
+    <p>干净的水有时低于通常说的冰点还不冻，叫过冷。本页不比那个，也不要对孩子说「一定 0℃ 结冰」。0℃ 在本页尺子上热差是 0，按本页不冻——那是比较用的分界，不是「碰到 0 就已经是冰」。</p>
+    <p>真冰箱成人开。不舔金属与冰。碎冰不投人。秒数是比较尺子，不是某一滴水的真实时间。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">湖冰</span><span class="kid-figure-sub">先冻面</span><p class="kid-figure-fact">湖面先结冰，底下往往还是水，鱼还能游。不要写成整湖一起冻透，也不是水生气。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">满瓶</span><span class="kid-figure-sub">会裂</span><p class="kid-figure-fact">装满水的瓶子结冰会胀裂，这个试验儿童不要做，不把玻璃瓶灌满水硬冻。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">霜</span><span class="kid-figure-sub">另账</span><p class="kid-figure-fact">霜是空气里的水汽直接结成冰，不是先结成水再冻。和本页液态水结冰是邻居。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">舔</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">冬天别用舌头碰金属或冰块，一碰就会粘住。实验冰也不要含在嘴里。</p></div>
+    </div>
+  </section>
+
+
+            <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：冷处结冰 · 暖处化开 · 冷气灌进杯子</h2>
+    <p>三列用同一滴水。先只改周围有多冷。一次改两样，分不清到底是谁让它冻的。</p>
+    <p>冷处：热出走，结冰。暖处：热回来，化开。「冷气灌进去」整列划掉：关掉热的出路，水冻不成。「一定 0℃ 结冰」也划掉：本页 0℃ 热差是 0，不冻；过冷是另一件事。</p>
+    <p>盐、湖冰是加试，不是主任务：盐把结冰点压低；湖面先冻、底下常是水。本页秒数用来比较方向，不要背成真实秒表。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">冷处</span><span class="kid-figure-sub">结冰</span><p class="kid-figure-fact">放到冷处，热往外走，水才会一点点变硬。完成句写「热走出去才结冰」，看台上冰圈。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">暖处</span><span class="kid-figure-sub">化开</span><p class="kid-figure-fact">拿到暖处，热又回来，硬块就会变软化开，还是同一滴水，不是水消了气才软。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">灌冷气</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">不是往水里灌冷气，是热从水里跑出去了。把「水生气了变硬」和「冷气灌进去」整列划掉。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">热出走</span><p class="kid-figure-fact">回家只记：热走出去才结冰，从冷处长，不是有人往杯子里灌冷气，也不是水生气。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">刚好 0℃</span><span class="kid-figure-sub">本页不冻</span><p class="kid-figure-fact">热差是 0，按本页尺子不结冰。0&nbsp;℃ 是分界，不是已经结成冰，也不是水在犹豫。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">过冷</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">干净的水有时低于 0&nbsp;℃ 还不冻。本页不比过冷这件事，不要说「一定到了就结冰」。</p></div>
+    </div>
+  </section>
+
+
+            <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">冷处、暖处两行记下冻还是化</h2>
+    <p>在纸上画两行：冷处，写冻、热往外走；暖处，写化、还是水。两行并排，比背「0℃」有用。</p>
+    <p>口头只要两句：「热走出去才结冰。」「暖处又化回水。」有人说「冷气灌进去」或「一定 0℃ 结冰」，让孩子指着第二行和「热差是 0」反驳。湖冰若要写，另开一行。</p>
+    <p>不舔冰，不舔金属。真冰箱成人开。本页秒数不要抄进天气预报。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">两行</span><span class="kid-figure-sub">冷/暖</span><p class="kid-figure-fact">一行记冷处结冰，一行记暖处化开。两行并排，比抄秒数清楚，对照台上有没有冰圈。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">热走出去</span><p class="kid-figure-fact">回家说得出：热走出去，水才结成冰；热回来，冰又化成水。不是水生气变硬。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">湖冰</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">湖冰另记一行：先冻住水面，底下常常还是水，鱼还能游，不是整湖一起冻透。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frost.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">舔冰</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">冰箱让大人开，冰块不要舔，也不要用舌头碰金属。实验冰不吞，不把玻璃瓶灌满硬冻。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「结冰靠不靠够冷」，就只改周围温度这一项。同一滴水，先放到够冷处看一次，再拿到暖处看一次。更大一滴、加盐，是另一次对照，不要和「暖处」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>周围有多冷（−5℃ 或更冷 / 5℃ 或更暖）。</li>
+      <li><b>先保持不变：</b>同一滴水、滴的大小先不动。</li>
+      <li><b>要观察的：</b>冰晶长不长、热箭头往哪跑、还是不是水。</li>
+      <li><b>另开一行：</b>刚好 0℃ 按本页热差是 0，不冻；过冷是另一件事，本页不比。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>冬天湖面结了冰，底下的鱼为什么还能游？和本页「同一滴水」像在哪？差在哪？</li>
+      <li>刚好调到 0℃，本页为什么不结冰？能不能对孩子说「碰到 0 就一定冻」？</li>
+      <li>路上撒盐，雪为什么更容易化？和本页「盐把结冰点压低」像在哪？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>放到够冷的地方，水会变成硬冰块；拿到暖处，又化成水。不要舔冰。能指着冰晶说「长出来了」就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>结冰要把热交出去。暖处不冻。0℃ 是分界，不是已经结成冰。不要说「一定 0℃ 结冰」。本页秒数只用来比较。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>凝固是放热相变。过冷存在，本页不比。盐降低凝固点。秒数＝滴×36÷(0−T) 是比较尺子，不是真实秒表。</p></div>
+    </div>
+  </section>
+
+    <section class="card" aria-labelledby="thickTitle">
+    <h2 id="thickTitle">冻结工坊</h2>
+    <p>带走句：结冰是把热量交出去；够冷才长冰晶。</p>
+    <p>盐降冰点，不是盐在发热。</p>
+    <p>秒数是比较尺子；完成看冷暖都操作过。</p>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：冻结观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：冷处多一圈，暖处还是水"></div>
+      <div><label for="workContent">冻结做了什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下冷处和暖处时，水是冻出新圈还是仍是液体。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+              <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>冷处结冰时，孩子指的是热往外走，还是在说「冷气灌进去」？让他再指一次橙色箭头。</li>
+      <li>刚好 0℃ 不冻：哪一句四岁听得懂？试「冷热差不多，热走不出去」。</li>
+      <li>如果他说「水一到 0℃ 就一定冻」——过冷和本页尺子怎么拆？不要把过冷当绝对 0℃。</li>
+      <li>霜为什么不能当本页完成句？差在水汽直接成冰，还是杯子里的水。</li>
+      <li>舔冰、舔金属、满瓶进冷冻室：红线怎么说？本页能当冰箱维修手册吗？</li>
+      <li>湖面先冻、底下的鱼还能游：和本页主戏像在哪？为什么只能另开一行？</li>
+    </ul>
+  </section>
+
+              <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：够冷时箱壁结霜，水滴长出冰晶，橙色箭头表示热往外跑。暖处热差反了，还是液体。结冰不是往里灌冷气。</p>
+    <p>凝固是放热相变：体系向更冷环境输出潜热。熔化相反。本页「秒＝滴毫米×36÷(0−温度)、≥0℃ 不冻」只是比较尺子，不是某一滴水的真实秒数，也不是天气预报。</p>
+    <p>干净的水可以过冷：低于通常说的冰点还不冻。不要对孩子说「一定 0℃ 结冰」。0℃ 在本页尺子上热差是 0，按本页不冻，那是分界，不是已经结成冰。盐降低凝固点。冰的晶体排列使密度低于液态水。</p>
+    <p>不舔冰、不舔金属。满瓶不冻。舞台是示意，不模拟炸瓶。真冰箱成人开。</p>
+  </section>
+
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">冻结公式卡 · 秒=滴毫米×36÷(0−温度)（本页比较尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">≥0℃ 按本页不冻。越冷越快；滴越大越久。家长钉「交热」，别说「到点就冻」。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>同一条线索还可以在隔壁站继续看。</p>
+    <p class="row"><a class="btn btn-ghost" href="../nature/hail.html">冰雹观察站</a><a class="btn btn-ghost" href="../nature/frost.html">霜雪观察站</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为热会从舌头跑进冷金属、水结冰胀开会炸瓶，所以不要舔金属，也不要把密封玻璃瓶塞进冷冻室。本页只比较冷处和暖处。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var temp=-5, drop=6, did=false, lastSec=null, kind="cold";
+  var seen={cold:false,warm:false,done:false};
+  var guess1="",guess1Done=false,saw5=false,saw10=false,guess2="",guess2Done=false,sawWarm=false,guess3="",guess3Done=false,sawZero=false;
+  function el(id){ return document.getElementById(id); }
+  function secs(){ return temp>=0 ? null : Math.round(drop * 36 / (0 - temp)); }
+  function setOp(id, v){ var n=el(id); if(n) n.setAttribute("opacity", String(v)); }
+  function faces(mode){
+    setOp("faceNorm", mode==="norm" ? 1 : 0);
+    setOp("faceHappy", mode==="happy" ? 1 : 0);
+    setOp("faceSad", mode==="sad" ? 1 : 0);
+  }
+  function pressBtns(which){
+    ["toCold","toWarm","toBig"].forEach(function(id){
+      var n=el(id); if(n) n.setAttribute("aria-pressed", id===which ? "true" : "false");
+    });
+  }
+  function kidVoice(){
+    if(kind==="metal") return "金属把热带走很快。冬天别用舌头碰栏杆。";
+    if(kind==="hail") return "一层又一层，像被一次次送进更冷的地方。";
+    if(did && lastSec!==null) return drop>=10 ? "好大一滴！冰晶长出来了，热还在往外跑。" : "冰晶长出来了，热往外跑。";
+    if(did) return "暖处热差反了，还是水，没有冰晶。";
+    return "先点「放进冷箱」，看冰晶长出来、热往外跑。再点「拿到暖处」，看它还是水。";
+  }
+  function render(fromUser){
+    var s=secs();
+    var frozen = did && lastSec!==null;
+    var art=el("fzArt");
+    if(art){
+      art.setAttribute("data-cold", temp<0 ? "1" : "0");
+      art.setAttribute("data-warm", temp>=5 ? "1" : "0");
+      art.setAttribute("data-ice", frozen ? "1" : "0");
+      art.setAttribute("data-hail", (kind==="hail" && frozen) ? "1" : "0");
+      art.setAttribute("data-metal", kind==="metal" ? "1" : "0");
+    }
+    var r = 14 + drop*3.6;
+    el("drop").setAttribute("r", String(r));
+    el("core").setAttribute("r", String(4+drop*0.7));
+    el("rim").setAttribute("opacity", frozen ? "1" : "0");
+    el("rim").setAttribute("r", String(r+10));
+    var cs=0.55+drop/18;
+    el("crystalG").setAttribute("transform", "translate(320,186) scale("+cs+") translate(-320,-186)");
+    var mercTop = 220 - Math.max(10, Math.min(140, (temp+15)*4.2));
+    el("merc").setAttribute("y", String(mercTop));
+    el("merc").setAttribute("height", String(236-mercTop));
+    if(frozen) faces("happy");
+    else if(did && temp>=0) faces("sad");
+    else faces("norm");
+
+    el("tOut").textContent = temp + "℃";
+    el("secOut").textContent = s===null ? "不结冰" : (s + "\u00a0秒");
+    el("didOut").textContent = did ? (lastSec===null ? "仍是液体" : ("冻了，"+lastSec+"\u00a0秒")) : "还没放";
+    el("tempLab").textContent = temp + "℃";
+    el("temp").setAttribute("aria-valuetext", temp + " 摄氏度");
+    el("temp").value = String(temp);
+    el("dropLab").textContent = drop + "\u00a0毫米";
+    el("dropSz").setAttribute("aria-valuetext", drop + " 毫米");
+    el("dropSz").value = String(drop);
+    var badge=el("stateBadge");
+    var line;
+    if(!did) line="还没放";
+    else if(lastSec===null) line="还是水";
+    else line="长出冰晶了";
+    if(badge) badge.textContent=line;
+    var say=el("kidSay");
+    if(say) say.textContent=kidVoice();
+    var live=el("live");
+    if(live) live.textContent = temp>=0
+      ? ("不够冷，热差反了，水交不出热，不结冰。"+(did?"刚才仍是液体。":"点上面的大按钮。"))
+      : ("够冷才结冰。越冷结得越快；滴越大越久。盐降冰点是另一件事，本页不比。"+(did?"刚才长出冰晶了。":"点上面的大按钮。"));
+
+    if (fromUser && did) {
+      if (temp<=-5) seen.cold=true;
+      if (temp>=5) seen.warm=true;
+      if (guess1&&!guess1Done&&temp===-5&&drop===6)saw5=true;
+      if (guess1&&!guess1Done&&temp===-10&&drop===6)saw10=true;
+      if (guess2&&!guess2Done&&temp===5)sawWarm=true;
+      if (guess3&&!guess3Done&&temp===0)sawZero=true;
+      checkGuess(); updateTask();
+    }
+  }
+  function checkGuess(){
+    if(guess1&&!guess1Done&&saw5&&saw10){
+      guess1Done=true;
+      el("guessOut1").innerHTML=(guess1==="22"?"<b>押对了！</b>":"<b>揭晓：</b>")+
+        "按本页尺子，冷一倍，结冰时间大约减半。";
+      el("guessBlock2").hidden=false;
+    }
+    if(guess2&&!guess2Done&&sawWarm){
+      guess2Done=true;
+      el("guessOut2").innerHTML=(guess2==="no"?"<b>押对了！</b>":"<b>揭晓：</b>")+"5℃ 高于 0℃，按本页尺子，干净的水不会结冰。";
+      el("guessBlock3").hidden=false;
+    }
+    if(guess3&&!guess3Done&&sawZero){
+      guess3Done=true;
+      el("guessOut3").innerHTML=(guess3==="no"?"<b>押对了！</b>":"<b>揭晓：</b>")+"0℃ 热差是 0，本页尺子不结冰。0℃ 是分界，不是已经结成冰。";
+    }
+  }
+  function updateTask(){
+    var st=el("taskStatus");
+    if(!st||seen.done)return;
+    if(seen.cold&&seen.warm){seen.done=true;if(window.Progress)Progress.complete("games/freeze-lab.html","试过够冷结冰和暖处不冻");st.textContent="完成啦：越冷越快；0℃以上不冻。";}
+    else if(!seen.cold)st.textContent=seen.warm?"还差：温度调到 −5℃ 或更冷再放。":"尚未完成：先冷处放一次，或暖处放一次。";
+    else st.textContent="还差：温度调到 5℃ 或更暖再放。";
+  }
+  function go(){ did=true; lastSec=secs(); render(true); }
+  function doCold(){ kind="cold"; temp=-5; drop=6; pressBtns("toCold"); go(); }
+  function doWarm(){ kind="warm"; temp=5; pressBtns("toWarm"); go(); }
+  function doBig(){ kind="cold"; temp=-10; drop=12; pressBtns("toBig"); go(); }
+
+  el("temp").addEventListener("input", function(){ did=false; temp=+this.value; render(false); });
+  el("dropSz").addEventListener("input", function(){ did=false; drop=+this.value; render(false); });
+  el("toCold").addEventListener("click", doCold);
+  el("toWarm").addEventListener("click", doWarm);
+  el("toBig").addEventListener("click", doBig);
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess1Done)return; guess1=btn.getAttribute("data-guess1");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      el("guessOut1").textContent="押好了。先点「放进冷箱」，再点图鉴「冷处」。"; });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess2Done)return; guess2=btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      el("guessOut2").textContent="押好了。点「拿到暖处」。"; });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"),function(btn){
+    btn.addEventListener("click",function(){if(guess3Done)return;guess3=btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"),function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut3").textContent="押好了。温度调到 0℃，再点冷箱。";});});
+  var ATLAS={cold:"冷处把热吸走，台上从边上冻出一圈新冰，不是水生气了才自己变硬",warm:"暖处热量还在水里，台上仍是能流动的液体，不是水心情变好了才软",rim:"冻住以后外面多出来一层，结冰体积变大，从冷处往外长，不是水发脾气胀",heat:"冷处把热吸走，水才能排成冰，看台上新冰圈，不是有人往杯子里灌冷气",seed:"里面那一小粒是冰核，新冰贴着它从冷处长出来，不是整滴同时变硬",liquid:"还能流动，说明热量还没走完，台上仍是液体，不是水自己不肯结成冰",zero:"干净的水通常在大约 0\u00a0℃ 附近开始结冰，看台上温度，不是一定立刻变硬",hail:"冰雹是同一滴水被托进冷云，一层层冻，和本页从冷处长冰是邻居，不是水生气",box:"冰箱是家里的冷处，格子里一次冻成方块，只观察，不把玻璃瓶灌满水硬冻",salt:"盐会让水更难结冰，本页先不比这个，不是盐把冰吃掉，看台上冷处就够",metal:"金属传走热量很快，冬天别用舌头碰，舌头会被粘住，实验冰也不要舔",samew:"同一滴水比的是冷处还是暖处，看台上有没有冰圈，不是谁的冰块更大"};
+  Array.prototype.forEach.call(document.querySelectorAll("[data-fz-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key=btn.getAttribute("data-fz-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-fz-atlas]"), function(n){n.setAttribute("aria-pressed",n===btn?"true":"false");});
+      el("atlasSay").textContent=ATLAS[key]||"";
+      kind=key;
+      if(key==="cold"||key==="rim"||key==="hail"||key==="box"||key==="heat"||key==="seed"){temp=-10; drop=6; pressBtns("toCold");}
+      else if(key==="warm"||key==="liquid"){temp=5; pressBtns("toWarm");}
+      else if(key==="salt"){temp=5; pressBtns("toWarm");}
+      else if(key==="zero"){temp=0; pressBtns("");}
+      else if(key==="metal"){temp=-10; pressBtns("toCold");}
+      else if(key==="samew"){temp=-5; drop=6; pressBtns("toCold");}
+      go();
+    });
+  });
+  document.addEventListener("playful:preference", function(){ render(false); });
+  render(false);
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/freeze-lab.html", "冻结工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

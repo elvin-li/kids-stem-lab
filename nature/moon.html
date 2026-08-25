@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>月亮观察站 · 八个月相 | 少儿数理启蒙</title>
+<meta name="description" content="点八个月相，对照日地月位置，看清亮的总是朝太阳的那一半。离线即可使用。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+ /* subject: space */
+ .hero { padding: 28px 0 10px; }
+ .hero h1 { margin: .15em 0 .3em; }
+ .lead { max-width: 58ch; color: var(--ink-mid); }
+ .kid-hero-scene {
+ display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+ margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+ border: 1px solid color-mix(in srgb,var(--phys) 34%,var(--line));
+ border-radius: var(--r-lg);
+ background: linear-gradient(135deg,color-mix(in srgb,var(--phys) 12%,var(--surface)),var(--surface) 62%);
+ }
+ .mission-face {
+ width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+ border: 2px solid color-mix(in srgb,var(--phys) 36%,var(--line));
+ background: color-mix(in srgb,var(--phys) 12%,var(--surface)); font-size: 2.2rem;
+ }
+ .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+ .mn-art { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+ .mn-sky { fill: color-mix(in srgb,var(--phys) 10%,#e7eefc); }
+ .mn-sun { fill: #ffd166; stroke: color-mix(in srgb,var(--ink) 28%,transparent); stroke-width: 1.4; }
+ .mn-ray { fill: none; stroke: #e0a14a; stroke-width: 2; stroke-linecap: round; }
+ .mn-earth { fill: color-mix(in srgb,var(--video) 55%,#3a86c8); stroke: color-mix(in srgb,var(--ink) 30%,transparent); stroke-width: 1.6; }
+ .mn-land { fill: color-mix(in srgb,var(--sci) 48%,#4f9a58); }
+ .mn-orbit { fill: none; stroke: color-mix(in srgb,var(--phys) 36%,var(--line)); stroke-width: 1.6; stroke-dasharray: 5 5; }
+ .mn-sight { fill: none; stroke: var(--phys); stroke-width: 2; stroke-dasharray: 4 4; }
+ .mn-shade { fill: color-mix(in srgb,var(--ink) 38%,#b7b2a8); }
+ .mn-lit { fill: #f6edd4; stroke: color-mix(in srgb,var(--ink) 22%,transparent); stroke-width: 1.1; }
+ .mn-cover { fill: color-mix(in srgb,var(--ink) 46%,#8a857c); }
+ .mn-rim { fill: none; stroke: color-mix(in srgb,var(--ink) 28%,transparent); stroke-width: 1.4; }
+ .mn-ring { fill: none; stroke: var(--phys); stroke-width: 3; opacity: 0; }
+ .mn-pos.is-on .mn-ring { opacity: 1; }
+ .mn-label { fill: var(--ink); font: 800 12px var(--mono); }
+ .mn-soft { fill: var(--ink-mid); font: 700 11px var(--mono); }
+ .kid-action-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+ .phase-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit,minmax(min(118px,100%),1fr)); }
+ .phase-card {
+ display: grid; gap: 6px; justify-items: center; min-height: 132px; padding: 10px;
+ border: 2px solid var(--line); border-radius: var(--r); background: var(--surface);
+ }
+ .phase-card.kid-figure { --tone: var(--phys); min-height: 0; }
+ .phase-card .kid-figure-art { padding: 6px; background: color-mix(in srgb,var(--phys) 8%,#eef2fb); }
+ .phase-card .kid-figure-art > svg { width: 100%; max-width: 110px; height: auto; }
+ .phase-card[aria-pressed="true"] { border-color: var(--phys); box-shadow: 0 0 0 3px color-mix(in srgb,var(--phys) 22%,transparent); }
+ .phase-card.kid-figure[aria-pressed="true"] {
+ background: color-mix(in srgb, var(--phys) 11%, var(--surface));
+ }
+ .phase-card.kid-figure[aria-pressed="true"]::after { color: var(--phys); }
+ .phase-card svg { width: 100%; height: auto; }
+ .ph-bg { fill: color-mix(in srgb,var(--phys) 8%,#eef2fb); }
+ .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+ .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+ .ask li::before {
+ counter-increment: q; content: counter(q);
+ position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+ display: grid; place-items: center; background: color-mix(in srgb,var(--phys) 12%,var(--surface));
+ border: 1px solid color-mix(in srgb,var(--phys) 40%,var(--line)); color: var(--ink);
+ font: 800 .76rem var(--mono);
+ }
+ button, .btn { min-height: 44px; }
+ .stage + .kid-action-strip { margin-top: 8px; }
+ .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+ @media (max-width: 640px) {
+ .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+ .mission-face { display: none; }
+ .stage { padding: 10px; }
+ .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+ .lead { max-width: none; }
+ }
+
+ .mn-lab-panel { margin: 12px 0; padding: 10px; border: 1px solid color-mix(in srgb,var(--sci) 36%,var(--line)); border-radius: var(--r-lg); background: color-mix(in srgb,var(--sci) 8%,var(--surface)); }
+ .mn-lab-panel .readout { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0; }
+ .mn-lab-panel .readout div { padding:8px; border-radius:var(--r); background:var(--surface); border:1px solid var(--line); }
+ .mn-lab-panel .readout span { display:block; font-size:.78rem; color:var(--ink-mid); }
+ .mn-lab-panel .readout b { font:800 1.05rem var(--mono); color:var(--ink); }
+ .mn-lab-panel label { display:block; font-weight:700; margin-top:8px; }
+ .mn-lab-panel input[type="range"] { width:100%; min-height:44px; }
+ .mn-lab-panel .kid-action-strip { flex-direction:column; align-items:stretch; gap:4px; margin:8px 0; }
+ .mn-guess .pick-btns { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+ .guess-card { border-color: color-mix(in srgb,var(--sci) 45%,var(--line)); }
+ .guess-pick[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 18%,var(--surface)); color: var(--ink); }
+ .guess-out { font-weight: 750; color: var(--ink-mid); }
+ .guess-out b { color: var(--ink); }
+ @media (max-width:640px){
+ .hero .lead { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+ .mn-lab-panel > p { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+ }
+ @media (max-width:480px){
+ [data-playful-companion], [data-playful-sticker] { display:none !important; }
+ .mn-lab-panel .readout { grid-template-columns:1fr; }
+ }
+
+
+/* hn-photo-strip */
+.hn-photo-strip { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0 12px; }
+.hn-photo-strip figure { margin:0; border:1px solid color-mix(in srgb,var(--sci) 28%,var(--line)); border-radius:var(--r-lg); overflow:hidden; background:var(--surface); }
+.hn-photo-strip img { display:block; width:100%; height:140px; object-fit:cover; }
+.hn-photo-strip figcaption { padding:6px 8px; font:700 .85rem var(--mono); color:var(--ink); }
+@media (max-width:520px){ .hn-photo-strip { grid-template-columns:1fr; } .hn-photo-strip img { height:120px; } }
+</style>
+</head>
+<body data-playful-page="nature/moon.html">
+<!-- subject: space · page id nature/moon.html -->
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+ <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+ <div class="row" aria-label="主导航">
+ <a class="nav-link" href="../index.html">资源库</a>
+ <a class="nav-link" href="../pages/paths.html">学习路径</a>
+ <a class="nav-link" href="../games/index.html">互动实验</a>
+ <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+ <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+ <a class="nav-link" href="../pages/parents.html">家长指南</a>
+ <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+ </div>
+</div></nav>
+
+<main id="main" class="wrap">
+ <header class="hero">
+ <div>
+ <p class="row"><span class="pill pill-phys">太空</span><span class="pill">5–12&nbsp;岁</span><span class="pill">本地观察</span></p>
+ <h1>月亮观察站</h1>
+ <p class="lead">月亮有时像细牙、有时像盘子：看见的是被太阳照亮的那一半月面朝向地球的比例。月相不是地球影子每天咬一口——那是月食，而且只有满月附近、日地月接近一条线才会发生。背面也有白天，只是我们看不见。近地点会让满月略大，但解释不了为什么变成弯刀。夜观先给来车留眼睛。台上潮差数字是比较尺子，细节去潮汐页。</p>
+ <div data-playful-companion></div>
+ <span data-playful-sticker></span>
+ </div>
+ <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="78" height="78"></div>
+ </header>
+
+
+ <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+ <h2 id="stageTitle">太阳、地球和月亮怎么站队</h2>
+ <div class="hn-photo-strip" role="group" aria-label="真图对照：月亮 与 地球对照">
+  <figure>
+   <img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="320" height="180" loading="lazy">
+   <figcaption>月亮</figcaption>
+  </figure>
+  <figure>
+   <img class="photo-real" src="../assets/photos/earth.jpg" alt="" width="320" height="180" loading="lazy">
+   <figcaption>地球对照</figcaption>
+  </figure>
+ </div>
+<svg class="mn-art" viewBox="0 0 500 272" role="img" aria-labelledby="moonTitle moonDesc">
+ <title id="moonTitle">日地月月相图</title>
+ <desc id="moonDesc">太阳在左边，地球在中间，月亮绕地球转八个位置。右边放大从地球看见的月相。亮的一半始终朝向太阳。</desc>
+ <rect class="mn-sky" width="500" height="272"/>
+ <line class="mn-ray" x1="56" y1="136" x2="150" y2="136"/>
+ <line class="mn-ray" x1="54" y1="118" x2="118" y2="108"/>
+ <line class="mn-ray" x1="54" y1="154" x2="118" y2="164"/>
+ <circle class="mn-sun" cx="32" cy="136" r="22"/>
+ <text class="mn-label" x="32" y="172" text-anchor="middle">太阳</text>
+ <ellipse class="mn-orbit" cx="180" cy="136" rx="80" ry="80"/>
+ <line class="mn-sight" id="sightLine" x1="180" y1="136" x2="180" y2="216"/>
+ <circle class="mn-earth" cx="180" cy="136" r="18"/>
+ <path class="mn-land" d="M168 128 C176 124 186 126 190 132 C188 140 180 144 172 140 Z"/>
+ <text class="mn-label" x="180" y="164" text-anchor="middle">地球</text>
+
+ <g class="mn-pos" id="pos-new" transform="translate(100 136)">
+ <circle class="mn-ring" r="16"/>
+ <circle class="mn-shade" r="12"/>
+ </g>
+ <g class="mn-pos" id="pos-wax-cres" transform="translate(123 193)">
+ <circle class="mn-ring" r="16"/>
+ <circle class="mn-shade" r="12"/>
+ <path class="mn-lit" d="M0 -12 A12 12 0 0 1 0 12 A7 12 0 0 0 0 -12 Z"/>
+ </g>
+ <g class="mn-pos is-on" id="pos-first" transform="translate(180 216)">
+ <circle class="mn-ring" r="16"/>
+ <circle class="mn-shade" r="12"/>
+ <path class="mn-lit" d="M0 -12 A12 12 0 0 1 0 12 Z"/>
+ </g>
+ <g class="mn-pos" id="pos-wax-gib" transform="translate(237 193)">
+ <circle class="mn-ring" r="16"/>
+ <circle class="mn-shade" r="12"/>
+ <path class="mn-lit" d="M0 -12 A12 12 0 0 1 0 12 A7 12 0 0 1 0 -12 Z"/>
+ </g>
+ <g class="mn-pos" id="pos-full" transform="translate(260 136)">
+ <circle class="mn-ring" r="16"/>
+ <circle class="mn-lit" r="12"/>
+ </g>
+ <g class="mn-pos" id="pos-wane-gib" transform="translate(237 79)">
+ <circle class="mn-ring" r="16"/>
+ <circle class="mn-shade" r="12"/>
+ <path class="mn-lit" d="M0 -12 A12 12 0 0 0 0 12 A7 12 0 0 0 0 -12 Z"/>
+ </g>
+ <g class="mn-pos" id="pos-third" transform="translate(180 56)">
+ <circle class="mn-ring" r="16"/>
+ <circle class="mn-shade" r="12"/>
+ <path class="mn-lit" d="M0 -12 A12 12 0 0 0 0 12 Z"/>
+ </g>
+ <g class="mn-pos" id="pos-wane-cres" transform="translate(123 79)">
+ <circle class="mn-ring" r="16"/>
+ <circle class="mn-shade" r="12"/>
+ <path class="mn-lit" d="M0 -12 A12 12 0 0 0 0 12 A7 12 0 0 1 0 -12 Z"/>
+ </g>
+ <text class="mn-soft" x="78" y="136" text-anchor="end">新</text>
+ <text class="mn-soft" x="180" y="246" text-anchor="middle">上弦</text>
+ <text class="mn-soft" x="292" y="136">满</text>
+ <text class="mn-soft" x="180" y="32" text-anchor="middle">下弦</text>
+
+ <defs>
+ <clipPath id="moonClip"><circle cx="408" cy="124" r="46"/></clipPath>
+ </defs>
+ <circle class="mn-shade" cx="408" cy="124" r="46"/>
+ <g clip-path="url(#moonClip)">
+ <circle class="mn-lit" cx="408" cy="124" r="46"/>
+ <circle class="mn-cover" id="moonCover" cx="362" cy="124" r="46"/>
+ </g>
+ <circle class="mn-rim" cx="408" cy="124" r="46"/>
+ <text class="mn-label" id="moonFaceCap" x="408" y="188" text-anchor="middle">从地球看见</text>
+ <text class="mn-soft" id="moonFaceNote" x="408" y="206" text-anchor="middle">上弦月 · 右半边亮</text>
+ </svg>
+ <p class="live-text" id="phaseSay" role="status" aria-live="polite">图里先画上弦月。点下面一张月相，看月亮走到哪、地球这边看见多少亮面。</p>
+ <div class="kid-action-strip" role="group" aria-label="不翻页也能换月相">
+ <button class="btn btn-primary" type="button" id="stageNextPhase">下一个月相</button>
+ </div>
+ </section>
+
+<section class="card mn-lab-panel" aria-labelledby="mnLabTitle">
+ <h2 id="mnLabTitle">月亮潮差台 · 真参数</h2>
+ <p>调<strong>日月对齐</strong>与<strong>近地程度</strong>。朔望时日月拉力更同向，大潮更明显；近地点再叠一点。月相本身不是潮汐开关，对齐才是。</p>
+ <div class="kid-action-strip" role="group" aria-label="真参数主操作">
+ <label for="mnA">日月对齐：<span id="mnALab">…</span></label>
+ <input class="input" id="mnA" type="range" min="2" max="30" value="14" aria-valuetext="14">
+ <label for="mnB">近地程度：<span id="mnBLab">…</span></label>
+ <input class="input" id="mnB" type="range" min="2" max="18" value="8" aria-valuetext="8">
+ </div>
+ <svg class="mn-art" viewBox="0 0 640 220" role="img" aria-labelledby="mnLabSvgTitle mnLabSvgDesc">
+ <title id="mnLabSvgTitle">潮差示意</title>
+ <desc id="mnLabSvgDesc">对齐与近地改变潮差条。</desc>
+ <rect fill="#0e1a2e" width="640" height="220"/>
+ <circle cx="120" cy="70" r="28" fill="#f0d878"/>
+ <circle id="mnMoon" cx="280" cy="70" r="16" fill="#e8e4d8"/>
+ <ellipse cx="320" cy="160" rx="120" ry="28" fill="#3a6a8a"/>
+ <ellipse id="mnTide" cx="320" cy="150" rx="90" ry="18" fill="#5a9ab8"/>
+ <g id="mnRound" opacity="0.28">
+ <circle cx="560" cy="48" r="16" fill="#e8e4d8"/>
+ <path d="M536 24 L584 72 M584 24 L536 72" stroke="#c2410c" stroke-width="4"/>
+ </g>
+ <rect id="mnBar" x="20" y="70" width="14" height="90" fill="#7ac89a"/>
+ <text fill="#e8eef6" style="font:800 13px monospace" x="16" y="28">潮差台</text>
+ <text id="mnStateLab" fill="#e8eef6" style="font:700 12px monospace" x="160" y="28">对齐才大潮</text>
+ </svg>
+ <div class="readout" aria-live="polite">
+ <div><span>对齐</span><b id="mnAOut">…</b></div>
+ <div><span>潮差（算）</span><b id="mnSOut">…</b></div>
+ <div><span>大潮？</span><b id="mnOkOut">…</b></div>
+ </div>
+ <p class="live-text" id="mnLabLive" role="status" aria-live="polite">日月拉力同向，才是大潮。圆月亮不是单独的开关。</p>
+ </section>
+ <section class="card guess-card mn-guess" aria-labelledby="mnGuessTitle">
+ <h2 id="mnGuessTitle">先猜一猜，再拖滑杆</h2>
+ <p><b>第 1 题：</b>对齐够、近地够（对齐 24、近地 10）。大潮是日月对齐拉开，还是圆月单独开关？</p>
+ <div class="pick-btns" role="group" aria-label="猜潮差">
+ <button class="btn guess-pick" type="button" data-mn-g1="20" aria-pressed="false">对齐才大潮</button>
+ <button class="btn guess-pick" type="button" data-mn-g1="28" aria-pressed="false">圆月单独拉开海</button>
+ </div>
+ <p class="guess-out" id="mnGuessOut1" role="status" aria-live="polite">先押一个，再拖到 日月对齐 24、近地程度 10。</p>
+ <div id="mnGuessBlock2" hidden>
+ <p><b>第 2 题：</b>对齐 4、近地 3，还算大潮吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜够不够">
+ <button class="btn guess-pick" type="button" data-mn-g2="yes" aria-pressed="false">大潮</button>
+ <button class="btn guess-pick" type="button" data-mn-g2="no" aria-pressed="false">偏小</button>
+ </div>
+ <p class="guess-out" id="mnGuessOut2" role="status" aria-live="polite">押好后拖到 日月对齐 4、近地程度 3。</p>
+ </div>
+ <div id="mnGuessBlock3" hidden>
+ <p><b>第 3 题：</b>对齐最少 2、近地最弱 2。还能明显算大潮吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜最低档">
+ <button class="btn guess-pick" type="button" data-mn-g3="yes" aria-pressed="false">能，还在</button>
+ <button class="btn guess-pick" type="button" data-mn-g3="no" aria-pressed="false">不能，两边都太弱</button>
+ <button class="btn guess-pick" type="button" data-mn-g3="zero" aria-pressed="false">变成 0，没了</button>
+ </div>
+ <p class="guess-out" id="mnGuessOut3" role="status" aria-live="polite">押好后对齐 2、近地 2。</p>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="phaseTitle">
+ <h2 id="phaseTitle">八个月相图鉴</h2>
+ <p>走到窗边看今晚的月亮，点一张最像的。再点另一张，比一比亮面差多少。</p>
+ <div class="phase-grid kid-figure-grid" id="phaseGrid" role="group" aria-label="八个月相图鉴"></div>
+ </section>
+
+ <section class="card" aria-labelledby="predictTitle">
+ <h2 id="predictTitle">猜一猜</h2>
+ <div class="kid-predict" style="--tone:var(--video)"
+ data-kid-predict
+ data-kid-predict-explain="月相是太阳、月亮、地球的位置在变；只有月食才是地球影子挡住月亮。"
+ data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+ data-kid-predict-again="押好了">
+ <p class="kid-predict-q"><b>每天晚上看到的月亮上的「兔子」图案，会不会换一面给我们看？</b></p>
+ <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：月亮会不会换脸">
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="turn">会，每晚转一点</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="same" data-kid-predict-correct>不会，永远是同一面</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="random">看运气，有时换有时不换</button>
+ </div>
+ <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+ <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+ </div>
+ </section>
+
+ <section class="task" aria-labelledby="taskTitle">
+ <h2 class="task-title" id="taskTitle">任务：今晚像哪一张，亮的朝哪边</h2>
+ <p>至少点两个月相（今晚一张，再比一张也行）。然后选出：我们看见的亮面，是朝太阳的那一半。</p>
+ <div class="kid-tiles" role="group" aria-labelledby="sideCap">
+ <p id="sideCap">亮的是哪一边？</p>
+ <button class="kid-tile" type="button" data-side="sun" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">☀️</span><span class="kid-tile-label">朝太阳那边</span></button>
+ <button class="kid-tile" type="button" data-side="back" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">🌑</span><span class="kid-tile-label">背着太阳那边</span></button>
+ <button class="kid-tile" type="button" data-side="self" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">✨</span><span class="kid-tile-label">月亮自己发光</span></button>
+ </div>
+ <div class="kid-action-strip" role="group" aria-label="记下观察">
+ <button class="btn btn-primary" type="button" id="finishBtn" disabled>记下这次观察</button>
+ <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+ </div>
+ <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+ <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先点至少两个月相，再选出亮的是朝太阳那边。</p>
+ </section>
+
+ <section class="card" aria-labelledby="numsTitle">
+ <h2 id="numsTitle">月亮的惊人数字</h2>
+ <div class="kid-figure-grid" role="group" aria-label="四个关于月亮的数字">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">约&nbsp;384,400&nbsp;km</span><span class="kid-figure-sub">地球到月亮的距离</span><p class="kid-figure-fact">开高速要开一百多天不睡觉；光只要 1.3&nbsp;秒。这中间能塞下太阳系其他七颗行星排成一排。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">只有约&nbsp;1/6</span><span class="kid-figure-sub">月亮上的重力</span><p class="kid-figure-fact">在月亮上你能跳过一张大餐桌。宇航员走路都改成蹦——那是那里最省劲的走法。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">能留几百万年</span><span class="kid-figure-sub">月面上的脚印</span><p class="kid-figure-fact">月亮没有空气，就没有风和雨。宇航员五十多年前踩下的脚印，今天还清清楚楚地留在原地。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">每年约&nbsp;3.8&nbsp;厘米</span><span class="kid-figure-sub">月亮正在慢慢离开我们</span><p class="kid-figure-fact">科学家往月面的镜子上打激光测出来的。恐龙看到的月亮，比你今晚看到的更大一点。</p></div>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="homeTitle">
+ <h2 id="homeTitle">用一个球试出所有月相</h2>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>布置。</b>暗屋子里开一盏台灯当太阳，你站在屋子中间当地球。</li>
+ <li data-step="2"><b>举月亮。</b>手臂伸直举一个小球，比头稍高。</li>
+ <li data-step="3"><b>原地转圈。</b>身体慢慢转一圈，眼睛盯着球上被灯照亮的部分。</li>
+ <li data-step="4"><b>找月相。</b>背对灯是「满月」，面对灯是「新月」，侧着是「半月」——八个月相一圈全出来了。</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>月亮不发光，是太阳把它照亮的；我们每天看到它亮的部分不一样多。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>太阳永远照亮月球的一半。月球绕着地球转，我们看那半个「亮面」的角度每天变一点，看上去月亮就从细牙长成圆盘、再瘦回去，一圈大约一个月。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>月相和月食是两回事：月相是「我们看亮面的角度」在变，天天发生；月食是地球的影子真的遮住月亮，一年只有少数几次。「新月看不见」不是被地球挡住了，而是亮面整个背对我们——这是最常见的误解，值得用台灯实验当场破掉。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>三个球的几何关系——光源、观察者、被照物换个角度，看到的样子就完全不同。这套「换位思考」的空间推理，正是天文入门最难也最值钱的一步。</p>
+ <ul class="ask-list">
+ <li>台灯实验里，怎样才能让你手里的「月亮」被你的头挡住？那对应真实的什么现象？</li>
+ <li>今晚的月亮，明天会更胖还是更瘦？先猜再连看两晚。</li>
+ <li>为什么农历十五总是差不多满月？</li>
+ </ul>
+ </section>
+
+
+<section class="card" aria-labelledby="teachWhatTitle">
+ <h2 id="teachWhatTitle">缺一块，是被照亮的比例，不是被咬一口</h2>
+ <p>先点「峨眉月」，再对照「满月」。月亮自己几乎不发光，我们看见的亮，是太阳光照到的那一部分。月相是「被照亮的半球里，有多少朝向我们」：亮半球永远朝太阳，我们绕着走，看见的亮区形状才一夜一夜变。缺的不是被谁咬掉的一块，也不是月亮跑远了变瘦。</p>
+ <p>月食是地球的影子落到月亮上，只发生在满月附近，还会在一两个小时里明显变暗，可能发红，然后走出来。弯月一夜之间几乎不变，和月食不是一张图。背面不是「永远黑暗」——背面同样有白天和黑夜，只是地球上看不见那一面的地面。近地点会让满月略大，但解释不了娥眉月。</p>
+ <p>因为抬头会看不见来车，所以看月也要看路面。本页不讲看太阳；看日食必须有专用滤光，墨镜、玻璃瓶、普通望远镜都不够，不能用看月的办法看日。舞台上的读数只比较相位方向，不是精确时刻预报，更不是「圆月亮单独拉起海水」的开关。</p>
+ </section>
+
+ <section class="card" aria-labelledby="lookTitle">
+ <h2 id="lookTitle">缺一块，是照亮的比例</h2>
+ <p>同一颗球、同一盏灯，先只改你站的位置：亮的一半永远朝向灯，我们绕着走，看见的亮区变成弯、半、圆。这就是月相。再把地球挡在灯和球中间——那才是月食，和弯月不是同一件事。</p>
+ <p>完成句写「照亮比例」或「地球影子」（仅当讲月食）。禁止「月亮生气了变瘦」，也禁止「它走远了所以缺一块」。因为抬头会看不见来车，所以看月也要看路面；无滤光设备就只看月、看影，不用看月的办法看日。</p>
+ <div class="kid-figure-grid" role="group" aria-label="主题细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">太阳</span><span class="kid-figure-sub">唯一主灯</span><p class="kid-figure-fact">月亮自己不发光，只反射太阳光；看见的缺角是亮面没朝我们，不是月亮减肥。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">月相</span><span class="kid-figure-sub">看见多少亮</span><p class="kid-figure-fact">看见多少亮，看的是被太阳照亮的那一面朝向我们多少；不是月亮逃走了一块。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">满月</span><span class="kid-figure-sub">亮面对着我们</span><p class="kid-figure-fact">满月时日地月接近一条线，月亮在外侧，亮面对着我们；只有这时才可能走进地影。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">新月</span><span class="kid-figure-sub">亮面背对我们</span><p class="kid-figure-fact">新月时月亮跑到日地之间，白天的天上看不见。那也不是被地球影子咬掉。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">月食</span><span class="kid-figure-sub">地影</span><p class="kid-figure-fact">月食只有满月才可能，还要近乎排成一条线，整晚慢慢进影，不是被谁一口吃掉。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">远近</span><span class="kid-figure-sub">不是主因</span><p class="kid-figure-fact">盈亏主要是相位：亮面转过来多少就看见多少，不是月亮逃走，也不是影子每天咬一口。</p></div>
+ </div>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>指定太阳方向。</b>亮半球永远朝那边。</li>
+ <li data-step="2"><b>转动「地球上的人」。</b>看亮区变成弯、半、圆。</li>
+ <li data-step="3"><b>把地球挡在中间。</b>这才是月食，和弯月不是同一件事。</li>
+ <li data-step="4"><b>写下今晚像哪一张卡。</b>用形状，不用心情词。</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>月亮像一面脏镜子，亮的是太阳照到的那边。我们走位不同，看见的亮就不一样多。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>月相按日—月—地的夹角变。弯月不是被吃掉，也不是变远。月食是地球影子，只在满月附近出现，还会在一两个小时里形状一直变。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>同步自转让我们总看见同一面（有天平动，本页只需「同一面为主」）。近地点会让满月略大，但解释不了娥眉月。日食和月食的几何对偶：谁进谁的影子。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能用球和灯演示月相，把「缺一块」说成照亮比例，并否定「被咬」和「走远了」。完成看的是几何对照，不是背农历口诀。</p>
+ <ul class="ask-list">
+ <li>弯月是被谁咬的吗？亮的一半朝哪边？</li>
+ <li>月食一定是满月吗？弯月那天可能月食吗？</li>
+ <li>月亮变瘦是因为它走远了吗？走远应该整张脸变小，还是缺一块？</li>
+ <li>因为太阳光会灼伤眼睛，所以能不能用看月的办法看日？夜路要先看哪里？</li>
+ </ul>
+ </section>
+
+
+ <section class="card" aria-labelledby="deepTitle">
+ <h2 id="deepTitle">同一面、地影，以及为什么不能用看月的办法看日</h2>
+ <p>月球自转一圈的时间和绕地球一圈差不多，所以我们总看见同一面。背面不是「永远黑暗」——背面同样有白天和黑夜，只是地球上看不见那一面的地面。同步自转解释的是「哪一面朝我们」，解释不了「今晚缺一块」。</p>
+ <p>月食时月亮可以仍是满月的位置，但进了地球的本影或半影，亮度掉下去，颜色可能发红——那是地影加上大气把剩下的光滤红了，不是月亮本身变成红灯。这和月初月末的弯月完全不是一张图：弯月一夜几乎不变，月食几个小时内大变。</p>
+ <p>日食是月亮影子落到地球上，必须用滤光设备。墨镜、玻璃瓶、普通望远镜都不够。本页主讲月，把这句话留下以免迁移错误。朔望周期大约&nbsp;29.5&nbsp;天，本页不要求背精确值；不是每个满月、新月都有食，还要近乎共线。</p>
+ <p>因为抬头会看不见来车，所以看月时仍要看地面。无滤光设备就只看月、看影。本页不预报精确时刻，也不说「圆月亮单独拉起海水」——潮汐去潮汐页对照。</p>
+ <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">同步自转</span><span class="kid-figure-sub">同一面</span><p class="kid-figure-fact">背面也有白天和黑夜，只是地球这边看不见那一面；背面不等于永远关灯。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">月食红</span><span class="kid-figure-sub">地影+大气</span><p class="kid-figure-fact">月食发红是地球大气把红光弯进地影，月亮还在，不是它自己变成红灯。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">看日</span><span class="kid-figure-sub">要滤光</span><p class="kid-figure-fact">看月的办法不能拿去看太阳：无滤光设备就看月、看影，别盯日面，墨镜也不够。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">夜路</span><span class="kid-figure-sub">看地面</span><p class="kid-figure-fact">月相再好看也要给来车留眼睛：先看路边再抬头，交通优先，不是先认星再躲车。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">近地点</span><span class="kid-figure-sub">略大</span><p class="kid-figure-fact">近地点会让满月略大，但解释不了为什么变成弯刀。弯刀是相位，不是远近。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">共线</span><span class="kid-figure-sub">才有食</span><p class="kid-figure-fact">不是每个满月新月都有食，还要近乎排成一条线才可能；对齐才食，不是圆了就食。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="fieldTitle">
+ <h2 id="fieldTitle">对照：月相几何 · 月食地影 · 远近误区</h2>
+ <p>三列都让月亮「看起来少了一块」，原因不同。甲：月相是太阳照亮月球的一半，我们看见其中一部分；形状一夜之间几乎不变，一夜一夜慢慢变。乙：月食是满月走进地球影子，几个小时内明显变暗，可能发红，然后走出来，不是每天发生。丙：远近误区——轨道确实有近有远，满月时可能略大略小，但娥眉月主要是相位。否决句：「它走远了所以缺一块。」「被谁咬了一口。」</p>
+ <p>用「走远了」解释弯月，几何对不上：走远应该整张脸变小，不是缺一块。手电筒当太阳、球当月亮，亮面永远朝灯。本页读数只比较方向，不是精确时刻表。</p>
+ <div class="kid-figure-grid" role="group" aria-label="三列对照">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">月相</span><span class="kid-figure-sub">一夜一夜变</span><p class="kid-figure-fact">月相是照亮半球朝向我们的比例。完成句写「看见多少亮面」，不要写被咬。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">月食</span><span class="kid-figure-sub">几小时变暗</span><p class="kid-figure-fact">月食是走进地影，且必须在满月附近；月相一夜几乎不变，月食一晚会明显变暗。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">远近</span><span class="kid-figure-sub">次要</span><p class="kid-figure-fact">远近只会让整张脸略大略小，解释不了弯刀；把「超级月亮所以缺一块」划掉。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">手电筒</span><span class="kid-figure-sub">太阳</span><p class="kid-figure-fact">球的亮面永远朝灯，人绕着走，看见的亮面比例就会变；灯没关，球也没减肥。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">人的位置</span><span class="kid-figure-sub">绕着看</span><p class="kid-figure-fact">我们站的位置决定看见多少亮面；灯一直亮着，月亮也没逃走，是角度在换。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">红线</span><span class="kid-figure-sub">不看日</span><p class="kid-figure-fact">无滤光设备就看月、看影；太阳不能用同一套办法看，玻璃瓶和墨镜都不够。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="moreTitle">
+ <h2 id="moreTitle">画日—月—地，再写一句不是什么</h2>
+ <p>画三个圈，标太阳、地球、月亮，用阴影标月亮的夜半球。再写：今晚看见的形状对应哪一个位置。旁边写否定句：这不是月食 / 这不是月亮走远。厨房里半边涂黑的球加手电筒，比任何应用都快：亮面朝灯，人绕着走。</p>
+ <p>口头只要两句：「缺一块是照亮的比例。」「月食是地影，且必须在满月附近。」有人说「它走远了」，让孩子问：走远应该整张脸变小，还是缺一块？</p>
+ <p>因为抬头会看不见来车，所以夜路看地面，交通优先于认星。无滤光设备就只看月。本页不预报精确时刻，潮汐去潮汐页。</p>
+ <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">三体图</span><span class="kid-figure-sub">位置</span><p class="kid-figure-fact">形状跟日地月位置锁在一起；用细牙或盘子写下今晚像哪张卡，不用心情词。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">不是月食</span><span class="kid-figure-sub">写清</span><p class="kid-figure-fact">月食会在一晚内明显变暗再走出来；普通月相要好几夜才从细牙变成盘子。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">手电筒</span><span class="kid-figure-sub">可做</span><p class="kid-figure-fact">桌上用球演示：亮面朝灯，人绕着走，缺角和圆盘就会换，不是球被咬掉。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">夜路</span><span class="kid-figure-sub">安全</span><p class="kid-figure-fact">交通优先于认星：夜观先给来车留眼睛，再抬头认月相，别走在车道中间。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">今晚</span><span class="kid-figure-sub">形状</span><p class="kid-figure-fact">用形状写下今晚像哪一张卡：细牙或盘子对上相位，不要写「月亮心情不好」。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">潮汐</span><span class="kid-figure-sub">另页</span><p class="kid-figure-fact">对齐才大潮，不是圆月单独当开关；细节去潮汐页，本页潮差只是比较尺子。</p></div>
+ </div>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+ <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+ <p>想知道「缺一块是不是被咬的」，就只改观测者相对亮半球的位置这一项。同一颗球、同一盏灯，先绕着走看月相，再把地球挡在中间看月食。把「它走远了」叠进同一档，分不清到底是相位，还是距离。</p>
+ <ul>
+ <li><b>只改这一项：</b>人站在哪（或有没有地影罩上）。</li>
+ <li><b>先保持不变：</b>同一颗月球、同一盏太阳、亮半球永远朝灯。</li>
+ <li><b>要观察的：</b>看见多少亮；一夜之间变不变；几个小时内暗不暗。</li>
+ <li><b>另开一行：</b>看日必须滤光，不要和看月叠在一起；潮汐去潮汐页。</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+ <h2 id="askMoreTitle">还可以问下去</h2>
+ <ol>
+ <li>手电筒当太阳、球当月亮：孩子站在地球位置，怎样走出「上弦」而不是「满月」？</li>
+ <li>背面是不是永远黑的？怎样用自转和公转把「看不见」和「没有太阳」拆开？</li>
+ <li>今晚的月亮，明天会更胖还是更瘦？先猜再连看两晚，形状一夜一夜变，还是一小时大变？</li>
+ </ol>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+ <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+ <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把天平动提前塞进四岁耳朵。</p>
+ <div class="age-tiers" aria-label="给家长的分层讲法">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>月亮像一面脏镜子，亮的是太阳照到的那边。我们走位不同，看见的亮就不一样多。看月亮也要看路。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>月相按日—月—地的夹角变。弯月不是被吃掉，也不是变远。月食是地球影子，只在满月附近出现。本页不预报精确时刻。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>同步自转让我们总看见同一面（有天平动，本页只需「同一面为主」）。近地点会让满月略大，但解释不了娥眉月。日食和月食的几何对偶：谁进谁的影子。无滤光不看日，是在保护眼睛，不只是纪律。</p></div>
+ </div>
+ </section>
+
+ <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+ <h2 class="work-card-title" id="workTitle">作品表单：月亮观察</h2>
+ <p class="work-card-meta">只保存文字，存在这台设备上。看月亮请在安全地点，不要用眼睛或望远镜对着太阳。</p>
+ <div class="work-card-fields">
+ <div><label for="workType">作品类型</label>
+ <select class="input" id="workType" name="type">
+ <option value="observation">观察记录</option>
+ <option value="drawing">发现画</option>
+ <option value="photo-note">照片备注</option>
+ </select>
+ </div>
+ <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：今晚是右边细牙的峨眉月"></div>
+ <div><label for="workContent">看见了什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="今晚最像哪一张，亮面在左还是右，你怎么知道那是朝太阳的一边。"></textarea></div>
+ <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+ </div>
+ <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+ </form>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+ <h2 id="askTitle">给家长的问题</h2>
+ <ul class="ask">
+ <li>手电筒当太阳、球当月亮：孩子站在地球位置，怎样走出「上弦」而不是「满月」？亮面永远朝哪？</li>
+ <li>月食那天一定是满月吗？弯月那天可能月食吗？一夜几乎不变的，更像月相还是月食？</li>
+ <li>若孩子坚持「月亮变小是变远」，问他：走远应该整张脸变小，还是缺一块？</li>
+ <li>背面是不是永远黑的？怎样用自转和公转把「看不见」和「没有太阳」拆开？</li>
+ <li>因为太阳光会灼伤眼睛，所以为什么看月不用滤光镜，看日必须有？</li>
+ <li>本页读数能当精确时刻表吗？它比较的是相位方向，还是预报？</li>
+ <li>农历十五为什么总是差不多满月？对齐才大潮，是圆月开关吗？细节去哪一页？</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+ <h2 id="whyTitle">背后的原理</h2>
+ <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：月相是日—月—地相位角的几何结果。月球始终有一半被太阳照亮，地球上的观测者看到的是该亮半球的不同份额。朔望周期大约&nbsp;29.5&nbsp;天，本页不要求背精确值。</p>
+ <p>月食发生在望（满月）且月球进入地球影子；日食发生在朔且月球影子扫过地球。两者都要求近乎共线，所以不是每个满月、新月都有食。本页读数只比较相位方向，不是精确时刻预报，也不是「圆月亮单独拉起海水」的开关。</p>
+ <p>潮汐锁定使月球自转周期与公转周期接近，地球上主要看见同一面。背面仍有昼夜循环。视直径变化来自椭圆轨道，幅度解释不了月相。</p>
+ <p>观察安全：夜视被亮月干扰时更要看路。太阳观测有独立的滤光标准，与本页无关，必须单独强调以免错误迁移。常见误会：被咬、走远了、背面永远黑、看月的办法能看日。纠正。本页不预报时刻。</p>
+ </section>
+
+ <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))" data-audience="parent">
+ <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">月亮公式卡 · 潮差≈对齐×近地÷12（本页比较尺子）；潮差≥10 大潮更明显；朔望对齐＞仅看圆缺</p>
+ <p style="margin:0;color:var(--ink-mid);line-height:1.55">真实海洋潮汐还受盆地形状与太阳影响。月相教学可与潮汐对照，但勿说「圆月亮单独拉起海水」。</p>
+ </div>
+
+
+<section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+ <h2 id="nextTitle">接下来可以去</h2>
+ <p>带走句：月亮自己不发光，只是把太阳的光弹回来。对齐才大潮，不是圆月开关。星星页看谁在自己发光；潮汐页看月亮怎样拉开海水。</p>
+ <p class="row"><a class="btn btn-ghost" href="stars.html">星星观察站</a><a class="btn btn-ghost" href="tides.html">潮汐观察站</a></p>
+ </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为太阳光会灼伤眼睛、看日要单独滤光，所以观察请在安全地点进行，不要直视太阳。本页只练认月相，不预报精确时刻。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+ "use strict";
+ /* subject: space · page id nature/moon.html
+ 完成规则：看过 ≥2 个月相，并选出亮的是朝太阳那边，才 complete。 */
+ var picked = "", side = "", done = false, seen = {};
+ var PHASES = [
+ { id:"new", name:"新月", pos:"pos-new", x:100, y:136, cover:0, cap:"新月 · 几乎全黑",
+ sub:"亮面翻到背面，这边几乎全黑",
+ fact:"太阳把亮的一半全翻到背面，地球这边几乎全黑；月亮还在，并没有减肥消失。",
+ d:"" },
+ { id:"wax-cres", name:"峨眉月", pos:"pos-wax-cres", x:123, y:193, cover:-22, cap:"峨眉月 · 右边细牙",
+ sub:"只能看见右边一条细牙",
+ fact:"只能看见亮面右边的细牙。亮的仍是朝太阳的那一半，只是大部分转到背面了。",
+ d:"M40 14 A26 26 0 0 1 40 66 A16 26 0 0 0 40 14 Z" },
+ { id:"first", name:"上弦月", pos:"pos-first", x:180, y:216, cover:-46, cap:"上弦月 · 右半边亮",
+ sub:"右边一半亮，太阳在亮的一侧",
+ fact:"从地球看右边一半亮、左边一半暗；太阳在亮的那一侧，不是月亮自己劈成两半。",
+ d:"M40 14 A26 26 0 0 1 40 66 Z" },
+ { id:"wax-gib", name:"盈凸月", pos:"pos-wax-gib", x:237, y:193, cover:-70, cap:"盈凸月 · 右边大半",
+ sub:"亮面超过一半，还在变圆",
+ fact:"亮面超过一半，还在变圆。我们看见的仍是同一块被太阳照亮的半球。",
+ d:"M40 14 A26 26 0 0 1 40 66 A16 26 0 0 1 40 14 Z" },
+ { id:"full", name:"满月", pos:"pos-full", x:260, y:136, cover:-120, cap:"满月 · 整张圆脸",
+ sub:"亮的一半正对着我们",
+ fact:"地球夹在太阳和月亮中间，亮的一半正对着我们，所以看见整张圆脸。",
+ d:"M40 40 m-26 0 a26 26 0 1 1 52 0 a26 26 0 1 1 -52 0" },
+ { id:"wane-gib", name:"亏凸月", pos:"pos-wane-gib", x:237, y:79, cover:70, cap:"亏凸月 · 左边大半",
+ sub:"过了满月，左边还剩一大半",
+ fact:"过了满月，亮面开始变少；细看亮的仍朝太阳，只是角度变了，不是被咬掉一块。",
+ d:"M40 14 A26 26 0 0 0 40 66 A16 26 0 0 0 40 14 Z" },
+ { id:"third", name:"下弦月", pos:"pos-third", x:180, y:56, cover:46, cap:"下弦月 · 左半边亮",
+ sub:"左边一半亮，跟上弦月隔半个月",
+ fact:"左边一半亮，和上弦月对称，大约隔了半个月；太阳仍在亮的那一侧，不是月亮对半切开。",
+ d:"M40 14 A26 26 0 0 0 40 66 Z" },
+ { id:"wane-cres", name:"残月", pos:"pos-wane-cres", x:123, y:79, cover:22, cap:"残月 · 左边细牙",
+ sub:"细牙跑到左边，下一站是新月",
+ fact:"又变成细牙，细牙跑到左边；下一站就是新月，再开始下一圈，不是月亮搬了家。",
+ d:"M40 14 A26 26 0 0 0 40 66 A16 26 0 0 1 40 14 Z" }
+ ];
+ function seenCount(){
+ var n = 0, k;
+ for (k in seen) if (Object.prototype.hasOwnProperty.call(seen, k)) n += 1;
+ return n;
+ }
+ function namesSeen(){
+ var out = [];
+ PHASES.forEach(function(p){ if (seen[p.id]) out.push(p.name); });
+ return out;
+ }
+ function draw(p){
+ var cover = document.getElementById("moonCover");
+ var note = document.getElementById("moonFaceNote");
+ var line = document.getElementById("sightLine");
+ cover.setAttribute("cx", String(408 + p.cover));
+ cover.style.opacity = p.id === "full" ? "0" : "1";
+ if (note) note.textContent = p.cap;
+ line.setAttribute("x2", String(p.x));
+ line.setAttribute("y2", String(p.y));
+ PHASES.forEach(function(q){
+ var g = document.getElementById(q.pos);
+ if (g) g.classList.toggle("is-on", q.id === p.id);
+ });
+ document.getElementById("phaseSay").textContent = p.name+"："+p.fact;
+ }
+ var grid = document.getElementById("phaseGrid");
+ PHASES.forEach(function(p){
+ var b = document.createElement("button");
+ var face = p.d
+ ? '<path class="mn-lit" d="'+p.d+'"/>'
+ : "";
+ b.className = "phase-card kid-figure"; b.type = "button"; b.id = "phaseCard-"+p.id;
+ b.setAttribute("aria-pressed","false");
+ b.setAttribute("aria-label","查看"+p.name);
+ b.innerHTML = '<span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moon.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">'+p.name+'</span><span class="kid-figure-sub">'+p.sub+'</span>';
+ b.addEventListener("click", function(){
+ picked = p.id;
+ seen[p.id] = true;
+ Array.prototype.forEach.call(grid.querySelectorAll(".phase-card"), function(n){ n.setAttribute("aria-pressed", n===b?"true":"false"); });
+ draw(p);
+ syncTask();
+ });
+ grid.appendChild(b);
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-side]"), function(btn){
+ btn.addEventListener("click", function(){
+ side = btn.getAttribute("data-side");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-side]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+ syncTask();
+ });
+ });
+ function syncTask(){
+ var n = seenCount();
+ var ready = n >= 2 && side === "sun";
+ document.getElementById("finishBtn").disabled = !ready || done;
+ if (done) return;
+ if (n < 2) {
+ document.getElementById("taskStatus").textContent = n === 0
+ ? "尚未完成：先点至少两个月相，再选出亮的是朝太阳那边。"
+ : "已看 1\u00a0个月相。再点另一张，比一比亮面差多少。";
+ return;
+ }
+ if (side === "back") {
+ document.getElementById("taskStatus").textContent = "背着太阳的那一半是影子。再看看图上的阳光从哪边来。";
+ return;
+ }
+ if (side === "self") {
+ document.getElementById("taskStatus").textContent = "月亮自己几乎不发光。亮的是被太阳照到的那一半。";
+ return;
+ }
+ if (side === "sun") {
+ document.getElementById("taskStatus").textContent = "选好了。点「记下这次观察」就会记进足迹。";
+ return;
+ }
+ document.getElementById("taskStatus").textContent = "已看 "+n+"\u00a0个月相。再选出亮的是哪一边。";
+ }
+ document.getElementById("finishBtn").addEventListener("click", function(){
+ if (seenCount() < 2 || side !== "sun" || done) return;
+ done = true;
+ var list = namesSeen().join("、");
+ if (window.Progress) Progress.complete("nature/moon.html", "看过"+list+"，亮的是朝太阳那一面");
+ document.getElementById("taskStatus").textContent = "完成啦：你看了"+list+"，并且指出亮的是朝太阳的那一半。";
+ this.disabled = true;
+ });
+ var stageIdx = -1;
+ document.getElementById("stageNextPhase").addEventListener("click", function(){
+ var list = grid.querySelectorAll(".phase-card");
+ if (!list.length) return;
+ stageIdx = (stageIdx + 1) % list.length;
+ list[stageIdx].click();
+ });
+})();
+</script>
+<script>
+
+(function(){
+ "use strict";
+ var a = document.getElementById("mnA");
+ var b = document.getElementById("mnB");
+ if (!a || !b) return;
+ var g1 = "", g2 = "", g3 = "";
+ var g1Done = false, g2Done = false, g3Done = false;
+ function score(){ return Math.round(Number(a.value) * Number(b.value) / 12); }
+ function paint(){
+ var s = score();
+ var ok = s >= 10;
+ document.getElementById("mnALab").textContent = a.value;
+ document.getElementById("mnBLab").textContent = b.value;
+ a.setAttribute("aria-valuetext", a.value);
+ b.setAttribute("aria-valuetext", b.value);
+ document.getElementById("mnAOut").textContent = a.value;
+ document.getElementById("mnSOut").textContent = String(s);
+ document.getElementById("mnOkOut").textContent = ok ? "大潮" : "偏小";
+ document.getElementById("mnStateLab").textContent = ok ? "对齐才大潮" : "对不齐，潮偏小";
+ document.getElementById("mnLabLive").textContent = ok
+ ? "日月拉力同向，才是大潮。圆月亮不是单独的开关。"
+ : "对不齐或离得远，潮差小。";
+ var rnd = document.getElementById("mnRound");
+ if (rnd) rnd.setAttribute("opacity", ok ? "0.12" : "0.4");
+ 
+ var rx = 60 + s * 2;
+ document.getElementById("mnTide").setAttribute("rx", String(rx));
+ document.getElementById("mnMoon").setAttribute("cx", String(200 + Number(a.value) * 4));
+ var bh = 30 + s * 2.5;
+ document.getElementById("mnBar").setAttribute("height", String(bh));
+ document.getElementById("mnBar").setAttribute("y", String(180 - bh));
+
+ if (g1 && !g1Done && Number(a.value) === 24 && Number(b.value) === 10 && s === 20) {
+ g1Done = true;
+ document.getElementById("mnGuessOut1").innerHTML = (g1 === "20" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "日月对齐、月亮够近，潮差才大。不是圆月单独拉开海。";
+ document.getElementById("mnGuessBlock2").hidden = false;
+ }
+ if (g2 && !g2Done && Number(a.value) <= 4 && Number(b.value) <= 3 && !ok) {
+ g2Done = true;
+ document.getElementById("mnGuessOut2").innerHTML = (g2 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "对不齐、又离得远，潮差小。";
+ document.getElementById("mnGuessBlock3").hidden = false;
+ }
+ if (g3 && !g3Done && Number(a.value) === 2 && Number(b.value) === 2) {
+ g3Done = true;
+ document.getElementById("mnGuessOut3").innerHTML = (g3 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "最不对齐、离得最远，几乎没有潮。";
+ }
+}
+ a.addEventListener("input", paint); b.addEventListener("input", paint);
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mn-g1]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g1Done) return;
+ g1 = btn.getAttribute("data-mn-g1");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mn-g1]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("mnGuessOut1").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mn-g2]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g2Done) return;
+ g2 = btn.getAttribute("data-mn-g2");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mn-g2]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("mnGuessOut2").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mn-g3]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g3Done) return;
+ g3 = btn.getAttribute("data-mn-g3");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-mn-g3]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("mnGuessOut3").textContent = "押好了";
+ });
+ });
+ paint();
+})();
+
+</script>
+<script>if (window.Progress) Progress.visit("nature/moon.html", "月亮观察站");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

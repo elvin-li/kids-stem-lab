@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>植物观察站 · 从种子到叶子 | 少儿数理启蒙</title>
+<meta name="description" content="看种子发芽、比较十二种叶子，并记录一次身边的植物观察。离线即可使用。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+ .hero { padding: 28px 0 10px; }
+ .hero h1 { margin: .15em 0 .3em; }
+ .lead { max-width: 58ch; color: var(--ink-mid); }
+ .kid-hero-scene {
+ display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+ margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+ border: 1px solid color-mix(in srgb,var(--sci) 34%,var(--line));
+ border-radius: var(--r-lg);
+ background: linear-gradient(135deg,color-mix(in srgb,var(--sci) 12%,var(--surface)),var(--surface) 62%);
+ }
+ .mission-face {
+ width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+ border: 2px solid color-mix(in srgb,var(--sci) 36%,var(--line));
+ background: color-mix(in srgb,var(--sci) 12%,var(--surface)); font-size: 2.2rem;
+ }
+ .mission-face svg { width: 68px; height: 68px; display: block; }
+ .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+ .pl-art { display: block; width: 100%; max-width: 520px; height: auto; margin: 0 auto; }
+ .pl-sky { fill: color-mix(in srgb,var(--video) 10%,#e8f5ff); }
+ .pl-soil { fill: color-mix(in srgb,var(--kit) 34%,#c4a06a); }
+ .pl-seed { fill: color-mix(in srgb,var(--kit) 55%,#8a5a28); }
+ .pl-stem { fill: none; stroke: color-mix(in srgb,var(--sci) 70%,#2f6b3a); stroke-width: 6; stroke-linecap: round; }
+ .pl-leaf { fill: color-mix(in srgb,var(--sci) 55%,#4f9a58); stroke: color-mix(in srgb,var(--ink) 30%,transparent); stroke-width: 1.4; }
+ .pl-flower { fill: color-mix(in srgb,var(--danger) 42%,#f2a3b0); }
+ .pl-sun { fill: #ffd166; }
+ .kid-action-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+ .leaf-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit,minmax(min(150px,100%),1fr)); }
+ .leaf-card {
+ display: grid; gap: 6px; justify-items: center; min-height: 132px; padding: 10px;
+ border: 2px solid var(--line); border-radius: var(--r); background: var(--surface);
+ }
+ .leaf-card.kid-figure { --tone: var(--sci); min-height: 0; }
+ .leaf-card .kid-figure-art { padding: 6px; background: color-mix(in srgb,var(--sci) 8%,#f3faef); }
+ .leaf-card .kid-figure-art > svg { width: 100%; max-width: 120px; height: auto; }
+ .leaf-card .kid-figure-fact { display: block; }
+ .leaf-card[aria-pressed="true"] { border-color: var(--sci); box-shadow: 0 0 0 3px color-mix(in srgb,var(--sci) 22%,transparent); }
+ .leaf-card.kid-figure[aria-pressed="true"] {
+ background: color-mix(in srgb, var(--sci) 11%, var(--surface));
+ }
+ .leaf-card svg { width: 100%; height: auto; }
+ .lf-bg { fill: color-mix(in srgb,var(--sci) 8%,#f3faef); }
+ .lf-blade { fill: color-mix(in srgb,var(--sci) 48%,#67a86a); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.6; }
+ .lf-vein { fill: none; stroke: color-mix(in srgb,var(--sci) 30%,#d7efd4); stroke-width: 1.4; }
+ .lf-thick { fill: color-mix(in srgb,var(--sci) 32%,#b5d47a); stroke: color-mix(in srgb,var(--ink) 28%,transparent); stroke-width: 1.2; }
+ .lf-drop { fill: color-mix(in srgb,var(--video) 40%,#9ec8e8); }
+ .lf-fan { fill: color-mix(in srgb,var(--sci) 28%,#c8d46a); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.6; }
+ .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+ .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+ .ask li::before {
+ counter-increment: q; content: counter(q);
+ position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+ display: grid; place-items: center; background: color-mix(in srgb,var(--sci) 12%,var(--surface));
+ border: 1px solid color-mix(in srgb,var(--sci) 40%,var(--line)); color: var(--ink);
+ font: 800 .76rem var(--mono);
+ }
+ button, .btn { min-height: 44px; }
+ .stage + .kid-action-strip { margin-top: 8px; }
+ .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+ @media (max-width: 640px) {
+ .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+ .mission-face { display: none; }
+ .stage { padding: 10px; }
+ .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+ .lead { max-width: none; }
+ }
+
+ .ps-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+ .ps-lab-panel { margin: 12px 0; padding: 10px; border: 1px solid color-mix(in srgb,var(--sci) 36%,var(--line)); border-radius: var(--r-lg); background: color-mix(in srgb,var(--sci) 8%,var(--surface)); }
+ .ps-lab-panel .readout { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0; }
+ .ps-lab-panel .readout div { padding:8px; border-radius:var(--r); background:var(--surface); border:1px solid var(--line); }
+ .ps-lab-panel .readout span { display:block; font-size:.78rem; color:var(--ink-mid); }
+ .ps-lab-panel .readout b { font:800 1.05rem var(--mono); color:var(--ink); }
+ .ps-lab-panel label { display:block; font-weight:700; margin-top:8px; }
+ .ps-lab-panel input[type="range"] { width:100%; min-height:44px; }
+ .ps-lab-panel .kid-action-strip { flex-direction:column; align-items:stretch; gap:4px; margin:8px 0; }
+ .ps-guess .pick-btns { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+ .guess-card { border-color: color-mix(in srgb,var(--sci) 45%,var(--line)); }
+ .guess-pick[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 18%,var(--surface)); color: var(--ink); }
+ .guess-out { font-weight: 750; color: var(--ink-mid); }
+ .guess-out b { color: var(--ink); }
+ @media (max-width:640px){
+ .hero .lead { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+ .ps-lab-panel > p { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+ }
+ @media (max-width:480px){
+ [data-playful-companion], [data-playful-sticker] { display:none !important; }
+ .ps-lab-panel .readout { grid-template-columns:1fr; }
+ }
+
+</style>
+</head>
+<body data-playful-page="nature/plants.html">
+<!-- ART:START 插画图库由 tools/art-build.mjs 生成，请改 tools/art-library.mjs -->
+<svg class="art-sprite" aria-hidden="true" focusable="false" width="0" height="0" viewBox="0 0 0 0">
+ <symbol id="art-nature-burdock" viewBox="0 0 120 120">
+ <linearGradient id="ag-w32-bd-br" x1=".28" y1="0" x2=".72" y2="1">
+ <stop offset="0" stop-color="#d6b07a"/><stop offset=".5" stop-color="#a16207"/><stop offset="1" stop-color="#44403c"/>
+ </linearGradient>
+ <linearGradient id="ag-w32-bd-lf" x1=".2" y1="0" x2=".8" y2="1">
+ <stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#166534"/>
+ </linearGradient>
+ <path d="M0 100 C40 92 82 110 120 98 V120 H0 Z" fill="#86efac"/>
+ <path d="M34 118 C32 78 30 48 36 28" fill="none" stroke="#365314" stroke-width="3.6" stroke-linecap="round"/>
+ <path d="M86 118 C88 74 90 44 84 24" fill="none" stroke="#365314" stroke-width="3.6" stroke-linecap="round"/>
+ <path d="M8 78 C20 52 40 56 38 82 C28 96 12 92 8 78 Z" fill="url(#ag-w32-bd-lf)" stroke="#14532d" stroke-width="1.4"/>
+ <path d="M112 74 C100 48 80 54 82 80 C92 96 108 90 112 74 Z" fill="url(#ag-w32-bd-lf)" stroke="#14532d" stroke-width="1.4"/>
+ <path d="M18 68 C26 62 32 70 28 78" fill="none" stroke="#166534" stroke-width="1.2" opacity=".5"/>
+ <path d="M102 64 C94 58 88 66 92 76" fill="none" stroke="#166534" stroke-width="1.2" opacity=".5"/>
+ <ellipse cx="38" cy="40" rx="20" ry="18" fill="url(#ag-w32-bd-br)" stroke="#292524" stroke-width="1.6"/>
+ <ellipse cx="84" cy="36" rx="18" ry="16" fill="#854d0e" stroke="#292524" stroke-width="1.5"/>
+ <g fill="#6b4328" opacity=".35">
+ <ellipse cx="32" cy="36" rx="4" ry="3"/><ellipse cx="46" cy="44" rx="3.4" ry="2.4"/>
+ <ellipse cx="78" cy="32" rx="3.2" ry="2.2"/><ellipse cx="90" cy="40" rx="3" ry="2"/>
+ </g>
+ <g stroke="#1c1917" stroke-width="1.7" stroke-linecap="round">
+ <path d="M24 28 L12 12"/><path d="M38 22 L38 4"/><path d="M52 28 L66 12"/>
+ <path d="M20 44 L4 46"/><path d="M56 48 L72 56"/><path d="M28 54 L16 70"/><path d="M50 54 L62 70"/>
+ <path d="M72 26 L60 10"/><path d="M84 20 L86 2"/><path d="M98 26 L112 10"/>
+ <path d="M70 44 L56 52"/><path d="M98 46 L114 52"/><path d="M76 50 L68 66"/>
+ </g>
+ <g fill="none" stroke="#1c1917" stroke-width="1.4">
+ <path d="M12 12 Q6 4 18 8"/><path d="M38 4 Q40 -4 44 6"/><path d="M66 12 Q74 4 60 8"/>
+ <path d="M4 46 Q-4 48 6 54"/><path d="M72 56 Q80 62 68 64"/>
+ <path d="M60 10 Q54 2 66 6"/><path d="M86 2 Q90 -6 92 6"/><path d="M112 10 Q120 2 106 6"/>
+ </g>
+ <ellipse cx="70" cy="114" rx="24" ry="3.4" fill="#166534" opacity=".2"/>
+ </symbol>
+ <symbol id="art-nature-coconut-drift" viewBox="0 0 120 120">
+ <linearGradient id="ag-pg5-coc-hk" x1=".2" y1="0" x2=".8" y2="1">
+ <stop offset="0" stop-color="#e7c48a"/><stop offset=".4" stop-color="#a16207"/><stop offset="1" stop-color="#292524"/>
+ </linearGradient>
+ <linearGradient id="ag-pg5-coc-wd" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#0c4a6e"/>
+ </linearGradient>
+ <path d="M0 82 C40 74 80 92 120 80 V120 H0 Z" fill="url(#ag-pg5-coc-wd)"/>
+ <path d="M0 98 C48 90 84 108 120 96" fill="none" stroke="#bae6fd" stroke-width="3.4" opacity=".5"/>
+ <g fill="#86efac" opacity=".28">
+ <ellipse cx="22" cy="104" rx="12" ry="3.2"/><ellipse cx="96" cy="108" rx="14" ry="3.4"/>
+ </g>
+ <ellipse cx="62" cy="56" rx="30" ry="24" fill="url(#ag-pg5-coc-hk)" stroke="#1c1410" stroke-width="2"/>
+ <g fill="none" stroke="#78350f" stroke-width="1.4">
+ <path d="M40 48 C52 40 72 40 84 50"/><path d="M36 60 C50 70 74 70 88 60"/>
+ <path d="M38 44 C34 58 38 74 48 84"/><path d="M86 44 C90 58 86 74 76 84"/>
+ <path d="M44 36 C56 32 70 32 80 38"/>
+ </g>
+ <g fill="#1c1410">
+ <ellipse cx="50" cy="48" rx="4.2" ry="4.6"/><ellipse cx="62" cy="42" rx="4.2" ry="4.6"/><ellipse cx="74" cy="48" rx="4.2" ry="4.6"/>
+ </g>
+ <g fill="#0c0a09">
+ <ellipse cx="50" cy="49.2" rx="1.8" ry="2"/><ellipse cx="62" cy="43.2" rx="1.8" ry="2"/><ellipse cx="74" cy="49.2" rx="1.8" ry="2"/>
+ </g>
+ <g fill="#a16207" opacity=".35">
+ <ellipse cx="48" cy="62" rx="6" ry="3"/><ellipse cx="72" cy="66" rx="5" ry="2.6"/>
+ </g>
+ <path d="M44 38 C54 30 72 30 82 40" fill="none" stroke="#fde68a" stroke-width="2.4" opacity=".3"/>
+ <ellipse cx="90" cy="78" rx="14" ry="5" fill="#86efac" opacity=".4"/>
+ <ellipse cx="30" cy="80" rx="10" ry="4" fill="#86efac" opacity=".3"/>
+ <path d="M20 88 C40 82 70 94 100 84" fill="none" stroke="#e0f2fe" stroke-width="1.6" opacity=".35"/>
+ </symbol>
+ <symbol id="art-nature-dandelion" viewBox="0 0 120 120">
+ <linearGradient id="ag-w31-dn-st" x1="0" y1="0" x2="1" y2="0">
+ <stop offset="0" stop-color="#65a30d"/><stop offset="1" stop-color="#3f6212"/>
+ </linearGradient>
+ <linearGradient id="ag-w31-dn-pf" x1=".3" y1="0" x2=".7" y2="1">
+ <stop offset="0" stop-color="#fffdf6"/><stop offset="1" stop-color="#e7e0d0"/>
+ </linearGradient>
+ <path d="M0 100 C36 92 84 110 120 98 V120 H0 Z" fill="#4d7c0f"/>
+ <path d="M16 102 C8 84 18 70 10 56 C28 70 26 90 24 104 Z" fill="#365314"/>
+ <path d="M18 86 C4 80 2 92 16 96 C6 100 8 108 20 100 Z" fill="#4d7c0f"/>
+ <path d="M104 104 C114 86 104 70 112 54 C94 70 96 90 98 106 Z" fill="#365314"/>
+ <path d="M58 112 C56 78 56 52 60 38" fill="none" stroke="url(#ag-w31-dn-st)" stroke-width="6.4" stroke-linecap="round"/>
+ <path d="M58 80 C48 78 38 88 44 98 C50 90 56 92 60 88" fill="#65a30d" stroke="#365314" stroke-width="1"/>
+ <ellipse cx="60" cy="38" rx="7" ry="6" fill="#a16207" stroke="#7c4a12" stroke-width="1.2"/>
+ <g fill="none" stroke="#f8f4ea" stroke-width="1.45" stroke-linecap="round">
+ <path d="M60 38 L60 4"/><path d="M60 38 L88 12"/><path d="M60 38 L32 12"/>
+ <path d="M60 38 L102 32"/><path d="M60 38 L18 32"/><path d="M60 38 L94 56"/>
+ <path d="M60 38 L26 56"/><path d="M60 38 L78 6"/><path d="M60 38 L42 6"/>
+ <path d="M60 38 L104 48"/><path d="M60 38 L16 48"/><path d="M60 38 L86 70"/>
+ <path d="M60 38 L34 70"/><path d="M60 38 L70 2"/><path d="M60 38 L50 2"/>
+ </g>
+ <g fill="url(#ag-w31-dn-pf)" stroke="#d6d0c2" stroke-width=".7">
+ <circle cx="60" cy="4" r="4.4"/><circle cx="88" cy="12" r="3.8"/><circle cx="32" cy="12" r="3.8"/>
+ <circle cx="102" cy="32" r="3.6"/><circle cx="18" cy="32" r="3.6"/><circle cx="94" cy="56" r="3.4"/>
+ <circle cx="26" cy="56" r="3.4"/><circle cx="78" cy="6" r="3.2"/><circle cx="42" cy="6" r="3.2"/>
+ <circle cx="104" cy="48" r="3"/><circle cx="16" cy="48" r="3"/><circle cx="86" cy="70" r="2.8"/>
+ <circle cx="34" cy="70" r="2.8"/><circle cx="70" cy="2" r="2.6"/><circle cx="50" cy="2" r="2.6"/>
+ </g>
+ <g fill="#c4a06a">
+ <ellipse cx="60" cy="2" rx="1.5" ry="2.2"/><ellipse cx="88" cy="10" rx="1.3" ry="1.8"/>
+ <ellipse cx="32" cy="10" rx="1.3" ry="1.8"/>
+ </g>
+ <g fill="none" stroke="#f8f4ea" stroke-width="1.2" stroke-linecap="round" opacity=".7">
+ <path d="M92 8 L108 0"/><path d="M28 8 L10 0"/>
+ </g>
+ <g fill="url(#ag-w31-dn-pf)" stroke="#d6d0c2" stroke-width=".6">
+ <circle cx="110" cy="0" r="2.6"/><circle cx="8" cy="0" r="2.6"/>
+ </g>
+ <ellipse cx="60" cy="114" rx="10" ry="3" fill="#1a2e05" opacity=".2"/>
+ </symbol>
+ <symbol id="art-nature-dandelion-seed" viewBox="0 0 120 120">
+ <linearGradient id="ag-w30-ds-ach" x1=".3" y1="0" x2=".7" y2="1">
+ <stop offset="0" stop-color="#fbbf24"/><stop offset="1" stop-color="#7c2d12"/>
+ </linearGradient>
+ <path d="M0 102 C40 96 80 112 120 100 V120 H0 Z" fill="#4d7c0f"/>
+ <g fill="#365314">
+ <ellipse cx="16" cy="110" rx="7" ry="10"/><ellipse cx="104" cy="112" rx="8" ry="11"/>
+ <ellipse cx="36" cy="114" rx="5" ry="7"/>
+ </g>
+ <g fill="#86efac" opacity=".45">
+ <ellipse cx="50" cy="110" rx="8" ry="3"/><ellipse cx="86" cy="114" rx="9" ry="3"/>
+ </g>
+ <g fill="none" stroke="#f8fafc" stroke-width="1.35" stroke-linecap="round">
+ <path d="M62 46 L62 10"/><path d="M62 46 L86 16"/><path d="M62 46 L38 16"/>
+ <path d="M62 46 L98 32"/><path d="M62 46 L26 32"/><path d="M62 46 L80 6"/>
+ <path d="M62 46 L44 6"/><path d="M62 46 L104 50"/><path d="M62 46 L20 50"/>
+ <path d="M62 46 L92 64"/><path d="M62 46 L32 64"/><path d="M62 46 L74 4"/>
+ <path d="M62 46 L50 4"/><path d="M62 46 L108 40"/><path d="M62 46 L16 40"/>
+ </g>
+ <g fill="#fffdf6" stroke="#d6d3d1" stroke-width=".65">
+ <ellipse cx="62" cy="10" rx="5.2" ry="3.2"/><ellipse cx="86" cy="16" rx="4.6" ry="2.8"/>
+ <ellipse cx="38" cy="16" rx="4.6" ry="2.8"/><ellipse cx="98" cy="32" rx="4.2" ry="2.6"/>
+ <ellipse cx="26" cy="32" rx="4.2" ry="2.6"/><ellipse cx="80" cy="6" rx="3.8" ry="2.4"/>
+ <ellipse cx="44" cy="6" rx="3.8" ry="2.4"/><ellipse cx="104" cy="50" rx="3.6" ry="2.2"/>
+ <ellipse cx="20" cy="50" rx="3.6" ry="2.2"/><ellipse cx="92" cy="64" rx="3.4" ry="2"/>
+ <ellipse cx="32" cy="64" rx="3.4" ry="2"/><ellipse cx="74" cy="4" rx="3.2" ry="2"/>
+ <ellipse cx="50" cy="4" rx="3.2" ry="2"/><ellipse cx="108" cy="40" rx="3" ry="1.8"/>
+ <ellipse cx="16" cy="40" rx="3" ry="1.8"/>
+ </g>
+ <circle cx="62" cy="46" r="4.4" fill="#f8fafc" stroke="#a8a29e" stroke-width="1"/>
+ <circle cx="62" cy="46" r="1.6" fill="#d6d3d1"/>
+ <path d="M62 50 L62 82" stroke="#8a6a40" stroke-width="2.2" stroke-linecap="round"/>
+ <path d="M58 86 C56 74 68 74 66 86 C70 98 54 98 58 86 Z" fill="url(#ag-w30-ds-ach)" stroke="#7c2d12" stroke-width="1.2"/>
+ <path d="M59 80 L65 80 M60 88 L64 88" stroke="#92400e" stroke-width=".8"/>
+ <ellipse cx="60" cy="80" rx="1.8" ry="2.4" fill="#fde68a" opacity=".5"/>
+ <g opacity=".45">
+ <path d="M22 28 L22 16" stroke="#f8fafc" stroke-width="1"/>
+ <circle cx="22" cy="14" r="2.4" fill="#fffdf6"/>
+ <path d="M22 30 L22 40" stroke="#8a6a40" stroke-width="1.2"/>
+ <ellipse cx="22" cy="44" rx="2.4" ry="4" fill="#b45309"/>
+ </g>
+ </symbol>
+ <symbol id="art-nature-pine" viewBox="0 0 120 120">
+ <linearGradient id="ag-w33-pi-nd" x1=".3" y1="0" x2=".7" y2="1">
+ <stop offset="0" stop-color="#86efac"/><stop offset=".45" stop-color="#3f6212"/><stop offset="1" stop-color="#14532d"/>
+ </linearGradient>
+ <linearGradient id="ag-w33-pi-wd" x1="0" y1="0" x2="1" y2="0">
+ <stop offset="0" stop-color="#8a5a30"/><stop offset="1" stop-color="#4a2c14"/>
+ </linearGradient>
+ <linearGradient id="ag-w33-pi-cn" x1=".3" y1="0" x2=".8" y2="1">
+ <stop offset="0" stop-color="#d6a36a"/><stop offset="1" stop-color="#7c2d12"/>
+ </linearGradient>
+ <path d="M0 98 C36 92 82 106 120 96 V120 H0 Z" fill="#3f6212"/>
+ <ellipse cx="62" cy="112" rx="26" ry="4.2" fill="#1a1408" opacity=".2"/>
+ <path d="M56 112 V66" stroke="url(#ag-w33-pi-wd)" stroke-width="9.4" stroke-linecap="round"/>
+ <path d="M54 112 V68" stroke="#c4a06a" stroke-width="2.1" opacity=".3"/>
+ <g fill="none" stroke="#4a2c12" stroke-width="1.15" opacity=".5">
+ <path d="M52 80 C58 84 58 92 52 98"/><path d="M62 86 C56 90 56 98 64 102"/>
+ </g>
+ <path d="M62 6 L96 46 H28 Z" fill="url(#ag-w33-pi-nd)" stroke="#14532d" stroke-width="1.65"/>
+ <path d="M62 28 L106 72 H18 Z" fill="url(#ag-w33-pi-nd)" stroke="#14532d" stroke-width="1.65"/>
+ <path d="M62 50 L114 98 H10 Z" fill="url(#ag-w33-pi-nd)" stroke="#14532d" stroke-width="1.65"/>
+ <g fill="none" stroke="#d9f99d" stroke-width="1.2" opacity=".4">
+ <path d="M62 14 L86 42"/><path d="M62 36 L94 68"/><path d="M62 58 L100 92"/>
+ <path d="M62 16 L38 42"/><path d="M62 38 L30 68"/><path d="M62 60 L24 92"/>
+ </g>
+ <g fill="none" stroke="#166534" stroke-width=".85" opacity=".45">
+ <path d="M50 30 L46 22"/><path d="M74 30 L78 22"/><path d="M40 56 L34 46"/><path d="M84 56 L90 46"/>
+ <path d="M28 82 L20 70"/><path d="M96 82 L104 70"/>
+ </g>
+ <ellipse cx="86" cy="88" rx="7.4" ry="11" fill="url(#ag-w33-pi-cn)" stroke="#7c2d12" stroke-width="1.2"/>
+ <g fill="none" stroke="#fde68a" stroke-width=".95" opacity=".6">
+ <path d="M82 82 H90"/><path d="M80 88 H92"/><path d="M82 94 H90"/>
+ </g>
+ <ellipse cx="86" cy="79" rx="3.4" ry="2.1" fill="#92400e"/>
+ <ellipse cx="36" cy="92" rx="5.6" ry="8" fill="url(#ag-w33-pi-cn)" stroke="#7c2d12" stroke-width="1.05"/>
+ <g fill="none" stroke="#fde68a" stroke-width=".8" opacity=".5">
+ <path d="M32 88 H40"/><path d="M32 94 H40"/>
+ </g>
+ <path d="M16 108 C20 96 26 98 24 110 M98 110 C102 98 108 100 106 112" fill="none" stroke="#4d7c0f" stroke-width="2.2" stroke-linecap="round" opacity=".55"/>
+ </symbol>
+ <symbol id="art-nature-touchmenot" viewBox="0 0 120 120">
+ <linearGradient id="ag-t6-tm-lf" x1=".2" y1="0" x2=".8" y2="1">
+ <stop offset="0" stop-color="#86efac"/><stop offset=".5" stop-color="#22c55e"/><stop offset="1" stop-color="#166534"/>
+ </linearGradient>
+ <linearGradient id="ag-t6-tm-gd" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#3f6212"/>
+ </linearGradient>
+ <path d="M0 96 C40 88 80 106 120 94 V120 H0 Z" fill="url(#ag-t6-tm-gd)"/>
+ <path d="M60 118 L60 48" stroke="#365314" stroke-width="4" stroke-linecap="round"/>
+ <ellipse cx="38" cy="66" rx="20" ry="9" transform="rotate(-20 38 66)" fill="url(#ag-t6-tm-lf)" stroke="#14532d" stroke-width="1.3"/>
+ <ellipse cx="84" cy="62" rx="20" ry="9" transform="rotate(22 84 62)" fill="url(#ag-t6-tm-lf)" stroke="#14532d" stroke-width="1.3"/>
+ <path d="M50 38 Q60 18 70 38 L66 60 H54 Z" fill="#16a34a" stroke="#14532d" stroke-width="1.3"/>
+ <path d="M52 36 C44 20 28 12 18 16" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+ <path d="M68 36 C78 18 96 10 108 16" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+ <path d="M56 32 C50 14 40 6 28 8" fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round"/>
+ <circle cx="16" cy="18" r="4.2" fill="#b45309"/><circle cx="110" cy="16" r="4.2" fill="#b45309"/>
+ <circle cx="40" cy="10" r="3.2" fill="#c2410c"/><circle cx="86" cy="8" r="3" fill="#c2410c"/>
+ <path d="M58 30 Q62 8 76 4" fill="#f472b6" opacity=".9"/>
+ <ellipse cx="72" cy="8" rx="5" ry="3.4" fill="#fb7185"/>
+ <path d="M54 44 C58 50 64 50 68 44" fill="none" stroke="#14532d" stroke-width="1.2"/>
+ <path d="M36 68 C32 68 30 72 34 74" fill="none" stroke="#14532d" stroke-width="1.1"/>
+ <path d="M86 64 C90 64 92 68 88 70" fill="none" stroke="#14532d" stroke-width="1.1"/>
+ <g fill="#4d7c0f" opacity=".4">
+ <ellipse cx="16" cy="108" rx="8" ry="3"/><ellipse cx="108" cy="110" rx="8" ry="3"/>
+ </g>
+ </symbol>
+</svg>
+<!-- ART:END -->
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+ <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+ <div class="row" aria-label="主导航">
+ <a class="nav-link" href="../index.html">资源库</a>
+ <a class="nav-link" href="../pages/paths.html">学习路径</a>
+ <a class="nav-link" href="../games/index.html">互动实验</a>
+ <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+ <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+ <a class="nav-link" href="../pages/parents.html">家长指南</a>
+ <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+ </div>
+</div></nav>
+
+<main id="main" class="wrap">
+ <header class="hero">
+ <div>
+ <p class="row"><span class="pill pill-sci">生命</span><span class="pill">4–11&nbsp;岁</span><span class="pill">本地观察</span></p>
+ <h1>植物观察站</h1>
+ <p class="lead">植物不是「不会动的装饰」：根抓住土、喝水和矿，叶子用光、空气里的二氧化碳和水造糖，茎里有两套管把水和糖分开送。木头变重，主要是空气里的碳进来了，不是土被吸成了树。本页练「碳来自空气、两管分工」；窗边看、不尝野果。台上「造糖」数字只是比较尺子，不是某一种植物的说明书，更不是施肥课。</p>
+ <div data-playful-companion></div>
+ <span data-playful-sticker></span>
+ </div>
+ <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="78" height="78"></div>
+ </header>
+
+
+ <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+ <h2 id="stageTitle">种子在土里做什么</h2>
+ <svg class="pl-art" viewBox="0 0 420 240" role="img" aria-labelledby="growTitle growDesc">
+ <title id="growTitle">种子生长舞台</title>
+ <desc id="growDesc">一个花盆剖面：土里有种子，地上会陆续长出茎、叶子和花。</desc>
+ <rect class="pl-sky" width="420" height="240"/>
+ <circle class="pl-sun" cx="360" cy="42" r="22"/>
+ <path d="M40 148 H380 V230 H40 Z" class="pl-soil"/>
+ <ellipse class="pl-seed" id="seed" cx="210" cy="176" rx="16" ry="11"/>
+ <path class="pl-stem" id="stem" d="M210 168 V168" hidden></path>
+ <g id="leaves" hidden>
+ <path class="pl-leaf" d="M210 118 C176 104 164 128 210 142 C256 128 244 104 210 118 Z"/>
+ <path class="pl-leaf" d="M210 96 C184 78 176 102 210 114 C244 102 236 78 210 96 Z"/>
+ </g>
+ <g id="bloom" hidden>
+ <circle class="pl-flower" cx="198" cy="72" r="10"/>
+ <circle class="pl-flower" cx="222" cy="72" r="10"/>
+ <circle class="pl-flower" cx="210" cy="58" r="10"/>
+ <circle class="pl-flower" cx="210" cy="84" r="10"/>
+ <circle cx="210" cy="72" r="6" fill="#ffe08a"/>
+ </g>
+ </svg>
+ <p class="live-text" id="growSay" role="status" aria-live="polite">土里睡着一颗种子。点下一步，看它醒来。</p>
+ </section>
+
+ <div class="kid-action-strip" role="group" aria-label="让植物长大">
+ <button class="btn btn-primary" type="button" id="growBtn">下一步：发芽</button>
+ <button class="btn btn-ghost" type="button" id="resetGrow">重新种一颗</button>
+ </div>
+
+<section class="card ps-lab-panel" aria-labelledby="psLabTitle">
+ <h2 id="psLabTitle">植物光合台 · 真参数</h2>
+ <p>调<strong>叶片面积</strong>与<strong>光照强度</strong>。叶子越大、光越够，造的糖越多。真根喝水，茎里的导管把水送到高处；苔藓没有这套管，只好贴地。</p>
+ <div class="kid-action-strip" role="group" aria-label="真参数主操作">
+ <label for="psA">叶片面积：<span id="psALab">…</span></label>
+ <input class="input" id="psA" type="range" min="4" max="40" value="18" aria-valuetext="18">
+ <label for="psB">光照强度：<span id="psBLab">…</span></label>
+ <input class="input" id="psB" type="range" min="2" max="20" value="8" aria-valuetext="8">
+ </div>
+ <svg class="ps-art" viewBox="0 0 640 220" role="img" aria-labelledby="psLabSvgTitle psLabSvgDesc">
+ <title id="psLabSvgTitle">有导管才能把水送到高处</title>
+ <desc id="psLabSvgDesc">真根抓住土、喝水；茎里的导管把水往上送；叶子用光造糖。右边苔藓垫和假根被划掉：没有导管就长不高。</desc>
+ <rect fill="#e6f2d8" width="640" height="220"/>
+ <ellipse cx="304" cy="188" rx="70" ry="12" fill="#8a6a40"/>
+ <path id="psRoot" d="M304 170 L280 198 M304 170 L304 202 M304 170 L328 198" stroke="#6a4a28" stroke-width="4" fill="none"/>
+ <rect x="298" y="88" width="12" height="84" fill="#6a8a40"/>
+ <path id="psVein" d="M304 168 V96" stroke="#4a8aaa" stroke-width="3"/>
+ <ellipse id="psLeaf" cx="250" cy="110" rx="60" ry="28" fill="#4a9a3a"/>
+ <circle id="psSun" cx="120" cy="44" r="22" fill="#f0c040"/>
+ <g id="psMoss" opacity="0.28">
+ <ellipse cx="560" cy="48" rx="28" ry="12" fill="#3a7a48"/>
+ <path d="M548 56 L542 78 M560 56 L560 80 M572 56 L578 78" stroke="#6b4328" stroke-width="2"/>
+ <path d="M528 28 L592 76 M592 28 L528 76" stroke="#c2410c" stroke-width="4"/>
+ </g>
+ <rect id="psBar" x="20" y="70" width="14" height="90" fill="#1a5a3a"/>
+ <text fill="#1a2a20" style="font:800 13px monospace" x="16" y="28">光合台</text>
+ <text id="psStateLab" fill="#1a2a20" style="font:700 12px monospace" x="180" y="28">导管送到高处</text>
+ </svg>
+ <div class="readout" aria-live="polite">
+ <div><span>叶面</span><b id="psAOut">…</b></div>
+ <div><span>造糖（算）</span><b id="psSOut">…</b></div>
+ <div><span>够糖？</span><b id="psOkOut">…</b></div>
+ </div>
+ <p class="live-text" id="psLabLive" role="status" aria-live="polite">真根喝水，叶子用光造糖。拖滑杆看糖造不造得出。</p>
+ </section>
+ <section class="card guess-card ps-guess" aria-labelledby="psGuessTitle">
+ <h2 id="psGuessTitle">先猜一猜，再拖滑杆</h2>
+ <p><b>第 1 题：</b>叶面够、光照够（叶面 32、光照 10），造糖会更明显吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜造糖">
+ <button class="btn guess-pick" type="button" data-ps-g1="15" aria-pressed="false">几乎不变</button>
+ <button class="btn guess-pick" type="button" data-ps-g1="20" aria-pressed="false">会更明显</button>
+ <button class="btn guess-pick" type="button" data-ps-g1="28" aria-pressed="false">会过头</button>
+ </div>
+ <p class="guess-out" id="psGuessOut1" role="status" aria-live="polite">先押一个，再拖到 叶片面积 32、光照强度 10。</p>
+ <div id="psGuessBlock2" hidden>
+ <p><b>第 2 题：</b>叶面 6、光照 4，还够糖吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜够不够">
+ <button class="btn guess-pick" type="button" data-ps-g2="yes" aria-pressed="false">够糖</button>
+ <button class="btn guess-pick" type="button" data-ps-g2="no" aria-pressed="false">偏少</button>
+ </div>
+ <p class="guess-out" id="psGuessOut2" role="status" aria-live="polite">押好后拖到 叶片面积 6、光照强度 4。</p>
+ </div>
+ <div id="psGuessBlock3" hidden>
+ <p><b>第 3 题：</b>叶面最少 4、光照最弱 2。还能明显够糖吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜最低档">
+ <button class="btn guess-pick" type="button" data-ps-g3="yes" aria-pressed="false">能，还在</button>
+ <button class="btn guess-pick" type="button" data-ps-g3="no" aria-pressed="false">不能，两边都太弱</button>
+ <button class="btn guess-pick" type="button" data-ps-g3="zero" aria-pressed="false">变成 0，没了</button>
+ </div>
+ <p class="guess-out" id="psGuessOut3" role="status" aria-live="polite">押好后叶面 4、光照 2。</p>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="leafTitle">
+ <h2 id="leafTitle">十二张叶子图鉴</h2>
+ <p>点一张最像你窗外那片叶子的卡。注意边缘：是光滑、锯齿，还是裂成好几片？</p>
+ <div class="leaf-grid kid-figure-grid" id="leafGrid" role="group" aria-label="叶子图鉴：十二张大图卡"></div>
+ <p class="live-text" id="leafSay" role="status" aria-live="polite">还没选叶子。</p>
+ </section>
+
+ <section class="card" aria-labelledby="predictTitle">
+ <h2 id="predictTitle">猜一猜</h2>
+ <div class="kid-predict" style="--tone:var(--sci)"
+ data-kid-predict
+ data-kid-predict-explain="根抓住土、叶子用光造糖，水和糖走两套管。木头的碳主要来自空气，不是吃土。稀有的不采，不认识的果子不尝。"
+ data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+ data-kid-predict-again="押好了，点「看答案」。">
+ <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🪴</span><b>把一盆刚发芽的植物横着放几天，它的茎会怎么长？</b></p>
+ <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：横放的植物怎么长">
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="flat">顺着盆一直横着长</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="up" data-kid-predict-correct>弯个弯，继续往上长</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="down">往下弯，钻回土里</button>
+ </div>
+ <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+ <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+ </div>
+ </section>
+
+ <section class="task" aria-labelledby="taskTitle">
+ <h2 class="task-title" id="taskTitle">任务：认一片真叶子</h2>
+ <p>走到窗边或楼下，找一片不伤害植物就能看到的叶子。对照图鉴选出最像的一种，再说出它的边缘和叶脉。</p>
+ <div class="kid-tiles" role="group" aria-labelledby="edgeCap">
+ <p id="edgeCap">叶子边缘是什么样？</p>
+ <button class="kid-tile" type="button" data-edge="光滑" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">○</span><span class="kid-tile-label">光滑</span></button>
+ <button class="kid-tile" type="button" data-edge="锯齿" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">▲▼</span><span class="kid-tile-label">锯齿</span></button>
+ <button class="kid-tile" type="button" data-edge="裂片" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">Y</span><span class="kid-tile-label">裂成几片</span></button>
+ </div>
+ <button class="btn btn-primary" type="button" id="finishBtn" disabled>记下这次观察</button>
+ <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+ <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+ <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先选一张叶子图鉴，再选边缘形状。</p>
+ </section>
+
+ <section class="card" aria-labelledby="seedTitle">
+ <h2 id="seedTitle">种子的旅行</h2>
+ <p>植物自己不会走路，可它的孩子必须走远——全挤在妈妈脚下会抢光和水。看看种子们各自搭了什么「交通工具」。</p>
+ <div class="kid-figure-grid" role="group" aria-label="四种种子的旅行方式">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dandelion.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">乘风</span><span class="kid-figure-sub">蒲公英、枫树翅果</span><p class="kid-figure-fact">蒲公英给每颗种子配一把小降落伞；枫树的种子带一片「螺旋桨」，落下来会打着转飞远。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">搭便车</span><span class="kid-figure-sub">苍耳、鬼针草</span><p class="kid-figure-fact">浑身小钩子，挂上动物的毛或你的裤腿就出发——尼龙搭扣（魔术贴）就是学它发明的。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/coconut.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">漂流</span><span class="kid-figure-sub">椰子</span><p class="kid-figure-fact">椰子壳里裹着厚厚的纤维救生衣，能在海上漂几个月，冲上哪片沙滩就在哪安家。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/beans.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">自己弹</span><span class="kid-figure-sub">凤仙花、豆荚</span><p class="kid-figure-fact">果荚晒干后会突然卷起来，「啪」地把种子弹出去——碰一下成熟的凤仙花果试试（就一下）。</p></div>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="numsTitle">
+ <h2 id="numsTitle">植物的惊人数字</h2>
+ <div class="kid-figure-grid" role="group" aria-label="四个关于植物的数字">
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">一天约&nbsp;90&nbsp;厘米</span><span class="kid-figure-sub">竹子最快的生长速度</span><p class="kid-figure-fact">早上做个记号，晚上再来看——有些竹笋一天就能蹿高快一米，是长得最快的植物之一。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/sequoias.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">超过&nbsp;115&nbsp;米</span><span class="kid-figure-sub">最高的树（北美红杉）</span><p class="kid-figure-fact">比三十多层楼还高。把水从根一路抽到树顶，靠的是叶子蒸发时产生的「拉力」。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/pine.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">约&nbsp;4800&nbsp;年</span><span class="kid-figure-sub">最老的狐尾松已经活了这么久</span><p class="kid-figure-fact">金字塔动工的时候它就发芽了。树干里一年一圈的年轮，就是它自己写的日记。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/seeds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">睡了约&nbsp;1300&nbsp;年</span><span class="kid-figure-sub">古种子仍能发芽</span><p class="kid-figure-fact">有的种子在泥炭里睡了一千多年，被叫醒后仍能发芽——种子是装着生命的时间胶囊。</p></div>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="howTitle">
+ <h2 id="howTitle">怎么观察一片叶子</h2>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>找一片够得着的。</b>不摘、不撕，蹲下来或踮起脚看就行。</li>
+ <li data-step="2"><b>看边缘。</b>光滑、锯齿，还是裂成几片？用手指沿着边描一圈。</li>
+ <li data-step="3"><b>摸一摸、翻一翻。</b>厚还是薄？正面和背面哪边颜色深、哪边摸起来毛？</li>
+ <li data-step="4"><b>对着光看叶脉。</b>是像网一样铺开，还是一条条平行的？</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>叶子是植物的小厨房，太阳一照就开工做饭。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>叶子用阳光把水和空气里的二氧化碳做成糖，再放出氧气。叶脉是运水送糖的管道：网状的多是阔叶树，平行的多是草和竹子。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>叶形是一道权衡题：叶片越大接的光越多，但失水越快、也越怕风撕；针叶接光少，却耐旱抗冻。同一个问题在不同环境下有不同的最优解，所以沙漠、雨林和高山上的叶子长得完全不一样。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>把叶形差异读成「环境出的考题不同」——先观察、再比较、最后解释，这条链比记住植物名字更重要。</p>
+ <ul class="ask-list">
+ <li>楼下向阳处和墙根背阴处的同种植物，叶子一样大吗？</li>
+ <li>草的叶脉和树的叶脉，是同一种排法吗？</li>
+ <li>如果让你给沙漠设计一片叶子，你会把它做大还是做小？</li>
+ </ul>
+ </section>
+
+
+ <section class="card" aria-labelledby="teachWhatTitle">
+ <h2 id="teachWhatTitle">叶子用光造糖，根喝水；碳来自空气，不是吃土</h2>
+ <p>先指叶子，再指根和茎。叶子里的绿色车间用光、空气里的二氧化碳和水造糖，并放出氧气。木头变重，主要是空气里的碳进来了，不是土被吸成了树。根抓住土、喝水和矿物质；碳骨架不从土里来。把植物说成「吃土长大」，账就记反了。</p>
+ <p>茎里有两套管：一根把水和矿往上送，一根把叶子做好的糖运到别处。水往上走，靠叶子蒸腾时拉着一条连续的水柱，不是根部有一台水泵打到树顶。真根喝水、导管送到高处；苔藓的假根只抓住，没有这套管，所以贴着地面。绿只说明会光合，不能证明是同一种身体方案。</p>
+ <p>因为土里泡满水根就换不上气、路边果子也可能有毒，所以窗边看、不尝野果、不把花盆泡成水塘。台上「造糖」读数只比较「叶面×光照」，不是某一种植物的说明书，更不是施肥课。</p>
+ </section>
+
+ <section class="card" aria-labelledby="lookTitle">
+ <h2 id="lookTitle">根茎叶花是四个站；碳来自空气，不是吃土</h2>
+ <p>同一盆植物，先只改「碳从哪来」这一项：指叶子接光，再指空气，最后才指土。叶子用光、空气里的二氧化碳和水造糖；根抓住土、喝水，不负责把土变成木头。对光看叶脉：那是运输网，不是装饰纹。这样比，才知道「长大」是空气进账，不是吃土。</p>
+ <p>完成句写「碳来自空气」或「两管分工」，不要写「植物吃土」。真根喝水、导管送到高处；苔藓的假根只抓住，没有这套管，所以贴着地面。窗边看，不尝野果，花盆不要泡成水塘。</p>
+ <div class="kid-figure-grid" role="group" aria-label="主题细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">植物</span><span class="kid-figure-sub">根茎叶花</span><p class="kid-figure-fact">根抓住土、叶子用光造糖，水和糖走两套管。绿的不一定是这一套身体。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">根</span><span class="kid-figure-sub">吸水锚定</span><p class="kid-figure-fact">真根抓住土、喝水和矿物质；碳骨架主要不从土里来，根不会把土变成木头。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">木质部</span><span class="kid-figure-sub">上行</span><p class="kid-figure-fact">木质部把水和矿物质从根往上送，这是上行的管子，不是把糖送下来。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">韧皮部</span><span class="kid-figure-sub">运糖</span><p class="kid-figure-fact">韧皮部是另一套管，专门把叶子做好的糖运到根和芽，不跟水管混用。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">叶</span><span class="kid-figure-sub">叶绿体</span><p class="kid-figure-fact">叶子用光、空气里的二氧化碳和水自己造糖，并放出氧气，不是吃土变甜。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/flower.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">花</span><span class="kid-figure-sub">传粉</span><p class="kid-figure-fact">花是植物请来传粉者的广告牌，结出种子；花不是叶子那间厨房。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/seeds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">种子</span><span class="kid-figure-sub">走远</span><p class="kid-figure-fact">种子带着小苗走远，才不挤在妈妈脚下抢光和水；干着在等水暖，不是死了。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/forest.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">树</span><span class="kid-figure-sub">导管</span><p class="kid-figure-fact">有导管才能把水送到高处，长得成大棵。看活树用林子，不要拿树桩年轮冒充一棵活树。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moss.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">苔藓</span><span class="kid-figure-sub">贴基质</span><p class="kid-figure-fact">苔藓贴着基质吸水，没有真正的根和两套管，身体是另一套，不要叫它小树。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/kelp.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">海藻</span><span class="kid-figure-sub">光合</span><p class="kid-figure-fact">藻也会用光做糖，可是没有根茎叶这套分工，不要画成会走的小花盆。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/seagrass.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">海草</span><span class="kid-figure-sub">有根有花</span><p class="kid-figure-fact">海草是水下开花植物，有真根；海带是藻，没有花也没有真根，两套不要混名。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">野果</span><span class="kid-figure-sub">不尝</span><p class="kid-figure-fact">观察植物可以摸叶、看花，不认识的果子不要放进嘴里，也不要咬一口试毒。</p></div>
+ </div>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>指叶。</b>绿色车间用光、空气和水造糖。</li>
+ <li data-step="2"><b>指茎。</b>两套管：水往上，糖往别处。</li>
+ <li data-step="3"><b>问碳。</b>木头的碳从土里来吗？不，从空气来。</li>
+ <li data-step="4"><b>写完成句。</b>点名碳来自空气或两管分工，并写下「不尝野果」。</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>叶子用阳光做食物，根抓住土、喝水，茎是管子。不认识的果子不尝。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>碳主要来自空气中的二氧化碳。真根喝水，茎里的导管把水送到高处；糖走另一套管。苔藓没有这套管。水浇太多，根会闷。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>蒸腾拉着连续水柱上行，不是根部有一台水泵。光不够时茎徒长抢高度，叶子却弱。本页不鉴定有毒植物，不尝野果。台上数字只比较叶面和光照。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能否定「植物吃土」，把水和糖说成两套管，并把绿苔藓从「小树」里分开。完成看的是账本对照，不是背「光合作用」四个字。</p>
+ <ul class="ask-list">
+ <li>木头的碳从哪来？土被吸成树了吗？</li>
+ <li>水和糖走同一根管子吗？哪根往上、哪根往别处？</li>
+ <li>水浇得越多越好吗？根也要呼吸吗？</li>
+ <li>苔藓很绿，为什么不能讲成小树？它缺哪套管？</li>
+ </ul>
+ </section>
+
+
+ <section class="card" aria-labelledby="deepTitle">
+ <h2 id="deepTitle">土、光、水三本账；绿不是身份证</h2>
+ <p>土提供矿质、水和支撑。碳骨架主要来自空气——这是最容易说反的一句。根旁边常有菌一起干活，土不是死的粉末；可就算菌再勤快，木头变重仍是空气里的碳进来了。</p>
+ <p>光不足时茎会又细又高，叶子却弱，这叫徒长：是抢光策略，不是勤奋。气孔开合换气，水也会从这里走掉；关得太死，二氧化碳也进不来。水浇太多，孔隙灌满，根就缺氧烂掉——涝根不是「喝得更饱」。</p>
+ <p>苔藓没有树木那套导管，只好贴着地面吸水。藻也会光合，可是没有根茎叶这套，不要画成小花盆。绿只说明会光合，不能证明是同一种植物。</p>
+ <p>因为土里泡满水根就换不上气、路边果子也可能有毒，所以窗边看、不尝野果、不把花盆泡成水塘。本页造糖读数只比较叶面和光照，不是施肥说明书。</p>
+ <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">碳源</span><span class="kid-figure-sub">空气</span><p class="kid-figure-fact">木头变重，主要是空气里的碳进来了，土还在花盆里，不是土被吸成了树。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">徒长</span><span class="kid-figure-sub">抢光</span><p class="kid-figure-fact">光不够时茎会又细又高去抢光，叶子却弱，这叫徒长，不是它更勤奋，绿的也不会走。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">涝根</span><span class="kid-figure-sub">缺氧</span><p class="kid-figure-fact">根也要呼吸。水把土里孔隙灌满，根就会缺氧烂掉，不是喝得更饱，根茎叶各干各的。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/fungi.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">根际</span><span class="kid-figure-sub">共生</span><p class="kid-figure-fact">根旁边常有菌和根一起干活，帮着喝矿，土不是一盘死的粉末，根负责喝矿。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="fieldTitle">
+ <h2 id="fieldTitle">对照卡：两管长高 · 苔藓贴地 · 藻另册</h2>
+ <p>三列用「绿」来拆误会。甲：有导管的植物能把水送到高处，才长得成大棵。乙：苔藓贴着基质吸水，没有真正的根和两套管。丙：藻也会光合，身体方案另册，不要塞进花盆故事。否决句：「绿的都是吃土的小树。」</p>
+ <p>水和糖分两套管，碳来自空气。浇水记和向光记要分开两行，免得把弯向窗口写成「想家」。本页读数只比较造糖方向，不是物种鉴定。</p>
+ <div class="kid-figure-grid" role="group" aria-label="三列对照">
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">维管</span><span class="kid-figure-sub">两管</span><p class="kid-figure-fact">有维管才能把水送上高处，苔藓没有这套管，只好贴着地面，长不成大树。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/moss.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">苔藓</span><span class="kid-figure-sub">贴基质</span><p class="kid-figure-fact">苔藓贴着基质吸水，没有真正的根和两套管，身体是另一套，不要叫它小树。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/kelp.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">海藻</span><span class="kid-figure-sub">光合</span><p class="kid-figure-fact">藻也会用光做糖，可是没有根茎叶这套分工，不要画成会走的小花盆。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/plants.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">区分句</span><span class="kid-figure-sub">各一</span><p class="kid-figure-fact">绿只说明会光合，不能证明是同一种植物，更不是「绿的都会走」，自己用光做糖。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="moreTitle">
+ <h2 id="moreTitle">窗边向光两日：碳从哪来，盆底有没有积水</h2>
+ <p>日&nbsp;0 与日&nbsp;2 各看盆栽朝向，写有没有弯向窗口。另开一行记浇水：盆底有没有积水。两件事不要写在同一句里，免得把「弯向光」和「根被淹」搅成一个原因。</p>
+ <p>口头只要两句：「叶子用光造糖，碳来自空气。」「水和糖走两套管。」有人说「植物吃土」，让孩子指着叶子和空气反驳。</p>
+ <p>窗边看，不摘稀有株，不认识的果子不入口。造糖怎么随叶面和光照变，看本页滑杆；没有导管的保湿垫，去苔藓页。本页数字不要抄进施肥手册。</p>
+ <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">两日照</span><span class="kid-figure-sub">朝向</span><p class="kid-figure-fact">隔日照一次，看叶子是不是朝窗子弯过去，那是抢光，不是植物想家，茎叶在抢光。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">浇水记</span><span class="kid-figure-sub">防涝</span><p class="kid-figure-fact">另记盆底有没有积水，不要和向光写在同一行，根被淹是另一本账，根被淹不能吸。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">碳来源</span><span class="kid-figure-sub">二氧化碳</span><p class="kid-figure-fact">叶子里的碳主要来自空气里的二氧化碳，不是从土里挖出来的炭，光把气做成糖。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">野果</span><span class="kid-figure-sub">红线</span><p class="kid-figure-fact">不认识的野果不入口，好看不等于能吃，绿叶子也不会告诉你果子有没有毒。</p></div>
+ </div>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+ <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+ <p>想知道「木头的碳从哪来」，就只改这一项：同一盆、同一土，先问叶子接不接光、空气进不进得来。把「水浇多了根会闷」叠进同一档，分不清到底是碳账记反了，还是根缺氧。</p>
+ <ul>
+ <li><b>只改这一项：</b>碳从空气来还是从土里来（或水和糖是不是同一根管子）。</li>
+ <li><b>先保持不变：</b>同一盆植物、同一片叶子、同一勺土。</li>
+ <li><b>要观察的：</b>叶子是不是车间；茎里是不是两套管。</li>
+ <li><b>另开一行：</b>浇水涝根、向光弯曲、苔藓没有导管，各记各的。</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+ <h2 id="askMoreTitle">还可以问下去</h2>
+ <ol>
+ <li>木头变重，重的是土被吸走了，还是空气里的碳进来了？土还在花盆里吗？</li>
+ <li>只看见一根「管子」，怎样逼出「水往上、糖往别处」？关掉气孔，二氧化碳还进得来吗？</li>
+ <li>叶往窗口弯，是「想家」还是光强不同？浇水记录为什么要另开一行？</li>
+ </ol>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+ <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+ <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把蒸腾拉力提前塞进四岁耳朵。</p>
+ <div class="age-tiers" aria-label="给家长的分层讲法">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>叶子用阳光做食物，根抓住土、喝水，茎是管子。不认识的果子不尝。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>碳主要来自空气中的二氧化碳。真根喝水，茎里的导管把水送到高处；糖走另一套管。苔藓没有这套管。水浇太多，根会闷。本页数字只用来比较，不是施肥表。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>蒸腾拉着连续水柱上行。徒长是抢光策略。维管、苔藓、藻类身体方案不同。观叶礼貌：不采稀有株、不尝野果、花盆不泡成水塘，是在保护根的气体交换，不只是礼貌。</p></div>
+ </div>
+ </section>
+
+ <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+ <h2 class="work-card-title" id="workTitle">作品表单：植物观察</h2>
+ <p class="work-card-meta">只保存文字，存在这台设备上。不要摘叶子，看清楚即可。</p>
+ <div class="work-card-fields">
+ <div><label for="workType">作品类型</label>
+ <select class="input" id="workType" name="type">
+ <option value="observation">观察记录</option>
+ <option value="drawing">发现画</option>
+ <option value="photo-note">照片备注</option>
+ </select>
+ </div>
+ <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：楼下那片带锯齿的叶子"></div>
+ <div><label for="workContent">看见了什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="叶子的形状、边缘、叶脉，以及它长在树上、灌木还是花盆里。"></textarea></div>
+ <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+ </div>
+ <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+ </form>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+ <h2 id="askTitle">给家长的问题</h2>
+ <ul class="ask">
+ <li>孩子说植物吃土长大——你用哪一句话把碳的账扳回来？让他再指一次叶子和空气。</li>
+ <li>只看见一根「管子」，怎样逼出「水往上、糖往别处」？关掉气孔，二氧化碳还进得来吗？</li>
+ <li>叶往窗口弯，是「想家」还是光不够的那边在抢？浇水记录为什么要另开一行？</li>
+ <li>苔藓很绿，为什么不能讲成小树？它缺哪套管，所以只好贴地？</li>
+ <li>水浇得越多越好吗？根也要呼吸吗？盆底积水和向光弯曲能并成一句吗？</li>
+ <li>本页「造糖」读数能当某一种植物的说明书吗？它比较的是叶面和光照，还是施肥表？</li>
+ <li>不认识的野果为什么默认不入口？好看等于能吃吗？</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+ <h2 id="whyTitle">背后的原理</h2>
+ <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：叶子用光、二氧化碳和水造糖并放出氧；碳骨架主要来自空气，矿质来自土壤溶液，两本账不能并成「吃土」。根抓住并喝水，不负责把土变成木头。</p>
+ <p>茎里两套管：木质部把水和矿往上送，韧皮部把糖运到别处。高大植物靠蒸腾拉着连续水柱上行，不是根部有一台水泵。本页「造糖≈叶面×光照÷16」只是比较尺子，用来让孩子看见「叶够大、光够足才造得出糖」，不是某一种的说明书，也不是施肥手册。</p>
+ <p>光不够时茎徒长抢高度。涝害是根际缺氧。维管、苔藓、藻类身体方案不同：绿不是身份证。</p>
+ <p>观察安全：窗边看、不采稀有株、不尝野果、花盆不泡成水塘。本页不提供物种鉴定，只练形状、结构和账本。</p>
+ </section>
+
+ <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))" data-audience="parent">
+ <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">植物公式卡 · 造糖≈叶面×光照÷16；造糖≥10 更够；光+水+二氧化碳→糖</p>
+ <p style="margin:0;color:var(--ink-mid);line-height:1.55">真实还受二氧化碳、水分与叶绿素限制。因为土里泡满水根就换不上气、路边果子也可能有毒，所以窗边看、不尝野果、不把花盆泡成水塘。</p>
+ </div>
+
+
+<section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+ <h2 id="nextTitle">接下来可以去</h2>
+ <p>带走句：导管把水送到高处，才长得成大棵。苔藓页看没有真根的保湿垫；树木页看谁把导管用到最高。</p>
+ <p class="row"><a class="btn btn-ghost" href="trees.html">树木观察站</a><a class="btn btn-ghost" href="moss.html">苔藓地衣观察站</a></p>
+ </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为土里泡满水根就换不上气、路边果子也可能有毒，所以观察请在不伤害植物的前提下进行。本页不提供物种鉴定，只练观察形状与结构。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+ "use strict";
+ var stage = 0, picked = "", edge = "", done = false;
+ var LEAVES = [
+ { id:"oval", name:"卵形", fact:"一端圆、一端稍尖，樟树和许多灌木常见。整片叶接光，不是会走的绿片。", d:"M60 18 C28 30 24 78 60 96 C96 78 92 30 60 18 Z" },
+ { id:"heart", name:"心形", fact:"基部凹进去像心形，紫荆和牵牛的叶子常这样，仍是一片叶在接光，绿片也不会走路。", d:"M60 28 C40 8 18 28 28 52 C36 70 60 92 60 92 C60 92 84 70 92 52 C102 28 80 8 60 28 Z" },
+ { id:"needle", name:"针形", fact:"又细又硬，松树用它减少失水，针叶也是叶子，不是树上的刺，针叶仍在接光做糖。", d:"M58 12 L62 12 L64 98 L56 98 Z" },
+ { id:"palm", name:"掌状", fact:"像张开的手裂成几片，枫树和蓖麻常见，裂片还连在同一叶柄上，掌裂仍是一片叶。", d:"M60 90 L52 48 L36 28 L44 50 L22 46 L40 62 L18 78 L46 72 L40 96 L60 90 L80 96 L74 72 L102 78 L80 62 L98 46 L76 50 L84 28 L68 48 Z" },
+ { id:"saw", name:"锯齿缘", fact:"边缘一格一格像锯齿，月季和榆树的叶子常这样，齿是叶缘，不是虫咬。", d:"M60 16 L48 28 L52 40 L40 50 L50 62 L38 74 L52 84 L60 98 L68 84 L82 74 L70 62 L80 50 L68 40 L72 28 Z" },
+ { id:"compound", name:"复叶", fact:"看起来像许多小叶排成一羽，合欢和槐树常见，那是复叶，小叶共用叶柄。", d:"M58 20 H62 V96 H58 Z M46 34 C34 36 34 50 46 50 C54 50 54 36 46 34 Z M74 34 C66 36 66 50 74 50 C86 50 86 36 74 34 Z M42 56 C30 58 30 72 42 72 C50 72 50 58 42 56 Z M78 56 C70 58 70 72 78 72 C90 72 90 58 78 56 Z" },
+ { id:"lance", name:"披针形", fact:"又长又尖，像矛头。柳树和竹叶常这样，窄叶也能接光做厨房，窄叶自己用光做糖。", d:"M60 8 C46 22 40 72 60 104 C80 72 74 22 60 8 Z", vein:"M60 16 V96" },
+ { id:"round", name:"圆形", fact:"差不多一样宽一样长，像小圆盘。铜钱草常见，圆叶也在接光，圆叶不会自己走。", d:"M60 18 C30 18 18 42 18 60 C18 86 36 100 60 100 C84 100 102 86 102 60 C102 42 90 18 60 18 Z" },
+ { id:"triangle", name:"三角形", fact:"基部宽、顶端尖，像一座小山。一些常春藤叶子这样，三角也是整片叶，三角叶也不会走。", d:"M60 14 L104 94 L16 94 Z", vein:"M60 22 L60 88 M60 50 L36 86 M60 50 L84 86" },
+ { id:"lobed", name:"浅裂", fact:"边缘凹进去几块，但还是一整片。栎树常见，浅裂不是许多片小叶，浅裂不是会走的叶。", d:"M60 16 C48 16 42 28 46 36 C32 34 24 46 32 56 C20 58 18 72 32 76 C24 86 36 98 50 92 L60 104 L70 92 C84 98 96 86 88 76 C102 72 100 58 88 56 C96 46 88 34 74 36 C78 28 72 16 60 16 Z" },
+ { id:"succulent", name:"肉质叶", fact:"又厚又鼓，里面存着水。玉树和芦荟常见，厚叶抗旱，不是果冻玩具，厚叶还是叶子厨房。", d:"M38 86 C26 58 32 20 60 14 C88 20 94 58 82 86 C76 100 44 100 38 86 Z", extra:'<path class="lf-thick" d="M46 80 C38 58 42 28 60 24 C78 28 82 58 74 80 C70 90 50 90 46 80 Z"/><ellipse class="lf-drop" cx="60" cy="52" rx="6" ry="8"/>', vein:"M60 26 V84" },
+ { id:"fan", name:"扇形", fact:"像一把打开的扇子，中间有缺刻。银杏就是这样，扇形叶仍是一片叶子。", blade:"lf-fan", d:"M60 100 L58 72 C26 72 12 46 18 28 C24 14 44 20 58 42 C60 36 60 36 62 42 C76 20 96 14 102 28 C108 46 94 72 62 72 L60 100 Z", vein:"M60 72 L26 34 M60 72 L42 26 M60 72 L60 20 M60 72 L78 26 M60 72 L94 34" },
+ { id:"awl", name:"钻形", fact:"短而硬、末端尖，像一把小锥子。许多柏树枝上这样，锥叶用来少失水，锥叶不会自己走。", d:"M56 18 L64 18 L70 96 L50 96 Z", vein:"M60 24 V90" },
+ { id:"scale", name:"鳞形", fact:"又小又贴枝，像一层层鱼鳞。侧柏常见，鳞叶也是叶子，不是树皮碎屑，鳞叶也在接光。", d:"M60 16 L72 28 L64 40 L78 52 L64 62 L76 76 L60 98 L44 76 L56 62 L42 52 L56 40 L48 28 Z" },
+ { id:"arrow", name:"箭形", fact:"基部两只尖角往后伸，像一支箭。慈姑叶子常这样，箭形叶仍在水面接光。", d:"M60 12 L96 70 L78 70 L78 100 L42 100 L42 70 L24 70 Z", vein:"M60 20 V92 M60 56 L36 74 M60 56 L84 74" },
+ { id:"wavy", name:"波状缘", fact:"边缘一起一伏，不像锯齿那么尖。一些栎树这样，波状缘仍是一整片叶。", d:"M60 16 C44 18 36 32 40 44 C28 48 30 64 42 66 C32 76 38 90 52 90 L60 104 L68 90 C82 90 88 76 78 66 C90 64 92 48 80 44 C84 32 76 18 60 16 Z" }
+ ];
+ var SAY = [
+ "土里睡着一颗种子。点下一步，看它醒来。",
+ "种子裂开，一条嫩茎钻出地面。",
+ "叶子展开了。它们要接住阳光。",
+ "开花了。花是植物请来传粉者的广告牌。"
+ ];
+ var BTN = ["下一步：发芽","下一步：长叶","下一步：开花","已经开花了"];
+ function grow(){
+ document.getElementById("seed").style.opacity = stage === 0 ? "1" : ".35";
+ document.getElementById("stem").hidden = stage < 1;
+ document.getElementById("stem").setAttribute("d", stage === 1 ? "M210 168 V118" : "M210 168 V86");
+ document.getElementById("leaves").hidden = stage < 2;
+ document.getElementById("bloom").hidden = stage < 3;
+ document.getElementById("growSay").textContent = SAY[stage];
+ document.getElementById("growBtn").textContent = BTN[stage];
+ document.getElementById("growBtn").disabled = stage >= 3;
+ }
+ document.getElementById("growBtn").addEventListener("click", function(){
+ if (stage < 3) { stage += 1; grow(); }
+ });
+ document.getElementById("resetGrow").addEventListener("click", function(){ stage = 0; grow(); });
+ var grid = document.getElementById("leafGrid");
+ LEAVES.forEach(function(leaf){
+ var b = document.createElement("button");
+ var blade = leaf.blade || "lf-blade";
+ var vein = leaf.vein || "M60 22 V92";
+ var extra = leaf.extra || "";
+ b.className = "leaf-card kid-figure"; b.type = "button"; b.id = "leafCard-"+leaf.id;
+ b.setAttribute("aria-pressed","false");
+ b.setAttribute("aria-label","选择"+leaf.name+"叶子");
+ b.innerHTML = '<span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 110" focusable="false"><rect class="lf-bg" width="120" height="110"/><path class="'+blade+'" d="'+leaf.d+'"/>'+extra+'<path class="lf-vein" d="'+vein+'"/></svg></span><span class="kid-figure-cap">'+leaf.name+'</span><span class="kid-figure-fact">'+leaf.fact+'</span>';
+ b.addEventListener("click", function(){
+ picked = leaf.id;
+ Array.prototype.forEach.call(grid.querySelectorAll(".leaf-card"), function(n){ n.setAttribute("aria-pressed", n===b?"true":"false"); });
+ document.getElementById("leafSay").textContent = leaf.name+"："+leaf.fact;
+ syncTask();
+ });
+ grid.appendChild(b);
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-edge]"), function(btn){
+ btn.addEventListener("click", function(){
+ edge = btn.getAttribute("data-edge");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-edge]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+ syncTask();
+ });
+ });
+ function syncTask(){
+ var ready = picked && edge;
+ document.getElementById("finishBtn").disabled = !ready || done;
+ if (done) return;
+ document.getElementById("taskStatus").textContent = ready
+ ? "选好了。点「记下这次观察」就会记进足迹。"
+ : "尚未完成：先选一张叶子图鉴，再选边缘形状。";
+ }
+ document.getElementById("finishBtn").addEventListener("click", function(){
+ if (!picked || !edge || done) return;
+ done = true;
+ var name = "";
+ LEAVES.forEach(function(leaf){ if (leaf.id === picked) name = leaf.name; });
+ if (window.Progress) Progress.complete("nature/plants.html", name+"，边缘"+edge);
+ document.getElementById("taskStatus").textContent = "完成啦：你认了一片"+name+"叶子，边缘是"+edge+"。";
+ this.disabled = true;
+ });
+ grow();
+})();
+</script>
+<script>
+
+(function(){
+ "use strict";
+ var a = document.getElementById("psA");
+ var b = document.getElementById("psB");
+ if (!a || !b) return;
+ var g1 = "", g2 = "", g3 = "";
+ var g1Done = false, g2Done = false, g3Done = false;
+ function score(){ return Math.round(Number(a.value) * Number(b.value) / 16); }
+ function paint(){
+ var s = score();
+ var ok = s >= 10;
+ document.getElementById("psALab").textContent = a.value;
+ document.getElementById("psBLab").textContent = b.value;
+ a.setAttribute("aria-valuetext", a.value);
+ b.setAttribute("aria-valuetext", b.value);
+ document.getElementById("psAOut").textContent = a.value;
+ document.getElementById("psSOut").textContent = String(s);
+ document.getElementById("psOkOut").textContent = ok ? "够糖" : "偏少";
+ document.getElementById("psStateLab").textContent = ok ? "导管送到高处" : "叶太小，或光不够";
+ document.getElementById("psLabLive").textContent = ok
+ ? "真根喝水，导管送到高处，叶子用光造糖。苔藓没有这套管。"
+ : "叶子小或光不够，糖造得少。";
+ document.getElementById("psLeaf").setAttribute("rx", String(35 + Number(a.value) * 1.1));
+ document.getElementById("psLeaf").setAttribute("ry", String(16 + Number(a.value) * 0.4));
+ var vein = document.getElementById("psVein");
+ if (vein) vein.setAttribute("stroke-width", String(2 + Number(b.value) * 0.18));
+ var sun = document.getElementById("psSun");
+ if (sun) sun.setAttribute("r", String(14 + Number(b.value) * 0.8));
+ var moss = document.getElementById("psMoss");
+ if (moss) moss.setAttribute("opacity", ok ? "0.14" : "0.4");
+ var bh = 30 + s * 2.5;
+ document.getElementById("psBar").setAttribute("height", String(bh));
+ document.getElementById("psBar").setAttribute("y", String(180 - bh));
+
+ if (g1 && !g1Done && Number(a.value) === 32 && Number(b.value) === 10 && s === 20) {
+ g1Done = true;
+ document.getElementById("psGuessOut1").innerHTML = (g1 === "20" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "叶子够大、光够足，才造得出糖。";
+ document.getElementById("psGuessBlock2").hidden = false;
+ }
+ if (g2 && !g2Done && Number(a.value) <= 6 && Number(b.value) <= 4 && !ok) {
+ g2Done = true;
+ document.getElementById("psGuessOut2").innerHTML = (g2 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "叶子小、光不够，糖造得少。";
+ document.getElementById("psGuessBlock3").hidden = false;
+ }
+ if (g3 && !g3Done && Number(a.value) === 4 && Number(b.value) === 2) {
+ g3Done = true;
+ document.getElementById("psGuessOut3").innerHTML = (g3 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "叶子最小、光最暗，造不出糖。";
+ }
+}
+ a.addEventListener("input", paint); b.addEventListener("input", paint);
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ps-g1]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g1Done) return;
+ g1 = btn.getAttribute("data-ps-g1");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ps-g1]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("psGuessOut1").textContent = "押好了。拖到 32 与 10。";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ps-g2]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g2Done) return;
+ g2 = btn.getAttribute("data-ps-g2");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ps-g2]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("psGuessOut2").textContent = "押好了。拖到 6 与 4。";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ps-g3]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g3Done) return;
+ g3 = btn.getAttribute("data-ps-g3");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ps-g3]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("psGuessOut3").textContent = "押好了。叶面 4、光照 2。";
+ });
+ });
+ paint();
+})();
+
+</script>
+<script>if (window.Progress) Progress.visit("nature/plants.html", "植物观察站");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>天平称重工坊 · 哪边沉下去，就是哪边更重吗？</title>
+<meta name="description" content="先看空盘是不是停在零，再用同一套克数比两边。一边沉说明那边更重，两边克数相等横梁才回平。不把人当砝码，不比体重羞辱。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  .hero { padding: 28px 0 10px; }
+  .hero h1 { margin: .15em 0 .3em; }
+  .lead { max-width: 58ch; color: var(--ink-mid); }
+  .kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--math) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--math) 12%,var(--surface)),var(--surface) 62%);
+  }
+  .mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--math) 36%,var(--line));
+    background: color-mix(in srgb,var(--math) 12%,var(--surface)); font-size: 2.2rem;
+  }
+  .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .sc-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+  .sc-wall { fill: color-mix(in srgb,var(--video) 10%,#eef6ff); }
+  .sc-desk { fill: color-mix(in srgb,var(--kit) 18%,#efe0c8); }
+  .sc-post { fill: color-mix(in srgb,var(--ink) 22%,#b9a078); }
+  .sc-base { fill: color-mix(in srgb,var(--ink) 28%,#8a7050); }
+  .sc-fulcrum { fill: color-mix(in srgb,var(--math) 46%,#6ea8fe); }
+  .sc-beam { fill: color-mix(in srgb,var(--warn) 28%,#f3e0b0); stroke: color-mix(in srgb,var(--ink) 42%,transparent); stroke-width: 2; }
+  .sc-hook { stroke: color-mix(in srgb,var(--ink) 50%,transparent); stroke-width: 3; fill: none; }
+  .sc-pan { fill: color-mix(in srgb,var(--surface) 70%,#ece4d6); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 2.4; }
+  .sc-weight { fill: color-mix(in srgb,var(--ink) 28%,#9aa3ad); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 1.4; }
+  .sc-apple { fill: color-mix(in srgb,var(--danger) 48%,#d06060); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.4; }
+  .sc-stem { stroke: color-mix(in srgb,var(--sci) 50%,#3d6a40); stroke-width: 2; }
+  .sc-wood { fill: color-mix(in srgb,var(--kit) 48%,#c4a06a); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.4; }
+  .sc-lab { fill: var(--ink); font: 800 14px var(--mono); text-anchor: middle; }
+  .sc-note { fill: var(--ink); /* ink-mid 压粉色底板只有 4.4:1 */ font: 700 12px var(--sans, sans-serif); text-anchor: middle; }
+  .readout { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); margin-top: 10px; }
+  .readout b { display: block; font: 800 1.2rem/1.2 var(--mono); color: var(--ink); }
+  .readout span { font-size: .78rem; color: var(--ink-dim); }
+  .kid-action-strip { display: grid; gap: 10px; margin: 12px 0; }
+  .side-row { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit,minmax(min(220px,100%),1fr)); }
+  .peg-card { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); }
+  .peg-card h3 { margin: 0; font-size: 1rem; }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pick-btns .btn { white-space: nowrap; }
+  .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+  .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+  .ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--math) 16%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--math) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+  button, .btn { min-height: 44px; min-width: 44px; }
+  .stage + .kid-action-strip { margin-top: 8px; }
+  .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+  @media (max-width: 640px) {
+    .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+  /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+    @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 6px 0 8px; padding: 8px 10px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .2em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.35rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .86rem; line-height: 1.4; margin-bottom: .25em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 8px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1rem; margin-bottom: .25em; }
+    html[data-mode="kid"] .sc-art { max-height: 96px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+    html[data-mode="kid"] .readout b { font-size: .95rem; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .86rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; gap: 6px; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+  }
+
+  .guess-card { border-color: color-mix(in srgb,var(--math) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--math); background: color-mix(in srgb,var(--math) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+</style>
+</head>
+<body data-playful-page="games/scale-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-hero-scene">
+    <div>
+      <p class="row"><span class="pill pill-math">数学</span><span class="pill">5–9&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>哪边沉下去，就是哪边更重吗？</h1>
+      <p class="lead">一边的秤盘沉下去，说明那边更重；两边克数对上，横梁才会回到中间。先看空盘是不是停在零，再用同一套刻度比。本页不称人，也不拿体重开玩笑。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><svg viewBox="0 0 78 78" width="68" height="68" focusable="false" aria-hidden="true"><rect width="78" height="78" rx="10" fill="#f4efe4"/><path d="M18 44 L30 22 L42 44 Z" fill="#fffdf8" stroke="#177447" stroke-width="2"/><path d="M36 44 L48 22 L60 44 Z" fill="#fffdf8" stroke="#b34f18" stroke-width="2"/><path d="M14 48 H64" stroke="#8a6a40" stroke-width="3"/><circle cx="39" cy="20" r="3" fill="#8a6a40"/></svg></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">往两个秤盘里放东西</h2>
+    <svg class="sc-art" viewBox="0 0 640 300" role="img" aria-labelledby="scTitle scDesc">
+      <title id="scTitle">盘式天平舞台</title>
+      <desc id="scDesc">中间一根柱子撑起横梁，左右各挂一个秤盘。盘里可以放砝码、苹果和木块。更重的一边会沉下去。</desc>
+      <rect class="sc-wall" width="640" height="300"/>
+      <rect class="sc-desk" y="248" width="640" height="52"/>
+      <rect class="sc-base" x="268" y="236" width="104" height="16" rx="4"/>
+      <rect class="sc-post" x="308" y="86" width="24" height="154" rx="4"/>
+      <polygon class="sc-fulcrum" points="320,78 304,102 336,102"/>
+      <g id="scaleG" transform="rotate(0 320 92)">
+        <rect class="sc-beam" x="118" y="84" width="404" height="16" rx="6"/>
+        <line class="sc-hook" x1="156" y1="100" x2="156" y2="148"/>
+        <line class="sc-hook" x1="484" y1="100" x2="484" y2="148"/>
+        <path class="sc-pan" d="M108 148 H204 L194 176 H118 Z"/>
+        <path class="sc-pan" d="M436 148 H532 L522 176 H446 Z"/>
+        <g id="leftStack"></g>
+        <g id="rightStack"></g>
+      </g>
+      <text class="sc-lab" id="leftLab" x="156" y="206">左盘 0&nbsp;克</text>
+      <text class="sc-lab" id="rightLab" x="484" y="206">右盘 0&nbsp;克</text>
+      <text class="sc-note" id="tiltLab" x="320" y="274">两边都是空的。先放上一样东西。</text>
+    </svg>
+    <div class="readout">
+      <div><span>左盘</span><b id="leftOut">0&nbsp;克</b></div>
+      <div><span>右盘</span><b id="rightOut">0&nbsp;克</b></div>
+      <div><span>现在怎样</span><b id="stateOut">还没放东西</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">先让一边比另一边重，看秤盘沉下去；再添东西，让两边一样重。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="往秤盘里放东西">
+    <div class="side-row">
+      <article class="peg-card">
+        <h3 id="leftPanTitle">左盘</h3>
+        <div class="pick-btns" role="group" aria-labelledby="leftPanTitle">
+          <button class="btn btn-primary" type="button" id="leftWeight">放上砝码</button>
+          <button class="btn" type="button" id="leftApple">放上苹果</button>
+          <button class="btn" type="button" id="leftWood">放上木块</button>
+          <button class="btn btn-ghost" type="button" id="leftTake">拿走一件</button>
+        </div>
+      </article>
+      <article class="peg-card">
+        <h3 id="rightPanTitle">右盘</h3>
+        <div class="pick-btns" role="group" aria-labelledby="rightPanTitle">
+          <button class="btn btn-primary" type="button" id="rightWeight">放上砝码</button>
+          <button class="btn" type="button" id="rightApple">放上苹果</button>
+          <button class="btn" type="button" id="rightWood">放上木块</button>
+          <button class="btn btn-ghost" type="button" id="rightTake">拿走一件</button>
+        </div>
+      </article>
+    </div>
+    <div class="row">
+      <button class="btn btn-ghost" type="button" id="clearAll">两边都清空</button>
+    </div>
+  </div>
+
+  <section class="card guess-card" aria-labelledby="guessTitleSc">
+    <h2 id="guessTitleSc">先猜一猜，再称</h2>
+    <p><b>第 1 题：</b>左盘放苹果（150&nbsp;克），右盘放 1&nbsp;个砝码（100&nbsp;克）。哪边沉？</p>
+    <div class="pick-btns" role="group" aria-label="猜苹果对砝码">
+      <button class="btn guess-pick" type="button" data-guess1="right" aria-pressed="false">右盘沉，砝码更重</button>
+      <button class="btn guess-pick" type="button" data-guess1="left" aria-pressed="false">左盘沉，苹果更重</button>
+      <button class="btn guess-pick" type="button" data-guess1="even" aria-pressed="false">两边一样平</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。左苹果、右砝码各放一件，看读数。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>右盘再加 1 块木块（50&nbsp;克）。两边会？</p>
+      <div class="pick-btns" role="group" aria-label="猜 150 对 150">
+        <button class="btn guess-pick" type="button" data-guess2="left" aria-pressed="false">左盘仍更沉</button>
+        <button class="btn guess-pick" type="button" data-guess2="even" aria-pressed="false">两边都是 150&nbsp;克，平衡</button>
+        <button class="btn guess-pick" type="button" data-guess2="right" aria-pressed="false">右盘更沉</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后右盘再放木块，看是否平。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>左盘 1&nbsp;个苹果（150&nbsp;克）。右盘放 3 块木块（各 50&nbsp;克），会？</p>
+      <div class="pick-btns" role="group" aria-label="猜三木对苹果">
+        <button class="btn guess-pick" type="button" data-guess3="left" aria-pressed="false">左盘更沉</button>
+        <button class="btn guess-pick" type="button" data-guess3="even" aria-pressed="false">两边都是 150&nbsp;克，平衡</button>
+        <button class="btn guess-pick" type="button" data-guess3="right" aria-pressed="false">右盘更沉</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后左苹果、右三木块对照。</p>
+    </div>
+  </section>
+
+          <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">一边沉说明那边更重，两边克数相等横梁才回平</h2>
+    <p>先往左盘或右盘多放一点，看横梁往哪边倒。再往轻的那边添砝码、苹果或木块，直到两边克数相等、横梁回到中间。也可以找出两种不同的平衡摆法。</p>
+    <p>先看空盘是不是停在零。没对准，后面读数会整体偏掉。比的是质量（有多重），不是谁看起来更大、颜色更深。厨房里先按「去皮」扣掉碗，和空盘归零是同一件事。</p>
+    <p>舞台上的克数是本页比较尺子，用来对照「沉」和「平」，不是体检单，也不是所有苹果都重 150&nbsp;克。砝码不入口，真天平轻放，不把人当砝码，不比体重羞辱。</p>
+  </section>
+
+  <section class="card" data-edu-compare aria-labelledby="eduCompareTitle">
+    <h2 id="eduCompareTitle">像 · 不像（纠错对照）</h2>
+    <p>沉下去比的是哪边更重（质量），不是谁看起来更大、颜色更深。</p>
+    <div class="kid-figure-grid" role="group" aria-label="结构纠错对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef6ff" width="120" height="90"/><rect x="54" y="70" width="12" height="12" fill="#6b5344"/><polygon points="60,18 52,70 68,70" fill="#8a6a40"/><rect x="14" y="34" width="92" height="6" rx="2" fill="#c4a06a" transform="rotate(10 60 37)" stroke="#3a2a18"/><path d="M10 52 H42 L38 68 H14 Z" fill="#ece4d6" stroke="#5a3a20"/><path d="M80 40 H112 L108 56 H84 Z" fill="#ece4d6" stroke="#5a3a20"/><circle cx="26" cy="56" r="7" fill="#d06060"/><rect x="90" y="42" width="12" height="8" fill="#9aa3ad"/><text x="60" y="14" text-anchor="middle" font-size="8" font-weight="800" fill="#177447">重→沉</text></svg></span><span class="kid-figure-cap">像 · 更重才沉</span><span class="kid-figure-sub">要对的</span><p class="kid-figure-fact">沉下去比的是哪边更重（质量），不是谁看起来更大、颜色更深。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#fff4f0" width="120" height="90"/><circle cx="40" cy="48" r="22" fill="#fca5a5" stroke="#b91c1c"/><circle cx="82" cy="52" r="10" fill="#9aa3ad" stroke="#334155"/><path d="M30 30 L90 70 M90 30 L30 70" stroke="#b91c1c" stroke-width="4"/><text x="60" y="16" text-anchor="middle" font-size="8" font-weight="800" fill="#b91c1c">看起来大≠更重</text></svg></span><span class="kid-figure-cap">不像 · 看谁更大</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">这是常见误会。先划掉，再回台上试正确的那一边。</p></div>
+    </div>
+  </section>
+
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">天平图鉴</h2>
+    <p>点一张，对照上面的两个秤盘：谁沉下去，怎样才平。</p>
+    <div class="kid-figure-grid" role="group" aria-label="天平图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-sc-atlas="lpan" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="54" y="70" width="12" height="12" fill="#6b5344"/><polygon points="60,16 52,70 68,70" fill="#8a6a40" stroke="#3a2a18"/><rect x="16" y="28" width="88" height="6" rx="2" fill="#c4a06a" stroke="#3a2a18"/><line x1="28" y1="34" x2="28" y2="46" stroke="#5a3a20" stroke-width="2"/><line x1="92" y1="34" x2="92" y2="46" stroke="#5a3a20" stroke-width="2"/><path d="M12 46 H44 L40 62 H16 Z" fill="#ece4d6" stroke="#5a3a20"/><path d="M76 46 H108 L104 62 H80 Z" fill="#ece4d6" stroke="#5a3a20"/><circle cx="28" cy="52" r="7" fill="#d06060" stroke="#5a3a20"/><path d="M28 46 L30 40" stroke="#3d6a40" stroke-width="1.6"/><circle cx="60" cy="22" r="4" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">左盘</span><span class="kid-figure-fact">挂在同一把秤的横梁左边，用来放要称的东西，先认准零点再比，换秤就比不了。</span></button>
+      <button class="kid-figure" type="button" data-sc-atlas="rpan" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="54" y="70" width="12" height="12" fill="#6b5344"/><polygon points="60,16 52,70 68,70" fill="#8a6a40" stroke="#3a2a18"/><rect x="16" y="28" width="88" height="6" rx="2" fill="#c4a06a" stroke="#3a2a18"/><line x1="28" y1="34" x2="28" y2="46" stroke="#5a3a20" stroke-width="2"/><line x1="92" y1="34" x2="92" y2="46" stroke="#5a3a20" stroke-width="2"/><path d="M12 46 H44 L40 62 H16 Z" fill="#ece4d6" stroke="#5a3a20"/><path d="M76 46 H108 L104 62 H80 Z" fill="#ece4d6" stroke="#5a3a20"/><rect x="84" y="48" width="16" height="12" rx="2" fill="#9aa3ad" stroke="#3a2a18"/><text x="92" y="58" text-anchor="middle" font-size="7" font-weight="800" fill="#1c1c1c">100</text><circle cx="60" cy="22" r="4" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">右盘</span><span class="kid-figure-fact">挂在同一把秤的横梁右边，和左盘比谁更重，零点对不上就比不了，必须同一把秤。</span></button>
+      <button class="kid-figure" type="button" data-sc-atlas="weight" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="42" y="28" width="36" height="36" rx="6" fill="#9aa3ad" stroke="#3a2a18"/><text x="60" y="52" text-anchor="middle" font-size="11" font-weight="800" fill="#1c1c1c">100</text></svg></span><span class="kid-figure-cap">砝码</span><span class="kid-figure-fact">本页按 100&nbsp;克当尺子，要和左盘用同一把秤、同一零点才比得了，换秤先归零。</span></button>
+      <button class="kid-figure" type="button" data-sc-atlas="apple" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="50" r="18" fill="#d06060" stroke="#5a3a20"/><path d="M60 32 L64 22" stroke="#3d6a40" stroke-width="3"/></svg></span><span class="kid-figure-cap">苹果</span><span class="kid-figure-fact">本页按 150&nbsp;克来比，不是所有苹果都这么重，换秤要先认同一零点，也要用同一把秤。</span></button>
+      <button class="kid-figure" type="button" data-sc-atlas="wood" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="54" y="70" width="12" height="12" fill="#6b5344"/><polygon points="60,16 52,70 68,70" fill="#8a6a40" stroke="#3a2a18"/><rect x="16" y="28" width="88" height="6" rx="2" fill="#c4a06a" stroke="#3a2a18"/><path d="M12 46 H44 L40 62 H16 Z" fill="#ece4d6" stroke="#5a3a20"/><polygon points="22,36 46,30 58,40 34,48" fill="#d97706"/><polygon points="22,36 34,48 34,60 22,48" fill="#b45309" stroke="#5a3210"/><circle cx="60" cy="22" r="4" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">木块</span><span class="kid-figure-fact">比较轻，本页按 50&nbsp;克来比，三块顶一个苹果，仍要同一把秤才比，零点也要对上。</span></button>
+      <button class="kid-figure" type="button" data-sc-atlas="even" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="54" y="70" width="12" height="12" fill="#6b5344"/><polygon points="60,18 52,70 68,70" fill="#8a6a40" stroke="#3a2a18"/><rect x="14" y="30" width="92" height="6" rx="2" fill="#c4a06a" stroke="#3a2a18"/><line x1="28" y1="36" x2="28" y2="48" stroke="#5a3a20" stroke-width="2"/><line x1="92" y1="36" x2="92" y2="48" stroke="#5a3a20" stroke-width="2"/><path d="M12 48 H44 L40 64 H16 Z" fill="#ece4d6" stroke="#5a3a20"/><path d="M76 48 H108 L104 64 H80 Z" fill="#ece4d6" stroke="#5a3a20"/><rect x="20" y="50" width="16" height="10" rx="1" fill="#9aa3ad"/><rect x="84" y="50" width="16" height="10" rx="1" fill="#9aa3ad"/><polygon points="60,16 54,28 66,28" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">平衡</span><span class="kid-figure-fact">两边克数相等，横梁才平平停在中间，先确认空盘停在同一零点，换一把秤就重来。</span></button>
+      <button class="kid-figure" type="button" data-sc-atlas="ldown" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="18" y="48" width="84" height="8" rx="3" fill="#f3e0b0" transform="rotate(12 60 52)" stroke="#5a3a20"/><circle cx="28" cy="62" r="8" fill="#9aa3ad"/></svg></span><span class="kid-figure-cap">左沉</span><span class="kid-figure-fact">左盘克数更大，左边盘子才沉下去，比的是克数，不是谁看起来更大，先对同一零点。</span></button>
+      <button class="kid-figure" type="button" data-sc-atlas="rdown" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="18" y="48" width="84" height="8" rx="3" fill="#f3e0b0" transform="rotate(-12 60 52)" stroke="#5a3a20"/><circle cx="92" cy="62" r="8" fill="#9aa3ad"/></svg></span><span class="kid-figure-cap">右沉</span><span class="kid-figure-fact">右盘克数更大，右边盘子才沉下去，同一把秤、同一零点才比得了，换秤不能直接比。</span></button><button class="kid-figure" type="button" data-sc-atlas="twoapple" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><ellipse cx="36" cy="40" rx="12" ry="10" fill="#d05050"/><ellipse cx="56" cy="40" rx="12" ry="10" fill="#d05050"/><rect x="20" y="48" width="80" height="8" rx="3" fill="#f3e0b0" stroke="#5a3a20"/></svg></span><span class="kid-figure-cap">两个苹果</span><span class="kid-figure-fact">两个苹果按 300&nbsp;克来比，比两个砝码更重，仍用同一把秤的零点，换秤要先归零。</span></button><button class="kid-figure" type="button" data-sc-atlas="empty" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="18" y="44" width="84" height="8" rx="3" fill="#f3e0b0" stroke="#5a3a20"/><ellipse cx="32" cy="58" rx="12" ry="5" fill="#e8e4dc"/><ellipse cx="88" cy="58" rx="12" ry="5" fill="#e8e4dc"/></svg></span><span class="kid-figure-cap">空盘</span><span class="kid-figure-fact">两边都不放，横梁本来就该平，这就是零点；没对准，后面都比不了，同一把秤才算。</span></button><button class="kid-figure" type="button" data-sc-atlas="gram" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="44" r="18" fill="#9aa3ad" stroke="#5a3a20"/><text x="60" y="50" text-anchor="middle" font-size="11" font-weight="800" fill="#3a2a18">g</text></svg></span><span class="kid-figure-cap">克</span><span class="kid-figure-fact">克是质量的小单位。本页用克来比，不比体积或颜色，也不换另一把秤乱比。</span></button><button class="kid-figure" type="button" data-sc-atlas="heavier" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="18" y="44" width="84" height="8" rx="3" fill="#f3e0b0" transform="rotate(10 60 48)" stroke="#5a3a20"/><ellipse cx="28" cy="58" rx="10" ry="8" fill="#d05050"/></svg></span><span class="kid-figure-cap">谁更重</span><span class="kid-figure-fact">哪边沉下去，哪边的克数更大，不是谁看起来更大，也要同一零点，还得是同一把秤。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照天平往哪边沉。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--math)"
+         data-kid-predict
+         data-kid-predict-explain="读数=相对零点的格数；格越大，同一重量占的格越少。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">⚖️</span><b>天平两边怎样才会平平的？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：天平何时平衡">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="look">看起来更大的那边一定沉</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="mass" data-kid-predict-correct>两边质量相等就平；哪边更重哪边沉——比的是质量不是体积</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="color">颜色更深的那边更重</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：先让一边沉，再让两边平</h2>
+    <p>先往一边多放一点，做出左沉或右沉；再添东西或换组合，让两边克数相等、横梁回平。也可以找出两种不同的平衡摆法。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先让一边比另一边重。</p>
+  </section>
+
+
+            <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">先让一边沉，再添到两边平</h2>
+    <p>舞台上先只改两边的克数。先往一边多放，看横梁往哪边倒；再往轻的那边添，直到两边读数相等、梁回到中间。这样比，才知道沉下去靠的是更重，不是颜色更深。</p>
+    <p>回家只带两句：「哪边更重，杆就往哪边倒」；「两边克数相等，杆才平」。不要写成「秤在说谁胖」，也不要把人放到盘上。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="54" y="70" width="12" height="12" fill="#6b5344"/><polygon points="60,20 48,70 72,70" fill="#8a6a40"/><rect x="14" y="36" width="92" height="6" rx="2" fill="#c4a06a" stroke="#3a2a18" transform="rotate(10 60 39)"/><path d="M10 52 H42 L38 68 H14 Z" fill="#ece4d6" stroke="#5a3a20"/><path d="M80 40 H112 L108 56 H84 Z" fill="#ece4d6" stroke="#5a3a20"/><circle cx="26" cy="56" r="7" fill="#d06060"/><rect x="90" y="42" width="12" height="8" fill="#9aa3ad"/><path d="M60 16 V28" stroke="#c2410c" stroke-width="2"/></svg></span><span class="kid-figure-cap">一边沉</span><span class="kid-figure-sub">更重</span><p class="kid-figure-fact">哪一边克数更大，横梁就倒向那一边，盘子跟着沉下去，先认同一零点。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="54" y="70" width="12" height="12" fill="#6b5344"/><polygon points="60,18 52,70 68,70" fill="#8a6a40" stroke="#3a2a18"/><rect x="14" y="30" width="92" height="6" rx="2" fill="#c4a06a" stroke="#3a2a18"/><line x1="28" y1="36" x2="28" y2="48" stroke="#5a3a20" stroke-width="2"/><line x1="92" y1="36" x2="92" y2="48" stroke="#5a3a20" stroke-width="2"/><path d="M12 48 H44 L40 64 H16 Z" fill="#ece4d6" stroke="#5a3a20"/><path d="M76 48 H108 L104 64 H80 Z" fill="#ece4d6" stroke="#5a3a20"/><rect x="20" y="50" width="16" height="10" rx="1" fill="#9aa3ad"/><rect x="84" y="50" width="16" height="10" rx="1" fill="#9aa3ad"/><polygon points="60,16 54,28 66,28" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">两边平</span><span class="kid-figure-sub">相等</span><p class="kid-figure-fact">左右克数对上，横梁才回到中间。看起来大的不一定更重，先对同一零点。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="54" y="70" width="12" height="12" fill="#6b5344"/><polygon points="60,18 52,70 68,70" fill="#8a6a40"/><rect x="14" y="30" width="92" height="6" fill="#c4a06a" stroke="#3a2a18"/><path d="M12 48 H44 L40 62 H16 Z" fill="#ece4d6" stroke="#5a3a20"/><path d="M76 48 H108 L104 62 H80 Z" fill="#ece4d6" stroke="#5a3a20"/><circle cx="60" cy="22" r="10" fill="#fff" stroke="#1c66c2"/><text x="60" y="26" text-anchor="middle" font-size="10" font-weight="800" fill="#1c66c2">0</text><line x1="28" y1="36" x2="28" y2="48" stroke="#5a3a20" stroke-width="2"/><line x1="92" y1="36" x2="92" y2="48" stroke="#5a3a20" stroke-width="2"/></svg></span><span class="kid-figure-cap">归零</span><span class="kid-figure-sub">空盘</span><p class="kid-figure-fact">空盘先看是不是停在零。没对准，后面读数会整体偏掉，两边就比不了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="30" width="88" height="28" rx="3" fill="#fff" stroke="#1c66c2"/><path d="M24 30 V50 M32 30 V44 M40 30 V50 M48 30 V44 M56 30 V50 M64 30 V44 M72 30 V50 M80 30 V44 M88 30 V50" stroke="#1c66c2"/><rect x="54" y="70" width="12" height="10" fill="#6b5344"/><rect x="20" y="66" width="24" height="8" fill="#ece4d6" stroke="#5a3a20"/><rect x="76" y="66" width="24" height="8" fill="#ece4d6" stroke="#5a3a20"/><path d="M16 62 H104" stroke="#c4a06a" stroke-width="3"/><circle cx="60" cy="20" r="4" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">细刻度</span><span class="kid-figure-sub">分得开</span><p class="kid-figure-fact">格子更细，差一点的重量还能看出来；先确认用的是同一套刻度，也要同一把秤。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="30" width="88" height="28" rx="3" fill="#fff" stroke="#1c66c2"/><path d="M36 30 V58 M60 30 V58 M84 30 V58" stroke="#1c66c2" stroke-width="3"/><rect x="40" y="14" width="40" height="12" fill="#c4a06a" stroke="#3a2a18"/><rect x="54" y="70" width="12" height="10" fill="#6b5344"/><rect x="20" y="66" width="24" height="8" fill="#ece4d6"/><rect x="76" y="66" width="24" height="8" fill="#ece4d6"/><path d="M16 62 H104" stroke="#c4a06a" stroke-width="3"/></svg></span><span class="kid-figure-cap">粗刻度</span><span class="kid-figure-sub">糊住</span><p class="kid-figure-fact">格子太粗，差一点点也会看成一样。换一把秤要先认它的格子，零点也要对上。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="28" r="8" fill="#e8c4a0"/><rect x="50" y="36" width="20" height="24" fill="#3d6fb8"/><path d="M44 62 H52 L48 78 H40 Z M68 62 H76 L80 78 H72 Z" fill="#3a4a58"/><circle cx="60" cy="46" r="26" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M42 28 L78 64" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">当人</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">不把人当砝码，不比体重羞辱。本页只称桌上的东西，同一把秤来比，零点先对上。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>一边多放。</b>看横梁往哪边倒，读数差多少克。</li>
+      <li data-step="2"><b>往轻的添。</b>添到两边克数相等、梁回平为止。</li>
+      <li data-step="3"><b>看空盘。</b>清空后再看，是不是先停在零。</li>
+      <li data-step="4"><b>写完成句。</b>相等才平。划掉「秤说谁胖」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>哪边更重，杆就往哪边倒。两边一样重，杆就平。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>先让空盘子对准中间，再用同一套克数比谁重。看起来更大，不一定更重。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>等臂时两边质量相等，力矩才平衡。零点偏移会让后面读数整体偏。本页克数是比较尺子，不是体检单。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能先做出一边沉，再调回两边平，并会先看零点。完成看的是对照，不是背「质量」两个字。</p>
+    <ul class="ask-list">
+      <li>左盘放苹果、右盘放一个砝码：哪一边沉？两边各是多少克？</li>
+      <li>右盘再加一块木块以后，横梁为什么能回到中间？</li>
+      <li>空盘如果不在中间，后面读出的克数还能直接信吗？</li>
+      <li>看起来更大的苹果，一定比小砝码更重吗？</li>
+    </ul>
+  </section>
+
+
+        <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">电子秤也要去皮；厨房秤不是体重计</h2>
+    <p>装食物的碗要先按「去皮」，否则碗的重量会算进食物里。和空盘先对准零，是同一件事。换一把格子更粗的秤，同一块东西占的格会变少，所以要比谁重，先确认用的是同一套刻度。</p>
+    <p>人体秤、厨房秤、实验室天平量程不同。本页克数是示意，不当体检，也不拿来比较谁更重。杠杆天平那一页会讲力臂，本页先按两边一样长来讲。</p>
+    <p>砝码不入口，真天平轻放。苹果在本页按 150&nbsp;克来比，真苹果因大小而变，不要把这个数当成所有苹果的标准。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="60" cy="50" rx="28" ry="12" fill="#d8c8b0" stroke="#5a3a20"/><ellipse cx="60" cy="44" rx="22" ry="8" fill="#ece4d6"/><rect x="48" y="16" width="24" height="16" fill="#9aa3ad" stroke="#3a2a18"/><path d="M60 32 V44" stroke="#c2410c" stroke-width="2"/><text x="60" y="28" text-anchor="middle" font-size="8" fill="#1c1c1c">−</text><rect x="20" y="70" width="80" height="8" fill="#c4a06a"/><path d="M40 50 Q60 62 80 50" fill="none" stroke="#8a6a40"/></svg></span><span class="kid-figure-cap">去皮</span><span class="kid-figure-sub">先扣碗</span><p class="kid-figure-fact">先把碗的重量扣掉，剩下的才是食物。这和空盘归零是同一条路，都要先认零点。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="30" y="58" width="60" height="16" rx="3" fill="#4a4a58"/><rect x="46" y="50" width="28" height="10" fill="#8a857c"/><circle cx="60" cy="22" r="8" fill="#e8c4a0"/><rect x="50" y="30" width="20" height="22" fill="#3d6fb8"/><path d="M16 16 L48 48 M48 16 L16 48" stroke="#c2410c" stroke-width="3"/><text x="60" y="84" text-anchor="middle" font-size="8" fill="#c2410c">另账</text><circle cx="56" cy="20" r="1.2" fill="#3a2a18"/></svg></span><span class="kid-figure-cap">体重计</span><span class="kid-figure-sub">另账</span><p class="kid-figure-fact">人体秤是另一把尺子。本页不称人，也不拿读数开玩笑，更不换秤乱比。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="54" y="70" width="12" height="12" fill="#6b5344"/><polygon points="70,18 52,70 68,70" fill="#8a6a40"/><rect x="20" y="28" width="80" height="6" fill="#c4a06a" transform="rotate(-8 60 31)"/><path d="M16 40 H40 L36 54 H20 Z" fill="#ece4d6" stroke="#5a3a20"/><path d="M84 48 H112 L108 62 H88 Z" fill="#ece4d6" stroke="#5a3a20"/><text x="60" y="84" text-anchor="middle" font-size="8" fill="#5a5348">另开</text><circle cx="70" cy="20" r="3" fill="#6ea8fe"/><rect x="22" y="42" width="10" height="8" fill="#9aa3ad"/></svg></span><span class="kid-figure-cap">不等臂</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">两边臂长不一样，要用游码或比例。本页先按等臂来比，不改刻度算法。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="44" y="30" width="32" height="28" rx="4" fill="#9aa3ad" stroke="#3a2a18"/><text x="60" y="50" text-anchor="middle" font-size="10" font-weight="800" fill="#1c1c1c">100</text><circle cx="60" cy="46" r="26" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M42 28 L78 64" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">入口</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">砝码不要放进嘴里，真天平轻轻放。台上用示意克数就够，不改刻度算法。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：一边沉 · 两边平 · 秤说谁胖</h2>
+    <p>三列用同一架天平。先只改两边克数：一边多，梁倒向重的一边；克数相等，梁回平。「秤说谁胖」整列划掉：它只比较两边的东西，不评价人。</p>
+    <p>看起来更大、颜色更深，都不能当完成句。比的是克，要先确认空盘在零、两边用同一套刻度。</p>
+    <p>换一种摆法再平一次，是加试：两种组合克数都相等，梁都会平。不要和「一边沉」叠在同一档里讲。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="54" y="70" width="12" height="12" fill="#6b5344"/><polygon points="60,18 52,70 68,70" fill="#8a6a40" stroke="#3a2a18"/><rect x="14" y="30" width="92" height="6" rx="2" fill="#c4a06a" stroke="#3a2a18"/><line x1="28" y1="36" x2="28" y2="48" stroke="#5a3a20" stroke-width="2"/><line x1="92" y1="36" x2="92" y2="48" stroke="#5a3a20" stroke-width="2"/><path d="M12 48 H44 L40 64 H16 Z" fill="#ece4d6" stroke="#5a3a20"/><path d="M76 48 H108 L104 64 H80 Z" fill="#ece4d6" stroke="#5a3a20"/><rect x="20" y="50" width="16" height="10" rx="1" fill="#9aa3ad"/><rect x="84" y="50" width="16" height="10" rx="1" fill="#9aa3ad"/><polygon points="60,16 54,28 66,28" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">两边平</span><span class="kid-figure-sub">相等</span><p class="kid-figure-fact">左右克数对上，横梁停在中间。这才叫平衡，不是谁看起来更大，同一把秤才比得了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="54" y="70" width="12" height="12" fill="#6b5344"/><polygon points="60,20 48,70 72,70" fill="#8a6a40"/><rect x="14" y="36" width="92" height="6" rx="2" fill="#c4a06a" stroke="#3a2a18" transform="rotate(10 60 39)"/><path d="M10 52 H42 L38 68 H14 Z" fill="#ece4d6" stroke="#5a3a20"/><path d="M80 40 H112 L108 56 H84 Z" fill="#ece4d6" stroke="#5a3a20"/><circle cx="26" cy="56" r="7" fill="#d06060"/><rect x="90" y="42" width="12" height="8" fill="#9aa3ad"/><path d="M60 16 V28" stroke="#c2410c" stroke-width="2"/></svg></span><span class="kid-figure-cap">一边沉</span><span class="kid-figure-sub">更重</span><p class="kid-figure-fact">哪一边更重，杆就倒向哪一边。先做出这一档，再去调平，零点要先对上。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="44" cy="40" r="10" fill="#e8c4a0"/><circle cx="76" cy="40" r="14" fill="#e8c4a0"/><circle cx="60" cy="46" r="26" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M42 28 L78 64" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">谁胖</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">秤只比较两边的东西，不评价人。把「秤说谁胖」整列划掉，也不换秤羞辱。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="24" y="12" width="72" height="66" fill="#fff" stroke="#3a2a18" stroke-width="1.6"/><rect x="24" y="12" width="72" height="10" fill="#d7eefc"/><path d="M34 34 H84 M34 46 H84 M34 58 H70" stroke="#8a857c" stroke-width="2"/><path d="M40 44 H80" stroke="#c4a06a" stroke-width="3"/><text x="60" y="62" text-anchor="middle" font-size="9" font-weight="800" fill="#1c3a66">相等才平</text></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">相等才平</span><p class="kid-figure-fact">回家只记：同一把秤先看零，两边克数相等才平。不是谁胖谁瘦，换秤不能直接比。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">沉、平两行记下两边克数</h2>
+    <p>在纸上画两行：一行写一边沉时左右各多少克，一行写调平后左右各多少克。两行并排，比背「平衡」两个字有用。</p>
+    <p>口头只要两句：「先看空盘在不在零。」「两边克数相等，杆才平。」厨房去皮如果要写，另开一行，不要和天平对照叠在同一句里。</p>
+    <p>不把人当砝码，不拿读数比较谁更重。真砝码不入口，真天平轻放。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="24" y="12" width="72" height="66" fill="#fff" stroke="#3a2a18" stroke-width="1.6"/><rect x="24" y="12" width="72" height="10" fill="#d7eefc"/><path d="M34 34 H84 M34 46 H84 M34 58 H70" stroke="#8a857c" stroke-width="2"/><text x="60" y="42" text-anchor="middle" font-size="8" fill="#1c3a66">沉 150 | 100</text><text x="60" y="56" text-anchor="middle" font-size="8" fill="#1c3a66">平 150 | 150</text></svg></span><span class="kid-figure-cap">两行</span><span class="kid-figure-sub">沉/平</span><p class="kid-figure-fact">一行写沉下去时左右克数，一行写调平后的克数。对照比抄公式清楚。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="40" cy="34" rx="26" ry="16" fill="#fff" stroke="#3a2a18"/><path d="M36 50 L28 66 L48 52" fill="#fff" stroke="#3a2a18"/><text x="40" y="38" text-anchor="middle" font-size="8" font-weight="800" fill="#1c3a66">先看零</text><rect x="70" y="20" width="36" height="8" fill="#c4a06a"/><path d="M76 28 H104 L100 48 H80 Z" fill="#ece4d6" stroke="#5a3a20"/><circle cx="60" cy="16" r="4" fill="#6ea8fe"/><rect x="8" y="78" width="104" height="8" fill="#c4a06a"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">先看零</span><p class="kid-figure-fact">回家说得出：同一把秤先看零；两边克数相等，横梁才回平，才比得了，换秤要重认零。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="60" cy="50" rx="28" ry="12" fill="#d8c8b0" stroke="#5a3a20"/><ellipse cx="60" cy="44" rx="22" ry="8" fill="#ece4d6"/><rect x="48" y="16" width="24" height="16" fill="#9aa3ad" stroke="#3a2a18"/><path d="M60 32 V44" stroke="#c2410c" stroke-width="2"/><text x="60" y="28" text-anchor="middle" font-size="8" fill="#1c1c1c">−</text><rect x="20" y="70" width="80" height="8" fill="#c4a06a"/><path d="M40 50 Q60 62 80 50" fill="none" stroke="#8a6a40"/></svg></span><span class="kid-figure-cap">去皮</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">先扣掉碗的重量，剩下的才是食物。另记一行，不要和天平混写，那也是先认零点。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="28" r="8" fill="#e8c4a0"/><rect x="50" y="36" width="20" height="24" fill="#3d6fb8"/><path d="M44 62 H52 L48 78 H40 Z M68 62 H76 L80 78 H72 Z" fill="#3a4a58"/><circle cx="60" cy="46" r="26" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M42 28 L78 64" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">当人</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">本页不当体检，不把人放上秤盘，也不拿体重开玩笑，更不换秤比人，同一把秤才比物。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「沉下去靠不靠更重」，就只改两边克数这一项。同一架天平、同一套刻度，先做出一边沉，再添到两边平。空盘归零是比较之前的准备，不要和「往盘里放东西」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>左右盘里的东西（从而改克数）。</li>
+      <li><b>先保持不变：</b>同一架等臂天平、同一套克、空盘已经在零。</li>
+      <li><b>要观察的：</b>横梁往哪边倒，读数什么时候回到相等。</li>
+      <li><b>另开一行：</b>换一种组合再平一次，两种摆法是不是都能平。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>厨房秤上先放一只碗，再按「去皮」，再往碗里加面粉。扣掉的是什么？这和空盘归零像在哪？</li>
+      <li>同一袋米，拿到格子很粗的秤上，读数的「格」变少了。米变轻了吗，还是尺子换了？</li>
+      <li>一个大气球看起来很大，一个小铁块看起来很小。放到天平两端，你猜谁沉？比的是体积还是质量？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把「力矩」提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>哪边更重，杆就往哪边倒。两边一样重，杆就平。能指着沉下去的那一边就够了，不必说质量。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>先让空盘对准中间，再用同一套克数比。看起来更大不一定更重。厨房去皮和归零是同一件事。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>等臂时质量相等则力矩平衡。零点偏移引入系统误差。本页克数是比较尺子，不是体检单。不等臂、游码放到杠杆天平那一页。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：称重观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：两个砝码抵得过一个苹果加一块木头"></div>
+      <div><label for="workContent">哪一边更重</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下左盘和右盘各放了什么、各是多少克，以及怎样才让横梁平下来。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+            <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>左盘苹果、右盘一个砝码：孩子指的是「左边更重」，还是在说「秤觉得苹果比较胖」？让他再报一次两边的克数。</li>
+      <li>空盘归零，哪一句四岁听得懂？试「两边都不放，杆要先停在中间」。</li>
+      <li>如果他先放碗再倒面粉、没按去皮——读数多出来的是面粉，还是碗？为什么这句不能当「食物有多重」？</li>
+      <li>两个苹果看起来更大，一个砝码看起来更小：哪一边会沉？比的是体积还是克数？</li>
+      <li>把弟弟抱上秤盘、拿体重开玩笑：红线怎么说？本页克数能当体检单吗？</li>
+      <li>换一把格子更粗的秤，同一袋米占的格变少了：米变轻了，还是尺子换了？</li>
+    </ul>
+  </section>
+
+            <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：横梁倒向更重的一边；两边克数相等，梁才平。比的是质量，不是体积，也不是颜色。空盘停在中间，才是这把尺子的零点。</p>
+    <p>等臂时，两边质量相等，力矩才平衡。本页写成「左克数=右克数」，只是比较尺子，不是自然定律，也不是体检公式。零点没对准，后面读数会整体偏；格子太粗，差一点也会看成一样。</p>
+    <p>厨房去皮是同一条归零。杠杆天平那一页会讲力臂不一样的情况，本页先按两边一样长。体积工坊比的是占多少空间，不要和有多重混成一句。</p>
+    <p>不把人当砝码，不比体重羞辱。砝码不入口，真天平轻放。苹果 150&nbsp;克、木块 50&nbsp;克、砝码 100&nbsp;克都是本页示意，不是所有真苹果的标准。</p>
+  </section>
+
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--math) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--math) 8%,var(--surface))" data-audience="parent">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">天平公式卡 · 平衡⇔左质量=右质量（本页比较尺子，不是自然定律）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">比的是克，不是体积或颜色。先认零点，再用同一套刻度。换盘不换物，平衡不变。本页不是体检单，也不称人。真苹果重量因大小而变，150&nbsp;克只是示意。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：哪边更重，杆就往哪边倒；两边克数相等，杆才平。测量工坊练同一把尺子怎么读；杠杆天平看力臂不一样会怎样；体积工坊比的是占多少空间，不要和有多重混在一起。</p>
+    <p class="row"><a class="btn btn-ghost" href="measure-lab.html">测量工坊</a><a class="btn btn-ghost" href="balance-lab.html">杠杆天平</a><a class="btn btn-ghost" href="volume-lab.html">体积工坊</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页是等臂盘秤的示意模型，质量取整以便心算。真苹果的重量因大小而变，不要把 150&nbsp;克当成所有苹果的标准。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var MASS = { weight:100, apple:150, wood:50 };
+  var NAME = { weight:"砝码", apple:"苹果", wood:"木块" };
+  var MAX = 8;
+  var left = [];
+  var right = [];
+  var seen = { unbalanced:false, balanced:false, combos:{}, done:false };
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  var seenGuess = { appleWeight:false, appleBal:false, threeWood:false };
+  var NS = "http://www.w3.org/2000/svg";
+
+  function grams(n){ return n + "\u00a0克"; }
+  function total(arr){
+    var s = 0, i;
+    for (i = 0; i < arr.length; i += 1) s += MASS[arr[i]];
+    return s;
+  }
+  function countKey(arr){
+    var c = { weight:0, apple:0, wood:0 }, i;
+    for (i = 0; i < arr.length; i += 1) c[arr[i]] += 1;
+    return c.weight + "w" + c.apple + "a" + c.wood + "d";
+  }
+  function comboKey(){
+    var a = countKey(left), b = countKey(right);
+    return a < b ? a + "|" + b : b + "|" + a;
+  }
+  function comboCount(){
+    var n = 0, k;
+    for (k in seen.combos) if (Object.prototype.hasOwnProperty.call(seen.combos, k)) n += 1;
+    return n;
+  }
+  function drawStack(id, items, baseX){
+    var g = document.getElementById(id);
+    while (g.firstChild) g.removeChild(g.firstChild);
+    var i, kind, y;
+    for (i = 0; i < items.length; i += 1) {
+      kind = items[i];
+      y = 140 - i * 15;
+      if (kind === "weight") {
+        var w = document.createElementNS(NS, "rect");
+        w.setAttribute("class", "sc-weight");
+        w.setAttribute("x", String(baseX - 14));
+        w.setAttribute("y", String(y - 16));
+        w.setAttribute("width", "28");
+        w.setAttribute("height", "16");
+        w.setAttribute("rx", "4");
+        g.appendChild(w);
+      } else if (kind === "apple") {
+        var a = document.createElementNS(NS, "circle");
+        a.setAttribute("class", "sc-apple");
+        a.setAttribute("cx", String(baseX));
+        a.setAttribute("cy", String(y - 9));
+        a.setAttribute("r", "9");
+        g.appendChild(a);
+        var stem = document.createElementNS(NS, "path");
+        stem.setAttribute("class", "sc-stem");
+        stem.setAttribute("d", "M"+baseX+" "+(y-17)+" L"+(baseX+3)+" "+(y-22));
+        g.appendChild(stem);
+      } else {
+        var wood = document.createElementNS(NS, "rect");
+        wood.setAttribute("class", "sc-wood");
+        wood.setAttribute("x", String(baseX - 16));
+        wood.setAttribute("y", String(y - 12));
+        wood.setAttribute("width", "32");
+        wood.setAttribute("height", "12");
+        wood.setAttribute("rx", "2");
+        g.appendChild(wood);
+      }
+    }
+  }
+  function addItem(arr, kind){
+    if (arr.length >= MAX) {
+      document.getElementById("live").textContent = "这一盘已经放满了，先拿走一件再试。";
+      return false;
+    }
+    arr.push(kind);
+    return true;
+  }
+  function takeItem(arr){
+    if (!arr.length) {
+      document.getElementById("live").textContent = "这一盘是空的。";
+      return false;
+    }
+    arr.pop();
+    return true;
+  }
+  function render(){
+    var L = total(left), R = total(right);
+    var tilt = 0;
+    var state = "还没放东西";
+    if (L === 0 && R === 0) tilt = 0;
+    else if (L === R) { tilt = 0; state = "平衡"; }
+    else if (L > R) { tilt = Math.min(14, 7 + (L - R) / 40); state = "左沉"; }
+    else { tilt = -Math.min(14, 7 + (R - L) / 40); state = "右沉"; }
+    document.getElementById("scaleG").setAttribute("transform", "rotate("+tilt.toFixed(1)+" 320 92)");
+    drawStack("leftStack", left, 156);
+    drawStack("rightStack", right, 484);
+    document.getElementById("leftLab").textContent = "左盘 " + grams(L);
+    document.getElementById("rightLab").textContent = "右盘 " + grams(R);
+    document.getElementById("leftOut").textContent = grams(L);
+    if (L === 150 && R === 100) seenGuess.appleWeight = true;
+    if (L === 150 && R === 150) seenGuess.appleBal = true;
+    if (L === 150 && R === 150 && right.filter(function(x){return x==="wood";}).length === 3) seenGuess.threeWood = true;
+    if (guess1 && !guess1Done && seenGuess.appleWeight) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "left" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "苹果 150&nbsp;克 > 砝码 100&nbsp;克，左盘沉。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && seenGuess.appleBal) {
+      guess2Done = true;
+      document.getElementById("guessBlock3").hidden = false;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "even" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "100+50=150。质量相等，横梁就平。";
+    }
+    if (guess3 && !guess3Done && seenGuess.threeWood) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "even" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "3×50=150\u00a0克，和一只苹果一样重，天平平衡。";
+    }
+    document.getElementById("rightOut").textContent = grams(R);
+    document.getElementById("stateOut").textContent = state;
+    var tiltLab = document.getElementById("tiltLab");
+    var live = document.getElementById("live");
+    if (L === 0 && R === 0) {
+      tiltLab.textContent = "两边都是空的。先放上一样东西。";
+      live.textContent = "先让一边比另一边重，看秤盘沉下去；再添东西，让两边一样重。";
+    } else if (L === R) {
+      tiltLab.textContent = "两边都是 " + grams(L) + "，横梁平了。";
+      live.textContent = "平衡了：左盘 " + grams(L) + "，右盘 " + grams(R) + "。可以换一种摆法再平一次。";
+    } else if (L > R) {
+      tiltLab.textContent = "左盘更重，左边沉下去。";
+      live.textContent = "左沉：左盘 " + grams(L) + "，右盘 " + grams(R) + "。再往轻的那边加点，看它会不会平。";
+    } else {
+      tiltLab.textContent = "右盘更重，右边沉下去。";
+      live.textContent = "右沉：左盘 " + grams(L) + "，右盘 " + grams(R) + "。再往轻的那边加点，看它会不会平。";
+    }
+    if (L !== R && (L > 0 || R > 0)) seen.unbalanced = true;
+    if (L === R && L > 0) {
+      seen.balanced = true;
+      seen.combos[comboKey()] = true;
+    }
+    var status = document.getElementById("taskStatus");
+    if (seen.done) return;
+    var twoCombos = comboCount() >= 2;
+    if ((seen.unbalanced && seen.balanced) || twoCombos) {
+      seen.done = true;
+      var evidence = twoCombos && !(seen.unbalanced && seen.balanced)
+        ? "找到两种不同的平衡摆法"
+        : "先做过不平衡，再让两边一样重";
+      if (window.Progress) Progress.complete("games/scale-lab.html", evidence);
+      status.textContent = "完成啦：" + evidence + "。";
+    } else if (!seen.unbalanced && !seen.balanced) {
+      status.textContent = "尚未完成：先让一边比另一边重。";
+    } else if (seen.unbalanced && !seen.balanced) {
+      status.textContent = "还差：再添东西，让两边克数相等、横梁回平。";
+    } else {
+      status.textContent = "还差：先做出一次一边沉下去，或再找一种不同的平衡摆法。";
+    }
+  }
+
+  document.getElementById("leftWeight").addEventListener("click", function(){ if (addItem(left, "weight")) render(); });
+  document.getElementById("leftApple").addEventListener("click", function(){ if (addItem(left, "apple")) render(); });
+  document.getElementById("leftWood").addEventListener("click", function(){ if (addItem(left, "wood")) render(); });
+  document.getElementById("rightWeight").addEventListener("click", function(){ if (addItem(right, "weight")) render(); });
+  document.getElementById("rightApple").addEventListener("click", function(){ if (addItem(right, "apple")) render(); });
+  document.getElementById("rightWood").addEventListener("click", function(){ if (addItem(right, "wood")) render(); });
+  document.getElementById("leftTake").addEventListener("click", function(){ if (takeItem(left)) render(); });
+  document.getElementById("rightTake").addEventListener("click", function(){ if (takeItem(right)) render(); });
+  document.getElementById("clearAll").addEventListener("click", function(){ left = []; right = []; render(); });
+
+  var ATLAS = {
+    lpan:"左盘：同一把秤的左边盘子。先看空盘零点，再往这里放要称的东西，换秤就比不了。",
+    rpan:"右盘：同一把秤的右边盘子。和左盘对克数，零点没对准就比不了，必须同一把秤。",
+    weight:"砝码：本页按 100\u00a0克当尺子，要和左盘用同一把秤、同一零点才比得了，换秤先归零。",
+    apple:"苹果：本页按 150\u00a0克来比，不是所有苹果都这么重，换秤要先认同一零点，也要用同一把秤。",
+    wood:"木块：比较轻，本页按 50\u00a0克来比，三块顶一个苹果，仍要同一把秤才比，零点也要对上。",
+    even:"平衡：两边克数相等，横梁才平平停在中间，先确认空盘停在同一零点。",
+    ldown:"左沉：左盘克数更大，左边盘子才沉下去，比的是克数，不是谁看起来更大。",
+    rdown:"右沉：右盘克数更大，右边盘子才沉下去，同一把秤、同一零点才比得了。",
+    twoapple:"两个苹果：按 300\u00a0克来比，比两个砝码更重，仍用同一把秤的零点，换秤要先归零。",
+    empty:"空盘：两边都不放，横梁本来就该平，这就是零点；没对准，后面都比不了。",
+    gram:"克：质量的小单位。本页用克来比，不比体积或颜色，也不换另一把秤乱比。",
+    heavier:"谁更重：哪边沉下去，哪边的克数更大，不是谁看起来更大，也要同一零点。"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-sc-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-sc-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-sc-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if(guess1Done)return; guess1=btn.getAttribute("data-guess1")||"";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){n.setAttribute("aria-pressed",n===btn?"true":"false");});
+      document.getElementById("guessOut1").textContent="押好了。左苹果、右砝码各放一件，看读数。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+      document.getElementById("guessOut2").textContent = '押好了。对照两边。';
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+      document.getElementById("guessOut3").textContent = '押好了。左苹果、右三木块。';
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-sc-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key=btn.getAttribute("data-sc-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-sc-atlas]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+      var say=document.getElementById("atlasSay");
+      if (say) say.textContent=(typeof ATLAS!=="undefined" && ATLAS[key]) ? ATLAS[key] : key;
+    });
+  });
+  render(true);
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/scale-lab.html", "天平称重工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

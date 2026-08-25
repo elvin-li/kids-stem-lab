@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>角度工坊 · 边越长角越大，还是口张多大才是角？</title>
+<meta name="description" content="同一把角，只改两条射线转了多少。锐角不到 90 度，直角正好 90 度，钝角比直角更开，平角摊成一条线。边拉长，读数常常不动。本页度数是比较尺子，不是制图考证。尖角不对着眼。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/games-lab.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+.kid-mission {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--math) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--math) 12%,var(--surface)),var(--surface) 62%);
+  }
+.mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--math) 36%,var(--line));
+    background: color-mix(in srgb,var(--math) 12%,var(--surface)); font-size: 2.2rem;
+  }
+.angle-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+.al-paper { fill: color-mix(in srgb,var(--math) 8%,#fffaf2); }
+.al-desk { fill: color-mix(in srgb,var(--kit) 16%,#efe0c8); }
+.al-dial { fill: color-mix(in srgb,var(--surface) 82%,#fff); stroke: color-mix(in srgb,var(--ink) 38%,transparent); stroke-width: 2; }
+.al-tick { stroke: color-mix(in srgb,var(--ink) 44%,transparent); stroke-linecap: round; }
+.al-num { fill: var(--ink); font: 700 11px var(--mono); text-anchor: middle; }
+.al-base { stroke: color-mix(in srgb,var(--ink) 28%,transparent); stroke-width: 2; stroke-dasharray: 6 6; }
+.al-wedge-acute { fill: color-mix(in srgb,var(--math) 32%,transparent); }
+.al-wedge-right { fill: color-mix(in srgb,var(--sci) 36%,transparent); }
+.al-wedge-obtuse { fill: color-mix(in srgb,var(--warn) 34%,transparent); }
+.al-wedge-straight { fill: color-mix(in srgb,var(--phys) 24%,transparent); }
+.al-wedge-zero { fill: none; }
+.al-ray-a { stroke: color-mix(in srgb,var(--kit) 74%,var(--ink)); stroke-width: 6; stroke-linecap: round; }
+.al-ray-b { stroke: color-mix(in srgb,var(--math) 74%,var(--ink)); stroke-width: 6; stroke-linecap: round; }
+.al-dot-a { fill: color-mix(in srgb,var(--kit) 74%,var(--ink)); }
+.al-dot-b { fill: color-mix(in srgb,var(--math) 74%,var(--ink)); }
+.al-vertex { fill: color-mix(in srgb,var(--ink) 72%,#3a2a18); }
+.al-deg { fill: var(--ink); font: 800 16px var(--mono); text-anchor: middle; }
+.kind-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.kind-chip {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 8px 14px;
+    border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2);
+    color: var(--ink-mid); font-weight: 800; font-size: .88rem;
+  }
+.kind-chip.is-on {
+    border-color: color-mix(in srgb,var(--math) 48%,var(--line));
+    background: color-mix(in srgb,var(--math) 14%,var(--surface));
+    color: var(--ink);
+  }
+.readout b { display: block; font: 800 1.2rem/1.2 var(--mono); color: var(--ink); }
+.side-row { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit,minmax(min(220px,100%),1fr)); }
+.peg-card { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); }
+.peg-card h3 { margin: 0; font-size: 1rem; }
+.peg-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.peg-slide { display: grid; gap: 4px; }
+.peg-slide label { font-size: .78rem; color: var(--ink-dim); font-weight: 700; }
+button, .btn { min-height: 44px; min-width: 44px; }
+input[type="range"] { width: 100%; min-height: 44px; touch-action: pan-y; }
+.ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--math) 16%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--math) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+.log { margin: 0; padding-left: 1.2em; color: var(--ink-mid); }
+.stage + .kid-action-strip { margin-top: 8px; }
+.kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+@media (max-width: 480px) {
+    html[data-mode="kid"] .kid-mission { margin: 6px 0 8px; padding: 8px 10px; }
+    html[data-mode="kid"] .kid-mission .row { margin-bottom: .2em; }
+    html[data-mode="kid"] .kid-mission h1 { font-size: 1.35rem; }
+    html[data-mode="kid"] .kid-mission .lead { font-size: .82rem; line-height: 1.4; margin-bottom: .25em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 8px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1rem; margin-bottom: .28em; }
+    html[data-mode="kid"] .angle-art { max-height: 96px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; margin-top: 3px; }
+    html[data-mode="kid"] .readout b { font-size: .88rem; }
+    html[data-mode="kid"] .readout span { font-size: .66rem; }
+    html[data-mode="kid"] .kid-visual-stage > p:not(.live-text) { font-size: .82rem; margin: .08em 0 .22em; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .84rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 4px 0; }
+    html[data-mode="kid"] .kind-row { margin-top: 2px; gap: 3px; }
+    html[data-mode="kid"] .kind-chip { min-height: 26px; padding: 2px 6px; font-size: .74rem; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+    html[data-mode="kid"] [data-playful-sticker] { display: none; }
+  }
+.guess-card { border-color: color-mix(in srgb,var(--math) 45%,var(--line)); }
+.guess-pick[aria-pressed="true"] { border-color: var(--math); background: color-mix(in srgb,var(--math) 18%,var(--surface)); color: var(--ink); }
+</style>
+</head>
+<body data-playful-page="games/angle-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-mission">
+    <div>
+      <p class="row"><span class="pill pill-math">数学</span><span class="pill">7–11&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>边越长角越大，还是口张多大才是角？</h1>
+      <p class="lead">角是两条射线中间的口张多大，不是边有多长。先认出像书角那样的直角，再认张得更大的钝角。只拉长边，读数常常不动。本页度数是比较尺子，不是制图考证。量角器尖角不对着眼。</p>
+      <p class="teach-note" data-ad-learn><b>学什么：</b>角是两条边张开的口大小，不是边有多长。锐角、直角、钝角、平角靠张开程度区分。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><svg viewBox="0 0 120 90" width="70" height="52" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><rect y="80" width="120" height="10" fill="#e2d4b8"/><path d="M6 78L6 14L72 78Z" fill="#5ec49a" stroke="#1c4a38" stroke-width="2" stroke-linejoin="round"/><path d="M16 70L16 34L50 70Z" fill="#eef3fb" stroke="#1c4a38" stroke-width="1.4" stroke-linejoin="round"/><path d="M6 26h7M6 38h7M6 50h7M6 62h7M22 78v-7M36 78v-7M50 78v-7M64 78v-7" stroke="#1c4a38" stroke-width="1.4"/><circle cx="20" cy="62" r="4.6" fill="#eef3fb" stroke="#1c4a38" stroke-width="1.4"/><path d="M78 78L78 20" stroke="#c47a22" stroke-width="6.2" stroke-linecap="round"/><path d="M78 78L114 54" stroke="#c47a22" stroke-width="6.2" stroke-linecap="round"/><circle cx="78" cy="78" r="5.2" fill="#e8c060" stroke="#5a3a20" stroke-width="1.4"/><path d="M78 58A22 22 0 0 1 98 70" fill="none" stroke="#1c66c2" stroke-width="2.4"/></svg></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">先看口有多张</h2>
+    <p>红射线和蓝射线共用一个顶点。一次只转一条，看夹角变大还是变小。</p>
+    <svg class="angle-art" id="angleArt" viewBox="0 0 640 360" role="img" aria-labelledby="angleTitle angleDesc">
+      <title id="angleTitle">量角器与两条射线</title>
+      <desc id="angleDesc">半圆量角器上，红蓝两条射线从顶点伸出，中间夹着一个角。</desc>
+      <rect class="al-paper" width="640" height="360"/>
+      <rect class="al-desk" y="308" width="640" height="52"/>
+      <path class="al-dial" d="M90 300 A230 230 0 0 1 550 300 L90 300 Z"/>
+      <line class="al-base" x1="78" y1="300" x2="562" y2="300"/>
+      <g id="tickLayer"></g>
+      <path id="wedge" class="al-wedge-acute" d=""/>
+      <line class="al-ray-a" id="rayA" x1="320" y1="300" x2="520" y2="300"/>
+      <line class="al-ray-b" id="rayB" x1="320" y1="300" x2="461" y2="159"/>
+      <circle class="al-dot-a" id="dotA" cx="520" cy="300" r="7"/>
+      <circle class="al-dot-b" id="dotB" cx="461" cy="159" r="7"/>
+      <circle class="al-vertex" cx="320" cy="300" r="8"/>
+      <text class="al-deg" id="degLabel" x="320" y="230">45&nbsp;度</text>
+    </svg>
+    <div class="kind-row" role="group" aria-label="角的种类">
+      <span class="kind-chip is-on" id="chipAcute">锐角</span>
+      <span class="kind-chip" id="chipRight">直角</span>
+      <span class="kind-chip" id="chipObtuse">钝角</span>
+      <span class="kind-chip" id="chipStraight">平角</span>
+    </div>
+    <div class="readout">
+      <div><span>红射线</span><b id="rayAOut">0&nbsp;度</b></div>
+      <div><span>蓝射线</span><b id="rayBOut">45&nbsp;度</b></div>
+      <div><span>中间夹角</span><b id="degOut">45&nbsp;度</b></div>
+      <div><span>现在是</span><b id="kindOut">锐角</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">角是两条射线中间的口张多大，不是边有多长。现在不到 90&nbsp;度，是锐角。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="转动两条射线">
+    <div class="side-row">
+      <article class="peg-card">
+        <h3>红射线</h3>
+        <div class="peg-btns">
+          <button class="btn btn-ghost" type="button" id="rayADown" aria-label="红射线减少 5&nbsp;度">−5&nbsp;度</button>
+          <button class="btn btn-primary" type="button" id="rayAUp" aria-label="红射线增加 5&nbsp;度">+5&nbsp;度</button>
+        </div>
+        <div class="peg-slide">
+          <label for="rayASlide">连续拨动：<span id="rayASlideLab">0</span>&nbsp;度</label>
+          <input class="input" id="rayASlide" type="range" min="0" max="180" step="5" value="0" aria-valuetext="0 度">
+        </div>
+        <p id="hintA">贴着量角尺的 0</p>
+      </article>
+      <article class="peg-card">
+        <h3>蓝射线</h3>
+        <div class="peg-btns">
+          <button class="btn btn-ghost" type="button" id="rayBDown" aria-label="蓝射线减少 5&nbsp;度">−5&nbsp;度</button>
+          <button class="btn btn-primary" type="button" id="rayBUp" aria-label="蓝射线增加 5&nbsp;度">+5&nbsp;度</button>
+        </div>
+        <div class="peg-slide">
+          <label for="rayBSlide">连续拨动：<span id="rayBSlideLab">45</span>&nbsp;度</label>
+          <input class="input" id="rayBSlide" type="range" min="0" max="180" step="5" value="45" aria-valuetext="45 度">
+        </div>
+        <p id="hintB">现在指着 45&nbsp;度</p>
+      </article>
+    </div>
+    <div>
+      <label for="rayLen">边有多长（度数可以不动）：<span id="rayLenLab">200</span></label>
+      <input class="input" id="rayLen" type="range" min="120" max="220" step="10" value="200" aria-valuetext="边长 200">
+    </div>
+    <div class="row">
+      <button class="btn btn-ghost" type="button" id="resetAngle">回到起始角</button>
+      <button class="btn btn-primary" type="button" id="keepShot" disabled>记下这个角</button>
+    </div>
+  </div>
+
+  <section class="card guess-card" aria-labelledby="guessTitleAg">
+    <h2 id="guessTitleAg">先猜一猜，再拨</h2>
+    <p><b>第 1 题：</b>红射线停在 0°。蓝射线从 45° 拨到 90°，中间夹角变成？</p>
+    <div class="pick-btns" role="group" aria-label="猜 90 度角">
+      <button class="btn guess-pick" type="button" data-guess1="acute" aria-pressed="false">还是锐角，不到直角</button>
+      <button class="btn guess-pick" type="button" data-guess1="right" aria-pressed="false">正好直角，约 90°</button>
+      <button class="btn guess-pick" type="button" data-guess1="obtuse" aria-pressed="false">已经钝角，大于 90°</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。先看 45°，再把蓝射线拨到 90°，对照「现在是」。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>夹角已经是 90°。蓝射线再往外开到 120°，会变成？</p>
+      <div class="pick-btns" role="group" aria-label="猜钝角">
+        <button class="btn guess-pick" type="button" data-guess2="right" aria-pressed="false">仍是直角</button>
+        <button class="btn guess-pick" type="button" data-guess2="obtuse" aria-pressed="false">钝角：比直角更开</button>
+        <button class="btn guess-pick" type="button" data-guess2="long" aria-pressed="false">边变长了所以角变大</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后把夹角拨到约 120°。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>夹角继续开到约 180°，两条射线几乎成一条直线，这是？</p>
+      <div class="pick-btns" role="group" aria-label="猜平角">
+        <button class="btn guess-pick" type="button" data-guess3="obtuse" aria-pressed="false">还是钝角</button>
+        <button class="btn guess-pick" type="button" data-guess3="straight" aria-pressed="false">平角：摊成一条直线</button>
+        <button class="btn guess-pick" type="button" data-guess3="right" aria-pressed="false">又变回直角</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后把夹角拨到约 180°。</p>
+    </div>
+  </section>
+
+          <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">先记下直角，再记下钝角；边变长，角可以不动</h2>
+    <p>先把夹角拨到正好 90&nbsp;度，点「记下这个角」。再把口张开一些，拨出钝角（比 90&nbsp;度大、比 180&nbsp;度小），再记一次。两种都记下才算完成。最好再只拉「边有多长」那根滑杆，看度数动不动。</p>
+    <p>角是两条射线中间的口张多大，不是边有多长。直角像书角、门框，正好 90&nbsp;度，先认这个锚，再决定旁边是锐还是钝。只拉长边，转的量没变，读数常常不动。摊成一条直线是平角，整圈多少度是另一课。</p>
+    <p>舞台上的度数是本页比较尺子：用来对齐「现在是哪种角」，不是制图考证，也不要求背满圆 360。量角器尖角不对着眼，更不要拿激光笔对着眼睛比划。</p>
+  </section>
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">角的图鉴</h2>
+    <p>点一张，对照上面拨出来的口：比直角小、一样，还是更大。</p>
+    <div class="kid-figure-grid" role="group" aria-label="角的图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-ag-atlas="acute" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect y="80" width="120" height="10" fill="#e2d4b8"/><path d="M6 78L6 14L72 78Z" fill="#5ec49a" stroke="#1c4a38" stroke-width="2" stroke-linejoin="round"/><path d="M16 70L16 34L50 70Z" fill="#eef3fb" stroke="#1c4a38" stroke-width="1.4" stroke-linejoin="round"/><path d="M6 26h7M6 38h7M6 50h7M6 62h7M22 78v-7M36 78v-7M50 78v-7M64 78v-7" stroke="#1c4a38" stroke-width="1.4"/><circle cx="20" cy="62" r="4.6" fill="#eef3fb" stroke="#1c4a38" stroke-width="1.4"/><path d="M78 78L78 20" stroke="#c47a22" stroke-width="6.2" stroke-linecap="round"/><path d="M78 78L114 54" stroke="#c47a22" stroke-width="6.2" stroke-linecap="round"/><circle cx="78" cy="78" r="5.2" fill="#e8c060" stroke="#5a3a20" stroke-width="1.4"/><path d="M78 58A22 22 0 0 1 98 70" fill="none" stroke="#1c66c2" stroke-width="2.4"/></svg></span><span class="kid-figure-cap">锐角</span><span class="kid-figure-fact">比直角张得更窄，口还没到书角那么开；用三角板对，对不上那条直角边。</span></button>
+      <button class="kid-figure" type="button" data-ag-atlas="right" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect y="80" width="120" height="10" fill="#e2d4b8"/><path d="M14 78V22h52v56z" fill="#fff8ec" stroke="#5a3a20" stroke-width="1.8"/><path d="M14 22h52v10H14z" fill="#c43c32"/><path d="M66 36l40 12v30L66 66z" fill="#d9e6f8" stroke="#1c66c2" stroke-width="1.6"/><path d="M28 70V36h34" fill="none" stroke="#1c66c2" stroke-width="4.5" stroke-linecap="round"/><path d="M28 50h16V36" fill="none" stroke="#1c66c2" stroke-width="2"/></svg></span><span class="kid-figure-cap">直角</span><span class="kid-figure-fact">像打开的书角、门框，口正好那么大；三角板的直角边能对得上，先用三角板对书角。</span></button>
+      <button class="kid-figure" type="button" data-ag-atlas="obtuse" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect y="80" width="120" height="10" fill="#e2d4b8"/><path d="M14 78h70l28-40" fill="none" stroke="#1c66c2" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="84" cy="78" r="5" fill="#e8c060" stroke="#5a3a20"/><path d="M84 62A18 18 0 0 0 102 70" fill="none" stroke="#c2410c" stroke-width="2.4"/><path d="M28 78 V42 h28" fill="none" stroke="#8a857c" stroke-width="2" stroke-dasharray="4 3"/></svg></span><span class="kid-figure-cap">钝角</span><span class="kid-figure-fact">比直角张得更开，还没摊成一条直线；三角板的直角边对不满这一口。</span></button>
+      <button class="kid-figure" type="button" data-ag-atlas="straight" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect y="80" width="120" height="10" fill="#e2d4b8"/><path d="M10 58 H110" stroke="#1c66c2" stroke-width="5.4" stroke-linecap="round"/><circle cx="60" cy="58" r="5.2" fill="#e8c060" stroke="#5a3a20"/><path d="M60 58 A22 22 0 0 1 82 58" fill="none" stroke="#c2410c" stroke-width="2.4"/><path d="M60 58 V28" stroke="#8a857c" stroke-width="2" stroke-dasharray="4 3"/></svg></span><span class="kid-figure-cap">平角</span><span class="kid-figure-fact">两条射线摊成一条直线，口开到最大这一档，再不是直角能对的那种。</span></button>
+      <button class="kid-figure" type="button" data-ag-atlas="vertex" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="40" cy="60" r="6" fill="#c81769"/><path d="M40 60 L40 20 M40 60 L88 60" fill="none" stroke="#1c66c2" stroke-width="4"/></svg></span><span class="kid-figure-cap">顶点</span><span class="kid-figure-fact">两条边从同一个点伸出，那个共用点才叫顶点，边画长也不会换点，口从这里张开。</span></button>
+      <button class="kid-figure" type="button" data-ag-atlas="long" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><path d="M20 70 L20 16 L96 70" fill="none" stroke="#1c66c2" stroke-width="4"/></svg></span><span class="kid-figure-cap">边再长</span><span class="kid-figure-fact">边再画长，口也可以不变；角看张开多少，不看线段有多长，三角板对上的仍是同一口。</span></button>
+      <button class="kid-figure" type="button" data-ag-atlas="book" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><path d="M22 74 V22 h40 v52z" fill="#fff8ec" stroke="#5a3a20" stroke-width="1.8"/><path d="M22 22h40v10H22z" fill="#c43c32"/><path d="M62 32l40 10v32L62 64z" fill="#d9e6f8" stroke="#1c66c2" stroke-width="1.6"/><path d="M34 66V36h28" fill="none" stroke="#1c66c2" stroke-width="4" stroke-linecap="round"/><path d="M34 50h14V36" fill="none" stroke="#1c66c2" stroke-width="2"/></svg></span><span class="kid-figure-cap">书角</span><span class="kid-figure-fact">打开的书常常就是一个直角，三角板能对上书角那条折线，先认这个锚。</span></button>
+      <button class="kid-figure" type="button" data-ag-atlas="turn" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><path d="M28 60 A28 28 0 0 1 84 32" fill="none" stroke="#c81769" stroke-width="4"/><path d="M28 60 H84" fill="none" stroke="#1c66c2" stroke-width="3"/></svg></span><span class="kid-figure-cap">转过的口</span><span class="kid-figure-fact">角看的是两边转开的口，不是线段长短；边上多画一截，口可以不动，三角板对的是口。</span></button>
+      <button class="kid-figure" type="button" data-ag-atlas="zero" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><path d="M28 70 L28 18" fill="none" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><circle cx="28" cy="70" r="5" fill="#c81769"/></svg></span><span class="kid-figure-cap">零角</span><span class="kid-figure-fact">两条射线重合在一起，口还没张开，这是零角，不是把边画短了，边短了也不是零角。</span></button>
+      <button class="kid-figure" type="button" data-ag-atlas="forty" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><path d="M24 70 L24 22 L62 70" fill="none" stroke="#1c66c2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 70 V28 H70" fill="none" stroke="#8a857c" stroke-width="2" stroke-dasharray="4 3"/></svg></span><span class="kid-figure-cap">一半直角</span><span class="kid-figure-fact">大约一半直角那么开，仍比书角窄，用三角板对不上那条直角边，口比书角窄一截。</span></button>
+      <button class="kid-figure" type="button" data-ag-atlas="door" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><path d="M36 74 V20 H78 V74 Z" fill="#fff" stroke="#1c66c2" stroke-width="3"/><path d="M78 20 L104 28 V66 L78 74" fill="#d9e6f8" stroke="#1c66c2" stroke-width="3"/></svg></span><span class="kid-figure-cap">门缝</span><span class="kid-figure-fact">门开一条缝，口比直角窄；开过半，口比直角更开，常常成了钝角，对的是门缝那一口。</span></button>
+      <button class="kid-figure" type="button" data-ag-atlas="square" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="28" y="22" width="64" height="48" fill="#fff" stroke="#1c66c2" stroke-width="3"/><path d="M28 54 H44 V38" fill="none" stroke="#c81769" stroke-width="2"/></svg></span><span class="kid-figure-cap">方桌角</span><span class="kid-figure-fact">方桌角、墙角常常就是直角；用三角板对桌角，对上的是口不是边长，先对桌角再看边。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照上面拨出来的角。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--math)"
+         data-kid-predict
+         data-kid-predict-explain="周角 360°；直角 90°；平角 180°。同一角用不同「开口故事」仍是同一转量。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">📐</span><b>直角和钝角，怎么一眼区分？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：直角和钝角">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="color">涂成红色的都是直角</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="square" data-kid-predict-correct>直角像书角约&nbsp;90°；钝角比直角更「开」、大于&nbsp;90°</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="long">边越长角度越大</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：记下直角和钝角</h2>
+    <p>先拨出 90&nbsp;度的直角，点「记下这个角」。再换一个开口，拨出钝角（比 90&nbsp;度大、比 180&nbsp;度小），再记一次。两种都记下才算完成。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <ol class="log" id="angleLog"></ol>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：还差直角和钝角各 1 张快照。</p>
+  </section>
+
+
+          <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">先记下直角，再记下钝角；只拉长边看读数动不动</h2>
+    <p>舞台上只改一件事：口张多大。同一把角、同一条红射线先贴着零。先拨出直角记下，再拨出钝角记下。也可以只拉「边有多长」那根滑杆，看度数动不动。这样比，才知道角看的是转了多少，不是边有多长。</p>
+    <p>回家只带两句：「直角像书角」；「边再长，口也可以不变」。不要写成「边越长角越大」。完成要交两张快照，不是背满圆有多少格。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">先认书角</text><path d="M28 70 H80 V28" fill="none" stroke="#1e2d4a" stroke-width="4"/><path d="M44 70 V54 H60" fill="none" stroke="#c2410c" stroke-width="3"/></svg></span><span class="kid-figure-cap">直角</span><span class="kid-figure-sub">像书角</span><p class="kid-figure-fact">先认出像书角那样的直角当锚，再用三角板对一下，再看旁边更窄还是更开。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">比直角张得开</text><path d="M24 70 L80 70 L96 36" fill="none" stroke="#1e2d4a" stroke-width="4"/><path d="M40 70 A20 20 0 0 0 56 58" fill="none" stroke="#c2410c" stroke-width="3"/></svg></span><span class="kid-figure-cap">钝角</span><span class="kid-figure-sub">比直角张</span><p class="kid-figure-fact">钝角这一档口比书角更开，两边还没摊平；把三角板直角边贴上去，会空出一块。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">边长不改张口</text><path d="M20 70 H100" stroke="#1e2d4a" stroke-width="3"/><path d="M20 70 L52 28" stroke="#1e2d4a" stroke-width="3"/><path d="M20 70 L88 20" stroke="#6b7280" stroke-width="2" stroke-dasharray="4 3"/></svg></span><span class="kid-figure-cap">拉长边</span><span class="kid-figure-sub">角可不动</span><p class="kid-figure-fact">只把边画长，转的量没变，读数常常不动；角看张开，不看线段长短，三角板对上仍是同一口。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">边长不是张口</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">边长决定角</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">边有多长和口张多大是两件事，不能拿边长去当角度，线段再长口也可以不变。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">尖角不对着眼</text><path d="M60 24 L96 76 H24 Z" fill="#e8b84a" stroke="#c2410c"/><rect x="57" y="40" width="6" height="20" fill="#1e2d4a"/><circle cx="60" cy="68" r="3" fill="#1e2d4a"/></svg></span><span class="kid-figure-cap">尖角</span><span class="kid-figure-sub">不对眼</span><p class="kid-figure-fact">量角器尖角不要对着眼睛看，本页度数只是比较尺子，不是制图考证。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">直角一张钝一张</text><rect x="16" y="28" width="40" height="44" fill="#f4efe4" stroke="#1e2d4a"/><rect x="64" y="28" width="40" height="44" fill="#f4efe4" stroke="#1e2d4a"/><path d="M24 64 H48 V36" fill="none" stroke="#c2410c" stroke-width="2"/><path d="M72 64 L96 64 L100 40" fill="none" stroke="#c2410c" stroke-width="2"/></svg></span><span class="kid-figure-cap">两张快照</span><span class="kid-figure-sub">完成</span><p class="kid-figure-fact">完成要交直角一张快照，再交钝角一张；两种口都记下，边长不用抄，用三角板核对直角。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>拨出直角。</b>口像书角，点「记下这个角」。</li>
+      <li data-step="2"><b>拨出钝角。</b>口张得更开，再记一次。</li>
+      <li data-step="3"><b>只拉长边。</b>转的量没变，看读数动不动。</li>
+      <li data-step="4"><b>写完成句。</b>角看转了多少。划掉「边越长角越大」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>先认书角那样的直角，再认张得更大的钝角。边画长了，口不一定更大。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>角看的是转了多少。直角正好 90&nbsp;度，钝角比直角更开、还没摊成一条线。只拉长边，读数常常不动。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>角度是两条射线的定向差，与边的度量长度独立。锐、直、钝先定性再读数。平角 180&nbsp;度，整圈 360&nbsp;度是另一课。本页不是制图考证。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能交出直角和钝角各一张快照，并否定「边越长角越大」。完成看的是对照，不是背满圆。</p>
+    <ul class="ask-list">
+      <li>直角像家里的什么？</li>
+      <li>钝角比直角张，还是比平角张？</li>
+      <li>只拉长边，读数动了吗？</li>
+      <li>边越长角就越大吗？</li>
+    </ul>
+  </section>
+
+
+        <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">先认直角这个锚，再决定旁边是锐还是钝</h2>
+    <p>同一把角，先只改口张多大。直角像书角、门框、方桌角，正好 90&nbsp;度，先认出这个锚，再决定旁边是更窄的锐角，还是张得更开的钝角。摊成一条直线是平角。</p>
+    <p>两条边不够长时，孩子会去看弧而不是看转。先把边画清楚，再读数。只拉长边，转的量没变，读数常常不动——这是拆掉「边越长角越大」的关键对照。</p>
+    <p>门开一条缝常常是锐角，开过半常常是钝角。整圈多少度是另一课。本页先锚三点：比直角小、正好、比直角大。优角和立体角不练。</p>
+    <p>量角器尖角不对着眼。不要拿激光笔对着眼睛比划。本页不是制图考证，度数只是比较尺子。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">先认出直角锚</text><path d="M32 72 H84 V28" fill="none" stroke="#1e2d4a" stroke-width="4"/><circle cx="32" cy="72" r="5" fill="#c2410c"/></svg></span><span class="kid-figure-cap">直角锚</span><span class="kid-figure-sub">先认</span><p class="kid-figure-fact">直角锚先立住：三角板对上书角那种口，旁边更窄叫锐角，更开还没摊平叫钝角。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">边清再读数</text><path d="M24 70 L88 28" stroke="#1e2d4a" stroke-width="3"/><path d="M24 70 H96" stroke="#1e2d4a" stroke-width="3"/><path d="M92 22 L104 36 L86 56" fill="#e8b84a" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">边画清</span><span class="kid-figure-sub">再读</span><p class="kid-figure-fact">先把两条边从顶点画清楚，再读数，不要先盯着那条弧去猜张开多少。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">整圈另一课</text><circle cx="60" cy="52" r="22" fill="none" stroke="#1e2d4a" stroke-width="3"/><path d="M60 30 A22 22 0 1 1 38 64" fill="none" stroke="#c2410c" stroke-width="3"/></svg></span><span class="kid-figure-cap">整圈</span><span class="kid-figure-sub">另一课</span><p class="kid-figure-fact">整圈多少度是另一课，本页先分比直角小、正好、更大，用三角板对直角。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">尖角不对着眼</text><path d="M60 24 L96 76 H24 Z" fill="#e8b84a" stroke="#c2410c"/><rect x="57" y="40" width="6" height="20" fill="#1e2d4a"/><circle cx="60" cy="68" r="3" fill="#1e2d4a"/></svg></span><span class="kid-figure-cap">尖角</span><span class="kid-figure-sub">不对眼</span><p class="kid-figure-fact">尖角不对着眼：度数只用来比较本页的口，不当制图考证，也不必背满圆。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：直角快照 · 钝角快照 · 「边越长角越大」</h2>
+    <p>三列用同一把角。先记直角再记钝角。只拉长边，是另一次对照。一次改两样，分不清到底是口张大了还是边画长了。</p>
+    <p>直角：像书角，正好 90&nbsp;度。钝角：张得比直角大，还没摊成一条线。「边越长角越大」整列划掉：只拉长边，转的量没变，读数常常不动。</p>
+    <p>平角是加试：两条射线摊成一条直线。整圈是另一课。本页度数用来对齐种类，不是制图考证，也不要求背满圆。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">像书角那样</text><circle cx="60" cy="52" r="18" fill="#3d9a58"/></svg></span><span class="kid-figure-cap">直角</span><span class="kid-figure-sub">一张快照</span><p class="kid-figure-fact">直角像打开的书角、门框，口正好那么大；三角板能对上，先认这个锚，边上多长不算。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">张得比直角大</text><circle cx="60" cy="52" r="18" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">钝角</span><span class="kid-figure-sub">一张快照</span><p class="kid-figure-fact">钝角这一张：口比书角更开，可是两边还没摊成一条线，三角板对不满。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">边长不改张口</text><circle cx="60" cy="52" r="18" fill="#c2410c"/><path d="M28 28 L92 76" stroke="#1e2d4a" stroke-width="3"/></svg></span><span class="kid-figure-cap">边越长角越大</span><span class="kid-figure-sub">整列划掉</span><p class="kid-figure-fact">边再画长，口也可以不变，所以边长不能决定角；台上读数常常不动，三角板仍对同一口。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">读数常常不动</text><path d="M16 68 H104" stroke="#1e2d4a" stroke-width="3"/><path d="M16 68 L44 32" stroke="#c2410c" stroke-width="3"/><path d="M16 68 L92 24" stroke="#6b7280" stroke-width="2" stroke-dasharray="3 2"/></svg></span><span class="kid-figure-cap">拉长边</span><span class="kid-figure-sub">对照</span><p class="kid-figure-fact">夹角不变、只拉长边，读数常常不动：这就是「角不是线段长短」的对照，三角板对上也不改。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「直角和钝角」，不背满圆格数</h2>
+    <p>在纸上画一个书角，再画一个张得更大的口。旁边可以再画两条边特别长、口却一样大的射线。两张图并排，比背满圆格数有用。</p>
+    <p>口头只要两句：「直角像书角。」「边再长，口也可以不变。」有人说「边越长角越大」，让孩子指着拉长边、读数不动那一档反驳。</p>
+    <p>量角器尖角不要对着眼睛，更不要拿激光笔比划。本页不当制图考证，也不要求背满圆 360。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">先画两个口</text><path d="M16 70 H52 V36" fill="none" stroke="#1e2d4a" stroke-width="3"/><path d="M64 70 L104 70 L110 40" fill="none" stroke="#1e2d4a" stroke-width="3"/></svg></span><span class="kid-figure-cap">两个口</span><span class="kid-figure-sub">直角和钝角</span><p class="kid-figure-fact">先在纸上画一个书角，再用三角板对一下，再画一个张得更开的口并排放。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">边再长口可不变</text><ellipse cx="56" cy="48" rx="28" ry="16" fill="#f4efe4" stroke="#1e2d4a"/><path d="M44 62 L36 76 L60 64" fill="#f4efe4" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">边长不改角</span><p class="kid-figure-fact">回家说得出：边再长，张口也可以不变，角看两边转开多少，不看边有多长。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">不要写边越长角越大</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">边越长角越大</span><span class="kid-figure-sub">否决句</span><p class="kid-figure-fact">把「边越长角越大」整句划掉，指着只拉长边、读数不动那一档对照，口没变。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">尖角不对着眼</text><path d="M60 24 L96 76 H24 Z" fill="#e8b84a" stroke="#c2410c"/><rect x="57" y="40" width="6" height="20" fill="#1e2d4a"/><circle cx="60" cy="68" r="3" fill="#1e2d4a"/></svg></span><span class="kid-figure-cap">尖角</span><span class="kid-figure-sub">不对眼</span><p class="kid-figure-fact">尖角不对着眼：本页也不当制图考证，不必背满圆，直角用三角板对就够。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「角靠不靠口张多大」，就先只改转了多少。同一把角，先记下直角，再记下钝角。只拉长边，是另一次对照，不要和「换种类」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>夹角大小（直角 / 钝角）。</li>
+      <li><b>先保持不变：</b>同一把量角器、边长先不动。</li>
+      <li><b>要观察的：</b>口像书角，还是张得更开。</li>
+      <li><b>另开一行：</b>夹角不变，只拉长边，读数动不动。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>打开的书、门框、方桌角，常常是哪种角？先认这个锚，再去认钝角，为什么比较容易？</li>
+      <li>把两条边画得长长的，角会不会自己变大？舞台上那根「边有多长」滑杆怎么验证？</li>
+      <li>门开一条缝和开过半，哪种更像锐角、哪种更像钝角？摊成一条直线又是什么？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>先认书角那样的直角，再认张得更大的钝角。边画长了，口不一定更大。能交出两张快照就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>角看的是转了多少。直角 90&nbsp;度，钝角比直角更开。只拉长边，读数常常不动。本页度数只用来比较。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>角度与边长独立。平角 180&nbsp;度，整圈是另一课。不是制图考证。尖角不对眼。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：记下这个角</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：门开到一半是钝角"></div>
+      <div><label for="workContent">这个角怎么认</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下两条射线各指几度、夹角是多少，以及它为什么是直角或钝角。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>直角那张快照，孩子指的是书角，还是「九十这个词」？让他再比一次门框。</li>
+      <li>钝角比直角张，哪一句能给四岁听？试「口张得比书角更开，还没摊成一条线」。</li>
+      <li>只拉长边为什么角可以不动？他能不能不用数字，只用「转了多少」讲清楚。</li>
+      <li>尖角对眼的红线怎么说？激光笔能对着眼睛比划吗？</li>
+      <li>本页能当制图考证吗？要不要背满圆 360？</li>
+      <li>门开一条缝和开过半，哪种更像锐角？摊平了又是什么角？</li>
+    </ul>
+  </section>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：角是两条射线的定向差，与边的度量长度独立。直角是方便的参考锚，先认它再决定旁边是锐还是钝。</p>
+    <p>本页「锐角不到 90&nbsp;度、直角正好 90&nbsp;度、钝角大于 90&nbsp;度且小于 180&nbsp;度、平角 180&nbsp;度」只是比较尺子，用来对齐「现在是哪种角」，不是制图考证，也不要求背满圆。</p>
+    <p>只拉长边，转的量没变，读数常常不动。这是拆掉「边越长角越大」的关键对照。整圈、优角、立体角是另一课。</p>
+    <p>尖角不对着眼。舞台是射线示意，边长滑杆只用来证明「长度不改角度」。</p>
+  </section>
+
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--math) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--math) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">角分类说明 · 本页不是两态浅页</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">红蓝射线各用滑杆（步进 5&nbsp;度）与 ±5&nbsp;度按钮连续改角（无两态开关）；锐/直/钝/平是读数分类芯片（kind），不是「按按钮换两张图」。拨到基准角，口头对齐「现在是哪种角」即可。</p>
+    </div>
+
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--math) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--math) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">角公式卡 · 锐角&lt;90° · 直角=90° · 钝角&gt;90°且&lt;180° · 平角=180°（本页尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">滑杆与 ±5&nbsp;度按钮连续改夹角；芯片只是读数分类，不是两态换图。边拉长不改角度。拨到基准角，口头对齐「现在是哪种角」即可。不是制图考证。</p>
+    </div>
+
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：角是口张多大，不是边有多长。先认直角，再认钝角。海龟几何看转多少度画出什么形；对称工作室看翻折和对折。</p>
+    <p class="row"><a class="btn btn-ghost" href="turtle-geometry.html">海龟几何</a><a class="btn btn-ghost" href="symmetry-studio.html">对称工作室</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页只练 0&nbsp;度到 180&nbsp;度的平面角，不涉及大于平角的优角和立体角。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var CX = 320, CY = 300, RAY = 200, DIAL = 230;
+  var a = 0, b = 45;
+  var prevDeg = 45;
+  var kept = { right:null, obtuse:null };
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  var seenDeg = { d45:false, d90:false, d120:false, d180:false };
+  var NS = "http://www.w3.org/2000/svg";
+  function polar(deg, r){
+    var rad = deg * Math.PI / 180;
+    return { x: CX + Math.cos(rad) * r, y: CY - Math.sin(rad) * r };
+  }
+  function clamp(n){ return Math.max(0, Math.min(180, n)); }
+  function opening(){ return Math.abs(b - a); }
+  function kindOf(deg){
+    if (deg === 0) return "重合";
+    if (deg < 90) return "锐角";
+    if (deg === 90) return "直角";
+    if (deg < 180) return "钝角";
+    return "平角";
+  }
+  function kindKey(deg){
+    if (deg === 0) return "";
+    if (deg < 90) return "acute";
+    if (deg === 90) return "right";
+    if (deg < 180) return "obtuse";
+    return "straight";
+  }
+  function degText(n){ return n + "\u00a0度"; }
+  (function drawTicks(){
+    var layer = document.getElementById("tickLayer");
+    var i, p1, p2, t, mid;
+    for (i = 0; i <= 180; i += 5) {
+      var major = i % 10 === 0;
+      p1 = polar(i, major ? DIAL - 16 : DIAL - 9);
+      p2 = polar(i, DIAL - 2);
+      var line = document.createElementNS(NS, "line");
+      line.setAttribute("class", "al-tick");
+      line.setAttribute("x1", String(p1.x));
+      line.setAttribute("y1", String(p1.y));
+      line.setAttribute("x2", String(p2.x));
+      line.setAttribute("y2", String(p2.y));
+      line.setAttribute("stroke-width", major ? "2.2" : "1.2");
+      layer.appendChild(line);
+      if (i % 20 === 0) {
+        mid = polar(i, DIAL - 30);
+        t = document.createElementNS(NS, "text");
+        t.setAttribute("class", "al-num");
+        t.setAttribute("x", String(mid.x));
+        t.setAttribute("y", String(mid.y + 4));
+        t.textContent = String(i);
+        layer.appendChild(t);
+      }
+    }
+  })();
+  function setRay(id, deg){
+    var p = polar(deg, RAY);
+    document.getElementById(id).setAttribute("x2", String(p.x));
+    document.getElementById(id).setAttribute("y2", String(p.y));
+    var dot = document.getElementById(id === "rayA" ? "dotA" : "dotB");
+    dot.setAttribute("cx", String(p.x));
+    dot.setAttribute("cy", String(p.y));
+  }
+  function wedgePath(from, to){
+    var lo = Math.min(from, to), hi = Math.max(from, to);
+    if (hi === lo) return "";
+    var p1 = polar(lo, RAY - 8), p2 = polar(hi, RAY - 8);
+    return "M"+CX+" "+CY+" L"+p1.x.toFixed(1)+" "+p1.y.toFixed(1)+" A"+(RAY-8)+" "+(RAY-8)+" 0 0 0 "+p2.x.toFixed(1)+" "+p2.y.toFixed(1)+" Z";
+  }
+  function keepable(deg){
+    if (deg === 90) return !kept.right;
+    if (deg > 90 && deg < 180) return !kept.obtuse;
+    return false;
+  }
+  function render(fromDial, fromLen){
+    var deg = opening();
+    var key = kindKey(deg);
+    var kind = kindOf(deg);
+    if (fromDial) {
+      if (guess1) {
+        if (deg === 45 || prevDeg === 45) seenDeg.d45 = true;
+        if (deg === 90 || prevDeg === 90) seenDeg.d90 = true;
+      }
+      if (guess2 && ((deg >= 115 && deg <= 125) || (prevDeg >= 115 && prevDeg <= 125))) seenDeg.d120 = true;
+      if (guess3 && (deg >= 175 || prevDeg >= 175)) seenDeg.d180 = true;
+    }
+    prevDeg = deg;
+    if (guess1 && !guess1Done && seenDeg.d45 && seenDeg.d90) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "right" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "夹角 = |蓝 − 红|。蓝在 90°、红在 0° 时正好直角。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && seenDeg.d120) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "obtuse" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "大于 90°、小于 180° 是钝角。边画长不会改角度。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && seenDeg.d180) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "straight" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "约 180° 是平角：两条射线摊成一条直线。";
+    }
+    setRay("rayA", a);
+    setRay("rayB", b);
+    var wedge = document.getElementById("wedge");
+    wedge.setAttribute("d", wedgePath(a, b));
+    wedge.setAttribute("class", "al-wedge-" + (key || "zero"));
+    var mid = polar((a + b) / 2, key === "straight" ? 70 : 88);
+    var label = document.getElementById("degLabel");
+    label.setAttribute("x", String(mid.x));
+    label.setAttribute("y", String(mid.y));
+    label.textContent = degText(deg);
+    document.getElementById("rayAOut").textContent = degText(a);
+    document.getElementById("rayBOut").textContent = degText(b);
+    document.getElementById("degOut").textContent = degText(deg);
+    document.getElementById("kindOut").textContent = kind;
+    document.getElementById("hintA").textContent = a === 0 ? "贴着量角尺的 0" : "指着 " + degText(a);
+    document.getElementById("hintB").textContent = "指着 " + degText(b);
+    var slideA = document.getElementById("rayASlide");
+    var slideB = document.getElementById("rayBSlide");
+    if (slideA && Number(slideA.value) !== a) {
+      slideA.value = String(a);
+      slideA.setAttribute("aria-valuetext", degText(a));
+    }
+    if (slideB && Number(slideB.value) !== b) {
+      slideB.value = String(b);
+      slideB.setAttribute("aria-valuetext", degText(b));
+    }
+    var labA = document.getElementById("rayASlideLab");
+    var labB = document.getElementById("rayBSlideLab");
+    if (labA) labA.textContent = String(a);
+    if (labB) labB.textContent = String(b);
+    document.getElementById("chipAcute").className = "kind-chip" + (key === "acute" ? " is-on" : "");
+    document.getElementById("chipRight").className = "kind-chip" + (key === "right" ? " is-on" : "");
+    document.getElementById("chipObtuse").className = "kind-chip" + (key === "obtuse" ? " is-on" : "");
+    document.getElementById("chipStraight").className = "kind-chip" + (key === "straight" ? " is-on" : "");
+    document.getElementById("keepShot").disabled = !keepable(deg);
+    document.getElementById("angleDesc").textContent = "半圆量角器上，红射线在 "+degText(a)+"，蓝射线在 "+degText(b)+"，夹角 "+degText(deg)+"，是"+kind+"。边长 "+RAY+"，拉长边不会改度数。";
+    var live = document.getElementById("live");
+    var rayLenLab = document.getElementById("rayLenLab");
+    if (rayLenLab) rayLenLab.textContent = String(RAY);
+    var rayLenEl = document.getElementById("rayLen");
+    if (rayLenEl) {
+      if (Number(rayLenEl.value) !== RAY) rayLenEl.value = String(RAY);
+      rayLenEl.setAttribute("aria-valuetext", "边长 "+RAY);
+    }
+    if (fromLen) {
+      live.textContent = "边拉长或缩短，夹角还是 "+degText(deg)+"。角是口张多大，不是边有多长。";
+    } else if (deg === 90) live.textContent = "正好 90\u00a0度，这是直角。可以记下这一张。";
+    else if (deg > 90 && deg < 180) live.textContent = "夹角 "+degText(deg)+"，比直角大、比平角小，这是钝角。";
+    else if (deg === 180) live.textContent = "两条射线摊成一条直线，这是平角。任务要的是钝角，再收回一点。";
+    else if (deg === 0) live.textContent = "两条射线重合了。把其中一条转开，口才会出现。";
+    else live.textContent = "夹角 "+degText(deg)+"，比直角小，这是锐角。再张开一些就能到直角。";
+  }
+  function bump(which, delta){
+    if (which === "A") a = clamp(a + delta);
+    else b = clamp(b + delta);
+    render(true);
+  }
+  document.getElementById("rayADown").addEventListener("click", function(){ bump("A", -5); });
+  document.getElementById("rayAUp").addEventListener("click", function(){ bump("A", 5); });
+  document.getElementById("rayBDown").addEventListener("click", function(){ bump("B", -5); });
+  document.getElementById("rayBUp").addEventListener("click", function(){ bump("B", 5); });
+  document.getElementById("rayASlide").addEventListener("input", function(){
+    a = clamp(Number(this.value) || 0);
+    render(true);
+  });
+  document.getElementById("rayBSlide").addEventListener("input", function(){
+    b = clamp(Number(this.value) || 0);
+    render(true);
+  });
+  document.getElementById("rayLen").addEventListener("input", function(){
+    RAY = Math.max(120, Math.min(220, Number(this.value) || 200));
+    render(false, true);
+  });
+  document.getElementById("resetAngle").addEventListener("click", function(){
+    a = 0; b = 45; render(true);
+  });
+  document.getElementById("keepShot").addEventListener("click", function(){
+    var deg = opening();
+    var kind = kindOf(deg);
+    var live = document.getElementById("live");
+    if (kind === "直角") {
+      if (kept.right !== null) {
+        live.textContent = "直角已经记过了。再拨一个钝角。";
+        return;
+      }
+      kept.right = deg;
+    } else if (kind === "钝角") {
+      if (kept.obtuse !== null) {
+        live.textContent = "钝角已经记过了。再拨一个直角。";
+        return;
+      }
+      kept.obtuse = deg;
+    } else {
+      live.textContent = "现在不是直角也不是钝角。先拨到那两种再记。";
+      return;
+    }
+    var count = (kept.right !== null ? 1 : 0) + (kept.obtuse !== null ? 1 : 0);
+    var li = document.createElement("li");
+    li.textContent = "第 "+count+" 张："+kind+" "+degText(deg)+"。";
+    document.getElementById("angleLog").appendChild(li);
+    var status = document.getElementById("taskStatus");
+    if (kept.right !== null && kept.obtuse !== null) {
+      var evidence = "直角 "+degText(kept.right)+"，钝角 "+degText(kept.obtuse);
+      if (window.Progress) Progress.complete("games/angle-lab.html", evidence);
+      status.textContent = "完成啦：已经记下直角和钝角两张不同的快照。";
+      live.textContent = "两种角都记下了。";
+    } else if (kept.right !== null) {
+      status.textContent = "已记下直角。还差 1 张钝角快照。";
+      live.textContent = "直角记下了。把口再张开一些，超过 90\u00a0度就是钝角。";
+    } else {
+      status.textContent = "已记下钝角。还差 1 张直角快照。";
+      live.textContent = "钝角记下了。把口收到正好 90\u00a0度。";
+    }
+    render();
+  });
+  var ATLAS = {
+    acute:"锐角：比直角张得更窄，口还没到书角那么开；用三角板对，对不上那条直角边。",
+    right:"直角：像打开的书角、门框，口正好那么大；三角板的直角边能对得上，先用三角板对书角。",
+    obtuse:"钝角：比直角张得更开，还没摊成一条直线；三角板的直角边对不满这一口。",
+    straight:"平角：两条射线摊成一条直线，口开到最大这一档，再不是直角能对的那种。",
+    vertex:"顶点：两条边从同一个点伸出，那个共用点才叫顶点，边画长也不会换点，口从这里张开。",
+    long:"边再长：边再画长，口也可以不变；角看张开多少，不看线段有多长，三角板对上的仍是同一口。",
+    book:"书角：打开的书常常就是一个直角，三角板能对上书角那条折线，先认这个锚。",
+    turn:"转过的口：角看的是两边转开的口，不是线段长短；边上多画一截，口可以不动，三角板对的是口。",
+    zero:"零角：两条射线重合在一起，口还没张开，这是零角，不是把边画短了，边短了也不是零角。",
+    forty:"一半直角：大约一半直角那么开，仍比书角窄，用三角板对不上那条直角边，口比书角窄一截。",
+    door:"门缝：门开一条缝，口比直角窄；开过半，口比直角更开，常常成了钝角，对的是门缝那一口。",
+    square:"方桌角：方桌角、墙角常常就是直角；用三角板对桌角，对上的是口不是边长，先对桌角再看边。"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-ag-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-ag-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-ag-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。去舞台上对照读数验证。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。继续对照舞台验证。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut3").textContent = "押好了。把夹角拨到约 180°。";
+    });
+  });
+  render();
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/angle-lab.html", "角度工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

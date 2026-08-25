@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>旋转工坊 · 珠子往外走，是它想逃，还是转快了被甩开？</title>
+<meta name="description" content="同一个转盘，只改快慢和绳长。珠距随绳长与转速张开；需力≈质量×转速²÷80。数字是本页比较尺子，不是永动机。停下珠子会回来。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/games-lab.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+.kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--phys) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--phys) 12%,var(--surface)),var(--surface) 62%);
+  }
+.mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--phys) 36%,var(--line));
+    background: color-mix(in srgb,var(--phys) 12%,var(--surface)); font-size: 2.2rem;
+  }
+.sn-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+.sn-desk { fill: color-mix(in srgb,var(--kit) 10%,#f6efe3); }
+.sn-plate { fill: color-mix(in srgb,var(--warn) 18%,#e8d2a0); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 3; }
+.sn-hub { fill: color-mix(in srgb,var(--ink) 28%,#8a857c); }
+.sn-spoke { fill: none; stroke: color-mix(in srgb,var(--ink) 28%,transparent); stroke-width: 2; }
+.sn-bead-a { fill: color-mix(in srgb,var(--danger) 55%,#d06060); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.6; }
+.sn-bead-b { fill: color-mix(in srgb,var(--math) 48%,#3d6fb8); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.6; }
+.sn-bead-c { fill: color-mix(in srgb,var(--sci) 48%,#3d9a58); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.6; }
+.sn-rope { fill: none; stroke: color-mix(in srgb,var(--ink) 50%,#8a7050); stroke-width: 2.4; stroke-linecap: round; }
+.sn-bucket { fill: color-mix(in srgb,var(--ink) 14%,#cfd3d8); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 3; }
+.sn-water { fill: color-mix(in srgb,var(--video) 42%,#7eb6e8); }
+.sn-lab { fill: var(--ink); font: 700 14px var(--mono); text-anchor: middle; }
+@media (max-width: 640px) {
+    .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+.readout { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); margin-top: 10px; }
+@media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 6px 0 8px; padding: 8px 10px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .2em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.35rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .88rem; line-height: 1.4; margin-bottom: .3em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 8px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1rem; margin-bottom: .25em; }
+    html[data-mode="kid"] .sn-art { max-height: 132px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+    html[data-mode="kid"] .readout b { font-size: .95rem; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .86rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; gap: 6px; }
+    html[data-mode="kid"] .kid-action-strip label { font-size: .86rem; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+  }
+</style>
+</head>
+<body data-playful-page="games/spin-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-hero-scene">
+    <div>
+      <p class="row"><span class="pill pill-phys">物理</span><span class="pill">6–11&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>珠子往外走，是它想逃，还是转快了被甩开？</h1>
+      <p class="lead">转起来，珠子往外甩；中间空，边缘的水更难停。停下，珠子掉回中间，水面重新摊平。不是珠子想离开家，也不是转盘会永远转下去。本页只改转速和绳长；长发束起，远离脸部旋转物。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><svg viewBox="0 0 120 90" width="70" height="52" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="58" width="88" height="18" rx="3" fill="#6b5344" stroke="#3a2a18"/><rect x="28" y="50" width="64" height="10" fill="#8a6a40"/><ellipse cx="60" cy="42" rx="38" ry="16" fill="#2a2a2a" stroke="#3a2a18" stroke-width="1.6"/><ellipse cx="60" cy="42" rx="30" ry="12" fill="none" stroke="#5a5a5a"/><ellipse cx="60" cy="42" rx="22" ry="8" fill="none" stroke="#5a5a5a"/><ellipse cx="60" cy="42" rx="10" ry="4.5" fill="#c45a3a" stroke="#3a2a18"/><circle cx="60" cy="42" r="2.2" fill="#8a857c"/><path d="M96 18 L88 42" stroke="#8a857c" stroke-width="3" stroke-linecap="round"/><rect x="90" y="12" width="16" height="8" rx="2" fill="#4a4a58"/><circle cx="86" cy="42" r="3" fill="#d05050"/></svg></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">让转盘和水桶转起来</h2>
+    <svg class="sn-art" viewBox="0 0 640 260" role="img" aria-labelledby="snTitle snDesc">
+      <title id="snTitle">转盘、拴绳小球和水桶</title>
+      <desc id="snDesc">转起来时，珠子沿绳往外甩，中间空出来；水往桶壁爬，边缘更高更难停。停下后珠子掉回中间，水面摊平。</desc>
+      <rect class="sn-desk" width="640" height="260"/>
+      <g id="outArrows" opacity="0" fill="none" stroke="#9a3412" stroke-width="2.5">
+        <path d="M210 130 L318 130"/>
+        <polygon points="326,130 314,124 314,136" fill="#9a3412" stroke="none"/>
+        <path d="M210 130 L132 198"/>
+        <polygon points="126,204 140,196 128,188" fill="#9a3412" stroke="none"/>
+      </g>
+      <g id="plateG" transform="translate(210 130)">
+        <circle class="sn-plate" r="108"/>
+        <line class="sn-spoke" x1="-96" y1="0" x2="96" y2="0"/>
+        <line class="sn-spoke" x1="0" y1="-96" x2="0" y2="96"/>
+        <circle class="sn-hub" r="8"/>
+        <path class="sn-rope" id="rope" d="M0 0 L70 0"/>
+        <circle class="sn-bead-a" id="beadA" cx="70" cy="0" r="11"/>
+        <circle class="sn-bead-b" id="beadB" cx="-36" cy="62" r="10"/>
+        <circle class="sn-bead-c" id="beadC" cx="-36" cy="-62" r="10"/>
+      </g>
+      <g id="bucketG" transform="translate(500 48)">
+        <path class="sn-water" id="water" d="M18 118 H102 V158 H18 Z"/>
+        <path class="sn-bucket" d="M14 48 H106 L98 168 H22 Z" fill="none"/>
+        <path class="sn-bucket" d="M22 168 H98" />
+        <text class="sn-lab" id="edgeLab" x="60" y="40">边缘更高</text>
+      </g>
+      <text class="sn-lab" id="spinLab" x="210" y="28">中间还没空</text>
+      <text class="sn-lab" id="snCap" x="320" y="244">现在停着。珠子待在靠近中间的地方。</text>
+    </svg>
+    <div class="readout">
+      <div><span>转速</span><b id="rpmOut">0</b></div>
+      <div><span>绳长</span><b id="ropeOut">70</b></div>
+      <div><span>珠距 / 需力</span><b id="needOut">——</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">转起来往外甩。中间空，边缘更难停。先押再转一次。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="旋转主操作">
+    <div>
+      <label for="spin">转速：<span id="spinOut">0</span></label>
+      <input class="input" id="spin" type="range" min="0" max="100" value="0" aria-valuetext="0">
+    </div>
+    <div>
+      <label for="ropeLen">绳长上限：<span id="ropeLab">70</span></label>
+      <input class="input" id="ropeLen" type="range" min="30" max="100" value="70" aria-valuetext="70">
+    </div>
+    <div class="pick-btns">
+      <button class="btn" type="button" id="goSlow">慢转 25</button>
+      <button class="btn btn-primary" type="button" id="goFast">快转 80</button>
+      <button class="btn" type="button" id="goStop">停下</button>
+    </div>
+  </div>
+  <section class="card guess-card" aria-labelledby="guessTitleSn">
+    <h2 id="guessTitleSn">先猜一猜，再转</h2>
+    <p><b>第 1 题：</b>绳长 70。转速 40 珠距约 28。转速改成 80，珠距怎样？</p>
+    <div class="pick-btns" role="group" aria-label="猜珠距">
+      <button class="btn guess-pick" type="button" data-guess1="double" aria-pressed="false">大约加倍，更靠外</button>
+      <button class="btn guess-pick" type="button" data-guess1="in" aria-pressed="false">更往圆心挤</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。绳长 70，转速 40→80。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>转速 80 固定。绳长从 70 减到 35，珠距怎样？</p>
+      <div class="pick-btns" role="group" aria-label="猜绳长">
+        <button class="btn guess-pick" type="button" data-guess2="half" aria-pressed="false">大约减半（更近圆心）</button>
+        <button class="btn guess-pick" type="button" data-guess2="same" aria-pressed="false">不变</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后转速 80，绳长 70→35。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>绳长 70。转速从很快降到 0，珠距会？</p>
+      <div class="pick-btns" role="group" aria-label="猜停转珠距">
+        <button class="btn guess-pick" type="button" data-guess3="stay" aria-pressed="false">停在绳长尽头</button>
+        <button class="btn guess-pick" type="button" data-guess3="in" aria-pressed="false">缩回圆心附近</button>
+        <button class="btn guess-pick" type="button" data-guess3="zero" aria-pressed="false">珠子消失</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后绳长 70，转速拖到 0 看珠距。</p>
+    </div>
+  </section>
+          <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">同一个转盘：慢转靠中间，快转往外甩，停下会回来</h2>
+    <p>先点「慢转 25」，看珠子还靠近中间、水面还摊着。再点「快转 80」，看珠子往外走、水往桶壁爬。最好再点「停下」：往外甩的力没了，珠子掉回中间，水面重新摊平。</p>
+    <p>转起来，珠子更想沿直线冲出去，绳子把它拽住，所以它只能往外甩到绳能到的地方。中间空出来。水也一样：中间被甩薄，边缘堆高。不是珠子想离开家，也不是转盘会永远自己转下去。</p>
+    <p>舞台上的珠距随绳长和转速张开，需力按质量×转速²÷80 算，是本页比较尺子：用来比「慢」和「快」，不是洗衣机转速表，更不是永动机。长发束起，水桶不甩到人。</p>
+  </section>
+
+  <section class="card" data-edu-compare aria-labelledby="eduCompareTitle">
+    <h2 id="eduCompareTitle">像 · 不像（纠错对照）</h2>
+    <p>转起来时方向会“记住”原来的轴，不是转得越快越魔法悬浮。</p>
+    <div class="kid-figure-grid" role="group" aria-label="结构纠错对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef6ff" width="120" height="90"/><ellipse cx="60" cy="50" rx="34" ry="12" fill="none" stroke="#0f766e" stroke-width="3"/><line x1="60" y1="18" x2="60" y2="78" stroke="#f59e0b" stroke-width="3"/><circle cx="60" cy="50" r="5" fill="#0f766e"/><text x="60" y="86" text-anchor="middle" font-size="8" font-weight="800" fill="#0f766e">轴方向更稳</text></svg></span><span class="kid-figure-cap">像 · 轴更稳</span><span class="kid-figure-sub">要对的</span><p class="kid-figure-fact">转起来时方向会“记住”原来的轴，不是转得越快越魔法悬浮。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#fff4f0" width="120" height="90"/><circle cx="60" cy="46" r="24" fill="#fecaca"/><text x="60" y="50" text-anchor="middle" font-size="12" font-weight="900" fill="#b91c1c">悬浮</text><path d="M38 28 L82 64" stroke="#b91c1c" stroke-width="4"/><text x="60" y="84" text-anchor="middle" font-size="8" font-weight="800" fill="#b91c1c">不是转就飘起来</text></svg></span><span class="kid-figure-cap">不像 · 转就悬浮</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">这是常见误会。先划掉，再回台上试正确的那一边。</p></div>
+    </div>
+  </section>
+
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">旋转图鉴</h2>
+    <p>点一张，对照上面的舞台：谁在往外走，停下后又怎样。</p>
+    <div class="kid-figure-grid" role="group" aria-label="旋转图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-sn-atlas="plate" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="58" width="88" height="18" rx="3" fill="#6b5344" stroke="#3a2a18"/><rect x="28" y="50" width="64" height="10" fill="#8a6a40"/><ellipse cx="60" cy="42" rx="38" ry="16" fill="#2a2a2a" stroke="#3a2a18" stroke-width="1.6"/><ellipse cx="60" cy="42" rx="30" ry="12" fill="none" stroke="#5a5a5a"/><ellipse cx="60" cy="42" rx="22" ry="8" fill="none" stroke="#5a5a5a"/><ellipse cx="60" cy="42" rx="10" ry="4.5" fill="#c45a3a" stroke="#3a2a18"/><circle cx="60" cy="42" r="2.2" fill="#8a857c"/><path d="M96 18 L88 42" stroke="#8a857c" stroke-width="3" stroke-linecap="round"/><rect x="90" y="12" width="16" height="8" rx="2" fill="#4a4a58"/><circle cx="86" cy="42" r="3" fill="#d05050"/></svg></span><span class="kid-figure-cap">转盘</span><span class="kid-figure-fact">转盘带着上面的珠子一起转；转起来才甩开，离心只是惯性的观感，不是魔法手。</span></button>
+      <button class="kid-figure" type="button" data-sn-atlas="bucket" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M34 22 H86 L80 78 H40 Z" fill="#e8d2a0" stroke="#5a3a20" stroke-width="2"/><ellipse cx="60" cy="22" rx="26" ry="7" fill="#f4e6c4" stroke="#5a3a20"/><path d="M42 40 Q60 58 78 40 V74 H42 Z" fill="#7eb6e8"/><path d="M42 40 Q60 28 78 40" fill="none" stroke="#3d6fb8" stroke-width="1.6"/><path d="M34 18 Q60 6 86 18" fill="none" stroke="#8a857c" stroke-width="2.4"/><rect x="56" y="4" width="8" height="6" rx="1" fill="#8a857c"/><ellipse cx="48" cy="52" rx="3" ry="5" fill="#d7eefc"/><line x1="40" y1="78" x2="80" y2="78" stroke="#5a3a20" stroke-width="2"/></svg></span><span class="kid-figure-cap">水桶</span><span class="kid-figure-fact">转快了水会往桶壁爬，中间凹下去；那是惯性让它甩开，不是水想搬家。</span></button>
+      <button class="kid-figure" type="button" data-sn-atlas="horse" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="48" r="26" fill="none" stroke="#c47a12" stroke-width="3"/><path d="M48 56 q8 -18 20 -4 q6 8 -4 14 h-16 z" fill="#d07050"/></svg></span><span class="kid-figure-cap">坐旋转木马</span><span class="kid-figure-fact">坐旋转木马会被轻轻往外甩，所以要抓紧；离心是惯性观感，不要对人抡绳。</span></button>
+      <button class="kid-figure" type="button" data-sn-atlas="wash" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="28" y="16" width="64" height="60" rx="8" fill="#cfd3d8" stroke="#5a3a20" stroke-width="2"/><circle cx="60" cy="48" r="18" fill="#7eb6e8"/><circle cx="60" cy="48" r="6" fill="#fff"/></svg></span><span class="kid-figure-cap">洗衣机</span><span class="kid-figure-fact">洗衣机脱水时，水被甩到桶壁再从孔里流走；离心是惯性观感，本页不教拆机器。</span></button>
+      <button class="kid-figure" type="button" data-sn-atlas="earth" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="24" fill="#3a86c8"/><path d="M48 36 C60 30 74 38 70 50 C62 58 50 54 48 44 Z" fill="#4f9a58"/><path d="M60 16 V22 M60 70 V76" stroke="#5a3a20" stroke-width="2"/></svg></span><span class="kid-figure-cap">地球自转</span><span class="kid-figure-fact">地球自转只是示意：我们跟着转，不会被甩飞；离心是惯性观感，不是地球在施法。</span></button>
+      <button class="kid-figure" type="button" data-sn-atlas="rope" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="28" cy="46" r="6" fill="#8a857c"/><path d="M34 46 H84" stroke="#8a7050" stroke-width="3"/><circle cx="94" cy="46" r="10" fill="#d06060"/></svg></span><span class="kid-figure-cap">绳子拴球</span><span class="kid-figure-fact">绳子拉住小球，它才绕着转、不会沿直线飞走；转起来才稳定在圈上，别对人抡。</span></button>
+      <button class="kid-figure" type="button" data-sn-atlas="fast" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="28" fill="#e8d2a0" stroke="#5a3a20"/><circle cx="60" cy="46" r="4" fill="#8a857c"/><circle cx="86" cy="46" r="8" fill="#d06060"/></svg></span><span class="kid-figure-cap">越快越往外</span><span class="kid-figure-fact">转得越快，珠子越靠近边缘被甩开；离心是惯性观感，不是有一只手在往外推。</span></button>
+      <button class="kid-figure" type="button" data-sn-atlas="stop" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="28" fill="#e8d2a0" stroke="#5a3a20"/><circle cx="60" cy="46" r="4" fill="#8a857c"/><circle cx="68" cy="40" r="8" fill="#3d6fb8"/></svg></span><span class="kid-figure-cap">停下掉回</span><span class="kid-figure-fact">一停住，往外甩的劲没了，珠子滑回中间；不会永远转，也不是珠子想回家。</span></button><button class="kid-figure" type="button" data-sn-atlas="yoyo" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="36" r="16" fill="#d05050"/><circle cx="60" cy="36" r="6" fill="#e8d2a0"/><path d="M60 52 V76" stroke="#5a3a20" stroke-width="3"/></svg></span><span class="kid-figure-cap">悠悠球</span><span class="kid-figure-fact">悠悠球转起来会往外绷，线把它留在圈上；转起来才稳定，线不是魔法，别对人抡。</span></button><button class="kid-figure" type="button" data-sn-atlas="salad" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="60" cy="48" rx="28" ry="18" fill="#c4d48a" stroke="#5a3a20"/><circle cx="48" cy="44" r="4" fill="#3d9a58"/><circle cx="70" cy="50" r="3" fill="#d05050"/></svg></span><span class="kid-figure-cap">沙拉甩干</span><span class="kid-figure-fact">沙拉筐转快了，水被甩到筐壁再流走；和脱水同一家人，离心只是惯性观感。</span></button><button class="kid-figure" type="button" data-sn-atlas="orbit" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="8" fill="#e0b14a"/><circle cx="60" cy="46" r="26" fill="none" stroke="#8a857c" stroke-dasharray="4 3"/><circle cx="86" cy="46" r="5" fill="#3d6fb8"/></svg></span><span class="kid-figure-cap">绕圈</span><span class="kid-figure-fact">被拉住的东西会绕中心转，不会沿直线飞走；转起来才稳住，别把绳子对人抡。</span></button><button class="kid-figure" type="button" data-sn-atlas="stir" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="60" cy="50" rx="30" ry="16" fill="#5aa0d4"/><path d="M60 34 Q78 50 60 66 Q42 50 60 34" fill="none" stroke="#fff" stroke-width="3"/></svg></span><span class="kid-figure-cap">搅拌</span><span class="kid-figure-fact">勺子一转，水跟着转，中间会凹下去；转起来水面才甩开，不要拿勺对人抡。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照舞台上看珠子往外走还是掉回来。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--phys)"
+         data-kid-predict
+         data-kid-predict-explain="转得快 → 更稳（示意）；摩擦/触地 → 最终倒。不是魔法不倒翁。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🌀</span><b>转盘转快时，珠子更常往哪边走？停下后呢？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：转盘上珠子往哪">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="in">转得越快，珠子越往圆心挤</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="out" data-kid-predict-correct>想沿直线走，被拽成圆；不够时滑到更外面，停下又回来</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="stick">一转就焊死在原地，永远不动</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：慢转与快转都试</h2>
+    <p>转速 18–40 到过一次，再 ≥70 到过一次。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先让转盘慢慢转起来。</p>
+  </section>
+
+
+          <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">同一个转盘，先慢转看中间，再快转看往外</h2>
+    <p>舞台左边是转盘和珠子，右边是水桶。先慢转一次，再快转一次，看珠子和水分别跑到哪里。再停下，看会不会回来。这样比，才知道往外走靠的是转得快，不是珠子想逃，也不是转盘会永远转。</p>
+    <p>回家只带两句：「转快了往外走」；「停下会回来」。不要写成「珠子想离开家」或「转起来就停不下来」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="28" fill="#e8d2a0" stroke="#5a3a20"/><circle cx="60" cy="46" r="4" fill="#8a857c"/><circle cx="68" cy="40" r="7" fill="#3d6fb8"/></svg></span><span class="kid-figure-cap">慢转</span><span class="kid-figure-sub">靠近中间</span><p class="kid-figure-fact">转得慢，珠子还靠近中间，还没被甩到边上，不是珠子比较听话才待着。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="28" fill="#e8d2a0" stroke="#5a3a20"/><circle cx="60" cy="46" r="4" fill="#8a857c"/><circle cx="86" cy="46" r="8" fill="#d06060"/></svg></span><span class="kid-figure-cap">快转</span><span class="kid-figure-sub">往外走</span><p class="kid-figure-fact">转得快，珠子往外走，绳子被拉直，中间空出来，不是离心力在台上施魔法。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M34 18 H86 L80 74 H40 Z" fill="none" stroke="#5a3a20" stroke-width="3"/><path d="M42 36 Q60 56 78 36 V70 H42 Z" fill="#7eb6e8"/></svg></span><span class="kid-figure-cap">水面</span><span class="kid-figure-sub">往壁上爬</span><p class="kid-figure-fact">水跟着转快了，会往桶壁爬，中间水面变低，不是水自己想搬走这个家。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="28" fill="#e8d2a0" stroke="#5a3a20"/><circle cx="60" cy="46" r="4" fill="#8a857c"/><circle cx="66" cy="42" r="7" fill="#3d6fb8"/><path d="M86 20 H104 V36 H86 Z" fill="#c2410c"/></svg></span><span class="kid-figure-cap">停下</span><span class="kid-figure-sub">掉回中间</span><p class="kid-figure-fact">一停住，珠子滑回中间，水面摊平，不会永远转下去，这也不是什么永动机。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f2e6c8" width="120" height="90"/><circle cx="48" cy="50" r="10" fill="#d06060"/><path d="M60 50 H96" stroke="#c2410c" stroke-width="3"/><path d="M88 42 L100 50 L88 58" fill="#c2410c"/><path d="M16 16 L104 74 M104 16 L16 74" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">想离开</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">不是珠子想搬家，是转得快它才被甩向外边，停下又会滑回中间来待着。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f2e6c8" width="120" height="90"/><circle cx="70" cy="50" r="22" fill="#e8d2a0" stroke="#5a3a20"/><path d="M28 20 q8 28 0 44 M40 16 q4 32 8 48" fill="none" stroke="#5a4030" stroke-width="3"/><path d="M16 16 L104 74 M104 16 L16 74" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">头发</span><span class="kid-figure-sub">远离转盘</span><p class="kid-figure-fact">头发和衣袖远离转盘，也不要把水甩到人身上，站在外面看台上珠子。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>慢转一次。</b>看珠子还在中间附近吗。</li>
+      <li data-step="2"><b>还是同一盘，快转一次。</b>只改快慢，看珠子和水往哪。</li>
+      <li data-step="3"><b>停下。</b>珠子会不会回来？水面摊平了吗？</li>
+      <li data-step="4"><b>写完成句。</b>转快了往外走；停下会回来。划掉「想逃」和「永动机」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>转得慢，珠子还在中间附近；转得快，珠子往外跑，水也往桶壁爬。停下会回来。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>转得越快，越需要绳子拉住。水被甩向桶壁，中间就凹下去。摩擦会让它停下，不会永远转。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>需向心力随转速平方增大。旋转坐标系里用离心描述。水面沿等压面爬成抛物面。角动量示意到此为止：有摩擦就会慢下来，不是永动机。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能对慢转和快转各指珠子或水面位置，并否定「珠子想离开家」和「会永远转」。完成看的是对照，不是背「向心力」三个字。</p>
+    <ul class="ask-list">
+      <li>慢转时，珠子在哪？</li>
+      <li>快转时，水往哪爬？中间空不空？</li>
+      <li>停下后，珠子会停在绳尽头吗？</li>
+      <li>它想搬家吗？转盘会自己永远转吗？</li>
+    </ul>
+  </section>
+
+
+        <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">转快了往外甩，不是想逃，也不是永动机</h2>
+    <p>同一个转盘，先只改快慢。用手拨珠、摇桌子，都是另一回事。本页只认：转起来往外甩，停下掉回来。</p>
+    <p>家里也能看见同一家人。洗衣机脱水时水被甩到桶壁再流走。沙拉筐转快了，水也被甩出去。旋转木马上人会被轻轻往外甩，所以要抓紧。这些都是转快了往外走，不是东西想搬家。</p>
+    <p>绳长上限改的是珠子能走多远，是第二件事。轴想保持方向是另一页的陀螺，本页先交往外走。转盘会因摩擦慢下来，停住；不要写成永远转、不用再推的永动机。</p>
+    <p>转盘不绞头发。水不甩到人。本页不是洗衣机维修。需力读数是示意，不是转速表校准。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M60 16 L78 40 H42 Z" fill="#c47a12"/><path d="M60 40 L68 74 H52 Z" fill="#8a6a40"/><text x="60" y="86" text-anchor="middle" font-size="11" fill="#5a5348">另页</text></svg></span><span class="kid-figure-cap">陀螺</span><span class="kid-figure-sub">另一页</span><p class="kid-figure-fact">陀螺那一页讲站得稳，这里先看珠子会不会往外走，不是同一出旋转戏。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="24" cy="46" r="6" fill="#8a857c"/><path d="M30 46 H88" stroke="#8a7050" stroke-width="3"/><circle cx="98" cy="46" r="8" fill="#d06060"/></svg></span><span class="kid-figure-cap">绳长</span><span class="kid-figure-sub">能走多远</span><p class="kid-figure-fact">绳子有多长，决定珠子最远能走到哪，那是第二件事，先比转得快不快。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="60" cy="40" rx="22" ry="10" fill="#e8d2a0" stroke="#5a3a20"/><circle cx="60" cy="40" r="4" fill="#8a857c"/><path d="M40 40 Q60 20 80 40" fill="none" stroke="#c47a12" stroke-width="2"/><circle cx="60" cy="46" r="26" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M42 28 L78 64" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">永动机</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">有摩擦就会慢下来，转盘不会自己永远转，也不用再推它才算真科学。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="24" y="10" width="72" height="68" rx="8" fill="#cfd3d8" stroke="#5a3a20" stroke-width="2"/><circle cx="60" cy="44" r="22" fill="#7eb6e8" stroke="#3a4a58"/><circle cx="60" cy="44" r="8" fill="#fff"/><circle cx="48" cy="40" r="2.4" fill="#5aa0d4"/><circle cx="70" cy="38" r="2.4" fill="#5aa0d4"/><circle cx="72" cy="52" r="2.2" fill="#5aa0d4"/><circle cx="50" cy="54" r="2.2" fill="#5aa0d4"/><rect x="86" y="18" width="6" height="16" rx="1" fill="#8a857c"/><path d="M82 44 H96" stroke="#5aa0d4" stroke-width="2"/></svg></span><span class="kid-figure-cap">洗衣机</span><span class="kid-figure-sub">同族</span><p class="kid-figure-fact">脱水时水被甩到桶壁再流走，和台上爬壁同一家人，本页不是维修手册。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="34" width="88" height="22" rx="3" fill="#fff" stroke="#1c66c2"/><path d="M28 34 V48 M40 34 V54 M52 34 V48 M64 34 V54 M76 34 V48 M88 34 V54" stroke="#1c66c2"/><circle cx="96" cy="20" r="10" fill="#e8d2a0" stroke="#5a3a20"/><path d="M96 20 L104 20" stroke="#c2410c" stroke-width="2"/><rect x="8" y="78" width="104" height="8" fill="#c4a06a"/><text x="60" y="74" text-anchor="middle" font-size="8" fill="#5a5348">示意</text><circle cx="60" cy="45" r="2" fill="#1c66c2"/></svg></span><span class="kid-figure-cap">本页尺子</span><span class="kid-figure-sub">不是转速表</span><p class="kid-figure-fact">需力随转速平方涨，只用来比较快慢方向，不是校准过的洗衣机转速表。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f2e6c8" width="120" height="90"/><circle cx="70" cy="50" r="22" fill="#e8d2a0" stroke="#5a3a20"/><path d="M28 20 q8 28 0 44 M40 16 q4 32 8 48" fill="none" stroke="#5a4030" stroke-width="3"/><path d="M16 16 L104 74 M104 16 L16 74" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">头发</span><span class="kid-figure-sub">远离</span><p class="kid-figure-fact">转盘边上不要伸手，水也不要甩到人身上，看台上珠子往哪边走就够。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：慢转靠中间 · 快转往外爬壁 · 「珠子想离开家」</h2>
+    <p>三列用同一个转盘。先只改快慢，再另开一行看绳长。一次改两样，分不清到底是转速还是绳长让珠走远的。</p>
+    <p>慢转：珠子靠近中间。快转：珠子往外，水面爬壁。「想离开家」整列划掉：是转速在改位置，不是珠子有家。「永动机」也划掉：停下就回来，摩擦会让它停。</p>
+    <p>缩短绳长是加试，不是主任务：同样转快，绳越短，珠距上限越近圆心。本页需力公式只是比较尺子，不要背成洗衣机手册。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#cfe8b0" width="120" height="90"/><circle cx="60" cy="46" r="28" fill="#e8d2a0" stroke="#2f7a3e"/><circle cx="66" cy="40" r="7" fill="#3d6fb8"/></svg></span><span class="kid-figure-cap">慢转</span><span class="kid-figure-sub">靠近中间</span><p class="kid-figure-fact">对照栏里同一盘珠子，转得慢就还停在靠近中间的地方，不是它想待着。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6e7b0" width="120" height="90"/><circle cx="60" cy="46" r="28" fill="#e8d2a0" stroke="#b08900"/><circle cx="86" cy="46" r="8" fill="#d06060"/></svg></span><span class="kid-figure-cap">快转</span><span class="kid-figure-sub">往外爬壁</span><p class="kid-figure-fact">对照栏里转得快，水往壁上爬，中间凹下去，不是离心力在台上施魔法。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f2e6c8" width="120" height="90"/><rect x="20" y="28" width="28" height="36" fill="#c4a06a"/><circle cx="78" cy="50" r="10" fill="#d06060"/><path d="M50 48 H68" stroke="#c2410c" stroke-width="3"/><path d="M16 16 L104 74 M104 16 L16 74" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">想离开家</span><span class="kid-figure-sub">划掉</span><p class="kid-figure-fact">珠子没有家，也不是想离开；转快了才往外走，停下又会滑回中间来待着。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="28" fill="#e8d2a0" stroke="#5a3a20"/><circle cx="60" cy="46" r="4" fill="#8a857c"/><circle cx="66" cy="42" r="7" fill="#3d6fb8"/><path d="M86 20 H104 V36 H86 Z" fill="#c2410c"/></svg></span><span class="kid-figure-cap">停下</span><span class="kid-figure-sub">掉回中间</span><p class="kid-figure-fact">转盘一停，往外甩的劲没了，中间又重新摊平，这不是永动机在偷懒停。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="36" cy="46" r="6" fill="#8a857c"/><path d="M42 46 H70" stroke="#8a7050" stroke-width="3"/><circle cx="78" cy="46" r="10" fill="#d06060"/><ellipse cx="60" cy="70" rx="28" ry="8" fill="#e8d2a0" stroke="#5a3a20"/><circle cx="60" cy="70" r="3" fill="#8a857c"/><path d="M70 46 L86 28" stroke="#c2410c" stroke-width="2"/><circle cx="90" cy="24" r="4" fill="#3d6fb8" opacity=".4"/></svg></span><span class="kid-figure-cap">绳短</span><span class="kid-figure-sub">加试</span><p class="kid-figure-fact">同样转快，绳越短，珠子最远也更靠近圆心，不是转快就一定甩到边上。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="34" width="88" height="22" rx="3" fill="#fff" stroke="#1c66c2"/><path d="M28 34 V48 M40 34 V54 M52 34 V48 M64 34 V54 M76 34 V48 M88 34 V54" stroke="#1c66c2"/><circle cx="96" cy="20" r="10" fill="#e8d2a0" stroke="#5a3a20"/><path d="M96 20 L104 20" stroke="#c2410c" stroke-width="2"/><rect x="8" y="78" width="104" height="8" fill="#c4a06a"/><text x="60" y="74" text-anchor="middle" font-size="8" fill="#5a5348">示意</text><circle cx="60" cy="45" r="2" fill="#1c66c2"/></svg></span><span class="kid-figure-cap">本页尺子</span><span class="kid-figure-sub">不是手册</span><p class="kid-figure-fact">需力随转速平方涨，只用来比较方向，不是洗衣机转速表，也别去对说明书。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「转快了往外走」，不记洗衣机型号</h2>
+    <p>在纸上画两个圆：慢的珠子靠中，快的珠子靠外、水爬壁。旁边再画一个叉：停下，珠子回来。三张图并排，比背公式有用。</p>
+    <p>口头只要两句：「转快了往外走。」「停下会回来。」有人说「珠子想逃」或「会永远转」，让孩子指着停下那一张反驳。</p>
+    <p>真水桶不要在屋里猛转。长发束起，远离旋转物。本页数字不要抄进洗衣机手册，也不要写成永动机。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="36" cy="46" r="22" fill="none" stroke="#5a3a20"/><circle cx="40" cy="42" r="5" fill="#3d6fb8"/><circle cx="86" cy="46" r="22" fill="none" stroke="#5a3a20"/><circle cx="104" cy="46" r="5" fill="#d06060"/></svg></span><span class="kid-figure-cap">两个圆</span><span class="kid-figure-sub">慢中快外</span><p class="kid-figure-fact">纸上画两个圆：慢转珠子靠里，快转珠子靠外，对照比抄数字更清楚些。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="48" cy="46" rx="24" ry="16" fill="#f7fbff" stroke="#5a5348"/><text x="48" y="52" text-anchor="middle" font-size="12" font-weight="800" fill="#c2410c">外</text></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">转快了往外走</span><p class="kid-figure-fact">回家说得出：转得越快，珠子越往外走，水面爬壁；停下会回来，不是魔法。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f2e6c8" width="120" height="90"/><rect x="20" y="28" width="28" height="36" fill="#c4a06a"/><circle cx="78" cy="50" r="10" fill="#d06060"/><path d="M16 16 L104 74 M104 16 L16 74" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">想离开家</span><span class="kid-figure-sub">否决句</span><p class="kid-figure-fact">不要写成珠子想离开家，更不要写成永远转。是转得快才把它甩出去。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f2e6c8" width="120" height="90"/><circle cx="70" cy="50" r="22" fill="#e8d2a0" stroke="#5a3a20"/><path d="M28 20 q8 28 0 44 M40 16 q4 32 8 48" fill="none" stroke="#5a4030" stroke-width="3"/><path d="M16 16 L104 74 M104 16 L16 74" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">头发</span><span class="kid-figure-sub">远离转盘</span><p class="kid-figure-fact">护住头发，站在转盘外面看，水不要甩到人，也不要把袖子伸进转盘里。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「往外走靠不靠转得快」，就只改转速这一项。同一个转盘、同一根绳，先慢转一次，再快转一次。绳长另开一行对照，不要和「快转」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>转速（慢转 / 快转）。</li>
+      <li><b>先保持不变：</b>同一个转盘、绳长先固定。</li>
+      <li><b>要观察的：</b>珠子靠里还是靠外，水面爬不爬壁。</li>
+      <li><b>另开一行：</b>停下以后，珠子是不是掉回中间。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>洗衣机脱水时水往哪走？转筒停下来以后，水还会自己永远转吗？</li>
+      <li>绳长减半、转速不变，珠子最远能到哪？这和「想逃」有什么不一样？</li>
+      <li>陀螺站得稳是另一页。本页如果用「轴想保持方向」当完成句，差在哪一层？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>转得慢，珠子还在中间附近；转得快，珠子往外跑，水也往桶壁爬。停下会回来。不是想逃。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>转得越快，越需要绳子拉住。水被甩向桶壁。摩擦会让它停下，不会永远转。本页数字只用来比较，不是洗衣机手册。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>需向心力随转速平方增大。水面沿等压面成抛物面。角动量示意到此：有摩擦就会慢下来。不要写成永动机或「玩具盘等于地球自转」。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：旋转观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：转得越快珠子越靠外"></div>
+      <div><label for="workContent">慢转和快转</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下慢转时珠子在哪、快转时水和珠子去了哪里，停下后又怎样。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>快转时，孩子指的是珠子往外，还是在说「它想逃」？让他再指一次珠子和绳子。</li>
+      <li>水面爬壁，哪一句四岁听得懂？试「转快了，水往桶壁爬，中间空出来」。</li>
+      <li>停下以后珠子回来——为什么「会永远转」不能当本页完成句？差在有没有摩擦。</li>
+      <li>陀螺站得稳为什么不能当本页完成句？本页先交的是往外走，不是轴的方向。</li>
+      <li>头发、甩水：红线怎么说？本页能当洗衣机维修手册吗？数字能抄进说明书吗？</li>
+      <li>绳长减半、转速不变，珠距上限怎样？这和「想逃」差在谁在限制路程？</li>
+    </ul>
+  </section>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：转起来，珠子要沿直线冲出去，绳子把它拽住，所以它只能往外甩到绳能到的地方。中间空出来。水也一样：中间被甩薄，边缘堆高，更难停。不是珠子自己喜欢外面。</p>
+    <p>需向心力大约随转速平方增大。本页「需力≈质量×转速²÷80」只是比较尺子，用来让孩子看见「越快越往外」，不是洗衣机转速表，也不是实验室测力。绳长决定珠距上限。</p>
+    <p>停下，往外甩的力没了，珠子掉回中间，水面重新摊平。摩擦会让转动慢下来。角动量示意到此为止：不要写成永动机，也不要写成「不用再推就会永远转」。</p>
+    <p>陀螺稳定是另一页。洗衣机、沙拉筐、旋转木马是同一家族的不同尺度。不要写成「玩具盘等于地球自转」。远离头发。真水桶不要在屋里猛转。</p>
+  </section>
+
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))" data-audience="parent">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">自旋公式卡 · 珠距≈随绳长与转速张开；需力≈质量×转速²÷80（本页尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">转得越快、绳越长，珠越外甩；转速≈0 时珠回到圆心附近。需向心力随转速平方涨。用来比较快慢，不是洗衣机手册，也不是永动机。停下会回来。</p>
+    </div>
+
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：转起来往外甩；中间空，边缘更难停；停下，珠子掉回中间。自由落体看没有绳子时东西怎么走；地球页看更大的一圈转动示意。</p>
+    <p class="row"><a class="btn btn-ghost" href="gravity-drop.html">自由落体</a><a class="btn btn-ghost" href="../nature/earth.html">地球与地震</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为转起来往外甩、水桶在屋里会砸到人，所以真水桶不要在屋里猛转。本页是示意模型，不计算向心力的精确数值。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+
+  var speed=0, ropeLen=70, mass=4;
+  var seen={slow:false,fast:false,done:false};
+  var guess1="",guess1Done=false,saw40=false,saw80=false;
+  var guess2="",guess2Done=false,saw70=false,saw35=false;
+  var guess3="",guess3Done=false,sawStop=false;
+  function beadR(){
+    if(speed<=8) return 28;
+    return Math.min(ropeLen, Math.round(28 + (ropeLen-28)*speed/100));
+  }
+  function needF(){ return Math.round(mass*speed*speed/80); }
+  function setSpin(v, fromAction){ speed=v; document.getElementById("spin").value=String(v); render(fromAction); }
+  function render(fromAction){
+    var r=beadR(), need=needF(), ang=speed*2.4;
+    var a1=(ang+128)*Math.PI/180, a2=(ang+248)*Math.PI/180;
+    document.getElementById("plateG").setAttribute("transform","translate(210 130) rotate("+ang+")");
+    document.getElementById("beadA").setAttribute("cx",String(Math.round(r)));
+    document.getElementById("beadA").setAttribute("cy","0");
+    document.getElementById("beadB").setAttribute("cx",String(Math.round(Math.cos(a1)*r)));
+    document.getElementById("beadB").setAttribute("cy",String(Math.round(Math.sin(a1)*r)));
+    document.getElementById("beadC").setAttribute("cx",String(Math.round(Math.cos(a2)*r)));
+    document.getElementById("beadC").setAttribute("cy",String(Math.round(Math.sin(a2)*r)));
+    document.getElementById("rope").setAttribute("d","M0 0 L"+Math.round(r)+" 0");
+    var wall=118-Math.round(speed*0.62), mid=118+Math.round(speed*0.28);
+    if(wall<58)wall=58; if(mid>150)mid=150;
+    document.getElementById("water").setAttribute("d","M18 "+wall+" Q60 "+mid+" 102 "+wall+" V158 H18 Z");
+    document.getElementById("spinOut").textContent=String(speed);
+    document.getElementById("ropeLab").textContent=String(ropeLen);
+    document.getElementById("spin").setAttribute("aria-valuetext",String(speed));
+    document.getElementById("ropeLen").setAttribute("aria-valuetext",String(ropeLen));
+    document.getElementById("rpmOut").textContent=String(speed);
+    document.getElementById("ropeOut").textContent=String(ropeLen);
+    document.getElementById("needOut").textContent=r+" / "+need;
+    var oa=document.getElementById("outArrows");
+    if(oa) oa.setAttribute("opacity", speed>8 ? "1" : "0");
+    var sl=document.getElementById("spinLab");
+    if(sl) sl.textContent=speed<=8?"中间还没空":"中间空，珠子往外甩";
+    var elab=document.getElementById("edgeLab");
+    if(elab) elab.textContent=speed<=8?"水面摊平":"边缘更高，更难停";
+    document.getElementById("snCap").textContent=speed<=8?"现在停着。珠子待在靠近中间的地方。":"转起来：珠子往外甩，水往桶壁爬。";
+    document.getElementById("live").textContent=speed<=8
+      ?"停下，往外甩的力没了，珠子掉回中间。先押再转一次。"
+      :"转起来往外甩。中间空，边缘更难停。先押再对照慢转和快转。";
+    if(speed>=18&&speed<=40)seen.slow=true; if(speed>=70)seen.fast=true;
+    if(fromAction){
+      if(guess1&&!guess1Done&&ropeLen===70&&speed===40)saw40=true;
+      if(guess1&&!guess1Done&&ropeLen===70&&speed===80)saw80=true;
+      if(guess2&&!guess2Done&&speed===80&&ropeLen===70)saw70=true;
+      if(guess2&&!guess2Done&&speed===80&&ropeLen===35)saw35=true;
+      if(guess3&&!guess3Done&&ropeLen===70&&speed<=8)sawStop=true;
+      checkGuess();
+    }
+    updateTask();
+  }
+  function checkGuess(){
+    if(guess1&&!guess1Done&&saw40&&saw80){
+      guess1Done=true;
+      document.getElementById("guessOut1").innerHTML=(guess1==="double"?"<b>押对了！</b>":"<b>揭晓：</b>")+"转速加倍，珠子更靠外。";
+      document.getElementById("guessBlock2").hidden=false;
+    }
+    if(guess2&&!guess2Done&&saw70&&saw35){
+      guess2Done=true;
+      document.getElementById("guessOut2").innerHTML=(guess2==="half"?"<b>押对了！</b>":"<b>揭晓：</b>")+"绳长减半，珠距上限更近圆心。";
+      document.getElementById("guessBlock3").hidden=false;
+    }
+    if(guess3&&!guess3Done&&sawStop){
+      guess3Done=true;
+      document.getElementById("guessOut3").innerHTML=(guess3==="in"?"<b>押对了！</b>":"<b>揭晓：</b>")+"转速几乎为 0 时珠子回到圆心附近，不是停在绳长尽头。";
+    }
+  }
+  function updateTask(){
+    var st=document.getElementById("taskStatus"); if(seen.done)return;
+    if(seen.slow&&seen.fast){
+      seen.done=true;
+      if(window.Progress)Progress.complete("games/spin-lab.html","珠距随转速与绳长变");
+      st.textContent="完成啦：转越快越往外；绳越短上限越小。";
+    } else if(!seen.slow) st.textContent="还差：先慢转（18–40）。";
+    else st.textContent="还差：再快转（≥70）。";
+  }
+  var ATLAS={plate:"转盘一转，珠子跟着转；转起来才被甩开，离心只是惯性看起来往外走。",bucket:"水桶转快了，水往壁上爬，中间凹下去；那是惯性把它甩开，不是水要搬家。",horse:"旋转木马把人轻轻往外甩，要抓紧；离心是惯性观感，不要对人抡东西。",wash:"洗衣机把水甩到壁上再流走，和台上珠子往外走同一家人，别拿说明书来对。",earth:"地球自转只是示意：我们跟着转，不会飞出去，离心不是地球在台上施法。",rope:"绳子拉住小球，它才绕圈，不会沿直线飞走；转起来才稳住，别对人抡绳。",fast:"转速越高，珠子越往边缘走；甩开是惯性观感，不是有手在往外推那颗珠。",stop:"转盘一停，珠子滑回中间，水面重新摊平；不会永远转，也不是珠子想回家。",yoyo:"悠悠球转起来往外绷，线把它留在圈上；转稳靠这条线，不要拿线对人抡。",salad:"沙拉筐转快了，水甩到筐壁再流走；和脱水同一家人，不要拿筐对人抡。",orbit:"被拉住才绕中心转，不会沿直线飞走；转起来才稳定在圈上，别对人抡。",stir:"勺子带着水转，中间凹下去；转起来水面才甩开，不要拿勺子对人抡水。"};
+  document.getElementById("spin").addEventListener("input",function(){speed=+this.value;render(true);});
+  document.getElementById("ropeLen").addEventListener("input",function(){ropeLen=+this.value;render(true);});
+  document.getElementById("goSlow").addEventListener("click",function(){setSpin(25,true);});
+  document.getElementById("goFast").addEventListener("click",function(){setSpin(80,true);});
+  document.getElementById("goStop").addEventListener("click",function(){setSpin(0,true);});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"),function(btn){
+    btn.addEventListener("click",function(){if(guess1Done)return;guess1=btn.getAttribute("data-guess1");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"),function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut1").textContent="押好了。绳长70，转速40→80。";});});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"),function(btn){
+    btn.addEventListener("click",function(){if(guess2Done)return;guess2=btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"),function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut2").textContent="押好了。转速80，绳长70→35。";});});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"),function(btn){
+    btn.addEventListener("click",function(){if(guess3Done)return;guess3=btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"),function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut3").textContent="押好了。绳长 70，转速拖到 0。";});});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-sn-atlas]"),function(btn){
+    btn.addEventListener("click",function(){
+      var key=btn.getAttribute("data-sn-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-sn-atlas]"),function(n){n.setAttribute("aria-pressed",n===btn?"true":"false");});
+      document.getElementById("atlasSay").textContent=ATLAS[key]||key;
+      if(key==="fast"||key==="wash"||key==="salad")setSpin(80,false);
+      else if(key==="stop")setSpin(0,false);
+      else if(key==="horse")setSpin(25,false);
+      else render(false);
+    });
+  });
+  render(false);
+
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/spin-lab.html", "旋转工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

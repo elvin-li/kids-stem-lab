@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>冷热工坊 · 冰化了就变没了，还是同一份水？</title>
+<meta name="description" content="同一份水，拖到结冰、液态和沸腾。清水约 0℃ 结冰、海平面约 100℃ 沸腾；加盐结冰示意 −8℃，高山沸点示意 90℃。本页读数是比较尺子，不是厨房温度计。真蒸汽防烫。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/games-lab.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+.kid-mission {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--warn) 40%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--warn) 12%,var(--surface)),var(--surface) 62%);
+  }
+.mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--warn) 40%,var(--line));
+    background: color-mix(in srgb,var(--warn) 12%,var(--surface)); font-size: 2.2rem;
+  }
+.ht-art { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+.ht-lab { fill: color-mix(in srgb,var(--ink) 6%,#f4f1ea); }
+.ht-pot { fill: color-mix(in srgb,var(--ink) 18%,#cfd3d8); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 2; }
+.ht-ice { fill: color-mix(in srgb,var(--video) 35%,#d7eefc); stroke: color-mix(in srgb,var(--ink) 28%,transparent); stroke-width: 1.4; }
+.ht-water { fill: color-mix(in srgb,var(--math) 42%,#7eb6e8); }
+.ht-steam { fill: none; stroke: color-mix(in srgb,var(--ink) 28%,transparent); stroke-width: 3; stroke-linecap: round; }
+.ht-flame { fill: color-mix(in srgb,var(--warn) 70%,#e08a3c); }
+.ht-txt { fill: var(--ink); font: 700 12px var(--mono); }
+.ht-tube { fill: #fdfbf6; stroke: color-mix(in srgb,var(--ink) 45%,transparent); stroke-width: 2; }
+.ht-mercury { fill: color-mix(in srgb,var(--danger) 62%,#c85040); }
+.ht-tick { stroke: color-mix(in srgb,var(--ink) 55%,transparent); stroke-width: 2; }
+.ht-tick-soft { stroke: color-mix(in srgb,var(--ink) 30%,transparent); stroke-width: 1.4; stroke-dasharray: 3 3; }
+.ht-bubble { fill: #fdfbf6; opacity: .85; stroke: color-mix(in srgb,var(--ink) 22%,transparent); stroke-width: 1; }
+.ht-salt { fill: #fdfbf6; stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 1.2; }
+.guess-card { border-color: color-mix(in srgb,var(--warn) 45%,var(--line)); }
+.guess-pick[aria-pressed="true"] { border-color: var(--warn); background: color-mix(in srgb,var(--warn) 18%,var(--surface)); color: var(--ink); }
+.ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--warn) 12%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--warn) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+@media (max-width: 480px) {
+    html[data-mode="kid"] .kid-mission { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-mission .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-mission h1 { font-size: 1.45rem; }
+    html[data-mode="kid"] .kid-mission .lead { font-size: .86rem; line-height: 1.45; margin-bottom: .28em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 8px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .ht-art { max-height: 118px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .92rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+    html[data-mode="kid"] [data-playful-sticker] { display: none; }
+  }
+
+  .mission-face { overflow: hidden; }
+  .mission-face img.photo-real { width: 78px; height: 78px; object-fit: cover; border-radius: 50%; display: block; }
+  .mission-character { overflow: hidden; }
+  .mission-character img.photo-real { width: 76px; height: 76px; object-fit: cover; border-radius: 50%; display: block; }
+  .story-guide img.photo-real { width: 72px; height: 72px; object-fit: cover; border-radius: 50%; display: block; }
+  .kid-figure-art img.photo-real { width: 100%; max-width: 240px; height: auto; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; display: block; }
+
+</style>
+</head>
+<body data-playful-page="games/heat-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+<main id="main" class="wrap">
+  <header class="hero kid-mission">
+    <div>
+      <p class="row"><span class="pill pill-phys">物理</span><span class="pill">6–11&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>冰化了就变没了，还是同一份水？</h1>
+      <p class="lead">同一份水，可以冻成硬邦邦的冰，可以倒进杯子，也可以散开成看不见的汽。拖温度找出它在几℃变脸；再加一勺盐，看结冰点会不会往下挪。变的是样子，不是「水消失了」，盐也不是把冰吃掉。本页读数是比较尺子，不是厨房温度计，更不是自然定律。真蒸汽防烫，炉灶归大人，不凑脸。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">给锅里的水加热或降温</h2>
+    <svg class="ht-art" viewBox="0 0 480 240" role="img" aria-labelledby="htTitle htDesc">
+      <title id="htTitle">冰、水和蒸汽舞台</title>
+      <desc id="htDesc">左边是温度计，0℃ 和 100℃ 各有一条刻度线。右边一口锅装着水：温度低于结冰点时是冰，0℃ 附近冰水混合，中间是液态水并悄悄蒸发，海平面约 100℃ 沸腾。加盐后结冰刻度下移；改到高山会出现约 90℃ 的沸点刻度。</desc>
+      <rect class="ht-lab" width="480" height="240"/>
+      <g id="thermo">
+        <rect class="ht-tube" x="64" y="24" width="18" height="180" rx="9"/>
+        <rect class="ht-mercury" id="mercCol" x="68" y="120" width="10" height="80" rx="5"/>
+        <line class="ht-tick" x1="58" y1="179" x2="88" y2="179"/>
+        <text class="ht-txt" x="92" y="183">0℃ 结冰</text>
+        <line class="ht-tick" x1="58" y1="44" x2="88" y2="44"/>
+        <text class="ht-txt" x="92" y="48">100℃ 沸腾</text>
+        <line class="ht-tick-soft" id="saltTick" x1="58" y1="190" x2="88" y2="190" opacity="0"/>
+        <text class="ht-txt" id="saltTickLab" x="92" y="200" opacity="0">盐水结冰点</text>
+        <line class="ht-tick-soft" id="boilTick" x1="58" y1="58" x2="88" y2="58" opacity="0"/>
+        <text class="ht-txt" id="boilTickLab" x="92" y="62" opacity="0">高山沸点</text>
+      </g>
+      <rect class="ht-pot" x="180" y="88" width="200" height="110" rx="12"/>
+      <rect class="ht-water" id="waterLayer" x="194" y="140" width="172" height="50" rx="6"/>
+      <g id="iceLayer">
+        <rect class="ht-ice" id="ice1" x="202" y="118" width="48" height="36" rx="4"/>
+        <rect class="ht-ice" id="ice2" x="256" y="110" width="44" height="40" rx="4"/>
+        <rect class="ht-ice" id="ice3" x="306" y="122" width="50" height="32" rx="4"/>
+      </g>
+      <g id="bubbleLayer" hidden>
+        <circle class="ht-bubble" id="bub1" cx="220" cy="182" r="4"/>
+        <circle class="ht-bubble" id="bub2" cx="262" cy="186" r="5"/>
+        <circle class="ht-bubble" id="bub3" cx="304" cy="184" r="4"/>
+        <circle class="ht-bubble" id="bub4" cx="340" cy="188" r="3"/>
+      </g>
+      <g id="steamLayer" opacity="0">
+        <path class="ht-steam" d="M230 86 q-8 -18 0 -34"/>
+        <path class="ht-steam" d="M280 80 q8 -20 0 -40"/>
+        <path class="ht-steam" d="M326 86 q-6 -16 0 -32"/>
+      </g>
+      <g id="saltLayer" opacity="0">
+        <rect class="ht-salt" x="404" y="96" width="22" height="30" rx="5"/>
+        <rect class="ht-salt" x="409" y="90" width="12" height="8" rx="2"/>
+        <circle class="ht-salt" cx="398" cy="132" r="2"/>
+        <circle class="ht-salt" cx="408" cy="140" r="2"/>
+        <circle class="ht-salt" cx="392" cy="144" r="2"/>
+        <text class="ht-txt" x="388" y="164">加了盐</text>
+      </g>
+      <g id="flameLayer" hidden>
+        <path class="ht-flame" id="flame1" d="M240 210 l16 -28 16 28z"/>
+        <path class="ht-flame" id="flame2" d="M272 214 l14 -24 14 24z"/>
+        <path class="ht-flame" id="flame3" d="M302 210 l16 -28 16 28z"/>
+      </g>
+      <text class="ht-txt" id="stateLab" x="188" y="76">现在：水</text>
+    </svg>
+    <div class="readout">
+      <div><span>温度</span><b id="tempRead">20℃</b></div>
+      <div><span>现在的样子</span><b id="phaseRead">水</b></div>
+      <div><span>变汽的快慢</span><b id="vaporRead">很慢</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">还能流动。水面在慢慢变成汽。先押再拖温度。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="调节温度和加盐">
+    <div>
+      <label for="temp">温度：<span id="tempOut">20℃</span></label>
+      <input class="input" id="temp" type="range" min="-15" max="100" value="20" aria-valuetext="20 摄氏度">
+    </div>
+    <div class="pick-btns">
+      <button class="btn" type="button" id="toIce">调到很冷</button>
+      <button class="btn" type="button" id="toWater">调到常温</button>
+      <button class="btn btn-primary" type="button" id="toSteam">调到沸腾</button>
+      <button class="btn" type="button" id="saltBtn" aria-pressed="false">加一勺盐</button>
+      <button class="btn" type="button" id="altBtn" aria-pressed="false">改到高山</button>
+    </div>
+  </div>
+
+  <section class="card guess-card" aria-labelledby="guessTitle">
+    <h2 id="guessTitle">先猜一猜，再去验证</h2>
+    <p id="guessQ"><b>第 1 题：</b>清水要降到几℃，才开始结冰？押一个，然后拖温度自己找答案。</p>
+    <div class="pick-btns" id="guessRow1" role="group" aria-label="猜结冰温度">
+      <button class="btn guess-pick" type="button" data-guess1="8" aria-pressed="false">8℃</button>
+      <button class="btn guess-pick" type="button" data-guess1="0" aria-pressed="false">0℃</button>
+      <button class="btn guess-pick" type="button" data-guess1="-8" aria-pressed="false">−8℃</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">先押一个，再把温度往下拖，看冰在几℃ 出现。</p>
+    <div id="guessBlock2" hidden>
+      <p id="guessQ2"><b>第 2 题：</b>加一勺盐，结冰会发生在更冷、一样冷，还是更暖的温度？</p>
+      <div class="pick-btns" id="guessRow2" role="group" aria-label="猜盐水结冰点">
+        <button class="btn guess-pick" type="button" data-guess2="colder" aria-pressed="false">要更冷</button>
+        <button class="btn guess-pick" type="button" data-guess2="same" aria-pressed="false">一样冷</button>
+        <button class="btn guess-pick" type="button" data-guess2="warmer" aria-pressed="false">更暖就冻</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后点「加一勺盐」，再把温度拖到 0℃ 以下试试。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p id="guessQ3"><b>第 3 题：</b>换回清水。海平面上，50℃ 就会冒大汽开锅吗？</p>
+      <div class="pick-btns" id="guessRow3" role="group" aria-label="猜 50℃ 会不会开锅">
+        <button class="btn guess-pick" type="button" data-guess3="50" aria-pressed="false">会，50℃ 就开</button>
+        <button class="btn guess-pick" type="button" data-guess3="80" aria-pressed="false">还要更热，大约 80℃</button>
+        <button class="btn guess-pick" type="button" data-guess3="100" aria-pressed="false">还要到约 100℃</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后换回清水，拖到高温或点「变成汽」。</p>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="heatAtlasTitle">
+    <h2 id="heatAtlasTitle">物态图鉴</h2>
+    <p>同一类东西，冷热不同会长得不一样。点一张，看它现在更像固体、液体还是气体。</p>
+    <div class="kid-figure-grid" id="heatAtlas" role="group" aria-label="物态图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-heat="ice" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">冰块</span><span class="kid-figure-sub">固体</span><span class="kid-figure-fact">冰化了还是同一份水，只是样子换了，热从较热那边过来，冰没有变没。</span>
+      </button>
+      <button class="kid-figure" type="button" data-heat="water" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">水</span><span class="kid-figure-sub">液体</span><span class="kid-figure-fact">热从热的地方走向冷的地方，冰化了还在杯子里，没有变没。</span>
+      </button>
+      <button class="kid-figure" type="button" data-heat="steam" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">水蒸气</span><span class="kid-figure-sub">气体</span><span class="kid-figure-fact">汽会散开，眼睛常看不见，仍是水，不是变没了，热从较热流向较冷，水才跑出去。</span>
+      </button>
+      <button class="kid-figure" type="button" data-heat="butter" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">黄油</span><span class="kid-figure-sub">室温会软</span><span class="kid-figure-fact">冰热一点就化成水，变的是样子，不是「冰消失了」，本页滑块不是温度计。</span>
+      </button>
+      <button class="kid-figure" type="button" data-heat="choc" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">巧克力</span><span class="kid-figure-sub">手心会化</span><span class="kid-figure-fact">冰、水、汽还是同一块料，只是粒子排得松还是紧，不要写成三种脾气，热只是在换样子。</span>
+      </button>
+      <button class="kid-figure" type="button" data-heat="wax" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">蜡烛</span><span class="kid-figure-sub">蜡先化再烧</span><span class="kid-figure-fact">冰先变成液体再变成汽，跳过中间那一步也能讲，但本页先看化开。热从热处流向冷处。</span>
+      </button>
+      <button class="kid-figure" type="button" data-heat="iron" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">铁钉</span><span class="kid-figure-sub">厨房火化不了</span><span class="kid-figure-fact">铁的熔点比水高得多，本页不炼铁，只拿来对照：不是所有固体都在 0℃ 化。</span>
+      </button>
+      <button class="kid-figure" type="button" data-heat="glass" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">玻璃杯</span><span class="kid-figure-sub">排得乱的固体</span><span class="kid-figure-fact">固体里粒子冻在原地，并不会流动，所以冰有固定形状，水才会跟着杯子变。</span>
+      </button>
+      <button class="kid-figure" type="button" data-heat="snow" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">雪花</span><span class="kid-figure-sub">固体小晶体</span><span class="kid-figure-fact">冰还是水，只是排成了晶体。化开又能倒，回家先说「化了，但水还在」。热过来才会化。</span>
+      </button>
+      <button class="kid-figure" type="button" data-heat="honey" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">蜂蜜</span><span class="kid-figure-sub">又稠又会流</span><span class="kid-figure-fact">蜂蜜还是液体，只是走得慢，不要因为稠就写成固体，本页主戏是冰和水。</span>
+      </button>
+      <button class="kid-figure" type="button" data-heat="cream" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">冰淇淋</span><span class="kid-figure-sub">手心会化</span><span class="kid-figure-fact">热让它从固体变成液体，这叫熔化，不是水发脾气，也不是盐把冰吃掉。</span>
+      </button>
+      <button class="kid-figure" type="button" data-heat="oil" aria-pressed="false">
+        <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span>
+        <span class="kid-figure-cap">油</span><span class="kid-figure-sub">液体，浮在水面</span><span class="kid-figure-fact">油会流动，但比水轻，会浮在水面上，和冰化成水不是同一组对照，热也不会把油变成水。</span>
+      </button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，先说它现在是固体、液体还是气体。</p>
+  </section>
+
+          
+  <section class="card" aria-labelledby="corrTitle-heat_lab">
+    <h2 id="corrTitle-heat_lab">常见误解 · 先划掉</h2>
+    <p>先认清「不是什么」，再记「是什么」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="纠错对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">冰化了就没了</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">还是同一份水，只是样子变了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">盐把冰吃掉</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">盐让结冰点更低，不是把冰吃掉。</p></div>
+    </div>
+  </section>
+
+<section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">同一份水：拖到结冰、能倒、冒汽各一次</h2>
+    <p>先点「调到很冷」，看水结成冰、形状自己站得住。再点「调到常温」，看冰化开、能倒。再点「调到沸腾」，看锅里咕嘟、汽往上走。三种样子都亲手做出来。最好再点一次「加一勺盐」，把温度拖过 0℃，看盐水是不是还没冻。</p>
+    <p>冰化成水，如果没有溅出去，还是同一份；变的是样子和排列，不是变没了。汽散开了眼睛常看不见，水也还在空气里。盐会把结冰点往下挪一点，本页示意大约 −8℃，不是「永远不结冰」。高山气压更低，沸点示意 90℃。</p>
+    <p>舞台上的摄氏度是本页比较尺子：用来比「何时结冰、何时开锅」，不是校准过的厨房温度计，更不是炒菜火候。热水、蒸汽、炉灶一律大人看管，孩子不凑脸、不伸手。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--sci)"
+         data-kid-predict
+         data-kid-predict-explain="同一份水：固→液→气是样子与排列变；质量几乎守恒。盐可挪动凝固点。成人看护防烫。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🧊</span><b>冰化成水，如果没有溅出去，重量会变少吗？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：冰融化重量变不变">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="less">冰化了就变轻，质量跑掉了</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="same" data-kid-predict-correct>还是同一份水；变的是样子（固→液），质量几乎不变</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="gas">一化就全变成气跑光了</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：让同一份水走过三种样子</h2>
+    <p>把温度拖到结冰、液态和沸腾各一次。三种都亲手做出来，就可以记录完成。做完再试试加盐，看结冰点搬到了哪里。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先把温度拖到 0℃ 以下，让水结成冰。</p>
+  </section>
+
+
+          <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">同一锅水，先结冰，再化开，再冒汽</h2>
+    <p>舞台上只改一件事：有多热。同一份水。先拖到结冰，看硬邦邦倒不出来；再拖到液态，看能倒、跟着杯子变；再拖到沸腾，看冒汽。这样比，才知道变的是样子，不是水「生气消失」。</p>
+    <p>回家只带两句：「还是同一份水」；「变的是样子，化了没变没」。不要写成「冰化了就没了」或「汽是另一种新料」。盐是加试，先把三种样子做完。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">结冰</span><span class="kid-figure-sub">固态</span><p class="kid-figure-fact">结成冰就有固定形状，倒不出来，还是那份水。变的是样子，不是换了一种新料。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">化开</span><span class="kid-figure-sub">液态</span><p class="kid-figure-fact">化开就能倒，跟着杯子变，还是同一份水。冰化了没有变没，汽也只是散开。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">冒汽</span><span class="kid-figure-sub">气态</span><p class="kid-figure-fact">再热会散开成汽，眼睛常看不见，水没有变没。锅盖上的雾能证明它还在。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">温度</span><span class="kid-figure-sub">旋钮</span><p class="kid-figure-fact">冷热是旋钮，让同一种东西换样子。本页读数是比较尺子，不是厨房温度计。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">加盐</span><span class="kid-figure-sub">结冰点挪</span><p class="kid-figure-fact">三种样子做完再试加盐：结冰会更不容易，仍是那份水，不是换成另一种东西。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">变没</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">没溅出去就还在：汽是散开，不是消失。把「化了就没了」整列划掉。热只是让它换样子。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>拖到结冰。</b>看固态。</li>
+      <li data-step="2"><b>拖到液态。</b>看能倒。</li>
+      <li data-step="3"><b>拖到沸腾。</b>看冒汽。</li>
+      <li data-step="4"><b>写完成句。</b>不是变没。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>水可以冻硬、化开、再变成看不见的汽，还是那份水。化了没有变没。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>变的是排列和运动，不是质量跑掉。盐会让结冰更难一点，要更冷才冻。锅盖上的雾是汽又凝回来，证明它还在。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>相变：温度提供能量，潜热在变脸点附近被吸收或放出。盐干扰冰晶网络，凝固点下降。高山气压低，沸点示意下移。本页 −8℃、90℃ 是比较尺子，不是精确配方。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能做出固、液、气三种样子，指着舞台说「还是同一份」，并否定「化了就变没」。完成看的是对照，不是背「相变」两个字。</p>
+    <ul class="ask-list">
+      <li>冰是固体、液体还是气体？</li>
+      <li>化开以后还是同一份水吗？</li>
+      <li>汽跑到哪去了，是变没了吗？</li>
+      <li>加盐以后，0℃ 还会结冰吗？</li>
+    </ul>
+  </section>
+
+
+        <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">盐挪动结冰点，不改「还是同一份水」</h2>
+    <p>同一锅水，先只改温度，做出冰、能倒、冒汽三种样子。盐是附加旋钮：加盐以后，要更冷才结冰，本页示意大约 −8℃。水还是那份水，没有换成另一种料。</p>
+    <p>蒸发不是魔法消失：分子进了空气。锅盖上若有雾，那是汽又凝回来的小水珠，正好证明它没变没。黄油、巧克力、冰淇淋也走同一条路：热只换样子。铁钉在厨房火上几乎不变，因为它的熔点比水高得多。</p>
+    <p>高山气压更低，水不到平时那么热就开锅，本页示意 90℃。这是加试，用来看见「沸点会挪」，不是海拔对照表。滑块刻度是教学示意，真厨房用成人看的温度计。</p>
+    <p>热水会烫，蒸汽不要凑脸，开盖溅出的热汤能烫伤。本页不是煮汤教程，也不模拟沸腾喷溅。炉灶只许大人开。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">盐</span><span class="kid-figure-sub">挪点</span><p class="kid-figure-fact">加盐只挪结冰点，不把水换成另一种东西。盐不是把冰吃掉，也不要撒在活叶上。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">雾</span><span class="kid-figure-sub">又凝回来</span><p class="kid-figure-fact">锅盖上的雾是汽又凝成水，热从热汽流向较冷的盖，证明它没变没。真蒸汽防烫，炉灶归大人。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">滑块</span><span class="kid-figure-sub">示意</span><p class="kid-figure-fact">本页滑块只示意冷热，不是校准过的温度计，也不是菜谱火候。温度计不在制热。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">防烫</span><span class="kid-figure-sub">成人</span><p class="kid-figure-fact">真蒸汽很烫，不凑脸，炉灶只许大人开。真火真锅归大人，本页滑块不是火候。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：三种样子 · 还是同一份 · 「化了就变没」</h2>
+    <p>三列用同一锅、同一份水。先只改温度。一次改两样，分不清到底是谁让它换了脸。</p>
+    <p>三种样子：冰硬、水能倒、汽散开。同一份：没溅出去，质量几乎还在。「化了就变没」整列划掉：看不见不等于不在，汽是散开，雾是又凝回来。</p>
+    <p>加盐、改到高山是加试，不是主任务：盐把结冰点往下拖，高山把沸点往下示意。本页 −8℃、90℃ 用来比较方向，不要背成自然常数。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">三种</span><span class="kid-figure-sub">亲手做</span><p class="kid-figure-fact">冰、水、汽三种样子都看过或做过一遍。完成句写「还是那份水」，热只是换样子。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">同一份</span><span class="kid-figure-sub">没溅出</span><p class="kid-figure-fact">没溅出去，质量几乎还在那一份里。汽散开了，不等于变没了。热不会把水吃掉。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">变没</span><span class="kid-figure-sub">划掉</span><p class="kid-figure-fact">汽只是散开，不是变没了。回家先说「化了，但水还在」，杯子外壁的珠是凝结。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">盐</span><span class="kid-figure-sub">附加</span><p class="kid-figure-fact">三种样子写完，再试加盐这一句。先别把盐和「消失」叠在同一档，盐也不在制热。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记三种样子和「还在」，不记厨房火候</h2>
+    <p>在纸上画三格：硬、能倒、看不见。旁边写「还是那份水」。三格并排，比背「固液气」有用。</p>
+    <p>口头只要两句：「化了，但水还在。」「汽是散开，不是消失。」有人说「化了就变没」，让孩子指着三格反驳。盐是第四句：要更冷才冻。</p>
+    <p>真炉灶只许大人开，蒸汽不凑脸。本页滑块不当温度计，数字不要抄进菜谱。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">三格</span><span class="kid-figure-sub">样子</span><p class="kid-figure-fact">画硬、能倒、看不见三格，旁边写「还是那份水」。对照比抄℃清楚，℃不是温度计在制热。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">没变没</span><p class="kid-figure-fact">先说「化了，但水还在」，不要说变没了。汽也是同一份水散开了。热从较热流向较冷。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">盐</span><span class="kid-figure-sub">第四句</span><p class="kid-figure-fact">加盐是第四句，先把三种样子写完。盐只挪结冰点，不把水换掉，也不是温度计在制热。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/iceberg.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">真炉</span><span class="kid-figure-sub">大人</span><p class="kid-figure-fact">真炉灶只许大人开，本页滑块不是温度计，也不是厨房火候。蒸汽不凑脸。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「换样子靠不靠冷热」，就只改温度这一项。同一份水，先结冰，再化开，再冒汽。加盐、改到高山，是另一次对照，不要和「三种样子」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>温度（很冷 / 常温 / 沸腾）。</li>
+      <li><b>先保持不变：</b>同一份水、先不加盐、先在海平面。</li>
+      <li><b>要观察的：</b>硬不硬、能不能倒、有没有冒汽。</li>
+      <li><b>另开一行：</b>加盐以后 0℃ 还冻不冻；改到高山，不到 100℃ 会不会开锅。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>锅盖里面的水珠是从哪来的？杯子漏了，还是汽又凝回来了？这能用来反驳「化了就变没」吗？</li>
+      <li>冬天往路上撒盐，雪为什么更容易化？和本页「盐水要更冷才冻」像在哪？</li>
+      <li>高山上煮面条，水不到平时那么热就开了。面一定熟了吗？本页 90℃ 能当海拔表吗？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>水可以冻硬、化开、再变成看不见的汽，还是那份水。化了没有变没。能指着冰、水和汽说名字就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>变的是样子和排列，不是质量跑掉。盐会让结冰更难。本页数字只用来比较，不是厨房温度计。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>相变与潜热。盐降低凝固点。高山气压低，沸点示意下移。−8℃、90℃ 是比较尺子。真蒸汽防烫。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：物态观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：冰在 0℃ 出现，盐水更晚冻"></div>
+      <div><label for="workContent">三种样子</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下冰、水和蒸汽分别在几℃ 出现，加盐以后结冰点有没有变。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>三种样子里，孩子指的是图标还是「水生气了」？让他再指一次冰、水和汽。</li>
+      <li>化了还是同一份，哪一句能给四岁听？试「没溅出去，还是那份水」。</li>
+      <li>盐为什么不能写成完成句的主角？三种样子没做完，盐只是加试。</li>
+      <li>蒸汽凑脸的红线怎么说？本页能当煮汤教程吗？</li>
+      <li>本页滑块能当厨房温度计吗？数字能抄进菜谱吗？</li>
+      <li>锅盖上的雾证明了哪一句：水变没了，还是汽又凝回来了？</li>
+    </ul>
+  </section>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：物态是宏观标签，对应分子排列与动能。冰排得整齐能自己站着，水能滑动跟着杯子变，汽跑得很快会散开。质量在封闭、无溅出时近似守恒。</p>
+    <p>本页「清水约 0℃ 结冰、海平面约 100℃ 沸腾；加盐示意 −8℃；高山示意 90℃」只是比较尺子，用来看见「何时换脸、点会挪」，不是校准过的温度计，也不是菜谱火候。</p>
+    <p>盐通过扰乱冰晶网络降低凝固点。高山气压低，沸点下移。蒸发是分子进入空气，锅盖上的雾是又凝回来，证明它没变没。</p>
+    <p>热水防烫，蒸汽不凑脸。舞台是锅的示意，不是厨房校准，也不模拟沸腾喷溅。</p>
+  </section>
+
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--warn) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--warn) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">相变公式卡 · 清水结冰≈0℃、海平面沸腾≈100℃；加盐结冰≈−8℃；高山示意≈90℃（本页比较尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">同一份水换样子：结冰、液态、沸腾。盐把结冰点往下拖（本页示意 −8℃），不是「永远不结冰」。高山气压更低，沸点示意 90℃——孩子看得见，不是精确海拔表。厨房真实验需成人防烫。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：同一份水，冷热只换样子，没有变没。水循环页看汽升上天怎么再落回来；浮沉页看水当介质怎么托东西。</p>
+    <p class="row"><a class="btn btn-ghost" href="water-cycle.html">水循环工坊</a><a class="btn btn-ghost" href="float-sink.html">浮沉实验室</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页是理想化示意。因为热水会烫、同一份水只换样子没有变没，所以真实厨房请由大人操作热源，孩子只准观察。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var salt = false;
+  var alt = "sea";
+  var seen = { ice:false, water:false, steam:false, done:false };
+  var guess1 = "", guess1Done = false, sawIce = false;
+  var guess2 = "", guess2Done = false, sawSalt = false;
+  var guess3 = "", guess3Done = false, sawBoil = false;
+  var raf = 0;
+  var bubT = 0;
+  function motionReduced(){
+    if (window.Playful && typeof Playful.motionReduced === "function") return Playful.motionReduced();
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+  function temp(){ return Number(document.getElementById("temp").value); }
+  function freezeP(){ return salt ? -8 : 0; }
+  function boilP(){ return alt === "mtn" ? 90 : 100; }
+  /* 相：ice 全冰 / mix 冰水混合 / water 液态 / boil 沸腾 */
+  function phase(t){
+    var f = freezeP();
+    if (t < f - 1) return "ice";
+    if (t <= f + 1) return "mix";
+    if (t >= boilP()) return "boil";
+    return "water";
+  }
+  /* 温度计：-15℃→y200，100℃→y44（0℃ 刚好落在 179 的刻度上）。 */
+  function mercY(t){ return 200 - (t + 15) * (156 / 115); }
+  function setIce(id, base, frac){
+    var el = document.getElementById(id);
+    var h = Math.max(0, Math.round(base.h * frac));
+    el.setAttribute("height", String(h));
+    el.setAttribute("y", String(base.y + base.h - h));
+    el.style.display = h < 2 ? "none" : "";
+  }
+  var ICE = { ice1:{ y:118, h:36 }, ice2:{ y:110, h:40 }, ice3:{ y:122, h:32 } };
+  function vaporWord(t, p){
+    if (p === "boil") return "咕嘟咕嘟";
+    if (p === "ice" || p === "mix") return "几乎没有";
+    if (t >= 70) return "比较快";
+    if (t >= 35) return "慢慢地";
+    return "很慢";
+  }
+  function render(fromUser){
+    var t = temp();
+    var p = phase(t);
+    var f = freezeP();
+    document.getElementById("tempOut").textContent = t + "℃";
+    document.getElementById("tempRead").textContent = t + "℃";
+    document.getElementById("temp").setAttribute("aria-valuetext", t + " 摄氏度");
+    document.getElementById("mercCol").setAttribute("y", String(mercY(t).toFixed(1)));
+    document.getElementById("mercCol").setAttribute("height", String((200 - mercY(t) + 4).toFixed(1)));
+    /* 冰量：全冰=1；混合带内从 0.9 融到 0.1；液态/沸腾=0。 */
+    var frac = p === "ice" ? 1 : p === "mix" ? (0.5 - (t - f) * 0.4) : 0;
+    setIce("ice1", ICE.ice1, frac);
+    setIce("ice2", ICE.ice2, frac);
+    setIce("ice3", ICE.ice3, frac);
+    /* 蒸发：液态时随温度变强；沸腾时全开；冰面也有一点点升华，不画。 */
+    var vap = p === "boil" ? 1 : p === "water" ? Math.max(0, (t - 20) / 110) : 0;
+    document.getElementById("steamLayer").setAttribute("opacity", String(vap.toFixed(2)));
+    document.getElementById("bubbleLayer").hidden = p !== "boil";
+    document.getElementById("flameLayer").hidden = t < 30;
+    document.getElementById("flame2").style.display = t >= 60 ? "" : "none";
+    document.getElementById("flame3").style.display = t >= 90 ? "" : "none";
+    document.getElementById("saltLayer").setAttribute("opacity", salt ? "1" : "0");
+    document.getElementById("saltTick").setAttribute("opacity", salt ? "1" : "0");
+    document.getElementById("saltTickLab").setAttribute("opacity", salt ? "1" : "0");
+    var saltY = mercY(-8).toFixed(1);
+    document.getElementById("saltTick").setAttribute("y1", saltY);
+    document.getElementById("saltTick").setAttribute("y2", saltY);
+    var mtn = alt === "mtn";
+    var boilY = mercY(90).toFixed(1);
+    document.getElementById("boilTick").setAttribute("opacity", mtn ? "1" : "0");
+    document.getElementById("boilTickLab").setAttribute("opacity", mtn ? "1" : "0");
+    document.getElementById("boilTick").setAttribute("y1", boilY);
+    document.getElementById("boilTick").setAttribute("y2", boilY);
+    var phaseWord = p === "ice" ? "全是冰" : p === "mix" ? "冰 + 水" : p === "boil" ? "沸腾" : "水";
+    document.getElementById("phaseRead").textContent = phaseWord;
+    document.getElementById("vaporRead").textContent = vaporWord(t, p);
+    document.getElementById("stateLab").textContent = "现在：" + phaseWord;
+    var live = document.getElementById("live");
+    var pre = salt ? "盐水" : "清水";
+    if (p === "ice") {
+      live.textContent = pre + "全冻成了冰，形状自己站得住。" + (salt ? "盐水要更冷才全冻上。" : "清水够冷就是冰。");
+    } else if (p === "mix") {
+      live.textContent = "冰和水在一起时，温度停住，直到化完或冻完。";
+    } else if (p === "boil") {
+      live.textContent = (alt === "mtn" ? "高山气压低，水不到平时那么热就开锅。" : "开锅了。多余的热全拿去变汽。");
+    } else if (salt && t < 0) {
+      live.textContent = "已经低于清水的结冰点，可加了盐的水还没冻。盐把结冰点拖得更冷。";
+    } else {
+      live.textContent = "还能流动。水面在" + vaporWord(t, p) + "地变成汽。";
+    }
+    if (fromUser) {
+      if (p === "ice" || p === "mix") seen.ice = true;
+      if (p === "water") seen.water = true;
+      if (p === "boil") seen.steam = true;
+      if (guess1 && !guess1Done && !salt && (p === "ice" || p === "mix")) sawIce = true;
+      if (guess2 && !guess2Done && salt && t < 0) sawSalt = true;
+      if (guess3 && !guess3Done && !salt && p === "boil" && alt === "sea") sawBoil = true;
+      checkGuess(t, p);
+    }
+    updateTask();
+    requestDraw();
+  }
+  function checkGuess(t, p){
+    if (guess1 && !guess1Done && sawIce) {
+      guess1Done = true;
+      var right1 = guess1 === "0";
+      document.getElementById("guessOut1").innerHTML = (right1 ? "<b>押对了！</b>" : "<b>揭晓：</b>你押 " + guess1 + "℃，") +
+        "冰正好在 <b>0℃</b> 出现——不是更暖，也不用更冷。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && sawSalt) {
+      guess2Done = true;
+      var right2 = guess2 === "colder";
+      var word = guess2 === "colder" ? "要更冷" : guess2 === "same" ? "一样冷" : "更暖就冻";
+      var evi = (p === "water")
+        ? "现在 " + t + "℃ 已低于 0℃，可盐水还没冻——它要到约 <b>−8℃</b> 才结冰"
+        : "看温度计：盐水拖到约 <b>−8℃</b> 才冻上，比清水的 0℃ 冷得多";
+      document.getElementById("guessOut2").innerHTML = (right2 ? "<b>押对了！</b>" : "<b>揭晓：</b>你押「" + word + "」，") +
+        evi + "，答案是「要更冷」。冬天撒盐化雪就是这招。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && !salt && p === "boil" && alt === "mtn") {
+      document.getElementById("guessOut3").textContent = "这是高山：约 90℃ 就开锅了。换回海平面，再拖到约 100℃ 揭晓第 3 题。";
+    }
+    if (guess3 && !guess3Done && sawBoil) {
+      guess3Done = true;
+      var right3 = guess3 === "100";
+      document.getElementById("guessOut3").innerHTML = (right3 ? "<b>押对了！</b>" : "<b>揭晓：</b>你押 " + guess3 + "℃，") +
+        "海平面清水大约在 <b>100℃</b> 沸腾——高山气压低，本页示意 90℃ 就开锅。";
+    }
+  }
+  function updateTask(){
+    var status = document.getElementById("taskStatus");
+    if (seen.done) return;
+    if (seen.ice && seen.water && seen.steam) {
+      seen.done = true;
+      if (window.Progress) Progress.complete("games/heat-lab.html", "亲手把同一份水调到结冰、液态和沸腾");
+      status.textContent = "完成啦：同一份水走过了三种样子。再试试加盐，看结冰点搬去哪了。";
+    } else if (!seen.ice) {
+      status.textContent = "尚未完成：先把温度拖到 0℃ 以下，让水结成冰。";
+    } else if (!seen.water) {
+      status.textContent = "还差：把温度调回中间，看冰化成水。";
+    } else {
+      status.textContent = "还差：加热到当前沸点（海平面约 100℃）。";
+    }
+  }
+  /* 沸腾泡泡动画：只在沸腾且允许动效时排帧，停机条件写在同一行。 */
+  var BUBS = [ { id:"bub1", x:220, s:0 }, { id:"bub2", x:262, s:0.4 }, { id:"bub3", x:304, s:0.7 }, { id:"bub4", x:340, s:0.2 } ];
+  function stepBubbles(now){
+    if (!bubT) bubT = now;
+    var el, i, ph;
+    for (i = 0; i < BUBS.length; i += 1) {
+      el = document.getElementById(BUBS[i].id);
+      ph = ((now - bubT) / 1400 + BUBS[i].s) % 1;
+      el.setAttribute("cy", String((188 - ph * 44).toFixed(1)));
+      el.setAttribute("opacity", String((1 - ph * 0.7).toFixed(2)));
+    }
+    if (phase(temp()) === "boil" && !motionReduced()) { raf = requestAnimationFrame(stepBubbles); } else { raf = 0; }
+  }
+  function requestDraw(){
+    if (phase(temp()) === "boil" && !motionReduced() && !raf) raf = requestAnimationFrame(stepBubbles);
+  }
+  document.getElementById("temp").addEventListener("input", function(){ render(true); });
+  document.getElementById("toIce").addEventListener("click", function(){ document.getElementById("temp").value = -12; render(true); });
+  document.getElementById("toWater").addEventListener("click", function(){ document.getElementById("temp").value = 20; render(true); });
+  document.getElementById("toSteam").addEventListener("click", function(){ document.getElementById("temp").value = String(boilP()); render(true); });
+  document.getElementById("altBtn").addEventListener("click", function(){
+    alt = alt === "sea" ? "mtn" : "sea";
+    this.setAttribute("aria-pressed", alt === "mtn" ? "true" : "false");
+    this.textContent = alt === "mtn" ? "改回海平面" : "改到高山";
+    render(true);
+  });
+  document.getElementById("saltBtn").addEventListener("click", function(){
+    salt = !salt;
+    this.setAttribute("aria-pressed", salt ? "true" : "false");
+    this.textContent = salt ? "换回清水" : "加一勺盐";
+    render(true);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){ n.setAttribute("aria-pressed", n === btn ? "true" : "false"); });
+      document.getElementById("guessOut1").textContent = "押好了。现在把温度往下拖，看冰在几℃ 出现。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){ n.setAttribute("aria-pressed", n === btn ? "true" : "false"); });
+      document.getElementById("guessOut2").textContent = "押好了。点「加一勺盐」，再把温度拖到 0℃ 以下验证。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){ n.setAttribute("aria-pressed", n === btn ? "true" : "false"); });
+      document.getElementById("guessOut3").textContent = "押好了。换回清水，拖到高温或点「变成汽」。";
+    });
+  });
+  var ATLAS = {
+    ice: "冰块是固体：粒子排得整齐，所以能自己站着。热过来才会化，水还在那份里。",
+    water: "水是液体：粒子能滑动，所以会顺着杯子改形状。还是同一份水，不是另一种东西。",
+    steam: "水蒸气是气体：粒子跑得很快，会散到整个房间。仍是同一份水，不是变没了。",
+    butter: "黄油在冰箱里像固体，桌上较热，热从较热流向较冷，它就慢慢软、再化。",
+    choc: "巧克力和黄油一样，热只是让它换样子，还是同一份料，不是三种脾气。",
+    wax: "蜡烛先化成蜡液，再蒸发燃烧。先看见的是熔化，热从较热的火那边过来。",
+    iron: "铁钉在厨房火上几乎不变，熔点比水高得多。金属传得快，所以摸着才凉。",
+    glass: "玻璃是「排得乱的固体」：粒子冻在原地，并不会流动。老教堂玻璃下厚上薄，是当年做玻璃就不匀，不是它流了几百年。",
+    snow: "雪花是固体小晶体：还是水，只是排成了冰。化开又能倒，回家先说水还在。",
+    honey: "蜂蜜是液体：会流动，只是比水稠、走得慢。不要因为稠就写成固体，本页主戏是冰水。",
+    cream: "冰淇淋在冰箱里是固体，到手心里就会化：热从较热的手流向冰淇淋。",
+    oil: "油是液体，会流动；它比水轻，所以浮在水面上。和冰化成水不是同一组对照。"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-heat]"), function(btn){
+    btn.addEventListener("click", function(){
+      Array.prototype.forEach.call(document.querySelectorAll("[data-heat]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+      var key=btn.getAttribute("data-heat");
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+    });
+  });
+  window.addEventListener("playful:preference", function(){ render(false); });
+  render(false);
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/heat-lab.html", "冷热工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

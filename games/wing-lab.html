@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>翅膀工坊 · 互动实验室</title>
+<meta name="description" content="两对翅能各自扇，身子可以停在空中；一对翅多半要往前扑。本页用对×振×8 当比较尺子，不是真实升力公式。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  html, body { overflow-x:hidden; }
+  button, .btn, .chip, input, select, textarea, .input { min-height:44px; }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pick-btns .btn { white-space: nowrap; }
+  button, .btn { touch-action:manipulation; }
+  :root { --touch:52px; --touch-lg:64px; }
+  .tag-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .kid-mission { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; margin:10px 0 8px; padding:clamp(12px,2.4vw,18px); border:1px solid color-mix(in srgb,var(--phys) 34%,var(--line)); border-radius:22px; background:linear-gradient(135deg,color-mix(in srgb,var(--phys) 14%,var(--surface)),var(--surface) 62%); }
+  .mission-copy h1 { margin:.2em 0 .12em; font-size:clamp(1.45rem,4.6vw,2.15rem); line-height:1.12; }
+  .mission-copy p { max-width:52ch; margin:.2em 0 0; color:var(--ink-mid); }
+  .mission-character { width:76px; min-height:76px; display:grid; place-items:center; border:2px solid color-mix(in srgb,var(--phys) 32%,var(--line)); border-radius:50%; background:radial-gradient(circle at 38% 32%,var(--surface),color-mix(in srgb,var(--phys) 18%,var(--surface))); }
+  .mission-character svg { width:52px; height:52px; }
+  .kid-visual-stage { position:relative; margin-bottom:14px; padding:clamp(10px,2vw,16px); border:3px solid color-mix(in srgb,var(--phys) 42%,var(--line)); border-radius:24px; background:var(--surface); box-shadow:0 8px 0 color-mix(in srgb,var(--kit) 26%,transparent); }
+  .stage-head { display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-bottom:8px; }
+  .stage-head h2 { margin:0; font-size:clamp(1.1rem,3.6vw,1.4rem); }
+  .stage-head p { margin:2px 0 0; color:var(--ink-mid); font-size:.88rem; }
+  .condition-badge { flex:none; padding:6px 10px; border:1px solid color-mix(in srgb,var(--phys) 45%,var(--line)); border-radius:99px; background:color-mix(in srgb,var(--phys) 12%,var(--surface)); color:var(--ink); font-size:.8rem; font-weight:900; }
+  .wg-art { display:block; width:100%; max-width:960px; height:auto; margin:0 auto; }
+  .wg-toys { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:12px 0 0; }
+  .wg-toy { min-height:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:10px 8px; border:3px solid var(--line); border-radius:22px; background:var(--surface-2); color:var(--ink); font-weight:900; font-size:1.05rem; line-height:1.2; }
+  .wg-toy svg { width:72px; height:64px; }
+  .wg-toy[aria-pressed="true"] { border-color:var(--phys); background:color-mix(in srgb,var(--phys) 16%,var(--surface)); }
+  .wg-toy-go { border-color:color-mix(in srgb,var(--warn) 55%,var(--line)); background:color-mix(in srgb,var(--warn) 12%,var(--surface)); }
+  .wg-toy:active { transform:translateY(2px); }
+  .kid-speech-row { margin:10px 0 0; }
+  .kid-speech { font-size:1.05rem; font-weight:800; }
+  .wg-atlas .kid-figure { display:flex; flex-direction:column; gap:6px; align-items:stretch; margin:0; padding:10px; text-align:center; }
+  .wg-atlas .kid-figure-art { padding:4px; }
+  .wg-atlas .kid-figure-art > svg { width:100%; max-width:128px; height:auto; }
+  .wg-atlas .kid-figure-fact { display:block; }
+  .kid-band { margin:0 0 16px; padding:clamp(12px,2.4vw,18px); border:3px solid var(--line); border-radius:24px; background:linear-gradient(158deg,var(--surface),var(--surface-2)); box-shadow:0 6px 0 color-mix(in srgb,var(--kit) 26%,transparent); }
+  .kid-band-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .kid-band-emoji { flex:none; display:grid; place-items:center; width:48px; height:48px; border:3px solid var(--line); border-radius:46% 54% 50% 50%; background:var(--surface); }
+  .kid-band-emoji svg { width:30px; height:30px; }
+  .kid-band-head h2 { margin:0; font-size:clamp(1.05rem,3.4vw,1.32rem); }
+  .kid-band-head p { margin:2px 0 0; color:var(--ink-mid); font-size:.86rem; }
+  .kid-status { display:block; margin:10px 0 0; padding:10px 14px; border:3px solid var(--line-soft); border-radius:999px; background:var(--surface); color:var(--ink); font-size:.95rem; font-weight:800; }
+  .kid-icon-row { display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 0; }
+  .kid-icon-row .kid-icon-btn { flex:1 1 120px; }
+  .kid-icon-btn[aria-pressed="true"], .guess-pick[aria-pressed="true"] { border-color:var(--phys); background:color-mix(in srgb,var(--phys) 16%,var(--surface)); color:var(--ink); }
+  .parent-sliders { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
+  .readout { display:grid; gap:8px; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); margin-top:8px; }
+  .readout b { display:block; font:800 1.08rem/1.2 var(--mono); color:var(--ink); }
+  .readout span { font-size:.76rem; color:var(--ink-dim); }
+  .wg-ruler { margin:8px 0 0; font-size:.86rem; color:var(--ink-mid); }
+  .guess-out { font-weight:750; color:var(--ink-mid); }
+  .guess-out b { color:var(--ink); }
+  .teach-lead { margin:.2em 0 .7em; color:var(--ink-mid); }
+  .teach-lead b { color:var(--ink); }
+  .teach-points { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0; padding:0; list-style:none; }
+  .teach-points li { padding:12px; border:1px solid var(--line-soft); border-radius:14px; background:var(--surface-2); color:var(--ink-mid); font-size:.9rem; }
+  .teach-points b { display:block; margin-bottom:3px; color:var(--ink); }
+  .ask { counter-reset:q; list-style:none; padding:0; margin:0; }
+  .ask li { position:relative; padding-left:34px; margin-bottom:12px; color:var(--ink-mid); }
+  .ask li::before { counter-increment:q; content:counter(q); position:absolute; left:0; top:1px; width:23px; height:23px; border-radius:50%; display:grid; place-items:center; background:color-mix(in srgb,var(--phys) 16%,var(--surface)); border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line)); color:var(--ink); font:800 .76rem var(--mono); }
+  .parent-deep-dive { margin-top:16px; }
+  .science-note { border-color:color-mix(in srgb,var(--sci) 55%,var(--surface)); background:linear-gradient(135deg,color-mix(in srgb,var(--sci) 9%,var(--surface)),var(--surface-2)); }
+  .why h3 { margin-top:1.1em; }
+  .kid-action-strip { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+
+  .wg-sky { fill:#8ec8dc; }
+  .wg-sky-hi { fill:#c5e6f2; }
+  .wg-cloud { fill:#f4fbff; opacity:.85; }
+  .wg-sun { fill:#ffe08a; }
+  .wg-hill { fill:#6a9a58; }
+  .wg-pond { fill:#3a8aaa; }
+  .wg-pond-hi { fill:#7ec4d8; opacity:.35; }
+  .wg-reed { fill:#3d6a32; }
+  .wg-reed-tip { fill:#c45a3a; }
+  .wg-bug-eye { fill:#1a3a28; }
+  .wg-bug-eye-hi { fill:#7ad4a0; }
+  .wg-bug-head { fill:#2f7a3e; }
+  .wg-bug-thorax { fill:#3d8a4a; }
+  .wg-bug-ab { fill:#2a6a38; }
+  .wg-bug-ring { fill:none; stroke:#1f4a28; stroke-width:1.1; }
+  .wg-wing { fill:#d8f0f8; fill-opacity:.72; stroke:#3a6a78; stroke-width:1.4; }
+  .wg-wing-vein { fill:none; stroke:#5a8a98; stroke-width:.7; }
+  .wg-bird-body { fill:#6a4a30; }
+  .wg-bird-belly { fill:#c4a06a; }
+  .wg-bird-wing { fill:#8a6a40; stroke:#3a2a18; stroke-width:1.2; }
+  .wg-bird-beak { fill:#d48a28; }
+  .wg-bird-eye { fill:#1f2937; }
+  .wg-trail { fill:none; stroke:#c2410c; stroke-width:3; stroke-dasharray:7 6; stroke-linecap:round; opacity:0; }
+  .wg-down { fill:none; stroke:#0e7490; stroke-width:2.2; stroke-dasharray:4 5; stroke-linecap:round; opacity:0; }
+  .wg-heli { opacity:0; }
+  .wg-heli-body { fill:#8a857c; stroke:#3a2a18; stroke-width:2; }
+  .wg-heli-rotor { fill:none; stroke:#3a2a18; stroke-width:5; stroke-linecap:round; }
+  .wg-skin { fill:color-mix(in srgb,var(--kit) 18%,#f0c8a8); }
+  .wg-hair { fill:color-mix(in srgb,var(--ink) 42%,#5a3a28); }
+  .wg-shirt { fill:color-mix(in srgb,var(--sci) 40%,#5a8a48); }
+  .wg-eye-white { fill:var(--surface); }
+  .wg-pupil { fill:var(--ink); }
+  .wg-brow { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; }
+  .wg-mouth { fill:none; stroke:var(--ink); stroke-width:2; stroke-linecap:round; }
+  .wg-shadow { fill:color-mix(in srgb,var(--ink) 14%,transparent); }
+
+  #bugG, #birdG { transition:transform .35s ease; }
+  .wg-art[data-pose="hover"] #bugG { transform:translate(0,-18px); }
+  .wg-art[data-pose="forward"] #birdG { transform:translate(36px,10px) rotate(8deg); }
+  .wg-art[data-pose="fall"] #birdG { transform:translate(8px,54px) rotate(18deg); }
+  .wg-art[data-pose="reverse"] #bugG { transform:translate(-28px,-10px) scaleX(-1); }
+  .wg-art[data-pairs="2"] #bugG { opacity:1; }
+  .wg-art[data-pairs="2"] #birdG { opacity:0; }
+  .wg-art[data-pairs="1"] #bugG { opacity:0; }
+  .wg-art[data-pairs="1"] #birdG { opacity:1; }
+  .wg-art[data-pose="hover"] .wg-down { opacity:.85; }
+  .wg-art[data-pose="forward"] .wg-trail { opacity:1; }
+  .wg-art[data-pose="fall"] .wg-trail { opacity:0; }
+  .wg-art[data-kind="heli"] #heliG { opacity:1; }
+  .wg-art[data-kind="heli"] #bugG, .wg-art[data-kind="heli"] #birdG { opacity:.15; }
+
+  .wg-flap { transform-box:fill-box; transform-origin:center; }
+  .wg-art[data-flap="1"] .wg-flap-a { animation:wgFlapA .18s ease-in-out infinite alternate; }
+  .wg-art[data-flap="1"] .wg-flap-b { animation:wgFlapB .18s ease-in-out infinite alternate; }
+  @keyframes wgFlapA { from { transform:rotate(-16deg); } to { transform:rotate(18deg); } }
+  @keyframes wgFlapB { from { transform:rotate(14deg); } to { transform:rotate(-20deg); } }
+  html[data-playful-motion="reduced"] .wg-art * { animation:none !important; }
+  @media (prefers-reduced-motion: reduce) {
+    #bugG, #birdG, .wg-toy:active { transition:none; }
+    .wg-art .wg-flap-a, .wg-art .wg-flap-b { animation:none; }
+  }
+  main :where(.kid-visual-stage,.teach-points) > * { min-width:0; }
+  @media (max-width:720px) {
+    .mission-character { display:none; }
+    .kid-mission { grid-template-columns:1fr; }
+    .teach-points { grid-template-columns:1fr; }
+    .parent-sliders { grid-template-columns:1fr; }
+  }
+  @media (max-width:520px) {
+    .wg-toys { grid-template-columns:1fr; }
+    .kid-mission .pill:nth-child(n+2) { display:none; }
+    .wg-toy { min-height:72px; flex-direction:row; justify-content:flex-start; padding:8px 12px; }
+    .wg-toy svg { width:52px; height:46px; }
+  }
+
+  /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .playful-companion { display: none; }
+    html[data-mode="kid"] [data-playful-sticker] { display: none; }
+    html[data-mode="kid"] .kid-mission { margin: 6px 0 8px; padding: 8px 10px; }
+    html[data-mode="kid"] .kid-mission .row { margin-bottom: .25em; }
+    html[data-mode="kid"] .kid-mission h1 { font-size: 1.35rem; }
+    html[data-mode="kid"] .kid-mission .lead,
+    html[data-mode="kid"] .mission-copy p { font-size: .88rem; line-height: 1.45; margin-bottom: .3em; }
+    html[data-mode="kid"] .mission-character { display: none; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 8px; margin-bottom: 8px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1rem; margin-bottom: .25em; }
+    html[data-mode="kid"] .wg-art { max-height: 90px; }
+    html[data-mode="kid"] .stage-head p { display: none; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+    html[data-mode="kid"] .readout b { font-size: .9rem; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .84rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; gap: 6px; }
+  }
+</style>
+</head>
+<body data-playful-page="games/wing-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<a class="skip-link" href="#stage">跳到实验画面</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="kid-mission" aria-labelledby="wgStoryTitle">
+    <div class="mission-copy">
+      <div class="tag-row">
+        <span class="pill pill-phys">物理</span>
+        <span class="pill">6–11&nbsp;岁</span>
+        <span class="pill">约 10&nbsp;分钟</span>
+      </div>
+      <h1 id="wgStoryTitle">能停在空中，还是只能往前飞？</h1>
+      <p class="lead">两对翅能各自扇，身子可以停在空中；一对翅多半要往前扑才掉不下去。翅膀完全停住，常常会往下掉。本页只比较「几对翅」和「振得快慢」，不是真飞机手册。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-character" aria-hidden="true">
+      <svg viewBox="0 0 64 64" focusable="false">
+        <ellipse class="wg-wing" cx="18" cy="24" rx="14" ry="5"/>
+        <ellipse class="wg-wing" cx="46" cy="24" rx="14" ry="5"/>
+        <ellipse class="wg-wing" cx="18" cy="36" rx="14" ry="5"/>
+        <ellipse class="wg-wing" cx="46" cy="36" rx="14" ry="5"/>
+        <ellipse class="wg-bug-ab" cx="32" cy="40" rx="5" ry="16"/>
+        <circle class="wg-bug-head" cx="32" cy="20" r="7"/>
+      </svg>
+    </div>
+  </header>
+
+  <section class="kid-visual-stage" id="stage" aria-labelledby="stageTitle">
+    <div class="stage-head">
+      <div>
+        <h2 id="stageTitle">翅膀玩具台</h2>
+        <p>点下面三个大按钮，看谁停在空中，谁要往前冲，谁会掉下去。</p>
+      </div>
+      <span class="condition-badge" id="stateBadge">还没飞</span>
+    </div>
+
+    <svg class="wg-art" id="wgArt" viewBox="0 0 720 400" role="img" aria-labelledby="wgTitle wgDesc">
+      <title id="wgTitle">池塘边，蜻蜓四翅停住，小鸟一对翅往前飞</title>
+      <desc id="wgDesc">四只半透明翅膀的蜻蜓可以停在空中，身子几乎不动。一对羽毛翅膀的小鸟要往前冲才掉不下去；翅膀停住就会往下掉。直升机转一圈当翅膀，是另一套。舞台上不写升力、振频这些词。</desc>
+      <rect class="wg-sky" width="720" height="400"/>
+      <rect class="wg-sky-hi" width="720" height="90"/>
+      <circle class="wg-sun" cx="86" cy="58" r="28"/>
+      <ellipse class="wg-cloud" cx="220" cy="54" rx="46" ry="16"/>
+      <ellipse class="wg-cloud" cx="258" cy="62" rx="28" ry="12"/>
+      <ellipse class="wg-cloud" cx="520" cy="48" rx="52" ry="15"/>
+      <path class="wg-hill" d="M0 268 C80 240 160 252 240 268 C340 290 420 250 520 268 C600 282 660 270 720 278 V400 H0 Z"/>
+      <ellipse class="wg-pond" cx="300" cy="348" rx="210" ry="42"/>
+      <ellipse class="wg-pond-hi" cx="270" cy="340" rx="80" ry="12"/>
+      <g aria-hidden="true">
+        <path class="wg-reed" d="M86 348 L80 250"/>
+        <path class="wg-reed" d="M102 350 L108 242"/>
+        <path class="wg-reed" d="M118 352 L112 256"/>
+        <ellipse class="wg-reed-tip" cx="80" cy="246" rx="4" ry="10"/>
+        <ellipse class="wg-reed-tip" cx="108" cy="238" rx="4" ry="10"/>
+        <ellipse class="wg-reed-tip" cx="112" cy="252" rx="3.5" ry="8"/>
+        <path class="wg-reed" d="M488 350 L496 260"/>
+        <ellipse class="wg-reed-tip" cx="496" cy="256" rx="4" ry="9"/>
+      </g>
+
+      <g class="wg-down" aria-hidden="true">
+        <path d="M248 168 V214"/>
+        <path d="M292 172 V220"/>
+        <path d="M336 168 V214"/>
+      </g>
+      <path class="wg-trail" id="trail" d="M360 188 C420 176 470 196 540 186"/>
+
+      <g id="bugG">
+        <ellipse class="wg-shadow" cx="292" cy="318" rx="36" ry="8"/>
+        <g class="wg-flap wg-flap-a" id="wForeL">
+          <ellipse class="wg-wing" cx="232" cy="148" rx="52" ry="14" transform="rotate(-18 232 148)"/>
+          <path class="wg-wing-vein" d="M192 140 L260 156 M204 132 L248 160"/>
+        </g>
+        <g class="wg-flap wg-flap-a" id="wForeR">
+          <ellipse class="wg-wing" cx="352" cy="148" rx="52" ry="14" transform="rotate(18 352 148)"/>
+          <path class="wg-wing-vein" d="M312 156 L392 140 M324 160 L380 132"/>
+        </g>
+        <g class="wg-flap wg-flap-b" id="wHindL">
+          <ellipse class="wg-wing" cx="240" cy="176" rx="46" ry="12" transform="rotate(12 240 176)"/>
+          <path class="wg-wing-vein" d="M204 172 L276 180"/>
+        </g>
+        <g class="wg-flap wg-flap-b" id="wHindR">
+          <ellipse class="wg-wing" cx="344" cy="176" rx="46" ry="12" transform="rotate(-12 344 176)"/>
+          <path class="wg-wing-vein" d="M308 180 L380 172"/>
+        </g>
+        <ellipse class="wg-bug-ab" cx="292" cy="188" rx="10" ry="42"/>
+        <path class="wg-bug-ring" d="M282 172 H302 M282 186 H302 M282 200 H302 M282 214 H302"/>
+        <ellipse class="wg-bug-thorax" cx="292" cy="152" rx="16" ry="14"/>
+        <circle class="wg-bug-head" cx="292" cy="132" r="13"/>
+        <ellipse class="wg-bug-eye" cx="284" cy="130" rx="6" ry="7"/>
+        <ellipse class="wg-bug-eye" cx="300" cy="130" rx="6" ry="7"/>
+        <circle class="wg-bug-eye-hi" cx="286" cy="128" r="1.6"/>
+        <circle class="wg-bug-eye-hi" cx="302" cy="128" r="1.6"/>
+      </g>
+
+      <g id="birdG" opacity="0">
+        <ellipse class="wg-shadow" cx="300" cy="318" rx="34" ry="8"/>
+        <g class="wg-flap wg-flap-a">
+          <path class="wg-bird-wing" d="M268 176 Q210 140 168 178 Q214 168 268 186 Z"/>
+        </g>
+        <g class="wg-flap wg-flap-b">
+          <path class="wg-bird-wing" d="M332 176 Q390 140 432 178 Q386 168 332 186 Z"/>
+        </g>
+        <ellipse class="wg-bird-body" cx="300" cy="186" rx="36" ry="18"/>
+        <ellipse class="wg-bird-belly" cx="304" cy="192" rx="22" ry="10"/>
+        <circle class="wg-bird-body" cx="338" cy="176" r="12"/>
+        <path class="wg-bird-beak" d="M348 176 L368 180 L348 184 Z"/>
+        <circle class="wg-bird-eye" cx="342" cy="172" r="2.2"/>
+        <path class="wg-bird-wing" d="M264 190 Q248 206 268 214" fill="none"/>
+        <ellipse class="wg-bird-body" cx="262" cy="194" rx="10" ry="5"/>
+      </g>
+
+      <g id="heliG" class="wg-heli">
+        <rect class="wg-heli-body" x="248" y="168" width="88" height="28" rx="10"/>
+        <path class="wg-heli-rotor" d="M180 162 H404"/>
+        <path class="wg-heli-body" d="M336 182 H390" stroke-width="6"/>
+        <circle class="wg-bird-eye" cx="268" cy="180" r="4"/>
+      </g>
+
+      <g id="kidG">
+        <ellipse class="wg-shadow" cx="640" cy="316" rx="28" ry="7"/>
+        <rect class="wg-shirt" x="622" y="268" width="36" height="40" rx="10"/>
+        <circle class="wg-skin" cx="640" cy="248" r="18"/>
+        <path class="wg-hair" d="M624 246 Q640 226 656 246 Q652 236 640 232 Q628 236 624 246 Z"/>
+        <g id="faceNorm">
+          <ellipse class="wg-eye-white" cx="634" cy="246" rx="3.4" ry="3.2"/>
+          <ellipse class="wg-eye-white" cx="646" cy="246" rx="3.4" ry="3.2"/>
+          <circle class="wg-pupil" cx="634.6" cy="246" r="1.3"/>
+          <circle class="wg-pupil" cx="646.6" cy="246" r="1.3"/>
+          <path class="wg-mouth" d="M634 256 Q640 260 646 256"/>
+        </g>
+        <g id="faceHappy" opacity="0">
+          <path class="wg-mouth" d="M628 246 Q634 240 640 246"/>
+          <path class="wg-mouth" d="M640 246 Q646 240 652 246"/>
+          <path class="wg-mouth" d="M632 256 Q640 264 648 256"/>
+        </g>
+        <g id="faceSad" opacity="0">
+          <ellipse class="wg-eye-white" cx="634" cy="248" rx="3" ry="2.2"/>
+          <ellipse class="wg-eye-white" cx="646" cy="248" rx="3" ry="2.2"/>
+          <circle class="wg-pupil" cx="634.4" cy="248.4" r="1.1"/>
+          <circle class="wg-pupil" cx="646.4" cy="248.4" r="1.1"/>
+          <path class="wg-brow" d="M628 240 L640 246"/>
+          <path class="wg-brow" d="M652 240 L640 246"/>
+          <path class="wg-mouth" d="M634 260 Q640 254 646 260"/>
+        </g>
+      </g>
+    </svg>
+
+    <div class="kid-speech-row">
+      <p class="kid-speech" id="kidSay" role="status" aria-live="polite">先点「两对快振停住」，看蜻蜓身子几乎不动。再点「一对慢振往前」，看小鸟要往前冲。</p>
+    </div>
+
+    <div class="kid-action-strip wg-toys" role="group" aria-label="三个好玩的大按钮">
+      <button class="wg-toy" type="button" id="toHover" aria-pressed="false">
+        <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+          <ellipse class="wg-wing" cx="20" cy="22" rx="14" ry="4"/>
+          <ellipse class="wg-wing" cx="52" cy="22" rx="14" ry="4"/>
+          <ellipse class="wg-wing" cx="20" cy="34" rx="12" ry="4"/>
+          <ellipse class="wg-wing" cx="52" cy="34" rx="12" ry="4"/>
+          <ellipse class="wg-bug-ab" cx="36" cy="36" rx="5" ry="14"/>
+          <circle class="wg-bug-head" cx="36" cy="18" r="6"/>
+        </svg>
+        两对快振停住
+      </button>
+      <button class="wg-toy" type="button" id="toFlap" aria-pressed="false">
+        <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+          <path class="wg-bird-wing" d="M14 30 Q6 18 2 32 Q10 28 18 34 Z"/>
+          <path class="wg-bird-wing" d="M50 30 Q66 16 70 32 Q58 28 48 34 Z"/>
+          <ellipse class="wg-bird-body" cx="36" cy="34" rx="16" ry="8"/>
+          <path class="wg-trail" d="M52 34 H70" opacity="1"/>
+        </svg>
+        一对慢振往前
+      </button>
+      <button class="wg-toy wg-toy-go" type="button" id="toStall">
+        <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+          <ellipse class="wg-bird-body" cx="36" cy="22" rx="12" ry="6"/>
+          <path class="wg-trail" d="M36 30 V54" opacity="1" stroke="#b45309"/>
+        </svg>
+        停住就掉
+      </button>
+    </div>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先悬停一次，或升力不够飞一次。</p>
+  </section>
+
+  <section class="kid-band" aria-labelledby="guessTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false"><circle class="wg-skin" cx="16" cy="16" r="12"/><ellipse class="wg-eye-white" cx="12" cy="14" rx="3" ry="3"/><ellipse class="wg-eye-white" cx="20" cy="14" rx="3" ry="3"/><circle class="wg-pupil" cx="12.4" cy="14" r="1.2"/><circle class="wg-pupil" cx="20.4" cy="14" r="1.2"/><path class="wg-mouth" d="M11 20 Q16 24 21 20"/></svg>
+      </span>
+      <div>
+        <h2 id="guessTitle">先猜一猜</h2>
+        <p>先押，再点按钮看对不对。</p>
+      </div>
+    </div>
+    <p><b>第 1 题：</b>振频都是 5。改成一对翅，还够悬停吗（要≥40）？</p>
+    <div class="kid-icon-row" role="group" aria-label="猜升力">
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="80" aria-pressed="false"><span class="kid-tile-label">还是 80，够</span></button>
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="40" aria-pressed="false"><span class="kid-tile-label">40，刚好够</span></button>
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="20" aria-pressed="false"><span class="kid-tile-label">20，不够悬停</span></button>
+    </div>
+    <p class="guess-out kid-status" id="guessOut1" role="status" aria-live="polite">押好。先点图鉴「两对翅」，再点图鉴「一对翅」。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>一对翅、振频 10。够不够悬停（≥40）？</p>
+      <div class="pick-btns" role="group" aria-label="猜一对快振">
+        <button class="btn guess-pick" type="button" data-guess2="40" aria-pressed="false">40，刚好</button>
+        <button class="btn guess-pick" type="button" data-guess2="80" aria-pressed="false">大约 80，够</button>
+        <button class="btn guess-pick" type="button" data-guess2="20" aria-pressed="false">20，不够</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后一对翅、振频 10，再飞一次。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>一对翅、振频调到 1（几乎停住）。还够悬停吗（要≥40）？</p>
+      <div class="pick-btns" role="group" aria-label="猜停翅">
+        <button class="btn guess-pick" type="button" data-guess3="fall" aria-pressed="false">不够，会掉</button>
+        <button class="btn guess-pick" type="button" data-guess3="ok" aria-pressed="false">刚好 40，还能停</button>
+        <button class="btn guess-pick" type="button" data-guess3="eighty" aria-pressed="false">80，更稳</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后点「停住就掉」，或一对、振频 1 再飞。</p>
+    </div>
+  </section>
+
+          <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">两对翅能停在空中，一对翅多半要往前扑</h2>
+    <p>先点「两对快振停住」，看蜻蜓身子几乎不动。再点「一对慢振往前」，看小鸟要往前冲。再点「停住就掉」：翅膀完全不扇，常常往下掉。</p>
+    <p>两对翅可以错开扇，前后的力对消，身子更容易停住。一对翅多半同时往上托、往前推，所以常常要冲着飞才托得住。蜂鸟一对翅也能停，靠的是极快地扇和转腕——那是另一套，不要给蜂鸟打叉，也不要拿它抢本页「两对比一对」的完成句。</p>
+    <p>本页升力＝对×振×8，满 40 算停得住。这是比较尺子，不是真实牛顿，也不是某只蜻蜓每秒扇几下。不要抓真蜻蜓，也不要粘住活昆虫的翅膀。纸飞机不朝人脸扔。本页不是航模课。</p>
+  </section>
+
+  <section class="card" data-edu-compare aria-labelledby="eduCompareTitle">
+    <h2 id="eduCompareTitle">像 · 不像（纠错对照）</h2>
+    <p>左边是本页要学的关键样子；右边是常搞混的另一套——不要并成一句。</p>
+    <div class="kid-figure-grid" role="group" aria-label="像与不像对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">像 · 本页</span><span class="kid-figure-sub">要对的</span><p class="kid-figure-fact">认准本页这一招，再去台上试。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">不像 · 一对翅往前飞</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">另一套机制。本页不比它，两句不要并成一句。</p></div>
+    </div>
+  </section>
+
+
+  <section class="kid-band wg-atlas" aria-labelledby="atlasTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false"><ellipse class="wg-wing" cx="8" cy="12" rx="7" ry="3"/><ellipse class="wg-wing" cx="24" cy="12" rx="7" ry="3"/><ellipse class="wg-bug-ab" cx="16" cy="18" rx="3" ry="8"/><circle class="wg-bug-head" cx="16" cy="10" r="4"/></svg>
+      </span>
+      <div>
+        <h2 id="atlasTitle">点一张贴纸卡，舞台就演戏</h2>
+        <p>四翅、一对、往后飞、旋翼，点哪张演哪幕。</p>
+      </div>
+    </div>
+    <div class="kid-figure-grid" role="group" aria-label="翅膀图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-wg-atlas="two" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">两对翅</span><span class="kid-figure-fact">四只膜翅能各自扇，前后力错开，身子更容易停；不是吸住天，靠扑翼推风。</span></button>
+      <button class="kid-figure" type="button" data-wg-atlas="one" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">一对翅</span><span class="kid-figure-fact">左右各一只，多半要一起扑；常常要往前冲，把空气推走才托得住，不是翅膀魔法。</span></button>
+      <button class="kid-figure" type="button" data-wg-atlas="hover" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/hummingbirds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">悬停</span><span class="kid-figure-fact">身子几乎不动，翅膀还在把空气往下推，只留下向上的托力，不是吸住天空。</span></button>
+      <button class="kid-figure" type="button" data-wg-atlas="flap" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">扑打前进</span><span class="kid-figure-fact">一对翅要往前冲，气流才托得住；停住不推风，常常会往下掉，靠扑翼推风。</span></button>
+      <button class="kid-figure" type="button" data-wg-atlas="indep" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">各自扇</span><span class="kid-figure-fact">前一对和后一对可以不同步；错开推风，身子才更容易停，不是翅膀魔法。</span></button>
+      <button class="kid-figure" type="button" data-wg-atlas="samebeat" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">一起扇</span><span class="kid-figure-fact">一对翅常常左右对称地拍，一起把空气推走，不是翅膀有魔法，靠扑翼把风推走。</span></button>
+      <button class="kid-figure" type="button" data-wg-atlas="lift" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">升力</span><span class="kid-figure-fact">翅膀把空气往下推，自己就被反方向托住，不是翅膀会吸天空，靠扑翼推风。</span></button>
+      <button class="kid-figure" type="button" data-wg-atlas="stall" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">停住就掉</span><span class="kid-figure-fact">一对翅若完全停住、不再推风，常常会往下掉；不是天不喜欢它才掉的。</span></button>
+      <button class="kid-figure" type="button" data-wg-atlas="reverse" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">往后推</span><span class="kid-figure-fact">两对翅也能把空气往后送，倒着飞；仍是推风，不是魔法倒车，靠扑翼推风。</span></button>
+      <button class="kid-figure" type="button" data-wg-atlas="birdwing" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">鸟翅</span><span class="kid-figure-fact">羽毛做的一对翅，不是膜质四翅；机制仍是扑打推风，不是吸天，靠扑翼推风。</span></button>
+      <button class="kid-figure" type="button" data-wg-atlas="heli" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/helicopter.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">旋翼</span><span class="kid-figure-fact">直升机转一圈当翅膀，把空气往下推；和蜻蜓四只膜翅不是同一套零件。</span></button>
+      <button class="kid-figure" type="button" data-wg-atlas="samebug" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">同一只模型</span><span class="kid-figure-fact">比的是两对还是一对谁更容易停，不是谁更大，也不是魔法翅，靠扑翼推风停。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照为什么有的能停、有的要往前。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--phys)"
+         data-kid-predict
+         data-kid-predict-explain="两对翅可把前后的力错开、对消，身子更容易停住；一对翅多半要往前扑，才有气流托住。完全停住就掉。蜂鸟一对翅也能停，那是另一套，不抢本页对照。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🪽</span><b>蜻蜓有两对翅能各自扇，很多鸟主要一对翅——谁更容易「停在空中」？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：悬停还是只能往前">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="same">翅膀数量不重要，想停就能停</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="pair" data-kid-predict-correct>两对翅可对消前后力更易悬停；一对翅多半要往前扑</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="magic">悬停全靠魔法尘</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：悬停和往前飞都试</h2>
+    <p>先调出升力≥40 飞一次（悬停），再调到升力&lt;40 飞一次（往前/掉）。两头都试过即可完成。点「两对快振停住」和「一对慢振往前」就会记上。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="rulerTitle">
+    <h2 id="rulerTitle">给家长的本页尺子</h2>
+    <p class="wg-ruler">本页比较尺子：升力 = 翅对数 × 振频 × 8。悬停要 ≥40。这不是真实空气动力学，也不是某只蜻蜓每秒扇几下。孩子主操作是上面三个大按钮；滑杆留给想自己调的大人。</p>
+    <div class="parent-sliders">
+      <div><label for="pairs">翅有几对：<span id="pairsLab">2</span></label>
+        <input class="input" id="pairs" type="range" min="1" max="2" value="2" aria-valuetext="2 对"></div>
+      <div><label for="hz">振频：<span id="hzLab">6&nbsp;次/秒</span></label>
+        <input class="input" id="hz" type="range" min="1" max="10" value="6" aria-valuetext="6 次每秒"></div>
+    </div>
+    <div class="readout">
+      <div><span>本页尺子</span><b id="liftOut">——</b></div>
+      <div><span>姿态</span><b id="poseOut">——</b></div>
+      <div><span>刚才</span><b id="didOut">还没飞</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">两对翅错开扇，身子才停得住。一对翅多半要往前扑。完全停就掉。先押再飞一次。</p>
+  </section>
+
+
+          <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">同一只模型，先两对停住，再一对往前扑</h2>
+    <p>舞台上只改一件事：几对翅、扇多快。同一只模型。先点「两对快振停住」，看几乎不动；再点「一对慢振往前」，看要不要往前冲。这样比，才知道停住靠的是两对错开扇，不是「翅膀有升力魔法」。</p>
+    <p>回家只带两句：「两对能停」；「一对多半要往前」。不要写成「一对翅一定停不住」。蜂鸟一对翅也能停，靠的是极快地扇和转腕——那是另一套，不要给蜂鸟打叉，也不要拿它抢本页「两对比一对」的完成句。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">两对翅</span><span class="kid-figure-sub">能各自扇</span><p class="kid-figure-fact">前后两对可以错开把空气推走，身子更容易停在空中，不是吸住了天。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">一对翅</span><span class="kid-figure-sub">多半要往前</span><p class="kid-figure-fact">一对翅左右一起扑，常常要往前冲才托得住，原地停比较难，因为推风不够。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">对×振×8</span><span class="kid-figure-sub">本页尺子</span><p class="kid-figure-fact">升力满四十算停得住。这是本页比较尺子，不是真实牛顿公式，也不是手册。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">完全停住</span><span class="kid-figure-sub">会掉</span><p class="kid-figure-fact">一对翅若完全停住，常常往下掉。停在空中靠的是还在把空气往下推。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">升力魔法</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">不是翅膀自己会吸住天空。空气被推走，才会反过来托住身子。没有魔法。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">真虫</span><span class="kid-figure-sub">别抓</span><p class="kid-figure-fact">不要粘住活昆虫的翅膀。本页只看模型对照，不伤害动物，远观就够，不是翅膀魔法。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>两对快振。</b>点「两对快振停住」，身子停没停。</li>
+      <li data-step="2"><b>一对慢振。</b>点「一对慢振往前」，要不要往前冲。</li>
+      <li data-step="3"><b>停住一次。</b>点「停住就掉」，会不会往下掉。</li>
+      <li data-step="4"><b>写完成句。</b>两对能停，一对多半要往前。不要给蜂鸟打叉。划掉升力魔法。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>四只翅膀的蜻蜓能停在空中；两只翅膀的小鸟多半要往前飞。翅膀完全不扇，常常会掉。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>两对翅可以错开扇，前后的力对消，身子就停得住。一对翅多半要往前扑。蜂鸟一对也能停，是另一套，不要打叉。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>本页只比较「几对翅、振得多快」。升力＝对×振×8，满 40 算停得住，是比较尺子。蜂鸟一对翅高频转腕也能悬停，不抢完成句，不要打叉。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能对两对停住和一对往前各指一次，并否定「翅膀有升力魔法」。蜂鸟一对也能停，不要打叉，也不要拿来当本页第一完成句。</p>
+    <ul class="ask-list">
+      <li>两对快振，身子停得住吗？</li>
+      <li>一对慢振，为什么多半要往前？</li>
+      <li>翅膀完全停住会怎样？</li>
+      <li>蜂鸟一对翅也能停，要给它打叉吗？</li>
+    </ul>
+  </section>
+
+
+        <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">直升机转一圈当翅膀，是另一套，不抢两对对照</h2>
+    <p>同一只模型，先只改几对翅、扇多快。旋翼把转圈当成连续的翅膀，也能停，但零件和昆虫不是同一套。点图鉴「旋翼」看一看就够，不要写成「蜻蜓等于直升机」。</p>
+    <p>蜂鸟一对翅也能停，靠的是极快地扇和转腕。这是真的，不要给蜂鸟打叉。本页先交「两对比一对」：蜻蜓两对更容易停，很多鸟一对多半要往前。蜂鸟另开一行，不抢完成句。</p>
+    <p>不要抓真蜻蜓，不要粘住活翅膀。纸飞机不朝人脸扔。读数是示意，不是适航手册。</p>
+    <p>本页升力＝对×振×8，满 40 算停得住。用来比较「停 / 不够」，不是真实牛顿，也不是某只蜻蜓每秒扇几下。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/helicopter.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">旋翼</span><span class="kid-figure-sub">另一套</span><p class="kid-figure-fact">直升机转一圈当翅膀，不是蜻蜓那四只膜翅。零件不同，只借「能停」这一层。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/hummingbird.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">蜂鸟</span><span class="kid-figure-sub">另一套</span><p class="kid-figure-fact">蜂鸟一对翅也能停，不抢本页对照。本页主戏是两对和一对谁更容易停。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">真虫</span><span class="kid-figure-sub">别抓</span><p class="kid-figure-fact">也不要粘住活翅膀。远观就够，活虫不是教具。本页只拿模型对照，不是翅膀魔法。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">≥40</span><span class="kid-figure-sub">停得住</span><p class="kid-figure-fact">升力等于对数乘振频乘八，是本页比较尺子，不是牛顿公式，也不是飞机手册。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：两对停住 · 一对往前 · 翅膀有升力魔法</h2>
+    <p>三列用同一只模型。先只改几对翅、扇多快。一次改两样，分不清到底是谁让它停的。</p>
+    <p>两对快振：身子停得住。一对慢振：要往前冲。「升力魔法」整列划掉：空气被推走，才会反过来托住。不是翅膀自己吸住天空。</p>
+    <p>蜂鸟、直升机是加试，不是主任务：一对也能停，不要打叉；旋翼是另一套零件。本页满 40 用来比较方向，不要背成牛顿公式。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">两对快振</span><span class="kid-figure-sub">停得住</span><p class="kid-figure-fact">两对翅前后力可以错开，身子更容易停。完成句就写「两对更容易停住」。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">一对慢振</span><span class="kid-figure-sub">要往前</span><p class="kid-figure-fact">一对翅常常不够停在原地，要往前扑把空气推走才掉不下去，不是魔法。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">升力魔法</span><span class="kid-figure-sub">整列划掉</span><p class="kid-figure-fact">不是吸住天空。请把「翅膀会粘在天上」那一整列划掉。空气被推走才托住。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">完全停住</span><span class="kid-figure-sub">会掉</span><p class="kid-figure-fact">一对翅若完全停，常常往下掉。和「蜂鸟一对也能停」不是同一档，别打叉。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/hummingbird.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">蜂鸟</span><span class="kid-figure-sub">不要打叉</span><p class="kid-figure-fact">一对翅也能停，是另一套。不要打叉，也不要抢本页「两对比一对谁更易停」。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">本页尺子</span><span class="kid-figure-sub">对×振×8</span><p class="kid-figure-fact">满四十算停得住。只用来比较方向，不是真实牛顿，也不是飞机起飞表。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「两对能停、一对要往前」，不记航校口令</h2>
+    <p>在纸上画两格：四翅停着，两翅往前冲。两格并排，比背航校口令有用。</p>
+    <p>口头只要两句：「两对能停。」「一对多半要往前。」有人说「翅膀有升力魔法」，让孩子指着空气被往下推反驳。蜂鸟另开一句：一对也能停，不要打叉。</p>
+    <p>不要抓真蜻蜓，不要粘住活翅膀。纸飞机不朝人脸扔。本页数字不要抄进适航手册。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">两格</span><span class="kid-figure-sub">停和冲</span><p class="kid-figure-fact">先画两格对照：两对停在空中，一对往前扑。旁边写「不是吸住天，是推风」。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">两对能停</span><p class="kid-figure-fact">回家说得出：两对更容易停；一对常常要往前飞才托得住。不是翅膀魔法。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">升力魔法</span><span class="kid-figure-sub">否决句</span><p class="kid-figure-fact">空气被推走才会反过来托住，不是升力魔法，也不是翅膀会吸住天空。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dragonfly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">真虫</span><span class="kid-figure-sub">别抓</span><p class="kid-figure-fact">不要粘住活翅膀。本页不是捕捉课，也不当飞机说明书，只看模型对照。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「停得住靠不靠两对翅」，就只改几对翅、扇多快。同一只模型，先两对快振试一次，再一对慢振试一次。蜂鸟、直升机是另一次对照，不要和「一对往前」叠在同一档里讲，更不要给蜂鸟打叉。</p>
+    <ul>
+      <li><b>只改这一项：</b>几对翅、振得多快（两对快振 / 一对慢振）。</li>
+      <li><b>先保持不变：</b>同一只模型、同一套本页尺子。</li>
+      <li><b>要观察的：</b>身子停没停、要不要往前冲、完全停住会不会掉。</li>
+      <li><b>另开一行：</b>蜂鸟一对也能停，不要打叉；旋翼是另一套零件。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>蜻蜓能停在一朵花前面，很多小鸟却要绕着飞。差在几对翅，还是谁更聪明？</li>
+      <li>蜂鸟一对翅也能停在空中。为什么不能当本页第一完成句？要给它打叉吗？</li>
+      <li>直升机也能停。它的「翅膀」在转圈，和蜻蜓的四只膜翅像在哪？差在哪？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>四只翅膀的蜻蜓能停在空中；两只翅膀的小鸟多半要往前飞。翅膀完全不扇，常常会掉。能指着身子说「停住 / 往前」就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>两对翅可以错开扇，身子就停得住。一对翅多半要往前扑。蜂鸟一对也能停，是另一套，不要打叉。本页数字只用来比较。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>两对独立挥动可对消水平力。升力＝对×振×8 是比较尺子。蜂鸟高频转腕是另一套，不抢对照，不要打叉。不是适航手册。</p></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="boostTitle">
+    <h2 id="boostTitle">两对能停，一对要往前；停住就掉</h2>
+    <p>两对翅可以错开扇，前后的力对消，身子更容易停在空中。一对翅多半要往前扑，才有气流托住。</p>
+    <p>翅膀完全停住，升力没了，常常往下掉。直升机和蜂鸟是另一套，不抢本页「两对比一对」。</p>
+    <p>不要抓真蜻蜓，不要粘住活翅膀。纸飞机不朝人脸扔。本页对×振×8 只是比较尺子。</p>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：翅膀观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：两对能停，一对要往前"></div>
+      <div><label for="workContent">谁停得住</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下两对悬停和一对扑打时，身子停没停、要不要往前冲。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>两对那一次，孩子指的是身子停住，还是「蜻蜓比较聪明」？让他再指一次四只翅膀。</li>
+      <li>一对要往前冲，哪一句能给四岁听？试「两只翅膀多半要往前飞，才托得住」。</li>
+      <li>蜂鸟一对翅也能停，为什么不能当本页第一完成句？要给它打叉吗？差在「另一套，不抢对照」。</li>
+      <li>抓真蜻蜓、朝人脸扔纸飞机：红线怎么说？本页能当航校作业吗？</li>
+      <li>本页满 40 能当牛顿公式吗？数字能抄进适航手册吗？</li>
+      <li>直升机也能停：和蜻蜓像在哪？为什么只能另开一行？</li>
+    </ul>
+  </section>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：两对翅可以错开扇，身子更容易停住；一对翅多半要往前扑。翅膀完全停住，常常往下掉。不是翅膀有升力魔法，是空气被往下推，自己才被托住。</p>
+    <p>两对独立挥动的翅可以把前后方向的力分量错开甚至对消，净水平力接近零时就能悬停。一对翅的扑打通常同时产生升力与推力，机体要往前才维持绕流。本页「升力＝对×振×8、满 40 算停得住」只是比较尺子，不是真实牛顿，也不是适航手册。</p>
+    <p>蜂鸟一对翅也能悬停，靠的是极高频率和转腕。这是真的，不要打叉，也不要拿来抢本页「两对比一对」。直升机旋翼是另一套连续旋转的翅膀。</p>
+    <p>因为悬停靠两对翅把力错开、抓真虫既伤它也看不清振翅，所以只看蜻蜓与小鸟示意，不要抓真虫。纸飞机不朝人脸扔。</p>
+  </section>
+
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">悬停公式卡 · 升力=对×振×8；≥40 算停得住（本页比较尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">两对能对消前后力；一对多半要往前扑。家长钉本页尺子只比「停 / 不够」，不是真实牛顿。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>同一条线索还可以在隔壁站继续看。</p>
+    <p class="row"><a class="btn btn-ghost" href="../nature/dragonflies.html">蜻蜓观察站</a><a class="btn btn-ghost" href="air-lab.html">空气工坊</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为悬停靠两对翅把力错开、抓真蜻蜓既伤它也看不清振翅，所以不要抓真蜻蜓。本页只比较两对悬停和一对扑打。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var pairs=2, hz=6, did=false, lastLift=null, kind="bug";
+  var seen={hover:false,flap:false,done:false};
+  var guess1="",guess1Done=false,saw2=false,saw1=false,guess2="",guess2Done=false,saw110=false,guess3="",guess3Done=false,sawStall=false;
+  function el(id){ return document.getElementById(id); }
+  function lift(){ return pairs*hz*8; }
+  function hoverOk(){ return lift()>=40; }
+  function reduced(){
+    try { if (window.Playful && Playful.motionReduced) return Playful.motionReduced(); } catch (e) {}
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+  function setOp(id, v){ var n=el(id); if(n) n.setAttribute("opacity", String(v)); }
+  function faces(mode){
+    setOp("faceNorm", mode==="norm" ? 1 : 0);
+    setOp("faceHappy", mode==="happy" ? 1 : 0);
+    setOp("faceSad", mode==="sad" ? 1 : 0);
+  }
+  function pressBtns(which){
+    ["toHover","toFlap","toStall"].forEach(function(id){
+      var n=el(id); if(n) n.setAttribute("aria-pressed", id===which ? "true" : "false");
+    });
+  }
+  function poseName(){
+    if(kind==="heli") return "heli";
+    if(kind==="reverse") return "reverse";
+    if(!did) return "idle";
+    if(pairs>=2 && hoverOk()) return "hover";
+    if(hz<=1) return "fall";
+    return "forward";
+  }
+  function kidVoice(){
+    if(kind==="heli") return "这个是转一圈的，不是扇翅膀。";
+    if(kind==="reverse") return "往后倒着飞！身子还是停得住。";
+    if(!did) return "先点「两对快振停住」，看蜻蜓身子几乎不动。再点「一对慢振往前」，看小鸟要往前冲。";
+    if(pairs>=2 && hoverOk()) return "停住了！身子几乎不动。";
+    if(hz<=1) return "翅膀停住了，掉下去了。";
+    return "要往前冲才掉不下去。";
+  }
+  function render(fromUser){
+    var L=lift(), ok=hoverOk(), pose=poseName();
+    var art=el("wgArt");
+    if(art){
+      art.setAttribute("data-pairs", String(pairs));
+      art.setAttribute("data-pose", pose);
+      art.setAttribute("data-kind", kind);
+      art.setAttribute("data-flap", (did && hz>=2 && kind!=="heli" && !reduced()) ? "1" : "0");
+    }
+    if(kind==="heli") faces(did?"norm":"norm");
+    else if(did && ok && pairs>=2) faces("happy");
+    else if(did && !ok) faces("sad");
+    else faces("norm");
+
+    el("liftOut").textContent = String(L);
+    el("poseOut").textContent = ok?"能悬停":"往前/掉";
+    el("didOut").textContent = did?(ok?"停住了":"没悬住"):"还没飞";
+    el("pairsLab").textContent = String(pairs);
+    el("pairs").setAttribute("aria-valuetext", pairs+" 对");
+    el("pairs").value = String(pairs);
+    el("hzLab").textContent = hz+"\u00a0次/秒";
+    el("hz").setAttribute("aria-valuetext", hz+"\u00a0次每秒");
+    el("hz").value = String(hz);
+    var badge=el("stateBadge");
+    var line;
+    if(!did) line="还没飞";
+    else if(kind==="heli") line="转一圈";
+    else if(kind==="reverse") line="往后飞";
+    else if(ok && pairs>=2) line="停住了";
+    else if(hz<=1) line="掉下去了";
+    else line="往前飞";
+    if(badge) badge.textContent=line;
+    var say=el("kidSay");
+    if(say) say.textContent=kidVoice();
+    var live=el("live");
+    if(live) live.textContent=(pairs>=2
+      ?"两对翅错开扇，身子才停得住。"
+      :(hz<=1?"一对翅完全停，常常往下掉。":"一对翅多半要往前扑，才托得住。"))+
+      (did?(ok?"刚才停住了。":"刚才没悬住。"):"先押再飞一次。");
+
+    if(fromUser&&did){
+      if(ok) seen.hover=true; else seen.flap=true;
+      if(guess1&&!guess1Done&&pairs===2&&hz===5)saw2=true; if(guess1&&!guess1Done&&pairs===1&&hz===5)saw1=true;
+      if(guess2&&!guess2Done&&pairs===1&&hz===10)saw110=true; if(guess3&&!guess3Done&&pairs===1&&hz===1)sawStall=true;
+      checkGuess(); updateTask();
+    }
+  }
+  function checkGuess(){
+    if(guess1&&!guess1Done&&saw2&&saw1){
+      guess1Done=true;
+      el("guessOut1").innerHTML=(guess1==="40"?"<b>押对了！</b>":"<b>揭晓：</b>")+"一对翅、振 5 下，刚好够悬停边界；再慢就不够。";
+      el("guessBlock2").hidden=false;
+    }
+    if(guess2&&!guess2Done&&saw110){
+      guess2Done=true;
+      el("guessOut2").innerHTML=(guess2==="80"?"<b>押对了！</b>":"<b>揭晓：</b>")+"一对翅但振得很快，升力仍够悬停。";
+      el("guessBlock3").hidden=false;
+    }
+    if(guess3&&!guess3Done&&sawStall){
+      guess3Done=true;
+      el("guessOut3").innerHTML=(guess3==="fall"?"<b>押对了！</b>":"<b>揭晓：</b>")+"振得太慢，升力不够，停住就掉。";
+    }
+  }
+  function updateTask(){
+    var st=el("taskStatus"); if(!st||seen.done)return;
+    if(seen.hover&&seen.flap){seen.done=true;if(window.Progress)Progress.complete("games/wing-lab.html","试过悬停与升力不够");st.textContent="完成啦：一对翅振太慢就悬停不住。";}
+    else if(!seen.hover)st.textContent=seen.flap?"还差：把升力调到 ≥40 再飞。":"尚未完成：先悬停一次，或升力不够飞一次。";
+    else st.textContent="还差：把升力调到 <40 再飞。";
+  }
+  function fly(){ did=true; lastLift=lift(); render(true); }
+  function doHover(){ kind="bug"; pairs=2; hz=8; pressBtns("toHover"); fly(); }
+  function doFlap(){ kind="bug"; pairs=1; hz=3; pressBtns("toFlap"); fly(); }
+  function doStall(){ kind="bug"; pairs=1; hz=1; pressBtns("toStall"); fly(); }
+
+  el("pairs").addEventListener("input", function(){ did=false; kind="bug"; pairs=+this.value; render(false); });
+  el("hz").addEventListener("input", function(){ did=false; kind="bug"; hz=+this.value; render(false); });
+  el("toHover").addEventListener("click", doHover);
+  el("toFlap").addEventListener("click", doFlap);
+  el("toStall").addEventListener("click", doStall);
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess1Done)return; guess1=btn.getAttribute("data-guess1");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      el("guessOut1").textContent="押好了。先点图鉴「两对翅」，再点图鉴「一对翅」。"; });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess2Done)return; guess2=btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      el("guessOut2").textContent="押好了。一对、振频 10。"; });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess3Done)return; guess3=btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      el("guessOut3").textContent="押好了。一对、振频 1，再飞。"; });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-wg-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key=btn.getAttribute("data-wg-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-wg-atlas]"), function(n){n.setAttribute("aria-pressed",n===btn?"true":"false");});
+      el("atlasSay").textContent=(btn.querySelector(".kid-figure-fact")||{}).textContent||"";
+      kind="bug";
+      if(key==="two"||key==="samebug"){pairs=2;hz=5;}
+      else if(key==="one"){pairs=1;hz=5;}
+      else if(key==="hover"||key==="lift"||key==="indep"){pairs=2;hz=9;}
+      else if(key==="flap"||key==="samebeat"){pairs=1;hz=3;}
+      else if(key==="stall"){pairs=1;hz=1;}
+      else if(key==="reverse"){pairs=2;hz=8;kind="reverse";}
+      else if(key==="birdwing"){pairs=1;hz=4;}
+      else if(key==="heli"){pairs=2;hz=8;kind="heli";}
+      pressBtns("");
+      fly();
+    });
+  });
+  document.addEventListener("playful:preference", function(){ render(false); });
+  render(false);
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/wing-lab.html", "翅膀工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

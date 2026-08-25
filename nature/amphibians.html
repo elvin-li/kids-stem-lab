@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>两栖动物观察站 · 水里和岸上 | 少儿数理启蒙</title>
+<meta name="description" content="比较十二种两栖动物。选两只，说出谁更像水里阶段、谁更像陆上阶段。离线即可使用。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+ .hero { padding: 28px 0 10px; }
+ .hero h1 { margin: .15em 0 .3em; }
+ .lead { max-width: 58ch; color: var(--ink-mid); }
+ .kid-hero-scene {
+ display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+ margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+ border: 1px solid color-mix(in srgb,var(--sci) 36%,var(--line));
+ border-radius: var(--r-lg);
+ background: linear-gradient(135deg,color-mix(in srgb,var(--sci) 12%,var(--surface)),var(--surface) 62%);
+ }
+ .mission-face {
+ width: 78px; height: 78px; overflow: hidden; display: grid; place-items: center; border-radius: 50%;
+ border: 2px solid color-mix(in srgb,var(--sci) 40%,var(--line));
+ background: color-mix(in srgb,var(--sci) 12%,var(--surface)); font-size: 2.2rem;
+ }
+ .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+ .am-art { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+ .am-sky { fill: color-mix(in srgb,var(--video) 12%,#e4f4ff); }
+ .am-water { fill: color-mix(in srgb,var(--math) 28%,#7eb8d4); }
+ .am-bank { fill: color-mix(in srgb,var(--sci) 28%,#8fbf6a); }
+ .am-pad { fill: color-mix(in srgb,var(--sci) 42%,#4f9a48); }
+ .am-stem { fill: none; stroke: color-mix(in srgb,var(--sci) 40%,#3d7a40); stroke-width: 3; }
+ .am-frog { fill: color-mix(in srgb,var(--sci) 42%,#5a9a48); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.3; }
+ .am-toad { fill: color-mix(in srgb,var(--kit) 34%,#8a6a40); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.3; }
+ .am-newt { fill: color-mix(in srgb,var(--warn) 36%,#c49448); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.3; }
+ .am-giant { fill: color-mix(in srgb,var(--ink-mid) 22%,#8a9a7a); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.3; }
+ .am-tad { fill: color-mix(in srgb,var(--kit) 28%,#c4b06a); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.3; }
+ .am-tree { fill: color-mix(in srgb,var(--sci) 30%,#6aaa62); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.3; }
+ .am-rain { fill: color-mix(in srgb,var(--phys) 28%,#6a8a72); stroke: color-mix(in srgb,var(--ink) 32%,transparent); stroke-width: 1.3; }
+ .am-spot { fill: color-mix(in srgb,var(--ink) 28%,#5a4a32); }
+ .am-eye { fill: var(--ink); }
+ .am-drop { fill: color-mix(in srgb,var(--math) 40%,#8ec4dc); }
+ .am-leaf { fill: color-mix(in srgb,var(--sci) 36%,#6aaa50); }
+ .am-ring { fill: none; stroke: var(--sci); stroke-width: 3; opacity: 0; }
+ .am-ring.on { opacity: 1; }
+ .am-label { fill: var(--ink); font: 800 13px var(--mono); }
+ .kid-action-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+ .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+ .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+ .ask li::before {
+ counter-increment: q; content: counter(q);
+ position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+ display: grid; place-items: center; background: color-mix(in srgb,var(--sci) 12%,var(--surface));
+ border: 1px solid color-mix(in srgb,var(--sci) 40%,var(--line)); color: var(--ink);
+ font: 800 .76rem var(--mono);
+ }
+ button, .btn { min-height: 44px; }
+ .stage + .kid-action-strip { margin-top: 8px; }
+ .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+ .am-atlas .kid-figure { --tone: var(--sci); }
+ .am-atlas .kid-figure[data-am="toad"] { --tone: var(--kit); }
+ .am-atlas .kid-figure[data-am="newt"] { --tone: var(--warn); }
+ .am-atlas .kid-figure[data-am="giant"] { --tone: var(--math); }
+ .am-atlas .kid-figure[data-am="tadpole"] { --tone: var(--kit); }
+ .am-atlas .kid-figure[data-am="adult"] { --tone: var(--sci); }
+ .am-atlas .kid-figure[data-am="tree"] { --tone: var(--phys); }
+ .am-atlas .kid-figure[data-am="rain"] { --tone: var(--video); }
+ .am-atlas .kid-figure-art { padding: 6px; }
+ .am-atlas .kid-figure-art > svg { width: 100%; max-width: 132px; height: auto; }
+ .am-atlas .kid-figure-fact { display: block; }
+ .am-mini-sky { fill: color-mix(in srgb, var(--video) 10%, #e8f4ff); }
+ .am-mini-water { fill: color-mix(in srgb, var(--math) 22%, #b7d8ec); }
+ .am-mini-bank { fill: color-mix(in srgb, var(--sci) 24%, #c4d48a); }
+ .am-choice-row { display: grid; gap: 8px; margin: 10px 0; }
+ .am-choice-row .kid-choice { margin: 0; }
+ .am-choice-row .kid-choice button { white-space: nowrap; }
+ @media (max-width: 640px) {
+ .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+ .mission-face { display: none; }
+ .stage { padding: 10px; }
+ .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+ .lead { max-width: none; }
+ }
+
+ .af-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+ .af-lab-panel { margin: 12px 0; padding: 10px; border: 1px solid color-mix(in srgb,var(--sci) 36%,var(--line)); border-radius: var(--r-lg); background: color-mix(in srgb,var(--sci) 8%,var(--surface)); }
+ .af-lab-panel .readout { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0; }
+ .af-lab-panel .readout div { padding:8px; border-radius:var(--r); background:var(--surface); border:1px solid var(--line); }
+ .af-lab-panel .readout span { display:block; font-size:.78rem; color:var(--ink-mid); }
+ .af-lab-panel .readout b { font:800 1.05rem var(--mono); color:var(--ink); }
+ .af-lab-panel label { display:block; font-weight:700; margin-top:8px; }
+ .af-lab-panel input[type="range"] { width:100%; min-height:44px; }
+ .af-lab-panel .kid-action-strip { flex-direction:column; align-items:stretch; gap:4px; margin:8px 0; }
+ .af-guess .pick-btns { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+ .guess-card { border-color: color-mix(in srgb,var(--sci) 45%,var(--line)); }
+ .guess-pick[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 18%,var(--surface)); color: var(--ink); }
+ .guess-out { font-weight: 750; color: var(--ink-mid); }
+ .guess-out b { color: var(--ink); }
+ @media (max-width:640px){
+ .hero .lead { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+ .af-lab-panel > p { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+ }
+ @media (max-width:480px){
+ [data-playful-companion], [data-playful-sticker] { display:none !important; }
+ .af-lab-panel .readout { grid-template-columns:1fr; }
+ }
+
+</style>
+</head>
+<body data-playful-page="nature/amphibians.html">
+<!-- ART:START 插画图库由 tools/art-build.mjs 生成，请改 tools/art-library.mjs -->
+<svg class="art-sprite" aria-hidden="true" focusable="false" width="0" height="0" viewBox="0 0 0 0">
+ <symbol id="art-nature-axolotl" viewBox="0 0 120 120">
+ <linearGradient id="ag-ax-body" x1=".15" y1=".2" x2=".85" y2=".9">
+ <stop offset="0" stop-color="#ffd4cc"/><stop offset=".55" stop-color="#f4a89c"/><stop offset="1" stop-color="#e07870"/>
+ </linearGradient>
+ <linearGradient id="ag-ax-gill" x1="0" y1="0" x2="1" y2="1">
+ <stop offset="0" stop-color="#ff6b6b"/><stop offset="1" stop-color="#c81e1e"/>
+ </linearGradient>
+ <ellipse cx="62" cy="70" rx="54" ry="40" fill="#7ec8dc" opacity=".35"/>
+ <g fill="none" stroke="#5ab0c8" stroke-width="1.4" opacity=".45">
+ <circle cx="18" cy="28" r="4"/><circle cx="102" cy="24" r="3"/><circle cx="90" cy="96" r="3.4"/>
+ </g>
+ <!-- 尾 -->
+ <path d="M88 68 C108 58 118 72 112 84 C104 94 90 86 84 76 Z" fill="#f4a89c" stroke="#8a4038" stroke-width="1.6"/>
+ <path d="M92 70 C104 66 110 76 106 84" fill="none" stroke="#fff0ea" stroke-width="2" opacity=".45"/>
+ <!-- 身子 -->
+ <path d="M22 70 C24 50 40 40 60 42 C78 44 90 56 90 70 C90 86 74 96 56 96 C36 96 20 86 22 70 Z"
+ fill="url(#ag-ax-body)" stroke="#8a4038" stroke-width="2"/>
+ <g fill="#e05656" opacity=".35">
+ <circle cx="48" cy="62" r="2.4"/><circle cx="62" cy="58" r="1.8"/><circle cx="70" cy="72" r="2"/><circle cx="40" cy="78" r="1.6"/>
+ </g>
+ <!-- 短腿小趾 -->
+ <path d="M36 86 L28 98 M44 88 L40 100 M70 88 L76 100 M78 86 L86 98" stroke="#e07870" stroke-width="4" stroke-linecap="round"/>
+ <g fill="#f4a89c">
+ <circle cx="26" cy="98" r="2.2"/><circle cx="32" cy="100" r="1.8"/><circle cx="38" cy="101" r="1.6"/>
+ <circle cx="76" cy="101" r="1.8"/><circle cx="82" cy="100" r="2"/><circle cx="88" cy="98" r="1.6"/>
+ </g>
+ <!-- 外鳃：左右各三根羽状 -->
+ <g fill="none" stroke="url(#ag-ax-gill)" stroke-width="3.2" stroke-linecap="round">
+ <path d="M30 52 C18 40 14 28 20 18"/><path d="M34 48 C24 34 22 20 30 12"/><path d="M40 46 C34 30 36 16 44 10"/>
+ <path d="M78 48 C90 36 98 28 102 18"/><path d="M74 46 C86 30 94 18 90 10"/><path d="M68 48 C76 32 78 16 72 10"/>
+ </g>
+ <g fill="#ff8a8a">
+ <ellipse cx="18" cy="22" rx="3" ry="5" transform="rotate(-30 18 22)"/>
+ <ellipse cx="28" cy="14" rx="2.6" ry="4.4" transform="rotate(-10 28 14)"/>
+ <ellipse cx="44" cy="11" rx="2.4" ry="4"/>
+ <ellipse cx="102" cy="20" rx="3" ry="5" transform="rotate(28 102 20)"/>
+ <ellipse cx="90" cy="12" rx="2.6" ry="4.4" transform="rotate(8 90 12)"/>
+ <ellipse cx="72" cy="11" rx="2.4" ry="4"/>
+ </g>
+ <!-- 笑脸 -->
+ <ellipse cx="40" cy="64" rx="7" ry="6" fill="#fff6f0"/>
+ <ellipse cx="58" cy="64" rx="7" ry="6" fill="#fff6f0"/>
+ <circle cx="40" cy="64" r="3.2" fill="#2a1810"/><circle cx="58" cy="64" r="3.2" fill="#2a1810"/>
+ <circle cx="38.8" cy="62.8" r="1" fill="#fff"/><circle cx="56.8" cy="62.8" r="1" fill="#fff"/>
+ <path d="M42 76 C48 82 54 82 60 76" fill="none" stroke="#8a4038" stroke-width="2" stroke-linecap="round"/>
+ <ellipse cx="36" cy="72" rx="3" ry="1.6" fill="#f09088" opacity=".7"/>
+ <ellipse cx="64" cy="72" rx="3" ry="1.6" fill="#f09088" opacity=".7"/>
+ </symbol>
+ <symbol id="art-nature-frog" viewBox="0 0 120 120">
+ <linearGradient id="ag-n44fg-sk" x1=".14" y1=".08" x2=".88" y2="1">
+ <stop offset="0" stop-color="#bbf7d0"/><stop offset=".46" stop-color="#22c55e"/><stop offset="1" stop-color="#14532d"/>
+ </linearGradient>
+ <!-- 池边：眼鼓在头顶，鼓膜圆盘，后腿折成 Z 待跳 -->
+ <path d="M0 96 C40 88 80 108 120 94 V120 H0 Z" fill="#0e7490" opacity=".34"/>
+ <path d="M0 108 C44 102 84 116 120 106 V120 H0 Z" fill="#365314" opacity=".52"/>
+ <ellipse cx="62" cy="114" rx="26" ry="3.4" fill="#134e4a" opacity=".16"/>
+ <path d="M24 80 C32 50 84 38 106 62 C116 74 104 96 76 100 C46 106 22 94 24 80 Z"
+ fill="url(#ag-n44fg-sk)" stroke="#14532d" stroke-width="1.8"/>
+ <g fill="#14532d" opacity=".3">
+ <ellipse cx="50" cy="72" rx="4.8" ry="2.6"/><ellipse cx="72" cy="76" rx="4.4" ry="2.4"/>
+ </g>
+ <ellipse cx="32" cy="60" rx="14" ry="12.4" fill="#4ade80" stroke="#14532d" stroke-width="1.3"/>
+ <circle cx="30" cy="40" r="10" fill="#86efac" stroke="#14532d" stroke-width="1.4"/>
+ <circle cx="30" cy="40" r="4.3" fill="#1a2410"/><circle cx="28.4" cy="38.4" r="1.3" fill="#fff"/>
+ <circle cx="46" cy="62" r="5.6" fill="none" stroke="#14532d" stroke-width="1.35" opacity=".6"/>
+ <ellipse cx="18" cy="72" rx="8.6" ry="5.4" fill="#86efac" stroke="#14532d" stroke-width="1.1"/>
+ <path d="M96 74 C120 56 134 86 112 104 C100 90 94 82 90 80 Z" fill="#166534" stroke="#14532d" stroke-width="1.25"/>
+ <path d="M110 104 L128 112 M114 106 L122 120" stroke="#14532d" stroke-width="1.9" stroke-linecap="round"/>
+ <path d="M20 84 L0 102 M26 86 L8 108" stroke="#14532d" stroke-width="2.7" stroke-linecap="round"/>
+ <g fill="#86efac" stroke="#14532d" stroke-width=".9">
+ <ellipse cx="0" cy="102" rx="5.4" ry="2.6"/><ellipse cx="8" cy="108" rx="5" ry="2.4"/>
+ </g>
+ </symbol>
+ <symbol id="art-nature-frog-eggs" viewBox="0 0 120 120">
+ <linearGradient id="ag-pg7-feg-jl" x1=".25" y1=".05" x2=".75" y2="1">
+ <stop offset="0" stop-color="#ecfeff"/><stop offset=".5" stop-color="#67e8f9"/><stop offset="1" stop-color="#0891b2"/>
+ </linearGradient>
+ <linearGradient id="ag-pg7-feg-wd" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0" stop-color="#0e7490"/><stop offset="1" stop-color="#155e75"/>
+ </linearGradient>
+ <path d="M0 86 C40 94 80 80 120 92 V120 H0 Z" fill="url(#ag-pg7-feg-wd)" opacity=".55"/>
+ <path d="M16 120 C12 88 22 60 18 36" fill="none" stroke="#365314" stroke-width="4" stroke-linecap="round"/>
+ <path d="M10 48 C18 40 28 46 22 56 Z" fill="#4d7c0f"/>
+ <path d="M104 120 C108 90 100 64 106 40" fill="none" stroke="#3f6212" stroke-width="3.4" stroke-linecap="round"/>
+ <path d="M32 70 C28 42 70 28 96 48 C110 60 104 88 78 96 C52 104 34 90 32 72 Z"
+ fill="url(#ag-pg7-feg-jl)" stroke="#0e7490" stroke-width="1.6" opacity=".82"/>
+ <g fill="#a5f3fc" opacity=".35">
+ <circle cx="48" cy="58" r="13"/><circle cx="70" cy="70" r="12"/><circle cx="80" cy="50" r="11"/><circle cx="56" cy="82" r="10"/>
+ </g>
+ <g fill="#14532d">
+ <circle cx="46" cy="56" r="5.2"/><circle cx="68" cy="68" r="4.8"/><circle cx="80" cy="50" r="4.4"/>
+ <circle cx="56" cy="82" r="4"/><circle cx="60" cy="48" r="3.6"/><circle cx="86" cy="72" r="3.4"/>
+ </g>
+ <path d="M44 58 C40 64 46 70 52 66" fill="#166534"/>
+ <path d="M66 70 C62 76 70 80 74 74" fill="#166534"/>
+ <g fill="#fff" opacity=".5">
+ <circle cx="42" cy="52" r="1.6"/><circle cx="64" cy="64" r="1.4"/><circle cx="76" cy="46" r="1.3"/>
+ <circle cx="53" cy="78" r="1.2"/><circle cx="58" cy="45" r="1"/>
+ </g>
+ <path d="M38 64 C30 78 36 92 48 96" fill="none" stroke="#fff" stroke-width="2" opacity=".22"/>
+ <path d="M92 86 C100 92 108 88 112 96 C104 100 96 96 92 90 Z" fill="#4d7c0f"/>
+ <ellipse cx="108" cy="98" rx="6" ry="3.2" fill="#365314"/>
+ </symbol>
+ <symbol id="art-nature-glassfrog" viewBox="0 0 120 120">
+ <linearGradient id="ag-n47gf-sk" x1=".16" y1="0" x2=".88" y2="1">
+ <stop offset="0" stop-color="#bbf7d0"/><stop offset=".5" stop-color="#4ade80"/><stop offset="1" stop-color="#166534"/>
+ </linearGradient>
+ <linearGradient id="ag-n47gf-or" x1=".4" y1=".2" x2=".7" y2="1">
+ <stop offset="0" stop-color="#fecaca"/><stop offset="1" stop-color="#b91c1c"/>
+ </linearGradient>
+ <!-- 叶背：透腹见脏 + 大侧眼 -->
+ <path d="M4 18 C44 -4 90 36 122 6" fill="none" stroke="#365314" stroke-width="14" stroke-linecap="round"/>
+ <path d="M6 16 C46 0 88 32 120 8" fill="none" stroke="#4ade80" stroke-width="3.2" opacity=".35"/>
+ <ellipse cx="24" cy="12" rx="12" ry="5" fill="#16a34a"/>
+ <path d="M0 104 C38 96 80 114 120 102 V120 H0 Z" fill="#3f6212" opacity=".45"/>
+ <path d="M18 68 C24 42 66 30 100 50 C112 58 110 80 90 92 C62 106 20 96 16 74 C14 72 16 68 18 68 Z"
+ fill="url(#ag-n47gf-sk)" stroke="#14532d" stroke-width="1.8" opacity=".84"/>
+ <path d="M32 80 C44 66 78 66 94 82 C78 96 46 98 32 84 Z" fill="#f8fafc" opacity=".78"/>
+ <ellipse cx="52" cy="80" rx="7" ry="6" fill="url(#ag-n47gf-or)"/>
+ <path d="M58 76 Q76 88 88 94" fill="none" stroke="#b45309" stroke-width="2.2" opacity=".8" stroke-linecap="round"/>
+ <ellipse cx="32" cy="48" rx="13" ry="12" fill="#4ade80" stroke="#14532d" stroke-width="1.4"/>
+ <ellipse cx="90" cy="50" rx="13" ry="12" fill="#4ade80" stroke="#14532d" stroke-width="1.4"/>
+ <circle cx="28" cy="46" r="4" fill="#111827"/><circle cx="94" cy="48" r="4" fill="#111827"/>
+ <circle cx="27" cy="44.4" r="1.25" fill="#fff"/><circle cx="93" cy="46.4" r="1.25" fill="#fff"/>
+ <path d="M28 90 L10 114 M46 94 L38 118 M74 94 L86 118 M94 88 L116 112" stroke="#166534" stroke-width="3.5" stroke-linecap="round"/>
+ </symbol>
+ <symbol id="art-nature-newt" viewBox="0 0 120 120">
+ <linearGradient id="ag-n41nw-bk" x1=".18" y1="0" x2=".82" y2="1">
+ <stop offset="0" stop-color="#86efac"/><stop offset=".54" stop-color="#3f6212"/><stop offset="1" stop-color="#14532d"/>
+ </linearGradient>
+ <linearGradient id="ag-n41nw-bl" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0" stop-color="#fdba74"/><stop offset=".5" stop-color="#ea580c"/><stop offset="1" stop-color="#9a3412"/>
+ </linearGradient>
+ <!-- 浅水：背绿腹橙，波状背鳍，黑腹斑 -->
+ <path d="M0 96 C36 104 76 88 120 100 V120 H0 Z" fill="#0d6b8a" opacity=".34"/>
+ <path d="M12 72 C24 48 64 44 96 58 C108 64 112 74 104 80 C90 92 50 96 22 86 C10 82 8 78 12 72 Z"
+ fill="url(#ag-n41nw-bk)" stroke="#14532d" stroke-width="1.8"/>
+ <path d="M20 78 C38 66 74 64 100 74 C104 76 102 84 90 86 C60 92 32 88 20 82 Z"
+ fill="url(#ag-n41nw-bl)" stroke="#9a3412" stroke-width="1.2"/>
+ <path d="M34 56 C48 42 66 42 78 54 C66 48 50 48 34 56 Z" fill="#166534"/>
+ <g fill="#111827">
+ <ellipse cx="38" cy="82" rx="2.3" ry="1.7"/><ellipse cx="58" cy="84" rx="2.5" ry="1.8"/><ellipse cx="78" cy="82" rx="2.3" ry="1.6"/>
+ </g>
+ <ellipse cx="100" cy="60" rx="12.4" ry="9.2" fill="#4ade80" stroke="#14532d" stroke-width="1.4"/>
+ <circle cx="104" cy="58" r="2.15" fill="#1a2410"/><circle cx="103.3" cy="57.2" r=".6" fill="#fde68a"/>
+ <path d="M10 74 C0 64 -2 80 12 86" fill="none" stroke="#14532d" stroke-width="5.2" stroke-linecap="round"/>
+ <path d="M44 88 L36 104 M70 90 L78 106" stroke="#14532d" stroke-width="3" stroke-linecap="round"/>
+ </symbol>
+ <symbol id="art-nature-salamander" viewBox="0 0 120 120">
+ <linearGradient id="ag-w38-sl-sk" x1=".12" y1=".12" x2=".88" y2=".92">
+ <stop offset="0" stop-color="#3f3f46"/><stop offset=".5" stop-color="#18181b"/><stop offset="1" stop-color="#09090b"/>
+ </linearGradient>
+ <linearGradient id="ag-w38-sl-yl" x1=".3" y1="0" x2=".7" y2="1">
+ <stop offset="0" stop-color="#fde047"/><stop offset="1" stop-color="#ca8a04"/>
+ </linearGradient>
+ <path d="M0 100 C36 94 80 110 120 98 V120 H0 Z" fill="#365314"/>
+ <path d="M0 100 C40 104 80 96 120 102" fill="none" stroke="#0e7490" stroke-width="3" opacity=".28"/>
+ <ellipse cx="56" cy="114" rx="26" ry="3.6" fill="#1a1408" opacity=".18"/>
+ <path d="M8 70 C22 48 54 46 82 56 C100 62 110 54 118 42 C122 58 112 76 94 82 C68 92 34 94 16 84 C8 78 4 74 8 70 Z"
+ fill="url(#ag-w38-sl-sk)" stroke="#09090b" stroke-width="1.8"/>
+ <g fill="url(#ag-w38-sl-yl)">
+ <ellipse cx="28" cy="64" rx="5.2" ry="3.4"/><ellipse cx="48" cy="56" rx="6" ry="3.6"/>
+ <ellipse cx="68" cy="62" rx="5" ry="3"/><ellipse cx="86" cy="58" rx="4.4" ry="2.6"/>
+ <ellipse cx="38" cy="76" rx="4" ry="2.4"/><ellipse cx="58" cy="78" rx="3.8" ry="2.2"/>
+ <ellipse cx="78" cy="74" rx="3.4" ry="2"/><ellipse cx="98" cy="66" rx="3.2" ry="2.2"/>
+ <ellipse cx="20" cy="74" rx="2.8" ry="1.8"/>
+ </g>
+ <ellipse cx="22" cy="66" rx="11" ry="9" fill="#1c1c1e" stroke="#09090b" stroke-width="1.3"/>
+ <path d="M16 60 C12 52 20 48 24 56" fill="#27272a"/>
+ <circle cx="18" cy="64" r="2.2" fill="#111827"/><circle cx="17.3" cy="63.2" r=".65" fill="#fde68a"/>
+ <path d="M12 70 C6 76 2 76 0 70" fill="none" stroke="#09090b" stroke-width="1.6" stroke-linecap="round"/>
+ <path d="M108 58 C118 42 124 54 118 72 C112 64 108 60 108 58 Z" fill="#18181b" stroke="#09090b" stroke-width="1.2"/>
+ <g fill="none" stroke="#09090b" stroke-width="3.4" stroke-linecap="round">
+ <path d="M34 82 L20 100"/><path d="M50 84 L46 104"/><path d="M70 84 L82 102"/><path d="M88 78 L104 94"/>
+ </g>
+ <g fill="#18181b">
+ <ellipse cx="18" cy="102" rx="5.4" ry="2.4"/><ellipse cx="46" cy="106" rx="5" ry="2.2"/>
+ <ellipse cx="84" cy="104" rx="5.4" ry="2.4"/><ellipse cx="106" cy="96" rx="4.6" ry="2"/>
+ </g>
+ <g fill="#facc15" opacity=".75">
+ <ellipse cx="20" cy="100" rx="3.2" ry="1.4"/><ellipse cx="82" cy="102" rx="3.2" ry="1.4"/>
+ </g>
+ <path d="M26 60 C42 50 66 50 84 60" fill="none" stroke="#52525b" stroke-width="1.6" opacity=".35"/>
+ <ellipse cx="40" cy="62" rx="6" ry="2.6" fill="#3f3f46" opacity=".35"/>
+ </symbol>
+ <symbol id="art-nature-tadpole" viewBox="0 0 120 120">
+ <radialGradient id="ag-w25-td-hd" cx=".38" cy=".36" r=".7">
+ <stop offset="0" stop-color="#bbf7d0"/><stop offset=".5" stop-color="#4ade80"/><stop offset="1" stop-color="#166534"/>
+ </radialGradient>
+ <linearGradient id="ag-w25-td-tl" x1="0" y1=".5" x2="1" y2=".5">
+ <stop offset="0" stop-color="#86efac"/><stop offset=".55" stop-color="#22c55e"/><stop offset="1" stop-color="#14532d"/>
+ </linearGradient>
+ <path d="M0 92 C40 84 80 104 120 90 V120 H0 Z" fill="#0e7490" opacity=".42"/>
+ <g fill="none" stroke="#166534" stroke-width="3.2" stroke-linecap="round" opacity=".5">
+ <path d="M10 118 C8 102 16 94 12 80"/><path d="M24 118 C22 104 28 96 22 84"/>
+ </g>
+ <g fill="#65a30d" opacity=".7">
+ <ellipse cx="12" cy="78" rx="7" ry="3" transform="rotate(-18 12 78)"/>
+ <ellipse cx="24" cy="82" rx="6" ry="2.6" transform="rotate(14 24 82)"/>
+ </g>
+ <g fill="#7dd3fc" opacity=".32">
+ <ellipse cx="78" cy="102" rx="10" ry="3.2"/><ellipse cx="104" cy="110" rx="8" ry="2.6"/>
+ </g>
+ <path d="M56 62 C78 36 108 40 118 60 C110 82 80 88 56 62 Z" fill="url(#ag-w25-td-tl)" stroke="#14532d" stroke-width="1.5"/>
+ <path d="M56 62 C86 48 108 52 116 62 C108 72 86 76 56 62 Z" fill="#86efac" opacity=".35"/>
+ <g fill="none" stroke="#166534" stroke-width="1.05" opacity=".5">
+ <path d="M68 54 C86 46 100 50 112 60"/><path d="M68 70 C86 78 100 74 112 64"/>
+ <path d="M74 50 C76 62 76 66 74 74"/><path d="M90 48 C94 62 94 66 90 76"/>
+ <path d="M104 52 C106 62 106 66 104 72"/>
+ </g>
+ <ellipse cx="40" cy="62" rx="24" ry="20" fill="url(#ag-w25-td-hd)" stroke="#14532d" stroke-width="1.8"/>
+ <path d="M26 52 C32 46 44 46 50 54" fill="none" stroke="#dcfce7" stroke-width="2.4" opacity=".45"/>
+ <circle cx="28" cy="56" r="3.2" fill="#14532d"/><circle cx="27" cy="54.8" r="1.1" fill="#fef9c3"/>
+ <path d="M20 66 C10 60 6 70 16 74" fill="none" stroke="#0f766e" stroke-width="2.2" stroke-linecap="round"/>
+ <g fill="#15803d" opacity=".4">
+ <ellipse cx="38" cy="70" rx="5" ry="2.6"/><ellipse cx="50" cy="74" rx="3.6" ry="2"/>
+ </g>
+ <g fill="none" stroke="#166534" stroke-width="1.6" stroke-linecap="round">
+ <path d="M22 50 L16 42"/><path d="M20 54 L10 50"/><path d="M20 58 L12 60"/>
+ </g>
+ <ellipse cx="54" cy="62" rx="5" ry="8" fill="#86efac" opacity=".45"/>
+ <ellipse cx="70" cy="112" rx="22" ry="3.6" fill="#134e4a" opacity=".22"/>
+ </symbol>
+ <symbol id="art-nature-toad" viewBox="0 0 120 120">
+ <linearGradient id="ag-n45td-sk" x1=".16" y1=".08" x2=".88" y2="1">
+ <stop offset="0" stop-color="#d6c49a"/><stop offset=".5" stop-color="#8a6a40"/><stop offset="1" stop-color="#4a3728"/>
+ </linearGradient>
+ <!-- 湿土：耳后毒腺鼓起，满背疣，腿比蛙短粗 -->
+ <path d="M0 100 C40 92 80 110 120 98 V120 H0 Z" fill="#3f6212" opacity=".52"/>
+ <g fill="#365314" opacity=".45">
+ <ellipse cx="16" cy="108" rx="10" ry="3"/><ellipse cx="104" cy="110" rx="12" ry="3.2"/>
+ </g>
+ <ellipse cx="62" cy="114" rx="28" ry="3.6" fill="#1a2e05" opacity=".18"/>
+ <path d="M12 86 C16 58 56 42 94 52 C116 60 122 82 102 98 C74 114 18 112 12 90 C10 88 10 86 12 86 Z"
+ fill="url(#ag-n45td-sk)" stroke="#3a2a18" stroke-width="1.9"/>
+ <ellipse cx="84" cy="54" rx="19" ry="16" fill="#c4a06a" stroke="#3a2a18" stroke-width="1.4"/>
+ <path d="M62 44 C56 28 80 20 88 38 C102 24 120 36 112 54 C98 44 76 40 62 44 Z" fill="#a89070" stroke="#3a2a18" stroke-width="1.4"/>
+ <ellipse cx="70" cy="40" rx="9" ry="6.6" fill="#8a6a40" stroke="#3a2a18" stroke-width="1.15"/>
+ <ellipse cx="100" cy="42" rx="9" ry="6.6" fill="#8a6a40" stroke="#3a2a18" stroke-width="1.15"/>
+ <g fill="#6b5344">
+ <circle cx="34" cy="76" r="3.6"/><circle cx="52" cy="90" r="3.2"/><circle cx="68" cy="78" r="3"/>
+ <circle cx="44" cy="66" r="2.4"/><circle cx="80" cy="86" r="2.8"/><circle cx="60" cy="58" r="2"/>
+ <circle cx="92" cy="70" r="2.2"/><circle cx="26" cy="88" r="2.6"/>
+ </g>
+ <circle cx="86" cy="52" r="3.5" fill="#1a1008"/><circle cx="85.1" cy="50.8" r=".9" fill="#fde68a"/>
+ <path d="M82 52 H92" stroke="#fde68a" stroke-width="1.1" opacity=".7"/>
+ <ellipse cx="100" cy="68" rx="7.4" ry="4.2" fill="#6b5344"/>
+ <path d="M16 94 L2 110 M38 100 L26 118 M72 100 L88 118 M98 88 L116 104" stroke="#3a2a18" stroke-width="5" stroke-linecap="round"/>
+ <path d="M2 110 L-4 108 M26 118 L20 120 M88 118 L94 120 M116 104 L122 102" stroke="#3a2a18" stroke-width="2.4" stroke-linecap="round"/>
+ </symbol>
+</svg>
+<!-- ART:END -->
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+ <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+ <div class="row" aria-label="主导航">
+ <a class="nav-link" href="../index.html">资源库</a>
+ <a class="nav-link" href="../pages/paths.html">学习路径</a>
+ <a class="nav-link" href="../games/index.html">互动实验</a>
+ <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+ <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+ <a class="nav-link" href="../pages/parents.html">家长指南</a>
+ <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+ </div>
+</div></nav>
+<main id="main" class="wrap">
+ <header class="hero kid-hero-scene">
+ <div>
+ <p class="row"><span class="pill pill-sci">生命</span><span class="pill">4–11&nbsp;岁</span><span class="pill">本地观察</span></p>
+ <h1>两栖动物观察站</h1>
+ <p class="lead">同一只两栖动物，常先在水里当蝌蚪，再用肺和湿皮肤走上陆地。卵外面是胶膜，不是鸟蛋那种硬壳，干了就完；薄湿的皮肤帮着换气，脏水和农药也更容易钻进去。对照爬行动物：鳞甲和硬壳蛋让岸可以比较干，两栖的家却必须够湿。本页练「鳃→肺+湿皮」和「变态不是换衣服」。因为皮肤又薄又会吸脏东西，所以远观不抓、不往水里投药，看完洗手。舞台上的「适湿」数字只是比较尺子，用来比「皮够不够湿、离水近不近」，不是天气预报，更不是饲养课。</p>
+ <div data-playful-companion></div>
+ <span data-playful-sticker></span>
+ </div>
+ <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="78" height="78"></div>
+ </header>
+
+
+ <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+ <h2 id="stageTitle">池塘边站两只</h2>
+ <svg class="am-art" viewBox="0 0 560 240" role="img" aria-labelledby="amTitle amDesc">
+ <title id="amTitle">两栖动物比较舞台</title>
+ <desc id="amDesc">池塘边：水里有蝌蚪鳃和胶膜卵，岸上有湿皮青蛙。点中的两只会分别站到左边和右边，方便比水里阶段和陆上阶段。</desc>
+ <rect class="am-sky" width="560" height="240"/>
+ <path class="am-bank" d="M0 168 H560 V240 H0 Z"/>
+ <path class="am-water" d="M0 176 C80 150 160 190 260 168 C360 148 440 186 560 164 V240 H0 Z"/>
+ <ellipse class="am-pad" cx="150" cy="178" rx="42" ry="12"/>
+ <ellipse class="am-pad" cx="410" cy="178" rx="42" ry="12"/>
+ <path class="am-stem" d="M150 178 V214 M410 178 V214"/>
+ <use href="#art-nature-frog" x="50" y="10" width="200" height="200"/>
+ <ellipse cx="86" cy="206" rx="12" ry="6" fill="#6b8f3a"/>
+ <path d="M76 206 Q68 200 76 204" fill="none" stroke="#0e7490" stroke-width="2"/>
+ <ellipse cx="118" cy="214" rx="8" ry="6" fill="#d8e8f0" stroke="#4a7a32"/>
+ <ellipse cx="492" cy="156" rx="16" ry="9" fill="#4a7a32"/>
+ <ellipse cx="492" cy="154" rx="10" ry="5" fill="#86efac" opacity=".45"/>
+ <text x="86" y="36" text-anchor="middle" font-size="12" fill="#3a2a18">水里：鳃和胶膜</text>
+ <text x="492" y="36" text-anchor="middle" font-size="12" fill="#3a2a18">岸上：湿皮</text>
+ <ellipse class="am-ring" id="ringA" cx="150" cy="118" rx="92" ry="58"/>
+ <ellipse class="am-ring" id="ringB" cx="410" cy="118" rx="92" ry="58"/>
+ <g id="slotA" transform="translate(70 56)"></g>
+ <g id="slotB" transform="translate(330 56)"></g>
+ <text class="am-label" id="labA" x="150" y="228" text-anchor="middle">左边还空着</text>
+ <text class="am-label" id="labB" x="410" y="228" text-anchor="middle">右边还空着</text>
+ </svg>
+ <p class="live-text" id="live" role="status" aria-live="polite">池塘空着。到图鉴里点两只不一样的两栖动物。</p>
+ </section>
+
+ <div class="kid-action-strip" role="group" aria-label="比较水里还是岸上">
+ <span>点两只，再给每只选：水里阶段或陆上阶段</span>
+ <button class="btn" type="button" id="clearPick">清空选择</button>
+ </div>
+
+<section class="card af-lab-panel" aria-labelledby="afLabTitle">
+ <h2 id="afLabTitle">两栖适湿台 · 真参数</h2>
+ <p>调<strong>皮肤湿度</strong>与<strong>近水时间</strong>。两栖动物卵与幼体多靠水，成体皮肤也怕干——不是「随便两栖就能住沙漠」。</p>
+ <div class="kid-action-strip" role="group" aria-label="真参数主操作">
+ <label for="afA">皮肤湿度：<span id="afALab">…</span></label>
+ <input class="input" id="afA" type="range" min="4" max="36" value="16" aria-valuetext="16">
+ <label for="afB">近水时间：<span id="afBLab">…</span></label>
+ <input class="input" id="afB" type="range" min="2" max="20" value="8" aria-valuetext="8">
+ </div>
+ <svg class="af-art" viewBox="0 0 640 220" role="img" aria-labelledby="afLabSvgTitle afLabSvgDesc">
+ <title id="afLabSvgTitle">胶膜和湿皮是结构，所以必须近水</title>
+ <desc id="afLabSvgDesc">水边有带胶膜的卵和蝌蚪鳃。成蛙皮肤带水光。离水太远、皮变干时，右边划掉沙漠。适湿够才待得住岸。</desc>
+ <rect fill="#b8d8c8" width="640" height="220"/>
+ <rect id="afWater" x="0" y="140" width="340" height="80" fill="#5a9aba" opacity=".55"/>
+ <ellipse id="afEgg" cx="70" cy="168" rx="16" ry="12" fill="#d8e8f0" stroke="#4a7a32"/>
+ <ellipse id="afTad" cx="120" cy="172" rx="14" ry="7" fill="#6b8f3a"/>
+ <path id="afGill" d="M108 172 Q100 164 108 168" fill="none" stroke="#0e7490" stroke-width="2"/>
+ <ellipse id="afFrog" cx="200" cy="120" rx="36" ry="22" fill="#4a7a32"/>
+ <ellipse id="afSkin" cx="200" cy="120" rx="28" ry="14" fill="#86efac" opacity=".35"/>
+ <ellipse cx="420" cy="130" rx="40" ry="18" fill="#8a6a40" opacity=".35"/>
+ <g id="afDry" opacity="0.32">
+ <ellipse cx="560" cy="56" rx="28" ry="12" fill="#c4a06a"/>
+ <path d="M540 40 L580 72 M580 40 L540 72" stroke="#c2410c" stroke-width="4"/>
+ </g>
+ <rect id="afBar" x="500" y="90" width="14" height="90" fill="#1a5a3a"/>
+ <text fill="#1a2a20" style="font:800 13px monospace" x="16" y="28">适湿台</text>
+ <text id="afStateLab" fill="#1a2a20" style="font:700 12px monospace" x="16" y="208">湿皮帮换气，干了路就断</text>
+ </svg>
+ <div class="readout" aria-live="polite">
+ <div><span>湿皮</span><b id="afAOut">…</b></div>
+ <div><span>适湿（算）</span><b id="afSOut">…</b></div>
+ <div><span>够湿？</span><b id="afOkOut">…</b></div>
+ </div>
+ <p class="live-text" id="afLabLive" role="status" aria-live="polite">胶膜和湿皮是结构，所以必须近水。皮更湿、更常挨着水，才过得了水陆两边。不是随便两栖就能住沙漠。</p>
+ </section>
+ <section class="card guess-card af-guess" aria-labelledby="afGuessTitle">
+ <h2 id="afGuessTitle">先猜一猜，再拖滑杆</h2>
+ <p><b>第 1 题：</b>湿皮够、水时够（湿皮 30、水时 10），适湿会更明显吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜适湿">
+ <button class="btn guess-pick" type="button" data-af-g1="15" aria-pressed="false">几乎不变</button>
+ <button class="btn guess-pick" type="button" data-af-g1="20" aria-pressed="false">会更明显</button>
+ <button class="btn guess-pick" type="button" data-af-g1="30" aria-pressed="false">会过头</button>
+ </div>
+ <p class="guess-out" id="afGuessOut1" role="status" aria-live="polite">先押一个，再拖到 皮肤湿度 30、近水时间 10。</p>
+ <div id="afGuessBlock2" hidden>
+ <p><b>第 2 题：</b>湿皮 5、水时 3，还够湿吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜够不够">
+ <button class="btn guess-pick" type="button" data-af-g2="yes" aria-pressed="false">够湿</button>
+ <button class="btn guess-pick" type="button" data-af-g2="no" aria-pressed="false">偏干</button>
+ </div>
+ <p class="guess-out" id="afGuessOut2" role="status" aria-live="polite">押好后拖到 皮肤湿度 5、近水时间 3。</p>
+ </div>
+ <div id="afGuessBlock3" hidden>
+ <p><b>第 3 题：</b>湿皮最少 4、水时最弱 2。还能明显够湿吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜最低档">
+ <button class="btn guess-pick" type="button" data-af-g3="yes" aria-pressed="false">能，还在</button>
+ <button class="btn guess-pick" type="button" data-af-g3="no" aria-pressed="false">不能，两边都太弱</button>
+ <button class="btn guess-pick" type="button" data-af-g3="zero" aria-pressed="false">变成 0，没了</button>
+ </div>
+ <p class="guess-out" id="afGuessOut3" role="status" aria-live="polite">押好后湿皮 4、水时 2。</p>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="teachWhatTitle">
+ <h2 id="teachWhatTitle">同一只两栖：卵要湿，皮肤怕干也怕脏</h2>
+ <p>先点「蝌蚪」，再对照「成蛙」。两栖常把一生拆成两段：幼体在水里用鳃，变态后上岸多用肺，湿皮肤还帮着换气。卵外面是胶膜，不是鸟蛋那种硬壳，水干了胚胎就完。蝌蚪不是一只缩小的成蛙，尾巴和鳃会换成腿和肺。</p>
+ <p>薄湿的皮肤让气体进出更容易，脏水和农药也更容易钻进去。干塘、脏水、被路隔开的池塘，都是同一条路被掐断。爬行动物有鳞甲和硬壳蛋，岸可以比较干；两栖的家必须够湿，两套零件不要画成同一种。</p>
+ <p>因为湿皮又薄又会吸脏东西，所以远观不抓、不往水里投药，看完洗手。天气预报的「湿度」是人舒不舒服，不是蛙能不能活。舞台上的「适湿」读数只比较「皮够不够湿、离水近不近」，不是饲养说明书。</p>
+ </section>
+
+ <section class="card am-atlas" aria-labelledby="amAtlasTitle">
+ <h2 id="amAtlasTitle">两栖动物图鉴</h2>
+ <p>下面有 12&nbsp;张卡。点两张，比谁更像水里阶段、谁更像陆上阶段。再点一次同一张可以取消。</p>
+ <div class="kid-figure-grid" id="amAtlasGrid" role="group" aria-label="两栖动物图鉴：十二种样子">
+ <button class="kid-figure" type="button" id="amFigFrog" data-am="frog" aria-pressed="false" aria-label="青蛙：会跳，还要回水里下蛋" data-say="青蛙：成体用肺呼吸，长腿能跳上岸。下蛋还得回水里。皮肤湿湿的。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">青蛙</span>
+ <span class="kid-figure-fact">青蛙长腿能跳上岸，下蛋还得回水里，皮肤要湿，不是会游泳的爬行类。</span>
+ </button>
+ <button class="kid-figure" type="button" id="amFigToad" data-am="toad" aria-pressed="false" aria-label="蟾蜍：皮肤更干，更常待在岸上" data-say="蟾蜍：皮肤比较厚、有疙瘩，比青蛙更不怕离开水。走路一蹭一蹭，下蛋仍要找水洼。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/toad.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">蟾蜍</span>
+ <span class="kid-figure-fact">蟾蜍皮肤更干有疙瘩，更常待在岸上，皮仍要湿，下蛋还得找水洼。蝌蚪也不是小号蟾。</span>
+ </button>
+ <button class="kid-figure" type="button" id="amFigNewt" data-am="newt" aria-pressed="false" aria-label="蝾螈：长大了还留着长尾巴" data-say="蝾螈：长大了还留着长尾巴，皮肤始终湿。很多种类大半时间待在水里或潮湿的石头下。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/salamanders.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">蝾螈</span>
+ <span class="kid-figure-fact">蝾螈长大还留长尾巴，皮肤始终要湿；它不是青蛙把尾巴忘了剪，也不是蜥蜴。</span>
+ </button>
+ <button class="kid-figure" type="button" id="amFigGiant" data-am="giant" aria-pressed="false" aria-label="大鲵：几乎不上岸" data-say="大鲵：身体又扁又长，几乎一辈子待在山溪里。皮肤皱皱的，用潮湿的皮肤帮着换气，很少爬到干地上。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/hellbenders.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">大鲵</span>
+ <span class="kid-figure-fact">大鲵又扁又长，几乎一辈子待在山溪里，用湿皮肤换气，很少上干地。皮一干就难换气。</span>
+ </button>
+ <button class="kid-figure" type="button" id="amFigTadpole" data-am="tadpole" aria-pressed="false" aria-label="蝌蚪：水里阶段，用鳃和尾巴" data-say="蝌蚪：这是水里阶段。没有腿，用鳃呼吸，摇着尾巴游。以后才会变成能上岸的成蛙。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/tadpoles.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">蝌蚪</span>
+ <span class="kid-figure-fact">蝌蚪用鳃呼吸、摇尾巴游；它是青蛙小时候，不是小号青蛙，也不是小鱼。</span>
+ </button>
+ <button class="kid-figure" type="button" id="amFigAdult" data-am="adult" aria-pressed="false" aria-label="成蛙：变态以后的陆上阶段" data-say="成蛙：蝌蚪变态以后的样子。腿长出来，尾巴缩回去，改用肺，可以跳到荷叶上。仍要保持皮肤湿润。">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/frogs.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">成蛙</span>
+ <span class="kid-figure-fact">成蛙是陆上阶段：长出腿，改用肺，能跳上岸，湿皮肤仍帮着换气。蝌蚪不是小号青蛙。</span>
+ </button>
+ <button class="kid-figure" type="button" id="amFigTree" data-am="tree" aria-pressed="false" aria-label="树蛙：脚趾有吸盘，住在叶子上" data-say="树蛙：脚趾带吸盘，能贴在叶子和树干上。更常待在陆上的植物里，下蛋仍要找有水的地方。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/tree-frogs.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">树蛙</span>
+ <span class="kid-figure-fact">树蛙脚趾有吸盘，能贴在叶子上；肚皮不透明，不是玻璃蛙，下蛋仍要找水。</span>
+ </button>
+ <button class="kid-figure" type="button" id="amFigRain" data-am="rain" aria-pressed="false" aria-label="雨蛙：下雨才大声叫" data-say="雨蛙：也是住在树上的一类。下雨天空气湿，它们才敢大声叫、出来活动。皮肤照样要湿，不能走太远的干地。">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/tree-frogs.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">雨蛙</span>
+ <span class="kid-figure-fact">雨蛙下雨天才大声叫，住在潮湿的树上，空气干了就不敢走远。皮肤要湿才能换气。</span>
+ </button>
+ <button class="kid-figure" type="button" id="amFigAxolotl" data-am="axolotl" aria-pressed="false" aria-label="美西螈：一辈子留着鳃" data-say="美西螈：一辈子留着外鳃，几乎不上岸。它把水里阶段一直保留下来，和成蛙正好相反。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/axolotl.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">美西螈</span>
+ <span class="kid-figure-fact">美西螈外鳃不收，几乎一辈子待在水里，把幼体那套鳃一直留着。它不是小号青蛙。</span>
+ </button>
+ <button class="kid-figure" type="button" id="amFigBull" data-am="bull" aria-pressed="false" aria-label="牛蛙：大，能跳上岸" data-say="牛蛙：成体很大，长腿能跳上岸。下蛋仍要回水里。它比树蛙更常待在岸边的水面上。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bullfrogs.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">牛蛙</span>
+ <span class="kid-figure-fact">牛蛙耳后鼓膜特别大，能跳上岸，下蛋仍回水里；皮肤要湿，不是蟾蜍那种疙瘩皮。</span>
+ </button>
+ <button class="kid-figure" type="button" id="amFigEgg" data-am="egg" aria-pressed="false" aria-label="卵团：水里阶段的起点" data-say="卵团：包着胶的一堆卵，必须待在水里。还没有腿、没有肺，是整段水里生活的起点。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog-eggs.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">卵团</span>
+ <span class="kid-figure-fact">卵团是包着胶的卵，只能待在水里，没有爬行类那种不怕干的硬壳。孵出来先是蝌蚪。</span>
+ </button>
+ <button class="kid-figure" type="button" id="amFigFire" data-am="fire" aria-pressed="false" aria-label="火蝾螈：有尾巴，更常在岸上" data-say="火蝾螈：长大了还留着长尾巴，身上有醒目的斑。它比大鲵更常走潮湿的岸上，下蛋或产幼仍离不开湿处。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/salamanders.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">火蝾螈</span>
+ <span class="kid-figure-fact">火蝾螈留着长尾巴，更常走潮湿的岸上，下蛋或产幼仍离不开湿处。皮肤始终要湿。</span>
+ </button>
+ </div>
+ <p class="live-text" id="amAtlasSay" role="status" aria-live="polite">还没选。点两张卡，比一比水里阶段和陆上阶段。</p>
+ </section>
+
+
+ <section class="card" aria-labelledby="predictTitle">
+ <h2 id="predictTitle">猜一猜</h2>
+ <div class="kid-predict" style="--tone:var(--sci)"
+ data-kid-predict
+ data-kid-predict-explain="蝌蚪多用鳃，变成蛙以后多用肺，皮肤还常常要湿。不要抓回家，也不要往水里倒药。"
+ data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+ data-kid-predict-again="押好了，点「看答案」。">
+ <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🐸</span><b>蝌蚪和成蛙，呼吸主要靠什么？</b></p>
+ <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：两栖水陆阶段">
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="same">两边都只用肺，跟小猫一样</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="switch" data-kid-predict-correct>蝌蚪多用鳃，变态后多用肺；皮肤常要湿</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="stone">蝌蚪是石头变的，上岸才变成动物</button>
+ </div>
+ <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+ <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+ </div>
+ </section>
+
+ <section class="task" aria-labelledby="taskTitle">
+ <h2 class="task-title" id="taskTitle">任务：选两只，说出谁是水里阶段、谁是陆上阶段</h2>
+ <p>先点两张图鉴卡。再给每一只挑一个阶段。两个阶段必须不一样，然后点「记下这次比较」。</p>
+ <div class="am-choice-row">
+ <p id="stageACap">第一只的阶段</p>
+ <div class="kid-choice" id="stageA" role="group" aria-labelledby="stageACap">
+ <button type="button" data-slot="a" data-stage="water" aria-pressed="false">水里阶段</button>
+ <button type="button" data-slot="a" data-stage="land" aria-pressed="false">陆上阶段</button>
+ </div>
+ </div>
+ <div class="am-choice-row">
+ <p id="stageBCap">第二只的阶段</p>
+ <div class="kid-choice" id="stageB" role="group" aria-labelledby="stageBCap">
+ <button type="button" data-slot="b" data-stage="water" aria-pressed="false">水里阶段</button>
+ <button type="button" data-slot="b" data-stage="land" aria-pressed="false">陆上阶段</button>
+ </div>
+ </div>
+ <button class="btn btn-primary" type="button" id="confirmBtn" disabled>记下这次比较</button>
+ <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+ <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+ <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先在图鉴里点两只不一样的动物。</p>
+ </section>
+
+
+ <section class="card" aria-labelledby="lookTitle">
+ <h2 id="lookTitle">卵要湿，皮肤怕干也怕脏</h2>
+ <p>同一只两栖、同一张膜，先只改这一件事：水里阶段还是陆上阶段。先指卵团：胶膜是保湿袋，不是装饰冻。再指蝌蚪的鳃和成体湿背。这样比，才知道变态是换呼吸方案，不是换一件衣服。</p>
+ <p>完成句写「幼体用鳃、成体靠肺和湿皮」或「干了、脏了都伤这条路」。禁止「青蛙喜欢水」，也禁止「两栖就能住沙漠」。因为湿皮又薄又会吸脏东西，所以远观不抓、不往水里投药，看完洗手。</p>
+ <div class="kid-figure-grid" role="group" aria-label="主题细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog-eggs.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">卵</span><span class="kid-figure-sub">胶膜保湿</span><p class="kid-figure-fact">卵只有胶膜，没有爬行动物那种硬壳，水一干胚胎就完，不能带回旱地。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/tadpoles.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">幼体</span><span class="kid-figure-sub">鳃换气</span><p class="kid-figure-fact">蝌蚪用鳃在水里换气，不是一只缩小的成蛙，尾巴以后才会收掉。蝌蚪不是小号青蛙。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/frogs.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">成体</span><span class="kid-figure-sub">肺+湿皮</span><p class="kid-figure-fact">上岸后肺开始工作，湿皮肤仍帮着换气，所以这张皮不能干透。皮肤要湿。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">湿润</span><span class="kid-figure-sub">栖息条件</span><p class="kid-figure-fact">岸太干会把皮肤这条换气路掐断，家就不够格，不是「锻炼」。皮肤要湿才能换气。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">脏水</span><span class="kid-figure-sub">皮肤吸收</span><p class="kid-figure-fact">薄皮让脏水和农药更容易进来，所以水一脏，蛙常常会先受伤。皮肤要湿才换气。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">抓回家</span><span class="kid-figure-sub">红线</span><p class="kid-figure-fact">野外抓回来养，多数活不长，还拆掉池边那一小群，不是默认宠物。皮一干就难活。</p></div>
+ </div>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>点卵团。</b>胶膜在保什么？</li>
+ <li data-step="2"><b>点蝌蚪。</b>它现在用鳃还是肺？</li>
+ <li data-step="3"><b>点成体背。</b>皮肤干了会怎样。</li>
+ <li data-step="4"><b>写完成句。</b>湿润依赖，还是污染风险。</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>小时候像水里的宝宝，长大能上岸；皮要湿，不能随便抓。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>变态换呼吸方案。湿皮帮肺换气，也让脏水更容易进来。卵靠胶膜，不是鸟蛋。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>无羊膜卵限制在湿微生境。皮肤呼吸与渗透调节是同一张膜的两面。种群下降常叠栖息地破碎与污染，本页不鉴定物种、不教饲养。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能说出鳃→肺+湿皮的切换，并拒绝「抓回家」和「倒药入池」。完成看的是水陆对照，不是背「两栖」两个字。</p>
+ <ul class="ask-list">
+ <li>蝌蚪用肺呼吸吗？它现在用的是鳃还是肺？</li>
+ <li>皮肤为什么又怕干又怕脏？同一张膜在做什么？</li>
+ <li>能把青蛙抓回家养吗？对那一只和对池边那一小群各怎样？</li>
+ <li>天气预报说湿度高，今晚蛙一定出来吗？</li>
+ </ul>
+ </section>
+
+
+ <section class="card" aria-labelledby="deepTitle">
+ <h2 id="deepTitle">湿皮是交换窗，也是暴露窗</h2>
+ <p>气体和水盐从薄湿皮肤进出，农药和消毒剂走同一扇窗。把皮肤写成「防水衣」，后面就讲不下去。同一张膜帮肺换气，也让脏东西更容易进来，所以又怕干又怕脏，并不矛盾。</p>
+ <p>两栖不是「会游泳的爬行」，也不是「会上岸的鱼」。卵只有胶膜、幼体用鳃、成体靠肺加湿皮，三条一起看，才分得清。变态是换呼吸方案，不是换一件衣服。</p>
+ <p>池塘被填、被路隔开，成体走不到产卵的水，比「少看见一只」更伤种群。干塘不是「锻炼」，是把胶膜和湿皮同时掐断。</p>
+ <p>远观、拍照、洗手。把消毒剂、肥皂水当「帮池塘变干净」是反着来：薄皮会把药当水喝进去。本页不教饲养，也不鉴定物种。</p>
+ <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">薄湿皮</span><span class="kid-figure-sub">双刃</span><p class="kid-figure-fact">同一张薄湿皮帮肺换气，脏水和农药也从这里进来，所以又怕干又怕脏。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">池塘破碎</span><span class="kid-figure-sub">迁徙断</span><p class="kid-figure-fact">池塘被填或被路隔开，成体走不到产卵的水，比少看见一只更伤。蝌蚪没有水就活不成。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">污染物</span><span class="kid-figure-sub">经皮</span><p class="kid-figure-fact">蛙先受伤，常常是在提醒这片水脏了，它不是池边的装饰点缀。湿皮把脏水喝进去。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/tadpoles.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">变态</span><span class="kid-figure-sub">方案切换</span><p class="kid-figure-fact">蝌蚪用鳃，成体改用肺加湿皮，这是换呼吸方案，不是换一件衣服。蝌蚪不是小号青蛙。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="fieldTitle">
+ <h2 id="fieldTitle">对照：适湿池塘 · 干污压力 · 抓养否决</h2>
+ <p>三列不是三种性格，是同一只蛙会遇到的三种处境。公平比法是只改「够不够湿、水脏不脏」，不要写成「它爱不爱水」。</p>
+ <p>适湿清洁：卵的胶膜不干，成体湿皮还能换气，这才像水陆两栖的家。太干或水太脏，同一张膜先受伤，卵也常先死。抓回家：野外个体常常死，还拆掉局部种群，不是默认宠物。</p>
+ <p>万一摸到了，立刻洗手：皮肤分泌物可能刺激人，人也可能把脏东西留给蛙。消毒剂、肥皂水不能倒进池塘。本页读数只比较方向，不是饲养手册。</p>
+ <div class="kid-figure-grid" role="group" aria-label="三列对照">
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">适湿</span><span class="kid-figure-sub">宜居</span><p class="kid-figure-fact">卵的胶膜不能干裂，成体湿皮还能换气，这才像水陆两栖的家。皮肤要湿。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">干污</span><span class="kid-figure-sub">压力</span><p class="kid-figure-fact">太干或水太脏，同一张膜先受伤，卵也常先死，不是「锻炼」。皮肤要湿，不能当小号蛙养干。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">抓养</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">野外个体抓回家常常死，还拆掉局部种群，所以不是默认宠物。皮干了就难换气。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">洗手</span><span class="kid-figure-sub">观后</span><p class="kid-figure-fact">万一摸到了，立刻洗手：分泌物可能刺激人，人也可能把脏东西留给蛙。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="moreTitle">
+ <h2 id="moreTitle">池边只带走三句话</h2>
+ <p>在纸上写下三句：「卵要湿。」「皮肤怕脏。」「不抓回家养。」口头只要这两句：「小时候用鳃，长大靠肺和湿皮。」「干了、脏了都伤这条路。」有人说「两栖就能住沙漠」，让孩子指着胶膜和湿背反驳。</p>
+ <p>天气预报的湿度是人舒不舒服，不要拿来解释蛙会不会活。本页「适湿」数字不要抄进饲养手册。</p>
+ <p>池边远观就够。复查：手洗了没有；有没有伸手去捞；有没有把消毒剂、肥皂水倒进池塘。薄皮会把药当水喝进去。</p>
+ <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">三句</span><span class="kid-figure-sub">带走</span><p class="kid-figure-fact">写下三句：卵要湿；皮肤怕脏；不抓回家养。比背「两栖」两个字有用。蝌蚪不是小号青蛙。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/weather.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">天气湿度</span><span class="kid-figure-sub">别混</span><p class="kid-figure-fact">天气预报说人舒不舒服，不能拿来解释蛙会不会活、今晚出不出来。要看皮肤还湿不湿。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-ban" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">不抓</span><span class="kid-figure-sub">复查</span><p class="kid-figure-fact">池边远观就够。复查有没有伸手去捞，有没有洗手，不要抓带回。蝌蚪也不是小号青蛙。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/frog.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">倒药</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">消毒剂、肥皂水不能倒进池塘：薄湿皮会把药液当成水喝进去。皮肤要湿才换气，也怕脏。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="thickTitle">
+ <h2 id="thickTitle">湿皮帮着换气，卵也要保湿</h2>
+ <p>带走句：两栖用湿皮肤帮肺换气；太干会伤到这条路，卵也要待在湿处。</p>
+ <p>对照：适湿才像水陆两栖；干燥不是「锻炼」，是风险。</p>
+ <p>天气预报的湿度与人的舒适是另一套机制，不要混讲。</p>
+ <p>因为湿皮又薄又会吸脏东西，所以远观不抓、不往水里投药，看完洗手。</p>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+ <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+ <p>想知道「它是不是两栖」，就只改生命阶段这一项。同一只动物，先看水里用鳃还是岸上用肺加湿皮。把「会游泳所以是鱼」叠进同一档，分不清到底是变态，还是分类错了。</p>
+ <ul>
+ <li><b>只改这一项：</b>水里阶段还是陆上阶段（鳃还是肺+湿皮）。</li>
+ <li><b>先保持不变：</b>同一只两栖、同一张薄湿皮、同一团胶膜卵。</li>
+ <li><b>要观察的：</b>幼体有没有鳃和尾巴；成体皮干了换气路还在不在。</li>
+ <li><b>另开一行：</b>硬壳蛋去爬行动物页对照，不要和「抓回家」叠在一起。</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+ <h2 id="askMoreTitle">还可以问下去</h2>
+ <ol>
+ <li>皮肤又怕干又怕脏，听起来矛盾。怎样用「同一张膜」讲通？气体走哪扇窗，农药走哪扇窗？</li>
+ <li>池塘被路隔开以后，成体还找得到产卵的水吗？少看见一只，和整条繁殖路被掐断，哪一句更准？</li>
+ <li>把消毒剂倒进水里「帮小动物」，错在交换路径还是错在心情？天气预报湿度高，今晚蛙一定出来吗？</li>
+ </ol>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+ <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+ <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把羊膜、渗透调节提前塞进四岁耳朵。</p>
+ <div class="age-tiers" aria-label="给家长的分层讲法">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>小时候像水里的宝宝，长大能上岸；皮要湿，不能随便抓。卵外面是胶，干了就不行。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>变态换呼吸方案：蝌蚪用鳃，成体改用肺加湿皮。湿皮帮换气，也让脏水更容易进来。卵靠胶膜，不是鸟蛋。本页数字只用来比较，不是天气预报。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>无羊膜卵限制在湿微生境。皮肤呼吸与渗透调节是同一张膜的两面。种群下降常叠栖息地破碎与污染。本页不鉴定物种、不教饲养。</p></div>
+ </div>
+ </section>
+
+ <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+ <h2 class="work-card-title" id="workTitle">作品表单：两栖动物观察</h2>
+ <p class="work-card-meta">只保存文字，存在这台设备上。池塘边看见的也可以记。</p>
+ <div class="work-card-fields">
+ <div><label for="workType">作品类型</label>
+ <select class="input" id="workType" name="type">
+ <option value="observation">观察记录</option>
+ <option value="explanation">我的解释</option>
+ <option value="drawing">发现画</option>
+ </select>
+ </div>
+ <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：蝌蚪在水里，成蛙在荷叶上"></div>
+ <div><label for="workContent">水里还是岸上</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下两只，以及谁用鳃、谁用肺，谁有尾巴、谁有腿。"></textarea></div>
+ <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+ </div>
+ <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+ </form>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+ <h2 id="askTitle">给家长的问题</h2>
+ <ul class="ask">
+ <li>孩子指着蝌蚪说「它也用肺」——用哪一块结构把这句话挡住？让他再指一次鳃和尾巴。</li>
+ <li>皮肤又怕干又怕脏，听起来矛盾。怎样用「同一张膜」讲通？气体走哪扇窗，农药走哪扇窗？</li>
+ <li>把消毒剂倒进水里「帮小动物」，错在交换路径还是错在心情？</li>
+ <li>天气预报湿度高，能不能推断今晚蛙一定出来？本页「适湿」读数能当天气预报吗？</li>
+ <li>抓一只回家「保护它」，对那一只和对池边那一小群各有什么后果？</li>
+ <li>爬行动物的硬壳蛋和两栖的胶膜卵，差在哪一层？为什么两栖的岸不能太干？</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+ <h2 id="whyTitle">背后的原理</h2>
+ <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：许多两栖以变态连接水生幼体与更陆生的成体。幼体鳃与成体肺+皮肤呼吸是两套气体交换方案，不是把蝌蚪放大成青蛙。</p>
+ <p>皮肤呼吸与渗透调节要求角质薄、表面湿。同一结构提高污染暴露，使两栖成为水质与栖息地变化的敏感指示。本页「适湿≈湿皮×水时÷15」只是比较尺子，用来让孩子看见「皮够湿、常挨着水才过得了水陆两边」，不是天气预报，也不是饲养说明书。</p>
+ <p>卵多无羊膜，依赖水域或湿润微生境。胶膜保湿，干了胚胎就完。移出野外既破坏局部繁殖，也常导致个体脱水和死亡。爬行动物的硬壳或羊膜是另一套，不要画成同一种。</p>
+ <p>观察安全：远观不抓、不往水里投药，看完洗手。本页不提供物种鉴定，也不教人饲养。</p>
+ </section>
+
+ <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))" data-audience="parent">
+ <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">两栖公式卡 · 适湿≈湿皮×水时÷15；适湿≥10 更适水陆；卵与皮肤都怕干</p>
+ <p style="margin:0;color:var(--ink-mid);line-height:1.55">因为湿皮又薄又会吸脏东西，所以远观不抓、不往水里投药，看完洗手。别把「两栖」理解成到处都能住。</p>
+ </div>
+
+
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+ <h2 id="nextTitle">接下来可以去</h2>
+ <p>带走句：胶膜和湿皮是结构，所以家必须够湿。栖息地页把「够湿」写成四格清单；爬行动物页对照硬壳蛋，那是另一套结构。</p>
+ <p class="row"><a class="btn btn-ghost" href="habitats.html">栖息地观察站</a><a class="btn btn-ghost" href="reptiles.html">爬行动物观察站</a></p>
+ </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为皮肤又薄又要靠湿才能换气、抓了会伤皮也常带刺激物，所以观察请保持距离，不要用手抓。本页不提供物种鉴定，也不教人饲养。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+ "use strict";
+ var NS = "http://www.w3.org/2000/svg";
+ var NAMES = { frog:"青蛙", toad:"蟾蜍", newt:"蝾螈", giant:"大鲵", tadpole:"蝌蚪", adult:"成蛙", tree:"树蛙", rain:"雨蛙", axolotl:"美西螈", bull:"牛蛙", egg:"卵团", fire:"火蝾螈" };
+ var STAGES = { water:"水里阶段", land:"陆上阶段" };
+ var ART = {
+ frog: '<ellipse class="am-frog" cx="80" cy="78" rx="32" ry="18"/><ellipse class="am-frog" cx="112" cy="66" rx="14" ry="11"/><path class="am-frog" d="M54 88 Q28 118 48 126 M104 90 Q132 120 118 128"/><circle class="am-eye" cx="118" cy="62" r="2.2"/>',
+ toad: '<ellipse class="am-toad" cx="80" cy="82" rx="34" ry="20"/><ellipse class="am-toad" cx="112" cy="70" rx="15" ry="12"/><circle class="am-spot" cx="68" cy="76" r="4"/><circle class="am-spot" cx="88" cy="86" r="3.2"/><path class="am-toad" d="M54 96 L42 122 M72 102 L66 126 M94 102 L102 126 M112 96 L126 120"/><circle class="am-eye" cx="118" cy="66" r="2.1"/>',
+ newt: '<ellipse class="am-newt" cx="78" cy="80" rx="36" ry="12"/><ellipse class="am-newt" cx="118" cy="74" rx="14" ry="10"/><path class="am-newt" d="M44 82 Q12 60 22 94"/><path class="am-newt" d="M62 90 L52 112 M96 90 L108 112"/><circle class="am-eye" cx="124" cy="70" r="2"/>',
+ giant: '<ellipse class="am-giant" cx="86" cy="84" rx="48" ry="16"/><ellipse class="am-giant" cx="38" cy="82" rx="18" ry="13"/><path class="am-giant" d="M128 84 Q158 62 148 100"/><circle class="am-eye" cx="32" cy="76" r="2"/>',
+ tadpole: '<ellipse class="am-tad" cx="58" cy="82" rx="22" ry="16"/><path class="am-tad" d="M78 82 Q126 58 144 82 Q126 106 78 82"/><circle class="am-eye" cx="50" cy="76" r="2.2"/>',
+ adult: '<ellipse class="am-frog" cx="78" cy="78" rx="28" ry="16"/><ellipse class="am-frog" cx="108" cy="66" rx="13" ry="10"/><path class="am-frog" d="M54 86 Q30 112 46 120 M100 88 Q126 116 114 124"/><circle class="am-eye" cx="114" cy="62" r="2.1"/>',
+ tree: '<ellipse class="am-leaf" cx="86" cy="96" rx="52" ry="18"/><ellipse class="am-tree" cx="80" cy="78" rx="22" ry="14"/><ellipse class="am-tree" cx="102" cy="66" rx="12" ry="10"/><circle class="am-tree" cx="60" cy="90" r="5"/><circle class="am-tree" cx="108" cy="92" r="5"/><circle class="am-eye" cx="108" cy="62" r="2"/>',
+ rain: '<ellipse class="am-leaf" cx="84" cy="104" rx="48" ry="16"/><ellipse class="am-rain" cx="78" cy="86" rx="20" ry="13"/><ellipse class="am-rain" cx="100" cy="74" rx="11" ry="9"/><ellipse class="am-drop" cx="28" cy="36" rx="5" ry="9"/><ellipse class="am-drop" cx="50" cy="22" rx="4" ry="8"/><ellipse class="am-drop" cx="128" cy="30" rx="5" ry="9"/><circle class="am-eye" cx="106" cy="70" r="2"/>',
+ axolotl: '<ellipse class="am-tad" cx="86" cy="84" rx="36" ry="14"/><ellipse class="am-tad" cx="128" cy="76" rx="14" ry="11"/><path class="am-newt" d="M52 84 Q18 62 28 104"/><path class="am-drop" d="M128 62 Q138 44 132 34 M140 66 Q154 48 148 36"/><circle class="am-eye" cx="134" cy="72" r="2"/>',
+ bull: '<ellipse class="am-frog" cx="84" cy="80" rx="36" ry="20"/><ellipse class="am-frog" cx="122" cy="64" rx="16" ry="12"/><path class="am-frog" d="M54 90 Q24 124 46 132 M112 92 Q148 124 132 132"/><circle class="am-eye" cx="128" cy="60" r="2.2"/>',
+ egg: '<ellipse class="am-drop" cx="90" cy="88" rx="40" ry="28"/><circle class="am-tad" cx="72" cy="80" r="8"/><circle class="am-tad" cx="96" cy="92" r="7"/><circle class="am-tad" cx="108" cy="76" r="6"/><circle class="am-tad" cx="84" cy="100" r="5"/>',
+ fire: '<ellipse class="am-newt" cx="86" cy="84" rx="40" ry="13"/><ellipse class="am-newt" cx="130" cy="76" rx="14" ry="10"/><path class="am-newt" d="M48 86 Q12 60 22 108"/><circle class="am-spot" cx="72" cy="80" r="4"/><circle class="am-spot" cx="96" cy="88" r="3.2"/><circle class="am-eye" cx="136" cy="72" r="2"/>'
+ };
+ var picked = [];
+ var stages = { a:"", b:"" };
+ var done = false;
+ var slotA = document.getElementById("slotA");
+ var slotB = document.getElementById("slotB");
+
+ function setPressed(sel, on){
+ Array.prototype.forEach.call(document.querySelectorAll(sel), function(n){
+ n.setAttribute("aria-pressed", on(n) ? "true" : "false");
+ });
+ }
+ function fillSlot(slot, id){
+ while (slot.firstChild) slot.removeChild(slot.firstChild);
+ if (!id || !ART[id]) return;
+ var wrap = document.createElementNS(NS, "g");
+ wrap.innerHTML = ART[id];
+ slot.appendChild(wrap);
+ }
+ function paintStage(){
+ var a = picked[0] || "";
+ var b = picked[1] || "";
+ fillSlot(slotA, a);
+ fillSlot(slotB, b);
+ document.getElementById("labA").textContent = a ? NAMES[a] : "左边还空着";
+ document.getElementById("labB").textContent = b ? NAMES[b] : "右边还空着";
+ document.getElementById("ringA").setAttribute("class", a ? "am-ring on" : "am-ring");
+ document.getElementById("ringB").setAttribute("class", b ? "am-ring on" : "am-ring");
+ document.getElementById("stageACap").textContent = a ? NAMES[a]+"的阶段" : "第一只的阶段";
+ document.getElementById("stageBCap").textContent = b ? NAMES[b]+"的阶段" : "第二只的阶段";
+ var live = document.getElementById("live");
+ if (!a) live.textContent = "池塘空着。到图鉴里点两只不一样的两栖动物。";
+ else if (!b) live.textContent = NAMES[a]+"来到了左边。再点另一只，站到右边。";
+ else live.textContent = "左边是"+NAMES[a]+"，右边是"+NAMES[b]+"。给它们各选一个不一样的阶段。";
+ }
+ function sync(){
+ var status = document.getElementById("taskStatus");
+ var btn = document.getElementById("confirmBtn");
+ if (done) {
+ btn.disabled = true;
+ return;
+ }
+ if (picked.length < 2) {
+ btn.disabled = true;
+ status.textContent = "尚未完成：先在图鉴里点两只不一样的动物。";
+ return;
+ }
+ if (!stages.a || !stages.b) {
+ btn.disabled = true;
+ status.textContent = "两只都选好了。再给每一只挑一个阶段：水里或陆上。";
+ return;
+ }
+ if (stages.a === stages.b) {
+ btn.disabled = true;
+ status.textContent = "两个阶段现在一样。任务是说出谁更像水里阶段、谁更像陆上阶段。";
+ return;
+ }
+ btn.disabled = false;
+ status.textContent = NAMES[picked[0]]+"是"+STAGES[stages.a]+"，"+NAMES[picked[1]]+"是"+STAGES[stages.b]+"。点「记下这次比较」。";
+ }
+ Array.prototype.forEach.call(document.querySelectorAll("[data-am]"), function(btn){
+ btn.addEventListener("click", function(){
+ var id = btn.getAttribute("data-am");
+ var i = picked.indexOf(id);
+ if (i >= 0) picked.splice(i, 1);
+ else {
+ if (picked.length >= 2) picked.shift();
+ picked.push(id);
+ }
+ setPressed("[data-am]", function(n){ return picked.indexOf(n.getAttribute("data-am")) >= 0; });
+ document.getElementById("amAtlasSay").textContent = btn.getAttribute("data-say") || "";
+ if (i >= 0) {
+ if (picked.length < 2) stages.b = "";
+ if (picked.length < 1) stages.a = "";
+ }
+ setPressed("#stageA [data-stage]", function(n){ return n.getAttribute("data-stage") === stages.a; });
+ setPressed("#stageB [data-stage]", function(n){ return n.getAttribute("data-stage") === stages.b; });
+ paintStage();
+ sync();
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-slot]"), function(btn){
+ btn.addEventListener("click", function(){
+ var slot = btn.getAttribute("data-slot");
+ var stage = btn.getAttribute("data-stage");
+ if (slot === "a" && !picked[0]) return;
+ if (slot === "b" && !picked[1]) return;
+ stages[slot] = stage;
+ setPressed(slot === "a" ? "#stageA [data-stage]" : "#stageB [data-stage]", function(n){ return n.getAttribute("data-stage") === stage; });
+ sync();
+ });
+ });
+ document.getElementById("clearPick").addEventListener("click", function(){
+ if (done) return;
+ picked = [];
+ stages = { a:"", b:"" };
+ setPressed("[data-am]", function(){ return false; });
+ setPressed("[data-slot]", function(){ return false; });
+ document.getElementById("amAtlasSay").textContent = "还没选。点两张卡，比一比水里阶段和陆上阶段。";
+ paintStage();
+ sync();
+ });
+ document.getElementById("confirmBtn").addEventListener("click", function(){
+ if (done || picked.length < 2 || !stages.a || !stages.b || stages.a === stages.b) return;
+ done = true;
+ var evidence = NAMES[picked[0]]+"（"+STAGES[stages.a]+"）和"+NAMES[picked[1]]+"（"+STAGES[stages.b]+"）";
+ if (window.Progress) Progress.complete("nature/amphibians.html", evidence);
+ document.getElementById("taskStatus").textContent = "完成啦：你比较了"+NAMES[picked[0]]+"的"+STAGES[stages.a]+"和"+NAMES[picked[1]]+"的"+STAGES[stages.b]+"。";
+ this.disabled = true;
+ });
+ paintStage();
+ sync();
+})();
+</script>
+<script>
+
+(function(){
+ "use strict";
+ var a = document.getElementById("afA");
+ var b = document.getElementById("afB");
+ if (!a || !b) return;
+ var g1 = "", g2 = "", g3 = "";
+ var g1Done = false, g2Done = false, g3Done = false;
+ function score(){ return Math.round(Number(a.value) * Number(b.value) / 15); }
+ function paint(){
+ var s = score();
+ var ok = s >= 10;
+ document.getElementById("afALab").textContent = a.value;
+ document.getElementById("afBLab").textContent = b.value;
+ a.setAttribute("aria-valuetext", a.value);
+ b.setAttribute("aria-valuetext", b.value);
+ document.getElementById("afAOut").textContent = a.value;
+ document.getElementById("afSOut").textContent = String(s);
+ document.getElementById("afOkOut").textContent = ok ? "够湿" : "偏干";
+ document.getElementById("afStateLab").textContent = ok ? "湿皮能换气，卵也不干" : "皮干了，换气路被掐断";
+ document.getElementById("afLabLive").textContent = s >= 10
+ ? "胶膜和湿皮是结构，所以必须近水。皮更湿、更常挨着水，才过得了水陆两边。不是随便两栖就能住沙漠。"
+ : "皮干或离水太久，过不了水陆两边。不是随便两栖就能住沙漠。";
+ document.getElementById("afFrog").setAttribute("cx", String(160 + Number(b.value) * 4));
+ document.getElementById("afFrog").setAttribute("opacity", String(0.45 + Number(a.value) / 55));
+ var skin = document.getElementById("afSkin");
+ if (skin) {
+ skin.setAttribute("cx", document.getElementById("afFrog").getAttribute("cx"));
+ skin.setAttribute("opacity", String(0.15 + Number(a.value) / 80));
+ }
+ var dry = document.getElementById("afDry");
+ if (dry) dry.setAttribute("opacity", ok ? "0.16" : "0.42");
+ var egg = document.getElementById("afEgg");
+ if (egg) egg.setAttribute("opacity", Number(b.value) >= 8 ? "1" : "0.35");
+ var bh = 30 + s * 2.5;
+ document.getElementById("afBar").setAttribute("height", String(bh));
+ document.getElementById("afBar").setAttribute("y", String(180 - bh));
+
+ if (g1 && !g1Done && Number(a.value) === 30 && Number(b.value) === 10 && s === 20) {
+ g1Done = true;
+ document.getElementById("afGuessOut1").innerHTML = (g1 === "20" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "皮够湿、常挨着水，才过得了水陆两边。";
+ document.getElementById("afGuessBlock2").hidden = false;
+ }
+ if (g2 && !g2Done && Number(a.value) <= 5 && Number(b.value) <= 3 && !ok) {
+ g2Done = true;
+ document.getElementById("afGuessOut2").innerHTML = (g2 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "皮干、离水太久，过不了水陆两边。";
+ document.getElementById("afGuessBlock3").hidden = false;
+ }
+ if (g3 && !g3Done && Number(a.value) === 4 && Number(b.value) === 2) {
+ g3Done = true;
+ document.getElementById("afGuessOut3").innerHTML = (g3 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "皮最干、几乎不近水，过不了。";
+ }
+}
+ a.addEventListener("input", paint); b.addEventListener("input", paint);
+ Array.prototype.forEach.call(document.querySelectorAll("[data-af-g1]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g1Done) return;
+ g1 = btn.getAttribute("data-af-g1");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-af-g1]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("afGuessOut1").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-af-g2]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g2Done) return;
+ g2 = btn.getAttribute("data-af-g2");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-af-g2]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("afGuessOut2").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-af-g3]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g3Done) return;
+ g3 = btn.getAttribute("data-af-g3");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-af-g3]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("afGuessOut3").textContent = "押好了";
+ });
+ });
+ paint();
+})();
+
+</script>
+<script>if (window.Progress) Progress.visit("nature/amphibians.html", "两栖动物观察站");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

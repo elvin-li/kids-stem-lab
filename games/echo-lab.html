@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>回声工坊 · 墙越远等得越久，还是墙自己在说话？</title>
+<meta name="description" content="同一声拍手，只改墙有多远和声音跑在哪种介质里。等待按来回 2d÷v 来比：墙越远越晚；同一堵墙，水最快、氦居中、空气最慢。本页秒数是比较尺子，不是声呐手册。护耳，不在车道试。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/games-lab.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+.mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--phys) 36%,var(--line));
+    background: color-mix(in srgb,var(--phys) 12%,var(--surface)); font-size: 2.2rem; overflow: hidden;
+  }
+.ec-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+.ec-sky { fill: color-mix(in srgb,var(--video) 12%,#e8f3ff); }
+.ec-ground { fill: color-mix(in srgb,var(--kit) 18%,#efe0c8); }
+.ec-grass { fill: color-mix(in srgb,var(--sci) 28%,#8fbf7a); }
+.ec-kid-body { fill: color-mix(in srgb,var(--math) 42%,#6ea8fe); }
+.ec-kid-head { fill: color-mix(in srgb,var(--warn) 22%,#f3d2b0); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.6; }
+.ec-kid-leg { stroke: color-mix(in srgb,var(--ink) 50%,#4a3a28); stroke-width: 4; stroke-linecap: round; }
+.ec-wall { fill: color-mix(in srgb,var(--ink) 16%,#c8b8a4); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 2; }
+.ec-brick { fill: none; stroke: color-mix(in srgb,var(--ink) 22%,transparent); stroke-width: 1; }
+.ec-hill { fill: color-mix(in srgb,var(--sci) 26%,#8aa86a); stroke: color-mix(in srgb,var(--ink) 28%,transparent); stroke-width: 2; }
+.ec-well { fill: color-mix(in srgb,var(--ink) 22%,#8a857c); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 2; }
+.ec-well-hole { fill: color-mix(in srgb,var(--ink) 45%,#4a4a4a); }
+.ec-wave { fill: none; stroke: color-mix(in srgb,var(--phys) 62%,#4a6ab8); stroke-width: 3; stroke-linecap: round; }
+.ec-ping { fill: color-mix(in srgb,var(--phys) 55%,#6a86d0); }
+.ec-lab { fill: var(--ink); font: 800 14px var(--mono); text-anchor: middle; }
+.ec-note { fill: var(--ink); /* ink-mid 压粉色墙板只有 4.4:1 */ font: 700 12px var(--sans, sans-serif); text-anchor: middle; }
+.ec-track { fill: color-mix(in srgb,var(--ink) 8%,#e6ddd0); }
+.ec-fill { fill: color-mix(in srgb,var(--phys) 42%,#8aa0d8); }
+.readout b { display: block; font: 800 1.2rem/1.2 var(--mono); color: var(--ink); }
+.pick-btns .btn[aria-pressed="true"] {
+    border-color: color-mix(in srgb,var(--phys) 55%,var(--line));
+    background: color-mix(in srgb,var(--phys) 16%,var(--surface));
+  }
+@media (max-width: 480px) {
+    html[data-mode="kid"] .kid-mission { margin: 6px 0 8px; padding: 8px 10px; }
+    html[data-mode="kid"] .kid-mission .row { margin-bottom: .2em; }
+    html[data-mode="kid"] .kid-mission h1 { font-size: 1.35rem; }
+    html[data-mode="kid"] .kid-mission .lead { font-size: .86rem; line-height: 1.4; margin-bottom: .25em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 8px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1rem; margin-bottom: .25em; }
+    html[data-mode="kid"] .ec-art { max-height: 72px; }
+    html[data-mode="kid"] .readout { display: none; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .82rem; margin-bottom: 0; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+    html[data-mode="kid"] .kid-action-strip { margin: 4px 0; gap: 4px; }
+    html[data-mode="kid"] .kid-action-strip > p { display: none; }
+    html[data-mode="kid"] .kid-action-strip [aria-label="常见场景"] { display: none; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+  }
+
+  .mission-face { overflow: hidden; }
+  .mission-face img.photo-real { width: 78px; height: 78px; object-fit: cover; border-radius: 50%; display: block; }
+  .mission-character { overflow: hidden; }
+  .mission-character img.photo-real { width: 76px; height: 76px; object-fit: cover; border-radius: 50%; display: block; }
+  .story-guide img.photo-real { width: 72px; height: 72px; object-fit: cover; border-radius: 50%; display: block; }
+  .kid-figure-art img.photo-real { width: 100%; max-width: 240px; height: auto; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; display: block; }
+
+</style>
+</head>
+<body data-playful-page="games/echo-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-mission">
+    <div>
+      <p class="row"><span class="pill pill-phys">物理</span><span class="pill">5–10&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>墙越远等得越久，还是墙自己在说话？</h1>
+      <p class="lead">拍手声波跑出去撞墙，再弹回来——去一趟加回一趟，才是回声。墙越远等越久；太近会叠在掌声里听不清。同一堵墙，水里比空气里先回来。本页秒数是比较尺子；护耳，不对着耳朵猛拍，不在马路中间试。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">拍手，等声波弹回来</h2>
+    <svg class="ec-art" viewBox="0 0 640 280" role="img" aria-labelledby="ecTitle ecDesc">
+      <title id="ecTitle">回声工坊舞台</title>
+      <desc id="ecDesc">左边一个小朋友拍手，右边是墙、井或山壁。声波跑过去再弹回来，墙越远，回来得越晚。</desc>
+      <rect class="ec-sky" width="640" height="280"/>
+      <rect class="ec-ground" y="198" width="640" height="82"/>
+      <rect class="ec-grass" y="198" width="640" height="10"/>
+      <g id="kidG" transform="translate(72 128)">
+        <circle class="ec-kid-head" cx="0" cy="0" r="16"/>
+        <path id="kidMouth" d="M-4 6 Q0 10 4 6" fill="none" stroke="#5a3a20" stroke-width="2"/>
+        <rect class="ec-kid-body" x="-12" y="16" width="24" height="32" rx="8"/>
+        <line class="ec-kid-leg" x1="-6" y1="48" x2="-8" y2="70"/>
+        <line class="ec-kid-leg" x1="6" y1="48" x2="8" y2="70"/>
+      </g>
+      <g id="roomWall">
+        <rect class="ec-wall" id="wallBody" x="520" y="48" width="70" height="154" rx="4"/>
+        <path class="ec-brick" d="M520 88 H590 M520 128 H590 M520 168 H590 M555 48 V202"/>
+      </g>
+      <g id="wellWall" hidden>
+        <ellipse class="ec-well" cx="548" cy="188" rx="46" ry="16"/>
+        <ellipse class="ec-well-hole" cx="548" cy="188" rx="22" ry="8"/>
+        <rect class="ec-well" x="508" y="120" width="16" height="70" rx="3"/>
+        <rect class="ec-well" x="572" y="120" width="16" height="70" rx="3"/>
+      </g>
+      <g id="hillWall" hidden>
+        <path class="ec-hill" d="M470 198 L520 70 L560 120 L600 48 L640 198 Z"/>
+      </g>
+      <path class="ec-wave" id="waveA" d="" hidden/>
+      <path class="ec-wave" id="waveB" d="" hidden/>
+      <circle class="ec-ping" id="ping" cx="96" cy="132" r="8" hidden/>
+      <rect class="ec-track" x="96" y="248" width="448" height="12" rx="6"/>
+      <rect class="ec-fill" id="waitBar" x="96" y="248" width="0" height="12" rx="6"/>
+      <text class="ec-lab" id="distLab" x="320" y="28">墙离你 20&nbsp;米</text>
+      <text class="ec-note" id="echoLab" x="320" y="236">点「拍一下」，看声波什么时候回来。</text>
+    </svg>
+    <div class="readout">
+      <div><span>墙有多远</span><b id="distOut">20&nbsp;米</b></div>
+      <div><span>介质声速 v</span><b id="speedOut">340&nbsp;米/秒 · 空气</b></div>
+      <div><span>来回等待</span><b id="timeOut">0.12&nbsp;秒</b></div>
+      <div><span>听得见回声吗</span><b id="kindOut">近回声</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">先把墙拉近，拍一次；再把墙拉远，再拍一次。也可换介质：水里声速更快，同一距离回来更早。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="改墙的距离并拍手">
+    <div>
+      <label for="dist">墙离你有多远</label>
+      <input class="input" id="dist" type="range" min="2" max="170" value="20" aria-valuetext="20 米">
+    </div>
+    <div class="pick-btns" role="group" aria-label="常见场景">
+      <button class="btn" type="button" id="sceneNear" aria-pressed="false">近墙</button>
+      <button class="btn" type="button" id="sceneRoom" aria-pressed="false">空教室</button>
+      <button class="btn" type="button" id="sceneWell" aria-pressed="false">井</button>
+      <button class="btn" type="button" id="sceneFar" aria-pressed="false">远墙</button>
+      <button class="btn" type="button" id="sceneHill" aria-pressed="false">山壁</button>
+    </div>
+    <div class="pick-btns" role="group" aria-label="声音跑在哪种介质里">
+      <button class="btn" type="button" id="medAir" aria-pressed="true">空气 340</button>
+      <button class="btn" type="button" id="medWater" aria-pressed="false">水 1480</button>
+      <button class="btn" type="button" id="medHe" aria-pressed="false">氦气 1000</button>
+    </div>
+    <div class="row">
+      <button class="btn btn-primary" type="button" id="clapBtn">拍一下</button>
+    </div>
+    <p>可选回声默认关闭。想听「啪……啪」，请家长在「我的足迹」打开允许声音；不打开也能看波什么时候回来。</p>
+  </div>
+
+  <section class="card guess-card" aria-labelledby="guessTitleEc">
+    <h2 id="guessTitleEc">先猜一猜，再拍</h2>
+    <p><b>第 1 题：</b>墙都在 85&nbsp;米外。空气里 v≈340，水里 v≈1480。哪一次回声回来更早？</p>
+    <div class="pick-btns" role="group" aria-label="猜介质声速">
+      <button class="btn guess-pick" type="button" data-guess1="air" aria-pressed="false">空气更快</button>
+      <button class="btn guess-pick" type="button" data-guess1="water" aria-pressed="false">水里更快，回声更早回来</button>
+      <button class="btn guess-pick" type="button" data-guess1="same" aria-pressed="false">一样快，只看距离</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。把墙拉到远墙，空气与水各拍一次，对照谁先回来。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>同一远墙。空气 v≈340，氦气 v≈1000。氦气里回声会？</p>
+      <div class="pick-btns" role="group" aria-label="猜空气与氦气">
+        <button class="btn guess-pick" type="button" data-guess2="slower" aria-pressed="false">比空气更晚回来</button>
+        <button class="btn guess-pick" type="button" data-guess2="faster" aria-pressed="false">比空气更早，夹在空气与水之间</button>
+        <button class="btn guess-pick" type="button" data-guess2="same" aria-pressed="false">和空气一样，只看距离</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后远墙下再拍一次氦气，对照三介质。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>同一远墙。水 v≈1480，氦气 v≈1000。谁的回声更早回来？</p>
+      <div class="pick-btns" role="group" aria-label="猜水与氦气谁更早">
+        <button class="btn guess-pick" type="button" data-guess3="water" aria-pressed="false">水更早（v 更大，t 更小）</button>
+        <button class="btn guess-pick" type="button" data-guess3="he" aria-pressed="false">氦气更早</button>
+        <button class="btn guess-pick" type="button" data-guess3="same" aria-pressed="false">一样早，只看距离</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后远墙下，水与氦气各拍一次，对照谁先回来。</p>
+    </div>
+  </section>
+
+          
+  <section class="card" aria-labelledby="corrTitle-echo_lab">
+    <h2 id="corrTitle-echo_lab">常见误解 · 先划掉</h2>
+    <p>先认清「不是什么」，再记「是什么」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="纠错对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">墙自己在说话</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">是声波撞墙弹回来，不是墙长了嘴巴。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">回声是魔法</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">去一趟加回一趟，墙越远等越久。</p></div>
+    </div>
+  </section>
+
+<section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">去一趟再回一趟才是回声；墙越远等越久</h2>
+    <p>先点「近墙」拍一次，看回声很快回来。再点「远墙」或「山壁」拍一次，看等待变长。然后把墙停在较远位置：空气、水、氦气各拍一次，看谁先回来。画面上的波也算，不必开声音。</p>
+    <p>回声不是墙在说话，是声波跑出去撞到硬壁再折返。去一趟加回一趟，路越长等得越久。太近会和掌声叠成一下，听不清第二下。同一堵墙，水里声速最大、回来最早，氦气居中，空气最慢。</p>
+    <p>舞台上的「等待 t ≈ 2d ÷ v」是本页比较尺子：用来比远近和三种介质，不是声呐操作手册，也不是精确气温表。护耳，不对着耳朵猛拍。不在马路中间、不在井沿失足处试回声。大喊勿扰人。</p>
+  </section>
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">回声图鉴</h2>
+    <p>点一张，对照上面的墙：谁会把声音弹回来，谁几乎听不出回声。</p>
+    <div class="kid-figure-grid" role="group" aria-label="回声图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-ec-atlas="shout" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">喊</span><span class="kid-figure-fact">先发出一声，声波撞墙再弹回来，墙越远等越久，山谷不会自己说话。</span></button>
+      <button class="kid-figure" type="button" data-ec-atlas="hill" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">山壁</span><span class="kid-figure-fact">墙太近，回声叠进原声里听不清，不是墙自己在说话。</span></button>
+      <button class="kid-figure" type="button" data-ec-atlas="well" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">井</span><span class="kid-figure-fact">声音往下跑再弹上来，也能听见回声；仍是同一声，不是井沿自己会说话。</span></button>
+      <button class="kid-figure" type="button" data-ec-atlas="room" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">空教室</span><span class="kid-figure-fact">四面墙都近，回声又快又密，常常叠在一起，几乎听不清第二下，不是山谷会说话。</span></button>
+      <button class="kid-figure" type="button" data-ec-atlas="near" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">近墙</span><span class="kid-figure-fact">墙近时回声很快回来，像紧跟着的第二下；太近就会叠成一次，不是山谷会说话。</span></button>
+      <button class="kid-figure" type="button" data-ec-atlas="far" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">远墙</span><span class="kid-figure-fact">墙远要多等一会儿，回声才慢慢回来；仍是同一声折返，听得清是第二下。</span></button>
+      <button class="kid-figure" type="button" data-ec-atlas="none" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">无回声</span><span class="kid-figure-fact">墙太近，两次声音叠成一次，几乎听不清；不是没有发出声，不是山谷会说话。</span></button>
+      <button class="kid-figure" type="button" data-ec-atlas="wave" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">声波</span><span class="kid-figure-fact">空气被推挤着往前跑，碰到硬东西会折返；回来的仍是同一类声，不是新声音。</span></button><button class="kid-figure" type="button" data-ec-atlas="canyon" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">峡谷</span><span class="kid-figure-fact">两边都是硬石壁，回声会来回撞；一声变几声，仍是你的声音，不是山谷会说话。</span></button><button class="kid-figure" type="button" data-ec-atlas="cave" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">山洞</span><span class="kid-figure-fact">声音钻进去再弹出来，回声发闷；仍是反射，不是洞里有人应，不是山谷会说话。</span></button><button class="kid-figure" type="button" data-ec-atlas="he" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">氦气</span><span class="kid-figure-fact">氦气声速大约一千，同距回来夹在空气与水之间，仍是同一类声折返。</span></button><button class="kid-figure" type="button" data-ec-atlas="clap" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">拍手</span><span class="kid-figure-fact">短促的一声，最容易听清有没有第二下；墙太近会叠得听不清，不是山谷会说话。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照墙上弹回来的波。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--phys)"
+         data-kid-predict
+         data-kid-predict-explain="墙越远，来回路程越长，等得越久。同一距离：水最快，氦气居中，空气最慢。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🔊</span><b>墙离你更远时，拍手听到回声，等待时间通常怎样？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：墙更远回声等待">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="shorter">更远反而更早听见回声</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="longer" data-kid-predict-correct>来回路程更长，等得更久</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="color">墙的颜色决定快慢</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：近远各听一次，再同距换介质</h2>
+    <p>先把墙拉近拍一次，再拉远拍一次，比较等待。然后把墙停在较远位置：空气、水、氦气各拍一次——同一距离，排出谁的 t 更短（v 越大回来越早：水最快，氦气居中，空气最慢）。画面上的波也算，不必开声音。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先在近处拍一次，听见很快的回声。</p>
+  </section>
+
+
+          <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">近远各拍一次，再同距换介质比谁先回来</h2>
+    <p>舞台上先只改墙有多远：近处拍一次，听回声很快；远处拍一次，听等待变长。然后墙停在远处，只换介质，看水是不是最先回来。这样比，才知道回声是来回路程，不是墙在说话。</p>
+    <p>回家只带两句：「去一趟再回一趟」；「墙越远等得越久；同一堵墙，水更快」。不要只写「有回声」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">直达</span><span class="kid-figure-sub">先到</span><p class="kid-figure-fact">掌声自己先到耳朵，这一下还没碰到墙，不算回声。回声要多走一趟回来。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">回声</span><span class="kid-figure-sub">来回</span><p class="kid-figure-fact">回声是同一类声跑出去再弹回来，去一趟还要加回一趟，不是新声音。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">更远</span><span class="kid-figure-sub">更久等</span><p class="kid-figure-fact">墙越远，来回路越长，第二下就要多等一会儿。仍是你那一声折返，听得清。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">水</span><span class="kid-figure-sub">最快</span><p class="kid-figure-fact">同一堵墙，水里声速最大，回声会最先折回来。测的仍是来回这一条，不是山谷会说话。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">氦</span><span class="kid-figure-sub">居中</span><p class="kid-figure-fact">氦气比空气跑得快、比水慢，同距回来夹在中间。仍是同一声折返，不是新声。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">马路</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">不要站到车道中间拍手试回声，路边空地再试。井沿也不要失足喊，不是山谷会说话。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>近处拍。</b>记下等待短，像紧跟着的第二下。</li>
+      <li data-step="2"><b>远处拍。</b>记下等待变长，路更长要多等。</li>
+      <li data-step="3"><b>换介质。</b>同一堵远墙，比水、氦、空气谁先回。</li>
+      <li data-step="4"><b>写完成句。</b>去一趟再回一趟。划掉「墙在说话」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>声音碰到墙再弹回来，就是回声。墙远就要多等。不是墙在说话。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>去和回都要计时。墙越远，来回路越长。同一堵墙，水里传得比空气快，氦气夹在中间。太近会和掌声叠成一下。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>时延 t ≈ 2d / v。介质声速不同则同距时延不同。过近则与直达叠在一起，听不清第二下。本页 340、1000、1480 是整数近似尺子。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能把等待连到来回路程，并把水连到更快，而不是只说「有回声」。完成看的是对照，不是背公式。</p>
+    <ul class="ask-list">
+      <li>近处为什么回来得快？</li>
+      <li>远处为什么要多等？</li>
+      <li>同一堵墙，水里和空气里谁先回？</li>
+      <li>能在马路中间试吗？</li>
+    </ul>
+  </section>
+
+
+        <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">回声是来回，不是墙在说话</h2>
+    <p>同一声拍手，先只改墙有多远。声波跑出去撞到硬壁再折返，去一趟加回一趟。墙越远，路越长，等得越久。太近会和掌声叠成一下，听不清第二下。</p>
+    <p>蝙蝠发出再听回，测的也是来回。本页拍手是慢动作版。声呐、井口、空教室、山壁，都是同一家人。沙发、窗帘这类软东西会把声音吃掉，几乎没有回声。</p>
+    <p>山谷一声变几声，是好多面墙各回一次，不是声音自己复制。雷声滚是云层多次反射加距离，邻居账，另开一课。同一堵墙换介质：水最快，氦气居中，空气最慢。</p>
+    <p>护耳，不对着耳朵猛拍。不在马路中间、不在井沿失足处试。大喊勿扰人。本页秒数不是声呐手册。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">蝙蝠</span><span class="kid-figure-sub">来回测距</span><p class="kid-figure-fact">蝙蝠发出再听回，测的也是来回这一条，不是山谷在替它说话来指路。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">山谷</span><span class="kid-figure-sub">多次反射</span><p class="kid-figure-fact">一声变几声，是好多面墙各回一次，不是声音自己复制，也不是山谷会说话。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">雷声</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">雷声滚是云层多次反射，比拍手回声更复杂，另开一课，不要写进本页。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">车道</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">车道中间不试回声，请到路边空地再拍手；井沿也不要探身大喊，不是山谷会说话。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：近处等得短 · 远处等得长 · 「墙在说话」</h2>
+    <p>三列用同一声拍手。先只改墙远近，介质先固定。一次改两样，分不清到底是路长了还是介质变了。</p>
+    <p>近：等待短，像紧跟着的第二下。远：等待长。「墙在说话」和「只说有回声」整列划掉：要说出来回和快慢。</p>
+    <p>同距换介质是加试：水最快，氦居中，空气最慢。本页 t ≈ 2d / v 用来比较方向，不是声呐操作手册。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">近</span><span class="kid-figure-sub">短等</span><p class="kid-figure-fact">墙近时来回路短，回声很快回来，像紧跟着的第二下；再近就会叠在一起。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">远</span><span class="kid-figure-sub">长等</span><p class="kid-figure-fact">墙远时来回路更长，第二下要多等一会儿才回来，仍听得清是同一声。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">有回声</span><span class="kid-figure-sub">不够</span><p class="kid-figure-fact">只说「有回声」不够，要说出去一趟再回一趟。听的是反射回来的同一类声。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">去一趟回一趟</span><p class="kid-figure-fact">回声是去一趟再回一趟；水里也是来回，只是更快。墙太近会叠得听不清。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「来回」，不记声呐口令</h2>
+    <p>在纸上画近、远两行，再加空气、水、氦三行。每行写等待谁短、谁长。五行并排，比背公式有用。有人说「墙自己会说话」，让孩子指着来回那一行反驳。</p>
+    <p>口头只要两句：「去一趟再回一趟。」「墙越远等得越久；同一堵墙，水更快。」蝙蝠若要写，另开一行：它测的也是来回，不是魔法。</p>
+    <p>护耳，不对着耳朵猛拍。不在车道中间试，不在井沿失足处喊。本页秒数不要抄成声呐手册。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">五行</span><span class="kid-figure-sub">距+介质</span><p class="kid-figure-fact">近、远各写一行等待，再加空气、水、氦三行比快慢。比的是来回，不是新声。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">来回</span><p class="kid-figure-fact">回家说得出：回声不是一下，是去一趟再回一趟。墙太近会叠得听不清。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">蝙蝠</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">蝙蝠测的也是来回，另开一行，不要抢本页完成句，也不是山谷在指路。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">马路</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">不站车道中间试回声，井沿也不要失足大喊。空地拍一下，听第二下就够。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「等得久靠不靠墙远」，就先只改距离这一项。同一声拍手、同一种介质，先近处拍一次，再远处拍一次。换空气、水、氦气，是另一次对照，不要和「拉远墙」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>墙有多远（近 / 远）。</li>
+      <li><b>先保持不变：</b>同一声拍手、先用空气。</li>
+      <li><b>要观察的：</b>等待短还是长，波什么时候折回来。</li>
+      <li><b>另开一行：</b>同一堵远墙，空气、水、氦气谁先回来。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>蝙蝠在夜里找虫子，发出一声再听回声。它测的是「去」还是「来回」？和本页拍手像在哪？</li>
+      <li>山谷里一声变成几声，是声音自己复制了，还是好多面墙各回一次？</li>
+      <li>同一堵墙，水里比空气里先回来。氦气夹在中间。这三档比的是名字好听，还是声速不同？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>声音碰到墙再弹回来，就是回声。墙远就要多等。不是墙在说话。能指着波说「去了又回来」就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>去和回都要计时。同一堵墙，水更快，氦居中，空气最慢。太近会叠成一下。本页秒数只用来比较。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>t ≈ 2d / v。340、1000、1480 是整数近似。不是声呐手册。护耳，不在车道试。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：回声观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：山壁的回声比教室晚很多"></div>
+      <div><label for="workContent">近和远差在哪</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下近墙和远墙各等了多久，再用一句话说明：墙越远，回声回来越晚。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>孩子只说有回声——来回那一列怎么补？让他再指一次「去了又回来」。</li>
+      <li>墙远等得久哪一句能给四岁听？试「路更长，要多等一会儿」。</li>
+      <li>蝙蝠为什么不能当本页唯一完成句？本页先钉来回，蝙蝠是迁移。</li>
+      <li>马路红线怎么说？井沿呢？对着耳朵猛拍呢？</li>
+      <li>本页能当声呐操作手册吗？秒数能抄成真实测距吗？</li>
+      <li>同一堵墙，水比空气先回来——孩子说的是「水比较聪明」，还是「水里声音跑得快」？</li>
+    </ul>
+  </section>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：回声不是墙在说话，是声波跑出去撞到硬壁再折返。去一趟加回一趟，路越长等得越久。</p>
+    <p>本页「t ≈ 2d / v，空气约 340、氦约 1000、水约 1480」只是比较尺子，用来看见「更远更晚、水最快、氦居中、空气最慢」，不是声呐操作手册，也不是精确气温表。</p>
+    <p>近距时延小于听觉分辨，回声与直达叠在一起，听不清第二下。蝙蝠和声呐测的也是来回。山谷一声变几声，是好多面墙各回一次，不是声音自己复制。</p>
+    <p>护耳，不对着耳朵猛拍。不在车道试，不在井沿失足处喊。舞台可关声音只看波。</p>
+  </section>
+
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">回声公式卡 · t≈2d/v（空气≈340 · 氦≈1000 · 水≈1480）（本页尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">同一墙距 d，声速 v 越大，来回时间越短。远墙更晚回来；水最快、氦居中、空气最慢。整数近似用来比较方向，不是声呐手册。听力保护优先，不要对着耳朵猛拍。</p>
+    </div>
+
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：声音碰壁再回来，才是回声；不是墙在说话。蝙蝠页看谁用回声找路；猫头鹰页看谁用两耳对方向，不发声呐。</p>
+    <p class="row"><a class="btn btn-ghost" href="../nature/bats.html">蝙蝠观察站</a><a class="btn btn-ghost" href="../nature/owls.html">猫头鹰观察站</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页是示意模型：空气 340、水 1480、氦气 1000&nbsp;米每秒的整数近似。因为回波要走来回、井口边喊可能失足也伤耳，所以真的对着井口大喊请有大人在场。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var MED = {
+    air: { v:340, name:"空气" },
+    water: { v:1480, name:"水" },
+    he: { v:1000, name:"氦气" }
+  };
+  var medium = "air";
+  var SPEED = 340;
+  var KID_X = 96;
+  var PING_Y = 132;
+  var dist = 20;
+  var flight = 0;
+  var timers = [];
+  var audioCtx = null;
+  var seen = { near:false, far:false, done:false, airFar:false, waterFar:false, heFar:false };
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  var sawG1Air = false, sawG1Water = false, sawG2Air = false, sawG2He = false, sawG3W = false, sawG3H = false;
+
+  function motionOff(){
+    if (window.Playful && typeof Playful.motionReduced === "function") return Playful.motionReduced();
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+  function soundOn(){
+    try {
+      if (window.Playful && typeof Playful.getPreference === "function") {
+        return Playful.getPreference("soundEnabled") === true;
+      }
+    } catch (err) {}
+    return false;
+  }
+  function setHidden(id, hide){
+    var el = document.getElementById(id);
+    if (hide) el.setAttribute("hidden", "");
+    else el.removeAttribute("hidden");
+  }
+  function meters(n){ return n + "\u00a0米"; }
+  function seconds(n){
+    var t = Math.round(n * 100) / 100;
+    return String(t) + "\u00a0秒";
+  }
+  function delaySec(){ return (2 * dist) / SPEED; }
+  function setMedium(key){
+    medium = key;
+    SPEED = MED[key].v;
+    flight += 1;
+    clearTimers();
+    resetPulse();
+    paintRest();
+  }
+  function checkGuess(){
+    if (guess1 && !guess1Done && sawG1Air && sawG1Water) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "water" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "水里声音跑得更快，同一面墙，回声更早回来。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && sawG2Air && sawG2He) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "faster" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "氦气比空气快、比水慢：同一面墙，回声夹在中间。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && sawG3W && sawG3H) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "water" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "水里声音比氦气跑得更快，回声更早回来。同距比的是快慢，不是谁的名字好听。";
+    }
+  }
+  function kindOf(){
+    var t = delaySec();
+    if (t < 0.05) return "none";
+    if (t <= 0.24) return "near";
+    if (t >= 0.5) return "far";
+    return "mid";
+  }
+  function kindName(k){
+    if (k === "none") return "听不出回声";
+    if (k === "near") return "近回声";
+    if (k === "far") return "远回声";
+    return "中等回声";
+  }
+  function wallX(){
+    return 210 + (dist - 2) / 168 * 330;
+  }
+  function sceneOf(){
+    if (dist < 8) return "close";
+    if (dist < 22) return "room";
+    if (dist < 50) return "well";
+    return "hill";
+  }
+  function clearTimers(){
+    var i;
+    for (i = 0; i < timers.length; i += 1) window.clearTimeout(timers[i]);
+    timers = [];
+  }
+  function later(fn, ms){
+    timers.push(window.setTimeout(fn, ms));
+  }
+  function burst(at){
+    if (!soundOn()) return;
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var t0 = audioCtx.currentTime + at;
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(520, t0);
+      osc.frequency.exponentialRampToValueAtTime(180, t0 + 0.09);
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.12);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t0);
+      osc.stop(t0 + 0.13);
+    } catch (err) {}
+  }
+  function paintRest(){
+    var x = wallX();
+    document.getElementById("wallBody").setAttribute("x", String(x));
+    document.getElementById("roomWall").querySelector(".ec-brick").setAttribute("d",
+      "M"+x+" 88 H"+(x+70)+" M"+x+" 128 H"+(x+70)+" M"+x+" 168 H"+(x+70)+" M"+(x+35)+" 48 V202");
+    var scene = sceneOf();
+    setHidden("roomWall", scene === "hill" || scene === "well");
+    setHidden("wellWall", scene !== "well");
+    setHidden("hillWall", scene !== "hill");
+    if (scene === "well") {
+      document.getElementById("wellWall").setAttribute("transform", "translate("+(x-548)+" 0)");
+    }
+    if (scene === "hill") {
+      document.getElementById("hillWall").setAttribute("transform", "translate("+(x-560)+" 0)");
+    }
+    document.getElementById("distLab").textContent = "墙离你 " + meters(dist) + " · " + MED[medium].name;
+    document.getElementById("distOut").textContent = meters(dist);
+    document.getElementById("speedOut").textContent = SPEED + "\u00a0米/秒 · " + MED[medium].name;
+    document.getElementById("timeOut").textContent = seconds(delaySec());
+    document.getElementById("kindOut").textContent = kindName(kindOf());
+    document.getElementById("dist").setAttribute("aria-valuetext", meters(dist));
+    var k = kindOf();
+    document.getElementById("sceneNear").setAttribute("aria-pressed", dist === 18 ? "true" : "false");
+    document.getElementById("sceneRoom").setAttribute("aria-pressed", dist === 12 ? "true" : "false");
+    document.getElementById("sceneWell").setAttribute("aria-pressed", dist === 30 ? "true" : "false");
+    document.getElementById("sceneFar").setAttribute("aria-pressed", dist === 90 ? "true" : "false");
+    document.getElementById("sceneHill").setAttribute("aria-pressed", dist === 150 ? "true" : "false");
+    document.getElementById("medAir").setAttribute("aria-pressed", medium === "air" ? "true" : "false");
+    document.getElementById("medWater").setAttribute("aria-pressed", medium === "water" ? "true" : "false");
+    document.getElementById("medHe").setAttribute("aria-pressed", medium === "he" ? "true" : "false");
+    if (k === "none") {
+      document.getElementById("echoLab").textContent = "回来太快，回声会和掌声叠在一起。";
+    } else {
+      document.getElementById("echoLab").textContent = "墙越远回来越晚。点「拍一下」。";
+    }
+    document.getElementById("live").textContent =
+      "声音打到硬壁才弹回来。墙越远越晚听到；同一堵墙，水里比空气里先回来。点「拍一下」。";
+  }
+  function wavePath(x, dir){
+    var y = PING_Y;
+    var s = dir > 0 ? 18 : -18;
+    return "M"+(x-s)+" "+(y-22)+" Q"+x+" "+y+" "+(x-s)+" "+(y+22);
+  }
+  function resetPulse(){
+    setHidden("ping", true);
+    setHidden("waveA", true);
+    setHidden("waveB", true);
+    document.getElementById("waitBar").setAttribute("width", "0");
+    document.getElementById("kidMouth").setAttribute("d", "M-4 6 Q0 10 4 6");
+    document.getElementById("ping").setAttribute("cx", String(KID_X));
+  }
+  function finishClap(gen, k){
+    if (gen !== flight) return;
+    resetPulse();
+    document.getElementById("waitBar").setAttribute("width", "448");
+    if (dist >= 85 && medium === "air") seen.airFar = true;
+    if (dist >= 85 && medium === "water") seen.waterFar = true;
+    if (dist >= 85 && medium === "he") seen.heFar = true;
+    if (guess1 && !guess1Done && dist >= 85 && medium === "air") sawG1Air = true;
+    if (guess1 && !guess1Done && dist >= 85 && medium === "water") sawG1Water = true;
+    if (guess2 && !guess2Done && dist >= 85 && medium === "air") sawG2Air = true;
+    if (guess2 && !guess2Done && dist >= 85 && medium === "he") sawG2He = true;
+    if (guess3 && !guess3Done && dist >= 85 && medium === "water") sawG3W = true;
+    if (guess3 && !guess3Done && dist >= 85 && medium === "he") sawG3H = true;
+    checkGuess();
+    if (k === "none") {
+      document.getElementById("echoLab").textContent = "掌声和回声叠在一起，分不出第二次。";
+      document.getElementById("live").textContent = "回来太快，掌声和回声叠在一起。拉远一点，或换更慢的介质再拍。";
+    } else if (k === "near") {
+      seen.near = true;
+      document.getElementById("echoLab").textContent = "近回声回来了！";
+      document.getElementById("live").textContent = "近处（或快介质）回声很快。再试更远，或换空气/水对照谁先回来。";
+    } else if (k === "far") {
+      seen.far = true;
+      document.getElementById("echoLab").textContent = "远回声回来了。";
+      document.getElementById("live").textContent = "远处回声晚很多。同一堵墙，水里比空气里先回来。";
+    } else {
+      document.getElementById("echoLab").textContent = "回声回来了。";
+      document.getElementById("live").textContent = "声音打到硬壁才弹回来。再试更近或更远，或换水对照谁先回来。";
+    }
+    var status = document.getElementById("taskStatus");
+    if (seen.done) return;
+    if (seen.near && seen.far && seen.airFar && seen.waterFar && seen.heFar) {
+      seen.done = true;
+      if (window.Progress) Progress.complete("games/echo-lab.html", "近远对照过，并同距换过空气、水与氦气");
+      status.textContent = "完成啦：更远等更久；同一面墙，水最快，氦居中，空气最慢。";
+    } else if (!seen.near) {
+      status.textContent = "尚未完成：先在近处拍一次，听见很快的回声。";
+    } else if (!seen.far) {
+      status.textContent = "还差：把墙拉远，再拍一次，等一等更晚的回声。";
+    } else if (!seen.airFar || !seen.waterFar || !seen.heFar) {
+      status.textContent = "还差：同距三介质——远处用空气、水、氦气各拍一次。";
+    } else {
+      status.textContent = "还差：再对照一次近回声或远回声。";
+    }
+  }
+  function clap(){
+    flight += 1;
+    var gen = flight;
+    clearTimers();
+    resetPulse();
+    var k = kindOf();
+    var wait = delaySec();
+    var halfMs = motionOff() ? 0 : Math.round(wait * 500);
+    var xWall = wallX();
+    document.getElementById("kidMouth").setAttribute("d", "M-6 4 Q0 14 6 4");
+    setHidden("ping", false);
+    setHidden("waveA", false);
+    document.getElementById("waveA").setAttribute("d", wavePath(KID_X + 20, 1));
+    document.getElementById("echoLab").textContent = "声波正往墙上跑……";
+    document.getElementById("live").textContent = "等一等，看它什么时候弹回来。";
+    burst(0);
+    if (k !== "none") burst(wait);
+    later(function(){
+      if (gen !== flight) return;
+      document.getElementById("ping").setAttribute("cx", String(xWall - 10));
+      document.getElementById("waitBar").setAttribute("width", "224");
+      document.getElementById("waveA").setAttribute("d", wavePath(xWall - 16, 1));
+      document.getElementById("echoLab").textContent = "撞到墙了，正在折回来。";
+    }, halfMs);
+    later(function(){
+      if (gen !== flight) return;
+      setHidden("waveB", false);
+      document.getElementById("waveB").setAttribute("d", wavePath(xWall - 28, -1));
+      document.getElementById("ping").setAttribute("cx", String((KID_X + xWall) / 2));
+    }, halfMs + Math.min(80, halfMs));
+    later(function(){
+      if (gen !== flight) return;
+      document.getElementById("ping").setAttribute("cx", String(KID_X));
+      document.getElementById("waveB").setAttribute("d", wavePath(KID_X + 18, -1));
+      finishClap(gen, k);
+    }, halfMs * 2);
+  }
+  function setDist(next){
+    dist = next;
+    if (dist < 2) dist = 2;
+    if (dist > 170) dist = 170;
+    document.getElementById("dist").value = String(dist);
+    flight += 1;
+    clearTimers();
+    resetPulse();
+    paintRest();
+  }
+
+  document.getElementById("dist").addEventListener("input", function(){
+    setDist(Number(this.value));
+  });
+  document.getElementById("sceneNear").addEventListener("click", function(){ setDist(18); });
+  document.getElementById("sceneRoom").addEventListener("click", function(){ setDist(12); });
+  document.getElementById("sceneWell").addEventListener("click", function(){ setDist(30); });
+  document.getElementById("sceneFar").addEventListener("click", function(){ setDist(90); });
+  document.getElementById("sceneHill").addEventListener("click", function(){ setDist(150); });
+  document.getElementById("medAir").addEventListener("click", function(){ setMedium("air"); });
+  document.getElementById("medWater").addEventListener("click", function(){ setMedium("water"); });
+  document.getElementById("medHe").addEventListener("click", function(){ setMedium("he"); });
+  document.getElementById("clapBtn").addEventListener("click", clap);
+  document.addEventListener("playful:preference", function(){ paintRest(); });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。远墙下空气与水各拍一次。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。远墙下再拍氦气，对照空气。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut3").textContent = "押好了。远墙下，水与氦气各拍一次。";
+    });
+  });
+
+  var ATLAS = {
+    shout:"喊：先发出一声，才有同一类声可以反射回来；山谷不会自己说话。",
+    hill:"山壁：很远的硬石头，回声回来得最晚；仍是你那一声折返，不是山谷在回话。",
+    well:"井：声音往下跑再弹上来，也能听见回声；仍是同一声，不是井沿自己会说话。",
+    room:"空教室：四面墙都近，回声又快又密，常常叠在一起，几乎听不清第二下。",
+    near:"近墙：墙近时回声很快回来，像紧跟着的第二下；太近就会叠成一次。",
+    far:"远墙：墙远要多等一会儿，回声才慢慢回来；仍是同一声折返，听得清是第二下。",
+    none:"无回声：墙太近，两次声音叠成一次，几乎听不清；不是没有发出声。",
+    wave:"声波：空气被推挤着往前跑，碰到硬东西会折返；回来的仍是同一类声，不是新声音。",
+    canyon:"峡谷：两边都是硬石壁，回声会来回撞；一声变几声，仍是你的声音，不是山谷会说话。",
+    cave:"山洞：声音钻进去再弹出来，回声发闷；仍是反射，不是洞里有人应。",
+    sofa:"沙发：软东西把声音吃掉，几乎没有回声；不是山谷不肯说话。",
+    he:"氦气：声速大约一千，同距回来夹在空气与水之间，仍是同一类声折返。",
+    clap:"拍手：短促的一声，最容易听清有没有第二下；墙太近会叠得听不清。"
+  };
+  var ATLAS_DIST = { hill:150, well:30, room:12, near:18, far:90, none:3, canyon:120, cave:40, sofa:6, clap:18, he:90 };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-ec-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-ec-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-ec-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+      if (ATLAS_DIST[key]) setDist(ATLAS_DIST[key]);
+      if (key === "he") setMedium("he");
+      if (key === "wave") setMedium("air");
+    });
+  });
+  paintRest();
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/echo-lab.html", "回声工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

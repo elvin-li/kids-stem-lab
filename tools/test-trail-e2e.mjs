@@ -1,12 +1,13 @@
 /* 探索足迹 v2 端到端测试：无依赖 Node + 本机 Chrome/CDP。
  * 验证 file:// 跨页共享、四层语义、JSON 恢复和三档响应式布局。
  */
-import { spawn } from 'node:child_process';
-import { access, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { access, mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { runInNewContext } from 'node:vm';
+import { acquireChromeLease } from './chrome-lease.mjs';
+import { spawnChrome, stopChrome } from './chrome-lifecycle.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const PORT = 9700 + (process.pid % 200);
@@ -52,6 +53,15 @@ class CDP {
         message.error ? pending.reject(new Error(message.error.message)) : pending.resolve(message.result);
       } else if (message.method && client.onEvent) client.onEvent(message);
     };
+    /* 这个浏览器一律不许写下载文件。门禁会逐个点击页面上可见的按钮，
+       其中就有「保存图片」「导出 JSON」「导出代码」这类导出控件——Chrome 的
+       默认行为会把文件真的存进 ~/Downloads，跑一轮门禁就多出十几个文件
+       （doodle-pad 的画、symmetry 的对称作品、足迹 JSON、评估 txt…），
+       几轮下来上百个。审计只关心「点下去有没有报错、有没有请求离开设备」，
+       落盘对结论没有任何贡献，纯属污染用户的下载目录。
+       deny 也顺带让「点导出」这条路径本身仍然被走到，不影响判定。 */
+    /* 下载禁用是安全边界：失败时必须在创建 target、点击页面之前终止。 */
+    await client.send('Browser.setDownloadBehavior', { behavior: 'deny' });
     return client;
   }
   send(method, params = {}, sessionId) {
@@ -67,31 +77,24 @@ class CDP {
   close() { this.ws.close(); }
 }
 
+await acquireChromeLease();
+const chromePath = await findChrome();
 const profile = await mkdtemp(join(tmpdir(), 'trail-v2-e2e-'));
 let chrome;
 let browser;
 async function cleanup() {
   if (browser) browser.close();
-  if (chrome && chrome.exitCode === null) chrome.kill();
-  if (chrome) {
-    await new Promise((resolve) => {
-      if (chrome.exitCode !== null) return resolve();
-      const timer = setTimeout(resolve, 3000);
-      chrome.once('exit', () => { clearTimeout(timer); resolve(); });
-    });
-  }
-  try { await rm(profile, { recursive: true, force: true }); } catch { /* 不遮盖测试结果 */ }
+  await stopChrome(chrome);
 }
 
 let fatal;
 try {
-  const chromePath = await findChrome();
-  chrome = spawn(chromePath, [
+  chrome = await spawnChrome(chromePath, [
     `--remote-debugging-port=${PORT}`, `--user-data-dir=${profile}`,
     '--headless=new', '--no-first-run', '--no-default-browser-check',
     '--disable-gpu', '--hide-scrollbars', '--mute-audio',
     '--allow-file-access-from-files', '--window-size=1280,900', 'about:blank'
-  ], { stdio: 'ignore' });
+  ], { cleanupPath: profile });
 
   let wsUrl;
   for (let attempt = 0; attempt < 60 && !wsUrl; attempt++) {
@@ -327,12 +330,17 @@ try {
     check(await evaluate(`return document.getElementById("recentCardSummary").textContent.includes("已收集 1 / ${cardTotal}") && /波浪倾听者/.test(document.getElementById("recentCards").textContent);`), '首页显示收藏卡总数和最近解锁卡');
 
     step(`${DETAIL_PAGES.length} 页儿童首屏`);
-    await browser.send('Emulation.setDeviceMetricsOverride', {
-      width: 375, height: 812, deviceScaleFactor: 2, mobile: true
-    }, sessionId);
-    for (const page of DETAIL_PAGES) {
-      await go(page);
-      const childView = await evaluate(`
+    const kidMetrics = { width: 375, height: 812, deviceScaleFactor: 2, mobile: true };
+    await browser.send('Emulation.setDeviceMetricsOverride', kidMetrics, sessionId);
+    /* 视口模拟会在负载高时对个别导航悄悄退化：布局宽度与媒体查询仍按 375 算，
+       但 vw/clamp() 里的 vw 按外层窗口（--window-size=1280,900）解析。此时
+       clamp(1.5rem,…,1.9rem) 的标题、clamp(280px,48vw,520px) 的舞台全部取到
+       桌面端的值，操作条被推出首屏——报出来的数值具体而稳定（同一子模板的
+       页面聚簇出相同的 top），极像真缺陷，实际是测量环境坏了。这里在每页
+       测量前用一个 100vw 探针核对，失效就重新广播 override 后重导航重试；
+       三次仍失效则记一条点名基础设施的失败并跳过该页断言，不拿错误数值
+       冒充页面缺陷。 */
+    const childViewProbe = `
         const root = document.documentElement;
         /* 一页可以有多个舞台，也可以有家长版 + 孩子版两条操作条。
            以前这里直接取 querySelector 的第一个，于是量到的常常是首个舞台
@@ -364,7 +372,24 @@ try {
           const style = getComputedStyle(el);
           return style.display !== 'none' && style.visibility !== 'hidden' && rect.top < innerHeight && rect.bottom > 0 && el.textContent.trim().length > 70;
         }).length;
+        /* 视口模拟健康探针。两类失效形状不同，勿混为一谈：
+           A) 100vw 明显偏离目标宽度 → vw 按外层窗口解析（基础设施）。
+           B) 100vw 已贴近目标，但 innerWidth 被撑大且伴有横向溢出 → 页面缺陷
+              （移动端布局视口会跟 scrollWidth 走，曾被误报成基础设施）。 */
+        const vwEl = document.createElement('div');
+        vwEl.style.cssText = 'position:absolute;left:0;top:0;width:100vw;height:1px;visibility:hidden;pointer-events:none;';
+        document.body.appendChild(vwEl);
+        const vwProbe = Math.round(vwEl.getBoundingClientRect().width);
+        vwEl.remove();
+        const overflow = root.scrollWidth - root.clientWidth;
+        const vwMatchesTarget = Math.abs(vwProbe - 375) <= 1;
+        const innerMatchesTarget = Math.abs(innerWidth - 375) <= 1;
+        const overflowExpanded = vwMatchesTarget && !innerMatchesTarget && overflow > 1;
         return {
+          vwOk: vwMatchesTarget && innerMatchesTarget,
+          overflowExpanded,
+          vwProbe,
+          innerW: innerWidth,
           mode: root.getAttribute('data-mode'),
           stageVisible: Boolean(stageRect && stageRect.width > 0 && stageRect.height > 180),
           stageArea: stageRect ? Math.round(stageRect.width * Math.min(stageRect.height, innerHeight)) : 0,
@@ -378,10 +403,31 @@ try {
           actionTop: actionRect ? Math.round(actionRect.top) : null,
           actionAboveFold: Boolean(actionRect && actionRect.top < innerHeight),
           parentHidden: Boolean(deep && getComputedStyle(deep).display === 'none'),
-          overflow: root.scrollWidth - root.clientWidth,
+          overflow,
           unnamed: focusables.filter(el => !(el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.labels?.length || el.textContent.trim() || el.title)).length
         };
-      `);
+      `;
+    for (const page of DETAIL_PAGES) {
+      let childView;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) {
+          await browser.send('Emulation.setDeviceMetricsOverride', kidMetrics, sessionId);
+          await WAIT(250);
+        }
+        await go(page);
+        childView = await evaluate(childViewProbe);
+        if (childView.vwOk) break;
+        /* 溢出撑大 innerWidth 是页面缺陷，重试无益，直接进入断言。 */
+        if (childView.overflowExpanded) break;
+      }
+      if (childView.overflowExpanded) {
+        check(false, `${page} 375px 无页面级横向溢出（${childView.overflow}px，撑大 innerWidth=${childView.innerW}）`);
+        continue;
+      }
+      if (!childView.vwOk) {
+        check(false, `${page} 视口模拟生效（100vw=${childView.vwProbe}px，innerWidth=${childView.innerW}px，重试 2 次仍失效，基础设施问题）`);
+        continue;
+      }
       check(childView.mode === 'kid', `${page} 保持孩子模式`);
       check(childView.stageVisible, `${page} 图形舞台可见`);
       check(childView.stageArea >= childView.viewportArea * .24, `${page} 图形舞台占据足够首屏面积`);
@@ -400,22 +446,41 @@ try {
     check(await evaluate('Progress.setPreference("motion", "reduced"); return document.documentElement.getAttribute("data-playful-motion") === "reduced";'), '减少动效偏好即时生效');
     await evaluate('Progress.setPreference("motion", "system"); return true;');
     for (const width of [375, 768, 1280]) {
-      await browser.send('Emulation.setDeviceMetricsOverride', {
+      const widthMetrics = {
         width, height: width === 375 ? 750 : 900, deviceScaleFactor: width === 375 ? 2 : 1, mobile: width === 375
-      }, sessionId);
-      await go('pages/progress.html');
-      const layout = await evaluate(`
+      };
+      const layoutProbe = `
         const root = document.documentElement;
         const main = document.getElementById('main').getBoundingClientRect();
         const focusables = [...document.querySelectorAll('a[href],button:not([disabled]),select,textarea,input:not([type=hidden])')]
           .filter(el => getComputedStyle(el).visibility !== 'hidden' && getComputedStyle(el).display !== 'none');
+        const vwEl = document.createElement('div');
+        vwEl.style.cssText = 'position:absolute;left:0;top:0;width:100vw;height:1px;visibility:hidden;pointer-events:none;';
+        document.body.appendChild(vwEl);
+        const vwProbe = Math.round(vwEl.getBoundingClientRect().width);
+        vwEl.remove();
         return {
+          vwOk: innerWidth === ${width} && Math.abs(vwProbe - innerWidth) <= 1,
+          vwProbe,
+          innerW: innerWidth,
           overflow: root.scrollWidth - root.clientWidth,
           clippedMain: main.left < -1 || main.right > innerWidth + 1,
           cards: document.querySelectorAll('.album-card').length,
           unnamed: focusables.filter(el => !(el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.labels?.length || el.textContent.trim() || el.title)).length
         };
-      `);
+      `;
+      let layout;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        await browser.send('Emulation.setDeviceMetricsOverride', widthMetrics, sessionId);
+        if (attempt > 0) await WAIT(250);
+        await go('pages/progress.html');
+        layout = await evaluate(layoutProbe);
+        if (layout.vwOk) break;
+      }
+      if (!layout.vwOk) {
+        check(false, `${width}px 视口模拟生效（100vw=${layout.vwProbe}px，innerWidth=${layout.innerW}px，重试 2 次仍失效，基础设施问题）`);
+        continue;
+      }
       check(layout.overflow <= 1 && !layout.clippedMain, `${width}px 无页面级横向溢出（${layout.overflow}px）`);
       check(layout.cards === cardTotal, `${width}px 保留完整 ${cardTotal} 槽卡册`);
       check(layout.unnamed === 0, `${width}px 可聚焦控件均有名称`);

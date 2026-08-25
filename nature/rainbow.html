@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>彩虹观察站 · 雨后为什么有颜色 | 少儿数理启蒙</title>
+<meta name="description" content="比较水滴、阳光和霓虹灯。彩虹是小水滴把白光掰弯、拆开。红在外、紫在内。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+ .hero { padding: 28px 0 10px; }
+ .hero h1 { margin: .15em 0 .3em; }
+ .lead { max-width: 58ch; color: var(--ink-mid); }
+ .kid-hero-scene {
+ display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+ margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+ border: 1px solid color-mix(in srgb,var(--video) 40%,var(--line));
+ border-radius: var(--r-lg);
+ background: linear-gradient(135deg,color-mix(in srgb,var(--video) 14%,var(--surface)),var(--surface) 62%);
+ }
+ .mission-face {
+ width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+ border: 2px solid color-mix(in srgb,var(--video) 42%,var(--line));
+ background: color-mix(in srgb,var(--video) 12%,var(--surface)); font-size: 2.2rem;
+ }
+ .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+ .rb-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+ .rb-sky { fill: #8ec5e8; }
+ .rb-ground { fill: #7aaa58; }
+ .rb-sun { fill: #ffd166; }
+ .rb-drop { fill: #b7daf2; stroke: #2586c4; stroke-width: 2; }
+ .rb-lab { fill: var(--ink); font: 800 13px var(--mono); }
+ .rb-soft { fill: #3a2a18; /* 压在浅色天空上，原色不足 4.5:1，换深墨色 */ font: 700 12px var(--mono); }
+ .rb-ring { fill: none; stroke: var(--video); stroke-width: 3; opacity: 0; }
+ .rb-ring.on { opacity: 1; }
+ .kid-action-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+ .kid-action-strip .btn { white-space: nowrap; }
+ .rainbow-atlas .kid-figure { --tone: var(--video); }
+ .rainbow-atlas .kid-figure-art { padding: 6px; }
+ .rainbow-atlas .kid-figure-art > svg { width: 100%; max-width: 132px; height: auto; }
+ .rainbow-atlas .kid-figure-fact { display: block; }
+ .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+ .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+ .ask li::before {
+ counter-increment: q; content: counter(q);
+ position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+ display: grid; place-items: center; background: color-mix(in srgb,var(--video) 12%,var(--surface));
+ border: 1px solid color-mix(in srgb,var(--video) 40%,var(--line)); color: var(--ink);
+ font: 800 .76rem var(--mono);
+ }
+ button, .btn { min-height: 44px; }
+ .stage + .kid-action-strip { margin-top: 8px; }
+ .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+ @media (max-width: 640px) {
+ .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+ .mission-face { display: none; }
+ .stage { padding: 10px; }
+ .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+ .lead { max-width: none; }
+ }
+
+ .rw-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+.rw-lab-panel { margin: 12px 0; padding: 10px; border: 1px solid color-mix(in srgb,var(--sci) 36%,var(--line)); border-radius: var(--r-lg); background: color-mix(in srgb,var(--sci) 8%,var(--surface)); }
+ .rw-lab-panel .readout { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0; }
+ .rw-lab-panel .readout div { padding:8px; border-radius:var(--r); background:var(--surface); border:1px solid var(--line); }
+ .rw-lab-panel .readout span { display:block; font-size:.78rem; color:var(--ink-mid); }
+ .rw-lab-panel .readout b { font:800 1.05rem var(--mono); color:var(--ink); }
+ .rw-lab-panel label { display:block; font-weight:700; margin-top:8px; }
+ .rw-lab-panel input[type="range"] { width:100%; min-height:44px; }
+ .rw-lab-panel .kid-action-strip { flex-direction:column; align-items:stretch; gap:4px; margin:8px 0; }
+ .rw-guess .pick-btns { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+ .guess-card { border-color: color-mix(in srgb,var(--sci) 45%,var(--line)); }
+ .guess-pick[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 18%,var(--surface)); color: var(--ink); }
+ .guess-out { font-weight: 750; color: var(--ink-mid); }
+ .guess-out b { color: var(--ink); }
+ @media (max-width:640px){
+ .hero .lead { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+ .rw-lab-panel > p { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+ }
+ @media (max-width:480px){
+ [data-playful-companion], [data-playful-sticker] { display:none !important; }
+ .rw-lab-panel .readout { grid-template-columns:1fr; }
+ }
+
+</style>
+</head>
+<body data-playful-page="nature/rainbow.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+ <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+ <div class="row" aria-label="主导航">
+ <a class="nav-link" href="../index.html">资源库</a>
+ <a class="nav-link" href="../pages/paths.html">学习路径</a>
+ <a class="nav-link" href="../games/index.html">互动实验</a>
+ <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+ <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+ <a class="nav-link" href="../pages/parents.html">家长指南</a>
+ <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+ </div>
+</div></nav>
+<main id="main" class="wrap">
+ <header class="hero">
+ <div>
+ <p class="row"><span class="pill pill-sci">地球</span><span class="pill">5–11&nbsp;岁</span><span class="pill">本地观察</span></p>
+ <h1>彩虹观察站</h1>
+ <p class="lead">彩虹不是天上的颜料带，也不是能走上去的桥。阳光看起来白，里面藏着许多颜色；小水滴像一颗颗透镜，光进去先拐弯，在内壁弹一次，再拐出来。红光拐得少，排在弧外；紫光拐得多，排在弧内。人要背对太阳、面前有雨雾，三件齐了才容易见。本页练「水滴拆光、背对太阳」；不盯太阳，雷雨先找安全处。舞台上的「彩弧」数字只是比较尺子，不是某一次雨后的说明书，更不是气象预报。</p>
+ <div data-playful-companion></div>
+ <span data-playful-sticker></span>
+ </div>
+ <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="78" height="78"></div>
+ </header>
+
+
+ <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+ <h2 id="stageTitle">这一件更像彩虹吗</h2>
+ <svg class="rb-art" viewBox="0 0 640 280" role="img" aria-labelledby="rbTitle rbDesc">
+ <title id="rbTitle">雨后彩虹舞台</title>
+ <desc id="rbDesc">左边是太阳和水滴，中间一道彩虹，右边是霓虹灯和颜料。点图鉴后对应的一块会亮起来。</desc>
+ <rect class="rb-sky" width="640" height="280"/>
+ <path class="rb-ground" d="M0 200 h640 v80 H0 Z"/>
+ <circle class="rb-sun" cx="80" cy="70" r="28"/>
+ <path d="M180 200 A140 140 0 0 1 460 200" fill="none" stroke="#e74d3d" stroke-width="8"/>
+ <path d="M190 200 A130 130 0 0 1 450 200" fill="none" stroke="#f0c14a" stroke-width="8"/>
+ <path d="M200 200 A120 120 0 0 1 440 200" fill="none" stroke="#4a7a32" stroke-width="8"/>
+ <path d="M210 200 A110 110 0 0 1 430 200" fill="none" stroke="#2586c4" stroke-width="8"/>
+ <path d="M220 200 A100 100 0 0 1 420 200" fill="none" stroke="#6b4aa0" stroke-width="8"/>
+ <ellipse class="rb-drop" cx="140" cy="120" rx="10" ry="14"/>
+ <ellipse class="rb-drop" cx="168" cy="150" rx="8" ry="12"/>
+ <rect x="520" y="70" width="80" height="28" fill="#e74d3d"/>
+ <rect x="520" y="100" width="80" height="28" fill="#f0c14a"/>
+ <rect x="540" y="180" width="36" height="36" fill="#e74d3d"/>
+ <rect x="580" y="190" width="28" height="28" fill="#2586c4"/>
+ <ellipse class="rb-ring" id="ringRb" cx="320" cy="140" rx="90" ry="50"/>
+ <text class="rb-lab" x="16" y="36">雨后</text>
+ <text class="rb-soft" id="whoSay" x="220" y="36">还没选</text>
+ </svg>
+ <p class="live-text" id="live" role="status" aria-live="polite">点一张图鉴，看它更像真正让彩虹出现的条件，还是霓虹灯、颜料。再点另一张来比较。</p>
+ </section>
+
+ <div class="kid-action-strip" role="group" aria-label="图鉴比较主操作">
+ <span>到图鉴点两张不同的卡来比</span>
+ <button class="btn" type="button" id="comparePickReset">清空重选</button>
+ </div>
+
+<section class="card rw-lab-panel" aria-labelledby="rwLabTitle">
+ <h2 id="rwLabTitle">彩虹色散台 · 真参数</h2>
+ <p>调<strong>水滴浓度</strong>与<strong>阳光角度</strong>。阳光在水滴里折射+反射再色散；背对太阳、面前有雨雾时更易看见。</p>
+ <div class="kid-action-strip" role="group" aria-label="真参数主操作">
+ <label for="rwA">水滴浓度：<span id="rwALab">…</span></label>
+ <input class="input" id="rwA" type="range" min="3" max="30" value="14" aria-valuetext="14">
+ <label for="rwB">阳光角度：<span id="rwBLab">…</span></label>
+ <input class="input" id="rwB" type="range" min="2" max="20" value="8" aria-valuetext="8">
+ </div>
+ <svg class="rw-art" viewBox="0 0 640 220" role="img" aria-labelledby="rwLabSvgTitle rwLabSvgDesc">
+ <title id="rwLabSvgTitle">水滴把白光拆开；颜料混色是另一套</title>
+ <desc id="rwLabSvgDesc">太阳在人背后。白光进水滴，红光拐得少、紫光拐得多。面前出现外红内紫的弧。右边颜料盘被划掉。</desc>
+ <rect fill="#c8e0f8" width="640" height="220"/>
+ <circle id="rwSun" cx="70" cy="48" r="18" fill="#f0d060"/>
+ <circle id="rwPerson" cx="160" cy="150" r="10" fill="#8a6a50"/>
+ <path d="M160 160 L160 190 M148 172 L172 172" stroke="#8a6a50" stroke-width="4"/>
+ <ellipse id="rwDrop" cx="300" cy="88" rx="16" ry="22" fill="#a8d4f0" stroke="#4a7a9a"/>
+ <path id="rwWhite" d="M88 56 L284 84" stroke="#fff8e8" stroke-width="3"/>
+ <path id="rwRedRay" d="M314 78 L400 58" stroke="#e05050" stroke-width="3"/>
+ <path id="rwVioRay" d="M314 98 L400 118" stroke="#6b4aa0" stroke-width="3"/>
+ <path id="rwArcR" d="M360 180 A160 90 0 0 1 560 180" fill="none" stroke="#e05050" stroke-width="7"/>
+ <path id="rwArcV" d="M380 180 A140 74 0 0 1 540 180" fill="none" stroke="#6b4aa0" stroke-width="6"/>
+ <g id="rwPaint" opacity="0.28">
+ <circle cx="80" cy="200" r="10" fill="#e05050"/>
+ <circle cx="98" cy="200" r="10" fill="#2586c4"/>
+ <path d="M68 188 L110 212 M110 188 L68 212" stroke="#c2410c" stroke-width="3"/>
+ </g>
+ <rect id="rwBar" x="20" y="90" width="14" height="80" fill="#1a5a3a"/>
+ <text fill="#1a2a20" style="font:800 13px monospace" x="200" y="28">色散台</text>
+ <text id="rwStateLab" fill="#1a2a20" style="font:700 12px monospace" x="320" y="28">水滴拆光，不是颜料</text>
+ </svg>
+ <div class="readout" aria-live="polite">
+ <div><span>水滴</span><b id="rwAOut">…</b></div>
+ <div><span>彩弧（算）</span><b id="rwSOut">…</b></div>
+ <div><span>易见？</span><b id="rwOkOut">…</b></div>
+ </div>
+ <p class="live-text" id="rwLabLive" role="status" aria-live="polite">太阳在背后，水滴把白光拆开：红拐得少在外，紫拐得多在内。不是天上的桥，颜料混色是另一套。</p>
+ </section>
+ <section class="card guess-card rw-guess" aria-labelledby="rwGuessTitle">
+ <h2 id="rwGuessTitle">先猜一猜，再拖滑杆</h2>
+ <p><b>第 1 题：</b>水滴多、阳光角度合适（水滴 28、阳光角 14）。彩弧是水滴拆开白光，还是天上架了一座桥？</p>
+ <div class="pick-btns" role="group" aria-label="猜拆光">
+ <button class="btn guess-pick" type="button" data-rw-g1="28" aria-pressed="false">水滴拆开白光，不是桥</button>
+ <button class="btn guess-pick" type="button" data-rw-g1="18" aria-pressed="false">天上架了一座桥</button>
+ </div>
+ <p class="guess-out" id="rwGuessOut1" role="status" aria-live="polite">押好了</p>
+ <div id="rwGuessBlock2" hidden>
+ <p><b>第 2 题：</b>水滴 4、阳光角 3，还易见吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜够不够">
+ <button class="btn guess-pick" type="button" data-rw-g2="yes" aria-pressed="false">易见</button>
+ <button class="btn guess-pick" type="button" data-rw-g2="no" aria-pressed="false">偏淡</button>
+ </div>
+ <p class="guess-out" id="rwGuessOut2" role="status" aria-live="polite">押好了</p>
+ </div>
+ <div id="rwGuessBlock3" hidden>
+ <p><b>第 3 题：</b>水滴最少 3、阳光角最偏 2。还能看见彩虹吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜又少又偏">
+ <button class="btn guess-pick" type="button" data-rw-g3="yes" aria-pressed="false">能，有光就有虹</button>
+ <button class="btn guess-pick" type="button" data-rw-g3="no" aria-pressed="false">很难，水滴少角度又偏</button>
+ <button class="btn guess-pick" type="button" data-rw-g3="zero" aria-pressed="false">颜色消失了</button>
+ </div>
+ <p class="guess-out" id="rwGuessOut3" role="status" aria-live="polite">押好了</p>
+ </div>
+ </section>
+
+ <section class="card rainbow-atlas" aria-labelledby="atlasTitle">
+ <h2 id="atlasTitle">彩虹图鉴</h2>
+ <p>下面有 12&nbsp;张卡。点两张不一样的，再说谁更像真正让彩虹出现的条件。霓虹灯和油画颜料不是彩虹。</p>
+ <div class="kid-figure-grid" role="group" aria-label="彩虹图鉴：十二种样子">
+ <button class="kid-figure" type="button" data-rb="drop" aria-pressed="false" aria-label="水滴：把光掰弯、拆开"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dew.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">水滴</span><span class="kid-figure-fact">水滴把光掰弯再反射一次，才把白光拆开，是小透镜，天上那一圈不是桥。</span></button>
+ <button class="kid-figure" type="button" data-rb="sun" aria-pressed="false" aria-label="阳光：白光里藏着许多颜色"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/sun.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">阳光</span><span class="kid-figure-fact">阳光看起来白，里面藏着许多颜色，从背后射来才在前面成虹，那不是桥。</span></button>
+ <button class="kid-figure" type="button" data-rb="red" aria-pressed="false" aria-label="红光在外"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">红光在外</span><span class="kid-figure-fact">主虹最外面那一圈是红的，那是水珠折射反射的规矩，不是谁在天上架桥。</span></button>
+ <button class="kid-figure" type="button" data-rb="violet" aria-pressed="false" aria-label="紫光在内"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">紫光在内</span><span class="kid-figure-fact">主虹最里面那一圈偏紫，和外红成一套，是水珠拆光，不是桥面刷上去的漆。</span></button>
+ <button class="kid-figure" type="button" data-rb="bend" aria-pressed="false" aria-label="掰弯：光进出水滴会拐弯"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dew.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">掰弯</span><span class="kid-figure-fact">光进出水滴会拐弯，再在内壁反射一次才回到眼里，虹在前面，太阳在背后。</span></button>
+ <button class="kid-figure" type="button" data-rb="split" aria-pressed="false" aria-label="拆开：不同颜色拐的角度不一样"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">拆开</span><span class="kid-figure-fact">不同颜色拐的角度不一样，所以排成弧，不是颜料在天上画了一座桥。</span></button>
+ <button class="kid-figure" type="button" data-rb="double" aria-pressed="false" aria-label="双虹：外面还有一道更淡的"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">双虹</span><span class="kid-figure-fact">外面还有一道更淡的霓，颜色反过来，那是多弹一次，仍不是第二座桥。</span></button>
+ <button class="kid-figure" type="button" data-rb="mist" aria-pressed="false" aria-label="喷雾虹：花园水管也能做"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rain.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">喷雾虹</span><span class="kid-figure-fact">花园水管背对太阳喷细雾，也能看见一小段弧，零件仍是光加水滴，不是桥。</span></button>
+ <button class="kid-figure" type="button" data-rb="shadow" aria-pressed="false" aria-label="站在影子这边：背对太阳"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/sun.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">站在影子这边</span><span class="kid-figure-fact">背对太阳，彩虹才在你前面；转过身对着太阳找，方向反了，虹也不是桥。</span></button>
+ <button class="kid-figure" type="button" data-rb="cloud" aria-pressed="false" aria-label="雨云：提供水滴的地方"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/nimbus.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">雨云</span><span class="kid-figure-fact">雨云提供水滴，自己不是彩虹；虹是阳光从背后射来、水珠折射反射，不是桥。</span></button>
+ <button class="kid-figure" type="button" data-rb="neon" aria-pressed="false" aria-label="霓虹灯：不是彩虹"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">霓虹灯</span><span class="kid-figure-fact">霓虹灯是管子自己发光，不是雨后的虹，也没有太阳在背后、水珠在拆光。</span></button>
+ <button class="kid-figure" type="button" data-rb="paint" aria-pressed="false" aria-label="颜料：不是彩虹"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/paint.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">颜料</span><span class="kid-figure-fact">颜料混色是另一件事，不是把白光拆开；虹也不是用颜料在天上架的桥。</span></button>
+ </div>
+ <p class="live-text" id="atlasSay" role="status" aria-live="polite">还没选。先点一张，再点另一张，比谁更像彩虹这件事。</p>
+ </section>
+
+
+ <section class="card" aria-labelledby="predictTitle">
+ <h2 id="predictTitle">猜一猜</h2>
+ <div class="kid-predict" style="--tone:var(--sci)"
+ data-kid-predict
+ data-kid-predict-explain="色序来自不同色光偏转角略有差别；雾虹/白虹说明是光学不是颜料。"
+ data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+ data-kid-predict-again="押好了">
+ <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🌈</span><b>雨后彩虹，光主要是怎么变出颜色的？</b></p>
+ <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：彩虹怎么来">
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="paint">云把颜料喷在天上</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="split" data-kid-predict-correct>小水滴把白光掰弯、拆开；红在外、紫在内</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="neon">和霓虹灯管子一样自己发光</button>
+ </div>
+ <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+ <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+ </div>
+ </section>
+
+ <section class="task" aria-labelledby="taskTitle">
+ <h2 class="task-title" id="taskTitle">任务：比谁更像彩虹</h2>
+ <p>点两张不同的图鉴，再说出谁更像真正让彩虹出现的条件。霓虹灯和颜料不是彩虹，请换水滴、阳光、红光或紫光来比。</p>
+ <div class="kid-action-strip" role="group" aria-label="谁更像彩虹">
+ <button class="btn" type="button" id="moreA" disabled>先点的更像</button>
+ <button class="btn" type="button" id="moreB" disabled>后点的更像</button>
+ </div>
+ <button class="btn btn-primary" type="button" id="finishBtn" disabled>记下这次比较</button>
+ <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+ <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+ <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先点两张卡，再说谁更像彩虹这件事。</p>
+ </section>
+
+
+<section class="card" aria-labelledby="teachWhatTitle">
+ <h2 id="teachWhatTitle">水滴把阳光拆开，再送回一个弧</h2>
+ <p>先点「水滴」，再对照「颜料」。阳光进入水滴：先折射，在滴的内壁反射一次，再折射出来。不同颜色拐的角度略有差别，所以弧上有顺序：主虹外红内紫。人要站在太阳对面，背对太阳看——对着太阳找，方向反了。霓虹灯管子自己发光，油画颜料混色是减色，都不是把白光拆开。</p>
+ <p>雾虹或很淡的虹，常常因为滴更小或几何不完整，颜色被洗淡，不是「假虹」。喷壶在背光处喷细雾，也能做出一小段，几何和天上的虹是亲戚。双虹外面那道更淡，颜色常常反过来，那是光在滴里多弹一次。</p>
+ <p>因为眼睛对着太阳会受伤，所以背对太阳看虹，不要盯着太阳找角度。雷雨先管安全。喷壶演示选背光、地面不滑、大人控喷头的地方。舞台上的「彩弧」读数只比较「水滴够不够、角度对不对」，不是某一次雨的色卡，也不是 42° 测量说明书。</p>
+ </section>
+
+ <section class="card" aria-labelledby="lookTitle">
+ <h2 id="lookTitle">水滴把阳光拆开，再送回一个弧</h2>
+ <p>同一片天空、同一束阳光，先只改站位：太阳在背后才找得见虹，对着太阳找方向反了。再看弧的颜色顺序：主虹外红内紫，是拐弯规矩，不是谁拿颜料乱涂。然后只改有没有水滴：喷壶对着背光喷细雾，也能做出一小段。</p>
+ <p>完成句写「折射+反射」或「背对太阳」。禁止「天上有一座桥」。雷雨先找安全处，也不要对着太阳盯着看。</p>
+ <div class="kid-figure-grid" role="group" aria-label="主题细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/sun.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">太阳</span><span class="kid-figure-sub">在背后</span><p class="kid-figure-fact">看虹时太阳必须在你背后，弧才在前面；转过身对着太阳找，方向整个反了。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dew.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">水滴</span><span class="kid-figure-sub">小棱镜</span><p class="kid-figure-fact">白光进水滴先拐弯，再在内壁弹一次才出来，红和紫拐的角度本来就不一样。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">色序</span><span class="kid-figure-sub">有规矩</span><p class="kid-figure-fact">主虹常见外红内紫，那是光在水滴里拐弯的规矩，不是谁拿颜料往天上乱涂。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/paint.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">颜料</span><span class="kid-figure-sub">另一套</span><p class="kid-figure-fact">红蓝颜料混在一起是减色变暗，和水滴把白光拆开成弧，根本不是一本账。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rain.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">喷壶</span><span class="kid-figure-sub">身边复现</span><p class="kid-figure-fact">背对太阳喷出细雾，身边也能做出同一家族的一小段弧，零件仍是光加水滴。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/sun.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">盯日</span><span class="kid-figure-sub">不要</span><p class="kid-figure-fact">雷雨时先找屋里或车里的安全处，再谈虹；更不要为了核对角度去盯着太阳看。</p></div>
+ </div>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>找太阳。</b>它应在你背后。</li>
+ <li data-step="2"><b>看色序。</b>外红内紫还在不在。</li>
+ <li data-step="3"><b>喷壶试。</b>只改有没有水滴。</li>
+ <li data-step="4"><b>否决桥。</b>没有人能走上去。</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>太阳在背后，前面的小水滴把光拆成一圈颜色。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>光在水滴里折射—内反射—再折射。波长不同，拐弯角度不同。雾虹更淡。喷壶能做一小段。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>主虹约在 42° 附近（红在外）；有时能看到更大角度的霓（色序相反）。本页不要求背角度，只要知道「有几何，不是心情」。不要用眼睛找太阳核对。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能把虹说成水滴拆开白光，把站位说成背对太阳，并否定「天上的桥」和「颜料带」。完成看的是几何对照，不是背色序歌。</p>
+ <ul class="ask-list">
+ <li>太阳应该在哪一边？对着太阳找，缺了哪一步？</li>
+ <li>喷壶为什么也能出小虹？三件里少了哪一件就不行？</li>
+ <li>颜色淡，一定是假虹吗？雾虹和颜料带差在哪？</li>
+ <li>为什么不能盯着太阳核对角度？雷雨时哪一句该先说？</li>
+ </ul>
+ </section>
+
+
+ <section class="card" aria-labelledby="deepTitle">
+ <h2 id="deepTitle">内反射一次，以及霓为什么更淡</h2>
+ <p>主虹是滴内反射一次。有时还能看到外面一圈更淡的霓，那是反射两次，色序反过来。看不见霓不代表主虹是假的。本页「彩弧」读数只比较水滴和角度够不够，不是某一次雨的亮度表。</p>
+ <p>滴径变小，衍射会把颜色糊在一起，变成白茫茫的雾虹。所以「颜色不够鲜」常常是滴的尺寸，不是颜料不够，更不是「假虹」。颜料混色是减色，和水滴把白光拆开不是一本账。</p>
+ <p>地平线切掉下半圈，所以我们常见弓形。飞机上有时能看到整圈——几何一直是圆，地面切掉了一半。不要写成「神仙只搭半座桥」。</p>
+ <p>因为眼睛对着太阳会受伤，所以不抬头用裸眼对太阳量角度。雷雨里看虹，先管闪电和积水。喷壶演示地面防滑。本页不教气象预报。</p>
+ <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">一次反射</span><span class="kid-figure-sub">主虹</span><p class="kid-figure-fact">光在水滴里只弹一次，就是最常见的那道主虹，外面更淡的那圈还没出场。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">两次反射</span><span class="kid-figure-sub">霓</span><p class="kid-figure-fact">光在水滴里多弹一次，外面那道霓更淡，颜色常常反过来，看不见霓也不假。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dew.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">雾虹</span><span class="kid-figure-sub">滴小</span><p class="kid-figure-fact">雾里的水滴更小，衍射把颜色糊成淡白色，那是雾虹，不是颜料不够的假虹。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">整圈</span><span class="kid-figure-sub">几何是圆</span><p class="kid-figure-fact">彩虹其实是一整圈，地面把它切成我们看见的弓，飞机上有时能看见整环。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="fieldTitle">
+ <h2 id="fieldTitle">对照卡：主虹 · 雾虹 · 喷壶小虹</h2>
+ <p>三列都是水滴+阳光+眼睛，差在滴的大小和你站的位置。甲：主虹，雨滴较大、太阳在背后，色序清楚。乙：雾虹，滴很小，颜色淡，有时几乎白。丙：喷壶，你控制水滴和站位，弧短，但零件齐全。否决句：「天上架了一座桥。」</p>
+ <p>颜料混色、霓虹灯自己发光，都不是彩虹。本页读数只比较方向，不是某一次雨的说明书。不要盯太阳，也不要把喷壶当气象站。</p>
+ <div class="kid-figure-grid" role="group" aria-label="三列对照">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">主虹</span><span class="kid-figure-sub">色序清</span><p class="kid-figure-fact">看主虹时人站在太阳对面，前面才是那圈外红内紫，站位错了色序也找不着。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/dew.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">雾虹</span><span class="kid-figure-sub">淡</span><p class="kid-figure-fact">雾虹的水滴更小，所以颜色更淡，几乎看不清彩条，仍是水滴拆光，不是假货。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rain.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">喷壶</span><span class="kid-figure-sub">可做</span><p class="kid-figure-fact">喷壶细雾也能做出同一类弧，太阳仍要在背后，背景够暗才看得清那一小段。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/sun.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">太阳</span><span class="kid-figure-sub">背后</span><p class="kid-figure-fact">脸冲着太阳去找虹，几何反了，常常什么也看不见，该转过身把太阳留在背后。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">角度</span><span class="kid-figure-sub">有规矩</span><p class="kid-figure-fact">外红内紫是光在水滴里拐弯的固定规矩，不是谁心情好就往天上乱涂一圈。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/lightning.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">红线</span><span class="kid-figure-sub">不盯日</span><p class="kid-figure-fact">好看也要先安全：雷雨先躲进屋子或车里，更不要抬头盯着太阳核对角度。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="moreTitle">
+ <h2 id="moreTitle">一分钟拆光账</h2>
+ <p>在纸上画三点：太阳在人背后，水滴在人前方，弧画在水滴那边。写「水滴拆开白光」，再写一句「不是桥」。旁边画喷壶细雾，写「身边也能做一小段」。</p>
+ <p>口头只要两句：「太阳在背后，水滴把光拆开。」「桥走不上去。」有人说「天上有颜料」，让孩子指着水滴反驳。</p>
+ <p>不盯太阳；下雨先找安全处。棱镜怎么拆光，去<a href="../games/prism-lab.html">棱镜工坊</a>对照。本页数字不要抄进气象预报。</p>
+ <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/sun.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">三角</span><span class="kid-figure-sub">日—人—滴</span><p class="kid-figure-fact">记住这个三角形：太阳在背后，人在中间，水滴在前面，弧画在水滴那一边。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rain.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">喷壶</span><span class="kid-figure-sub">复现</span><p class="kid-figure-fact">背光和细雾都齐了，喷壶也能在身边做出一小段虹，证明不必等神仙搭桥。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/rainbow.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">不是桥</span><span class="kid-figure-sub">走不上去</span><p class="kid-figure-fact">彩虹是光在水滴里走的路，不是能走上去的桥，脚下也没有一座彩石栈道。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/lightning.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">安全</span><span class="kid-figure-sub">先于好看</span><p class="kid-figure-fact">先躲开雷电和积水，也不要为了好看去盯太阳，虹再漂亮也换不回眼睛。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="thickTitle">
+ <h2 id="thickTitle">水滴里的折射与色散</h2>
+ <p>带走句：阳光进水滴：折射→内反射→再折射出滴；波长不同偏转不同，形成弧上色序。雾虹更淡，是滴小，不是假虹。喷壶能做一小段，证明不必等神仙搭桥。</p>
+ <p>安全：不盯太阳看；雷雨先顾安全；喷壶演示背光处，地面防滑。完成看的是机制，不是背「赤橙黄绿青蓝紫」。</p>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+ <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+ <p>想知道「虹是不是天上的桥」，就只改几何这一项。同一束阳光，先背对太阳看有没有弧，再对着太阳看还在不在。把「颜料带」叠进同一档，分不清到底是站位错了，还是把混色当成拆光。</p>
+ <ul>
+ <li><b>只改这一项：</b>太阳在背后还是面前（或有没有水滴）。</li>
+ <li><b>先保持不变：</b>同一束阳光、同一片雨雾。</li>
+ <li><b>要观察的：</b>面前有没有外红内紫的弧。</li>
+ <li><b>另开一行：</b>拆光去棱镜工坊对照，不要和「是不是桥」叠在一起。</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+ <h2 id="askMoreTitle">还可以问下去</h2>
+ <ol>
+ <li>同样有阳光，为什么背对太阳看得见、对着太阳却没有？缺的是桥，还是几何？</li>
+ <li>喷壶做不出虹，先查太阳位置、水滴细不细、背景够不够暗，哪一个最常被漏？这和天上的虹是同一套零件吗？</li>
+ <li>颜色淡，一定是假虹吗？雾虹和霓差在滴的大小，还是反射次数？</li>
+ </ol>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+ <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+ <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把 42° 提前塞进四岁耳朵。</p>
+ <div class="age-tiers" aria-label="给家长的分层讲法">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>太阳在背后，前面的小水滴把光拆成一圈颜色。不是桥，走不上去。我们不盯太阳。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>光在水滴里折射—内反射—再折射。波长不同，拐弯角度不同。雾虹更淡。喷壶能做一小段。本页数字只用来比较，不是色卡。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>主虹约在 42° 附近（红在外）；霓对应两次内反射，色序相反。角度数字是给家长的，不必让孩子用裸眼对太阳测量。雷电和湿滑地面优先于拍摄。</p></div>
+ </div>
+ </section>
+
+ <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+ <h2 class="work-card-title" id="workTitle">作品表单：彩虹观察</h2>
+ <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+ <div class="work-card-fields">
+ <div><label for="workType">作品类型</label>
+ <select class="input" id="workType" name="type">
+ <option value="observation">观察记录</option>
+ <option value="prediction">预测卡</option>
+ <option value="explanation">我的解释</option>
+ </select>
+ </div>
+ <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：水滴比颜料更像彩虹"></div>
+ <div><label for="workContent">谁更像彩虹这件事</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下你点的两张卡，谁在把白光拆开，谁其实是灯或颜料。"></textarea></div>
+ <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+ </div>
+ <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+ </form>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+ <h2 id="askTitle">给家长的问题</h2>
+ <ul class="ask">
+ <li>孩子面向太阳喊「虹在那边」，缺了哪一个几何条件？让他再转一次身。</li>
+ <li>喷壶做不出虹，先查太阳位置、水滴细不细、背景够不够暗，哪一个最常被漏？</li>
+ <li>颜色淡，一定是「假虹」吗？雾虹和霓差在滴的大小，还是反射次数？</li>
+ <li>为什么本页不让孩子抬头找太阳来「验证 42°」？尺子和测量差在哪？</li>
+ <li>雷雨中停下来拍照，和「先找安全处」，哪一句该先说？</li>
+ <li>本页「彩弧」读数能当某一次雨的亮度表吗？它比较的是水滴和角度，还是说明书？</li>
+ <li>颜料混在一起变暗，和水滴把白光拆开，是同一本账吗？</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+ <h2 id="whyTitle">背后的原理</h2>
+ <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：主虹来自阳光在近似球形水滴中的折射、一次内反射和再次折射。色散使红光偏转较小、紫光较大，形成外红内紫的角半径约 42° 的弧。观测者必须背对太阳。</p>
+ <p>二次虹（霓）对应两次内反射，更暗、色序相反。小滴的衍射加宽色带，形成雾虹。地面遮挡使常见形状为弓。本页「彩弧≈水滴×阳光角÷14」只是比较尺子，用来让孩子看见「滴够、角度对才易见」，不是某一次雨的亮度说明书，也不是 42° 测量手册。</p>
+ <p>花园软管在背光条件下能复现同一几何，证明不需要「桥」的叙事。颜料混色是减色，和水滴拆光不是同一本账。角度数字是给家长的，不必让孩子用裸眼对太阳测量。</p>
+ <p>安全：直视太阳损伤视网膜；雷电和湿滑地面优先于拍摄。演示选开阔、背光、成人控制喷头的场地。本页不教气象预报。</p>
+ </section>
+
+ <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))" data-audience="parent">
+ <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">彩虹公式卡 · 彩弧≈水滴×阳光角÷14；彩弧≥8 更易见虹；折射+反射+色散</p>
+ <p style="margin:0;color:var(--ink-mid);line-height:1.55">真实主虹约 42° 视角；霓虹颜色顺序相反。因为眼睛对着太阳会受伤，所以背对太阳看虹、雨后注意路滑。</p>
+ </div>
+
+
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+ <h2 id="nextTitle">接下来可以去</h2>
+ <p>带走句：水滴把白光拆开，外红内紫；颜料混色是另一套。因为眼睛对着太阳会受伤，所以背对太阳看虹。棱镜工坊只练光怎么拐弯拆开；眼睛页看拆开的光落到哪里。</p>
+ <p class="row"><a class="btn btn-ghost" href="../games/prism-lab.html">棱镜工坊</a><a class="btn btn-ghost" href="eyes.html">眼睛观察站</a></p>
+ </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为眼睛对着太阳会受伤，所以不要盯着太阳看。花园喷雾比抬头找虹更安全。本页只讲水滴拆光，不是气象预报。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+ "use strict";
+ var INFO = {
+ drop: { name:"水滴", score:4, cx:140, cy:120, say:"水滴：光先拐弯再弹一次才拆开白光，是小透镜，天上那一圈不是一座桥。" },
+ sun: { name:"阳光", score:4, cx:80, cy:70, say:"阳光：看起来白，里面藏着许多颜色，要从背后射来，前面才成虹，不是桥。" },
+ red: { name:"红光在外", score:3, cx:320, cy:90, say:"红光在外：主虹最外面那圈是红的，是水珠折射反射的规矩，不是架桥。" },
+ violet: { name:"紫光在内", score:3, cx:320, cy:140, say:"紫光在内：主虹最里面那圈偏紫，和外红成一套，是水珠拆光，不是桥漆。" },
+ bend: { name:"掰弯", score:3, cx:154, cy:135, say:"掰弯：光进出水滴会拐弯，再反射一次才回到眼里，太阳一定要留在背后。" },
+ split: { name:"拆开", score:3, cx:320, cy:120, say:"拆开：不同颜色拐的角度不一样，所以排成弧，不是颜料在天上画的一座桥。" },
+ double: { name:"双虹", score:2, cx:320, cy:100, say:"双虹：外面更淡的霓颜色反过来，那是多弹一次，仍不是天上第二座桥。" },
+ mist: { name:"喷雾虹", score:2, cx:168, cy:150, say:"喷雾虹：花园水管背对太阳喷细雾，也能看见一小段，零件仍是光加水滴。" },
+ shadow: { name:"站在影子这边", score:2, cx:80, cy:180, say:"站在影子这边：背对太阳，彩虹才在前面；对着太阳找，方向反了，不是桥。" },
+ cloud: { name:"雨云", score:1, cx:400, cy:60, say:"雨云：提供水滴，自己不是彩虹；虹是背后阳光加水珠折射反射，不是桥。" },
+ neon: { name:"霓虹灯", score:-1, cx:560, cy:90, say:"霓虹灯：管子自己发光，不是雨后的虹，也没有太阳在背后让水珠拆光。" },
+ paint: { name:"颜料", score:-1, cx:570, cy:200, say:"颜料：混色是另一件事，不是把白光拆开，虹也不是颜料在天上架的桥。" }
+ };
+ var first = "", second = "", judged = "", done = false;
+ function expected(){
+ if (!first || !second || first === second) return "";
+ var a = INFO[first].score, b = INFO[second].score;
+ if (a < 0 || b < 0) return "skip";
+ if (a === b) return "tie";
+ return a > b ? "first" : "second";
+ }
+ function paint(){
+ var last = second || first;
+ var info = last ? INFO[last] : null;
+ document.getElementById("ringRb").setAttribute("class", last ? "rb-ring on" : "rb-ring");
+ if (info) {
+ document.getElementById("ringRb").setAttribute("cx", String(info.cx));
+ document.getElementById("ringRb").setAttribute("cy", String(info.cy));
+ }
+ document.getElementById("whoSay").textContent = info ? info.name : "还没选";
+ var aBtn = document.getElementById("moreA");
+ var bBtn = document.getElementById("moreB");
+ var exp = expected();
+ if (first && second && first !== second && exp !== "skip" && exp !== "tie") {
+ aBtn.textContent = INFO[first].name+"更像";
+ bBtn.textContent = INFO[second].name+"更像";
+ aBtn.disabled = false;
+ bBtn.disabled = false;
+ } else {
+ aBtn.textContent = "先点的更像";
+ bBtn.textContent = "后点的更像";
+ aBtn.disabled = true;
+ bBtn.disabled = true;
+ }
+ aBtn.setAttribute("aria-pressed", judged === "first" ? "true" : "false");
+ bBtn.setAttribute("aria-pressed", judged === "second" ? "true" : "false");
+ }
+ function sync(){
+ var exp = expected();
+ document.getElementById("finishBtn").disabled = !(exp === "first" || exp === "second") || judged !== exp || done;
+ if (done) return;
+ var status = document.getElementById("taskStatus");
+ if (!first || !second || first === second) status.textContent = "尚未完成：先点两张卡，再说谁更像彩虹这件事。";
+ else if (exp === "skip") status.textContent = "霓虹灯和颜料不是彩虹。换水滴、阳光、红光或紫光来比。";
+ else if (exp === "tie") status.textContent = "这两张差不多像。换一对再比。";
+ else if (!judged) status.textContent = "两张都选好了。点一颗按钮，说出谁更像彩虹这件事。";
+ else if (judged !== exp) status.textContent = "再比一比：水滴加阳光、把白光拆开的，更像彩虹。";
+ else status.textContent = "选对了。点「记下这次比较」就会记进足迹。";
+ }
+ Array.prototype.forEach.call(document.querySelectorAll("[data-rb]"), function(btn){
+ btn.addEventListener("click", function(){
+ var key = btn.getAttribute("data-rb");
+ if (first && first !== key) second = first;
+ first = key;
+ judged = "";
+ Array.prototype.forEach.call(document.querySelectorAll("[data-rb]"), function(n){
+ var id = n.getAttribute("data-rb");
+ n.setAttribute("aria-pressed", (id === first || id === second) ? "true" : "false");
+ });
+ document.getElementById("live").textContent = INFO[key].say;
+ document.getElementById("atlasSay").textContent = second
+ ? INFO[second].name+"和"+INFO[key].name+"都点过了。谁更像彩虹这件事？"
+ : INFO[key].say+"再点另一张来比较。";
+ paint();
+ sync();
+ });
+ });
+ document.getElementById("moreA").addEventListener("click", function(){
+ if (expected() !== "first" && expected() !== "second" || done) return;
+ judged = "first"; paint(); sync();
+ });
+ document.getElementById("moreB").addEventListener("click", function(){
+ if (expected() !== "first" && expected() !== "second" || done) return;
+ judged = "second"; paint(); sync();
+ });
+ document.getElementById("finishBtn").addEventListener("click", function(){
+ var exp = expected();
+ if (done || (exp !== "first" && exp !== "second") || judged !== exp) return;
+ done = true;
+ var more = exp === "first" ? INFO[first].name : INFO[second].name;
+ var less = exp === "first" ? INFO[second].name : INFO[first].name;
+ var evidence = more+"更像彩虹这件事，"+less+"比较不像";
+ if (window.Progress) Progress.complete("nature/rainbow.html", evidence);
+ document.getElementById("taskStatus").textContent = "完成啦："+evidence+"。";
+ this.disabled = true;
+ });
+ document.getElementById("comparePickReset").addEventListener("click", function(){
+ if (done) return;
+ first = ""; second = ""; judged = "";
+ Array.prototype.forEach.call(document.querySelectorAll("[data-rb]"), function(n){
+ n.setAttribute("aria-pressed", "false");
+ });
+ document.getElementById("atlasSay").textContent = "还没选。先点一张，再点另一张，比谁更像彩虹这件事。";
+ paint();
+ sync();
+ });
+ paint();
+ sync();
+})();
+</script>
+<script>
+
+(function(){
+ "use strict";
+ var a = document.getElementById("rwA");
+ var b = document.getElementById("rwB");
+ if (!a || !b) return;
+ var g1 = "", g2 = "", g3 = "";
+ var g1Done = false, g2Done = false, g3Done = false;
+ function score(){ return Math.round(Number(a.value) * Number(b.value) / 14); }
+ function paint(){
+ var s = score();
+ var ok = s >= 8;
+ document.getElementById("rwALab").textContent = a.value;
+ document.getElementById("rwBLab").textContent = b.value;
+ a.setAttribute("aria-valuetext", a.value);
+ b.setAttribute("aria-valuetext", b.value);
+ document.getElementById("rwAOut").textContent = a.value;
+ document.getElementById("rwSOut").textContent = String(s);
+ document.getElementById("rwOkOut").textContent = ok ? "易见" : "偏淡";
+ document.getElementById("rwStateLab").textContent = ok ? "水滴拆光，不是颜料" : "滴少或太阳不在背后";
+ document.getElementById("rwLabLive").textContent = "太阳在背后，水滴把白光拆开：红拐得少在外，紫拐得多在内。不是天上的桥，颜料混色是另一套。";
+ var op = String(Math.min(1, 0.22 + s * 0.04));
+ document.getElementById("rwArcR").setAttribute("opacity", op);
+ document.getElementById("rwArcV").setAttribute("opacity", op);
+ document.getElementById("rwRedRay").setAttribute("opacity", op);
+ document.getElementById("rwVioRay").setAttribute("opacity", op);
+ var drop = document.getElementById("rwDrop");
+ if (drop) drop.setAttribute("opacity", String(0.35 + Number(a.value) / 45));
+ var paint = document.getElementById("rwPaint");
+ if (paint) paint.setAttribute("opacity", ok ? "0.12" : "0.4");
+ var bh = 28 + s * 3;
+ document.getElementById("rwBar").setAttribute("height", String(bh));
+ document.getElementById("rwBar").setAttribute("y", String(180 - bh));
+
+ if (g1 && !g1Done && Number(a.value) === 28 && Number(b.value) === 14 && s === 28) {
+ g1Done = true;
+ document.getElementById("rwGuessOut1").innerHTML = (g1 === "28" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "水滴把白光拆开，外红内紫。不是颜料。";
+ document.getElementById("rwGuessBlock2").hidden = false;
+ }
+ if (g2 && !g2Done && Number(a.value) <= 4 && Number(b.value) <= 3 && !ok) {
+ g2Done = true;
+ document.getElementById("rwGuessOut2").innerHTML = (g2 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "水滴少、角度偏，虹偏淡。";
+ document.getElementById("rwGuessBlock3").hidden = false;
+ }
+ if (g3 && !g3Done && Number(a.value) === 3 && Number(b.value) === 2) {
+ g3Done = true;
+ document.getElementById("rwGuessOut3").innerHTML = (g3 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "很难看见。光还在，只是拆不开一道虹。";
+ }
+ }
+ a.addEventListener("input", paint); b.addEventListener("input", paint);
+ Array.prototype.forEach.call(document.querySelectorAll("[data-rw-g1]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g1Done) return;
+ g1 = btn.getAttribute("data-rw-g1");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-rw-g1]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("rwGuessOut1").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-rw-g2]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g2Done) return;
+ g2 = btn.getAttribute("data-rw-g2");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-rw-g2]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("rwGuessOut2").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-rw-g3]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g3Done) return;
+ g3 = btn.getAttribute("data-rw-g3");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-rw-g3]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("rwGuessOut3").textContent = "押好了";
+ });
+ });
+ paint();
+})();
+
+</script>
+<script>if (window.Progress) Progress.visit("nature/rainbow.html", "彩虹观察站");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

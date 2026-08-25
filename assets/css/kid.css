@@ -76,9 +76,9 @@ html[data-mode="kid"] {
 /* 明亮底不需要氛围暗光；三处光斑统一走暖调，避免冷暖对撞 */
 html[data-mode="kid"] body::before {
   background:
-    radial-gradient(900px 520px at 10% -10%, rgba(255,206,120,.30), transparent 62%),
-    radial-gradient(820px 480px at 92% 2%,  rgba(255,224,170,.26), transparent 62%),
-    radial-gradient(700px 420px at 50% 106%, rgba(255,236,200,.28), transparent 62%);
+    radial-gradient(640px 360px at 10% -10%, rgba(255,206,120,.16), transparent 62%),
+    radial-gradient(560px 320px at 92% 2%,  rgba(255,224,170,.12), transparent 62%),
+    radial-gradient(480px 280px at 50% 106%, rgba(255,236,200,.12), transparent 62%);
 }
 
 html[data-mode="kid"] body {
@@ -335,13 +335,28 @@ html[data-mode="kid"] .work-card-form { display: none; }
    11. 图形任务优先：先看、再动、最后说一句
    -------------------------------------------------------------------------- */
 html[data-mode="kid"] .kid-hero-scene,
+html[data-mode="kid"] .kid-mission,
 html[data-mode="kid"] .kid-visual-stage {
   border-width: 3px;
   border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
-  background:
-    radial-gradient(circle at 88% 10%, color-mix(in srgb, var(--accent) 17%, transparent), transparent 34%),
-    linear-gradient(155deg, #fff, color-mix(in srgb, var(--surface-2) 55%, #fff));
   box-shadow: 0 6px 0 rgba(120,84,42,.13), 0 18px 36px rgba(120,84,42,.08);
+}
+/* 底纹单独一条，并用 :where() 把特异度压到 (0,1,0)。
+   这样它照旧盖得住 base.css 里同名类的默认底纹（同特异度，本文件在后加载），
+   但页面自己写的 .ocean-story / .weather-scene / .beetle-lab / .play-card 这类
+   (0,1,0) 规则又能盖回来（页面 <style> 在两个 <link> 之后）。
+
+   原先这条背景和上面的边框写在一起，选择器是 html[data-mode="kid"] .kid-visual-stage
+   即 (0,2,1)，压过所有页面自定义的 (0,1,0)。而 kid 是默认模式，后果是
+   全站 51 个自定义舞台里有 49 个的背景在默认状态下被换成白底：
+   深海剖面图的「越深越黑」、天气图的天空与草地、厨房各站的配色分区、
+   规律机器与对称工作室的分色卡片，全部失效。 */
+:where(html[data-mode="kid"]) .kid-hero-scene,
+:where(html[data-mode="kid"]) .kid-mission,
+:where(html[data-mode="kid"]) .kid-visual-stage {
+  background:
+    radial-gradient(circle at 88% 10%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 26%),
+    linear-gradient(155deg, #fff, color-mix(in srgb, var(--surface-2) 40%, #fff));
 }
 html[data-mode="kid"] .kid-visual-stage { min-height: clamp(280px, 48vw, 520px); }
 html[data-mode="kid"] .kid-scene-art { min-height: clamp(220px, 38vw, 420px); }
@@ -353,6 +368,12 @@ html[data-mode="kid"] .kid-action-strip {
   border-width: 3px;
   background: linear-gradient(135deg, #fff7cf, #ffe6b2);
   box-shadow: 0 4px 0 rgba(183,121,31,.2);
+}
+html[data-mode="kid"] .stage + .kid-action-strip,
+html[data-mode="kid"] .kid-visual-stage + .kid-action-strip,
+html[data-mode="kid"] .kid-hero-scene + .kid-action-strip,
+html[data-mode="kid"] .kid-mission + .kid-action-strip {
+  margin-top: 8px;
 }
 html[data-mode="kid"] .kid-action-strip .btn-primary,
 html[data-mode="kid"] .kid-action-strip > button:first-of-type {
@@ -442,6 +463,23 @@ html[data-mode="kid"] .skip-link {
   }
   html[data-mode="kid"] .playful-companion { padding: 12px 13px; }
   html[data-mode="kid"] .playful-character { width: 52px; height: 52px; font-size: 1.8rem; }
+  /* 窄屏：操作条贴舞台、收紧间距，把主按钮留在首屏 */
+  html[data-mode="kid"] .kid-action-strip {
+    margin: 8px 0 0;
+    gap: 6px;
+    padding: 10px 12px;
+    min-height: 56px;
+  }
+  html[data-mode="kid"] .stage + .kid-action-strip,
+  html[data-mode="kid"] .kid-visual-stage + .kid-action-strip {
+    margin-top: 6px;
+  }
+  html[data-mode="kid"] .kid-action-strip .btn,
+  html[data-mode="kid"] .kid-action-strip .btn-primary,
+  html[data-mode="kid"] .kid-action-strip > button:first-of-type {
+    min-height: 48px;
+    padding-inline: 14px;
+  }
 }
 
 /* 减少动效时同样降级 */
@@ -500,6 +538,15 @@ html[data-mode="kid"] .skip-link {
   flex: 0 0 auto;
 }
 .kid-tile > svg { width: clamp(46px, 12vw, 62px); height: auto; }
+.kid-tile-art img.photo-real,
+html[data-mode="kid"] .kid-tile-art img.photo-real {
+  display: block;
+  width: 78px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
 .kid-tile-label { font-size: .95rem; font-weight: 800; }
 .kid-tile-sub {
   font-size: .78rem;
@@ -552,8 +599,8 @@ html[data-mode="kid"] .kid-tile > .kid-tile-art { font-size: 3rem; }
 .kid-steps-visual {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
-  gap: 12px;
-  margin: 14px 0;
+  gap: 8px;
+  margin: 10px 0;
   padding: 0;
   list-style: none;
   counter-reset: kidstep;
@@ -592,36 +639,21 @@ html[data-mode="kid"] .kid-tile > .kid-tile-art { font-size: 3rem; }
 }
 .kid-steps-visual .kid-tile-art { font-size: 2.3rem; line-height: 1; }
 
-/* 14.4 柔和背景色块：给舞台加一点绘本气息，纯装饰 */
-.kid-blob-bg {
-  position: relative;
-  isolation: isolate;
-}
-.kid-blob-bg::before {
-  content: "";
-  position: absolute;
-  inset: -6% -4% auto -8%;
-  height: 62%;
-  z-index: -1;
-  border-radius: 50% 50% 44% 56% / 60% 56% 44% 40%;
-  background:
-    radial-gradient(circle at 22% 28%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 60%),
-    radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--sci) 12%, transparent), transparent 58%);
-  pointer-events: none;
-}
+/* 14.4 曾是纯装饰色块；教学页不再铺 blob。类名保留以免旧 markup 报错。 */
+.kid-blob-bg { position: relative; }
 
 /* 14.5 吉祥物取景框：给角色一个圆润的窝，而不是裸 emoji */
 .kid-mascot {
   display: inline-grid;
   place-items: center;
-  width: clamp(64px, 16vw, 88px);
+  width: clamp(52px, 12vw, 72px);
   aspect-ratio: 1;
   border: 3px solid var(--line);
   border-radius: 42% 58% 54% 46% / 52% 46% 54% 48%;
   background: radial-gradient(circle at 34% 30%, #fff, var(--surface-2));
-  font-size: clamp(2rem, 7vw, 2.8rem);
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
   line-height: 1;
-  box-shadow: 0 5px 0 rgba(180,130,60,.2);
+  box-shadow: 0 4px 0 rgba(180,130,60,.18);
   flex: 0 0 auto;
 }
 
@@ -723,8 +755,16 @@ html[data-playful-age="4-6"] .kid-icon-btn > .kid-tile-art { font-size: 2.2rem; 
   html[data-mode="kid"] .story-guide { font-size: 2.2rem; }
   html[data-mode="kid"] .story-goal { margin: .2em 0 0; }
 
-  /* 图例在 375px 下会换行占三行。压成单行、可横向滑动：内容一条不少，
-     但只花一行高度。内层滚动容器不会造成页面级横向溢出。 */
+  /* 图例压成单行、可横向滑动，省首屏高度。
+     ⚠️ 不要改成 flex-wrap:wrap。试过，会破坏另一条硬要求：
+     换行会让每个溢出的图例多占约 37px，number-blocks 的主操作条因此从 795px
+     被顶到 832px，越过 test-trail-e2e 的「主操作首屏可触达」（top < innerHeight）。
+     那条是门禁，图例换行只是观感取舍，冲突时让后者。
+     但横滑有个真问题：scrollbar-width:none 把唯一的可发现性也去掉了，孩子不会
+     知道这条能滑，第三项等于不存在（fraction-lab 的「还没吃」就曾整条落在可见区外）。
+     解决办法不是换行，而是**让文案短到一行装得下**——色块本身就是颜色样本，
+     标签里不必再写一遍「蓝色」「粉斜纹」。新增图例时按这个原则写：
+     一个色块 + 三四个字，375px 下三项必须排得进一行。 */
   html[data-mode="kid"] .kid-legend {
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -757,14 +797,53 @@ html[data-mode="kid"] .pf-scene { --tone: var(--accent); }
 
 html[data-mode="kid"] .kid-figure-grid {
   grid-template-columns: repeat(auto-fit, minmax(min(164px, 100%), 1fr));
-  gap: 14px;
+  gap: 10px;
 }
 html[data-mode="kid"] .kid-figure {
+  min-width: 0;
   border-width: 3px;
   border-radius: var(--r-lg);
   box-shadow: 0 4px 0 rgba(180,130,60,.18);
 }
+html[data-mode="kid"] .kid-figure-grid > *,
+html[data-mode="kid"] .kid-steps-visual > li,
+html[data-mode="kid"] .kid-tiles > * { min-width: 0; }
 html[data-mode="kid"] .kid-figure-art { min-height: 116px; font-size: clamp(3rem, 10vw, 4.2rem); }
+.kid-figure-art img.photo-real,
+html[data-mode="kid"] .kid-figure-art img.photo-real {
+  display: block;
+  width: 100%;
+  height: 116px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.kid-figure-art {
+  position: relative;
+  overflow: hidden;
+}
+.kid-figure-art.atlas-same {
+  box-shadow: inset 0 0 0 3px #3a7a48;
+}
+.kid-figure-art.atlas-same img.photo-real {
+  outline: 2px dashed #3a7a48;
+  outline-offset: -8px;
+}
+.kid-figure-art.atlas-ban::after {
+  content: "别追";
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: #9a3412;
+  color: #fff8ec;
+  font: 800 12px/1.2 sans-serif;
+  pointer-events: none;
+}
+.mission-face img.photo-real {
+  width: 78px; height: 78px; object-fit: cover; border-radius: 50%;
+}
 html[data-mode="kid"] .kid-figure-cap { font-size: 1.08rem; }
 html[data-mode="kid"] button.kid-figure:active,
 html[data-mode="kid"] a.kid-figure:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(180,130,60,.18); }
@@ -813,3 +892,77 @@ html[data-playful-age="4-6"] .kid-scene-caption { display: none; }
   html[data-mode="kid"] .kid-figure-art { min-height: 96px; }
   html[data-mode="kid"] .kid-meter-track { height: 30px; }
 }
+
+/* --------------------------------------------------------------------------
+   16. 枢纽页分类：芯片，不是 emoji 墙
+   .kid-choose / .kid-dice-row 只出现在 nature/ 与 games/ 目录页。
+   作答题里的 .kid-tile 不受影响。
+   -------------------------------------------------------------------------- */
+.kid-choose { margin: 0 0 10px; }
+.kid-choose-title { margin: 0 0 8px; font-size: 1.02rem; }
+.kid-choose .kid-headline { display: none; }
+.kid-choose .kid-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+.kid-choose .kid-tile,
+html[data-mode="kid"] .kid-choose .kid-tile,
+html[data-playful-age="4-6"] .kid-choose .kid-tile {
+  flex-direction: row;
+  min-height: 40px;
+  padding: 5px 11px 5px 9px;
+  gap: 5px;
+  border-width: 1.5px;
+  border-radius: 999px;
+  box-shadow: none;
+  font-size: .86rem;
+}
+.kid-choose .kid-tile > .kid-tile-art,
+html[data-mode="kid"] .kid-choose .kid-tile > .kid-tile-art,
+html[data-playful-age="4-6"] .kid-choose .kid-tile > .kid-tile-art {
+  font-size: 1.05rem;
+}
+.kid-choose .kid-tile[aria-pressed="true"]::after,
+.kid-choose .kid-tile[data-selected="true"]::after {
+  font-size: .8rem;
+  margin-left: 2px;
+}
+
+.kid-dice-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+  padding: 6px 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.kid-dice-say {
+  margin: 0;
+  flex: 1;
+  min-width: min(140px, 100%);
+  font-size: .82rem;
+  font-weight: 650;
+  color: var(--ink-dim);
+}
+.kid-dice-row .kid-icon-btn,
+html[data-mode="kid"] .kid-dice-row .kid-icon-btn,
+html[data-playful-age="4-6"] .kid-dice-row .kid-icon-btn {
+  flex-direction: row;
+  min-width: auto;
+  min-height: 40px;
+  padding: 4px 12px;
+  gap: 5px;
+  font-size: .86rem;
+  box-shadow: none;
+}
+.kid-dice-row .kid-icon-btn > .kid-tile-art,
+html[data-mode="kid"] .kid-dice-row .kid-icon-btn > .kid-tile-art,
+html[data-playful-age="4-6"] .kid-dice-row .kid-icon-btn > .kid-tile-art {
+  font-size: 1.05rem;
+}
+.kid-total { margin: 14px 0 0; font-size: .82rem; }

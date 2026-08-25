@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>透镜工坊 · 互动实验室</title>
+<meta name="description" content="中间厚的凸透镜把光往中间收。物越靠近焦点，像往往越大。本页用 f÷|u−f| 当比较尺子，不是每一片真透镜的公式。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  html, body { overflow-x:hidden; }
+  button, .btn, .chip, input, select, textarea, .input { min-height:44px; }
+  button, .btn { touch-action:manipulation; }
+  :root { --touch:52px; --touch-lg:64px; }
+  .tag-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .kid-mission { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; margin:10px 0 8px; padding:clamp(12px,2.4vw,18px); border:1px solid color-mix(in srgb,var(--phys) 34%,var(--line)); border-radius:22px; background:linear-gradient(135deg,color-mix(in srgb,var(--phys) 14%,var(--surface)),var(--surface) 62%); }
+  .mission-copy h1 { margin:.2em 0 .12em; font-size:clamp(1.45rem,4.6vw,2.15rem); line-height:1.12; }
+  .mission-copy p { max-width:52ch; margin:.2em 0 0; color:var(--ink-mid); }
+  .mission-character { width:76px; min-height:76px; display:grid; place-items:center; border:2px solid color-mix(in srgb,var(--phys) 32%,var(--line)); border-radius:50%; background:radial-gradient(circle at 38% 32%,var(--surface),color-mix(in srgb,var(--phys) 18%,var(--surface))); }
+  .mission-character svg { width:52px; height:52px; }
+  .kid-visual-stage { position:relative; margin-bottom:14px; padding:clamp(10px,2vw,16px); border:3px solid color-mix(in srgb,var(--phys) 42%,var(--line)); border-radius:24px; background:var(--surface); box-shadow:0 8px 0 color-mix(in srgb,var(--kit) 26%,transparent); }
+  .stage-head { display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-bottom:8px; }
+  .stage-head h2 { margin:0; font-size:clamp(1.1rem,3.6vw,1.4rem); }
+  .stage-head p { margin:2px 0 0; color:var(--ink-mid); font-size:.88rem; }
+  .condition-badge { flex:none; padding:6px 10px; border:1px solid color-mix(in srgb,var(--phys) 45%,var(--line)); border-radius:99px; background:color-mix(in srgb,var(--phys) 12%,var(--surface)); color:var(--ink); font-size:.8rem; font-weight:900; }
+  .ln-art { display:block; width:100%; max-width:960px; height:auto; margin:0 auto; }
+  .ln-toys { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:12px 0 0; }
+  .ln-toy { min-height:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:10px 8px; border:3px solid var(--line); border-radius:22px; background:var(--surface-2); color:var(--ink); font-weight:900; font-size:1.05rem; line-height:1.2; }
+  .ln-toy svg { width:72px; height:64px; }
+  .ln-toy[aria-pressed="true"] { border-color:var(--phys); background:color-mix(in srgb,var(--phys) 16%,var(--surface)); }
+  .ln-toy-go { border-color:color-mix(in srgb,var(--warn) 55%,var(--line)); background:color-mix(in srgb,var(--warn) 12%,var(--surface)); }
+  .ln-toy:active { transform:translateY(2px); }
+  .kid-speech-row { margin:10px 0 0; }
+  .kid-speech { font-size:1.05rem; font-weight:800; }
+  .ln-atlas .kid-figure { display:flex; flex-direction:column; gap:6px; align-items:stretch; margin:0; padding:10px; text-align:center; }
+  .ln-atlas .kid-figure-art { padding:4px; }
+  .ln-atlas .kid-figure-art > svg { width:100%; max-width:128px; height:auto; }
+  .ln-atlas .kid-figure-fact { display:block; }
+  .kid-band { margin:0 0 16px; padding:clamp(12px,2.4vw,18px); border:3px solid var(--line); border-radius:24px; background:linear-gradient(158deg,var(--surface),var(--surface-2)); box-shadow:0 6px 0 color-mix(in srgb,var(--kit) 26%,transparent); }
+  .kid-band-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .kid-band-emoji { flex:none; display:grid; place-items:center; width:48px; height:48px; border:3px solid var(--line); border-radius:46% 54% 50% 50%; background:var(--surface); }
+  .kid-band-emoji svg { width:30px; height:30px; }
+  .kid-band-head h2 { margin:0; font-size:clamp(1.05rem,3.4vw,1.32rem); }
+  .kid-band-head p { margin:2px 0 0; color:var(--ink-mid); font-size:.86rem; }
+  .kid-status { display:block; margin:10px 0 0; padding:10px 14px; border:3px solid var(--line-soft); border-radius:999px; background:var(--surface); color:var(--ink); font-size:.95rem; font-weight:800; }
+  .kid-status[data-tone="good"] { border-color:color-mix(in srgb,var(--sci) 55%,var(--line)); background:color-mix(in srgb,var(--sci) 14%,var(--surface)); }
+  .kid-icon-row { display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 0; }
+  .kid-icon-row .kid-icon-btn { flex:1 1 120px; }
+  .kid-icon-btn[aria-pressed="true"], .guess-pick[aria-pressed="true"] { border-color:var(--phys); background:color-mix(in srgb,var(--phys) 16%,var(--surface)); color:var(--ink); }
+  .parent-sliders { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
+  .readout { display:grid; gap:8px; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); margin-top:8px; }
+  .readout b { display:block; font:800 1.08rem/1.2 var(--mono); color:var(--ink); }
+  .readout span { font-size:.76rem; color:var(--ink-dim); }
+  .ln-ruler { margin:8px 0 0; font-size:.86rem; color:var(--ink-mid); }
+  .guess-out { font-weight:750; color:var(--ink-mid); }
+  .guess-out b { color:var(--ink); }
+  .teach-lead { margin:.2em 0 .7em; color:var(--ink-mid); }
+  .teach-lead b { color:var(--ink); }
+  .teach-points { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0; padding:0; list-style:none; }
+  .teach-points li { padding:12px; border:1px solid var(--line-soft); border-radius:14px; background:var(--surface-2); color:var(--ink-mid); font-size:.9rem; }
+  .teach-points b { display:block; margin-bottom:3px; color:var(--ink); }
+  .ask { counter-reset:q; list-style:none; padding:0; margin:0; }
+  .ask li { position:relative; padding-left:34px; margin-bottom:12px; color:var(--ink-mid); }
+  .ask li::before { counter-increment:q; content:counter(q); position:absolute; left:0; top:1px; width:23px; height:23px; border-radius:50%; display:grid; place-items:center; background:color-mix(in srgb,var(--phys) 16%,var(--surface)); border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line)); color:var(--ink); font:800 .76rem var(--mono); }
+  .parent-deep-dive { margin-top:16px; }
+  .science-note { border-color:color-mix(in srgb,var(--sci) 55%,var(--surface)); background:linear-gradient(135deg,color-mix(in srgb,var(--sci) 9%,var(--surface)),var(--surface-2)); }
+  .why h3 { margin-top:1.1em; }
+  .kid-action-strip { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pick-btns .btn { white-space: nowrap; }
+
+  .ln-wall { fill:color-mix(in srgb,var(--phys) 8%,#eef2fb); }
+  .ln-desk { fill:color-mix(in srgb,var(--kit) 22%,#c4a06a); }
+  .ln-desk-top { fill:color-mix(in srgb,var(--kit) 14%,#e2c48a); }
+  .ln-axis { fill:none; stroke:color-mix(in srgb,var(--ink) 16%,transparent); stroke-width:1.6; stroke-dasharray:7 6; }
+  .ln-ray { fill:none; stroke:color-mix(in srgb,var(--warn) 72%,#c47a12); stroke-width:3.4; stroke-linecap:round; stroke-linejoin:round; }
+  .ln-kink { fill:color-mix(in srgb,var(--warn) 70%,#f0c14a); }
+  .ln-glass { fill:color-mix(in srgb,var(--video) 32%,#b9d8f2); stroke:color-mix(in srgb,var(--ink) 38%,#3a4a58); stroke-width:2.4; }
+  .ln-glass-hi { fill:color-mix(in srgb,var(--surface) 55%,#d8eefc); opacity:.45; }
+  .ln-focus { fill:var(--danger); }
+  .ln-stem { stroke:color-mix(in srgb,var(--sci) 48%,#3a6a38); stroke-width:4; stroke-linecap:round; }
+  .ln-leaf { fill:color-mix(in srgb,var(--sci) 46%,#4a8a3a); }
+  .ln-petal { fill:color-mix(in srgb,var(--danger) 48%,#e07080); stroke:color-mix(in srgb,var(--ink) 28%,#8a4050); stroke-width:1.1; }
+  .ln-pollen { fill:color-mix(in srgb,var(--warn) 58%,#f0c14a); stroke:color-mix(in srgb,var(--ink) 30%,#8a6a20); stroke-width:1.1; }
+  .ln-dot { fill:color-mix(in srgb,var(--ink) 40%,#8a6a20); }
+  .ln-pot { fill:color-mix(in srgb,var(--danger) 28%,#c45a3a); }
+  .ln-soil { fill:color-mix(in srgb,var(--ink) 28%,#6a4a28); }
+  .ln-screen { fill:color-mix(in srgb,var(--ink) 8%,#efe8dc); stroke:color-mix(in srgb,var(--ink) 28%,transparent); stroke-width:1.6; }
+  .ln-eye-w { fill:#fff; stroke:color-mix(in srgb,var(--ink) 40%,transparent); stroke-width:2; }
+  .ln-eye-i { fill:color-mix(in srgb,var(--phys) 50%,#3d6fb8); }
+  .ln-eye-p { fill:#1a1a1a; }
+  .ln-skin { fill:color-mix(in srgb,var(--kit) 18%,#f0c8a8); }
+  .ln-hair { fill:color-mix(in srgb,var(--ink) 42%,#5a3a28); }
+  .ln-shirt { fill:color-mix(in srgb,var(--phys) 42%,#4a8ab0); }
+  .ln-eye-white { fill:var(--surface); }
+  .ln-pupil { fill:var(--ink); }
+  .ln-brow { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; }
+  .ln-happy { fill:none; stroke:var(--ink); stroke-width:2; stroke-linecap:round; }
+  .ln-shadow { fill:color-mix(in srgb,var(--ink) 14%,transparent); }
+
+  .ln-img { transition: transform .28s ease, opacity .22s ease; }
+  .ln-obj { transition: transform .28s ease; }
+  @media (prefers-reduced-motion: reduce) {
+    .ln-img, .ln-obj, .ln-toy:active { transition:none; transform:none; }
+  }
+
+  main :where(.kid-visual-stage,.teach-points) > * { min-width:0; }
+  @media (max-width:720px) {
+    .mission-character { display:none; }
+    .kid-mission { grid-template-columns:1fr; }
+    .teach-points { grid-template-columns:1fr; }
+    .parent-sliders { grid-template-columns:1fr; }
+  }
+  @media (max-width:520px) {
+    .ln-toys { grid-template-columns:1fr; }
+    .kid-mission .pill:nth-child(n+2) { display:none; }
+    .ln-toy { min-height:72px; flex-direction:row; justify-content:flex-start; padding:8px 12px; }
+    .ln-toy svg { width:52px; height:46px; }
+  }
+
+  /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-mission { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-mission .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-mission h1 { font-size: 1.38rem; }
+    html[data-mode="kid"] .kid-mission .lead { font-size: .84rem; line-height: 1.45; margin-bottom: .28em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 8px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .ln-art { max-height: 96px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+    html[data-mode="kid"] .readout b { font-size: .95rem; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .88rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+    html[data-mode="kid"] [data-playful-sticker] { display: none; }
+  }
+</style>
+</head>
+<body data-playful-page="games/lens-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<a class="skip-link" href="#stage">跳到实验画面</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="kid-mission" aria-labelledby="lnStoryTitle">
+    <div class="mission-copy">
+      <div class="tag-row">
+        <span class="pill pill-phys">物理</span>
+        <span class="pill">6–10&nbsp;岁</span>
+        <span class="pill">约 10&nbsp;分钟</span>
+      </div>
+      <h1 id="lnStoryTitle">花会倒过来变大，还是变小？</h1>
+      <p class="lead">凸透镜可会聚平行光到焦点，也能成放大虚像或倒立实像（条件满足时）。凹透镜发散。对照平面镜反射。严禁用透镜对太阳看或点火玩耍；室内灯源成人看管。</p>
+      <p class="live-text" data-edu-point role="note"><b>这一页在学：</b>凸透镜会聚、凹透镜发散；不是「放大镜魔法」。严禁对太阳看。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-character" aria-hidden="true">
+      <svg viewBox="0 0 64 64" focusable="false">
+        <path class="ln-ray" d="M4 18 H24 M4 32 H24 M4 46 H24"/>
+        <ellipse class="ln-glass" cx="32" cy="32" rx="8" ry="22"/>
+        <ellipse class="ln-glass-hi" cx="30" cy="28" rx="3" ry="10"/>
+        <path class="ln-ray" d="M40 20 L54 32 M40 32 H58 M40 44 L54 32"/>
+        <circle class="ln-focus" cx="54" cy="32" r="3"/>
+      </svg>
+    </div>
+  </header>
+
+  <section class="kid-visual-stage" id="stage" aria-labelledby="stageTitle">
+    <figure class="lab-photo-strip" style="margin:0 0 8px;padding:0"><img class="photo-real" src="../assets/photos/glass.jpg" alt="" width="640" height="360" style="display:block;width:100%;max-height:180px;object-fit:cover;border-radius:12px"><figcaption class="live-text" style="margin:.35em 0 0">玻璃弯折光路：凸透镜会聚到焦点，凹透镜发散——看台上光线图</figcaption></figure>
+
+    <div class="stage-head">
+      <div>
+        <h2 id="stageTitle">透镜玩具台</h2>
+        <p>点下面三个大按钮，看花和光线怎么变。</p>
+      </div>
+      <span class="condition-badge" id="stateBadge">还没看</span>
+    </div>
+
+    <svg class="ln-art" id="lnArt" viewBox="0 0 720 400" role="img" aria-labelledby="lnTitle lnDesc">
+      <title id="lnTitle">一朵花、一片透镜、三条会拐弯的光，右边是倒过来的花</title>
+      <desc id="lnDesc">左边一朵红花。中间鼓的玻璃把光往中间收，右边出现倒过来的花。中间瘪的玻璃把光往两边推，花变小。舞台上不写名词，用眼睛看形状和倒正。</desc>
+
+      <rect class="ln-wall" width="720" height="400"/>
+      <rect class="ln-desk" y="318" width="720" height="82"/>
+      <rect class="ln-desk-top" y="308" width="720" height="16" rx="3"/>
+      <line class="ln-axis" x1="24" y1="200" x2="696" y2="200"/>
+
+      <rect class="ln-screen" id="wallG" x="640" y="86" width="44" height="200" rx="4" opacity="0"/>
+      <g id="eyeG" opacity="0">
+        <ellipse class="ln-eye-w" cx="662" cy="200" rx="28" ry="24"/>
+        <circle class="ln-eye-i" cx="654" cy="200" r="11"/>
+        <circle class="ln-eye-p" cx="652" cy="200" r="4.5"/>
+      </g>
+      <g id="camG" opacity="0">
+        <rect class="ln-screen" x="628" y="168" width="60" height="48" rx="6"/>
+        <circle cx="658" cy="192" r="12" fill="#b9d8f2" stroke="#3a2a18" stroke-width="2"/>
+      </g>
+
+      <circle class="ln-focus" id="fMarkL" cx="304" cy="200" r="4"/>
+      <circle class="ln-focus" id="fMarkR" cx="416" cy="200" r="4"/>
+
+      <path class="ln-ray" id="ray1" d="M220 132 L360 132 L528 268"/>
+      <path class="ln-ray" id="ray2" d="M220 132 L360 200 L528 268"/>
+      <path class="ln-ray" id="ray3" d="M220 200 L360 200 L528 200"/>
+      <g id="kinkG" aria-hidden="true">
+        <circle class="ln-kink" id="kink1" cx="360" cy="132" r="5"/>
+        <circle class="ln-kink" id="kink2" cx="360" cy="200" r="5"/>
+        <circle class="ln-kink" id="kink3" cx="360" cy="168" r="5"/>
+      </g>
+
+      <path class="ln-glass" id="lens" d="M360 64 Q424 200 360 336 Q296 200 360 64 Z"/>
+      <path class="ln-glass-hi" id="lensHi" d="M352 90 Q388 200 352 310 Q340 200 352 90 Z"/>
+
+      <g id="objG" class="ln-obj" transform="translate(220,200)">
+        <ellipse class="ln-shadow" cx="0" cy="108" rx="22" ry="6"/>
+        <path class="ln-pot" d="M-16 86 L-12 108 H12 L16 86 Z"/>
+        <ellipse class="ln-soil" cx="0" cy="86" rx="16" ry="5"/>
+        <line class="ln-stem" x1="0" y1="86" x2="0" y2="8"/>
+        <ellipse class="ln-leaf" cx="-16" cy="54" rx="14" ry="6" transform="rotate(-28 -16 54)"/>
+        <ellipse class="ln-leaf" cx="15" cy="62" rx="13" ry="5.5" transform="rotate(32 15 62)"/>
+        <ellipse class="ln-petal" cx="0" cy="-28" rx="11" ry="20"/>
+        <ellipse class="ln-petal" cx="20" cy="-8" rx="11" ry="18" transform="rotate(72 20 -8)"/>
+        <ellipse class="ln-petal" cx="-20" cy="-8" rx="11" ry="18" transform="rotate(-72 -20 -8)"/>
+        <ellipse class="ln-petal" cx="13" cy="16" rx="11" ry="17" transform="rotate(144 13 16)"/>
+        <ellipse class="ln-petal" cx="-13" cy="16" rx="11" ry="17" transform="rotate(-144 -13 16)"/>
+        <circle class="ln-pollen" r="10"/>
+        <circle class="ln-dot" cx="-3" cy="-2" r="1.4"/>
+        <circle class="ln-dot" cx="3" cy="1" r="1.2"/>
+        <circle class="ln-dot" cx="0" cy="4" r="1.1"/>
+      </g>
+
+      <g id="imgG" class="ln-img" transform="translate(528,200) scale(0.7 -0.7)" opacity=".4">
+        <line class="ln-stem" x1="0" y1="86" x2="0" y2="8"/>
+        <ellipse class="ln-leaf" cx="-16" cy="54" rx="14" ry="6" transform="rotate(-28 -16 54)"/>
+        <ellipse class="ln-leaf" cx="15" cy="62" rx="13" ry="5.5" transform="rotate(32 15 62)"/>
+        <ellipse class="ln-petal" cx="0" cy="-28" rx="11" ry="20"/>
+        <ellipse class="ln-petal" cx="20" cy="-8" rx="11" ry="18" transform="rotate(72 20 -8)"/>
+        <ellipse class="ln-petal" cx="-20" cy="-8" rx="11" ry="18" transform="rotate(-72 -20 -8)"/>
+        <ellipse class="ln-petal" cx="13" cy="16" rx="11" ry="17" transform="rotate(144 13 16)"/>
+        <ellipse class="ln-petal" cx="-13" cy="16" rx="11" ry="17" transform="rotate(-144 -13 16)"/>
+        <circle class="ln-pollen" r="10"/>
+      </g>
+
+      <g id="kidG">
+        <ellipse class="ln-shadow" cx="640" cy="316" rx="28" ry="7"/>
+        <rect class="ln-shirt" x="622" y="268" width="36" height="40" rx="10"/>
+        <circle class="ln-skin" cx="640" cy="248" r="18"/>
+        <path class="ln-hair" d="M624 246 Q640 226 656 246 Q652 236 640 232 Q628 236 624 246 Z"/>
+        <g id="faceNorm">
+          <ellipse class="ln-eye-white" cx="634" cy="246" rx="3.4" ry="3.2"/>
+          <ellipse class="ln-eye-white" cx="646" cy="246" rx="3.4" ry="3.2"/>
+          <circle class="ln-pupil" cx="634.6" cy="246" r="1.3"/>
+          <circle class="ln-pupil" cx="646.6" cy="246" r="1.3"/>
+          <path class="ln-happy" d="M634 256 Q640 260 646 256"/>
+        </g>
+        <g id="faceHappy" opacity="0">
+          <path class="ln-happy" d="M628 246 Q634 240 640 246"/>
+          <path class="ln-happy" d="M640 246 Q646 240 652 246"/>
+          <path class="ln-happy" d="M632 256 Q640 264 648 256"/>
+        </g>
+        <g id="faceSad" opacity="0">
+          <ellipse class="ln-eye-white" cx="634" cy="248" rx="3" ry="2.2"/>
+          <ellipse class="ln-eye-white" cx="646" cy="248" rx="3" ry="2.2"/>
+          <circle class="ln-pupil" cx="634.4" cy="248.4" r="1.1"/>
+          <circle class="ln-pupil" cx="646.4" cy="248.4" r="1.1"/>
+          <path class="ln-brow" d="M628 240 L640 246"/>
+          <path class="ln-brow" d="M652 240 L640 246"/>
+          <path class="ln-happy" d="M634 260 Q640 254 646 260"/>
+        </g>
+      </g>
+    </svg>
+
+    <div class="kid-speech-row">
+      <p class="kid-speech" id="kidSay" role="status" aria-live="polite">先点「靠近」，看倒着的花变大。再点「换成凹透镜」，看光往两边跑。</p>
+    </div>
+
+    <div class="kid-action-strip ln-toys" role="group" aria-label="三个好玩的大按钮">
+      <button class="ln-toy" type="button" id="toNear" aria-pressed="false">
+        <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+          <ellipse class="ln-glass" cx="40" cy="32" rx="7" ry="20"/>
+          <ellipse class="ln-petal" cx="16" cy="22" rx="6" ry="10"/>
+          <circle class="ln-pollen" cx="16" cy="22" r="3"/>
+          <path d="M22 16 L40 16 L56 48" class="ln-ray"/>
+        </svg>
+        靠近
+      </button>
+      <button class="ln-toy" type="button" id="toFar" aria-pressed="false">
+        <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+          <ellipse class="ln-glass" cx="36" cy="32" rx="6" ry="18"/>
+          <ellipse class="ln-petal" cx="8" cy="28" rx="4" ry="7"/>
+          <circle class="ln-pollen" cx="8" cy="28" r="2"/>
+          <ellipse class="ln-petal" cx="60" cy="36" rx="3" ry="5" transform="rotate(180 60 36)"/>
+        </svg>
+        拉远
+      </button>
+      <button class="ln-toy ln-toy-go" type="button" id="toConcave">
+        <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+          <path class="ln-glass" d="M28 10 C42 22 42 42 28 54 C34 42 34 22 28 10 Z M44 10 C30 22 30 42 44 54 C38 42 38 22 44 10 Z"/>
+          <path d="M8 18 L36 18 L64 6" class="ln-ray"/>
+          <path d="M8 46 L36 46 L64 58" class="ln-ray"/>
+        </svg>
+        换成凹透镜
+      </button>
+    </div>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先靠近焦点看一次，或离远看一次。</p>
+  </section>
+
+  <section class="kid-band" aria-labelledby="kidGuessTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false"><circle class="ln-skin" cx="16" cy="16" r="12"/><ellipse class="ln-eye-white" cx="12" cy="14" rx="3" ry="3"/><ellipse class="ln-eye-white" cx="20" cy="14" rx="3" ry="3"/><circle class="ln-pupil" cx="12.4" cy="14" r="1.2"/><circle class="ln-pupil" cx="20.4" cy="14" r="1.2"/><path class="ln-happy" d="M11 20 Q16 24 21 20"/></svg>
+      </span>
+      <div>
+        <h2 id="kidGuessTitle">先猜一猜</h2>
+        <p>先押，再点按钮看对不对。</p>
+      </div>
+    </div>
+    <p><b>第 1 题：</b>f=8，物距从 24 改到 12（更近焦点），放大率大约怎样？</p>
+    <div class="kid-icon-row" role="group" aria-label="猜一">
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="same" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><ellipse class="ln-petal" cx="14" cy="18" rx="6" ry="8"/><ellipse class="ln-petal" cx="34" cy="18" rx="6" ry="8"/></svg></span>
+        <span class="kid-tile-label">差不多</span>
+      </button>
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="bigger" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><ellipse class="ln-petal" cx="12" cy="20" rx="5" ry="7"/><ellipse class="ln-petal" cx="34" cy="16" rx="9" ry="12"/></svg></span>
+        <span class="kid-tile-label">变大</span>
+      </button>
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="smaller" aria-pressed="false">
+        <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><ellipse class="ln-petal" cx="12" cy="16" rx="8" ry="11"/><ellipse class="ln-petal" cx="34" cy="20" rx="4" ry="6"/></svg></span>
+        <span class="kid-tile-label">变小</span>
+      </button>
+    </div>
+    <p class="guess-out kid-status" id="guessOut1" role="status" aria-live="polite">押一个。先点「拉远」，再点「靠近」。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>物距等于焦距（u=f=8）时，公式分母为 0，本页怎么处理？</p>
+      <div class="kid-icon-row" role="group" aria-label="猜二">
+        <button class="kid-icon-btn guess-pick" type="button" data-guess2="huge" aria-pressed="false">
+          <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><ellipse class="ln-petal" cx="24" cy="16" rx="12" ry="16"/></svg></span>
+          <span class="kid-tile-label">变得非常大</span>
+        </button>
+        <button class="kid-icon-btn guess-pick" type="button" data-guess2="zero" aria-pressed="false">
+          <span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 48 40" focusable="false"><circle cx="24" cy="20" r="3" fill="#8a857c"/></svg></span>
+          <span class="kid-tile-label">变成 0</span>
+        </button>
+      </div>
+      <p class="guess-out kid-status" id="guessOut2" role="status" aria-live="polite">押好后点图鉴「焦点」，或让大人把物距调到和焦距一样。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>换成凹透镜（中间瘪），花通常怎样？</p>
+      <div class="pick-btns" role="group" aria-label="猜凹透镜">
+        <button class="btn guess-pick" type="button" data-guess3="small" aria-pressed="false">变小（光往两边跑）</button>
+        <button class="btn guess-pick" type="button" data-guess3="big" aria-pressed="false">变得更大</button>
+        <button class="btn guess-pick" type="button" data-guess3="same" aria-pressed="false">和凸透镜一样</button>
+      </div>
+      <p class="guess-out kid-status" id="guessOut3" role="status" aria-live="polite">押好后点「凹透镜」对照。</p>
+    </div>
+  </section>
+
+          <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">凸透镜把光收拢，离焦点远近会改像；绝不用透镜看太阳</h2>
+    <p>先点「靠近」，看倒着的花变大。再点「拉远」，看像变小或仍倒着。再点「换成凹透镜」，看光往两边跑、花变小。同一朵花、同一条轴，只改远近，或中间鼓还是瘪。</p>
+    <p>中间鼓的玻璃（凸透镜）让光线往中间收。物靠近焦点，像常常变大，有时还会倒过来。中间瘪的凹透镜把光推开，像常变小。平面镜是反射，左右对调，不靠厚度收光，另开一行。</p>
+    <p>舞台上的放大率按 f÷|物距−焦距| 来比大小，贴在焦点上封顶 40。这是本页比较尺子，不是每一片真透镜的公式，更不是出厂说明书。严禁用透镜看太阳或对日聚焦点火。灯源成人管。</p>
+  </section>
+
+  <section class="kid-band ln-atlas" aria-labelledby="atlasTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false"><ellipse class="ln-glass" cx="16" cy="16" rx="6" ry="12"/></svg>
+      </span>
+      <div>
+        <h2 id="atlasTitle">点一张贴纸卡，舞台就演戏</h2>
+        <p>鼓玻璃、瘪玻璃、水珠、眼睛，点哪张演哪幕。</p>
+      </div>
+    </div>
+    <div class="kid-figure-grid" role="group" aria-label="透镜图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-ln-atlas="convex" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="6" y="80" width="108" height="6" rx="1" fill="#8a857c"/><rect x="54" y="70" width="12" height="12" fill="#5a5348"/><ellipse cx="60" cy="44" rx="11" ry="32" fill="#b9d8f2" stroke="#3a2a18" stroke-width="2"/><ellipse cx="57" cy="38" rx="4" ry="14" fill="#d8eefc" opacity=".55"/><path d="M6 44 H114" stroke="#3a2a18" stroke-width="1" stroke-dasharray="4 3"/><path d="M8 20 H50 M8 44 H50 M8 68 H50" stroke="#c47a12" stroke-width="2.4" stroke-linecap="round"/><path d="M70 20 L102 44 M70 44 H108 M70 68 L102 44" stroke="#c47a12" stroke-width="2.4" stroke-linecap="round"/><rect x="100" y="16" width="5" height="56" rx="1" fill="#f4efe4" stroke="#3a2a18" stroke-width="1.2"/><circle cx="102.5" cy="44" r="4.5" fill="#d05050"/></svg></span><span class="kid-figure-cap">凸透镜</span><span class="kid-figure-fact">凸透镜中间更厚，光线穿过以后往中间收，不是放大镜有魔法，是中间厚在弯光。</span></button>
+      <button class="kid-figure" type="button" data-ln-atlas="concave" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef2fb" width="120" height="90"/><path d="M44 14 C68 30 68 60 44 76 C54 58 54 32 44 14 Z M76 14 C52 30 52 60 76 76 C66 58 66 32 76 14 Z" fill="#b9d8f2" stroke="#3a2a18" stroke-width="2"/></svg></span><span class="kid-figure-cap">凹透镜</span><span class="kid-figure-fact">凹透镜中间更薄，光线穿过以后往两边散开，不是玻璃在变戏法，是中间薄。</span></button>
+      <button class="kid-figure" type="button" data-ln-atlas="mag" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef2fb" width="120" height="90"/><circle cx="42" cy="50" r="16" fill="#d05050"/><circle cx="86" cy="42" r="24" fill="#d05050"/><circle cx="86" cy="42" r="10" fill="#e8c84a"/></svg></span><span class="kid-figure-cap">放大</span><span class="kid-figure-fact">透过中间厚的凸透镜，花常常变大，是光被收到一起，不是魔法把花变真。</span></button>
+      <button class="kid-figure" type="button" data-ln-atlas="shrink" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef2fb" width="120" height="90"/><circle cx="38" cy="46" r="22" fill="#d05050"/><circle cx="88" cy="50" r="12" fill="#d05050"/><circle cx="88" cy="50" r="5" fill="#e8c84a"/></svg></span><span class="kid-figure-cap">缩小</span><span class="kid-figure-fact">透过中间薄的凹透镜，花常常变小，是光被往两边推开，不是缩小咒在施法。</span></button>
+      <button class="kid-figure" type="button" data-ln-atlas="focus" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef2fb" width="120" height="90"/><ellipse cx="40" cy="45" rx="10" ry="28" fill="#b9d8f2" stroke="#3a2a18" stroke-width="2"/><circle cx="86" cy="45" r="6" fill="#d05050"/><path d="M52 30 L86 45 L52 60" fill="none" stroke="#c47a12" stroke-width="3"/></svg></span><span class="kid-figure-cap">焦点</span><span class="kid-figure-fact">平行光穿过中间厚的凸透镜后，会聚到焦点这一点，不是随便亮一下。</span></button>
+      <button class="kid-figure" type="button" data-ln-atlas="glasses" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef2fb" width="120" height="90"/><circle cx="40" cy="48" r="16" fill="none" stroke="#3a2a18" stroke-width="4"/><circle cx="80" cy="48" r="16" fill="none" stroke="#3a2a18" stroke-width="4"/><path d="M56 48 H64" stroke="#3a2a18" stroke-width="3"/></svg></span><span class="kid-figure-cap">眼镜</span><span class="kid-figure-fact">近视镜常用中间薄的凹透镜，老花镜常用中间厚的凸透镜，本页不配镜。</span></button>
+      <button class="kid-figure" type="button" data-ln-atlas="loupe" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef2fb" width="120" height="90"/><circle cx="50" cy="40" r="20" fill="#b9d8f2" stroke="#3a2a18" stroke-width="4"/><rect x="66" y="56" width="28" height="8" rx="3" transform="rotate(40 80 60)" fill="#8a857c"/></svg></span><span class="kid-figure-cap">放大镜</span><span class="kid-figure-fact">放大镜是一块中间厚的凸透镜，让近处的字变大，不是镜子会魔法，是中间厚。</span></button>
+      <button class="kid-figure" type="button" data-ln-atlas="camera" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef2fb" width="120" height="90"/><rect x="22" y="30" width="76" height="42" rx="6" fill="#8a857c"/><circle cx="60" cy="51" r="14" fill="#b9d8f2" stroke="#3a2a18" stroke-width="3"/><rect x="78" y="22" width="14" height="10" rx="2" fill="#5a5348"/></svg></span><span class="kid-figure-cap">相机镜头</span><span class="kid-figure-fact">相机几片中间厚的凸透镜把光收到底片或传感器上，才会留下影像。</span></button>
+      <button class="kid-figure" type="button" data-ln-atlas="drop" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef2fb" width="120" height="90"/><ellipse cx="60" cy="48" rx="16" ry="22" fill="#b9d8f2" stroke="#3a4a58"/><circle cx="54" cy="40" r="4" fill="#fff"/></svg></span><span class="kid-figure-cap">水滴</span><span class="kid-figure-fact">圆鼓鼓的水珠中间也厚，也是凸透镜，字会变大，仍不要对日看，也不对眼。</span></button>
+      <button class="kid-figure" type="button" data-ln-atlas="scope" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef2fb" width="120" height="90"/><rect x="18" y="38" width="84" height="14" rx="6" fill="#8a857c"/><circle cx="26" cy="45" r="10" fill="#b9d8f2"/><circle cx="94" cy="45" r="10" fill="#b9d8f2"/></svg></span><span class="kid-figure-cap">望远镜</span><span class="kid-figure-fact">望远镜用两片透镜把远处的光收近，看起来更大，仍不要对着太阳看。</span></button>
+      <button class="kid-figure" type="button" data-ln-atlas="proj" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef2fb" width="120" height="90"/><rect x="18" y="30" width="40" height="28" fill="#8a857c"/><circle cx="58" cy="44" r="10" fill="#b9d8f2"/><rect x="78" y="26" width="24" height="36" fill="#f4e0a0"/></svg></span><span class="kid-figure-cap">投影仪</span><span class="kid-figure-fact">投影仪用凸透镜把小小的图放大投到墙上，仍是中间厚把光收拢，不是魔法。</span></button>
+      <button class="kid-figure" type="button" data-ln-atlas="eye" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef2fb" width="120" height="90"/><circle cx="60" cy="46" r="22" fill="#fff" stroke="#3a2a18" stroke-width="3"/><circle cx="60" cy="46" r="10" fill="#3d6fb8"/><circle cx="60" cy="46" r="4" fill="#1a1a1a"/></svg></span><span class="kid-figure-cap">眼球</span><span class="kid-figure-fact">眼球里的晶状体是凸透镜，把光收到视网膜上，本页不教自己验光，也不对日。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照舞台上看放大还是缩小。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--phys)"
+         data-kid-predict
+         data-kid-predict-explain="凸透镜会聚；物距像距关系变→放大/倒立可能出现。绝不用透镜看太阳。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🔍</span><b>中间鼓的玻璃（凸透镜）看花，像常常怎样？中间瘪的呢？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：凸透镜和凹透镜">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="same">鼓和瘪都一样，只是玻璃颜色不同</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="flip" data-kid-predict-correct>凸透镜常把光收拢，像可倒过来变大；凹透镜把光推开，像变小</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="magic">玻璃会魔法把花变真假</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：靠近焦点和离远都看</h2>
+    <p>先把物距调到靠近焦距看一次，再调到比焦距大 12 以上看一次。两头都看过即可完成。点「靠近」和「拉远」就会记上。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="rulerTitle">
+    <h2 id="rulerTitle">给家长的本页尺子</h2>
+    <p class="ln-ruler">本页比较尺子：放大率按 f ÷ |物距−焦距| 来比大小，贴在焦点上封顶 40。这不是每一片真透镜的公式，也不是出厂说明书。孩子主操作是上面三个大按钮；滑杆留给想自己调的大人。</p>
+    <div class="parent-sliders">
+      <div><label for="f">焦距 f：<span id="fLab">8</span></label>
+        <input class="input" id="f" type="range" min="4" max="16" value="8" aria-valuetext="焦距 8"></div>
+      <div><label for="u">物距 u：<span id="uLab">20</span></label>
+        <input class="input" id="u" type="range" min="6" max="40" value="20" aria-valuetext="物距 20"></div>
+    </div>
+    <div class="readout">
+      <div><span>焦距 f</span><b id="fOut">8</b></div>
+      <div><span>物距 u</span><b id="uOut">20</b></div>
+      <div><span>本页尺子</span><b id="mOut">——</b></div>
+    </div>
+  </section>
+
+
+          <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">靠近焦点看一次，拉远再看一次，比像怎么变</h2>
+    <p>舞台上只改一件事：花离透镜有多远。同一朵花、同一片凸透镜。先点「靠近」，看倒着的花变大；再点「拉远」，看像变小或仍倒着。这样比，才知道改像靠的是离焦点远近，不是玻璃「会魔法」。</p>
+    <p>回家只带两句：「鼓的把光往中间收」；「离焦点远近会改像」。不要写成「玻璃会变魔术」。绝不用透镜看太阳。凹透镜若要写，另开一行：中间瘪，光往两边跑，花变小。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M38 16 Q78 45 38 74" fill="#9ec8e8" stroke="#3a2a18" stroke-width="3"/><path d="M16 30 L44 45 L16 60" fill="none" stroke="#c2410c" stroke-width="3"/><path d="M78 30 L104 22 M78 45 L108 45 M78 60 L104 68" stroke="#0e7490" stroke-width="3"/></svg></span><span class="kid-figure-cap">凸透镜</span><span class="kid-figure-sub">中间厚</span><p class="kid-figure-fact">中间鼓，光线穿过以后往中间收。放大镜、老花镜、相机镜头都是这一家。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M78 16 Q38 45 78 74" fill="#9ec8e8" stroke="#3a2a18" stroke-width="3"/><path d="M16 30 L50 45 L16 60" fill="none" stroke="#c2410c" stroke-width="3"/><path d="M78 30 L108 18 M78 45 L110 45 M78 60 L108 72" stroke="#0e7490" stroke-width="3"/></svg></span><span class="kid-figure-cap">凹透镜</span><span class="kid-figure-sub">中间薄</span><p class="kid-figure-fact">中间瘪，光线穿过以后往两边散开。近视镜常用它，像常常变小，不是缩小咒。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="28" cy="46" r="6" fill="#f0c14a"/><circle cx="18" cy="38" r="6" fill="#c45a7a"/><circle cx="38" cy="38" r="6" fill="#c45a7a"/><circle cx="18" cy="54" r="6" fill="#c45a7a"/><circle cx="38" cy="54" r="6" fill="#c45a7a"/><path d="M70 16 Q104 45 70 74" fill="#9ec8e8" stroke="#3a2a18" stroke-width="3"/><path d="M88 30 L110 22 M88 45 L114 45 M88 60 L110 68" stroke="#0e7490" stroke-width="2"/></svg></span><span class="kid-figure-cap">靠近</span><span class="kid-figure-sub">焦点旁</span><p class="kid-figure-fact">把花靠近凸透镜、停在焦点旁边，像常常会变大，有时还会倒过来，玻璃没换魔法。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="16" cy="46" r="4" fill="#c45a7a"/><path d="M50 16 Q86 45 50 74" fill="#9ec8e8" stroke="#3a2a18" stroke-width="3"/><path d="M70 30 L104 14 M70 45 L110 45 M70 60 L104 76" stroke="#0e7490" stroke-width="2"/><circle cx="16" cy="46" r="7" fill="#c45a7a"/></svg></span><span class="kid-figure-cap">拉远</span><span class="kid-figure-sub">物距大</span><p class="kid-figure-fact">把花拉远、过了焦点，像可以倒过来，还会变小。只改远近，中间厚薄没换。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M60 12 C60 12 36 46 36 58 A24 24 0 0 0 84 58 C84 46 60 12 60 12Z" fill="#0e7490"/><path d="M20 46 H44" stroke="#c2410c" stroke-width="2"/><path d="M76 30 L100 20 M76 46 L104 46 M76 62 L100 72" stroke="#0e7490" stroke-width="2"/></svg></span><span class="kid-figure-cap">水珠</span><span class="kid-figure-sub">也是凸</span><p class="kid-figure-fact">圆鼓鼓的水珠也是中间厚，字会变大。和凸透镜同一条弯光账，仍不要对日。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="40" r="18" fill="#f0c14a"/><path d="M60 16 V8 M60 64 V72 M36 40 H28 M84 40 H92" stroke="#f0c14a" stroke-width="3"/><circle cx="60" cy="46" r="30" fill="none" stroke="#c2410c" stroke-width="5"/><path d="M38 26 L82 66" stroke="#c2410c" stroke-width="5"/></svg></span><span class="kid-figure-cap">看太阳</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">透镜不要对着太阳看，会伤眼睛，也会把纸烫糊。灯源由大人管，儿童不试。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>点「靠近」。</b>记像大不大、倒不倒。</li>
+      <li data-step="2"><b>点「拉远」。</b>只改远近，再记一次。</li>
+      <li data-step="3"><b>说玻璃。</b>鼓的收光，瘪的散光。平面镜另开一行。</li>
+      <li data-step="4"><b>写完成句。</b>光往中间收，离焦点远近改像。划掉「玻璃会魔法」。不看太阳。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>鼓玻璃把光收到一起，离得远近，花的样子会变。绝不要拿它看太阳。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>靠近焦点常常放大；离远可能倒过来。瘪玻璃把光推开。本页放大率只用来比较，不是真透镜说明书。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>凸透镜会聚，物距相对焦距决定实像/虚像与放大率。本页 f÷|u−f| 贴焦点封顶 40，是比较尺子，不是高斯成像公式的完整解。凹透镜发散。严禁对日。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能指着舞台说「靠近变大、拉远改像」，并否定「玻璃会魔法」。完成看的是对照，不是背「焦距」两个字。红线是不看太阳。</p>
+    <ul class="ask-list">
+      <li>鼓玻璃把光往哪收？瘪的呢？</li>
+      <li>靠近焦点时，像常常怎样？拉远呢？</li>
+      <li>水珠为什么也能把字放大？</li>
+      <li>能对着太阳看吗？本页数字能当验光单吗？</li>
+    </ul>
+  </section>
+
+
+        <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">眼镜和相机是邻居；平面镜反射另开一行</h2>
+    <p>同一片凸透镜，先只改物距。眼镜、相机、放大镜、水珠都是会聚或发散的亲戚，但本页验收的是「靠近变大、拉远改像」。近视常用凹透镜把像推远一点，老花常用凸透镜帮忙收近。本页不验光、不配镜。</p>
+    <p>相机几片凸透镜把光收到传感器上。投影仪把小小的图放大投到墙上。望远镜两头各有透镜。都是同一条弯光账，不要写成「相机等于放大镜」。</p>
+    <p>平面镜是反射，左右对调，不靠中间厚薄收光。不要混成一句「都是镜子」。本页放大率 f÷|u−f| 只是比较尺子：物靠近焦点，分母变小，尺子上的数变大；贴在焦点上封顶 40。它不是每一片真透镜的公式，也不是出厂说明书。</p>
+    <p>放大镜对日能点燃纸。儿童不做。灯源成人管。真透镜不要对着皮肤或纸长时间晒。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="44" cy="46" rx="16" ry="14" fill="#9ec8e8" stroke="#3a2a18" stroke-width="3"/><ellipse cx="76" cy="46" rx="16" ry="14" fill="#9ec8e8" stroke="#3a2a18" stroke-width="3"/><path d="M58 46 H62" stroke="#3a2a18" stroke-width="3"/></svg></span><span class="kid-figure-cap">眼镜</span><span class="kid-figure-sub">不配镜</span><p class="kid-figure-fact">这一页只对照光线怎么收、怎么散，不教你自己配眼镜，也不当验光单。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="24" y="30" width="72" height="42" rx="6" fill="#3a2a18"/><circle cx="60" cy="51" r="14" fill="#9ec8e8" stroke="#8a857c" stroke-width="4"/><rect x="40" y="22" width="24" height="10" fill="#5a5348"/><circle cx="84" cy="40" r="4" fill="#c2410c"/></svg></span><span class="kid-figure-cap">相机</span><span class="kid-figure-sub">会聚</span><p class="kid-figure-fact">镜头把光线收到底片或传感器上，才能留下影像。和放大镜同一家，不是同一把尺。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="34" y="10" width="52" height="70" rx="6" fill="#d5ebf8" stroke="#8a857c" stroke-width="5"/><path d="M44 24 L72 24 L72 36" fill="none" stroke="#fff" stroke-width="3"/></svg></span><span class="kid-figure-cap">平面镜</span><span class="kid-figure-sub">反射</span><p class="kid-figure-fact">平面镜是反射，左右对调。和透镜弯光不是同一课，完成句不要写「都是镜子」。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="10" y="34" width="100" height="24" rx="3" fill="#f0c14a" stroke="#3a2a18" stroke-width="2"/><path d="M22 34 V52 M34 34 V46 M46 34 V52 M58 34 V46 M70 34 V52 M82 34 V46 M94 34 V52" stroke="#3a2a18" stroke-width="2"/></svg></span><span class="kid-figure-cap">本页尺子</span><span class="kid-figure-sub">不是公式</span><p class="kid-figure-fact">本页放大率按焦距和物距来比，贴焦点封顶四十。只用来比较方向，不是真透镜说明书。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M60 12 C60 12 36 46 36 58 A24 24 0 0 0 84 58 C84 46 60 12 60 12Z" fill="#0e7490"/></svg></span><span class="kid-figure-cap">水珠</span><span class="kid-figure-sub">同族</span><p class="kid-figure-fact">圆鼓鼓的水珠也算中间厚的凸透镜。字会变大，仍不要拿它对着太阳看。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M60 12 L106 80 H14 Z" fill="#e8b84a" stroke="#3a2a18" stroke-width="3"/><rect x="56" y="36" width="8" height="24" fill="#3a2a18"/><circle cx="60" cy="70" r="4" fill="#3a2a18"/><circle cx="22" cy="18" r="8" fill="#f0c14a"/><path d="M22 6 V2 M10 18 H6 M22 34 V30 M38 18 H34 M13 9 L10 6 M31 27 L34 30 M31 9 L34 6 M13 27 L10 30" stroke="#f0c14a" stroke-width="2"/></svg></span><span class="kid-figure-cap">对日</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">对日看会伤眼睛，也会把纸烫糊。这一栏再钉一次：灯源归大人，绝不对眼对日。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：靠近变大 · 拉远改像 · 玻璃会魔法</h2>
+    <p>三列用同一朵花、同一片凸透镜。先只改物距。一次改两样，分不清到底是谁让像变的。</p>
+    <p>靠近焦点：像常常变大，有时倒过来。拉远：像可倒过来或变小。「玻璃会魔法」整列划掉：关掉弯曲，花还在，像却不那样变。</p>
+    <p>凹透镜是加试，不是主任务：中间瘪，光往两边跑，花通常变小。本页尺子用来比较方向，不要把它背成自然常数。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="28" cy="46" r="6" fill="#f0c14a"/><circle cx="18" cy="38" r="6" fill="#c45a7a"/><circle cx="38" cy="38" r="6" fill="#c45a7a"/><circle cx="18" cy="54" r="6" fill="#c45a7a"/><circle cx="38" cy="54" r="6" fill="#c45a7a"/><path d="M70 16 Q104 45 70 74" fill="#9ec8e8" stroke="#3a2a18" stroke-width="3"/><path d="M88 30 L110 22 M88 45 L114 45 M88 60 L110 68" stroke="#0e7490" stroke-width="2"/></svg></span><span class="kid-figure-cap">靠近</span><span class="kid-figure-sub">变大</span><p class="kid-figure-fact">花停在焦点旁边时，透过中间厚的凸透镜，常常看到更大的像，不是魔法。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="16" cy="46" r="4" fill="#c45a7a"/><path d="M50 16 Q86 45 50 74" fill="#9ec8e8" stroke="#3a2a18" stroke-width="3"/><path d="M70 30 L104 14 M70 45 L110 45 M70 60 L104 76" stroke="#0e7490" stroke-width="2"/><circle cx="16" cy="46" r="7" fill="#c45a7a"/></svg></span><span class="kid-figure-cap">拉远</span><span class="kid-figure-sub">改像</span><p class="kid-figure-fact">花离透镜比焦点更远时，像会改样子，还可能倒过来、变小。只改远近，不是换魔法玻璃。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M60 10 L68 36 H92 L72 52 L80 78 L60 62 L40 78 L48 52 L28 36 H52 Z" fill="#f0c14a"/><path d="M16 14 L104 76" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">魔法</span><span class="kid-figure-sub">划掉</span><p class="kid-figure-fact">不是魔法把花变大，是中间厚的透镜把光线弯到一起。关掉弯曲，花还在原处。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M78 16 Q38 45 78 74" fill="#9ec8e8" stroke="#3a2a18" stroke-width="3"/><path d="M16 30 L50 45 L16 60" fill="none" stroke="#c2410c" stroke-width="3"/><path d="M78 30 L108 18 M78 45 L110 45 M78 60 L108 72" stroke="#0e7490" stroke-width="3"/></svg></span><span class="kid-figure-cap">凹透镜</span><span class="kid-figure-sub">加试</span><p class="kid-figure-fact">中间瘪，光往两边跑，花通常变小。凹透镜另开一行，不和「拉远」叠在同一档。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="10" y="34" width="100" height="24" rx="3" fill="#f0c14a" stroke="#3a2a18" stroke-width="2"/><path d="M22 34 V52 M34 34 V46 M46 34 V52 M58 34 V46 M70 34 V52 M82 34 V46 M94 34 V52" stroke="#3a2a18" stroke-width="2"/></svg></span><span class="kid-figure-cap">本页尺子</span><span class="kid-figure-sub">不是说明书</span><p class="kid-figure-fact">本页放大率只按焦距和物距来比近和远，用来对照方向，不是出厂公式。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="22" y="14" width="58" height="60" fill="#fff" stroke="#3a2a18" stroke-width="2"/><path d="M30 28 H72 M30 40 H72 M30 52 H56" stroke="#3a2a18" stroke-width="2"/><path d="M76 56 L102 38 L108 46 L82 64 Z" fill="#f0c14a" stroke="#3a2a18"/></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">光往中间收</span><p class="kid-figure-fact">回家只记：凸透镜把光往中间收，离焦点远近会改像。绝对不要看太阳。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">靠近、拉远两行记下像怎么变</h2>
+    <p>在纸上画两行：靠近焦点，写大 / 倒；拉远，再写一回。两行并排，比背透镜公式有用。</p>
+    <p>口头只要两句：「鼓的把光往中间收。」「离焦点远近会改像。」有人说「玻璃会魔法」，让孩子指着第二行反驳。凹透镜若要写，另开一行：中间瘪，花变小。</p>
+    <p>灯源成人管。真透镜不要对着太阳看，也不要对着皮肤或纸长时间晒。本页数字不要抄进验光单。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="32" y="14" width="56" height="68" rx="4" fill="#c4a06a" stroke="#3a2a18"/><rect x="38" y="26" width="44" height="48" fill="#fff"/><rect x="48" y="8" width="24" height="12" rx="2" fill="#8a857c"/><path d="M46 40 H74 M46 52 H74 M46 64 H64" stroke="#3a2a18" stroke-width="2"/></svg></span><span class="kid-figure-cap">两行</span><span class="kid-figure-sub">近 / 远</span><p class="kid-figure-fact">一行记靠近时像变大，一行记拉远时像可能倒过来。对照比抄数字清楚。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="62" cy="36" rx="36" ry="22" fill="#fff" stroke="#3a2a18" stroke-width="3"/><path d="M50 54 L40 78 L70 56" fill="#fff" stroke="#3a2a18" stroke-width="3"/><path d="M44 32 H80 M48 44 H72" stroke="#3a2a18" stroke-width="3" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">收光，不看太阳</span><p class="kid-figure-fact">回家说得出：凸透镜把光往中间收；透镜不对着太阳，更不要拿来点火照眼。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M78 16 Q38 45 78 74" fill="#9ec8e8" stroke="#3a2a18" stroke-width="3"/><path d="M16 30 L50 45 L16 60" fill="none" stroke="#c2410c" stroke-width="3"/><path d="M78 30 L108 18 M78 45 L110 45 M78 60 L108 72" stroke="#0e7490" stroke-width="3"/><text x="20" y="20" font-size="11" fill="#3a2a18">另</text></svg></span><span class="kid-figure-cap">凹透镜</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">凹透镜另记一行：中间薄，光被往两边推开，花会变小，不要和拉远写成一句。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M38 16 Q78 45 38 74" fill="#9ec8e8" stroke="#3a2a18" stroke-width="3"/><path d="M16 30 L44 45 L16 60" fill="none" stroke="#c2410c" stroke-width="3"/><path d="M78 30 L104 22 M78 45 L108 45 M78 60 L104 68" stroke="#0e7490" stroke-width="3"/><circle cx="96" cy="18" r="10" fill="#f0c14a"/><circle cx="60" cy="46" r="30" fill="none" stroke="#c2410c" stroke-width="5"/><path d="M38 26 L82 66" stroke="#c2410c" stroke-width="5"/></svg></span><span class="kid-figure-cap">点火</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">不要拿透镜对着太阳点火，也不要拿来照眼睛。灯源归大人，儿童只看舞台。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「像怎么变靠不靠离焦点远近」，就只改物距这一项。同一朵花、同一片凸透镜，先靠近焦点看一次，再拉远看一次。换成凹透镜，是另一次对照，不要和「拉远」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>物距（靠近焦点 / 拉远）。</li>
+      <li><b>先保持不变：</b>同一朵花、同一片凸透镜、焦距先不动。</li>
+      <li><b>要观察的：</b>像变大还是变小、倒不倒、光往中间收还是往两边跑。</li>
+      <li><b>另开一行：</b>换成凹透镜，花是不是通常变小。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>放大镜看报纸上的字，字变大了。这和本页「靠近焦点」像在哪？能拿放大镜对着太阳玩吗？</li>
+      <li>眼镜片中间鼓还是瘪？近视和老花差在哪？为什么本页不能当验光单？</li>
+      <li>叶子上的水珠把字放大了。水珠中间厚还是薄？它和凸透镜是同一家人吗？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>鼓玻璃把光收到一起，离得远近，花的样子会变。绝不要拿它看太阳。能指着舞台说「变大 / 变小」就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>靠近焦点常常放大；离远可能倒过来。瘪玻璃把光推开。平面镜是反射，另开一行。本页数字只用来比较，不是说明书。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>凸透镜会聚，物距相对焦距决定实像/虚像与放大率。本页 f÷|u−f| 贴焦点封顶 40，是比较尺子，不是完整成像公式。严禁对日。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：透镜观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：凸透镜把花放大了"></div>
+      <div><label for="workContent">哪一种会放大</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下凸透镜和凹透镜各把花变成什么样，以及光线是收拢还是散开。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>靠近变大时，孩子指的是倒着的花，还是在说「玻璃会变魔术」？让他再指一次光线往哪拐。</li>
+      <li>拉远、像变小：哪一句四岁听得懂？试「离那个红点远了，花就没那么大」。</li>
+      <li>如果他换成凹透镜、花也变小了——为什么这句不能和「拉远」叠在同一档？差在「改了几样」。</li>
+      <li>平面镜为什么不能当本页完成句？差在反射还是穿过。</li>
+      <li>对日红线怎么说？本页能当验光单吗？数字能抄进说明书吗？</li>
+      <li>水珠把字放大，和本页的鼓玻璃像在哪？能拿水珠对着太阳玩吗？</li>
+    </ul>
+  </section>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：中间鼓的是凸透镜，光线往中间收；中间瘪的是凹透镜，光线往两边散。花靠近焦点，像常常变大；拉远，像可倒过来或变小。</p>
+    <p>球面折射使近轴光线会聚于焦点；物距与焦距的相对关系决定像距、倒正与放大率。本页「放大率≈f÷|u−f|、贴焦点封顶 40」只是比较尺子，用来让孩子看见「离焦点越近越大」，不是实验室的透镜公式，也不是出厂说明书。</p>
+    <p>凹面发散。反射镜走另一条边界条件：光被弹开，不穿过。不要把平面镜写成完成句。水珠、放大镜、相机镜头是同一家族的不同尺度。</p>
+    <p>对日聚焦功率密度足以灼伤视网膜和点燃纸。严禁对日。灯源成人管。舞台是二维教具示意，不代替真实透镜实验。</p>
+  </section>
+
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">透镜公式卡 · 放大率≈f÷|物距−f|（贴焦点封顶 40）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">物靠近焦点，分母变小，比较尺子上的放大率变大；贴在焦点上本页封顶。凹透镜发散、花变小。严禁对太阳看。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：凸透镜把光收拢，像要落到该落的地方。眼睛页看晶状体怎样把像落到视网膜上；镜子工坊看光怎么被弹开，不是穿过。</p>
+    <p class="row"><a class="btn btn-ghost" href="../nature/eyes.html">眼睛观察站</a><a class="btn btn-ghost" href="mirror-lab.html">镜子工坊</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">真透镜不要对着太阳看，也不要用放大镜对着皮肤或纸长时间晒。本页是二维示意，比较尺子不是出厂说明书，也不代替真实透镜实验。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var f=8, u=20, did=false, lastM=0, kind="convex";
+  var seen={near:false,far:false,done:false};
+  var guess1="",guess1Done=false,saw24=false,saw12=false,guess2="",guess2Done=false,sawEq=false,guess3="",guess3Done=false,sawConcave=false;
+  var CX=360, CY=200, SCALE=7;
+
+  function el(id){ return document.getElementById(id); }
+  function mag(){
+    var d=Math.abs(u-f);
+    if(d<0.5) return 40;
+    return Math.round(f / d * 100) / 100;
+  }
+  function motionOff(){
+    if (window.Playful && typeof Playful.motionReduced === "function" && Playful.motionReduced()) return true;
+    return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+  function setOp(id, v){ var n=el(id); if(n) n.setAttribute("opacity", String(v)); }
+  function faces(mode){
+    setOp("faceNorm", mode==="norm" ? 1 : 0);
+    setOp("faceHappy", mode==="happy" ? 1 : 0);
+    setOp("faceSad", mode==="sad" ? 1 : 0);
+  }
+  function pressBtns(which){
+    ["toNear","toFar","toConcave"].forEach(function(id){
+      var n=el(id); if(n) n.setAttribute("aria-pressed", id===which ? "true" : "false");
+    });
+  }
+  function flower(id, x, scx, scy, op){
+    var g=el(id);
+    if(!g) return;
+    g.setAttribute("transform", "translate("+x+","+CY+") scale("+scx+" "+scy+")");
+    g.setAttribute("opacity", String(op));
+  }
+  function kidVoice(){
+    if(kind==="concave") return "咦，中间瘪进去了，光往两边跑，花变小了。";
+    if(kind==="drop") return "水珠也是中间鼓的，字会变大。";
+    var atF=Math.abs(u-f)<0.5;
+    if(atF) return "贴在那个点上，光几乎平行出去，花跑到很远。";
+    if(u>f) return u-f<=6 ? "哇，花倒过来了，好大！" : "离远了，倒着的花变小了。";
+    return "花在会聚点里面，像是正的。";
+  }
+
+  function render(fromUser){
+    var m=did?lastM:mag();
+    var ox=Math.max(70, CX-u*SCALE);
+    var fdx=f*SCALE;
+    var atF=Math.abs(u-f)<0.5;
+    var inverted=kind!=="concave" && u>f+0.4;
+    var virt=kind!=="concave" && u<f-0.4;
+    var ih=Math.min(2.4, 0.5+m*0.42);
+    var ix, scy, iop;
+    if(kind==="concave"){
+      ix=Math.max(64, ox-42);
+      ih=0.52;
+      scy=ih;
+      iop=did?0.9:0.35;
+    } else if(atF){
+      ix=668;
+      ih=2.2;
+      scy=-ih;
+      iop=did?0.28:0.12;
+    } else if(virt){
+      ix=Math.max(64, ox-32);
+      scy=ih;
+      iop=did?0.8:0.3;
+    } else {
+      ix=Math.min(640, CX+56+m*40);
+      scy=inverted?-ih:ih;
+      iop=did?1:0.42;
+    }
+    flower("objG", ox, 1, 1, 1);
+    flower("imgG", ix, ih, scy, iop);
+
+    if(kind==="concave"){
+      el("lens").setAttribute("d","M338 70 C372 120 372 280 338 330 C322 270 322 130 338 70 Z M382 70 C348 120 348 280 382 330 C398 270 398 130 382 70 Z");
+      el("lensHi").setAttribute("d","M348 110 C360 200 360 290 348 310 C344 250 344 150 348 110 Z");
+    } else if(kind==="drop"){
+      el("lens").setAttribute("d","M360 80 Q430 200 360 330 Q290 200 360 80 Z");
+      el("lensHi").setAttribute("d","M348 110 Q390 200 348 300 Q336 200 348 110 Z");
+    } else {
+      el("lens").setAttribute("d","M360 64 Q424 200 360 336 Q296 200 360 64 Z");
+      el("lensHi").setAttribute("d","M352 90 Q388 200 352 310 Q340 200 352 90 Z");
+    }
+    el("fMarkL").setAttribute("cx", String(CX-fdx));
+    el("fMarkR").setAttribute("cx", String(CX+fdx));
+
+    var tip=CY-68, bot=CY+8;
+    var iy;
+    if(kind==="concave"){
+      el("ray1").setAttribute("d","M"+ox+" "+tip+" L"+CX+" "+tip+" L680 "+(tip-56));
+      el("ray2").setAttribute("d","M"+ox+" "+CY+" L680 "+CY);
+      el("ray3").setAttribute("d","M"+ox+" "+bot+" L"+CX+" "+bot+" L680 "+(bot+56));
+      iy=tip-56;
+    } else if(atF){
+      el("ray1").setAttribute("d","M"+ox+" "+tip+" L"+CX+" "+tip+" L710 "+tip);
+      el("ray2").setAttribute("d","M"+ox+" "+CY+" L710 "+CY);
+      el("ray3").setAttribute("d","M"+ox+" "+bot+" L"+CX+" "+bot+" L710 "+bot);
+      iy=tip;
+    } else {
+      iy = inverted ? (CY+56*Math.abs(ih)) : (CY-56*Math.abs(scy));
+      if(virt) iy=CY-56*ih;
+      el("ray1").setAttribute("d","M"+ox+" "+tip+" L"+CX+" "+tip+" L"+ix+" "+iy);
+      el("ray2").setAttribute("d","M"+ox+" "+(CY-40)+" L"+CX+" "+CY+" L"+ix+" "+iy);
+      el("ray3").setAttribute("d","M"+ox+" "+bot+" L"+CX+" "+(CY+20)+" L"+ix+" "+(inverted?CY+16:CY-16));
+    }
+    el("kink1").setAttribute("cy", String(tip));
+    el("kink2").setAttribute("cy", String(CY));
+    el("kink3").setAttribute("cy", String(kind==="concave"||atF?bot:(CY+20)));
+    el("kink1").setAttribute("cx", String(CX));
+    el("kink2").setAttribute("cx", String(CX));
+    el("kink3").setAttribute("cx", String(CX));
+
+    el("wallG").setAttribute("opacity", kind==="proj"?"1":"0");
+    el("eyeG").setAttribute("opacity", kind==="eye"?"1":"0");
+    el("camG").setAttribute("opacity", kind==="camera"?"1":"0");
+
+    if(kind==="concave") faces(did?"sad":"norm");
+    else if(did && inverted && m>=1.2) faces("happy");
+    else if(did) faces("norm");
+    else faces("norm");
+
+    el("fOut").textContent=String(f);
+    el("uOut").textContent=String(u);
+    el("mOut").textContent=String(mag());
+    el("fLab").textContent=String(f);
+    el("f").setAttribute("aria-valuetext","焦距 "+f);
+    el("f").value=String(f);
+    el("uLab").textContent=String(u);
+    el("u").setAttribute("aria-valuetext","物距 "+u);
+    el("u").value=String(u);
+
+    var badge=el("stateBadge");
+    var line;
+    if(!did) line="还没看";
+    else if(kind==="concave") line="中间瘪，花变小";
+    else if(atF) line="非常大（示意）";
+    else if(inverted) line="倒过来的花";
+    else line="正着的花";
+    if(badge) badge.textContent=line;
+    var say=el("kidSay");
+    if(say) say.textContent=did?kidVoice():"先点「靠近」，看倒着的花变大。再点「换成凹透镜」，看光往两边跑。";
+
+    if(fromUser&&did){
+      if(kind!=="concave"){
+        if(Math.abs(u-f)<=6) seen.near=true;
+        if(u-f>=12) seen.far=true;
+      }
+      if(guess1&&!guess1Done&&f===8&&u===24) saw24=true;
+      if(guess1&&!guess1Done&&f===8&&u===12) saw12=true;
+      if(guess2&&!guess2Done&&u===f) sawEq=true;
+      if(guess3&&!guess3Done&&kind==="concave") sawConcave=true;
+      checkGuess(); updateTask();
+    }
+  }
+  function checkGuess(){
+    if(guess1&&!guess1Done&&saw24&&saw12){
+      guess1Done=true;
+      el("guessOut1").innerHTML=(guess1==="bigger"?"<b>押对了！</b>":"<b>揭晓：</b>")+"离焦点更近，像变得更大。";
+      el("guessBlock2").hidden=false;
+    }
+    if(guess2&&!guess2Done&&sawEq){
+      guess2Done=true;
+      el("guessOut2").innerHTML=(guess2==="huge"?"<b>押对了！</b>":"<b>揭晓：</b>")+"刚好在焦点上，像会跑到很远，看起来非常大。";
+      el("guessBlock3").hidden=false;
+    }
+    if(guess3&&!guess3Done&&sawConcave){
+      guess3Done=true;
+      el("guessOut3").innerHTML=(guess3==="small"?"<b>押对了！</b>":"<b>揭晓：</b>")+"凹透镜中间瘪，光往两边跑，像通常变小。";
+    }
+  }
+  function updateTask(){
+    var st=el("taskStatus"); if(!st||seen.done) return;
+    if(seen.near&&seen.far){
+      seen.done=true;
+      if(window.Progress) Progress.complete("games/lens-lab.html","试过近焦点和远物距放大");
+      st.textContent="完成啦：离焦点越近（差越小）放得越大。";
+    } else if(!seen.near){
+      st.textContent=seen.far?"还差：把物距调到靠近焦距再看。":"尚未完成：先靠近焦点看一次，或离远看一次。";
+    } else {
+      st.textContent="还差：物距比焦距大 12 以上再看。";
+    }
+  }
+  function see(){ did=true; lastM=mag(); render(true); }
+
+  function doNear(){
+    kind="convex"; f=8; u=12; pressBtns("toNear"); see();
+  }
+  function doFar(){
+    kind="convex"; f=8; u=24; pressBtns("toFar"); see();
+  }
+  function doConcave(){
+    kind="concave"; f=8; u=20; pressBtns("toConcave"); see();
+  }
+
+  el("f").addEventListener("input", function(){ did=false; f=+this.value; render(false); });
+  el("u").addEventListener("input", function(){ did=false; u=+this.value; render(false); });
+  el("toNear").addEventListener("click", doNear);
+  el("toFar").addEventListener("click", doFar);
+  el("toConcave").addEventListener("click", doConcave);
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if(guess1Done) return;
+      guess1=btn.getAttribute("data-guess1");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(x){ x.setAttribute("aria-pressed", x===btn?"true":"false"); });
+      el("guessOut1").textContent="押好了。先点「拉远」，再点「靠近」。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if(guess2Done) return;
+      guess2=btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(x){ x.setAttribute("aria-pressed", x===btn?"true":"false"); });
+      el("guessOut2").textContent="押好了。点图鉴「焦点」，或让大人把物距调到和焦距一样。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"),function(btn){
+    btn.addEventListener("click",function(){if(guess3Done)return;guess3=btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"),function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut3").textContent="押好了。点凹透镜看花变小。";});});
+  var ATLAS={
+    convex:"convex", concave:"concave", mag:"convex", shrink:"concave", focus:"convex",
+    glasses:"convex", loupe:"convex", camera:"camera", drop:"drop", scope:"convex",
+    proj:"proj", eye:"eye"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-ln-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      Array.prototype.forEach.call(document.querySelectorAll("[data-ln-atlas]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+      el("atlasSay").textContent=(btn.querySelector(".kid-figure-fact")||{}).textContent||"";
+      var key=btn.getAttribute("data-ln-atlas");
+      kind=ATLAS[key]||"convex";
+      if(key==="convex"||key==="mag"||key==="loupe"||key==="glasses"){ u=12; f=8; pressBtns("toNear"); }
+      else if(key==="concave"||key==="shrink"){ u=20; f=8; pressBtns("toConcave"); }
+      else if(key==="focus"){ u=f; pressBtns(""); }
+      else if(key==="camera"||key==="proj"||key==="eye"||key==="scope"){ u=Math.max(u,f+12); pressBtns("toFar"); }
+      else if(key==="drop"){ u=f+2; pressBtns("toNear"); }
+      see();
+    });
+  });
+  document.addEventListener("playful:preference", function(){ render(false); });
+  render(false);
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/lens-lab.html", "透镜工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

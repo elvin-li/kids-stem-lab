@@ -5,17 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>设计系统 | 少儿数理启蒙</title>
 <meta name="description" content="全站设计系统的唯一参考页：色彩 token 与实测对比度、真实字号、圆角尺度、全部共享组件与键盘焦点状态。所有数值由页面实时从 base.css 读取计算，不手写。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=17">
-<link rel="stylesheet" href="../assets/css/kid.css?v=17">
-<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#fff8ec">
-<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
 <style>
   /* 本页只调整展示外壳，不覆盖 :root；下方脚本仍读取 base.css 的真实 token。 */
   .ds-page { background: #f8f5ed; color: #243a34; }
   .ds-page::before { background: radial-gradient(820px 420px at 8% -6%, rgba(171,205,180,.22), transparent 62%), radial-gradient(700px 400px at 92% 2%, rgba(230,205,151,.18), transparent 62%); }
-  .ds-page .nav { background: rgba(248,245,237,.92); border-color: #dce4dc; }
+  /* #dce4dc 压在本页纸色底 #f8f5ed 上只有 1.19:1，低于「看不见」阈值 1.22，
+     导航底边实际画不出来。换成本页已有的 #b8c9bd（.empty 虚线边同色系），对同底 1.59:1。 */
+  .ds-page .nav { background: rgba(248,245,237,.92); border-color: #b8c9bd; }
   .ds-page .brand, .ds-page h1, .ds-page h2, .ds-page h3, .ds-page h4 { color: #243a34; }
   .ds-page p, .ds-page .sec-lede { color: #526861; }
   .ds-page .nav a.nav-link { color: #4e625b; }
@@ -23,7 +25,8 @@
   .ds-page .toc a, .ds-page .sw, .ds-page .specimen, .ds-page .rules li, .ds-page .tablewrap { background: #fff; border-color: #d7e0d8; box-shadow: 0 5px 18px rgba(49,75,64,.05); }
   .ds-page .toc a { color: #405a51; }
   .ds-page .toc a:hover { color: #203a31; border-color: #76a68f; }
-  .ds-page .specimen > figcaption, .ds-page table.ds thead th { background: #f1f5f0; border-color: #dce4dc; color: #526861; }
+  /* 同上：#dce4dc 在 #f1f5f0 上只有 1.18:1，表头下边线和样本图注的分隔线都画不出来。 */
+  .ds-page .specimen > figcaption, .ds-page table.ds thead th { background: #f1f5f0; border-color: #b8c9bd; color: #526861; }
   .ds-page table.ds th, .ds-page table.ds td { border-color: #e2e8e2; }
   .ds-page .focus-hint { border-color: #76a68f; background: #eef5f0; color: #405a51; }
   .ds-page .finding { border-color: #d8c28d; background: #fbf6e9; color: #52604f; }
@@ -32,7 +35,8 @@
   .ds-page .rules li::before { color: #356f59; }
   .ds-page .rules li.no::before { color: #a6372d; }
   .ds-page main, .ds-page header, .ds-page footer, .ds-page section, .ds-page figure, .ds-page .specimen-body > * { min-width: 0; }
-  .ds-page p, .ds-page code, .ds-page a, .ds-page button, .ds-page td, .ds-page th { overflow-wrap: anywhere; }
+  .ds-page p, .ds-page a, .ds-page button, .ds-page td, .ds-page th { overflow-wrap: break-word; }
+  .ds-page code { overflow-wrap: anywhere; }
 
   .ds-head { padding: 38px 0 4px; }
   .ds-kicker { margin: 0 0 7px; color: #39725b !important; font-size: .82rem; font-weight: 800; letter-spacing: .06em; }
@@ -49,7 +53,7 @@
   }
   .sec-lede { max-width: 72ch; }
 
-  .toc { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 20px 0 0; }
+  .toc { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); margin: 20px 0 0; }
   .toc a {
     padding: 10px 13px; border-radius: var(--r-sm); font-size: .88rem; font-weight: 600;
     background: var(--surface); border: 1px solid var(--line); color: var(--ink-mid);
@@ -58,7 +62,7 @@
   .toc a:hover { color: var(--ink); border-color: rgba(110,168,254,.5); text-decoration: none; }
 
   /* ---- 色彩 ---- */
-  .swatches { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); margin-top: 18px; }
+  .swatches { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr)); margin-top: 18px; }
   .sw { border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--surface); }
   .sw-chip { height: 62px; display: grid; place-items: center; font: 700 .78rem/1 var(--mono); }
   .sw-body { padding: 10px 12px; display: grid; gap: 3px; }
@@ -81,10 +85,14 @@
     display: inline-block; margin-left: 7px; padding: 1px 7px; border-radius: 999px;
     font: 800 .68rem/1.6 var(--font); border: 1px solid;
   }
-  .verdict[data-level="AAA"] { color: var(--sci);    border-color: rgba(74,222,128,.45);  background: rgba(74,222,128,.1); }
-  .verdict[data-level="AA"]  { color: var(--video);  border-color: rgba(34,211,238,.45);  background: rgba(34,211,238,.1); }
-  .verdict[data-level="大字"] { color: var(--warn);   border-color: rgba(251,191,36,.45); background: rgba(251,191,36,.1); }
-  .verdict[data-level="不足"] { color: var(--danger); border-color: rgba(248,113,113,.5);  background: rgba(248,113,113,.1); }
+  /* 这四级是一把判定标尺（AAA / AA / 大字 / 不足），必须看起来是同一套刻度。
+     原来四条都写死了为暗底调的 rgba 高光描边，其中「大字」那条在浅底上只有 1.21:1、
+     等于没画。只修「大字」会让四级里唯一一条边跟其他三条深浅不一，所以整组换成
+     和 --surface 混的对应 token。 */
+  .verdict[data-level="AAA"] { color: var(--sci);    border-color: color-mix(in srgb,var(--sci) 55%,var(--surface));    background: color-mix(in srgb,var(--sci) 10%,var(--surface)); }
+  .verdict[data-level="AA"]  { color: var(--video);  border-color: color-mix(in srgb,var(--video) 55%,var(--surface));  background: color-mix(in srgb,var(--video) 10%,var(--surface)); }
+  .verdict[data-level="大字"] { color: var(--warn);   border-color: color-mix(in srgb,var(--warn) 55%,var(--surface));   background: color-mix(in srgb,var(--warn) 10%,var(--surface)); }
+  .verdict[data-level="不足"] { color: var(--danger); border-color: color-mix(in srgb,var(--danger) 55%,var(--surface)); background: color-mix(in srgb,var(--danger) 10%,var(--surface)); }
 
   /* ---- 字号 / 间距 ---- */
   .typerow {
@@ -135,9 +143,12 @@
   .rules li.no::before { content: "✕"; color: var(--danger); }
   .rules li b { color: var(--ink); }
 
+  /* 这条规则的边框和底色在本页其实被上面的 .ds-page .finding（特异度 0,2,0）盖掉了，
+     但里面写死的 rgba(251,191,36,.4) 仍是为暗底调的高光描边（浅底上 1.20:1，等于没画），
+     一旦哪天去掉 .ds-page 覆盖就会露出来。改成和 --surface 混的 --warn，两条规则同一意图。 */
   .finding {
     margin-top: 16px; padding: 14px 16px; border-radius: var(--r);
-    border: 1px solid rgba(251,191,36,.4); background: rgba(251,191,36,.07);
+    border: 1px solid color-mix(in srgb,var(--warn) 55%,var(--surface)); background: color-mix(in srgb,var(--warn) 7%,var(--surface));
     font-size: .88rem; color: var(--ink-mid);
   }
   .finding b { color: var(--warn); }
@@ -160,6 +171,7 @@
     <a class="nav-link" href="../nature/index.html">探索</a>
     <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
   </div>
 </div></nav>
 
@@ -286,7 +298,7 @@
 
     <figure class="specimen">
       <figcaption>卡片 <code>.card</code> 与精选态 <code>.card.star</code>（<code>::after</code> 自带「★ 精选」文字）</figcaption>
-      <div class="specimen-body block" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+      <div class="specimen-body block" style="grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))">
         <div class="card">
           <h3 style="margin-bottom:6px">普通卡片</h3>
           <p style="margin:0;font-size:.88rem">链接型卡片 <code>a.card</code> 悬停会上浮 3px 并高亮描边。</p>
@@ -309,7 +321,7 @@
 
     <figure class="specimen">
       <figcaption>表单 <code>.input</code> / <code>select.input</code> / <code>input[type=range]</code>——都有可见 <code>label</code></figcaption>
-      <div class="specimen-body block" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+      <div class="specimen-body block" style="grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr))">
         <div>
           <label for="dsText">文本输入</label>
           <input class="input" id="dsText" type="text" placeholder="搜索资源…" style="margin-top:6px">
@@ -317,7 +329,7 @@
         <div>
           <label for="dsSelect">下拉选择</label>
           <select class="input" id="dsSelect" style="margin-top:6px">
-            <option>全部年龄</option><option>4–6 岁</option><option>7–9 岁</option><option>10–12 岁</option>
+            <option>全部年龄</option><option>4–6&nbsp;岁</option><option>7–9&nbsp;岁</option><option>10–12&nbsp;岁</option>
           </select>
         </div>
         <div>
@@ -329,7 +341,7 @@
 
     <figure class="specimen">
       <figcaption>数据展示 <code>.panel</code> + <code>.readout</code> + <code>.bar</code>（实验页右栏用的就是这套）</figcaption>
-      <div class="specimen-body block" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+      <div class="specimen-body block" style="grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))">
         <div class="panel">
           <h3>实时读数</h3>
           <div class="readout"><span>下落时间</span><b>1.24 s</b></div>
@@ -393,7 +405,7 @@
     </p>
 
     <figure class="specimen">
-      <figcaption>探索伙伴 <code>.playful-companion</code>（4 个角色之一，按页面固定分配）</figcaption>
+      <figcaption>探索伙伴 <code>.playful-companion</code>（4&nbsp;个角色之一，按页面固定分配）</figcaption>
       <div class="specimen-body block">
         <div class="playful-companion">
           <span class="playful-character" aria-hidden="true">🦖</span>
@@ -415,7 +427,7 @@
 
     <figure class="specimen">
       <figcaption>作品卡 <code>.work-card</code>——孩子的观察、预测、画和解释存在本地</figcaption>
-      <div class="specimen-body block" style="grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">
+      <div class="specimen-body block" style="grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr))">
         <div class="work-card">
           <p class="work-card-title">我的预测</p>
           <p class="work-card-meta">斜坡滚球 · 预测</p>
@@ -774,6 +786,6 @@
   });
 })();
 </script>
-<script src="../assets/js/pwa.js?v=17"></script>
+<script src="../assets/js/pwa.js?v=488"></script>
 </body>
 </html>

@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>海龟几何 · 互动实验室</title>
 <meta name="description" content="写几行中文命令，让海龟在画布上画出正方形、星星、螺旋和花。用重复和转角理解角度、迭代与分解。适合 8-12 岁。">
-<link rel="stylesheet" href="../assets/css/base.css?v=17">
-<link rel="stylesheet" href="../assets/css/kid.css?v=17">
-<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#fff8ec">
-<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
 <style>
   * { box-sizing: border-box; }
   html, body { max-width: 100%; overflow-x: hidden; }
@@ -36,13 +36,19 @@
   .story-copy { max-width: 62ch; }
   .story-copy p:last-child { margin: 0; color: var(--ink-mid); font-size: 1.02rem; }
   .workshop-scene { position: absolute; z-index: 0; inset: 0; pointer-events: none; }
-  .scene-turtle { position: absolute; right: clamp(18px, 7vw, 76px); bottom: 17px; font-size: clamp(3.2rem, 9vw, 5.7rem); filter: drop-shadow(0 8px 10px rgba(0,0,0,.18)); transform: rotate(-8deg); }
+  .scene-turtle { position: absolute; right: clamp(10px, 4vw, 48px); bottom: 6px; width: clamp(118px, 24vw, 176px); filter: drop-shadow(0 8px 10px rgba(0,0,0,.18)); transform: rotate(-4deg); }
+  .scene-turtle svg { display: block; width: 100%; height: auto; }
+  .tg-hero-path { fill: none; stroke: color-mix(in srgb, var(--sci) 58%, var(--ink)); stroke-width: 4.2; stroke-dasharray: 8 6; stroke-linecap: round; stroke-linejoin: round; }
+  .tg-hero-shell { fill: var(--sci); stroke: #1c3a20; stroke-width: 1.5; }
+  .tg-hero-scute { fill: color-mix(in srgb, var(--sci) 55%, #1c3a20); }
+  .tg-hero-head { fill: #4ade80; stroke: #1c3a20; stroke-width: 1.2; }
+  .tg-hero-leg { fill: color-mix(in srgb, var(--sci) 72%, #2f7a44); }
+  .tg-hero-eye { fill: #1c3a20; }
   .scene-steps { position: absolute; right: clamp(100px, 18vw, 190px); bottom: 28px; color: rgba(74,222,128,.5); font-size: 1.5rem; letter-spacing: .45rem; transform: rotate(10deg); }
   .scene-pencil { position: absolute; right: 20px; top: 16px; font-size: 2rem; transform: rotate(18deg); }
   .scene-paper { position: absolute; right: 11%; top: 18%; width: 82px; height: 64px; border-radius: 5px; opacity: .38; transform: rotate(7deg); background: repeating-linear-gradient(#fff 0 11px, rgba(110,168,254,.45) 12px); box-shadow: 0 5px 14px rgba(0,0,0,.12); }
-  .hero-top, .playful-story-head, .playful-story-actions, .action-row { display: flex; min-width: 0; }
+  .hero-top, .playful-story-actions, .action-row { display: flex; min-width: 0; }
   .hero-top { align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-right: min(22vw, 160px); }
-  .playful-story-head { align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .playful-story-actions { align-items: center; gap: 10px; flex-wrap: wrap; max-width: 70ch; }
   .playful-story-actions p, [data-playful-feedback] { margin: 0; color: var(--ink-mid); }
 
@@ -69,7 +75,6 @@
   .turtle-heading-card b,.turtle-heading-card span { display:block; }
   .turtle-heading-card span { color:var(--ink-dim); font-size:.72rem; }
   .heading-needle { transform-origin:30px 30px; transition:transform .16s var(--ease); }
-  .next-turn-arrow { stroke:var(--code); stroke-width:5; fill:none; stroke-linecap:round; }
   .path-key { position:absolute; z-index:2; left:10px; bottom:10px; padding:5px 9px; border-radius:999px; border:1px solid var(--line); background:color-mix(in srgb,var(--surface) 92%,transparent); color:var(--ink-mid); font-size:.74rem; font-weight:800; pointer-events:none; }
   .path-key::before { content:""; display:inline-block; width:24px; margin-right:6px; border-top:3px dashed var(--video); vertical-align:middle; }
   #cv, .editor { display: block; width: 100%; max-width: 100%; }
@@ -186,6 +191,11 @@
   .brick-actions .kid-icon-btn { flex:0 0 auto; }
 
   .guess-row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:12px 0 0; }
+  .guess-card { border-color: color-mix(in srgb,var(--code) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--code); background: color-mix(in srgb,var(--code) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+  .pick-btns { display:flex; gap:8px; flex-wrap:wrap; }
   .turtle-result { margin:12px 0 0; }
   .turtle-result p { margin:2px 0 0; }
   .speed-picks { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
@@ -247,7 +257,7 @@
     .task-fields { grid-template-columns: 1fr; }
     .readout-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .hero-top { padding-right: 64px; }
-    .scene-turtle { right: 10px; bottom: 12px; opacity: .42; }
+    .scene-turtle { right: 6px; bottom: 4px; opacity: .78; }
     .scene-steps { display: none; }
   }
   @media (max-width: 520px) {
@@ -305,8 +315,12 @@
   .tgx-deg { fill:color-mix(in srgb, var(--code) 84%, var(--ink)); font:800 12px/1 var(--mono); }
   .tgx-deg-in { fill:color-mix(in srgb, var(--math) 84%, var(--ink)); }
   .tgx-in-arc { fill:none; stroke:color-mix(in srgb, var(--math) 74%, var(--ink)); stroke-width:2.6; stroke-linecap:round; }
-  .tgx-turtle > circle { fill:var(--sci); }
-  .tgx-turtle > path { fill:var(--sci); }
+  .tgx-turtle { pointer-events: none; }
+  .tgx-turtle-leg { fill: color-mix(in srgb, var(--sci) 72%, #2f7a44); }
+  .tgx-turtle-shell { fill: var(--sci); stroke: color-mix(in srgb, var(--ink) 42%, var(--sci)); stroke-width: 1.05; }
+  .tgx-turtle-scute { fill: color-mix(in srgb, var(--sci) 52%, #1c3a20); }
+  .tgx-turtle-head { fill: color-mix(in srgb, var(--sci) 42%, #4ade80); stroke: color-mix(in srgb, var(--ink) 36%, var(--sci)); stroke-width: .9; }
+  .tgx-turtle-eye { fill: #1c3a20; }
 
   .tgx-meters { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(248px,1fr)); }
   .tgx-meter-say { margin-top:12px; }
@@ -333,10 +347,19 @@
   /* 手机孩子模式：文字目标与「第一层」分层标签让位，把核心命令按钮留在首屏。
      玩法已由上方方格纸插画的三步图卡讲清楚。 */
   @media (max-width:480px) {
+    /* 与其它 lab 对齐：窄屏孩子模式藏 companion / sticker，给命令条让路 */
+    html[data-mode="kid"] .workshop-hero [data-playful-companion],
+    html[data-mode="kid"] .workshop-hero [data-playful-sticker],
+    html[data-mode="kid"] .workshop-hero .hero-top { display:none; }
     html[data-mode="kid"] .quick-goal,
     html[data-mode="kid"] .layer-label { display:none; }
-    html[data-mode="kid"] .scene-wrap { margin-bottom:8px; }
-    html[data-mode="kid"] .stage-title { margin:0 0 6px; font-size:1.02rem; }
+    html[data-mode="kid"] .scene-wrap { margin-bottom:2px; }
+    html[data-mode="kid"] .stage-title { margin:0 0 2px; font-size:.92rem; }
+    html[data-mode="kid"] .workshop-hero { gap:0; margin-top:0; padding:2px 8px; }
+    html[data-mode="kid"] .workshop-hero h1 { font-size:1.12rem; margin:0; }
+    html[data-mode="kid"] .workshop-hero .story-copy p { display:none; }
+    html[data-mode="kid"] .lab-stage.kid-visual-stage { max-height:min(32vh,260px); overflow:hidden; }
+    html[data-mode="kid"] #cv { max-height:min(30vh,240px); width:100%; height:auto; }
   }
 </style>
 </head>
@@ -352,18 +375,35 @@
     <a class="nav-link" href="../nature/index.html">探索</a>
     <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
   </div>
 </div></nav>
 
 <header class="head wrap">
   <section class="workshop-hero" aria-labelledby="turtleStoryTitle">
     <div class="workshop-scene" aria-hidden="true">
-      <span class="scene-paper"></span><span class="scene-steps">• • •</span><span class="scene-turtle">🐢</span><span class="scene-pencil">🖍️</span>
+      <span class="scene-paper"></span>
+      <span class="scene-turtle">
+        <svg viewBox="0 0 180 128" focusable="false" aria-hidden="true">
+          <path class="tg-hero-path" d="M22 104 H128 V32 H22 Z"/>
+          <g transform="translate(36 104)">
+            <ellipse class="tg-hero-leg" cx="-10" cy="-9" rx="6" ry="3.4"/>
+            <ellipse class="tg-hero-leg" cx="-10" cy="9" rx="6" ry="3.4"/>
+            <ellipse class="tg-hero-leg" cx="6" cy="-10" rx="5.4" ry="3.2"/>
+            <ellipse class="tg-hero-leg" cx="6" cy="10" rx="5.4" ry="3.2"/>
+            <ellipse class="tg-hero-shell" cx="0" cy="0" rx="16" ry="12"/>
+            <path class="tg-hero-scute" d="M-6 -4 L0 -9 L6 -4 L0 4 Z"/>
+            <ellipse class="tg-hero-head" cx="18" cy="0" rx="7" ry="5.6"/>
+            <circle class="tg-hero-eye" cx="20.4" cy="-1.8" r="1.5"/>
+          </g>
+        </svg>
+      </span>
+      <span class="scene-pencil">🖍️</span>
     </div>
     <div class="hero-top">
       <p class="row" style="margin:0">
         <span class="pill pill-code">编程</span>
-        <span class="pill">4–5 岁点图标就能玩</span>
+        <span class="pill">4–5&nbsp;岁点图标就能玩</span>
         <span class="pill">海龟几何 · Turtle Geometry</span>
       </p>
       <span data-playful-sticker></span>
@@ -381,6 +421,16 @@
     <p id="turtlePlayfulFeedback" data-playful-feedback></p>
   </section>
 </header>
+
+  <section class="card" data-edu-compare aria-labelledby="eduCompareTitle">
+    <h2 id="eduCompareTitle">像 · 不像（纠错对照）</h2>
+    <p>海龟几何靠指令走路径；对称要镜像/旋转对上，不是乱画碰巧好看。</p>
+    <div class="kid-figure-grid" role="group" aria-label="像与不像对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/turtles.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">像 · 本页</span><span class="kid-figure-sub">要对的</span><p class="kid-figure-fact">回到舞台，用同一把尺子试。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#fff4f0" width="120" height="90"/><circle cx="60" cy="44" r="24" fill="#fecaca"/><path d="M42 28 L78 60 M78 28 L42 60" stroke="#b91c1c" stroke-width="4"/><text x="60" y="82" text-anchor="middle" font-size="8" font-weight="800" fill="#b91c1c">随便乱画也对称</text></svg></span><span class="kid-figure-cap">不像 · 随便乱画也对称</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">先划掉这句，再去台上试正确条件。</p></div>
+    </div>
+  </section>
+
 <div class="wrap scene-wrap">
   <!-- 插画舞台：不识字也能看懂这一页在玩什么 -->
   <div class="kid-visual-stage tg-scene-stage" data-scene-layer="back"
@@ -417,7 +467,17 @@
             <svg viewBox="0 0 60 60" aria-hidden="true">
               <circle cx="30" cy="30" r="25" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
               <path d="M30 9v7M51 30h-7M30 51v-7M9 30h7" stroke="var(--ink-dim)" stroke-width="2"/>
-              <g class="heading-needle" id="turtleNeedle"><path d="M30 12l8 25-8-5-8 5z" fill="var(--sci)" stroke="var(--canvas-bg)" stroke-width="1.5"/></g>
+              <g class="heading-needle" id="turtleNeedle">
+                <ellipse class="tgx-turtle-leg" cx="23.4" cy="36" rx="4" ry="2.2"/>
+                <ellipse class="tgx-turtle-leg" cx="36.6" cy="36" rx="4" ry="2.2"/>
+                <ellipse class="tgx-turtle-leg" cx="23.8" cy="24.5" rx="3.6" ry="2"/>
+                <ellipse class="tgx-turtle-leg" cx="36.2" cy="24.5" rx="3.6" ry="2"/>
+                <ellipse class="tgx-turtle-shell" cx="30" cy="32" rx="9.2" ry="8"/>
+                <path class="tgx-turtle-scute" d="M30 25.5 L34.4 32 L30 37.5 L25.6 32 Z"/>
+                <ellipse class="tgx-turtle-head" cx="30" cy="19.6" rx="4.4" ry="4.2"/>
+                <circle class="tgx-turtle-eye" cx="28.3" cy="18.2" r="1"/>
+                <circle class="tgx-turtle-eye" cx="31.7" cy="18.2" r="1"/>
+              </g>
             </svg>
             <div><span>海龟头朝向</span><b id="headingText">上 · 0°</b><span id="nextTurnText">下一转：右转 90°</span></div>
           </div>
@@ -558,7 +618,7 @@
         <div class="ref">
           <div><code>前进 100</code><span>向前走 100 步（也可写 fd）</span></div>
           <div><code>后退 50</code><span>向后退（bk）</span></div>
-          <div><code>右转 90</code><span>原地右转 90 度（rt）</span></div>
+          <div><code>右转 90</code><span>原地右转 90&nbsp;度（rt）</span></div>
           <div><code>左转 90</code><span>原地左转（lt）</span></div>
           <div><code>重复 4 [ … ]</code><span>把方括号里的命令做 4 遍，可以套娃</span></div>
           <div><code>次数</code><span>只在 重复 里能用：现在是第几遍</span></div>
@@ -581,7 +641,7 @@
         <div class="kid-meter-head">
           <span class="kid-meter-icon" aria-hidden="true">🔁</span>
           <span id="tgxRepLabel">重复几次</span>
-          <b class="kid-meter-value" id="tgxRepValue">4 次</b>
+          <b class="kid-meter-value" id="tgxRepValue">4&nbsp;次</b>
         </div>
         <div class="kid-meter-track" id="tgxRepMeter" role="img" aria-labelledby="tgxRepLabel tgxRepValue"><i class="kid-meter-fill"></i></div>
         <p class="kid-meter-note" id="tgxRepNote">🔁 里的一小段动作要做几遍。</p>
@@ -625,12 +685,12 @@
             <path class="tgx-ext" d="M91.2 70L103.2 90.8"/>
             <path class="tgx-turn-arc" d="M98.2 82.1A14 14 0 0 1 77.2 70"/>
             <text class="tgx-deg" x="78.7" y="96" text-anchor="middle">120°</text>
-            <g class="tgx-turtle" transform="translate(60 16) rotate(60)"><circle r="4.6"/><path d="M2 -5L11 0L2 5Z"/></g>
+            <g class="tgx-turtle" transform="translate(60 16) rotate(60)"><ellipse class="tgx-turtle-leg" cx="-3.6" cy="-4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="-3.6" cy="4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="-4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-shell" cx="0" cy="0" rx="6.4" ry="4.8"/><path class="tgx-turtle-scute" d="M-2.2 -1.4 L0 -3.2 L2.2 -1.4 L0 1.2Z"/><ellipse class="tgx-turtle-head" cx="7.6" cy="0" rx="2.8" ry="2.3"/><circle class="tgx-turtle-eye" cx="8.6" cy="-0.8" r="0.7"/></g>
           </svg>
         </span>
         <span class="kid-figure-cap">正三角形</span>
-        <span class="kid-figure-sub">重复 3 次：前进 + 转一次</span>
-        <span class="kid-figure-fact">每次转 <b>120°</b>。3 × 120° = 360°，刚好一整圈。360 ÷ 3 = 120。</span>
+        <span class="kid-figure-sub">重复 3&nbsp;次：前进 + 转一次</span>
+        <span class="kid-figure-fact">指令一步一笔：每次转 <b>120°</b>。3 × 120° = 360°，刚好一整圈。转的是海龟朝向，不是把纸转过去。</span>
       </div>
 
       <div class="kid-figure" style="--tone:var(--math)">
@@ -640,12 +700,12 @@
             <path class="tgx-ext" d="M88 22L114 22"/>
             <path class="tgx-turn-arc" d="M102 22A14 14 0 0 1 88 36"/>
             <text class="tgx-deg" x="104" y="43" text-anchor="middle">90°</text>
-            <g class="tgx-turtle" transform="translate(28 22) rotate(0)"><circle r="4.6"/><path d="M2 -5L11 0L2 5Z"/></g>
+            <g class="tgx-turtle" transform="translate(28 22) rotate(0)"><ellipse class="tgx-turtle-leg" cx="-3.6" cy="-4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="-3.6" cy="4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="-4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-shell" cx="0" cy="0" rx="6.4" ry="4.8"/><path class="tgx-turtle-scute" d="M-2.2 -1.4 L0 -3.2 L2.2 -1.4 L0 1.2Z"/><ellipse class="tgx-turtle-head" cx="7.6" cy="0" rx="2.8" ry="2.3"/><circle class="tgx-turtle-eye" cx="8.6" cy="-0.8" r="0.7"/></g>
           </svg>
         </span>
         <span class="kid-figure-cap">正方形</span>
-        <span class="kid-figure-sub">重复 4 次：前进 + 转一次</span>
-        <span class="kid-figure-fact">每次转 <b>90°</b>。4 × 90° = 360°。360 ÷ 4 = 90。</span>
+        <span class="kid-figure-sub">重复 4&nbsp;次：前进 + 转一次</span>
+        <span class="kid-figure-fact">正方形合上要走四次转弯：每次转 <b>90°</b>。4 × 90° = 360°。改的是海龟朝向，桌面上的纸没转。</span>
       </div>
 
       <div class="kid-figure" style="--tone:var(--phys)">
@@ -655,12 +715,12 @@
             <path class="tgx-ext" d="M92.3 43.5L111.8 57.6"/>
             <path class="tgx-turn-arc" d="M102.9 51.1A13 13 0 0 1 88.3 55.9"/>
             <text class="tgx-deg" x="100" y="72" text-anchor="middle">72°</text>
-            <g class="tgx-turtle" transform="translate(60 20) rotate(36)"><circle r="4.6"/><path d="M2 -5L11 0L2 5Z"/></g>
+            <g class="tgx-turtle" transform="translate(60 20) rotate(36)"><ellipse class="tgx-turtle-leg" cx="-3.6" cy="-4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="-3.6" cy="4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="-4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-shell" cx="0" cy="0" rx="6.4" ry="4.8"/><path class="tgx-turtle-scute" d="M-2.2 -1.4 L0 -3.2 L2.2 -1.4 L0 1.2Z"/><ellipse class="tgx-turtle-head" cx="7.6" cy="0" rx="2.8" ry="2.3"/><circle class="tgx-turtle-eye" cx="8.6" cy="-0.8" r="0.7"/></g>
           </svg>
         </span>
         <span class="kid-figure-cap">正五边形</span>
-        <span class="kid-figure-sub">重复 5 次：前进 + 转一次</span>
-        <span class="kid-figure-fact">每次转 <b>72°</b>。5 × 72° = 360°。360 ÷ 5 = 72。</span>
+        <span class="kid-figure-sub">重复 5&nbsp;次：前进 + 转一次</span>
+        <span class="kid-figure-fact">正五边形合上要走五次转弯：每次转 <b>72°</b>。5 × 72° = 360°。一步一笔改方向，不是把纸转过去。</span>
       </div>
 
       <div class="kid-figure" style="--tone:var(--kit)">
@@ -670,12 +730,12 @@
             <path class="tgx-ext" d="M87.4 35L108.2 47"/>
             <path class="tgx-turn-arc" d="M98.7 41.5A13 13 0 0 1 87.4 48"/>
             <text class="tgx-deg" x="102" y="60" text-anchor="middle">60°</text>
-            <g class="tgx-turtle" transform="translate(58 18) rotate(30)"><circle r="4.6"/><path d="M2 -5L11 0L2 5Z"/></g>
+            <g class="tgx-turtle" transform="translate(58 18) rotate(30)"><ellipse class="tgx-turtle-leg" cx="-3.6" cy="-4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="-3.6" cy="4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="-4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-shell" cx="0" cy="0" rx="6.4" ry="4.8"/><path class="tgx-turtle-scute" d="M-2.2 -1.4 L0 -3.2 L2.2 -1.4 L0 1.2Z"/><ellipse class="tgx-turtle-head" cx="7.6" cy="0" rx="2.8" ry="2.3"/><circle class="tgx-turtle-eye" cx="8.6" cy="-0.8" r="0.7"/></g>
           </svg>
         </span>
         <span class="kid-figure-cap">正六边形</span>
-        <span class="kid-figure-sub">重复 6 次：前进 + 转一次</span>
-        <span class="kid-figure-fact">每次转 <b>60°</b>。6 × 60° = 360°。360 ÷ 6 = 60。</span>
+        <span class="kid-figure-sub">重复 6&nbsp;次：前进 + 转一次</span>
+        <span class="kid-figure-fact">正六边形合上要走六次转弯：每次转 <b>60°</b>。6 × 60° = 360°。海龟自己转身走，纸还摊在原处。</span>
       </div>
 
       <div class="kid-figure" style="--tone:var(--warn)">
@@ -685,12 +745,12 @@
             <path class="tgx-ext" d="M23.9 42.3L6.1 29.3"/>
             <path class="tgx-turn-arc" d="M14.2 35.2A12 12 0 0 1 35.9 42.3"/>
             <text class="tgx-deg" x="32" y="24" text-anchor="middle">144°</text>
-            <g class="tgx-turtle" transform="translate(60 16) rotate(72)"><circle r="4.6"/><path d="M2 -5L11 0L2 5Z"/></g>
+            <g class="tgx-turtle" transform="translate(60 16) rotate(72)"><ellipse class="tgx-turtle-leg" cx="-3.6" cy="-4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="-3.6" cy="4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="-4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-shell" cx="0" cy="0" rx="6.4" ry="4.8"/><path class="tgx-turtle-scute" d="M-2.2 -1.4 L0 -3.2 L2.2 -1.4 L0 1.2Z"/><ellipse class="tgx-turtle-head" cx="7.6" cy="0" rx="2.8" ry="2.3"/><circle class="tgx-turtle-eye" cx="8.6" cy="-0.8" r="0.7"/></g>
           </svg>
         </span>
         <span class="kid-figure-cap">五角星</span>
-        <span class="kid-figure-sub">重复 5 次：前进 + 转一次</span>
-        <span class="kid-figure-fact">每次转 <b>144°</b>。5 × 144° = 720°，海龟绕了 <b>2 整圈</b> 才闭合。</span>
+        <span class="kid-figure-sub">重复 5&nbsp;次：前进 + 转一次</span>
+        <span class="kid-figure-fact">指令一步一笔：每次转 <b>144°</b>。5 × 144° = 720°，海龟自己绕了 <b>2 整圈</b>才闭合，纸没有跟着转两圈。</span>
       </div>
 
       <div class="kid-figure" style="--tone:var(--video)">
@@ -702,12 +762,12 @@
             <text class="tgx-deg" x="58" y="59" text-anchor="middle">360°</text>
             <path class="tgx-ext" d="M82 28L100 16"/>
             <text class="tgx-deg" x="103" y="13" text-anchor="middle">1°</text>
-            <g class="tgx-turtle" transform="translate(58 18) rotate(0)"><circle r="4.6"/><path d="M2 -5L11 0L2 5Z"/></g>
+            <g class="tgx-turtle" transform="translate(58 18) rotate(0)"><ellipse class="tgx-turtle-leg" cx="-3.6" cy="-4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="-3.6" cy="4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="-4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-shell" cx="0" cy="0" rx="6.4" ry="4.8"/><path class="tgx-turtle-scute" d="M-2.2 -1.4 L0 -3.2 L2.2 -1.4 L0 1.2Z"/><ellipse class="tgx-turtle-head" cx="7.6" cy="0" rx="2.8" ry="2.3"/><circle class="tgx-turtle-eye" cx="8.6" cy="-0.8" r="0.7"/></g>
           </svg>
         </span>
         <span class="kid-figure-cap">圆</span>
-        <span class="kid-figure-sub">重复 360 次：走一小步 + 转 1°</span>
-        <span class="kid-figure-fact">每次转 <b>1°</b>。360 × 1° = 360°。360 ÷ 360 = 1，边多到看不出角。</span>
+        <span class="kid-figure-sub">重复 360&nbsp;次：走一小步 + 转 1°</span>
+        <span class="kid-figure-fact">指令一步一笔：每次转 <b>1°</b>。360 × 1° = 360°，边多到看不出角。转的是海龟朝向，不是纸在转。</span>
       </div>
 
       <div class="kid-figure" style="--tone:var(--code)">
@@ -720,12 +780,12 @@
             <path class="tgx-ext" d="M38 66L38 44"/>
             <path class="tgx-turn-arc" d="M38 53A13 13 0 0 1 51 66"/>
             <text class="tgx-deg" x="52" y="42" text-anchor="middle">90°</text>
-            <g class="tgx-turtle" transform="translate(18 86) rotate(0)"><circle r="4.6"/><path d="M2 -5L11 0L2 5Z"/></g>
+            <g class="tgx-turtle" transform="translate(18 86) rotate(0)"><ellipse class="tgx-turtle-leg" cx="-3.6" cy="-4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="-3.6" cy="4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="-4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-shell" cx="0" cy="0" rx="6.4" ry="4.8"/><path class="tgx-turtle-scute" d="M-2.2 -1.4 L0 -3.2 L2.2 -1.4 L0 1.2Z"/><ellipse class="tgx-turtle-head" cx="7.6" cy="0" rx="2.8" ry="2.3"/><circle class="tgx-turtle-eye" cx="8.6" cy="-0.8" r="0.7"/></g>
           </svg>
         </span>
         <span class="kid-figure-cap">楼梯</span>
-        <span class="kid-figure-sub">重复 4 次：前进、转 90°、前进、往回转 90°</span>
-        <span class="kid-figure-fact">一次向左 90°、一次向右 90°，一遍<b>净转 0°</b>。总角度到不了 360°，所以永远闭不上。</span>
+        <span class="kid-figure-sub">重复 4&nbsp;次：前进、转 90°、前进、往回转 90°</span>
+        <span class="kid-figure-fact">一次向左 90°、一次向右 90°，一遍<b>净转 0°</b>。总角度到不了 360°，所以永远闭不上。转的是朝向，纸没转。</span>
       </div>
 
       <div class="kid-figure" style="--tone:var(--accent-deep)">
@@ -735,7 +795,7 @@
             <path class="tgx-ext" d="M65 51L85 51"/>
             <path class="tgx-turn-arc" d="M76 51A11 11 0 0 1 65 62"/>
             <text class="tgx-deg" x="90" y="58" text-anchor="middle">90°</text>
-            <g class="tgx-turtle" transform="translate(55 51) rotate(0)"><circle r="4.6"/><path d="M2 -5L11 0L2 5Z"/></g>
+            <g class="tgx-turtle" transform="translate(55 51) rotate(0)"><ellipse class="tgx-turtle-leg" cx="-3.6" cy="-4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="-3.6" cy="4.6" rx="2.6" ry="1.55"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="-4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-leg" cx="2.8" cy="4.8" rx="2.4" ry="1.45"/><ellipse class="tgx-turtle-shell" cx="0" cy="0" rx="6.4" ry="4.8"/><path class="tgx-turtle-scute" d="M-2.2 -1.4 L0 -3.2 L2.2 -1.4 L0 1.2Z"/><ellipse class="tgx-turtle-head" cx="7.6" cy="0" rx="2.8" ry="2.3"/><circle class="tgx-turtle-eye" cx="8.6" cy="-0.8" r="0.7"/></g>
           </svg>
         </span>
         <span class="kid-figure-cap">螺旋</span>
@@ -794,6 +854,64 @@
   </section>
 
   <div class="task-and-work">
+
+  <section class="card guess-card" aria-labelledby="guessTitleTg">
+    <h2 id="guessTitleTg">先猜一猜，再跑</h2>
+    <p><b>第 1 题：</b>正方形：每次转 90°。要合拢，一共要转几次？</p>
+    <div class="pick-btns" role="group" aria-label="猜正方形转几次">
+      <button class="btn guess-pick" type="button" data-guess1="three" aria-pressed="false">3&nbsp;次</button>
+      <button class="btn guess-pick" type="button" data-guess1="four" aria-pressed="false">4&nbsp;次，转满一圈</button>
+      <button class="btn guess-pick" type="button" data-guess1="five" aria-pressed="false">5&nbsp;次</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。装入正方形图纸，跑一遍看是否合拢。</p>
+  </section>
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--code)"
+         data-kid-predict
+         data-kid-predict-explain="程序让海龟重复相同步骤。正方形：前进相同长度，每次转 90°，共 4&nbsp;次。转角错了就变菱形或星形。本页 DSL 里的空格是语法，不要改成特殊空格。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🐢</span><b>海龟画正方形，最关键的是什么？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：海龟画正方形靠什么">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="color">只要换颜色，怎么走都会是正方形</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="repeat" data-kid-predict-correct>同样的「前进+转弯」重复 4&nbsp;次，转角要对</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="fast">走得越快，角越方</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">走一步、转一个角，重复够一圈，图形才会合上</h2>
+    <p>先写一小步，再用重复包起来。一次改太多指令会找不到是谁画错。</p>
+    <div class="kid-figure-grid" role="group" aria-label="四个主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M8 64 H74" fill="none" stroke="#1c66c2" stroke-width="2.6" stroke-dasharray="6 5" stroke-linecap="round"/><ellipse cx="78" cy="70" rx="6" ry="3.4" fill="#2f7a44"/><ellipse cx="78" cy="50" rx="6" ry="3.4" fill="#2f7a44"/><ellipse cx="98" cy="70" rx="5.6" ry="3.2" fill="#2f7a44"/><ellipse cx="98" cy="50" rx="5.6" ry="3.2" fill="#2f7a44"/><ellipse cx="88" cy="60" rx="16" ry="12" fill="#3d9a58" stroke="#1c3a20" stroke-width="1.5"/><path d="M82 56 L88 50 L94 56 L88 64 Z" fill="#2f7a44"/><ellipse cx="106" cy="58" rx="7.2" ry="5.6" fill="#4ade80" stroke="#1c3a20" stroke-width="1.2"/><circle cx="109" cy="56" r="1.4" fill="#1c3a20"/><polygon points="112,46 120,50 112,54" fill="#c2410c"/></svg></span><span class="kid-figure-cap">前进</span><span class="kid-figure-sub">边长</span><p class="kid-figure-fact">前进是一条指令走一步、画一笔，只改这一段边有多长，纸自己不会挪位子。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M22 70 H62" fill="none" stroke="#1c66c2" stroke-width="2.4"/><path d="M62 70 V28" fill="none" stroke="#1c66c2" stroke-width="2.4" stroke-dasharray="5 4"/><path d="M62 70 A22 22 0 0 0 40 48" fill="none" stroke="#e07a28" stroke-width="3"/><polygon points="36,52 40,44 46,50" fill="#e07a28"/><ellipse cx="62" cy="70" rx="10" ry="8" fill="#3d9a58" stroke="#1c3a20" stroke-width="1.4"/><ellipse cx="72" cy="68" rx="5" ry="4" fill="#4ade80" stroke="#1c3a20"/><text x="48" y="40" text-anchor="middle" font-size="10" font-weight="800" fill="#c2410c">90°</text></svg></span><span class="kid-figure-cap">转弯</span><span class="kid-figure-sub">角度</span><p class="kid-figure-fact">转弯只改海龟朝向多少度，下一步才往新方向走；转的是方向，不是纸在转。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M18 66 H50 V34 H82" fill="none" stroke="#1c66c2" stroke-width="2.4"/><path d="M50 66 H82 V34" fill="none" stroke="#1c66c2" stroke-width="2.2" stroke-dasharray="5 4"/><ellipse cx="18" cy="66" rx="7" ry="5.5" fill="#3d9a58" stroke="#1c3a20"/><ellipse cx="50" cy="66" rx="7" ry="5.5" fill="#3d9a58" stroke="#1c3a20"/><ellipse cx="82" cy="34" rx="7" ry="5.5" fill="#4ade80" stroke="#1c3a20"/><text x="60" y="84" text-anchor="middle" font-size="10" font-weight="800" fill="#1c66c2">×4</text></svg></span><span class="kid-figure-cap">重复</span><span class="kid-figure-sub">循环</span><p class="kid-figure-fact">重复是把同一串指令再做 n 次，每一步仍是一笔一画；不是把整张纸转 n 圈。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M22 70 H58 V30 H96" fill="none" stroke="#1c66c2" stroke-width="2.4"/><path d="M58 30 L78 18" stroke="#c2410c" stroke-width="3" stroke-linecap="round"/><circle cx="78" cy="18" r="5" fill="#fff" stroke="#c2410c" stroke-width="2"/><path d="M76 16 L80 20 M80 16 L76 20" stroke="#c2410c" stroke-width="1.6"/><rect x="86" y="48" width="22" height="16" rx="3" fill="#fff" stroke="#1c66c2" stroke-width="1.6"/><text x="97" y="60" text-anchor="middle" font-size="9" font-weight="800" fill="#1c66c2">90</text><path d="M80 56 H86" stroke="#1c66c2" stroke-width="2"/></svg></span><span class="kid-figure-cap">调试</span><span class="kid-figure-sub">改一处</span><p class="kid-figure-fact">改一处指令再走一遍，看出哪一步一笔画错了；别去转纸张来凑出图形。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>画一条边。</b>前进。</li>
+      <li data-step="2"><b>转一个角。</b>90°？</li>
+      <li data-step="3"><b>重复四次。</b>封闭了吗？</li>
+      <li data-step="4"><b>改一个数。</b>看图形怎么变。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>走一段再转一下，重复四次，就能围成正方形。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>外角与边数决定正多边形；调试时一次只改一个参数。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>可谈总转角 360°、状态机（位置+朝向）。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>用重复结构生成几何，并学会调试。</p>
+    <ul class="ask-list">
+      <li>转 90° 六次会怎样？</li>
+      <li>边长变了角变了吗？</li>
+      <li>哪一行写错了？</li>
+    </ul>
+  </section>
+
     <section class="task" aria-labelledby="turtleTaskTitle">
       <h2 class="task-title" id="turtleTaskTitle">正式任务：让海龟画出一个闭合图形</h2>
 
@@ -850,6 +968,36 @@
       <p class="task-status status" id="turtleTaskStatus" role="status" aria-live="polite">入门任务：画出至少四条边，并回到起点和原朝向。</p>
     </section>
 
+    <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+      <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+      <p>想知道「合不上是不是转角写错」，就只改指令序列里的一个数。同一串前进和重复，先转 90° 画一次，再改成 89° 画一次。同时改边长和转角，就说不清是谁画歪了。海龟几何是指令按顺序执行，不是「它自己会画方」。</p>
+      <ul>
+        <li><b>只改这一项：</b>转角，或只改重复次数，或只改一步的长短。</li>
+        <li><b>先保持不变：</b>指令的先后顺序、其余每一个数。</li>
+        <li><b>要观察的：</b>有没有回到起点、朝向还在不在原方向、开口朝哪。</li>
+        <li><b>另开一行：</b>把「前进、右转」两块对调顺序，图形还是不是原来那个。</li>
+      </ul>
+    </section>
+
+    <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+      <h2 id="askMoreTitle">还可以问下去</h2>
+      <ol>
+        <li>把「先走再转」改成「先转再走」，海龟还在同一条路上吗？指令的先后是不是图形的一部分？</li>
+        <li>正方形转了四次 90°，一共转了多少度？孩子若先猜三角形转 60°，试完为什么要改成 120°？</li>
+        <li>海龟没回到起点，你先检查哪一条指令？一次只改一个数，怎么证明是它？</li>
+      </ol>
+    </section>
+
+    <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+      <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+      <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把「外角和」提前塞进四岁耳朵。</p>
+      <div class="age-tiers" aria-label="给家长的分层讲法">
+        <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>先说想让海龟去哪儿，再点对应的积木。命令一条一条执行，顺序错了路就错了。能走完一圈、指着积木说「先走再转」就够了。</p></div>
+        <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>同一串指令就是一个序列。转角总和够一圈才会合上。一次只改一个数。三角形常被猜成 60°，试完才知道是外角 120°。</p></div>
+        <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>状态是位置+朝向。外角和 360°。重复是迭代，嵌套是分解。把「右转」全换成「左转」是反射。调试是改序列，不是海龟发脾气。</p></div>
+      </div>
+    </section>
+
     <section class="panel work-panel parent-deep-dive" data-audience="parent" aria-labelledby="workFormTitle">
       <h2 id="workFormTitle">作品表单</h2>
       <p>满意了吗？给画起个名字，把此刻的命令一起放进作品柜。</p>
@@ -872,7 +1020,7 @@
 
   <p class="layer-label is-parent" data-audience="parent">第三层 · 家长延伸阅读</p>
   <section class="card teaching-card wrap-narrow" style="padding:24px;max-width:820px" aria-labelledby="teachingTitle">
-    <h2 id="teachingTitle" style="font-size:1.3rem">这在教什么</h2>
+    <h2 id="teachingTitle" style="font-size:1.3rem">转角加起来够一圈，图形才会自己合上</h2>
     <div class="teach-split">
       <p>孩子用命令指挥海龟走路，它走过的痕迹就是图形。为了画出正方形、星星或花，需要亲手探索<b>转多少度</b>、<b>重复几次</b>，以及怎样把复杂图案拆成简单小步骤。</p>
       <svg class="angle-figure" viewBox="0 0 180 150" role="img" aria-label="示意图：正方形的四个转角各 90 度，加起来是一整圈 360 度">
@@ -889,23 +1037,27 @@
   <section class="card parent-card parent-deep-dive wrap-narrow" data-audience="parent" style="padding:24px;max-width:820px" aria-labelledby="parentTitle">
     <h2 id="parentTitle" style="font-size:1.3rem">给家长</h2>
     <ol class="q">
-      <li>正方形转了四次 90 度，一共转了多少度？画三角形每次该转多少？（提示：让孩子先猜 60，试完再想为什么是 120）</li>
-      <li>如果把「重复 5 [ 前进 160 右转 144 ]」的 144 改成 143，你猜图形会怎么变？先说，再试。</li>
-      <li>这朵花其实是同一个正方形转着画了 12 次。你还能用「一个小图形重复很多次」画出什么？</li>
+      <li>正方形转了四次 90&nbsp;度，一共转了多少度？画三角形每次该转多少？（提示：让孩子先猜 60，试完再想为什么是 120）</li>
+      <li>如果把「重复 5 [ 前进 160 右转 144 ]」的 144 改成 143，你猜图形会怎么变？先说，再试。一次只改这一个数，才知道是转角在负责闭合。</li>
+      <li>这朵花其实是同一个正方形转着画了 12&nbsp;次。你还能用「一个小图形重复很多次」画出什么？</li>
+      <li>把「先前进再右转」改成「先右转再前进」，路还一样吗？指令的先后就是图形，海龟不会自己猜你的意思。</li>
+      <li>海龟没回到起点，你先查步数还是转角？怎样只改序列里的一处来验证猜测？画错了是命令需要改，不是海龟笨。</li>
+      <li>抬笔走一段再落下，为什么纸上没有痕迹？海龟还在执行指令吗？状态（笔的抬落）会一直保持到下一条改它的指令。</li>
     </ol>
   </section>
 
   <section class="why card parent-deep-dive wrap-narrow" data-audience="parent" style="padding:24px;max-width:820px">
     <h2 style="font-size:1.3rem">背后的原理</h2>
+    <p>海龟几何是<b style="color:var(--ink)">指令序列</b>：积木从左到右、从上到下一条一条执行，海龟不会跳步，也不会自己补上你漏写的转角。顺序错了，路就错了——把「先走再转」改成「先转再走」，图形立刻换一条。调试就是改这一串指令，不是怪海龟发脾气。</p>
     <p>海龟只懂两件事：<b style="color:var(--ink)">往前走</b>和<b style="color:var(--ink)">转个角度</b>。这种「以自己为中心」的描述方式叫内在几何（intrinsic geometry）——不需要坐标系，孩子可以把身体当成海龟，走一遍就懂。</p>
-    <p>闭合图形有一条漂亮的规律：走一圈回到起点并朝回原方向，转过的角度总和一定是 360 度。所以正三角形每次转 120 度，正方形转 90 度，正 n 边形转 360/n 度。孩子最常见的直觉错误是把「转的角」和「图形内角」搞混，画一次就能自己发现差别。这个转角在数学里叫外角（exterior angle）。</p>
+    <p>闭合图形有一条漂亮的规律：走一圈回到起点并朝回原方向，转过的角度总和一定是 360&nbsp;度。所以正三角形每次转 120&nbsp;度，正方形转 90&nbsp;度，正 n 边形转 360/n 度。孩子最常见的直觉错误是把「转的角」和「图形内角」搞混，画一次就能自己发现差别。这个转角在数学里叫外角（exterior angle）。</p>
     <p><code>重复</code> 是迭代（iteration），把「同一件事做很多遍」写成一行；<code>重复</code> 里再套 <code>重复</code> 就是把图形当作零件来搭积木，这是计算思维里的分解（decomposition）与抽象（abstraction）。海龟几何来自 Seymour Papert 的 Logo 语言，他的观点是：孩子学编程的价值不在语法，而在于获得一种可以「调试自己想法」的方式——图形画错了，不是自己笨，是命令需要修改。</p>
 
     <h3 style="font-size:1.02rem;margin:20px 0 0">按年龄怎么陪</h3>
     <div class="tiers">
-      <p class="tier-a"><b>4–6 岁 · 只玩「点一点、看一看」。</b>目标不是角度数值，而是建立「命令 → 动作」的因果感：先让孩子说出想让海龟去哪儿，再一起找对应的图标积木。这个年龄最有效的做法是<b>身体先行</b>——让孩子站起来当海龟，家长喊「前进、右转」，走完一圈再回到屏幕。只用「方方」和「尖尖」两张图纸，重复次数不超过 4，不要引入嵌套。孩子说「转」而不说「90 度」完全达标。</p>
-      <p class="tier-b"><b>7–9 岁 · 开始量化与预测。</b>把注意力引到数字上：先猜再试。经典切入点是三角形——几乎所有孩子都会先猜「转 60 度」（内角），画出来才发现要转 120 度（外角）。让孩子记录 3 次尝试的转角和结果，自己总结出「360 ÷ 边数」。这个阶段可以介绍嵌套重复：先画一个方方，再让整个方方转着画很多遍。</p>
-      <p class="tier-c"><b>10–12 岁 · 抽象与调试。</b>请孩子用文字命令框（家长视图里的命令文字版）而不是积木，体会「代码即想法的书写」。可探索的问题：把 <code>右转 89</code> 改成 <code>右转 90</code>，螺旋为什么会退化成正方形？<code>前进 次数 * 1.4</code> 里的变量做了什么？让孩子先写出预期图形再运行，把「预期 vs 实际」的差距当成调试线索，这正是专业编程的核心循环。</p>
+      <p class="tier-a"><b>4–6&nbsp;岁 · 只玩「点一点、看一看」。</b>目标不是角度数值，而是建立「命令 → 动作」的因果感：先让孩子说出想让海龟去哪儿，再一起找对应的图标积木。这个年龄最有效的做法是<b>身体先行</b>——让孩子站起来当海龟，家长喊「前进、右转」，走完一圈再回到屏幕。只用「方方」和「尖尖」两张图纸，重复次数不超过 4，不要引入嵌套。孩子说「转」而不说「90&nbsp;度」完全达标。</p>
+      <p class="tier-b"><b>7–9&nbsp;岁 · 开始量化与预测。</b>把注意力引到数字上：先猜再试。经典切入点是三角形——几乎所有孩子都会先猜「转 60&nbsp;度」（内角），画出来才发现要转 120&nbsp;度（外角）。让孩子记录 3&nbsp;次尝试的转角和结果，自己总结出「360 ÷ 边数」。这个阶段可以介绍嵌套重复：先画一个方方，再让整个方方转着画很多遍。</p>
+      <p class="tier-c"><b>10–12&nbsp;岁 · 抽象与调试。</b>请孩子用文字命令框（家长视图里的命令文字版）而不是积木，体会「代码即想法的书写」。可探索的问题：把 <code>右转 89</code> 改成 <code>右转 90</code>，螺旋为什么会退化成正方形？<code>前进 次数 * 1.4</code> 里的变量做了什么？让孩子先写出预期图形再运行，把「预期 vs 实际」的差距当成调试线索，这正是专业编程的核心循环。</p>
     </div>
 
     <h3 style="font-size:1.02rem;margin:20px 0 0">一起追问</h3>
@@ -918,25 +1070,25 @@
 
     <h3 style="font-size:1.02rem;margin:20px 0 0">离屏延伸活动</h3>
     <ol class="offline-list">
-      <li><b>人体海龟（10 分钟）。</b>在地板上贴一个起点，孩子当海龟，家长只能说「前进几步、右转」。走完后看脚印是不是闭合的。角色互换一次，让孩子当发指令的人——这一步对理解「指令要精确」尤其关键。</li>
-      <li><b>方格纸描图（15 分钟）。</b>给孩子一张方格纸和一支笔，家长口述一串指令，孩子照着画。画完再回屏幕上用积木排出同一串指令，比较两幅图。</li>
-      <li><b>转角小实验（10 分钟）。</b>准备一根吸管或筷子，放在桌上当海龟。每次转动时用量角器量一下角度，记在纸上，最后把所有角度加起来，看是不是接近 360。</li>
+      <li><b>人体海龟（10&nbsp;分钟）。</b>在地板上贴一个起点，孩子当海龟，家长只能说「前进几步、右转」。走完后看脚印是不是闭合的。角色互换一次，让孩子当发指令的人——这一步对理解「指令要精确」尤其关键。</li>
+      <li><b>方格纸描图（15&nbsp;分钟）。</b>给孩子一张方格纸和一支笔，家长口述一串指令，孩子照着画。画完再回屏幕上用积木排出同一串指令，比较两幅图。</li>
+      <li><b>转角小实验（10&nbsp;分钟）。</b>准备一根吸管或筷子，放在桌上当海龟。每次转动时用量角器量一下角度，记在纸上，最后把所有角度加起来，看是不是接近 360。</li>
       <li><b>图案寻宝（随时）。</b>散步时找「重复图案」：地砖、栏杆、窗格、树叶排列。回家试着用一个小图形加重复把它画出来。</li>
-      <li><b>作品展（20 分钟）。</b>把导出的图片打印或截图，让孩子给每幅画起名字并讲一句「我是怎么让海龟画出它的」。讲述比画本身更能巩固理解。</li>
+      <li><b>作品展（20&nbsp;分钟）。</b>把导出的图片打印或截图，让孩子给每幅画起名字并讲一句「我是怎么让海龟画出它的」。讲述比画本身更能巩固理解。</li>
     </ol>
 
     <h3 style="font-size:1.02rem;margin:20px 0 0">容易搞错的地方</h3>
     <ul class="myth">
-      <li><b>把「转的角」当成「图形的角」。</b>三角形内角是 60 度，但海龟每次要转 120 度。这不是孩子算错，而是两个不同的角。让孩子用手臂比一比「身体转过的量」，差别立刻清楚。</li>
-      <li><b>以为图形闭合只靠边数对。</b>边数对但转角不对，图形会散开或重叠。闭合的真正条件是转角总和恰好 360 度且每边长度一致。</li>
+      <li><b>把「转的角」当成「图形的角」。</b>三角形内角是 60&nbsp;度，但海龟每次要转 120&nbsp;度。这不是孩子算错，而是两个不同的角。让孩子用手臂比一比「身体转过的量」，差别立刻清楚。</li>
+      <li><b>以为图形闭合只靠边数对。</b>边数对但转角不对，图形会散开或重叠。闭合的真正条件是转角总和恰好 360&nbsp;度且每边长度一致。</li>
       <li><b>把「画错了」当成失败。</b>没闭合的图形是信息量最大的结果。请把提问从「对不对」换成「你觉得哪一步不一样」。</li>
-      <li><b>急着教语法。</b>4–5 岁不需要认识任何命令文字。图标积木已经完整表达了顺序、重复和状态改变这三个编程核心概念。</li>
+      <li><b>急着教语法。</b>4–5&nbsp;岁不需要认识任何命令文字。图标积木已经完整表达了顺序、重复和状态改变这三个编程核心概念。</li>
     </ul>
 
     <details class="fold">
       <summary>这一页对应哪些能力</summary>
       <p><b>计算思维：</b>顺序（积木从左到右执行）、循环（🔁 重复）、状态（笔的抬落与颜色会一直保持到下次改变）、分解（把花拆成方方 + 转一点）、调试（改一个数字再看差别）。</p>
-      <p><b>数学：</b>角度的量感、外角和为 360 度、正多边形与边数的关系、长度守恒与对称。</p>
+      <p><b>数学：</b>角度的量感、外角和为 360&nbsp;度、正多边形与边数的关系、长度守恒与对称。</p>
       <p><b>执行功能：</b>先预测再行动（猜一猜按钮）、抑制冲动（单步观察）、工作记忆（记住队伍里已经排了什么）。</p>
     </details>
   </section>
@@ -953,10 +1105,10 @@
 
   /* ========== 预设 ========== */
   var PRESETS = {
-    square: "# 正方形：转四次 90 度\n重复 4 [\n  前进 100\n  右转 90\n]",
-    star: "# 五角星：每次转 144 度\n颜色 黄\n重复 5 [\n  前进 130\n  右转 144\n]",
+    square: "# 正方形：转四次 90\u00a0度\n重复 4 [\n  前进 100\n  右转 90\n]",
+    star: "# 五角星：每次转 144\u00a0度\n颜色 黄\n重复 5 [\n  前进 130\n  右转 144\n]",
     spiral: "# 螺旋：每走一遍就走得更长一点\n颜色 紫\n重复 60 [\n  前进 次数 * 1.4\n  右转 89\n]",
-    flower: "# 花：同一个正方形，转着画 12 次\n颜色 粉\n重复 12 [\n  重复 4 [\n    前进 80\n    右转 90\n  ]\n  右转 30\n]"
+    flower: "# 花：同一个正方形，转着画 12\u00a0次\n颜色 粉\n重复 12 [\n  重复 4 [\n    前进 80\n    右转 90\n  ]\n  右转 30\n]"
   };
 
   /* 画笔颜色跟随当前主题：浅色主题用深墨，深色主题用亮墨，
@@ -1185,7 +1337,7 @@
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i];
       if (out.length > MAX_ACTIONS) {
-        throw { msg: "步骤太多了（超过 " + MAX_ACTIONS + " 步），画不完。把「重复」的次数改小一点", line: n.line };
+        throw { msg: "步骤太多了（超过 " + MAX_ACTIONS + "\u00a0步），画不完。把「重复」的次数改小一点", line: n.line };
       }
       switch (n.k) {
         case "fd": out.push({ t: "move", v: evalExpr(n.e, rc), line: n.line }); break;
@@ -1306,17 +1458,48 @@
     ctx.save();
     ctx.translate(turtle.x, turtle.y);
     ctx.rotate(turtle.dir * Math.PI / 180);
+    var body = turtle.pen ? "rgba(61,154,88,.96)" : "rgba(125,136,171,.88)";
+    var head = turtle.pen ? "#4ade80" : "#9aa3b8";
+    var ink = TGV("--ink", "#1c3a20");
+    ctx.fillStyle = body;
+    function leg(x, y, rot) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 4.2, 2.35, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    leg(-7.2, 5.2, -0.5);
+    leg(7.2, 5.2, 0.5);
+    leg(-7.2, -3.2, 0.45);
+    leg(7.2, -3.2, -0.45);
     ctx.beginPath();
-    ctx.moveTo(0, -13);
-    ctx.lineTo(8.5, 9);
-    ctx.lineTo(0, 4.5);
-    ctx.lineTo(-8.5, 9);
-    ctx.closePath();
-    ctx.fillStyle = turtle.pen ? "rgba(74,222,128,.95)" : "rgba(125,136,171,.85)";
+    ctx.ellipse(0, 2.2, 10.2, 8, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.lineWidth = 1.4;
-    ctx.strokeStyle = TGV("--canvas-bg", "#ffffff");
+    ctx.strokeStyle = ink;
     ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, -4.2);
+    ctx.lineTo(4.2, 2.2);
+    ctx.lineTo(0, 7.4);
+    ctx.lineTo(-4.2, 2.2);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(28,58,32,.28)";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(0, -11.2, 4.5, 4.2, 0, 0, Math.PI * 2);
+    ctx.fillStyle = head;
+    ctx.fill();
+    ctx.strokeStyle = ink;
+    ctx.stroke();
+    ctx.fillStyle = ink;
+    ctx.beginPath();
+    ctx.arc(-1.7, -12.3, 1.05, 0, Math.PI * 2);
+    ctx.arc(1.7, -12.3, 1.05, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 
@@ -1542,7 +1725,7 @@
     var repeats = (codeEl.value.match(/重复|repeat/gi) || []).length;
     var level = turtleLevel.value;
     taskPassed = !outOfBounds && closed && facing && ((level === "starter" && moves >= 4 && turns >= 4) || (level === "builder" && moves === 3 && turns >= 3) || (level === "creator" && moves >= 12 && repeats >= 2));
-    taskEvidence = "级别：" + turtleLevel.options[turtleLevel.selectedIndex].text + "；" + moves + " 次移动、" + turns + " 次转向；" + (closed ? "回到起点" : "未回到起点") + "，" + (facing ? "回到原朝向" : "朝向不同");
+    taskEvidence = "级别：" + turtleLevel.options[turtleLevel.selectedIndex].text + "；" + moves + "\u00a0次移动、" + turns + "\u00a0次转向；" + (closed ? "回到起点" : "未回到起点") + "，" + (facing ? "回到原朝向" : "朝向不同");
     updateGuessResult(closed);
     updateTurtleTask();
   }
@@ -1652,7 +1835,7 @@
         : a.t === "turn" ? (a.v >= 0 ? "右转 " : "左转 ") + Math.abs(Math.round(a.v * 10) / 10) + "°"
         : a.t === "pen" ? (a.v ? "落笔" : "抬笔")
         : a.t === "color" ? "换颜色" : a.t === "width" ? "改粗细" : "回家";
-      say("第 " + done + " 步：" + label + "（共 " + actions.length + " 步）", "ok");
+      say("第 " + done + "\u00a0步：" + label + "（共 " + actions.length + "\u00a0步）", "ok");
       if (done >= actions.length) { finished = true; setRunLabel("🔁", "再画", "让海龟再画一遍"); assessTask(); }
     }
     updateReadout();
@@ -1972,9 +2155,9 @@
   /* ---------- 图纸：一点就装一整队积木 ---------- */
   var SHEETS = {
     square: { note: "方方图纸装好了：四条边、四个转角。", make: function () { return [{ k: "rep", n: 4, body: [{ k: "fd", n: 80 }, { k: "rt", n: 90 }] }]; } },
-    triangle: { note: "尖尖图纸装好了：三条边，每次转 120 度。", make: function () { return [{ k: "color", v: "绿" }, { k: "rep", n: 3, body: [{ k: "fd", n: 100 }, { k: "rt", n: 120 }] }]; } },
-    star: { note: "星星图纸装好了：五条边，每次转 144 度。", make: function () { return [{ k: "color", v: "黄" }, { k: "rep", n: 5, body: [{ k: "fd", n: 120 }, { k: "rt", n: 144 }] }]; } },
-    flower: { note: "小花图纸装好了：方方转着画 12 次。", make: function () { return [{ k: "color", v: "粉" }, { k: "rep", n: 12, body: [{ k: "rep", n: 4, body: [{ k: "fd", n: 70 }, { k: "rt", n: 90 }] }, { k: "rt", n: 30 }] }]; } },
+    triangle: { note: "尖尖图纸装好了：三条边，每次转 120\u00a0度。", make: function () { return [{ k: "color", v: "绿" }, { k: "rep", n: 3, body: [{ k: "fd", n: 100 }, { k: "rt", n: 120 }] }]; } },
+    star: { note: "星星图纸装好了：五条边，每次转 144\u00a0度。", make: function () { return [{ k: "color", v: "黄" }, { k: "rep", n: 5, body: [{ k: "fd", n: 120 }, { k: "rt", n: 144 }] }]; } },
+    flower: { note: "小花图纸装好了：方方转着画 12\u00a0次。", make: function () { return [{ k: "color", v: "粉" }, { k: "rep", n: 12, body: [{ k: "rep", n: 4, body: [{ k: "fd", n: 70 }, { k: "rt", n: 90 }] }, { k: "rt", n: 30 }] }]; } },
     stairs: { note: "楼梯图纸装好了。猜猜看：它回不回起点？", make: function () { return [{ k: "color", v: "紫" }, { k: "rep", n: 4, body: [{ k: "fd", n: 45 }, { k: "rt", n: 90 }, { k: "fd", n: 45 }, { k: "lt", n: 90 }] }]; } },
     empty: { note: "空白图纸：自己点积木排队伍吧。", make: function () { return []; } }
   };
@@ -2152,7 +2335,7 @@
     var isClosed = total > 0 && Math.abs(laps - wholeLaps) < 0.005 && wholeLaps >= 1;
     var side = state.turn < 0 ? "左" : "右";
 
-    repValue.textContent = times + " 次";
+    repValue.textContent = times + "\u00a0次";
     angleValue.textContent = per + "°";
     totalValue.textContent = total + "°";
     tgxSetMeter("tgxRepMeter", times, TGX_REP_MAX);
@@ -2169,7 +2352,7 @@
 
     repNote.textContent = state.looped
       ? "🔁 里那一小段要做 " + times + " 遍。积木最多排到 12 遍，命令文字可以写更多。"
-      : "这串指令里没有 🔁，整段只走一遍，所以算 1 次。";
+      : "这串指令里没有 🔁，整段只走一遍，所以算 1\u00a0次。";
     angleNote.textContent = per === 0
       ? "这一遍里左转和右转正好抵消，净转 0°——楼梯就是这样。"
       : "每做一遍，海龟" + side + "转 " + per + "°。360 ÷ " + times + " = " + tgxRound(360 / times) + "°，两个数相等时正好闭合。";
@@ -2292,8 +2475,14 @@
         "class": "tgx-turtle",
         transform: "translate(" + fmt(v[0][0]) + " " + fmt(v[0][1]) + ") rotate(" + fmt(angOf(v[0], v[1])) + ")"
       });
-      turtle.appendChild(el("circle", { r: 6 }));
-      turtle.appendChild(el("path", { d: "M3 -6.5L14 0L3 6.5Z" }));
+      turtle.appendChild(el("ellipse", { "class": "tgx-turtle-leg", cx: "-4.4", cy: "-5.6", rx: "3.2", ry: "1.9" }));
+      turtle.appendChild(el("ellipse", { "class": "tgx-turtle-leg", cx: "-4.4", cy: "5.6", rx: "3.2", ry: "1.9" }));
+      turtle.appendChild(el("ellipse", { "class": "tgx-turtle-leg", cx: "3.4", cy: "-5.8", rx: "2.9", ry: "1.8" }));
+      turtle.appendChild(el("ellipse", { "class": "tgx-turtle-leg", cx: "3.4", cy: "5.8", rx: "2.9", ry: "1.8" }));
+      turtle.appendChild(el("ellipse", { "class": "tgx-turtle-shell", cx: "0", cy: "0", rx: "7.8", ry: "5.8" }));
+      turtle.appendChild(el("path", { "class": "tgx-turtle-scute", d: "M-2.6 -1.6 L0 -3.8 L2.6 -1.6 L0 1.6Z" }));
+      turtle.appendChild(el("ellipse", { "class": "tgx-turtle-head", cx: "9.4", cy: "0", rx: "3.4", ry: "2.8" }));
+      turtle.appendChild(el("circle", { "class": "tgx-turtle-eye", cx: "10.6", cy: "-1", r: "0.85" }));
       shapeBox.appendChild(turtle);
     }
 
@@ -2315,7 +2504,7 @@
       var turnDeg = 360 / item.n, inner = 180 - turnDeg, list = [];
       list.push({
         deg: turnDeg, ok: true, word: "外角",
-        why: "对了！海龟转的是<外角>——身体转过的那个量。" + item.n + " 个外角加起来正好一整圈 360°，所以 360 ÷ " + item.n + " = " + turnDeg + "°。"
+        why: "对了！海龟转的是<外角>——身体转过的那个量。" + item.n + "\u00a0个外角加起来正好一整圈 360°，所以 360 ÷ " + item.n + " = " + turnDeg + "°。"
       });
       list.push({
         deg: inner, ok: false, word: "内角",
@@ -2324,7 +2513,7 @@
       item.extras.forEach(function (deg) {
         list.push({
           deg: deg, ok: false, word: item.n * deg < 360 ? "不够一圈" : "绕过头了",
-          why: "每次转 " + deg + "° 的话，" + item.n + " 次一共转 " + (item.n * deg) + "°，不是 360°，图形就闭不上。每次要转 360 ÷ " + item.n + " = " + turnDeg + "°。"
+          why: "每次转 " + deg + "° 的话，" + item.n + "\u00a0次一共转 " + (item.n * deg) + "°，不是 360°，图形就闭不上。每次要转 360 ÷ " + item.n + " = " + turnDeg + "°。"
         });
       });
       return list;
@@ -2352,8 +2541,8 @@
 
       paintShape(item, "?", false);
       svgTitle.textContent = "一个" + item.name + "，海龟停在起点上";
-      svgDesc.textContent = "海龟要重复 " + item.n + " 次「前进 + 转一次」，转角那里画着问号";
-      askBox.textContent = "这是" + item.name + "。海龟重复 " + item.n + " 次「前进 + 转一次」，每次要转多少度？";
+      svgDesc.textContent = "海龟要重复 " + item.n + "\u00a0次「前进 + 转一次」，转角那里画着问号";
+      askBox.textContent = "这是" + item.name + "。海龟重复 " + item.n + "\u00a0次「前进 + 转一次」，每次要转多少度？";
       paintDots();
       nextBtn.disabled = true;
       nextBtn.textContent = "下一题 →";
@@ -2365,7 +2554,7 @@
         button.type = "button";
         button.className = "kid-tile tgx-tile";
         button.setAttribute("aria-pressed", "false");
-        button.setAttribute("aria-label", "选择每次转 " + opt.deg + " 度");
+        button.setAttribute("aria-label", "选择每次转 " + opt.deg + "\u00a0度");
 
         var art = document.createElement("span");
         art.className = "kid-tile-art";
@@ -2399,8 +2588,8 @@
           if (!missed) { firstTry += 1; scoreBox.textContent = String(firstTry); }
           button.setAttribute("aria-pressed", "true");
           paintShape(item, turnDeg + "°", true);
-          svgTitle.textContent = item.name + "：每次转 " + turnDeg + " 度";
-          svgDesc.textContent = "橙色小弧是海龟转的外角 " + turnDeg + " 度，蓝色小弧是图形里面的内角 " + (180 - turnDeg) + " 度";
+          svgTitle.textContent = item.name + "：每次转 " + turnDeg + "\u00a0度";
+          svgDesc.textContent = "橙色小弧是海龟转的外角 " + turnDeg + "\u00a0度，蓝色小弧是图形里面的内角 " + (180 - turnDeg) + "\u00a0度";
           entries.forEach(function (entry) {
             entry.button.disabled = true;
             entry.sub.textContent = entry.opt.word;
@@ -2506,11 +2695,39 @@
   requestDraw();   // 走 requestDraw 而不是裸 rAF：否则首帧待执行时 rafId 仍为 0，交互唤醒会重复排帧
 })();
 </script>
-<script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=17"></script>
-<script src="../data/playful.js?v=17"></script>
-<script src="../assets/js/playful.js?v=17"></script>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var guess1 = "";
+  var guess1Done = false;
+  var sawSquare = false, sawRun = false;
+  function checkGuess(){
+    if (!guess1 || guess1Done || !sawSquare || !sawRun) return;
+    guess1Done = true;
+    document.getElementById("guessOut1").innerHTML = (guess1 === "four" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+      "转满 4\u00a0次直角，正好转了一整圈，线才合拢。少一次就留缺口。";
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。装入正方形图纸，跑一遍看是否合拢。";
+    });
+  });
+  var square = document.querySelector('[data-preset="square"]');
+  if (square) square.addEventListener("click", function(){ if (guess1 && !guess1Done) sawSquare = true; checkGuess(); });
+  var run = document.getElementById("run");
+  if (run) run.addEventListener("click", function(){ if (guess1 && !guess1Done) sawRun = true; checkGuess(); });
+})();
+</script>
 <script>if (window.Progress) Progress.visit("games/turtle-geometry.html", "海龟几何");</script>
-<script src="../assets/js/pwa.js?v=17"></script>
+<script src="../assets/js/pwa.js?v=488"></script>
 </body>
 </html>

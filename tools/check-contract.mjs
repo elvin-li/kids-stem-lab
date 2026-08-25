@@ -5,17 +5,22 @@ import { runInNewContext } from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
+/* 固定七项导航。第七项「医药箱」是家庭医药箱分区的入口：它是医疗速查，
+   和前六项的教学内容不同域，埋在家长指南下面时家长在需要它的那一刻找不到。 */
 const EXPECTED_NAV = [
   ['资源库', 'index.html'],
   ['学习路径', 'pages/paths.html'],
   ['互动实验', 'games/index.html'],
   ['探索', 'nature/index.html'],
   ['我的足迹', 'pages/progress.html'],
-  ['家长指南', 'pages/parents.html']
+  ['家长指南', 'pages/parents.html'],
+  ['医药箱', 'pages/medicine-cabinet.html']
 ];
 /* Progress v3 允许的六种作品类型，data/playful.js 与页面表单共用这一份定义。 */
 const WORK_TYPES = ['observation', 'prediction', 'drawing', 'model', 'explanation', 'photo-note'];
-const VERSIONED_SHARED = /(?:^|\/)(?:assets\/css\/(?:base|kid|print)\.css|assets\/js\/(?:progress|playful|pwa)\.js|data\/(?:explorations|playful)\.js)(?:[?#]|$)/i;
+/* 版本锚的权威清单在下面 mandatoryShellResources / optionalShellResources 两个数组里。
+   这里曾有一条名为 VERSIONED_SHARED 的正则，从未被任何判定使用、却长得像判据，
+   已有人只改它而以为检查生效（实测改错一页的 med.css?v 门禁照样绿），故删除。 */
 const errors = [];
 const sourceCache = new Map();
 let shellVersion = null;
@@ -309,7 +314,8 @@ if (!(await isFile(manifestPath))) {
       const src = icon && typeof icon.src === 'string' ? icon.src : '';
       if (!src) { errors.push(`manifest.webmanifest: icons[${index}] 缺少 src`); continue; }
       if (src.startsWith('/')) { errors.push(`manifest.webmanifest: icons[${index}].src 不得使用根路径: ${src}`); continue; }
-      if (!(await isFile(resolve(ROOT, src)))) errors.push(`manifest.webmanifest: icons[${index}].src 在磁盘上不存在: ${src}`);
+      /* ?v= 查询串是本站的版本锚写法，核对磁盘时去掉查询串（与 check-render 同一口径）。 */
+      if (!(await isFile(resolve(ROOT, src.split(/[?#]/)[0])))) errors.push(`manifest.webmanifest: icons[${index}].src 在磁盘上不存在: ${src}`);
     }
   }
 }
@@ -408,8 +414,17 @@ for (const path of files) {
 
   /* 共享壳资源必须与 Service Worker 使用同一版本，防止新 HTML 混入旧 CSS/JS。 */
   if (shellVersion) {
-    const mandatoryShellResources = ['assets/css/base.css', 'assets/css/kid.css', 'assets/js/pwa.js'];
-    const optionalShellResources = ['assets/js/progress.js', 'assets/js/playful.js'];
+    /* print.css 每页必载，且和其余共享 CSS 一样落在部署配置的 /assets/ 30 天缓存下，
+       没有版本锚时改动它对装过缓存的设备是静默失效的——打印调色板那次修复就属于这类。 */
+    const mandatoryShellResources = ['assets/css/base.css', 'assets/css/kid.css', 'assets/css/print.css', 'assets/js/pwa.js'];
+    /* med.css 只有医药箱分区加载，data/*.js 与 app-icon.svg 也不是每页都引用，
+       所以归到 optional：下面的 referenced 守卫会让不引用的页面直接跳过，
+       而一旦引用了就必须带对版本。这份清单才是真正生效的判据。
+       data/explorations.js 与 data/resources.js 都在 sw.js CORE 里、都落在 /data/
+       30 天缓存下，此前一直没有锚（语义评审 2026-08-11 第 5 条）。 */
+    const optionalShellResources = ['assets/js/progress.js', 'assets/js/playful.js', 'assets/css/med.css',
+      'assets/css/nature-species.css', 'assets/css/games-lab.css',
+      'data/explorations.js', 'data/playful.js', 'data/resources.js', 'data/photo-hub.js', 'assets/icons/app-icon.svg'];
     for (const resource of mandatoryShellResources.concat(optionalShellResources)) {
       const referenced = new RegExp(`${escapeRe(resource)}(?:[?"'])`, 'i').test(html);
       if (!referenced && optionalShellResources.includes(resource)) continue;
@@ -461,7 +476,13 @@ for (const path of files) {
       fail(`自制 ${a.role} 控件缺少 tabindex${a.id ? ` (#${a.id})` : ''}`);
     }
   }
-  for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
+  /* 只检查真实静态 markup。CSS/JS/HTML 注释里的 `<img ...>` 是说明文本，
+     浏览器不会把它们创建成元素；直接扫原始源码会产生假阳性。 */
+  const imageMarkup = html
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<script\b[\s\S]*?<\/script\s*>/gi, ' ')
+    .replace(/<style\b[\s\S]*?<\/style\s*>/gi, ' ');
+  for (const match of imageMarkup.matchAll(/<img\b[^>]*>/gi)) {
     const a = attrs(match[0]);
     if (!('alt' in a)) fail(`图片缺少 alt${a.id ? ` (#${a.id})` : ''}`);
   }

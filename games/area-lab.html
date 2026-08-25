@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>面积工坊 · 拉成长条，面积变小了，还是只是样子变了？</title>
+<meta name="description" content="用同样大小的小正方形去铺：铺满几格，面积就是几格。6 格排成方块和 6 格拉成长条，盖住的地一样大，绕一圈的周长可以不一样。格子数不是真实平方米。不比身体面积。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  .hero { padding: 28px 0 10px; }
+  .hero h1 { margin: .15em 0 .3em; }
+  .lead { max-width: 58ch; color: var(--ink-mid); }
+  .kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--math) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--math) 12%,var(--surface)),var(--surface) 62%);
+  }
+  .mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--math) 36%,var(--line));
+    background: color-mix(in srgb,var(--math) 12%,var(--surface)); font-size: 2.2rem;
+  }
+  .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .ar-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+  .ar-desk { fill: color-mix(in srgb,var(--video) 10%,#eef4fb); }
+  .ar-panel { fill: color-mix(in srgb,var(--surface) 80%,#f7f1e6); stroke: color-mix(in srgb,var(--ink) 22%,transparent); stroke-width: 2; }
+  .ar-on { fill: color-mix(in srgb,var(--math) 48%,#6ea8fe); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 1.4; }
+  .ar-off { fill: color-mix(in srgb,var(--surface) 70%,#fff); stroke: color-mix(in srgb,var(--ink) 22%,transparent); stroke-width: 1.2; }
+  .ar-outline { fill: none; stroke: color-mix(in srgb,var(--math) 70%,#1b64c8); stroke-width: 2.4; stroke-dasharray: 6 4; }
+  .ar-lab { fill: var(--ink); font: 800 14px var(--mono); text-anchor: middle; }
+  .ar-note { fill: var(--ink-mid); font: 700 12px var(--sans, sans-serif); text-anchor: middle; }
+  .readout { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); margin-top: 10px; }
+  .readout b { display: block; font: 800 1.15rem/1.2 var(--mono); color: var(--ink); }
+  .readout span { font-size: .78rem; color: var(--ink-dim); }
+  .kid-action-strip { display: grid; gap: 10px; margin: 12px 0; }
+  .side-row { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit,minmax(min(220px,100%),1fr)); }
+  .peg-card { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); }
+  .peg-card h3 { margin: 0; font-size: 1rem; }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pick-btns .btn { white-space: nowrap; }
+  .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+  .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+  .ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--math) 16%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--math) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+  button, .btn { min-height: 44px; min-width: 44px; }
+  .stage + .kid-action-strip { margin-top: 8px; }
+  .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+  @media (max-width: 640px) {
+    .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+  /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .92rem; line-height: 1.5; margin-bottom: .4em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .ar-art { max-height: 150px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+    html[data-mode="kid"] .readout b { font-size: .95rem; }
+    html[data-mode="kid"] .readout span { font-size: .72rem; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .92rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 8px 0; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+  }
+
+  .guess-card { border-color: color-mix(in srgb,var(--math) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--math); background: color-mix(in srgb,var(--math) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+</style>
+</head>
+<body data-playful-page="games/area-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-hero-scene">
+    <div>
+      <p class="row"><span class="pill pill-math">数学</span><span class="pill">5–9&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>拉成长条，面积变小了，还是只是样子变了？</h1>
+      <p class="lead">用同样大小的小正方形去铺：铺满几格，面积就是几格。6&nbsp;格排成方块和 6&nbsp;格拉成长条，盖住的地一样大，绕一圈的周长却可以不一样。本页格子是比较用的单位正方形，不是真实的平方米；不比身体面积，更不要拿来羞人。</p>
+      <p class="teach-note" data-ad-learn><b>学什么：</b>面积是「铺满」一块面要多少格，不是边长加起来，也不是谁看起来更大。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><svg viewBox="0 0 120 90" width="70" height="52" focusable="false" aria-hidden="true"><rect fill="#eef4fb" width="120" height="90"/><g fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.6"><rect x="16" y="12" width="22" height="22"/><rect x="38" y="12" width="22" height="22"/><rect x="60" y="12" width="22" height="22"/><rect x="82" y="12" width="22" height="22"/><rect x="16" y="34" width="22" height="22"/><rect x="38" y="34" width="22" height="22"/><rect x="60" y="34" width="22" height="22"/><rect x="82" y="34" width="22" height="22"/><rect x="16" y="56" width="22" height="22"/><rect x="38" y="56" width="22" height="22"/><rect x="60" y="56" width="22" height="22"/><rect x="82" y="56" width="22" height="22"/></g></svg></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">用小正方形去铺</h2>
+    <svg class="ar-art" viewBox="0 0 640 280" role="img" aria-labelledby="arTitle arDesc">
+      <title id="arTitle">两块面积板</title>
+      <desc id="arDesc">左右两块格子板。左边可以铺满一个长方形，右边可以排成别的形状。格子数相同，面积就相同。</desc>
+      <rect class="ar-desk" width="640" height="280"/>
+      <rect class="ar-panel" x="28" y="36" width="248" height="188" rx="12"/>
+      <rect class="ar-panel" x="364" y="36" width="248" height="188" rx="12"/>
+      <rect class="ar-outline" x="48" y="56" width="96" height="64"/>
+      <rect class="ar-outline" x="384" y="56" width="96" height="64"/>
+      <g id="arDemo">
+        <rect class="ar-on" x="48" y="56" width="30" height="30"/>
+        <rect class="ar-on" x="80" y="56" width="30" height="30"/>
+        <rect class="ar-on" x="112" y="56" width="30" height="30"/>
+        <rect class="ar-on" x="48" y="88" width="30" height="30"/>
+        <rect class="ar-on" x="80" y="88" width="30" height="30"/>
+        <rect class="ar-on" x="112" y="88" width="30" height="30"/>
+        <rect class="ar-on" x="384" y="56" width="30" height="30"/>
+        <rect class="ar-on" x="416" y="56" width="30" height="30"/>
+        <rect class="ar-on" x="448" y="56" width="30" height="30"/>
+        <rect class="ar-on" x="448" y="88" width="30" height="30"/>
+      </g>
+      <g id="arLiveA"></g>
+      <g id="arLiveB"></g>
+      <text class="ar-lab" x="152" y="246">图形 A</text>
+      <text class="ar-lab" x="488" y="246">图形 B</text>
+      <text class="ar-note" id="arCap" x="320" y="22">虚线框是要铺满的长方形。先铺左边，再在右边排成另一种形状。</text>
+    </svg>
+    <div class="readout">
+      <div><span>图形 A</span><b id="outA">0&nbsp;格</b></div>
+      <div><span>图形 B</span><b id="outB">0&nbsp;格</b></div>
+      <div><span>面积一样吗</span><b id="outSame">还没铺</b></div>
+      <div><span>周长</span><b id="outPeri">先铺再比</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">先用小正方形铺满一个图形并数格子；再做一个格子数相同、形状不同的图形。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="面积主操作">
+    <div class="side-row">
+      <article class="peg-card">
+        <h3 id="leftBoardTitle">图形 A</h3>
+        <div class="pick-btns" role="group" aria-labelledby="leftBoardTitle">
+          <button class="btn btn-primary" type="button" data-ar-side="A" data-ar-shape="rect">铺满长方形</button>
+          <button class="btn" type="button" data-ar-side="A" data-ar-shape="square">正方形</button>
+          <button class="btn" type="button" data-ar-side="A" data-ar-shape="one">1&nbsp;格</button>
+          <button class="btn" type="button" data-ar-side="A" data-ar-shape="four">4&nbsp;格</button>
+          <button class="btn" type="button" data-ar-side="A" data-ar-shape="strip">排成一条</button>
+          <button class="btn" type="button" data-ar-side="A" data-ar-shape="ell">铺成 L</button>
+          <button class="btn btn-ghost" type="button" data-ar-side="A" data-ar-shape="clear">清空</button>
+        </div>
+      </article>
+      <article class="peg-card">
+        <h3 id="rightBoardTitle">图形 B</h3>
+        <div class="pick-btns" role="group" aria-labelledby="rightBoardTitle">
+          <button class="btn btn-primary" type="button" data-ar-side="B" data-ar-shape="rect">铺满长方形</button>
+          <button class="btn" type="button" data-ar-side="B" data-ar-shape="square">正方形</button>
+          <button class="btn" type="button" data-ar-side="B" data-ar-shape="one">1&nbsp;格</button>
+          <button class="btn" type="button" data-ar-side="B" data-ar-shape="four">4&nbsp;格</button>
+          <button class="btn" type="button" data-ar-side="B" data-ar-shape="strip">排成一条</button>
+          <button class="btn" type="button" data-ar-side="B" data-ar-shape="ell">铺成 L</button>
+          <button class="btn btn-ghost" type="button" data-ar-side="B" data-ar-shape="clear">清空</button>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <section class="card guess-card" aria-labelledby="guessTitleAr">
+    <h2 id="guessTitleAr">先猜一猜，再铺</h2>
+    <p><b>第 1 题：</b>6 格排成 2×3 长方形，面积是几格？</p>
+    <div class="pick-btns" role="group" aria-label="猜 2×3 面积">
+      <button class="btn guess-pick" type="button" data-guess1="5" aria-pressed="false">5 格，因为周长是 10</button>
+      <button class="btn guess-pick" type="button" data-guess1="6" aria-pressed="false">6 格：长×宽，盖住多少就数多少</button>
+      <button class="btn guess-pick" type="button" data-guess1="10" aria-pressed="false">10 格，把周长当成面积</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。图形 A 铺满长方形（6 格），看读数。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>同样 6 格改排成一条或 L，面积会？</p>
+      <div class="pick-btns" role="group" aria-label="猜变形面积">
+        <button class="btn guess-pick" type="button" data-guess2="same" aria-pressed="false">仍是 6 格，形状变面积可不变</button>
+        <button class="btn guess-pick" type="button" data-guess2="peri" aria-pressed="false">周长变了，面积一定变</button>
+        <button class="btn guess-pick" type="button" data-guess2="zero" aria-pressed="false">变成 0，因为不像长方形</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后 B 用同样格数排成另一形状，对照「面积一样吗」。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>本来要铺 6 格，少铺 1 格只盖住 5。读数会跟着少吗？</p>
+      <div class="pick-btns" role="group" aria-label="猜缺格面积">
+        <button class="btn guess-pick" type="button" data-guess3="6" aria-pressed="false">还是 6，虚线框说了算</button>
+        <button class="btn guess-pick" type="button" data-guess3="5" aria-pressed="false">会少：没铺到的不算</button>
+        <button class="btn guess-pick" type="button" data-guess3="0" aria-pressed="false">变成 0，因为不完整</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后 A 留一格空隙，对照面积读数。</p>
+    </div>
+  </section>
+
+          <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">两个不同形状，铺出来的格子数可以一样；周长却可以不同</h2>
+    <p>先在图形 A 点「铺满长方形」，数一数有几格。再在图形 B 排成一条或 L，让格子数相同。看「面积一样吗」和「周长」两行读数：格子数可以一样，绕一圈的小段数却可以不一样。</p>
+    <p>面积问的是盖住了几格，周长问的是绕一圈有多长。样子拉成长条，周长常常变长，格子数却可以不变，所以面积可以差不多。空隙没铺到，不能算进面积。看起来更高、更瘦，也不等于盖住更多地。</p>
+    <p>本页尺子是「面积=铺到的整格数」。同格数可以摆成长条或 L。格子数不是真实平方米，也不要拿去量房间。不比身体面积，更不要拿格子羞人。</p>
+  </section>
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">面积图鉴</h2>
+    <p>点一张，对照上面的格子：谁在数面积，谁只是绕圈。</p>
+    <div class="kid-figure-grid" role="group" aria-label="面积图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-ar-atlas="square" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><g fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.5"><rect x="12" y="22" width="18" height="18"/><rect x="30" y="22" width="18" height="18"/><rect x="12" y="40" width="18" height="18"/><rect x="30" y="40" width="18" height="18"/></g><text x="30" y="72" text-anchor="middle" font-size="8" font-weight="800" fill="#1c3a66">2×2</text><text x="60" y="48" text-anchor="middle" font-size="12" font-weight="800" fill="#1c66c2">=</text><g fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.5"><rect x="74" y="36" width="10" height="10"/><rect x="84" y="36" width="10" height="10"/><rect x="94" y="36" width="10" height="10"/><rect x="104" y="36" width="10" height="10"/></g><text x="94" y="72" text-anchor="middle" font-size="8" font-weight="800" fill="#1c3a66">1×4</text></svg></span><span class="kid-figure-cap">正方形</span><span class="kid-figure-fact">四边一样长，也是一种长方形；长乘宽只在对边上，用小格铺满就能数面积。</span></button>
+      <button class="kid-figure" type="button" data-ar-atlas="rect" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><g fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.3"><rect x="16" y="22" width="18" height="18"/><rect x="34" y="22" width="18" height="18"/><rect x="52" y="22" width="18" height="18"/><rect x="70" y="22" width="18" height="18"/><rect x="16" y="40" width="18" height="18"/><rect x="34" y="40" width="18" height="18"/><rect x="52" y="40" width="18" height="18"/><rect x="70" y="40" width="18" height="18"/></g><path d="M16 70h72M16 66v8M88 66v8" stroke="#1c66c2" stroke-width="2"/><text x="52" y="84" text-anchor="middle" font-size="8" font-weight="800" fill="#1c3a66">4×2</text></svg></span><span class="kid-figure-cap">长方形</span><span class="kid-figure-fact">对边相等，长乘宽只在对边上成立；用同样小格铺满，数出来的格数才是面积。</span></button>
+      <button class="kid-figure" type="button" data-ar-atlas="one" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><rect x="36" y="18" width="48" height="48" fill="#dbeafe" stroke="#1c3a66" stroke-width="1.4"/><rect x="46" y="28" width="28" height="28" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.6"/><text x="60" y="46" text-anchor="middle" font-size="12" font-weight="800" fill="#1c1c1c">1</text><path d="M46 76h28M46 72v8M74 72v8" stroke="#1c66c2" stroke-width="2"/></svg></span><span class="kid-figure-cap">1&nbsp;格</span><span class="kid-figure-fact">面积的单位：每一小块都记 1，本页只数铺满的整格，不写成真实平方米。</span></button>
+      <button class="kid-figure" type="button" data-ar-atlas="four" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><rect x="28" y="32" width="16" height="28" fill="#6ea8fe" stroke="#1c3a66"/><rect x="44" y="32" width="16" height="28" fill="#6ea8fe" stroke="#1c3a66"/><rect x="60" y="32" width="16" height="28" fill="#6ea8fe" stroke="#1c3a66"/><rect x="76" y="32" width="16" height="28" fill="#6ea8fe" stroke="#1c3a66"/></svg></span><span class="kid-figure-cap">4&nbsp;格</span><span class="kid-figure-fact">可以排成一行，也可以排成正方形；格子数一样，铺住的面积就一样，周长另算。</span></button>
+      <button class="kid-figure" type="button" data-ar-atlas="same" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><rect x="12" y="28" width="40" height="28" fill="#6ea8fe"/><rect x="68" y="22" width="14" height="42" fill="#6ea8fe"/><rect x="82" y="50" width="26" height="14" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">同样面积不同形状</span><span class="kid-figure-fact">格子数一样，样子可以完全不同；绕一圈的周长却可以有长有短，面积只问铺满。</span></button>
+      <button class="kid-figure" type="button" data-ar-atlas="peri" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><rect x="16" y="40" width="88" height="14" fill="#c5d8f6" stroke="#1c3a66"/><path d="M16 40 H104 V54 H16 Z" fill="none" stroke="#be123c" stroke-width="3"/></svg></span><span class="kid-figure-cap">周长不是面积</span><span class="kid-figure-fact">绕一圈的长度是周长，不等于铺满了多少格；面积只问盖住，不问围一圈。</span></button>
+      <button class="kid-figure" type="button" data-ar-atlas="full" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><rect x="24" y="24" width="72" height="48" fill="none" stroke="#1b64c8" stroke-dasharray="4 3"/><rect x="26" y="26" width="22" height="22" fill="#6ea8fe"/><rect x="50" y="26" width="22" height="22" fill="#6ea8fe"/><rect x="74" y="26" width="20" height="22" fill="#6ea8fe"/><rect x="26" y="50" width="22" height="20" fill="#6ea8fe"/><rect x="50" y="50" width="22" height="20" fill="#6ea8fe"/><rect x="74" y="50" width="20" height="20" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">铺满</span><span class="kid-figure-fact">虚线框里每一格都盖上、没有缺口，数出来的整格才算面积，框自己不会数。</span></button>
+      <button class="kid-figure" type="button" data-ar-atlas="gap" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><rect x="24" y="24" width="72" height="48" fill="none" stroke="#1b64c8" stroke-dasharray="4 3"/><rect x="26" y="26" width="22" height="22" fill="#6ea8fe"/><rect x="74" y="26" width="20" height="22" fill="#6ea8fe"/><rect x="26" y="50" width="22" height="20" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">空隙</span><span class="kid-figure-fact">没铺到的格子是空隙，不能偷偷加进面积；面积只数铺满的格，围一圈也不算。</span></button><button class="kid-figure" type="button" data-ar-atlas="row" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><rect x="20" y="36" width="18" height="18" fill="#6ea8fe"/><rect x="40" y="36" width="18" height="18" fill="#6ea8fe"/><rect x="60" y="36" width="18" height="18" fill="#6ea8fe"/><rect x="80" y="36" width="18" height="18" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">一行</span><span class="kid-figure-fact">4&nbsp;格排成一行，看起来更长，铺住的仍是 4&nbsp;格，不是面积变大了，周长变了面积没变。</span></button><button class="kid-figure" type="button" data-ar-atlas="lshape" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><rect x="32" y="22" width="22" height="22" fill="#6ea8fe"/><rect x="32" y="46" width="22" height="22" fill="#6ea8fe"/><rect x="56" y="46" width="22" height="22" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">L 形</span><span class="kid-figure-fact">3&nbsp;格拐一个弯，样子变了，铺住的仍是 3&nbsp;格，不是变小了，围一圈可以变，面积仍看铺满。</span></button><button class="kid-figure" type="button" data-ar-atlas="count" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><rect x="28" y="24" width="20" height="20" fill="#6ea8fe"/><rect x="50" y="24" width="20" height="20" fill="#6ea8fe"/><rect x="28" y="46" width="20" height="20" fill="#6ea8fe"/><text x="88" y="52" text-anchor="middle" font-size="18" font-weight="800" fill="#1b64c8">3</text></svg></span><span class="kid-figure-cap">先数格子</span><span class="kid-figure-fact">面积就是铺满了几格，先数再看谁看起来高、谁看起来胖，样子不作数。</span></button><button class="kid-figure" type="button" data-ar-atlas="big" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef4fb" width="120" height="90"/><rect x="24" y="20" width="28" height="28" fill="#6ea8fe"/><rect x="56" y="28" width="40" height="40" fill="#4a90d0"/></svg></span><span class="kid-figure-cap">格子变大</span><span class="kid-figure-fact">格子变大，同样几格盖住的地面更大；要比就先说清这一格有多大，长乘宽只在对边上。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照格子里铺了几格。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--math)"
+         data-kid-predict
+         data-kid-predict-explain="个数≈面积÷单位面积；单位越小，读数越大——东西没变，尺子变了。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🟦</span><b>6&nbsp;格的长条和 6&nbsp;格的方块，谁的面积更大？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：同样格子数面积谁大">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="long">长条看起来更长，所以面积更大</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="same" data-kid-predict-correct>都是 6&nbsp;格，面积一样；周长可以不同</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="gap">有空隙的那块面积更大</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：两个不同形状，面积却一样</h2>
+    <p>先铺满一个图形并数有几格；再在另一边排成不同的形状，让格子数相同。也可以先数，再把同一边改成另一种排法。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先用小正方形铺满一个图形，并数有几格。</p>
+  </section>
+
+
+          <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">先铺满数格，再换一种形状，看格子数还一样吗</h2>
+    <p>舞台上虚线框是要铺满的地。先铺左边并数有几格，再在右边排成一条或 L，让格子数相同。同时看周长那一行：样子拉长了，绕一圈的小段数常常变多，盖住的格数却可以不变。</p>
+    <p>回家只带两句：「先数格子」；「样子变了，地可以一样大」。不要写「看起来更高就更大」，也不要把格子数说成真实平方米。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="28" y="18" width="18" height="18" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="46" y="18" width="18" height="18" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="64" y="18" width="18" height="18" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="28" y="36" width="18" height="18" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="46" y="36" width="18" height="18" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="64" y="36" width="18" height="18" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="28" y="54" width="18" height="18" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="46" y="54" width="18" height="18" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="64" y="54" width="18" height="18" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/></svg></span><span class="kid-figure-cap">小格</span><span class="kid-figure-sub">先数</span><p class="kid-figure-fact">小格子铺满、没有缺口，数出来的整格数才是本页的面积，不是围一圈的长度。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="28" width="16" height="16" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="32" y="28" width="16" height="16" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="16" y="44" width="16" height="16" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="32" y="44" width="16" height="16" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="58" y="40" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="72" y="40" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="86" y="40" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="100" y="40" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/></svg></span><span class="kid-figure-cap">换形状</span><span class="kid-figure-sub">格数可同</span><p class="kid-figure-fact">拉成长条或拐成 L，样子变了，铺满的格子数可以还是一样，面积跟着格走。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="28" y="22" width="64" height="44" fill="#c5d8f6" stroke="#1c3a66"/><path d="M28 22 H92 V66 H28 Z" fill="none" stroke="#be123c" stroke-width="3"/></svg></span><span class="kid-figure-cap">周长</span><span class="kid-figure-sub">可以不同</span><p class="kid-figure-fact">绕一圈可以变长变短，那是周长；面积只问铺满了几格，两件事要分开。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="30" y="16" width="14" height="56" fill="#6ea8fe" stroke="#1c3a66"/><rect x="70" y="40" width="28" height="32" fill="#6ea8fe" stroke="#1c3a66"/><circle cx="60" cy="46" r="24" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M44 30 L76 62" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">看起来高</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">高瘦的长条不一定铺住更多地，先数铺满的格子，不要只看谁看起来高。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="24" y="20" width="72" height="50" fill="none" stroke="#1b64c8" stroke-dasharray="4 3"/><rect x="26" y="22" width="22" height="22" fill="#6ea8fe"/><rect x="72" y="46" width="22" height="22" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">空隙</span><span class="kid-figure-sub">不算</span><p class="kid-figure-fact">没铺到的那一格是空隙，不能偷偷加进面积；虚线框自己不会替你数格。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="28" r="10" fill="#f3d2a6" stroke="#3a2a18"/><rect x="48" y="38" width="24" height="30" rx="6" fill="#6ea8fe"/><circle cx="60" cy="46" r="24" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M44 30 L76 62" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">身体</span><span class="kid-figure-sub">不比</span><p class="kid-figure-fact">不要拿面积去比谁的身体，更不要用格子数来羞人。本页格子也不是平方米。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>铺满并数格。</b>写下左边有几格。</li>
+      <li data-step="2"><b>换一种形状。</b>右边排成一条或 L，让格数相同。</li>
+      <li data-step="3"><b>再看周长。</b>绕一圈的小段数变了吗？</li>
+      <li data-step="4"><b>写完成句。</b>形状不同、格数可同；不是看起来高就更大。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>样子不一样，铺出来的小正方形可以一样多。没铺到的那一格不算。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>面积问盖住几格，周长问绕一圈多长。拉成长条，周长常常变，格子数可以不变。本页格子不是真实平方米。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>面积是覆盖测度，周长是边界长度，两者独立。改形状可以保持格数、改变周长。本页只数整格，不换算成平方厘米，也不当房产测量。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能给出两个不同形状且格数相同，能把面积和周长分开，并否定「看起来更高就更大」。完成看的是对照，不是背公式。</p>
+    <ul class="ask-list">
+      <li>左边铺满是几格？右边换形状以后还是几格？</li>
+      <li>拉成长条，周长变了吗？面积一定变吗？</li>
+      <li>虚线框里空着一格，能不能算进面积？</li>
+      <li>看起来更高，就一定盖住更多地吗？</li>
+    </ul>
+  </section>
+
+
+        <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">面积不是周长；格子数也不是真实平方米</h2>
+    <p>同一块地，拉成细长条，绕一圈往往变长，盖住的格子数却可以差不多。周长和面积是两把尺子，不要混成一句。空隙没铺到，那一格不能加进去。</p>
+    <p>如果以后换更大的格子来铺同一块地，个数会变少，地还是那块。要比两个数目，得先说清格子有多大。本页舞台没有换格子大小的滑杆，只数同样大的整格。</p>
+    <p>6&nbsp;格就是 6&nbsp;个单位正方形，不是 6 平方米，更不是房间面积。不要把格子数抄进房产广告，也不要拿来量操场。</p>
+    <p>图形课不比谁的身体，面积不是用来羞人的。先数格子，再谈样子。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="20" y="36" width="80" height="16" fill="#c5d8f6" stroke="#1c3a66"/><path d="M20 36 H100 V52 H20 Z" fill="none" stroke="#be123c" stroke-width="3"/></svg></span><span class="kid-figure-cap">周长</span><span class="kid-figure-sub">可以不同</span><p class="kid-figure-fact">绕一圈可以有长有短，那是周长账；面积只问铺满了多少格子，分开记。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="12" y="28" width="12" height="12" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="24" y="28" width="12" height="12" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="36" y="28" width="12" height="12" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="12" y="40" width="12" height="12" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="24" y="40" width="12" height="12" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="36" y="40" width="12" height="12" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><text x="56" y="50" font-size="12" font-weight="800">=</text><rect x="70" y="22" width="12" height="12" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="82" y="22" width="12" height="12" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="70" y="34" width="12" height="12" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="82" y="34" width="12" height="12" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="70" y="46" width="12" height="12" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="82" y="46" width="12" height="12" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/></svg></span><span class="kid-figure-cap">同格不同形</span><span class="kid-figure-sub">面积可同</span><p class="kid-figure-fact">6&nbsp;格的长条和 6&nbsp;格的方块铺住一样多；长乘宽只在对边长方形上，围一圈可以不一样长。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="24" y="20" width="72" height="50" fill="none" stroke="#1b64c8" stroke-dasharray="4 3"/><rect x="26" y="22" width="22" height="22" fill="#6ea8fe"/><rect x="72" y="46" width="22" height="22" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">空隙</span><span class="kid-figure-sub">不算进去</span><p class="kid-figure-fact">没铺到的格子是空隙，虚线框画了也不算，只数真正铺上的整格，周长那一圈不算面积。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="36" y="22" width="20" height="20" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="56" y="22" width="20" height="20" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="36" y="42" width="20" height="20" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="56" y="42" width="20" height="20" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><text x="60" y="78" text-anchor="middle" font-size="9" font-weight="800" fill="#c2410c">不是 m²</text></svg></span><span class="kid-figure-cap">平方米</span><span class="kid-figure-sub">不是</span><p class="kid-figure-fact">本页格子不是真实平方米，也不拿铺了几格去比身体或羞人，长乘宽只在对边上。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：两形同格 · 周长可变 · 看起来高就更大</h2>
+    <p>三列用同样大小的小正方形。先数左边，再换右边的形状，不要同时改格子大小。一次改两样，分不清面积变了还是尺子变了。</p>
+    <p>两形同格：样子不同，格子数相同，面积一样。周长可以不同：长条绕一圈往往更长。「看起来高就更大」整列划掉：先数铺满了几格。</p>
+    <p>空隙那一格没盖住，读数会少，不是虚线框说了算。格子数不要写成真实平方米。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="14" y="28" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="28" y="28" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="14" y="42" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="28" y="42" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="56" y="40" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="70" y="40" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="84" y="40" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="98" y="40" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><circle cx="104" cy="16" r="8" fill="#3d9a58"/></svg></span><span class="kid-figure-cap">两形同格</span><span class="kid-figure-sub">完成</span><p class="kid-figure-fact">两个样子不同的图形，铺满的格子数一样，盖住的地就一样大，围一圈可以不同。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="30" width="36" height="28" fill="#6ea8fe" stroke="#be123c" stroke-width="2"/><rect x="64" y="40" width="44" height="12" fill="#6ea8fe" stroke="#be123c" stroke-width="2"/><circle cx="104" cy="16" r="8" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">周长可变</span><span class="kid-figure-sub">面积可同</span><p class="kid-figure-fact">拉成长条，绕一圈常常变长，铺满的格子数却可以还是 6，周长不是面积。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="28" y="12" width="12" height="60" fill="#6ea8fe"/><rect x="60" y="36" width="36" height="36" fill="#6ea8fe"/><path d="M28 22 L92 68 M92 22 L28 68" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">看起来高就更大</span><span class="kid-figure-sub">整列划掉</span><p class="kid-figure-fact">「看起来高就更大」整句划掉：先数铺满了几格，再谈样子，围一圈不作数。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="24" y="20" width="72" height="50" fill="none" stroke="#1b64c8" stroke-dasharray="4 3"/><rect x="26" y="22" width="22" height="22" fill="#6ea8fe"/><rect x="72" y="46" width="22" height="22" fill="#6ea8fe"/></svg></span><span class="kid-figure-cap">空隙</span><span class="kid-figure-sub">不算</span><p class="kid-figure-fact">空隙没铺到，不能偷偷加进面积；虚线框自己不会数格，只数盖住的，周长也不许混进来。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「先数格子」，不记地产词</h2>
+    <p>在纸上画两个不同样子：一个方一点，一个拉成长条，旁边写同一个数字，再各写一圈有多长。两张图并排，比背「长乘宽」有用。</p>
+    <p>口头只要两句：「先数格子。」「样子变了，地可以一样大。」有人说「看起来更高就更大」，让孩子指着格子数反驳。</p>
+    <p>不要把 6&nbsp;格说成 6 平方米，不要拿面积比身体。体积工坊是邻居：那里问的是占多少空间，不是盖住几格。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="14" y="28" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="28" y="28" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="14" y="42" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="28" y="42" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="58" y="40" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="72" y="40" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="86" y="40" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><rect x="100" y="40" width="14" height="14" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.2"/><path d="M100 62 L112 78 L108 60 Z" fill="#e8b84a" stroke="#3a2a18"/></svg></span><span class="kid-figure-cap">两个样子</span><span class="kid-figure-sub">同一个数</span><p class="kid-figure-fact">先画出两个样子，再写下它们铺满了几格，是不是同一个格子数，围多长另写一行。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="56" cy="40" rx="28" ry="18" fill="#fff" stroke="#3a2a18" stroke-width="1.8"/><path d="M44 54 L40 70 L56 58" fill="#fff" stroke="#3a2a18" stroke-width="1.8"/><circle cx="46" cy="40" r="3" fill="#3a2a18"/><circle cx="56" cy="40" r="3" fill="#3a2a18"/><circle cx="66" cy="40" r="3" fill="#3a2a18"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">先数格子</span><p class="kid-figure-fact">回家说得出：面积先数铺满的格子，不要只看谁看起来高、谁看起来胖。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="28" y="12" width="12" height="60" fill="#6ea8fe"/><rect x="60" y="36" width="36" height="36" fill="#6ea8fe"/><circle cx="60" cy="46" r="24" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M44 30 L76 62" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">看起来高就更大</span><span class="kid-figure-sub">否决句</span><p class="kid-figure-fact">看起来高不一定更大，先数铺满了几格。把「高就更大」整句划掉，周长不是面积。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="28" r="10" fill="#f3d2a6" stroke="#3a2a18"/><rect x="48" y="38" width="24" height="30" rx="6" fill="#6ea8fe"/><circle cx="60" cy="46" r="24" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M44 30 L76 62" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">身体</span><span class="kid-figure-sub">不比</span><p class="kid-figure-fact">面积课不比谁的身体，格子数也不是真实平方米；长乘宽只在对边上。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「样子变了面积变没变」，就只改形状这一项。同样大小的小正方形，先铺满一个长方形并数格，再排成一条或 L，让格子数相同。不要同时改格子大小，也不要把空隙那一格算进去。</p>
+    <ul>
+      <li><b>只改这一项：</b>形状（长方形 / 一条 / L）。</li>
+      <li><b>先保持不变：</b>同样大小的小正方形，只数铺到的整格。</li>
+      <li><b>要观察的：</b>格子数一样吗，周长变了吗。</li>
+      <li><b>另开一行：</b>故意留一格空隙，看读数会不会少。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>同一块手帕，摊平铺在桌上，和卷成细长条，盖住的地还一样大吗？绕一圈的边变长了吗？</li>
+      <li>花园里用绳子围一块地：围成接近正方形，和拉成细长条，哪一块里面能种的菜可能差不多，哪一边绳子更不够用？</li>
+      <li>如果有人说「我的房间有 20 格，所以有 20 平方米」，缺了哪一句？本页的格子能直接换成平方米吗？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>样子不一样，铺出来的小正方形可以一样多。没铺到的那一格不算。能数出「都是 6&nbsp;格」就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>面积问盖住几格，周长问绕一圈多长。拉成长条，周长常常变，格子数可以不变。本页格子不是真实平方米，也不比身体。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>面积是覆盖测度，周长是边界长度，两者独立。等面积图形可以有不同周长。本页只数整格，不换算平方厘米，不当房产测量。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：面积观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：6格的长条和6格的方块"></div>
+      <div><label for="workContent">格子数和样子</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下两个图形各有几格、看起来像什么，以及谁的周长更长。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>6&nbsp;格的长条和 6&nbsp;格的方块：孩子数的是格子，还是在说「这个比较胖、那个比较瘦」？让他再指一次格子。</li>
+      <li>拉成长条以后周长变了：哪一句四岁听得懂？试「绕一圈变长了，盖住的小方块还是这么多」。</li>
+      <li>虚线框里空着一格，读数变成 5：为什么不能说「框是 6，所以还是 6」？差在有没有铺到。</li>
+      <li>有人把 6&nbsp;格说成 6 平方米：缺了哪一句？本页能当房产测量吗？</li>
+      <li>比身体面积、用格子羞人：红线怎么说？图形课能拿来评论谁胖谁瘦吗？</li>
+      <li>同一块手帕摊平或卷成条：盖住的地还一样大吗？这和本页的「换形状」像在哪？</li>
+    </ul>
+  </section>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着两块板讲：涂色的小正方形是盖住的地，虚线框只是提示要铺哪里。数铺到的整格，就是本页的面积。</p>
+    <p>面积问覆盖了多少，周长问边界有多长，两者独立。同一格数可以摆成长条或 L，周长常常不同。本页「面积=铺到的整格数」只是比较尺子，用来看见「样子变了地可以一样大」，不是平方厘米，更不是房产平方米。</p>
+    <p>空隙没铺到，不能算进面积。看起来高、看起来胖，是视觉启发式，常常骗人。先数格子，再谈样子。</p>
+    <p>体积工坊问的是占多少空间，测量工坊问的是一条边有多长，都是邻居。不要把格子数抄成真实面积。不比身体，不羞人。</p>
+  </section>
+
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--math) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--math) 8%,var(--surface))" data-audience="parent">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">面积公式卡 · 面积=铺到的整格数（本页尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">只数盖住的单位正方形，空隙不算。同格数可以摆成 L 形或长条，周长可以不同。格子数用来比较，不是真实平方米，也不换算成平方厘米。不比身体面积。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：先数格子；样子变了，地可以一样大。体积工坊看「占多少空间」；数积木继续用手去数块。</p>
+    <p class="row"><a class="btn btn-ghost" href="volume-lab.html">体积工坊</a><a class="btn btn-ghost" href="number-blocks.html">数积木</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页用单位正方形数面积，是小学里「数方格」的示意，不引入平方厘米的换算。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var R = 4, C = 6, SIZE = 32;
+  var NS = "http://www.w3.org/2000/svg";
+  var A = empty(), B = empty();
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  var seenAr = { six:false, same6:false, five:false };
+  var snap = { area:0, key:"" };
+  var seen = { counted:false, paired:false, done:false };
+
+  function empty(){
+    var b = [], r, c, row;
+    for (r = 0; r < R; r++) {
+      row = [];
+      for (c = 0; c < C; c++) row.push(0);
+      b.push(row);
+    }
+    return b;
+  }
+  function cellsOf(board){
+    var out = [], r, c;
+    for (r = 0; r < R; r++) for (c = 0; c < C; c++) if (board[r][c]) out.push([r, c]);
+    return out;
+  }
+  function areaOf(board){ return cellsOf(board).length; }
+  function periOf(board){
+    var p = 0, r, c;
+    for (r = 0; r < R; r++) for (c = 0; c < C; c++) if (board[r][c]) {
+      if (r === 0 || !board[r-1][c]) p += 1;
+      if (r === R-1 || !board[r+1][c]) p += 1;
+      if (c === 0 || !board[r][c-1]) p += 1;
+      if (c === C-1 || !board[r][c+1]) p += 1;
+    }
+    return p;
+  }
+  function keyOf(cells){
+    if (!cells.length) return "";
+    var minR = Infinity, minC = Infinity, i;
+    for (i = 0; i < cells.length; i++) {
+      if (cells[i][0] < minR) minR = cells[i][0];
+      if (cells[i][1] < minC) minC = cells[i][1];
+    }
+    return cells.map(function(p){ return (p[0]-minR)+":"+(p[1]-minC); }).sort().join(";");
+  }
+  function rot90(cells){ return cells.map(function(p){ return [p[1], -p[0]]; }); }
+  function flip(cells){ return cells.map(function(p){ return [p[0], -p[1]]; }); }
+  function allKeys(cells){
+    var set = {}, cur = cells, i, k;
+    for (i = 0; i < 4; i++) {
+      k = keyOf(cur); set[k] = true;
+      k = keyOf(flip(cur)); set[k] = true;
+      cur = rot90(cur);
+    }
+    return set;
+  }
+  function sameShape(a, b){
+    if (!a.length || a.length !== b.length) return false;
+    return !!allKeys(a)[keyOf(b)];
+  }
+  function hasGap(board){
+    var n = 0, r, c;
+    for (r = 0; r < 2; r++) for (c = 0; c < 3; c++) if (board[r][c]) n += 1;
+    return n > 0 && n < 6;
+  }
+  function fillRect(board, rr, cc, w, h){
+    var r, c;
+    for (r = rr; r < rr+h && r < R; r++) for (c = cc; c < cc+w && c < C; c++) board[r][c] = 1;
+  }
+  function applyShape(board, name){
+    var r, c;
+    for (r = 0; r < R; r++) for (c = 0; c < C; c++) board[r][c] = 0;
+    if (name === "rect") fillRect(board, 0, 0, 3, 2);
+    else if (name === "square") fillRect(board, 0, 0, 2, 2);
+    else if (name === "one") board[0][0] = 1;
+    else if (name === "four") fillRect(board, 0, 0, 4, 1);
+    else if (name === "strip") fillRect(board, 0, 0, 6, 1);
+    else if (name === "ell") { board[0][0] = 1; board[1][0] = 1; board[2][0] = 1; board[2][1] = 1; }
+  }
+  function paintBoard(gid, ox, oy, board, which){
+    var g = document.getElementById(gid);
+    var r, c, rect, id;
+    if (!g.childNodes.length) {
+      for (r = 0; r < R; r++) for (c = 0; c < C; c++) {
+        rect = document.createElementNS(NS, "rect");
+        rect.setAttribute("x", String(ox + c * SIZE));
+        rect.setAttribute("y", String(oy + r * SIZE));
+        rect.setAttribute("width", String(SIZE - 2));
+        rect.setAttribute("height", String(SIZE - 2));
+        rect.setAttribute("rx", "3");
+        rect.setAttribute("data-ar-r", String(r));
+        rect.setAttribute("data-ar-c", String(c));
+        rect.setAttribute("data-ar-which", which);
+        g.appendChild(rect);
+      }
+      g.addEventListener("click", function(ev){
+        var t = ev.target;
+        if (!t.getAttribute || t.getAttribute("data-ar-which") !== which) return;
+        var rr = Number(t.getAttribute("data-ar-r"));
+        var cc = Number(t.getAttribute("data-ar-c"));
+        var bd = which === "A" ? A : B;
+        bd[rr][cc] = bd[rr][cc] ? 0 : 1;
+        render(true);
+      });
+    }
+    for (r = 0; r < R; r++) for (c = 0; c < C; c++) {
+      id = g.childNodes[r * C + c];
+      id.setAttribute("class", board[r][c] ? "ar-on" : "ar-off");
+    }
+  }
+  function render(fromUser){
+    var demo = document.getElementById("arDemo");
+    if (demo) demo.setAttribute("hidden", "");
+    paintBoard("arLiveA", 48, 56, A, "A");
+    paintBoard("arLiveB", 384, 56, B, "B");
+    var a = areaOf(A), b = areaOf(B);
+    var pa = periOf(A), pb = periOf(B);
+    var ca = cellsOf(A), cb = cellsOf(B);
+    document.getElementById("outA").textContent = a + "\u00a0格";
+    if (guess1 && !guess1Done && a === 6) seenAr.six = true;
+    if (guess2 && !guess2Done && a === 6 && b === 6) seenAr.same6 = true;
+    if (guess3 && !guess3Done && a === 5) seenAr.five = true;
+    if (guess1 && !guess1Done && seenAr.six) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "6" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "面积=盖住的格数。2×3=6，不是周长。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && seenAr.same6) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "same" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "格子数相同，面积相同；周长可以不一样。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && seenAr.five) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "5" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "面积只数盖住的格：少铺一格就是 <b>5</b>，空隙不算进去。";
+    }
+    document.getElementById("outB").textContent = b + "\u00a0格";
+    var sameTxt = "还没铺";
+    var periTxt = "先铺再比";
+    var live = document.getElementById("live");
+    var cap = document.getElementById("arCap");
+    if (!a && !b) {
+      cap.textContent = "虚线框是要铺满的长方形。先铺左边，再在右边排成另一种形状。";
+      live.textContent = "先用小正方形铺满一个图形并数格子；再做一个格子数相同、形状不同的图形。";
+    } else if (a && b && a === b && !sameShape(ca, cb)) {
+      sameTxt = "一样，都是 "+a+"\u00a0格";
+      periTxt = "A\u00a0"+pa+"\u00a0小段，B\u00a0"+pb+"\u00a0小段";
+      cap.textContent = "面积一样，形状不同。周长还可以再比一比。";
+      live.textContent = "面积 "+a+"\u00a0格 = "+b+"\u00a0格。绕一圈的周长可以不一样。";
+    } else if (a && b && a === b) {
+      sameTxt = "格子数一样，形状也像";
+      periTxt = "A\u00a0"+pa+"\u00a0小段，B\u00a0"+pb+"\u00a0小段";
+      cap.textContent = "面积一样，但形状也一样。换一种排法。";
+      live.textContent = "再把一边改成 L 或者一条，让样子看起来不同。";
+    } else {
+      sameTxt = a && b ? "格子数还不一样" : "先把两边都铺上";
+      periTxt = (a ? "A\u00a0"+pa+"\u00a0小段" : "A\u00a0还没铺")+"；"+(b ? "B\u00a0"+pb+"\u00a0小段" : "B\u00a0还没铺");
+      cap.textContent = hasGap(A) || hasGap(B) ? "虚线框里还有空隙，空隙不能算进面积。" : "数一数两边各有几格。";
+      live.textContent = hasGap(A) || hasGap(B) ? "空隙那一格还没盖住，先铺满或改成完整的形状。" : "一边铺好以后，另一边用相同的格子数排成不同形状。";
+    }
+    document.getElementById("outSame").textContent = sameTxt;
+    document.getElementById("outPeri").textContent = periTxt;
+    if (fromUser) {
+      if (a >= 1 || b >= 1) seen.counted = true;
+      if (snap.area === 0) {
+        if (a >= 1) snap = { area:a, key:keyOf(ca) };
+        else if (b >= 1) snap = { area:b, key:keyOf(cb) };
+      }
+      if (a >= 1 && a === b && !sameShape(ca, cb)) seen.paired = true;
+      if (snap.area >= 1 && a === snap.area && a >= 1 && !sameShape(ca, cellsFromKey(snap.key))) seen.paired = true;
+      if (snap.area >= 1 && b === snap.area && b >= 1 && !sameShape(cb, cellsFromKey(snap.key))) seen.paired = true;
+    }
+    var status = document.getElementById("taskStatus");
+    if (seen.done) return;
+    if (seen.counted && seen.paired) {
+      seen.done = true;
+      if (window.Progress) Progress.complete("games/area-lab.html", "做出两个同面积不同形状");
+      status.textContent = "完成啦：两块面积一样，形状不一样。";
+    } else if (!seen.counted) {
+      status.textContent = "尚未完成：先用小正方形铺满一个图形，并数有几格。";
+    } else {
+      status.textContent = "还差：再做一个格子数相同、形状不同的图形。";
+    }
+  }
+  function cellsFromKey(key){
+    if (!key) return [];
+    return key.split(";").map(function(p){
+      var xy = p.split(":");
+      return [Number(xy[0]), Number(xy[1])];
+    });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-ar-shape]"), function(btn){
+    btn.addEventListener("click", function(){
+      var side = btn.getAttribute("data-ar-side");
+      var name = btn.getAttribute("data-ar-shape");
+      applyShape(side === "A" ? A : B, name);
+      render(true);
+    });
+  });
+  var ATLAS = {
+    square:"正方形：四边一样长，也是一种长方形；长乘宽只在对边上，用小格铺满就能数面积。",
+    rect:"长方形：对边相等，长乘宽只在对边上成立；用同样小格铺满，数出来的格数才是面积。",
+    one:"1\u00a0格：面积的单位，每一小块都记 1，本页只数铺满的整格，不写成真实平方米。",
+    four:"4\u00a0格：可以排成一行，也可以排成正方形；格子数一样，铺住的面积就一样，周长另算。",
+    same:"同样面积不同形状：格子数一样，样子可以完全不同；绕一圈的周长却可以有长有短，面积只问铺满。",
+    peri:"周长不是面积：绕一圈的长度是周长，不等于铺满了多少格；面积只问盖住，不问围一圈。",
+    full:"铺满：虚线框里每一格都盖上、没有缺口，数出来的整格才算面积，框自己不会数。",
+    gap:"空隙：没铺到的格子是空隙，不能偷偷加进面积；面积只数铺满的格，围一圈也不算。",
+    row:"一行：4\u00a0格排成一行，看起来更长，铺住的仍是 4\u00a0格，不是面积变大了。",
+    lshape:"L 形：3\u00a0格拐一个弯，样子变了，铺住的仍是 3\u00a0格，不是变小了。",
+    count:"先数格子：面积就是铺满了几格，先数再看谁看起来高、谁看起来胖，样子不作数。",
+    big:"格子变大：格子变大，同样几格盖住的地面更大；要比就先说清这一格有多大，长乘宽只在对边上。"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-ar-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-ar-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-ar-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+    });
+  });
+  render(false);
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。去铺 6 格验证。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。两边都铺 6 格对照。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      guess3 = btn.getAttribute("data-guess3") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut3").textContent = "押好了。A 留一格空隙，对照读数。";
+    });
+  });
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/area-lab.html", "面积工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

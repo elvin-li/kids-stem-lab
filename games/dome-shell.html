@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>圆顶壳工坊 · 圆顶扛得住，是壳更厚，还是力走到边上？</title>
+<meta name="description" content="同一块壳，只改拱不拱。上限=20+曲率²×0.8；塌⇔载荷>上限。数字是本页比较尺子，不是建筑规范。蛋竖着更耐压只是示意。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/games-lab.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+.kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--phys) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--phys) 12%,var(--surface)),var(--surface) 62%);
+  }
+.mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--phys) 36%,var(--line));
+    background: color-mix(in srgb,var(--phys) 12%,var(--surface)); font-size: 2.2rem;
+  }
+.ds-art { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+.ds-desk { fill: color-mix(in srgb,var(--kit) 10%,#f6efe3); }
+.ds-floor { fill: color-mix(in srgb,var(--kit) 28%,#c4a06a); }
+.ds-lab { fill: var(--ink); font: 700 13px var(--mono); }
+.ds-atlas .kid-figure { --tone: var(--phys); }
+.ds-atlas .kid-figure-art { padding: 6px; }
+.ds-atlas .kid-figure-art > svg { width: 100%; max-width: 120px; height: auto; }
+.ds-atlas .kid-figure-fact { display: block; }
+@media (max-width: 640px) {
+    .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+@media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .92rem; line-height: 1.5; margin-bottom: .4em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .ds-art { max-height: 150px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .92rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 8px 0; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+  }
+.ad-photo-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 10px;align-items:end}.ad-photo-strip figure{margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface-2)}.ad-photo-strip img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}.ad-photo-strip figcaption{padding:6px 8px;font-size:.78rem;font-weight:800;color:var(--ink-mid);line-height:1.35}.ad-photo-strip .is-contrast figcaption{color:color-mix(in srgb,var(--warn) 70%,var(--ink))}@media (max-width:480px){.ad-photo-strip{gap:6px}.ad-photo-strip figcaption{font-size:.7rem;padding:4px 6px}}
+</style>
+</head>
+<body data-playful-page="games/dome-shell.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-hero-scene">
+    <div>
+      <p class="row"><span class="pill pill-phys">物理</span><span class="pill">6–11&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>圆顶扛得住，是壳更厚，还是力走到边上？</h1>
+      <p class="lead">拱把压下来的力顺着弧送到两边的脚。压扁成板，力挤在正中，中间先往下弯。同一块壳，只改曲率，不是圆顶偷偷加厚。蛋竖着更耐压只是示意。熟蛋或纸模即可，护眼防溅，不砸向人。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/turtles.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">调曲率和载荷，看塌不塌</h2>
+    <div class="ad-photo-strip" role="group" aria-label="真实现象参照"><figure><img class="photo-real" src="../assets/photos/turtles.jpg" alt="" width="640" height="360" loading="lazy"><figcaption>生活里能看见的参照</figcaption></figure><figure><img class="photo-real" src="../assets/photos/turtles.jpg" alt="" width="640" height="360" loading="lazy"><figcaption>再看台上的结构图：零件对上号</figcaption></figure></div>
+<svg class="ds-art" viewBox="0 0 420 280" role="img" aria-labelledby="dsTitle dsDesc">
+      <title id="dsTitle">圆顶舞台</title>
+      <desc id="dsDesc">弯拱时红箭头沿壳走到左右脚；压扁成板时箭头挤在正中。超载后壳上裂开，力走不到边上。</desc>
+      <rect class="ds-desk" width="420" height="280"/>
+      <rect class="ds-floor" y="232" width="420" height="48"/>
+      <defs>
+        <marker id="dsArr" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+          <path d="M0 0 L9 4.5 L0 9 Z" fill="#c2410c"/>
+        </marker>
+      </defs>
+      <rect x="44" y="198" width="32" height="18" fill="#6b5344"/>
+      <rect x="344" y="198" width="32" height="18" fill="#6b5344"/>
+      <path id="shell" d="M60 200 Q210 40 360 200" fill="#3a7a48" stroke="#1f2937" stroke-width="3"/>
+      <g id="forceG"></g>
+      <g id="crackG"></g>
+      <rect id="load" x="190" y="30" width="40" height="36" fill="#c2410c"/>
+      <text class="ds-lab" id="forceLab" x="210" y="248" text-anchor="middle"></text>
+      <text class="ds-lab" id="stateLab" x="16" y="36">还没压</text>
+    </svg>
+    <div class="readout">
+      <div><span>上限（算）</span><b id="capOut">——</b></div>
+      <div><span>载荷</span><b id="loadOut">——</b></div>
+      <div><span>结果</span><b id="goOut">还没压</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">拱把力沿壳送到边上。越弯越扛得住。点「压一下」。</p>
+  </section>
+  <div class="kid-action-strip" role="group" aria-label="圆顶主操作">
+    <div>
+      <label for="curve">拱有多弯：<span id="curveLab">8</span></label>
+      <input class="input" id="curve" type="range" min="0" max="12" value="8" aria-valuetext="8">
+    </div>
+    <div>
+      <label for="loadAmt">载荷：<span id="loadLab">40</span></label>
+      <input class="input" id="loadAmt" type="range" min="10" max="100" value="40" aria-valuetext="40">
+    </div>
+    <div class="pick-btns">
+      <button class="btn btn-primary" type="button" id="toDome">弯拱</button>
+      <button class="btn" type="button" id="toFlat">压扁</button>
+      <button class="btn" type="button" id="goBtn">压一下</button>
+    </div>
+  </div>
+  <section class="card guess-card" aria-labelledby="guessTitle">
+    <h2 id="guessTitle">先猜一猜，再压</h2>
+    <p><b>第 1 题：</b>载荷仍是 50。曲率改成 0（平板），还会撑住吗？</p>
+    <div class="pick-btns" role="group" aria-label="猜平板">
+      <button class="btn guess-pick" type="button" data-guess1="100" aria-pressed="false">上限还是 100，不塌</button>
+      <button class="btn guess-pick" type="button" data-guess1="20" aria-pressed="false">上限 20，会塌</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押好。载荷 50：先曲率 10 压一次，再曲率 0 压一次。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>曲率 5。上限会仍是平板那档、明显变高，还是跟最弯一样？</p>
+      <div class="pick-btns" role="group" aria-label="猜曲率5">
+        <button class="btn guess-pick" type="button" data-guess2="20" aria-pressed="false">还是 20</button>
+        <button class="btn guess-pick" type="button" data-guess2="40" aria-pressed="false">大约 40，比平板高</button>
+        <button class="btn guess-pick" type="button" data-guess2="100" aria-pressed="false">100</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后曲率 5、载荷 40，再压一次。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>曲率 0（平板），载荷调到最小 10。还会塌吗？</p>
+      <div class="pick-btns" role="group" aria-label="猜轻载平板">
+        <button class="btn guess-pick" type="button" data-guess3="hold" aria-pressed="false">扛住：10 ≤ 上限 20</button>
+        <button class="btn guess-pick" type="button" data-guess3="fall" aria-pressed="false">塌了：平板一定塌</button>
+        <button class="btn guess-pick" type="button" data-guess3="zero" aria-pressed="false">上限变成 0</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后曲率 0、载荷 10，再压一次。</p>
+    </div>
+  </section>
+        <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">同一块壳：拱着力走到边，压扁中间先弯</h2>
+    <p>先点「弯拱」再点「压一下」，看力是不是沿着弧走到两边的脚。再点「压扁」同样压一次：力挤在正中，中间先往下弯。最好再只改载荷：平板也能扛一点轻的，塌的是超过上限，不是「平板」三个字。</p>
+    <p>圆顶把压下来的力顺着弧送到边上，材料多半在受压。压扁成板，没有弧可走，正中先弯。同一块壳，只改曲率，不是圆顶偷偷加厚。裂缝一开，弧断了，力走不到边上。</p>
+    <p>舞台上的上限按 20+曲率²×0.8 算，是本页比较尺子：用来比「拱」和「扁」，不是建筑规范，更不是头盔认证。蛋竖着更耐压只是示意。熟蛋或纸模即可，护眼防溅，不砸向人。</p>
+  </section>
+  <section class="card ds-atlas" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">圆顶图鉴</h2>
+    <p>点一张，对照舞台：谁让力走到边上，谁让中间先弯。</p>
+    <div class="kid-figure-grid" role="group" aria-label="圆顶图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-ds-atlas="dome" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="4" y="78" width="112" height="8" fill="#c4a06a"/><rect x="22" y="52" width="76" height="28" fill="#e8dcc8" stroke="#5a3a20" stroke-width="1.4"/><rect x="52" y="60" width="16" height="20" rx="1" fill="#6b5344"/><circle cx="64" cy="70" r="1.2" fill="#e8b84a"/><rect x="30" y="60" width="10" height="10" fill="#7aa8cc" stroke="#3a4a58"/><rect x="80" y="60" width="10" height="10" fill="#7aa8cc" stroke="#3a4a58"/><path d="M22 52A38 32 0 0 1 98 52" fill="#c4a06a" stroke="#5a3a20" stroke-width="1.6"/><path d="M30 52A30 24 0 0 1 90 52" fill="none" stroke="#8a6a40" stroke-width="1.2"/><path d="M60 20v32" stroke="#8a6a40" stroke-width="1"/><path d="M36 28Q60 44 84 28" fill="none" stroke="#8a6a40" stroke-width="1"/><rect x="56" y="16" width="8" height="8" fill="#c2410c" stroke="#5a2020"/><path d="M40 30Q60 18 80 30" fill="none" stroke="#c2410c" stroke-width="1.6" stroke-dasharray="3 2"/></svg></span><span class="kid-figure-cap">圆顶</span><span class="kid-figure-fact">圆顶把力沿壳送到两边的脚上，台上脚在接住这一下，不是因为看起来圆。</span></button>
+      <button class="kid-figure" type="button" data-ds-atlas="flat" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="6" y="78" width="108" height="8" fill="#c4a06a"/><rect x="16" y="36" width="88" height="10" fill="#6b8f3a" stroke="#3a2a18"/><path d="M20 46 Q60 72 100 46" fill="#8a6a40"/><rect x="52" y="20" width="16" height="16" fill="#c2410c"/><line x1="16" y1="36" x2="104" y2="36" stroke="#3a2a18" stroke-width="1.4"/><rect x="14" y="70" width="14" height="10" fill="#6b5344"/><rect x="92" y="70" width="14" height="10" fill="#6b5344"/><path d="M60 36 V68" stroke="#c2410c" stroke-width="2" stroke-dasharray="3 3"/></svg></span><span class="kid-figure-cap">压扁</span><span class="kid-figure-fact">压扁没有弧可走，台上正中先往下弯先软，不是材料忽然变脆变软了。</span></button>
+      <button class="kid-figure" type="button" data-ds-atlas="rim" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M20 68 Q60 20 100 68" fill="none" stroke="#3a7a48" stroke-width="6"/><path d="M60 28 L28 68 M60 28 L92 68" stroke="#c2410c" stroke-width="3"/></svg></span><span class="kid-figure-cap">沿边卸力</span><span class="kid-figure-fact">两边的脚把沿壳传来的力接住，看脚在出力，不是画成圆就比较牢，看壳边。</span></button>
+      <button class="kid-figure" type="button" data-ds-atlas="bend" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M16 36 H104" stroke="#3a2a18" stroke-width="4"/><path d="M16 36 Q60 80 104 36" fill="none" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">中间弯</span><span class="kid-figure-fact">平板正中最容易垮，力挤在中间走不出去，看正中先塌，不是这块板脆。</span></button>
+      <button class="kid-figure" type="button" data-ds-atlas="bridge" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M14 70 Q60 22 106 70" fill="#8a857c"/><rect x="10" y="68" width="16" height="14" fill="#6b5344"/><rect x="94" y="68" width="16" height="14" fill="#6b5344"/></svg></span><span class="kid-figure-cap">拱桥</span><span class="kid-figure-fact">拱桥石头互相挤住，力沿壳走到桥墩上，和圆顶一家，不是路画成圆才牢。</span></button>
+      <button class="kid-figure" type="button" data-ds-atlas="plate" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="8" y="78" width="104" height="8" fill="#c4a06a"/><rect x="16" y="70" width="14" height="10" fill="#6b5344"/><rect x="90" y="70" width="14" height="10" fill="#6b5344"/><rect x="18" y="38" width="84" height="12" fill="#8aa0b0" stroke="#3a2a18" stroke-width="1.4"/><path d="M22 50Q60 78 98 50" fill="none" stroke="#c2410c" stroke-width="2.4"/><rect x="54" y="18" width="12" height="20" fill="#c2410c"/></svg></span><span class="kid-figure-cap">平板</span><span class="kid-figure-fact">没有弧，力只好挤在中间，看正中先弯下去，不是板比较厚才扛得住，看壳边。</span></button>
+      <button class="kid-figure" type="button" data-ds-atlas="turtle" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#7eb6d4" width="120" height="90"/><ellipse cx="60" cy="50" rx="30" ry="18" fill="#3a7a48" stroke="#1e3d28" stroke-width="1.4"/><path d="M40 42Q60 34 80 42M36 52Q60 44 84 52M42 60Q60 54 78 60" fill="none" stroke="#2f5a38" stroke-width="1.2"/><ellipse cx="34" cy="58" rx="8" ry="5" fill="#4a7a32" stroke="#1e3d28"/><ellipse cx="86" cy="58" rx="8" ry="5" fill="#4a7a32" stroke="#1e3d28"/><circle cx="26" cy="46" r="7" fill="#4a7a32" stroke="#1e3d28"/><circle cx="22" cy="44" r="1.4" fill="#1e2d4a"/><path d="M60 32v-8" stroke="#1e3d28" stroke-width="2"/></svg></span><span class="kid-figure-cap">龟壳</span><span class="kid-figure-fact">龟壳是活着的圆顶，力沿壳传下去；只看图对照，不要压活龟来比结实。</span></button>
+      <button class="kid-figure" type="button" data-ds-atlas="helm" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="60" cy="78" rx="18" ry="8" fill="#e8dcd0" stroke="#5a3a20"/><circle cx="60" cy="70" r="10" fill="#e8dcd0" stroke="#5a3a20"/><path d="M28 62Q60 12 92 62" fill="#8a96c0" stroke="#3a2a18" stroke-width="1.5"/><path d="M40 56Q60 28 80 56" fill="none" stroke="#4a5568" stroke-width="1.2"/><rect x="24" y="60" width="72" height="8" rx="2" fill="#4a5568" stroke="#1e293b"/><rect x="52" y="18" width="16" height="8" fill="#c2410c"/></svg></span><span class="kid-figure-cap">头盔</span><span class="kid-figure-fact">头盔把撞击沿壳散到一圈边上，里面另有吸能层，不是帽子越厚越安全。</span></button>
+      <button class="kid-figure" type="button" data-ds-atlas="egg" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="60" cy="46" rx="18" ry="26" fill="#efe0cc" stroke="#8a6a40" stroke-width="1.8"/><ellipse cx="54" cy="36" rx="6" ry="8" fill="#fff" opacity=".45"/><path d="M22 40 Q12 50 22 68" fill="none" stroke="#e8c4a0" stroke-width="6" stroke-linecap="round"/><path d="M98 40 Q108 50 98 68" fill="none" stroke="#e8c4a0" stroke-width="6" stroke-linecap="round"/><circle cx="18" cy="36" r="6" fill="#e8c4a0" stroke="#8a6a40"/><circle cx="102" cy="36" r="6" fill="#e8c4a0" stroke="#8a6a40"/><path d="M28 30 L22 20 M92 30 L98 20" stroke="#c4a06a" stroke-width="2"/><ellipse cx="60" cy="78" rx="22" ry="4" fill="#c4a06a" opacity=".4"/></svg></span><span class="kid-figure-cap">握蛋</span><span class="kid-figure-fact">整圈挤住不容易碎，对折就破；差的是力能不能沿壳走，不是蛋壳更厚。</span></button>
+      <button class="kid-figure" type="button" data-ds-atlas="crack" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M20 68 Q60 20 100 68" fill="#3a7a48"/><path d="M60 24 V68" stroke="#f4f0e4" stroke-width="3"/></svg></span><span class="kid-figure-cap">裂缝</span><span class="kid-figure-fact">弧上裂开一条缝，力沿壳走不到边上，台上顶一下子软了，不是壳变薄了。</span></button>
+      <button class="kid-figure" type="button" data-ds-atlas="brick" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M16 70 L40 36 H80 L104 70 Z" fill="#c4a06a" stroke="#8a6a40"/><path d="M40 36 H80 M28 54 H92" stroke="#8a6a40"/></svg></span><span class="kid-figure-cap">砖拱</span><span class="kid-figure-fact">砖拱一块块互相挤，力沿壳传到脚上才站得住，不是砌成圆就比较结实。</span></button>
+      <button class="kid-figure" type="button" data-ds-atlas="sameh" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><line x1="20" y1="18" x2="100" y2="18" stroke="#3a7a48" stroke-width="3" stroke-dasharray="5 4"/><path d="M18 70 Q40 36 58 70" fill="#3a7a48"/><rect x="70" y="48" width="34" height="10" fill="#6b8f3a"/></svg></span><span class="kid-figure-cap">同一块壳</span><span class="kid-figure-fact">同一块壳比鼓还是扁，力沿壳走还是挤在中间，不是谁更厚才比较结实。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照力为什么走到边上或挤在中间。</p>
+  </section>
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--phys)"
+         data-kid-predict
+         data-kid-predict-explain="完整穹顶承压强；开口或侧向集中力更易垮。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🐢</span><b>圆顶壳为什么比压扁的板更抗压？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：圆顶为什么抗压">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="thicker">圆顶一定比平板更厚</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="arc" data-kid-predict-correct>力顺着弧走到两边，中间少弯</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="magic">圆的形状会魔法吸掉压力</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：拱和扁都压</h2>
+    <p>先用曲率≥8 压一次（扛住或看上限），再把曲率调到 ≤2 压一次。两头都试过即可完成。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先弯拱压一次，或扁壳压一次。</p>
+  </section>
+
+        <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">同一块壳，先拱着压一次，再压扁压一次</h2>
+    <p>舞台上只改一件事：壳鼓不鼓。同一块壳、同一次压。先看弯拱时力沿着弧走到两边；再看压扁时力挤在正中、中间先弯。这样比，才知道扛住靠的是形状把力送到边，不是壳偷偷变厚。</p>
+    <p>回家只带两句：「力沿着弧走到两边」；「扁了，中间先弯」。不要写成「圆的一定更厚」或「圆顶会魔法吸掉压力」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">力沿弧送到两边</text><path d="M20 68 Q60 16 100 68" fill="#4a7a32" stroke="#1e2d4a"/><path d="M28 68 H40 M80 68 H92" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">圆顶</span><span class="kid-figure-sub">走边</span><p class="kid-figure-fact">圆顶把压下来的力沿着弧送到两边的脚上，台上脚在接住，不是圆的比较结实。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">没有弧正中先垮</text><rect x="20" y="48" width="80" height="16" fill="#8a6a40"/><path d="M40 48 Q60 68 80 48" fill="none" stroke="#c2410c" stroke-width="3"/></svg></span><span class="kid-figure-cap">压扁</span><span class="kid-figure-sub">中弯</span><p class="kid-figure-fact">压扁成平板，没有弧可走，台上正中间先往下弯先垮，不是材料忽然变脆。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">石头互挤走到墩</text><path d="M16 72 Q60 20 104 72" fill="none" stroke="#8a8680" stroke-width="10"/><rect x="12" y="64" width="16" height="16" fill="#6b7280"/><rect x="92" y="64" width="16" height="16" fill="#6b7280"/></svg></span><span class="kid-figure-cap">拱桥</span><span class="kid-figure-sub">互挤</span><p class="kid-figure-fact">拱桥的石头互相挤住，力才能走到桥墩上。和圆顶是同一家族。力沿壳传下去才到墩。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">整圈握不容易碎</text><ellipse cx="60" cy="50" rx="16" ry="22" fill="#f4efe4" stroke="#1e2d4a"/><path d="M28 40 Q20 50 28 64 M92 40 Q100 50 92 64" fill="none" stroke="#e8d4a8" stroke-width="6"/></svg></span><span class="kid-figure-cap">握蛋</span><span class="kid-figure-sub">示意</span><p class="kid-figure-fact">整圈握住不容易碎，对折就破。竖着更耐压只是示意，不是建筑规范。力沿壳走不是圆就结实。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">弧裂力走不到边</text><path d="M20 68 Q60 16 100 68" fill="#c4a06a" stroke="#1e2d4a"/><path d="M60 20 V68" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">裂缝</span><span class="kid-figure-sub">断弧</span><p class="kid-figure-fact">弧上裂开一条缝，力就走不到边上，台上顶一下子软了，不是壳变薄了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">不要砸向人</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">砸人</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">只拿熟蛋或纸做的壳来试，不要砸向人，也不要压活龟来比谁更结实。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>拱着压。</b>看力是否走到边，扛不扛得住。</li>
+      <li data-step="2"><b>还是同一块壳，压扁再压。</b>只改曲率，看中间是否先弯。</li>
+      <li data-step="3"><b>说形状。</b>材料没换，弯不弯换了。</li>
+      <li data-step="4"><b>写完成句。</b>沿弧走边，不是更厚。划掉「圆的比较厚」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>拱起来的壳把力送到两边，扁板中间先弯。不是壳变厚了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>同一块材料，只改弯不弯。裂缝会拆掉这条路。蛋竖着更耐压只是示意。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>薄壳以薄膜压应力把载荷传到边界；曲率趋零后弯曲项主导，跨中挠度先爆。开口与裂纹切断环向路径。上限公式是比较尺子，不是规范。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能把扛住连到拱、把先弯连到扁，并否定「圆顶更厚」。完成看的是对照，不是背「壳体」两个字。</p>
+    <ul class="ask-list">
+      <li>拱着压，力先走到哪里？</li>
+      <li>扁了，谁先弯？材料换了吗？</li>
+      <li>裂缝拆掉的是哪一条路？</li>
+      <li>蛋竖着更耐压，能当建筑规范吗？</li>
+    </ul>
+  </section>
+
+
+
+      <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">拱和壳把力传到边，不是壳更厚</h2>
+    <p>同一块壳，先只改曲率。用手从侧面挤、在壳上开口、压活龟，都是另一回事。本页只认：拱着，力沿弧走到边；压扁，中间先弯。</p>
+    <p>家里也能看见同一家人。拱桥的石头互相挤住，力走到桥墩。自行车头盔的圆顶把撞击散到一圈边上，泡沫再吸能——本页舞台只比曲率，不教头盔认证。龟壳和脊柱肋骨连在一起，是活着的圆顶，不是扣上去的帽子，更不要压。</p>
+    <p>蛋竖着更耐压、侧面一敲就破，只是示意：整圈受压时路还在，对折就把弧挤扁。不要写成「鸡蛋等于建筑规范」。真要加厚，平板也能扛一点，但本页对照关掉厚度。</p>
+    <p>侧向挤、开口、裂纹更容易让薄壳失稳。护眼防溅。不砸向人。不压活龟。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">撞击散到一圈边</text><path d="M28 60 Q60 20 92 60 V68 H28 Z" fill="#4a5560"/><rect x="36" y="60" width="48" height="8" fill="#86efac"/></svg></span><span class="kid-figure-cap">头盔</span><span class="kid-figure-sub">散边</span><p class="kid-figure-fact">头盔也是圆顶，把撞击散到一圈边上，里面另有吸能层，不是帽子更厚才安全。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">活着的圆顶连骨头</text><ellipse cx="60" cy="48" rx="28" ry="16" fill="#4a7a32"/><rect x="48" y="60" width="24" height="12" fill="#c4a06a"/></svg></span><span class="kid-figure-cap">龟壳</span><span class="kid-figure-sub">连骨</span><p class="kid-figure-fact">龟壳是活着的圆顶，跟骨头连在一起；只看图，不要压活龟来试结实。力沿壳传下去，别压活物。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">比的是圆还是扁</text><rect x="28" y="40" width="24" height="28" fill="#c4a06a"/><rect x="68" y="32" width="24" height="36" fill="#8a6a40"/><rect x="84" y="20" width="20" height="14" fill="#f4efe4" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">加厚</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">这一页比的是同一块壳圆还是扁，台上差的是鼓不鼓，不是谁更厚。不是圆的比较结实。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="60" cy="44" rx="16" ry="26" fill="#efe0cc" stroke="#8a6a40" stroke-width="1.8"/><ellipse cx="54" cy="32" rx="5" ry="7" fill="#fff" opacity=".4"/><rect x="48" y="70" width="24" height="8" fill="#c4a06a"/><path d="M44 70 L36 82 M76 70 L84 82" stroke="#8a6a40" stroke-width="2"/><rect x="32" y="18" width="10" height="10" fill="#c2410c"/><path d="M42 23 L54 30" stroke="#c2410c" stroke-width="2"/><ellipse cx="60" cy="84" rx="20" ry="3" fill="#c4a06a" opacity=".35"/></svg></span><span class="kid-figure-cap">竖蛋</span><span class="kid-figure-sub">示意</span><p class="kid-figure-fact">竖着更耐压只是示意整圈受压，台上蛋不容易碎，不是楼房该怎么盖。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="14" y="32" width="92" height="22" rx="3" fill="#fff" stroke="#1c66c2"/><path d="M26 32 V46 M38 32 V52 M50 32 V46 M62 32 V52 M74 32 V46 M86 32 V52" stroke="#1c66c2"/><path d="M20 70 Q60 40 100 70" fill="none" stroke="#3a7a48" stroke-width="4"/><rect x="16" y="68" width="10" height="10" fill="#6b5344"/><rect x="94" y="68" width="10" height="10" fill="#6b5344"/><text x="60" y="20" text-anchor="middle" font-size="8" fill="#5a5348">示意</text><rect x="8" y="82" width="104" height="6" fill="#c4a06a"/></svg></span><span class="kid-figure-cap">本页尺子</span><span class="kid-figure-sub">不是规范</span><p class="kid-figure-fact">上限=20+曲率²×0.8。用来比较拱和扁，不是建筑手册。只比力沿不沿壳走，不比看起来圆。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">开口最怕侧面推</text><path d="M60 24 L96 76 H24 Z" fill="#e8b84a" stroke="#c2410c"/><rect x="57" y="40" width="6" height="20" fill="#1e2d4a"/><circle cx="60" cy="68" r="3" fill="#1e2d4a"/></svg></span><span class="kid-figure-cap">侧向</span><span class="kid-figure-sub">失稳</span><p class="kid-figure-fact">从侧面推开口的壳，口会先垮，台上圆顶最怕这一下侧推，不是圆的就稳。</p></div>
+    </div>
+  </section>
+
+
+      <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：拱着扛住 · 压扁先弯 · 「圆顶一定更厚」</h2>
+    <p>三列用同一块壳。先只改曲率，再另开一行看载荷。一次改两样，分不清到底是形状还是重量让它塌的。</p>
+    <p>拱：力沿弧走到边，上限变高。扁：中间先往下弯，上限只剩底板那一档。「圆顶一定更厚」整列划掉：厚度没改，只改了弯。</p>
+    <p>轻载平板是加试，不是主任务：平板也能扛一点轻的，塌的是超过上限。本页上限公式只是比较尺子，不要背成建筑规范。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">鼓着力还能走边</text><circle cx="60" cy="52" r="18" fill="#3d9a58"/></svg></span><span class="kid-figure-cap">拱</span><span class="kid-figure-sub">走边</span><p class="kid-figure-fact">对照栏里还鼓着，力仍能沿着弧走到两边的脚上，看脚在接住这一下。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">压扁中间先弯</text><circle cx="60" cy="52" r="18" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">扁</span><span class="kid-figure-sub">中弯</span><p class="kid-figure-fact">对照栏里一压扁，中间最容易弯，力挤在正中走不出去，看正中先垮。没弧力沿不了壳。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">差的是鼓还是扁</text><circle cx="60" cy="52" r="18" fill="#c2410c"/><path d="M28 28 L92 76" stroke="#1e2d4a" stroke-width="3"/></svg></span><span class="kid-figure-cap">更厚</span><span class="kid-figure-sub">划掉</span><p class="kid-figure-fact">「更厚所以更结实」整句划掉：同一块材料，差的是鼓还是扁，看中间先垮。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="16" y="40" width="88" height="10" fill="#8aa0b0" stroke="#3a2a18"/><rect x="52" y="24" width="16" height="16" fill="#c4a06a"/><rect x="14" y="70" width="14" height="10" fill="#6b5344"/><rect x="92" y="70" width="14" height="10" fill="#6b5344"/><path d="M20 50 Q60 58 100 50" fill="none" stroke="#3a7a48" stroke-width="2" stroke-dasharray="4 3"/><rect x="8" y="80" width="104" height="6" fill="#c4a06a"/><path d="M60 40 V24" stroke="#8a6a40"/></svg></span><span class="kid-figure-cap">轻载平板</span><span class="kid-figure-sub">加试</span><p class="kid-figure-fact">平板也能扛一点轻的。塌的是超过上限，不是「平板」三个字。力沿不了壳才先垮。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="14" y="32" width="92" height="22" rx="3" fill="#fff" stroke="#1c66c2"/><path d="M26 32 V46 M38 32 V52 M50 32 V46 M62 32 V52 M74 32 V46 M86 32 V52" stroke="#1c66c2"/><path d="M20 70 Q60 40 100 70" fill="none" stroke="#3a7a48" stroke-width="4"/><rect x="16" y="68" width="10" height="10" fill="#6b5344"/><rect x="94" y="68" width="10" height="10" fill="#6b5344"/><text x="60" y="20" text-anchor="middle" font-size="8" fill="#5a5348">示意</text><rect x="8" y="82" width="104" height="6" fill="#c4a06a"/></svg></span><span class="kid-figure-cap">本页尺子</span><span class="kid-figure-sub">不是规范</span><p class="kid-figure-fact">上限只用来比较拱和扁谁先垮，不是楼房该盖多厚，也不是建筑规范。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">力沿弧走到两边</text><rect x="22" y="28" width="50" height="44" fill="#f4efe4" stroke="#1e2d4a"/><path d="M82 26 L100 42 L78 74 L60 58 Z" fill="#e8b84a" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">沿弧走边</span><p class="kid-figure-fact">回家只记：力沿着弧走到两边的脚上，不是因为壳变厚了才结实。拱把力沿壳送到脚。</p></div>
+    </div>
+  </section>
+
+
+      <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「力走到边上」，不记壳有多厚</h2>
+    <p>在纸上画一个圆顶，从顶点往边缘画箭头，写「力往边上走」。旁边画一块平板，写「中间先弯」。两张图并排，比背公式有用。</p>
+    <p>口头只要两句：「力沿着弧走到两边。」「扁了，中间先弯。」有人说「圆的比较厚」，让孩子指着同一块壳反驳。</p>
+    <p>熟蛋或纸模即可。护眼，碎片马上清。不要砸向人，不要压活龟。本页数字不要抄进建筑规范。蛋竖着更耐压只是示意。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">拱走边扁中弯</text><rect x="28" y="24" width="64" height="52" fill="#f4efe4" stroke="#1e2d4a"/><path d="M36 36 H84 M36 48 H84 M36 60 H64" stroke="#1e2d4a" stroke-width="2"/></svg></span><span class="kid-figure-cap">两行</span><span class="kid-figure-sub">拱/扁</span><p class="kid-figure-fact">一行记圆顶力走两边，一行记压扁正中先弯。对照比抄数字清楚。力沿壳走还是挤在正中。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">圆顶把力送到两边</text><ellipse cx="56" cy="48" rx="28" ry="16" fill="#f4efe4" stroke="#1e2d4a"/><path d="M44 62 L36 76 L60 64" fill="#f4efe4" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">送到两边</span><p class="kid-figure-fact">圆顶不是魔法，只是把力送到两边的脚上；台上脚在接，不是壳更厚。力沿壳传下去才站得住。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">弧一断顶就软</text><path d="M24 64 Q60 24 96 64" fill="#c4a06a"/><path d="M60 28 V64" stroke="#c2410c" stroke-width="3"/><rect x="84" y="20" width="20" height="14" fill="#f4efe4" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">裂缝</span><span class="kid-figure-sub">另开</span><p class="kid-figure-fact">弧一断，力就到不了边上，台上顶会一下子软下来，不是整块变脆。力沿不了壳才软。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">不要砸向人</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">砸人</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">纸做的壳就够看懂力怎么走边，不要拿硬壳砸人，也不要压活龟。力沿壳传到脚就够看懂。</p></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="boostTitle">
+    <h2 id="boostTitle">圆顶把力送到边上，平板更容易弯</h2>
+    <p>曲面把压下来的力顺着壳送到边缘，材料多半在受压。同样跨度的平板更容易弯。</p>
+    <p>开口和裂纹会把力挤到一小点，那里先裂。蛋壳顺着压更耐、侧面敲更弱，只用安全材料。</p>
+    <p>戴护目镜，碎片马上清，不要互砸。建筑圆顶和拱是同一家族。</p>
+  </section>
+
+  <section class="card" aria-labelledby="boostR30Title">
+    <h2 id="boostR30Title">回家对照：从顶画箭头到边缘</h2>
+    <p>画一个圆顶，从顶点往边缘画箭头，写「力往边上走」。旁边画一块平板，写「更容易弯」。</p>
+    <p>完成句写「曲面把力分走」。裂纹旁边打叉。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「扛住靠不靠拱」，就只改曲率这一项。同一块壳、同一次压，先弯拱压一次，再压扁压一次。载荷另开一行对照，不要和「压扁」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>曲率（弯拱 / 压扁）。</li>
+      <li><b>先保持不变：</b>同一块壳、载荷先固定。</li>
+      <li><b>要观察的：</b>力是否走到边，中间是否先弯，扛住还是塌。</li>
+      <li><b>另开一行：</b>平板、载荷很轻，是不是仍能扛一点。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>拱桥的石头互相挤住，和本页的「力沿弧走边」像在哪？如果抽掉一块，路还在吗？</li>
+      <li>蛋竖着握更耐压、侧面一敲就破。这能当楼房规范吗？还是只是示意整圈受压？</li>
+      <li>头盔里面还有泡沫吸能。本页舞台只比曲率，差在哪一层？为什么不能当认证课？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>拱起来的壳把力送到两边，扁板中间先弯。不是壳变厚了。能指着箭头说「走到边上」就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>同一块材料，只改弯不弯。裂缝会拆掉这条路。蛋竖着更耐压只是示意。本页数字只用来比较，不是建筑规范。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>薄壳以薄膜压应力把载荷传到边界。曲率趋零后弯曲项主导。开口与裂纹切断环向路径。不要写成「玩具壳等于楼房」或「竖蛋等于规范」。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：圆顶观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：圆顶托得住，压扁中间先弯"></div>
+      <div><label for="workContent">力走哪条路</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下圆顶和压扁时，中间塌不塌，你觉得力跑到哪里去了。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+        <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>拱着压时，孩子指的是力走到边上，还是在说「圆的比较厚」？让他再指一次箭头和同一块壳。</li>
+      <li>压扁、中间先弯：哪一句四岁听得懂？试「没有弧，力挤在正中」。</li>
+      <li>平板、载荷很轻仍扛住——为什么「平板一定塌」不能当完成句？差在有没有超过上限。</li>
+      <li>蛋竖着更耐压，能当建筑规范吗？握蛋和拱桥哪一句能给四岁听？</li>
+      <li>砸人、压活龟：红线怎么说？本页能当建筑结构课或头盔认证吗？</li>
+      <li>头盔里面还有泡沫吸能，和本页只比曲率差在哪一层？龟壳为什么不能当扣上去的帽子？</li>
+    </ul>
+  </section>
+
+        <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：拱和壳把竖向载荷转成沿弧的压力，边界的脚把力接住。压扁以后没有弧，只好靠弯曲抵抗，正中先垮。这不是壳变厚，是形状把力送到边上。</p>
+    <p>曲率消失后弯曲项主导，跨中挠度先爆。裂纹切断环向力流。厚度是平行变量，本页故意关掉。上限=20+曲率²×0.8 只是比较尺子，用来让孩子看见「越弯越能扛」，不是建筑规范，也不是实验室屈曲载荷。</p>
+    <p>蛋竖着更耐压只是示意整圈受压，侧面一敲就把弧挤扁。不要写成楼房该怎么盖。头盔还有泡沫吸能，本页不教认证。</p>
+    <p>拱桥、龟壳、头盔、纸模圆顶，都是同一家族的不同尺度。不要压活龟。护眼，不砸人。舞台是纸模示意。</p>
+  </section>
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))" data-audience="parent">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">圆顶公式卡 · 上限=20+曲率²×0.8（本页尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">载荷大于上限就塌。曲率 0→上限 20；曲率 10→上限 100。用来比较「拱」和「扁」，不是建筑规范，也不是头盔认证。力走弧到边上，不是壳更厚。蛋竖着更耐压只是示意。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：力沿着弧走到两边；扁了，中间先弯。龟观察站看活着的圆顶；贝壳观察站看另一层弯壳。</p>
+    <p class="row"><a class="btn btn-ghost" href="../nature/turtles.html">龟观察站</a><a class="btn btn-ghost" href="../nature/shells.html">贝壳观察站</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为圆顶靠曲率把力送到边、压活龟会压垮它的拱，所以不要压活龟的壳。本页只比较圆顶和压扁。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var curve=8, load=40, did=false;
+  var seen={dome:false,flat:false,done:false};
+  var guess1="",guess1Done=false,saw10=false,saw0=false,guess2="",guess2Done=false,saw5=false,guess3="",guess3Done=false,sawFlat10=false;
+  function cap(){ return Math.round(20 + curve*curve*0.8); }
+  function collapsed(){ return load > cap(); }
+  function qpt(t, top){
+    var u=1-t;
+    return { x:u*u*60 + 2*u*t*210 + t*t*360, y:u*u*200 + 2*u*t*top + t*t*200 };
+  }
+  function drawForces(isFlat, top, fall){
+    var NS="http://www.w3.org/2000/svg";
+    function wipe(id){ var n=document.getElementById(id); while(n.firstChild) n.removeChild(n.firstChild); return n; }
+    function add(parent, tag, attrs){
+      var n=document.createElementNS(NS, tag);
+      for (var k in attrs) n.setAttribute(k, attrs[k]);
+      parent.appendChild(n);
+    }
+    var fg=wipe("forceG"), cg=wipe("crackG");
+    var col=fall?"#9a3412":"#c2410c";
+    if (isFlat) {
+      add(fg,"path",{d:"M210 "+(top+6)+" L210 176",fill:"none",stroke:col,"stroke-width":"3.2","marker-end":"url(#dsArr)"});
+      add(fg,"path",{d:"M168 148 L210 176",fill:"none",stroke:col,"stroke-width":"2.6","marker-end":"url(#dsArr)"});
+      add(fg,"path",{d:"M252 148 L210 176",fill:"none",stroke:col,"stroke-width":"2.6","marker-end":"url(#dsArr)"});
+      document.getElementById("forceLab").textContent=fall?"正中先裂":"力挤在正中";
+    } else {
+      var p0=qpt(0.5, top), pL=qpt(0.14, top), pR=qpt(0.86, top);
+      add(fg,"path",{d:"M"+p0.x.toFixed(1)+" "+p0.y.toFixed(1)+" L"+pL.x.toFixed(1)+" "+pL.y.toFixed(1),fill:"none",stroke:col,"stroke-width":"3.2","marker-end":"url(#dsArr)"});
+      add(fg,"path",{d:"M"+p0.x.toFixed(1)+" "+p0.y.toFixed(1)+" L"+pR.x.toFixed(1)+" "+pR.y.toFixed(1),fill:"none",stroke:col,"stroke-width":"3.2","marker-end":"url(#dsArr)"});
+      document.getElementById("forceLab").textContent=fall?"弧断了，走不到边上":"力沿壳走到边上";
+    }
+    if (fall) {
+      add(cg,"path",{d:"M210 "+(top+4)+" L198 "+(top+36)+" L216 "+(top+64)+" L204 188",fill:"none",stroke:"#f4f0e4","stroke-width":"3.2","stroke-linecap":"round"});
+    }
+  }
+  function render(fromUser){
+    var el=function(id){return document.getElementById(id);};
+    var c=cap(), fall=collapsed();
+    var isFlat=curve<=1;
+    var top=isFlat?160:(200-curve*12);
+    if(did&&fall) top+=22;
+    el("shell").setAttribute("d", isFlat ? (did&&fall ? "M60 160 Q210 198 360 160 V180 Q210 218 60 180 Z" : "M60 160 H360 V180 H60 Z") : ("M60 200 Q210 "+top+" 360 200"));
+    el("load").setAttribute("y", String(Math.max(8, top-40)));
+    el("load").setAttribute("height", String(20+load/5));
+    el("shell").setAttribute("fill", did&&fall ? "#8a6a40" : "#3a7a48");
+    drawForces(isFlat, top, did&&fall);
+    el("capOut").textContent = String(c);
+    el("loadOut").textContent = String(load);
+    el("goOut").textContent = did?(fall?"塌了":"扛住了"):"还没压";
+    el("curveLab").textContent = String(curve);
+    el("curve").setAttribute("aria-valuetext", String(curve));
+    el("loadLab").textContent = String(load);
+    el("loadAmt").setAttribute("aria-valuetext", String(load));
+    el("stateLab").textContent = did?(fall?"塌了":"扛住"):"还没压";
+    el("live").textContent = "拱把力沿壳送到边上；压扁成板，力挤在正中就先塌。"+(did?(fall?"刚才塌了。":"刚才扛住了。"):"点「压一下」。");
+    if(fromUser&&did){
+      if(curve>=8) seen.dome=true; if(curve<=2) seen.flat=true;
+      if(guess1&&!guess1Done&&curve===10&&load===50)saw10=true; if(guess1&&!guess1Done&&curve===0&&load===50)saw0=true;
+      if(guess2&&!guess2Done&&curve===5&&load===40)saw5=true; if(guess3&&!guess3Done&&curve===0&&load===10)sawFlat10=true;
+      checkGuess(); updateTask();
+    }
+  }
+  function checkGuess(){
+    if(guess1&&!guess1Done&&saw10&&saw0){
+      guess1Done=true;
+      document.getElementById("guessOut1").innerHTML=(guess1==="20"?"<b>押对了！</b>":"<b>揭晓：</b>")+"完全摊平，扛不住这一压，会塌。";
+      document.getElementById("guessBlock2").hidden=false;
+    }
+    if(guess2&&!guess2Done&&saw5){
+      guess2Done=true;
+      document.getElementById("guessOut2").innerHTML=(guess2==="40"?"<b>押对了！</b>":"<b>揭晓：</b>")+"拱起来以后，上限比平板高，能扛住这一压。";
+      document.getElementById("guessBlock3").hidden=false;
+    }
+    if(guess3&&!guess3Done&&sawFlat10){
+      guess3Done=true;
+      document.getElementById("guessOut3").innerHTML=(guess3==="hold"?"<b>押对了！</b>":"<b>揭晓：</b>")+"平板也能扛一点轻的。塌的是「超过上限」，不是「平板」三个字。";
+    }
+  }
+  function updateTask(){
+    var st=document.getElementById("taskStatus");
+    if(seen.done)return;
+    if(seen.dome&&seen.flat){seen.done=true;if(window.Progress)Progress.complete("games/dome-shell.html","试过弯拱与扁壳承压");st.textContent="完成啦：越弯上限越高；平板容易塌。";}
+    else if(!seen.dome)st.textContent=seen.flat?"还差：曲率调到 ≥8 再压。":"尚未完成：先弯拱压一次，或扁壳压一次。";
+    else st.textContent="还差：曲率调到 ≤2 再压。";
+  }
+  function go(){ did=true; render(true); }
+  document.getElementById("curve").addEventListener("input", function(){ did=false; curve=+this.value; render(false); });
+  document.getElementById("loadAmt").addEventListener("input", function(){ did=false; load=+this.value; render(false); });
+  document.getElementById("toDome").addEventListener("click", function(){ did=false; curve=10; document.getElementById("curve").value="10"; render(false); });
+  document.getElementById("toFlat").addEventListener("click", function(){ did=false; curve=0; document.getElementById("curve").value="0"; render(false); });
+  document.getElementById("goBtn").addEventListener("click", go);
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess1Done)return; guess1=btn.getAttribute("data-guess1");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut1").textContent="押好了。载荷 50：先曲率 10，再曲率 0。"; });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess2Done)return; guess2=btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut2").textContent="押好了。曲率 5、载荷 40。"; });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess3Done)return; guess3=btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut3").textContent="押好了。曲率 0、载荷 10。"; });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-ds-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key=btn.getAttribute("data-ds-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-ds-atlas]"), function(n){n.setAttribute("aria-pressed",n===btn?"true":"false");});
+      document.getElementById("atlasSay").textContent=btn.querySelector(".kid-figure-fact").textContent;
+      if(key==="dome"||key==="bridge"||key==="turtle"||key==="helm"||key==="egg"||key==="brick"){curve=10;document.getElementById("curve").value="10";}
+      else if(key==="flat"||key==="plate"||key==="bend"){curve=0;document.getElementById("curve").value="0";}
+      did=false; render(false);
+    });
+  });
+  render(false);
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/dome-shell.html", "圆顶壳工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>指南针工坊 · 红针永远指正北，还是只找磁北附近？</title>
+<meta name="description" content="转动地图和罗盘盒，看红针怎样一直指北。先对准北方，再转开，再转回来。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/games-lab.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+.kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--phys) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--phys) 12%,var(--surface)),var(--surface) 62%);
+  }
+.mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--phys) 36%,var(--line));
+    background: color-mix(in srgb,var(--phys) 12%,var(--surface)); font-size: 2.2rem;
+  }
+.cp-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+.cp-desk { fill: color-mix(in srgb,var(--sci) 10%,#e8f2e6); }
+.cp-card { fill: color-mix(in srgb,var(--kit) 16%,#f3e6c8); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 2.4; }
+.cp-map { fill: color-mix(in srgb,var(--sci) 18%,#c8ddb0); }
+.cp-pond { fill: color-mix(in srgb,var(--video) 42%,#7eb6e8); }
+.cp-path { fill: none; stroke: color-mix(in srgb,var(--kit) 50%,#c4a06a); stroke-width: 4; }
+.cp-house { fill: color-mix(in srgb,var(--danger) 36%,#d07070); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.4; }
+.cp-roof { fill: color-mix(in srgb,var(--ink) 28%,#8a5040); }
+.cp-tree { fill: color-mix(in srgb,var(--sci) 48%,#3d9a58); }
+.cp-trunk { fill: color-mix(in srgb,var(--kit) 48%,#8a6238); }
+.cp-rose { fill: color-mix(in srgb,var(--surface) 86%,#fff); stroke: color-mix(in srgb,var(--ink) 42%,transparent); stroke-width: 3; }
+.cp-tick { stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 2; }
+.cp-nmark { fill: color-mix(in srgb,var(--danger) 62%,#c04040); font: 800 18px var(--mono); text-anchor: middle; }
+.cp-mark { fill: var(--ink); font: 800 14px var(--mono); text-anchor: middle; }
+.cp-needle-n { fill: color-mix(in srgb,var(--danger) 70%,#c04040); }
+.cp-needle-s { fill: color-mix(in srgb,var(--ink) 36%,#8a857c); }
+.cp-dead { fill: color-mix(in srgb,var(--ink) 22%,#b0aaa0); }
+.cp-hub { fill: var(--ink); }
+.cp-iron { fill: color-mix(in srgb,var(--ink) 30%,#9aa3ad); stroke: color-mix(in srgb,var(--ink) 44%,transparent); stroke-width: 1.6; }
+.cp-lab { fill: var(--ink); font: 800 14px var(--mono); text-anchor: middle; }
+.cp-note { fill: var(--ink-mid); font: 700 12px var(--sans, sans-serif); text-anchor: middle; }
+.readout b { display: block; font: 800 1.15rem/1.2 var(--mono); color: var(--ink); }
+.pick-btns .btn[aria-pressed="true"] {
+    border-color: color-mix(in srgb,var(--phys) 55%,var(--line));
+    background: color-mix(in srgb,var(--phys) 16%,var(--surface));
+  }
+@media (max-width: 640px) {
+    .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+@media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .92rem; line-height: 1.5; margin-bottom: .4em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .cp-art { max-height: 150px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+    html[data-mode="kid"] .readout b { font-size: .95rem; }
+    html[data-mode="kid"] .readout span { font-size: .72rem; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .92rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 8px 0; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+  }
+</style>
+</head>
+<body data-playful-page="games/compass-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-hero-scene">
+    <div>
+      <p class="row"><span class="pill pill-phys">物理</span><span class="pill">6–11&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>红针永远指正北，还是只找磁北附近？</h1>
+      <p class="lead">红针顺着当地磁场转，找的是地磁北极附近，不是地图上的真北，更不是「永远正北」。转的是你和盒子，针不会跟着盒子走，也不会认路回家。旁边的铁、音箱、手机会把针拉歪，先拿开再读。迷途优先停、想、求援。本页不是进山证件。</p>
+      <p class="teach-note" data-ad-learn><b>学什么：</b>指针指的是磁北极方向；转动表盘，针仍对准同一边，不是跟着画旋转。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><svg viewBox="0 0 120 90" width="70" height="52" focusable="false" aria-hidden="true"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="60" cy="50" r="34" fill="#c4a06a" stroke="#5a3a20" stroke-width="2"/><circle cx="60" cy="50" r="27" fill="#f7faf4"/><path d="M36 50h4M80 50h4" stroke="#8a6a40" stroke-width="1.5"/><text x="60" y="24" text-anchor="middle" font-size="9" font-weight="800" fill="#fff8e8">N</text><text x="60" y="82" text-anchor="middle" font-size="8" font-weight="700" fill="#3a2a18">S</text><text x="88" y="54" text-anchor="middle" font-size="8" font-weight="700" fill="#3a2a18">E</text><text x="32" y="54" text-anchor="middle" font-size="8" font-weight="700" fill="#3a2a18">W</text><polygon points="60,30 54,50 60,50" fill="#c04040"/><polygon points="60,30 66,50 60,50" fill="#8a2020"/><polygon points="60,66 54,50 60,50" fill="#e8e4dc"/><polygon points="60,66 66,50 60,50" fill="#8a857c"/><circle cx="60" cy="50" r="4.2" fill="#e8c060" stroke="#5a3a20" stroke-width="1.2"/><circle cx="60" cy="10" r="5" fill="none" stroke="#8a6a40" stroke-width="2.2"/></svg></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">转动地图，让针来找北</h2>
+    <svg class="cp-art" viewBox="0 0 640 340" role="img" aria-labelledby="cpTitle cpDesc">
+      <title id="cpTitle">可转动的地图与指南针</title>
+      <desc id="cpDesc">一张地图卡片上画着房子、树和指南针刻度。转动卡片时，红针仍指向北方。把 N 对准红针就是面朝北。</desc>
+      <rect class="cp-desk" width="640" height="340"/>
+      <g id="cardG" transform="rotate(90 320 170)">
+        <rect class="cp-card" x="190" y="58" width="260" height="224" rx="16"/>
+        <rect class="cp-map" x="204" y="72" width="232" height="196" rx="10"/>
+        <ellipse class="cp-pond" cx="268" cy="150" rx="28" ry="16"/>
+        <path class="cp-path" d="M240 220 C280 200 300 170 360 168"/>
+        <rect class="cp-trunk" x="352" y="188" width="8" height="22"/>
+        <circle class="cp-tree" cx="356" cy="180" r="16"/>
+        <rect class="cp-house" x="390" y="168" width="28" height="22"/>
+        <polygon class="cp-roof" points="388,168 404,150 420,168"/>
+        <circle class="cp-rose" cx="320" cy="170" r="58"/>
+        <line class="cp-tick" x1="320" y1="116" x2="320" y2="124"/>
+        <line class="cp-tick" x1="320" y1="216" x2="320" y2="224"/>
+        <line class="cp-tick" x1="266" y1="170" x2="274" y2="170"/>
+        <line class="cp-tick" x1="366" y1="170" x2="374" y2="170"/>
+        <text class="cp-nmark" x="320" y="140">N</text>
+        <text class="cp-mark" x="368" y="176">E</text>
+        <text class="cp-mark" x="320" y="214">S</text>
+        <text class="cp-mark" x="272" y="176">W</text>
+      </g>
+      <g id="needleG" transform="translate(320 170) rotate(0)">
+        <polygon class="cp-needle-n" id="needleN" points="0,-48 -8,0 8,0"/>
+        <polygon class="cp-needle-s" id="needleS" points="0,44 -8,0 8,0"/>
+        <circle class="cp-hub" r="5"/>
+      </g>
+      <g id="ironG" hidden>
+        <rect class="cp-iron" x="454" y="88" width="72" height="18" rx="4"/>
+        <rect class="cp-iron" x="470" y="78" width="40" height="10" rx="2"/>
+      </g>
+      <text class="cp-lab" id="cpFace" x="320" y="308">现在盒子转到东，针还指着北</text>
+      <text class="cp-note" id="cpCap" x="320" y="28">红针总是指北。转动地图，让 N 去对准它。</text>
+    </svg>
+    <div class="readout">
+      <div><span>盒子转到</span><b id="headOut">东</b></div>
+      <div><span>红针对准 N 吗</span><b id="alignOut">还没有</b></div>
+      <div><span>附近有铁吗</span><b id="ironOut">没有</b></div>
+      <div><span>这根针</span><b id="magOut">有磁性，会找北</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">先转动盒子，让 N 对准红针，面朝北。再转开，让针离开 N，然后再转回来。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="指南针主操作">
+    <div>
+      <label for="heading">转动地图和罗盘盒</label>
+      <input class="input" id="heading" type="range" min="0" max="360" step="15" value="90" aria-valuetext="朝东">
+    </div>
+    <div class="pick-btns">
+      <button class="btn btn-primary" type="button" id="faceNorth">转到朝北</button>
+      <button class="btn" type="button" id="turnLeft">向左转</button>
+      <button class="btn" type="button" id="turnRight">向右转</button>
+      <button class="btn" type="button" id="ironBtn" aria-pressed="false">靠近铁块</button>
+      <button class="btn" type="button" id="deadBtn" aria-pressed="false">换没磁性的针</button>
+    </div>
+  </div>
+
+  <section class="card guess-card" aria-labelledby="guessTitleCp">
+    <h2 id="guessTitleCp">先猜一猜，再转</h2>
+    <p><b>第 1 题：</b>盒子现在朝东（读数 90°）。红针仍指北。要把 N 对准红针、面朝北，盒子应转到？</p>
+    <div class="pick-btns" role="group" aria-label="猜朝北方位">
+      <button class="btn guess-pick" type="button" data-guess1="90" aria-pressed="false">仍停在东，90°</button>
+      <button class="btn guess-pick" type="button" data-guess1="0" aria-pressed="false">转到北，0°</button>
+      <button class="btn guess-pick" type="button" data-guess1="180" aria-pressed="false">转到南，180°</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。点「转到朝北」，看读数是否变成北 / 0°。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>已经朝北。再转到朝东，读数会回到 0、大约直角，还是转到对面？</p>
+      <div class="pick-btns" role="group" aria-label="猜朝东读数">
+        <button class="btn guess-pick" type="button" data-guess2="0" aria-pressed="false">还是 0°</button>
+        <button class="btn guess-pick" type="button" data-guess2="90" aria-pressed="false">大约直角</button>
+        <button class="btn guess-pick" type="button" data-guess2="180" aria-pressed="false">转到对面</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后从朝北再转到朝东，看方位读数。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>旁边放了铁块。即使转到 0°，算对准北了吗？</p>
+      <div class="pick-btns" role="group" aria-label="猜干扰铁">
+        <button class="btn guess-pick" type="button" data-guess3="yes" aria-pressed="false">算，读数到 0 就行</button>
+        <button class="btn guess-pick" type="button" data-guess3="no" aria-pressed="false">不算：铁把针拉歪了</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后打开「旁边放铁」，再转到朝北看对准读数。</p>
+    </div>
+  </section>
+
+                <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">红针找的是磁北附近，不是「永远正北」；先对准再转开再找回</h2>
+    <p>先转动盒子，让 N 对准红针，这时你才面朝磁北附近。再转开，让针离开 N：转的是你和盒子，红针仍指着那一边。然后再转回来对准。点「靠近铁块」看针被拽歪；换没磁性的针，它就不会自己找北。</p>
+    <p>红针顺着当地磁场转，指的是地磁北极附近，不是地图上的真北，更不是「永远正北」。磁北和真北会差一点点，叫磁偏角。本页把偏角画成零，只练「针不跟着盒子转」。</p>
+    <p>迷途优先停、想、求援。本页不是野外导航证，也不替代地图和安全计划。旁边的铁、音箱、手机会把针拉歪，先拿开再读。</p>
+  </section>
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">指南针图鉴</h2>
+    <p>点一张，对照上面的针和地图：谁在转，谁仍指着北。</p>
+    <div class="kid-figure-grid" role="group" aria-label="指南针图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-cp-atlas="needle" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="60" cy="50" r="34" fill="#c4a06a" stroke="#5a3a20" stroke-width="2"/><circle cx="60" cy="50" r="27" fill="#f7faf4"/><path d="M36 50h4M80 50h4" stroke="#8a6a40" stroke-width="1.5"/><text x="60" y="24" text-anchor="middle" font-size="9" font-weight="800" fill="#fff8e8">N</text><text x="60" y="82" text-anchor="middle" font-size="8" font-weight="700" fill="#3a2a18">S</text><text x="88" y="54" text-anchor="middle" font-size="8" font-weight="700" fill="#3a2a18">E</text><text x="32" y="54" text-anchor="middle" font-size="8" font-weight="700" fill="#3a2a18">W</text><polygon points="60,30 54,50 60,50" fill="#c04040"/><polygon points="60,30 66,50 60,50" fill="#8a2020"/><polygon points="60,66 54,50 60,50" fill="#e8e4dc"/><polygon points="60,66 66,50 60,50" fill="#8a857c"/><circle cx="60" cy="50" r="4.2" fill="#e8c060" stroke="#5a3a20" stroke-width="1.2"/><circle cx="60" cy="10" r="5" fill="none" stroke="#8a6a40" stroke-width="2.2"/></svg></span><span class="kid-figure-cap">针</span><span class="kid-figure-fact">红端顺着地磁场自己转，看台上红尖还指那边；不是永远指正北的魔法针。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="n" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="60" cy="46" r="28" fill="#fff" stroke="#5a3a20" stroke-width="3"/><text x="60" y="54" text-anchor="middle" font-size="22" font-weight="800" fill="#c04040">N</text></svg></span><span class="kid-figure-cap">N</span><span class="kid-figure-fact">盒子上的北字要先对上红针，读数对准才亮；不是随便转一下就算朝北。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="s" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="60" cy="46" r="28" fill="#fff" stroke="#5a3a20" stroke-width="3"/><text x="60" y="54" text-anchor="middle" font-size="22" font-weight="800" fill="#1c2430">S</text></svg></span><span class="kid-figure-cap">S</span><span class="kid-figure-fact">南在北的对面，北字对上红针后再看对面的南；不是指南鱼自己认识路。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="map" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><rect x="22" y="18" width="76" height="56" rx="6" fill="#c8ddb0" stroke="#5a3a20"/><ellipse cx="44" cy="40" rx="10" ry="6" fill="#7eb6e8"/><circle cx="78" cy="48" r="8" fill="#3d9a58"/></svg></span><span class="kid-figure-cap">地图</span><span class="kid-figure-fact">房子和树跟着盒子转，是为了把北字摆到红针上；不是地图自己会认路。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="turn" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="60" cy="46" r="24" fill="#fff" stroke="#5a3a20" stroke-width="3"/><path d="M78 30 A24 24 0 0 1 84 50" fill="none" stroke="#1b64c8" stroke-width="3"/><polygon points="86,52 78,46 90,44" fill="#1b64c8"/></svg></span><span class="kid-figure-cap">转向</span><span class="kid-figure-fact">滑杆转的是你和盒子，红针仍停在磁北那边；不是针跟着盒子一起转。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="magN" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="60" cy="48" r="22" fill="#3a86c8"/><path d="M48 40 C58 32 72 38 70 50 C64 58 52 54 48 46 Z" fill="#4f9a58"/><polygon points="60,14 56,28 64,28" fill="#c04040"/></svg></span><span class="kid-figure-cap">磁北</span><span class="kid-figure-fact">针找的是地磁北极附近，看红尖停哪；不是地图上的真北，也不是永远正北。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="iron" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="46" cy="46" r="22" fill="#fff" stroke="#5a3a20"/><polygon points="54,26 42,46 52,46" fill="#c04040"/><rect x="74" y="38" width="30" height="14" rx="3" fill="#9aa3ad" stroke="#5a3a20"/></svg></span><span class="kid-figure-cap">干扰铁</span><span class="kid-figure-fact">点靠近铁块，看旁边铁块把红针拽歪，能指着舞台看；不是永远指北方的魔法针。</span></button>
+      <button class="kid-figure" type="button" data-cp-atlas="dead" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="60" cy="46" r="24" fill="#fff" stroke="#5a3a20" stroke-width="3"/><polygon points="82,60 56,40 62,50" fill="#b0aaa0"/></svg></span><span class="kid-figure-cap">没有磁铁时</span><span class="kid-figure-fact">点换没磁性的针，看读数写它停在随便方向；不是针自己认识回家的路。</span></button><button class="kid-figure" type="button" data-cp-atlas="e" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="60" cy="46" r="24" fill="#fff" stroke="#5a3a20" stroke-width="3"/><text x="60" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">N</text><text x="92" y="50" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">E</text></svg></span><span class="kid-figure-cap">E</span><span class="kid-figure-fact">北字对上红针后面朝北，东就在右手边那一格；不是针自己会喊出东。</span></button><button class="kid-figure" type="button" data-cp-atlas="w" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="60" cy="46" r="24" fill="#fff" stroke="#5a3a20" stroke-width="3"/><text x="60" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">N</text><text x="28" y="50" text-anchor="middle" font-size="10" font-weight="800" fill="#3a2a18">W</text></svg></span><span class="kid-figure-cap">W</span><span class="kid-figure-fact">北字对上红针后面朝北，西就在左手边那一格；不是指南鱼认得西边。</span></button><button class="kid-figure" type="button" data-cp-atlas="phone" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><rect x="38" y="16" width="44" height="60" rx="6" fill="#4a5560"/><circle cx="60" cy="40" r="12" fill="#fff"/><polygon points="60,30 56,42 64,42" fill="#d05050"/></svg></span><span class="kid-figure-cap">手机罗盘</span><span class="kid-figure-fact">屏幕上的针也要先对准磁北，别贴着音箱读，能指着舞台看；不是手机自己会认路。</span></button><button class="kid-figure" type="button" data-cp-atlas="decl" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="60" cy="46" r="24" fill="#fff" stroke="#5a3a20" stroke-width="3"/><polygon points="60,24 56,46 64,46" fill="#d05050"/><path d="M60 24 L72 20" stroke="#1b64c8" stroke-width="2"/></svg></span><span class="kid-figure-cap">磁偏角</span><span class="kid-figure-fact">磁北和地图真北会差一点点，本页把差画成零来练对准；不是永远正北。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照红针还指不指北。</p>
+  </section>
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--phys)"
+         data-kid-predict
+         data-kid-predict-explain="附近大正铁/电线 → 指针偏离；远离干扰后回到稳定指向。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🧭</span><b>转动地图和罗盘盒时，红针通常怎样？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：针是否跟着转">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="follow">针跟着盒子一起转，永远对准 N</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="stay" data-kid-predict-correct>针仍指北；转的是你和盒子，不是针</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="random">针每次随便指向一个方向</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：先朝北，再转开，再找回来</h2>
+    <p>转动盒子，让 N 对准红针，面朝北；再转开，让针离开 N；最后再转回来对准。旁边的铁和没磁性的针，是用来看「什么时候会不准」。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先转动盒子，让 N 对准红针，面朝北。</p>
+  </section>
+
+
+                <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">同一只盒子：先对准磁北附近，再转开，再找回来</h2>
+    <p>舞台上转动的是地图和盒子，不是红针。先让 N 对准红针，面朝磁北附近；再转开，看针仍指着那一边、字母离开了针；再转回来对准。这样比，才知道转的是你，不是针「认路回家」。</p>
+    <p>回家只带两句：「红针指磁北附近，不是永远正北。」「转的是你和盒子，不是针。」不要写成「针会认路」或「指南针永远指正北」。铁块会拽歪，先拿开再读。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">北字对准红针</text><circle cx="60" cy="52" r="22" fill="#f4efe4" stroke="#1e2d4a"/><path d="M60 34 L64 52 L60 48 L56 52 Z" fill="#c2410c"/><text x="56" y="30" font-size="9" fill="#1e2d4a">N</text></svg></span><span class="kid-figure-cap">对准</span><span class="kid-figure-sub">N对红针</span><p class="kid-figure-fact">盒子上的北对准红针，读数才写对准；这时才面朝磁北附近，不是随便转一下。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">转的是你和盒子</text><circle cx="60" cy="52" r="22" fill="#f4efe4" stroke="#1e2d4a"/><path d="M60 34 L64 52 L60 48 L56 52 Z" fill="#c2410c"/><path d="M84 28 A28 28 0 0 1 96 52" fill="none" stroke="#6b7280" stroke-width="3"/></svg></span><span class="kid-figure-cap">转开</span><span class="kid-figure-sub">针离开N</span><p class="kid-figure-fact">转滑杆时转的是你和盒子，红针仍指磁北那边看；不是针跟着盒子走。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">再转回北对红针</text><circle cx="60" cy="52" r="22" fill="#f4efe4" stroke="#1e2d4a"/><path d="M60 34 L64 52 L60 48 L56 52 Z" fill="#c2410c"/><path d="M96 40 A28 28 0 0 0 80 24" fill="none" stroke="#2f6b32" stroke-width="3"/></svg></span><span class="kid-figure-cap">找回来</span><span class="kid-figure-sub">再对准</span><p class="kid-figure-fact">再转回来让北字重新对上红针，对准读数又亮；不是盒子自己转回家。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">铁会把针拉歪</text><circle cx="44" cy="52" r="16" fill="#f4efe4" stroke="#1e2d4a"/><path d="M44 40 L50 54 L44 50 L38 54 Z" fill="#c2410c" transform="rotate(35 44 52)"/><rect x="76" y="40" width="24" height="24" fill="#6b7280"/></svg></span><span class="kid-figure-cap">铁块</span><span class="kid-figure-sub">会拽歪</span><p class="kid-figure-fact">点靠近铁块，看红针被旁边铁拽歪，读数到零也不算对准；先拿开再读。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">针没有眼睛</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">认路</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">针没有眼睛，也不会认路回家，只顺着当地磁场转；看台上红尖停在哪。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">迷路先停再求援</text><path d="M60 24 L96 76 H24 Z" fill="#e8b84a" stroke="#c2410c"/><rect x="57" y="40" width="6" height="20" fill="#1e2d4a"/><circle cx="60" cy="68" r="3" fill="#1e2d4a"/></svg></span><span class="kid-figure-cap">迷途</span><span class="kid-figure-sub">停想求援</span><p class="kid-figure-fact">迷了路先停下来想、再求援。这一页不能当进山证件，也不能替代地图。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>N对准红针。</b>面朝磁北附近，不是「永远正北」。</li>
+      <li data-step="2"><b>转开一次。</b>看针仍指那一边，字母离开了针。</li>
+      <li data-step="3"><b>再转回来。</b>重新对准。铁块先拿开。</li>
+      <li data-step="4"><b>写完成句。</b>针指磁北附近。划掉「认路」和「永远正北」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>红针一直指北边附近。把盒子上的 N 对上红针，你就面朝那边。针不会认路。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>转开盒子，针还指磁北附近，字母离开了针。再转回来就能对准。铁会拽歪。它不是永远正北。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>磁针沿当地磁场取向。磁北与真北有磁偏角，本页把偏角画成零。铁磁体造成局部扰动。不是定向越野证。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能完成对准—转开—找回，并否定「针会认路」和「永远正北」。完成看的是对照，不是背「磁偏角」三个字。</p>
+    <ul class="ask-list">
+      <li>怎样才算朝北？红针指的是正北，还是磁北附近？</li>
+      <li>转开后针还指哪？转的是针，还是你和盒子？</li>
+      <li>铁块放旁边怎样？没磁性的针会自己找北吗？</li>
+      <li>针会认路吗？迷了路，这一页能当进山证件吗？</li>
+    </ul>
+  </section>
+
+
+              <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">铁块把针拽歪时，先拿开再找北；磁北不是永远正北</h2>
+    <p>同一只盒子，先只改旁边有没有铁。铁块、音箱、手机磁扣都会把针拉歪，读数不可信。先拿开再读，不要先怪盒子坏了。手机罗盘也一样：远离喇叭再看。</p>
+    <p>没有磁性的针停在随便一个方向。先换回红针。红针找的是地磁北极附近，和地图上的真北会差一点点——磁偏角。本页把偏角画成零，只练「针不跟着转」，不要写成「永远正北」。</p>
+    <p>迷途停、想、求援。不独自走远。有地图、有大人、有求援计划，才谈得上用针核对方向。</p>
+    <p>本页不是定向越野证，也不模拟真实罗盘的阻尼。舞台把磁偏角画成零，是示意，不是某地的偏角表。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">先拿开再读针</text><circle cx="40" cy="52" r="16" fill="#f4efe4" stroke="#1e2d4a"/><rect x="72" y="36" width="24" height="24" fill="#6b7280"/><path d="M68 40 L96 68" stroke="#c2410c" stroke-width="3"/></svg></span><span class="kid-figure-cap">铁块</span><span class="kid-figure-sub">先拿开</span><p class="kid-figure-fact">铁块拿开以后，看红针才会重新找回磁北附近；不要隔着铁块去读方向。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">离磁扣喇叭远点</text><rect x="28" y="24" width="28" height="48" rx="4" fill="#1e2d4a"/><rect x="72" y="40" width="24" height="20" fill="#6b7280"/><path d="M56 48 H72" stroke="#c2410c" stroke-width="3" stroke-dasharray="3 2"/></svg></span><span class="kid-figure-cap">手机</span><span class="kid-figure-sub">也怕磁扣</span><p class="kid-figure-fact">手机指南针也怕磁扣和喇叭，离远一点再看屏幕方向；别贴在音箱上读。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">没磁性就不会指北</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">没磁性</span><span class="kid-figure-sub">不指北</span><p class="kid-figure-fact">点换没磁性的针，看读数写它停在随便方向；先换回那根红针，别怪盒子坏了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="60" cy="46" r="24" fill="#fff" stroke="#5a3a20" stroke-width="3"/><polygon points="60,24 56,46 64,46" fill="#d05050"/><path d="M60 24 L72 20" stroke="#1b64c8" stroke-width="2"/></svg></span><span class="kid-figure-cap">磁偏角</span><span class="kid-figure-sub">差一点</span><p class="kid-figure-fact">磁北和地图真北会差一点点，本页把差画成零来练对准；不是永远指正北。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="60" cy="48" r="22" fill="#3a86c8"/><path d="M48 40 C58 32 72 38 70 50 C64 58 52 54 48 46 Z" fill="#4f9a58"/><polygon points="60,14 56,28 64,28" fill="#c04040"/></svg></span><span class="kid-figure-cap">地球磁场</span><span class="kid-figure-sub">大磁铁</span><p class="kid-figure-fact">地球像一块大磁铁，所以红针能找到磁北极附近；不是针自己认识家。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">不是进山证件</text><rect x="36" y="28" width="48" height="44" fill="#c2410c"/><rect x="44" y="44" width="32" height="12" fill="#f4efe4"/></svg></span><span class="kid-figure-cap">迷途</span><span class="kid-figure-sub">停想求援</span><p class="kid-figure-fact">迷途时先停下来想、再求援，不要把这一页当成进山证件；也不是导航证。</p></div>
+    </div>
+  </section>
+
+
+            <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：对准磁北附近 · 转开再找回 · 「针会认路 / 永远正北」</h2>
+    <p>三列用同一只盒子。先只改你转没转，铁先拿开。对准：N 对红针，面朝磁北附近。转开：针仍指那一边，字母离开。</p>
+    <p>「认路」整列划掉：针沿磁场，没有眼睛。「永远正北」也划掉：它找的是磁北极附近，和真北会差一点点。</p>
+    <p>铁块拽歪是加试，不是主任务。有铁时即使读数到 0° 也不算对准。本页把偏角画成零，不要背成某地的偏角表。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">北对红针才朝北</text><circle cx="60" cy="52" r="18" fill="#3d9a58"/></svg></span><span class="kid-figure-cap">对准</span><span class="kid-figure-sub">磁北附近</span><p class="kid-figure-fact">北字对上红针，对准读数才亮，你才面朝磁北附近；不是随便转一下就算朝北。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">转开再转回</text><circle cx="60" cy="52" r="18" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">转开再找回</span><span class="kid-figure-sub">完成</span><p class="kid-figure-fact">盒子转开再转回，红针一直指磁北附近；变的是你站的方向，不是针认路。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">针不会认路</text><circle cx="60" cy="52" r="18" fill="#c2410c"/><path d="M28 28 L92 76" stroke="#1e2d4a" stroke-width="3"/></svg></span><span class="kid-figure-cap">认路 / 正北</span><span class="kid-figure-sub">整列划掉</span><p class="kid-figure-fact">针没有眼睛，也不会永远指正北，只跟着磁场转到磁北极附近；看红尖。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">铁会把针拉歪</text><circle cx="44" cy="52" r="16" fill="#f4efe4" stroke="#1e2d4a"/><path d="M44 40 L50 54 L44 50 L38 54 Z" fill="#c2410c" transform="rotate(35 44 52)"/><rect x="76" y="40" width="24" height="24" fill="#6b7280"/></svg></span><span class="kid-figure-cap">铁块</span><span class="kid-figure-sub">加试</span><p class="kid-figure-fact">铁还在旁边时读数就不准，看红针被拽歪，先拿开再找北；不要先怪盒子坏了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f2e6" width="120" height="90"/><circle cx="60" cy="46" r="24" fill="#fff" stroke="#5a3a20" stroke-width="3"/><path d="M60 24 L72 20" stroke="#1b64c8" stroke-width="2"/></svg></span><span class="kid-figure-cap">磁偏角</span><span class="kid-figure-sub">差一点</span><p class="kid-figure-fact">磁北和地图真北会差一点点，本页把差画成零；这只是示意尺子，不是正北。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">不是进山证件</text><rect x="36" y="28" width="48" height="44" fill="#c2410c"/><rect x="44" y="44" width="32" height="12" fill="#f4efe4"/></svg></span><span class="kid-figure-cap">迷途</span><span class="kid-figure-sub">红线</span><p class="kid-figure-fact">迷途先停下来想、再求援。本页不能替代地图、安全计划和大人；不是进山证。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">回家只记「N对红针才朝磁北附近」，不记越野口令</h2>
+    <p>在纸上画一个圆：红针指上，N 对上它，旁边写「磁北附近，不是永远正北」。再画一个被铁块拽歪的针，打叉。</p>
+    <p>口头只要两句：「转的是你，针仍指磁北附近。」「铁块会拽歪。」有人说「针会认路」或「永远正北」，让孩子指着图反驳。</p>
+    <p>迷途停、想、求援。真指南针远离音箱、手机和铁门。本页不是进山证件。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">画圆标北对红针</text><rect x="22" y="28" width="50" height="44" fill="#f4efe4" stroke="#1e2d4a"/><path d="M82 26 L100 42 L78 74 L60 58 Z" fill="#e8b84a" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">一个圆</span><span class="kid-figure-sub">N对红针</span><p class="kid-figure-fact">画一个圆，标出北字对上红针的那一刻，旁边写「磁北附近，不是永远正北」。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#1e2d4a">红针对北才朝北</text><ellipse cx="56" cy="48" rx="28" ry="16" fill="#f4efe4" stroke="#1e2d4a"/><path d="M44 62 L36 76 L60 64" fill="#f4efe4" stroke="#1e2d4a"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">N对红针才朝北</span><p class="kid-figure-fact">回家只记：红针对上北字，才算朝磁北附近看；不是永远正北的魔法针。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">针顺着磁场转</text><path d="M22 22 L98 78 M98 22 L22 78" stroke="#c2410c" stroke-width="4"/></svg></span><span class="kid-figure-cap">认路</span><span class="kid-figure-sub">否决句</span><p class="kid-figure-fact">针顺着磁场转，没有眼睛，也不会带你走出森林；更不会认路，看红尖停哪。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#dce8c8" width="120" height="90"/><text x="8" y="16" font-size="9" fill="#c2410c">不是进山证件</text><rect x="36" y="28" width="48" height="44" fill="#c2410c"/><rect x="44" y="44" width="32" height="12" fill="#f4efe4"/></svg></span><span class="kid-figure-cap">迷途</span><span class="kid-figure-sub">停想求援</span><p class="kid-figure-fact">回家也记住：指南针课不是户外通行证，迷途先停再求援；不能当导航证。</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「转的是谁」，就只改盒子朝向这一项。同一只盒子、同一根红针、铁先拿开，先对准一次，再转开一次，再转回来一次。铁块是另一次对照，不要和「转开」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>盒子转到哪（北 / 转开）。</li>
+      <li><b>先保持不变：</b>同一根有磁性的针、旁边先没有铁。</li>
+      <li><b>要观察的：</b>红针还指不指原来那边，N 有没有离开针。</li>
+      <li><b>另开一行：</b>放铁以后即使到 0° 也不算对准；没磁性的针不会自己找北。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>地图上的北极和红针指的那边，一定重合吗？差一点点时，该说「坏了」还是「磁偏角」？</li>
+      <li>为什么不能把手机贴在音箱上读罗盘？拿开以后针为什么又回来了？</li>
+      <li>迷了路，为什么先停下来比先盯着针转更重要？本页能替代大人、地图和求援吗？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>红针一直指北边附近。把 N 对上红针，你就面朝那边。转的是你，不是针。针不会认路。迷了路先停下来找大人。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>它找的是磁北附近，不是永远正北。铁会拽歪。没磁性就不会指。本页不是进山证。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>磁针沿当地磁场取向。磁偏角本页画成零。铁磁扰动使读数失效。不是定向越野或阻尼模型。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：找北观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：转地图时针仍指着同一边"></div>
+      <div><label for="workContent">针有没有跟着转</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下你怎样对准北方，转开以后针还指哪一边，靠近铁块时发生了什么。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+                <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>对准时孩子指的是 N 对红针，还是「针认识家」？让他再说一次：转的是谁。</li>
+      <li>转开后针还指那一边，哪一句四岁听得懂？试「针还指那边，是你自己转开了」。</li>
+      <li>铁块拽歪时该先做什么？读数到 0° 却有铁，算对准了吗？</li>
+      <li>「永远正北」错在哪？磁北和真北差一点点，本页为什么画成零？</li>
+      <li>迷途红线怎么说？本页能当野外导航证吗？能替代地图和大人吗？</li>
+      <li>没磁性的针停在随便一个方向。这说明针靠的是磁性，还是「认路」？</li>
+    </ul>
+  </section>
+
+                <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：红针是小磁铁，顺着当地磁场转，指向地磁北极附近，不是地图上的真北，更不是「永远正北」。盒体旋转不改变磁场方向，所以针与盒标发生相对运动。</p>
+    <p>磁北与真北有磁偏角。本页把偏角画成零，只练「针不跟着转」，不是某地的偏角表。铁磁体造成局部扰动，读数失效。没有磁性的针不会自己取向。</p>
+    <p>针没有意图，也不会认路。手机罗盘同样怕磁扣和喇叭。</p>
+    <p>迷途优先停、想、求援。舞台是罗盘示意，不模拟阻尼，不当定向越野证。</p>
+  </section>
+
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">罗盘公式卡 · 朝北⇔盒方位≈0° 且无铁干扰（本页比较尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">红针指磁北。把 N 对准红针才算面朝北；东≈90°。旁边放铁会把针拉歪，读数不可信。野外迷途优先停、想、求援。</p>
+    </div>
+
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：红针指磁北附近，不是永远正北。转的是你，不是针。铁会拽歪。迷途停、想、求援。磁铁工坊看异吸同斥；地球页看这块大磁铁。</p>
+    <p class="row"><a class="btn btn-ghost" href="magnet-lab.html">磁铁工坊</a><a class="btn btn-ghost" href="../nature/earth.html">地球与地震</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页是找北示意，把磁偏角画成零，也不模拟真实罗盘的阻尼。因为旁边放铁会把针拉歪、读数不可信，所以真指南针请远离音箱、手机和铁门。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var heading = 90;
+  var iron = false;
+  var dead = false;
+  var seen = { north:false, off:false, back:false, done:false };
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  var seenEast = false, sawIronNorth = false, sawNorth1 = false;
+
+  function wrap(deg){
+    var n = ((deg % 360) + 360) % 360;
+    return n === 360 ? 0 : n;
+  }
+  function dirName(deg){
+    var d = wrap(deg);
+    if (d === 0) return "北";
+    if (d === 45) return "东北";
+    if (d === 90) return "东";
+    if (d === 135) return "东南";
+    if (d === 180) return "南";
+    if (d === 225) return "西南";
+    if (d === 270) return "西";
+    if (d === 315) return "西北";
+    return d + "\u00a0度";
+  }
+  function aligned(){
+    return !iron && !dead && wrap(heading) === 0;
+  }
+  function checkGuess(){
+    if (guess1 && !guess1Done && sawNorth1) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "0" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "面朝北时读数是 0°（北）。红针仍指北，盒子转到让 N 压在针上。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && seenEast) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "90" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "一圈 360°，东大约在 90°。从北再转到东，读数跟着走。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && sawIronNorth) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "有铁时针被拉歪，「对准」读数不会说对准了。先拿开铁块再找北。";
+    }
+  }
+  function render(fromUser){
+    heading = wrap(Number(document.getElementById("heading").value));
+    document.getElementById("cardG").setAttribute("transform", "rotate("+heading+" 320 170)");
+    var needleDeg = 0;
+    if (dead) needleDeg = 124;
+    else if (iron) needleDeg = 34;
+    document.getElementById("needleG").setAttribute("transform", "translate(320 170) rotate("+needleDeg+")");
+    document.getElementById("needleN").setAttribute("class", dead ? "cp-dead" : "cp-needle-n");
+    document.getElementById("needleS").setAttribute("class", dead ? "cp-dead" : "cp-needle-s");
+    var ironG = document.getElementById("ironG");
+    if (iron) ironG.removeAttribute("hidden");
+    else ironG.setAttribute("hidden", "");
+    var onN = aligned();
+    document.getElementById("headOut").textContent = dirName(heading) + " · " + heading + "°";
+    document.getElementById("alignOut").textContent = onN ? "对准了，面朝北" : (dead ? "这根针不会对准" : (iron ? "铁把针拉歪了" : "还没有"));
+    document.getElementById("ironOut").textContent = iron ? "有，针会歪" : "没有";
+    document.getElementById("magOut").textContent = dead ? "没有磁性" : "有磁性，会找北";
+    document.getElementById("heading").setAttribute("aria-valuetext", "朝"+dirName(heading)+"，"+heading+"度");
+    var live = document.getElementById("live");
+    var cap = document.getElementById("cpCap");
+    var face = document.getElementById("cpFace");
+    if (dead) {
+      face.textContent = "这根针没有磁性，不会自己找北";
+      cap.textContent = "换回有磁性的针，才能对准北方。";
+      live.textContent = "没有磁性的针停在随便一个方向。先换回红针，再去对准 N。";
+    } else if (iron) {
+      face.textContent = "旁边的铁把针拉歪了";
+      cap.textContent = "先拿开铁块，针才会回到磁北。";
+      live.textContent = "干扰铁会让找北不准。拿开铁块，再让 N 对准红针。";
+      checkGuess();
+    } else if (onN) {
+      face.textContent = "N 对准红针，你面朝北";
+      cap.textContent = "红针仍指北。再转开盒子，看 N 离开针。";
+      live.textContent = "红针指北。N 已经对准针，你面朝北。再转开，让针离开 N，然后再转回来。";
+      checkGuess();
+    } else {
+      face.textContent = "现在盒子转到"+dirName(heading)+"，针还指着北";
+      cap.textContent = "红针总是指北。转动地图，让 N 去对准它。";
+      live.textContent = "红针仍指北。转动盒子，让 N 去对准红针。";
+    }
+    if (fromUser) {
+      if (guess1 && !guess1Done && wrap(heading) === 0 && !iron && !dead) sawNorth1 = true;
+      if (guess2 && !guess2Done && wrap(heading) === 90 && !iron && !dead) seenEast = true;
+      if (guess3 && !guess3Done && iron && wrap(heading) === 0 && !dead) sawIronNorth = true;
+      if (onN) {
+        seen.north = true;
+        if (seen.off) seen.back = true;
+      } else if (seen.north && wrap(heading) !== 0 && !dead) {
+        seen.off = true;
+      }
+      checkGuess();
+    }
+    var status = document.getElementById("taskStatus");
+    if (seen.done) return;
+    if (seen.north && seen.off && seen.back) {
+      seen.done = true;
+      if (window.Progress) Progress.complete("games/compass-lab.html", "先对准北方，再转开后又找回北");
+      status.textContent = "完成啦：你朝过北，也把针转开再找回来了。";
+    } else if (!seen.north) {
+      status.textContent = "尚未完成：先转动盒子，让 N 对准红针，面朝北。";
+    } else if (!seen.off) {
+      status.textContent = "还差：再转开，让针离开 N。";
+    } else {
+      status.textContent = "还差：再转回来，让 N 重新对准红针。";
+    }
+  }
+  document.getElementById("heading").addEventListener("input", function(){ render(true); });
+  document.getElementById("faceNorth").addEventListener("click", function(){
+    document.getElementById("heading").value = "0";
+    render(true);
+  });
+  document.getElementById("turnLeft").addEventListener("click", function(){
+    document.getElementById("heading").value = String(wrap(heading - 15));
+    render(true);
+  });
+  document.getElementById("turnRight").addEventListener("click", function(){
+    document.getElementById("heading").value = String(wrap(heading + 15));
+    render(true);
+  });
+  document.getElementById("ironBtn").addEventListener("click", function(){
+    iron = !iron;
+    this.setAttribute("aria-pressed", iron ? "true" : "false");
+    render(true);
+  });
+  document.getElementById("deadBtn").addEventListener("click", function(){
+    dead = !dead;
+    this.setAttribute("aria-pressed", dead ? "true" : "false");
+    render(true);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      guess1 = btn.getAttribute("data-guess1");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。点「转到朝北」核对读数。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。从朝北再转到朝东核对。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut3").textContent = "押好了。打开旁边放铁，再转到朝北。";
+    });
+  });
+  var ATLAS = {
+    needle:"针：红端顺着地磁场自己转，看台上红尖还指那边；不是永远指正北的魔法针。",
+    n:"N：盒子上的北字要先对上红针，读数对准才亮；不是随便转一下就算朝北。",
+    s:"S：南在北的对面，北字对上红针后再看对面的南；不是指南鱼自己认识路。",
+    map:"地图：房子和树跟着盒子转，是为了把北字摆到红针上；不是地图自己会认路。",
+    turn:"转向：滑杆转的是你和盒子，红针仍停在磁北那边；不是针跟着盒子一起转。",
+    magN:"磁北：针找的是地磁北极附近，看红尖停哪；不是地图上的真北，也不是永远正北。",
+    iron:"干扰铁：点靠近铁块，看旁边铁块把红针拽歪，能指着舞台看；不是永远指北方的魔法针。",
+    dead:"没有磁铁时：点换没磁性的针，看读数写它停在随便方向；不是针自己认识回家的路。",
+    e:"E：北字对上红针后面朝北，东就在右手边那一格；不是针自己会喊出东。",
+    w:"W：北字对上红针后面朝北，西就在左手边那一格；不是指南鱼认得西边。",
+    phone:"手机罗盘：屏幕上的针也要先对准磁北，别贴着音箱读，能指着舞台看；不是手机自己会认路。",
+    decl:"磁偏角：磁北和地图真北会差一点点，本页把差画成零来练对准；不是永远正北。"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-cp-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-cp-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-cp-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+    });
+  });
+  render(false);
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/compass-lab.html", "指南针工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

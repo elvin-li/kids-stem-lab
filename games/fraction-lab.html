@@ -5,16 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>分数实验室 · 面积与数轴上的分数 — 少儿数理启蒙</title>
 <meta name="description" content="把分数同时看成「一块面积」和「数轴上的一个点」：自由切分 2–12 份、涂色、比较大小、发现等值分数，并用公分母图形做分数加法。">
-<link rel="stylesheet" href="../assets/css/base.css?v=17">
-<link rel="stylesheet" href="../assets/css/kid.css?v=17">
-<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#fff8ec">
-<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
 <style>
   .head-pills { margin-bottom: 14px; }
-  .teach { font-size: 1.02rem; color: var(--ink-mid); max-width: 62ch; }
-  .teach b { color: var(--ink); }
 
   .stage-head {
     display: flex; justify-content: space-between; align-items: center;
@@ -63,7 +61,6 @@
   .cell-canvas { position: relative; }
   .cell-canvas canvas { display: block; width: 100%; height: auto; touch-action: none; cursor: pointer; border-radius: var(--r-sm); }
 
-  .mini-row { display: flex; gap: 6px; align-items: center; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
 
   .verdict {
     margin-top: 14px; padding: 14px 16px;
@@ -82,7 +79,10 @@
   .badge-eq {
     display: inline-flex; align-items: center; gap: 6px;
     font-size: .78rem; font-weight: 700; color: var(--sci);
-    border: 1px solid rgba(74,222,128,.4); background: rgba(74,222,128,.12);
+    /* 原来写死的 rgba(74,222,128,.4) 是为暗底写的绿色高光描边，浅底上只有 1.21:1，
+       等于没画——这枚「✓ 等值分数」徽章就只剩一团淡绿，圈不出来。
+       换成和 --surface 混的 --sci（不和 --line 混：孩子模式的 --line 是暖棕 #f0c98a）。 */
+    border: 1px solid color-mix(in srgb,var(--sci) 55%,var(--surface)); background: color-mix(in srgb,var(--sci) 12%,var(--surface));
     padding: 3px 10px; border-radius: 999px;
   }
 
@@ -94,8 +94,6 @@
   .qa { counter-reset: q; }
   .qa li { margin-bottom: 10px; color: var(--ink-mid); }
   .qa li b { color: var(--ink); }
-  ul.plain { padding-left: 1.15rem; }
-  ul.plain li { margin-bottom: .5em; color: var(--ink-mid); }
   .why-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
   .mission { margin: 20px 0 22px; }
   .mission ol { margin: 8px 0 14px; padding-left: 1.3rem; color: var(--ink-mid); }
@@ -116,9 +114,6 @@
   .playful-task-output { min-height:1.6em; margin:0; color:var(--ink); font-weight:700; }
   .playful-evidence { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
   @media (max-width:620px) { .playful-quest-head { grid-template-columns:1fr; } }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
-  }
 
   /* 公平点心铺 */
   html, body { max-width:100%; overflow-x:clip; }
@@ -137,7 +132,7 @@
   .learning-layers summary { min-height:48px; display:flex; align-items:center; cursor:pointer; color:var(--ink); font-weight:800; }
   .learning-layers details > div { padding:0 0 16px; color:var(--ink-mid); }
   main#main > * { order:0 !important; }
-  [hidden] { display:none !important; }
+  /* [hidden] 的兜底已上提到 assets/css/base.css，本页不再重复。 */
   button, .btn, .chip, .tabs button, select, input[type="range"] { min-height:44px; }
   canvas { max-width:100%; }
   .pair, .mission-grid, .work-card-fields { min-width:0; }
@@ -156,6 +151,11 @@
   .kid-picks .kid-choice[aria-pressed="true"] { border-color:var(--sci); background:rgba(74,222,128,.14); }
   .kid-predict-card { padding:12px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
   .kid-predict-card > p { margin:0 0 8px; color:var(--ink); font-weight:800; }
+  .guess-card { border-color: color-mix(in srgb,var(--math) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--math); background: color-mix(in srgb,var(--math) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+  .pick-btns { display:flex; gap:8px; flex-wrap:wrap; }
   html[data-mode="kid"] main { padding-top:12px !important; }
   html[data-mode="kid"] .story-hero { padding-block:14px; margin-bottom:8px; }
   html[data-mode="kid"] .lab { display:block; }
@@ -221,13 +221,129 @@
   .fl-pie-plate { fill:color-mix(in srgb,var(--kit) 14%,var(--surface-2)); }
   .fl-pie-crust { fill:none; stroke:color-mix(in srgb,var(--warn) 62%,var(--line)); stroke-width:4; }
   .fl-pie-empty { fill:var(--surface-2); stroke:var(--line); stroke-width:1.5; stroke-dasharray:5 4; }
-  .fl-pie-cut { fill:none; stroke:color-mix(in srgb,var(--ink) 22%,transparent); stroke-width:1.5; }
   .fl-pie-a { fill:var(--math); stroke:#fff; stroke-width:1.5; }
   .fl-pie-b { fill:var(--kit); stroke:#fff; stroke-width:1.5; }
   .fl-pie-shine { fill:#fff; opacity:.3 }
   .fl-bar-empty { fill:var(--surface-2); stroke:var(--line); stroke-width:1.5; stroke-dasharray:5 4; }
   .fl-bar-a { fill:var(--math); stroke:#fff; stroke-width:1.2; }
   .fl-bar-b { fill:var(--kit); stroke:#fff; stroke-width:1.2; }
+
+  /* ============================================================
+     内联图形的取色表
+     为什么全部走 class：属性里写 var() 时，SVG 属性不参与 CSS 变量的层叠，
+     换主题（默认浅色 ⇄ 孩子模式奶油底）不会重算，于是图会僵在一套颜色上。
+     配色只借用三个既有语义 token，不新造颜色：
+       --math  蓝  = 分数 A / 上面那条（和实验台的 .swatch.a、图例 🫐 同色）
+       --kit   粉  = 分数 B / 下面那条（同 .swatch.b、图例 🍓）
+       --sci   绿  = 「相等 / 正确」，与 .verdict.eq、.badge-eq 一致
+       --danger 红 = 「这样不算分数」的反例，只在等分反例里出现
+     线宽都 ≥1.4，白色描边分隔相邻份，浅底两套主题下份界都数得清。
+     ============================================================ */
+
+  /* ---- 「一样长才公平」：两条等长分数条站同一条基线，涂色顶到同一条高度线 ---- */
+  .fl-fair-base { fill:none; stroke:var(--ink); stroke-width:3; stroke-linecap:round; }
+  /* 高度线用绿色虚线：它是这张图唯一的结论标记——两条涂色顶端落在同一条线上。
+     虚线而非实线，是为了和上面那条实心基线区分开，不会被读成第二条地面。 */
+  .fl-fair-level { fill:none; stroke:var(--sci); stroke-width:2.6; stroke-dasharray:7 5; stroke-linecap:round; }
+  .fl-fair-dot { fill:var(--sci); }
+
+  /* ---- 比较用的条形模型：一条更长 = 一条更多 ---- */
+  .fl-cmp-edge { fill:none; stroke:var(--ink-dim); stroke-width:1.6; stroke-dasharray:4 3; }
+  .fl-cmp-win { fill:var(--sci); }
+
+  /* ---- 页头那块圆饼：底色是写死的粉气泡（.story-guide），所以取 currentColor
+         跟随气泡自己的 #531331 深梅色，不受主题 token 影响，深梅压粉底稳定可读 ---- */
+  .fl-hero-crust { fill:none; stroke:currentColor; stroke-width:2.4; }
+  .fl-hero-on { fill:#fff6e8; stroke:currentColor; stroke-width:1.4; }
+  .fl-hero-off { fill:#ffffff; fill-opacity:.26; stroke:currentColor; stroke-width:1.3; stroke-dasharray:3.2 2.4; }
+  .fl-hero-plate { fill:currentColor; fill-opacity:.16; stroke:currentColor; stroke-width:1.4; }
+  .fl-hero-side { fill:#e8b86a; stroke:currentColor; stroke-width:1.3; }
+  .fl-hero-frost { fill:#fff6e8; stroke:currentColor; stroke-width:1.3; }
+  .fl-hero-cut { fill:none; stroke:currentColor; stroke-width:1.2; }
+  .fl-hero-cherry { fill:#c2410c; stroke:currentColor; stroke-width:1; }
+  .fl-hero-stem { fill:none; stroke:currentColor; stroke-width:1.15; stroke-linecap:round; }
+
+  /* ---- 松鼠：暖橙 --code 当皮毛、浅一档当肚皮，白底与奶油底上都压得住 ---- */
+  .fl-sq-fur { fill:var(--code); }
+  .fl-sq-tail { fill:color-mix(in srgb,var(--code) 74%,var(--surface)); stroke:var(--code); stroke-width:1.4; }
+  .fl-sq-belly { fill:color-mix(in srgb,var(--code) 20%,var(--surface)); }
+  .fl-sq-nut { fill:var(--warn); stroke:var(--ink); stroke-width:1.2; }
+  .fl-sq-ink { fill:var(--ink); }
+  .fl-sq-eye { fill:#fff; }
+  .fl-sq-line { fill:none; stroke:var(--ink); stroke-width:1.2; stroke-linecap:round; }
+  /* 松鼠是线条画，没有 emoji 的「字形红利」：1em 见方时尾巴和坚果会糊成一团。
+     放到 1.5em 仍留在 .kid-mascot 的取景框里（框宽 clamp(64px,16vw,88px)、
+     字号 clamp(2rem,7vw,2.8rem)，1.5em ≈ 48–67px），细节才数得清。 */
+  .fl-guide .kid-mascot > svg { width:1.5em; height:1.5em; }
+  /* 同理：三步图卡里的分数条要横着铺开才看得出长短，1em 方形放不下。
+     按高度定尺寸、宽度自适应：最紧的一档是孩子模式 375px（三列、卡内可用约 100px、
+     字号 1.7rem），1.5em ≈ 41px 高 ⇒ 最宽那张 74px，仍留得下。 */
+  .fl-guide .kid-steps-visual .kid-tile-art > svg { display:block; width:auto; height:1.5em; }
+  /* 页头的圆饼要能数出 4 份，1em（约 41px）在 88px 的粉气泡里偏小，放到 1.5em。 */
+  .story-hero .story-guide > svg { width:1.5em; height:1.5em; }
+  /* 小游戏的四个标签同样换成线条图标，尺寸略大于 1em 才看清份数。 */
+  .fl-games .kid-tiles .kid-tile-art > svg { display:block; width:1.15em; height:1.15em; }
+
+  /* ---- 分层说明：本页原先只有 .learning-layers 的骨架样式而没有 markup，
+         补上三档说明的同时把缺的 .layer-age 徽章样式也写全 ---- */
+  .learning-layers .layer-age { display:inline-block; margin-right:8px; padding:2px 9px; border-radius:999px; background:color-mix(in srgb,var(--math) 14%,var(--surface)); color:var(--math); font-size:.74rem; font-weight:850; }
+  .learning-layers p { margin:0 0 .6em; }
+  .learning-layers p:last-child { margin-bottom:0; }
+  .learning-layers code { font-size:.9em; }
+
+  /* ---- 看图涨知识：分数小图鉴 ---- */
+  .fl-atlas { margin:30px 0 0; padding:clamp(14px,3vw,22px); border:3px solid color-mix(in srgb,var(--math) 26%,var(--line)); border-radius:var(--r-xl); background:color-mix(in srgb,var(--math) 5%,var(--surface)); }
+  .fl-atlas-title { display:flex; align-items:center; gap:9px; margin:0 0 8px; font-size:clamp(1.15rem,3.6vw,1.5rem); }
+  .fl-atlas-lead { margin:0 0 14px; max-width:64ch; color:var(--ink-mid); }
+  .fl-atlas-lead b { color:var(--ink); }
+  .fl-atlas-grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(min(258px,100%),1fr)); }
+  .fl-atlas-card { display:flex; flex-direction:column; padding:14px; border:2px solid var(--line-soft); border-radius:var(--r-lg); background:var(--surface); }
+  .fl-atlas-card > h3 { margin:.1em 0 .3em; font-size:1.06rem; }
+  .fl-atlas-art { display:block; margin:0 0 10px; }
+  .fl-atlas-art > svg { display:block; width:100%; height:auto; border-radius:var(--r-sm); background:var(--surface-2); }
+  .fl-atlas-sum { margin:0; color:var(--ink-mid); font-size:.92rem; }
+  .fl-atlas-sum b { color:var(--ink); }
+  .fl-atlas-more { margin-top:10px; border-top:1px dashed var(--line-soft); }
+  .fl-atlas-more > summary { display:flex; align-items:center; gap:6px; min-height:44px; padding:6px 0 4px; list-style:none; cursor:pointer; color:var(--math); font-weight:800; font-size:.86rem; }
+  .fl-atlas-more > summary::-webkit-details-marker { display:none; }
+  .fl-atlas-more > summary::after { content:"＋"; margin-left:auto; color:var(--ink-dim); font-size:1.05rem; }
+  .fl-atlas-more[open] > summary { color:var(--ink); }
+  .fl-atlas-more[open] > summary::after { content:"－"; }
+  .fl-atlas-more > summary:hover { color:var(--ink); }
+  .fl-atlas-body p { margin:0 0 8px; color:var(--ink-mid); font-size:.85rem; line-height:1.6; }
+  .fl-atlas-body b { color:var(--ink); }
+  .fl-atlas-body code { font-size:.9em; }
+  /* 动手提示单独一块底色：它是「合上页面之后还能做的事」，和解释段落分开。 */
+  .fl-atlas-tip { margin:0 !important; padding:9px 11px; border-radius:var(--r); background:color-mix(in srgb,var(--sci) 11%,var(--surface)); color:var(--ink-mid); font-size:.84rem; line-height:1.55; }
+  .fl-atlas-tip b { color:var(--ink); }
+  .fl-atlas-note { margin:14px 0 0; }
+  html[data-mode="kid"] .fl-atlas-more > summary { min-height:48px; font-size:.94rem; }
+  html[data-mode="kid"] .fl-atlas-card > h3 { font-size:1.14rem; }
+  html[data-mode="kid"] .fl-atlas-sum { font-size:1rem; }
+
+  /* 图鉴插图取色。等分/不等分那张要有一组红线，语义是「这样切不算几分之一」。 */
+  .fl-ax-plate { fill:var(--surface); stroke:var(--line); stroke-width:1.6; }
+  .fl-ax-on-a { fill:var(--math); stroke:#fff; stroke-width:1.4; }
+  .fl-ax-on-b { fill:var(--kit); stroke:#fff; stroke-width:1.4; }
+  .fl-ax-off { fill:var(--surface); stroke:var(--line); stroke-width:1.4; stroke-dasharray:5 4; }
+  .fl-ax-bad { fill:color-mix(in srgb,var(--danger) 26%,var(--surface)); stroke:var(--danger); stroke-width:1.4; }
+  .fl-ax-bad-off { fill:var(--surface); stroke:var(--danger); stroke-width:1.4; stroke-dasharray:5 4; }
+  .fl-ax-ok-mark { fill:none; stroke:var(--sci); stroke-width:3.4; stroke-linecap:round; stroke-linejoin:round; }
+  .fl-ax-no-mark { fill:none; stroke:var(--danger); stroke-width:3.4; stroke-linecap:round; }
+  .fl-ax-align { fill:none; stroke:var(--sci); stroke-width:2.4; stroke-dasharray:6 4; stroke-linecap:round; }
+  .fl-ax-rule { fill:none; stroke:var(--ink-dim); stroke-width:1.6; stroke-linecap:round; }
+  .fl-ax-arrow { fill:var(--ink-dim); }
+  .fl-ax-num { fill:var(--ink); font:800 13px/1 var(--mono); }
+  .fl-ax-num-dim { fill:var(--ink-mid); font:700 11px/1 var(--mono); }
+  .fl-ax-group { fill:none; stroke:var(--sci); stroke-width:2.2; stroke-dasharray:6 5; }
+  .fl-ax-dot-on { fill:var(--kit); stroke:#fff; stroke-width:1.4; }
+  .fl-ax-dot-off { fill:var(--surface); stroke:var(--line); stroke-width:1.6; stroke-dasharray:4 3; }
+  .fl-ax-clock { fill:var(--surface); stroke:var(--ink); stroke-width:2.2; }
+  .fl-ax-clock-half { fill:color-mix(in srgb,var(--math) 34%,var(--surface)); }
+  .fl-ax-hand { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; }
+  .fl-ax-cup { fill:none; stroke:var(--ink); stroke-width:2.2; stroke-linejoin:round; }
+  .fl-ax-cup-water { fill:color-mix(in srgb,var(--video) 42%,var(--surface)); }
+  .fl-ax-cup-mark { fill:none; stroke:var(--ink-dim); stroke-width:1.4; }
 
   @media (max-width:620px) {
     .fl-duel { grid-template-columns:1fr; }
@@ -237,7 +353,6 @@
     .story-hero::after { font-size:2.7rem; }
     .tabs { width:100%; border-radius:var(--r); }
     .tabs button { flex:1; padding-inline:8px; }
-    .mini-row .btn { flex:1 1 44px; }
     html[data-mode="kid"] .story-hero { grid-template-columns:52px minmax(0,1fr); gap:10px; padding:10px 12px; }
     html[data-mode="kid"] .story-guide { width:52px; height:52px; font-size:1.55rem; }
     html[data-mode="kid"] .story-copy .head-pills { display:none; }
@@ -257,15 +372,18 @@
     html[data-mode="kid"] .fl-guide { margin-bottom:8px; }
     html[data-mode="kid"] .stage-head { margin:0 0 6px; gap:6px; }
     html[data-mode="kid"] .stage-hint { display:none; }
-    html[data-mode="kid"] .fl-legend { margin:4px 0; }
-    html[data-mode="kid"] .story-hero { padding-block:6px; }
-    html[data-mode="kid"] .pair { margin-top:6px; }
+    html[data-mode="kid"] .fl-legend { display:none; }
+    html[data-mode="kid"] .story-hero { padding-block:4px; margin-bottom:4px; }
+    html[data-mode="kid"] .story-goal { font-size:.86rem; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    html[data-mode="kid"] .pair { margin-top:4px; }
     html[data-mode="kid"] .stage-head { min-height:0; }
     /* .pair 是本页首个 .kid-visual-stage，「舞台占首屏 24% 面积」按它算，
-       所以只能收到约 220px，不能再低。 */
-    html[data-mode="kid"] .pair { min-height:220px; }
+       所以只能收到约 200px，不能再低。 */
+    html[data-mode="kid"] .pair { min-height:200px; }
     /* .fl-guide 原本没有内边距，别再加；收紧它的栅格间距即可。 */
-    html[data-mode="kid"] .fl-guide { gap:6px; margin-bottom:6px; }
+    html[data-mode="kid"] .fl-guide { gap:4px; margin-bottom:4px; }
+    html[data-mode="kid"] .fl-guide .kid-steps-visual { display:none; }
+    html[data-mode="kid"] .fraction-primary-actions { margin-top:4px; gap:4px; }
     html[data-mode="kid"] .stage-head { padding:0; }
     html[data-mode="kid"] .story-kicker { display:none; }
     /* 松鼠那句旁白和页头的 .story-goal 说的是同一件事：
@@ -276,7 +394,24 @@
        三步图卡已经讲清怎么玩，所以最窄这一档只留图卡，把高度让给主操作。
        这属于信息密度调整：任务文字、完成状态和无障碍名称都不在这里。 */
     html[data-mode="kid"] .fl-guide > .kid-speech-row { display:none; }
+    /* hero 在这一档被上面那条 padding-block:6px 压到只有 85px 高，装饰层就塞不进去了：
+       ::after 的「½ ¼」大字正好压在标题上，data-playful-scene 生成的背景插画又垫在
+       副标题底下（实测 scene 盒 y84..167 与目标文字 y125..161 几何重叠，「多。」那一行
+       直接叠在剪刀图上）。两者都是纯装饰、按契约不承载任何信息，这一档收起来，
+       把这 85px 完整留给标题和那句话。宽屏不受影响——symmetry-studio 同款 hero
+       在 390px 下就很干净，因为它没有被压高度。 */
+    html[data-mode="kid"] .story-hero::after { display:none; }
+    html[data-mode="kid"] .story-hero > .pf-scene { display:none; }
+    html[data-mode="kid"] .playful-companion { display: none; }
   }
+
+  .mission-face { overflow: hidden; }
+  .mission-face img.photo-real { width: 78px; height: 78px; object-fit: cover; border-radius: 50%; display: block; }
+  .mission-character { overflow: hidden; }
+  .mission-character img.photo-real { width: 76px; height: 76px; object-fit: cover; border-radius: 50%; display: block; }
+  .story-guide img.photo-real { width: 72px; height: 72px; object-fit: cover; border-radius: 50%; display: block; }
+  .kid-figure-art img.photo-real { width: 100%; max-width: 240px; height: auto; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; display: block; }
+
 </style>
 </head>
 <body data-playful-page="games/fraction-lab.html">
@@ -291,6 +426,7 @@
     <a class="nav-link" href="../nature/index.html">探索</a>
     <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
   </div>
 </div></nav>
 
@@ -300,29 +436,62 @@
           data-playful-scene="lab"
           data-playful-scene-decorative="true"
           data-playful-scene-tone="var(--kit)">
-    <div class="story-guide" aria-hidden="true">🥧</div>
+    <!-- 🥧 换成一张真正切好的饼：4 条刀痕把整块分成 4 等份，右半边 2 份已上色。
+         emoji 的派只是「一块点心」，看不出份数；这里的图能直接数出「4 份里的 2 份」，
+         正好是本页的主角例子 2/4 = 1/2。刀痕连着上色的那半边一起画，
+         份界不会被填色盖掉，孩子才数得清。 -->
+    <div class="story-guide" aria-hidden="true"><img class="photo-real" src="../assets/photos/beans.jpg" alt="" width="78" height="78"></div>
     <div class="story-copy">
       <p class="story-kicker">果果的公平点心铺开门啦</p>
       <div class="row head-pills">
         <span class="pill pill-math">数学 · 分数</span>
-        <span class="pill">适合 7–11 岁</span>
+        <span class="pill">适合 7–11&nbsp;岁</span>
         <span class="pill">面积与数轴</span>
       </div>
       <h1>分一盘一样多的点心</h1>
-      <p class="story-goal"><b>涂一涂、比一比：</b>切法不同，也可能刚好一样多。</p>
+      <p class="story-goal lead"><b>学什么：</b>分数既是一块面积，也是数轴上的一个点。切法不同也能一样多（等值分数）；不是「分母大就更大」。</p>
     </div>
   </header>
 
   <!-- 图形玩法引导：不识字也知道点哪里 -->
   <div class="fl-guide" data-audience="kid-only">
     <div class="kid-speech-row">
-      <span class="kid-mascot" aria-hidden="true">🐿️</span>
+      <!-- 🐿️ 换成画出来的松鼠：坐姿、大尾巴上扬、前爪抱一颗坚果。
+           emoji 的松鼠在 macOS 之外常常缺字形（掉成豆腐块或黑白线稿），
+           而它是本页唯一的说话角色，掉了整句旁白就没人在说。 -->
+      <span class="kid-mascot" aria-hidden="true">
+        <svg class="art" viewBox="0 0 48 48" focusable="false" aria-hidden="true">
+          <path class="fl-sq-tail" d="M18 40C7 40 2 28 7 17c3-8 13-11 16-5-4-1-10 3-11 10-1 7 2 14 7 14z"/>
+          <ellipse class="fl-sq-fur" cx="21.5" cy="41.4" rx="3.4" ry="2"/>
+          <ellipse class="fl-sq-fur" cx="28.6" cy="41.6" rx="3.4" ry="1.9"/>
+          <path class="fl-sq-fur" d="M24 42c-6 0-9-5-7-11 2-6 7-9 11-7 5 2 6 13 3 16-2 2-4 2-7 2z"/>
+          <ellipse class="fl-sq-belly" cx="26" cy="35" rx="5.6" ry="6"/>
+          <path class="fl-sq-fur" d="M25.6 11.8c-1.6-4.6 1.2-6 2.8-2.1z"/>
+          <path class="fl-sq-fur" d="M33.4 10.8c1.2-4.4 4-3 2.6 1.2z"/>
+          <circle class="fl-sq-fur" cx="30" cy="17" r="7.2"/>
+          <ellipse class="fl-sq-fur" cx="25.4" cy="29.6" rx="2.3" ry="3.1"/>
+          <ellipse class="fl-sq-fur" cx="30.6" cy="29.8" rx="2.3" ry="3.1"/>
+          <ellipse class="fl-sq-nut" cx="28" cy="29" rx="3.8" ry="4.4"/>
+          <path class="fl-sq-line" d="M28 24.8v-1.8"/>
+          <ellipse class="fl-sq-belly" cx="35" cy="19.4" rx="2.9" ry="2.3"/>
+          <circle class="fl-sq-ink" cx="36.8" cy="18.9" r="1.2"/>
+          <circle class="fl-sq-ink" cx="32.2" cy="16" r="1.9"/>
+          <circle class="fl-sq-eye" cx="32.8" cy="15.4" r=".7"/>
+        </svg>
+      </span>
       <p class="kid-speech">切几刀不重要，<b>吃到一样多</b>才算公平。</p>
     </div>
     <ol class="kid-steps-visual" aria-label="三步玩法">
       <li><span class="kid-tile-art" aria-hidden="true">👆</span>点点心涂色</li>
-      <li><span class="kid-tile-art" aria-hidden="true">📏</span>看两条谁长</li>
-      <li><span class="kid-tile-art" aria-hidden="true">🤝</span>一样长就公平</li>
+      <!-- 📏 换成比较用的条形模型：上下两条一样长的整体，上面 3 份涂 2、下面 4 份涂 1。
+           卷尺量的是长度，可它没说明「量什么」；这两条把「比分数」摊开成
+           「同一个整体里，哪一条的涂色更长」，末端两条竖虚线就是要对比的位置。 -->
+      <li><span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 120 66" focusable="false" aria-hidden="true"><rect class="fl-bar-a" x="10" y="12" width="33.3" height="18" rx="3"/><rect class="fl-bar-a" x="43.3" y="12" width="33.3" height="18" rx="3"/><rect class="fl-bar-empty" x="76.6" y="12" width="33.4" height="18" rx="3"/><rect class="fl-bar-b" x="10" y="38" width="25" height="18" rx="3"/><rect class="fl-bar-empty" x="35" y="38" width="25" height="18" rx="3"/><rect class="fl-bar-empty" x="60" y="38" width="25" height="18" rx="3"/><rect class="fl-bar-empty" x="85" y="38" width="25" height="18" rx="3"/><path class="fl-cmp-edge" d="M76.6 6V62M35 6V62"/></svg></span>看两条谁长</li>
+      <!-- 🤝 握手表示的是「讲和」，不是「一样长」。换成下面那张公平图的小尺寸版本
+           （同一组路径，只是靠 CSS 缩小）：两条等长的分数条底端落在同一条实心基线上，
+           涂色部分的顶端又落在同一条绿色虚线上 —— 切法不同（2 份 vs 4 份），
+           可涂色的长度一模一样，这才是「公平」。 -->
+      <li><span class="kid-tile-art" aria-hidden="true"><svg viewBox="0 0 120 84" focusable="false" aria-hidden="true"><rect class="fl-bar-empty" x="18" y="14" width="34" height="27" rx="3"/><rect class="fl-bar-a" x="18" y="41" width="34" height="27" rx="3"/><rect class="fl-bar-empty" x="68" y="14" width="34" height="13.5" rx="3"/><rect class="fl-bar-empty" x="68" y="27.5" width="34" height="13.5" rx="3"/><rect class="fl-bar-b" x="68" y="41" width="34" height="13.5" rx="3"/><rect class="fl-bar-b" x="68" y="54.5" width="34" height="13.5" rx="3"/><path class="fl-fair-base" d="M8 68H112"/><path class="fl-fair-level" d="M8 41H112"/><circle class="fl-fair-dot" cx="35" cy="41" r="3.4"/><circle class="fl-fair-dot" cx="85" cy="41" r="3.4"/></svg></span>一样长就公平</li>
     </ol>
   </div>
 
@@ -341,9 +510,12 @@
       </div>
 
       <ul class="fl-legend kid-legend" aria-label="画面图例">
-        <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">🫐</span>蓝色 = A 吃到的</li>
-        <li style="--tone:var(--kit)"><span class="kid-legend-mark" aria-hidden="true">🍓</span>粉斜纹 = B 吃到的</li>
-        <li style="--tone:var(--ink-dim)"><span class="kid-legend-mark" aria-hidden="true">▢</span>虚线 = 还没吃</li>
+        <!-- 标签要短到三项能排进 375px 的一行：孩子模式下图例是单行横滑，滑不出来
+             就等于没有（见 kid.css 里 .kid-legend 的说明）。色块本身就是颜色样本，
+             所以不再重复写「蓝色」「粉斜纹」，只说这块是谁的。 -->
+        <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">🫐</span>A 吃到的</li>
+        <li style="--tone:var(--kit)"><span class="kid-legend-mark" aria-hidden="true">🍓</span>B 吃到的</li>
+        <li style="--tone:var(--ink-dim)"><span class="kid-legend-mark" aria-hidden="true">▢</span>还没吃</li>
       </ul>
 
       <!-- 两个分数 -->
@@ -373,7 +545,7 @@
         </div>
       </div>
 
-      <div class="fraction-primary-actions kid-action-strip" aria-label="分数主要操作">
+      <div class="fraction-primary-actions kid-action-strip" role="group" aria-label="分数主要操作">
         <div class="fraction-action-group">
           <button class="btn btn-sm" type="button" id="aMinus" aria-label="分数 A 减少一份">− A</button>
           <span class="pill" id="aLabel">1/2</span>
@@ -493,9 +665,57 @@
     </div>
   </div>
 
+
+  <section class="card guess-card" aria-labelledby="guessTitleFl">
+    <h2 id="guessTitleFl">先猜一猜，再比</h2>
+    <p><b>第 1 题：</b>把 1/2 的上下都乘 2，得到 2/4。这两个分数？</p>
+    <div class="pick-btns" role="group" aria-label="猜 1/2 与 2/4">
+      <button class="btn guess-pick" type="button" data-guess1="bigger" aria-pressed="false">2/4 更大，因为数字更大</button>
+      <button class="btn guess-pick" type="button" data-guess1="same" aria-pressed="false">一样大：等价分数</button>
+      <button class="btn guess-pick" type="button" data-guess1="smaller" aria-pressed="false">2/4 更小</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。把 A 摆成 1/2、B 摆成 2/4，看阴影与最简。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>3/6 约分后最简是？</p>
+      <div class="pick-btns" role="group" aria-label="猜 3/6 约分">
+        <button class="btn guess-pick" type="button" data-guess2="half" aria-pressed="false">1/2（上下同除以 3）</button>
+        <button class="btn guess-pick" type="button" data-guess2="three" aria-pressed="false">还是 3/6</button>
+        <button class="btn guess-pick" type="button" data-guess2="six" aria-pressed="false">6/3</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后把某一侧摆成 3/6，看「最简形式」。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>把 A 摆成 2/3、B 摆成 3/4。阴影一样多吗？</p>
+      <div class="pick-btns" role="group" aria-label="猜 2/3 与 3/4">
+        <button class="btn guess-pick" type="button" data-guess3="same" aria-pressed="false">一样，分母不同无所谓</button>
+        <button class="btn guess-pick" type="button" data-guess3="diff" aria-pressed="false">不一样：2/3≈0.67，3/4=0.75</button>
+        <button class="btn guess-pick" type="button" data-guess3="twothirds" aria-pressed="false">2/3 更大</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后把 A 摆成 2/3、B 摆成 3/4，对照读数。</p>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--math)"
+         data-kid-predict
+         data-kid-predict-explain="分数在比「部分相对整体」。把一块掰成两小块，块数变了，占整盘的分量可以不变。先对齐「同样大的一整份」，再比阴影。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🍪</span><b>两盘点心看起来块数不同，怎样才算「一样多」？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：怎样算分得一样多">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="pieces">块数一样就算一样多，大小无所谓</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="whole" data-kid-predict-correct>要比「占整盘的几分之几」，或拼回同样大的一份</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="color">颜色一样就一样多</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
   <section class="task mission" aria-labelledby="fractionMissionTitle">
     <div class="card parent-deep-dive" data-audience="parent" style="margin-bottom:14px">
-      <h2 style="font-size:1.1rem">这在教什么</h2>
+      <h2 style="font-size:1.1rem">面积一样、数轴同一点，就是同一个数的不同名字</h2>
       <p style="margin:0">分数既是一块面积，也是数轴上的一个点。面积一样多、站在同一点，就是同一个数的不同名字。</p>
     </div>
     <h2 class="task-title" id="fractionMissionTitle">正式任务 · 找到公平证据</h2>
@@ -525,13 +745,51 @@
       <div data-audience="kid-only"><p style="margin:0 0 6px;font-weight:700">我发现……</p><div class="kid-picks" id="fractionReflectChoices"><button class="kid-choice" type="button" data-fraction-reflect="切法不同，涂色量也可以一样多。">切法不同，也能一样多</button><button class="kid-choice" type="button" data-fraction-reflect="等值分数会站在数轴的同一点。">一样大会站在同一点</button><button class="kid-choice" type="button" data-fraction-reflect="相加前要先把每一份切得一样大。">先切成一样大再相加</button></div></div>
       <button class="btn btn-primary" id="fractionComplete" type="button" disabled>把证据记进足迹</button>
     </div>
-    <p class="task-status status" id="fractionMissionStatus" role="status" aria-live="polite">尚未完成：请先做等值预测。</p>
+    <p class="task-status status" id="fractionMissionStatus" role="status" aria-live="polite">尚未完成：验证等值分数、在数轴上定位假分数、写一句你的发现。</p>
     <div class="playful-quest parent-deep-dive" data-audience="parent" style="--quest-accent:var(--kit)" aria-labelledby="fractionStoryTitle">
       <div class="playful-quest-head"><div><h3 id="fractionStoryTitle">公平点心铺的证据盘</h3><p class="playful-story">果果只相信看得见的证据：面积一样多、数轴站在同一点。</p></div><div data-playful-companion role="note" aria-label="果果伙伴提示"></div></div>
       <div class="playful-tools"><button class="btn btn-sm" type="button" data-playful-random-task="#fractionSurprise">抽一张点心挑战</button><p class="playful-task-output" id="fractionSurprise" data-playful-task-output role="status" aria-live="polite">再找一组分数来验证。</p></div>
       <div class="playful-evidence"><span data-playful-sticker aria-label="分数实验证据收藏卡位"></span><span data-playful-feedback aria-live="polite"></span></div>
+
+  
+  <section class="card" aria-labelledby="corrTitle-fraction_lab">
+    <h2 id="corrTitle-fraction_lab">常见误解 · 先划掉</h2>
+    <p>先认清「不是什么」，再记「是什么」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="纠错对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/beans.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">分母大就更大</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">1/2 和 2/4 一样多；要看分子分母一起。</p></div>
+    </div>
+  </section>
+
+<section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">先对齐同一个整体，再比两块是不是一样大</h2>
+    <p>先固定「整盘」是谁，再谈一半、三分之一。整盘偷偷变大，分数就没法比。</p>
+    <div class="kid-figure-grid" role="group" aria-label="四个主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/beans.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">整份</span><span class="kid-figure-sub">分母</span><p class="kid-figure-fact">分母是整块蛋糕被切成几等份；每一份要一样大，才能开始数。不是随便切几刀。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/beans.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">拿走</span><span class="kid-figure-sub">分子</span><p class="kid-figure-fact">分子是这几等份里拿走了几份；先数整份有几刀，再数涂色几格。不是数字越大越多。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/beans.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">等价</span><span class="kid-figure-sub">不同切法</span><p class="kid-figure-fact">2/4 和 1/2 可以一样多，只是刀数不同；必须先对齐同一个整体才比得了。刀数多不等于更多。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/beans.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">对齐</span><span class="kid-figure-sub">公平</span><p class="kid-figure-fact">要比谁多，得先是同一块蛋糕、两盘一样大；换盘子就比歪了。几份要对着同一块。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>指整盘。</b>谁是 1？</li>
+      <li data-step="2"><b>数等份。</b>分母是几？</li>
+      <li data-step="3"><b>数阴影。</b>分子是几？</li>
+      <li data-step="4"><b>找等价。</b>换一种切法还一样吗？</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>先看整盘，再看涂色占了几份。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>分子/分母；等价分数是同一分量的不同切法。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>可用数轴或面积模型证明等价；强调单位 1 必须一致。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>公平比较的前提是同一个整体。</p>
+    <ul class="ask-list">
+      <li>两盘一样大吗？</li>
+      <li>2/4 为什么能等于 1/2？</li>
+      <li>块数多就更多吗？</li>
+    </ul>
+  </section>
+
       <form class="work-card work-card-form" data-playful-work-form data-print="hide" aria-labelledby="fractionWorkTitle">
-        <h4 id="fractionWorkTitle">作品表单 · 保存证据盘</h4>
+        <h3 id="fractionWorkTitle">作品表单 · 保存证据盘</h3>
         <div class="work-card-fields">
           <div><label for="fractionWorkType">作品类型</label><select class="input" id="fractionWorkType" name="type"><option value="explanation">我的解释</option><option value="observation">观察记录</option><option value="drawing">发现画</option></select></div>
           <div><label for="fractionWorkName">证据名称</label><input class="input" id="fractionWorkName" name="title" required maxlength="80" placeholder="例如：2/4 和 1/2 站同一点"></div>
@@ -558,7 +816,7 @@
           <span class="kid-figure-cap" id="flDuelLeftCap">1/2</span>
         </button>
         <button class="kid-figure fl-duel-card" type="button" id="flDuelSame" data-side="same" style="--tone:var(--sci)">
-          <span class="kid-figure-art" aria-hidden="true">🤝</span>
+          <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/beans.jpg" alt="" width="240" height="180"></span>
           <span class="kid-figure-cap">一样多</span>
         </button>
         <button class="kid-figure fl-duel-card" type="button" id="flDuelRight" data-side="right" style="--tone:var(--kit)">
@@ -626,14 +884,44 @@
 
     <p class="fl-score">
       <span class="fl-stars" id="flStars" role="img" aria-label="点心游戏已答对 0 次"></span>
-      <span class="fl-say" id="flTotal" style="margin:0">答对 0 次</span>
+      <span class="fl-say" id="flTotal" style="margin:0">答对 0&nbsp;次</span>
     </p>
   </section>
 
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「2/4 是不是和 1/2 一样多」，就只改切法这一项。同一盘点心、同样大的整体，先切成 2 份拿走 1 份，再切成 4 份拿走 2 份。换盘子大小是另一次对照，不要和「换刀数」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>切成几等份、拿走几份。</li>
+      <li><b>先保持不变：</b>同一盘、一样大的整体。</li>
+      <li><b>要观察的：</b>面积是不是一样多，数轴是不是站在同一点。</li>
+      <li><b>另开一行：</b>半块大蛋糕和半块小饼干，还能直接比吗？</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>同一张饼，一半和两个四分之一，哪边更能吃饱？切法变了，能吃到的那份变了吗？</li>
+      <li>半块大蛋糕和半块小饼干，都叫「一半」。哪一块更大？先对齐的是名字，还是整块？</li>
+      <li>把一张纸对折三次再打开，每一小格是几分之一？格子变多了，这一格变大了还是变小了？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把「通分」提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>先指整盘是谁，再看涂色占了几份。两盘要比，得先一样大。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>分子是拿走几份，分母是切成几等份。2/4 和 1/2 是同一分量的不同切法。分母变大，每一份变小。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>分数是数轴上的一个点。加法要先切成一样厚的份。7/4 比 1 大，是超过一个整体，不是把 7 和 4 加起来。</p></div>
+    </div>
+  </section>
+
   <!-- ================= 家长提问脚本 ================= -->
-  <section class="parent-deep-dive" data-audience="parent" style="margin-top:34px">
-    <h2>给家长的提问脚本</h2>
-    <p style="font-size:.92rem">不用讲规则。按顺序问这三个问题，让孩子自己把规则说出来。</p>
+  <section class="parent-deep-dive" data-audience="parent" style="margin-top:34px" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的提问脚本</h2>
+    <p style="font-size:.92rem">不用讲规则。按顺序问这些问题，让孩子自己把规则说出来。</p>
     <div class="card">
       <ol class="qa" style="padding-left:1.2rem;margin:0">
         <li><b>「分母变大，一份会变大还是变小？」</b><br>
@@ -645,13 +933,26 @@
         <li><b>「1/2 + 1/3 为什么不是 2/5？」</b><br>
           切到「分数相加」模式。孩子会看到两块大小不同的砖没法直接数，
           必须先都切成 6 小份，才数得清是 <code>5/6</code>。</li>
+        <li><b>「半块大蛋糕和半块小饼干，都叫 1/2，哪块更大？」</b><br>
+          分数是部分相对同一个整体。整体不一样大，同名分数也不能直接比。</li>
+        <li><b>「左边 3 小块、右边 1 大块，块数多就一定更多吗？」</b><br>
+          先看每一块有多大，再数块。3/8 不必大于 1/2。</li>
+        <li><b>「7/4 比 1 大还是比 1 小？走到 4/4 时，整盘已经走完了吗？」</b><br>
+          假分数是超过一个整体，不是把 7 和 4 加起来，也不是 7 减 4。</li>
       </ol>
     </div>
   </section>
 
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--math) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--math) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">分数公式卡 · 等值 a/b = (a×k)/(b×k)；最简＝除掉最大公因数；公分母＝lcm(b₁,b₂)</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">1/2 与 2/4 是同一点的不同名字。加法先切成一样大的份（公分母）再数格：1/2+1/3→3/6+2/6=5/6，不是 2/5。分母变大，每一份变小。</p>
+    </div>
+
+
   <!-- ================= 背后的原理 ================= -->
-  <section class="parent-deep-dive" data-audience="parent" style="margin-top:28px">
-    <h2>背后的原理</h2>
+  <section class="parent-deep-dive" data-audience="parent" style="margin-top:28px" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>分数说的是部分相对同一个整体：先对齐「整盘是谁」，再谈一半、三分之一。切法可以换，拿走的量可以不变；整体偷偷变大，分数就没法比。</p>
     <div class="why-grid">
       <div class="card">
         <h3>分数是一个数，不是两个数</h3>
@@ -696,6 +997,17 @@
   </div>
 <p class="lab-exit"><a class="btn btn-ghost" href="index.html"><span aria-hidden="true">←</span> 回到实验室目录</a></p>
 </main>
+
+<!-- 追问清单放在孩子层：本页原先 3 条带问号的条目全部在家长层。 -->
+<section class="card" aria-labelledby="fractionAskTitle" style="margin:18px auto 0;max-width:var(--w-narrow, 780px)">
+  <h2 id="fractionAskTitle">还可以问下去</h2>
+  <ul class="ask-list">
+    <li>半块饼，和两个四分之一块饼，哪个多？切法变了，能吃到的那份变了吗？</li>
+    <li>1/2 比 1/3 大，可是 2 比 3 小。为什么下面那个数越大，每一份反而越小？</li>
+    <li>7/4 比 1 大还是比 1 小？在数轴上一步一步走过去看看。</li>
+    <li>把一张纸对折三次再打开，数一数格子。你能说出每一格是几分之一吗？</li>
+  </ul>
+</section>
 
 <footer class="foot"><div class="wrap">
   分数实验室 · 少儿数理启蒙 — 纯前端单文件实验，可离线使用。
@@ -876,8 +1188,11 @@
       ctx.textAlign = 'right'; ctx.fillText('1', x0 + bw, h - 6);
     }
 
-    canvas.setAttribute('aria-label',
-      (which === 'a' ? '分数 A' : '分数 B') + '：' + den + ' 份里涂了 ' + num + ' 份');
+    var name = which === 'a' ? '分数 A' : '分数 B';
+    canvas.setAttribute('aria-label', name + '：' + den + ' 份里涂了 ' + num + ' 份。使用方向键调整涂色份数');
+    canvas.setAttribute('aria-valuemax', String(den));
+    canvas.setAttribute('aria-valuenow', String(num));
+    canvas.setAttribute('aria-valuetext', den + ' 份里涂了 ' + num + ' 份');
   }
 
   // ---------- 命中测试 ----------
@@ -921,6 +1236,19 @@
     canvas.addEventListener('pointermove', function (ev) { if (painting) apply(ev); });
     canvas.addEventListener('pointerup', function () { painting = false; });
     canvas.addEventListener('pointercancel', function () { painting = false; });
+    canvas.addEventListener('keydown', function (ev) {
+      var frac = S[key], next = frac.n;
+      if (ev.key === 'ArrowRight' || ev.key === 'ArrowUp') next++;
+      else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowDown') next--;
+      else if (ev.key === 'Home') next = 0;
+      else if (ev.key === 'End') next = frac.d;
+      else return;
+      ev.preventDefault();
+      frac.n = clamp(next, 0, frac.d);
+      S.guess = null;
+      render();
+      say((key === 'a' ? '分数 A' : '分数 B') + '：' + frac.d + ' 份里涂了 ' + frac.n + ' 份');
+    });
   }
 
   // ---------- 数轴 ----------
@@ -1417,7 +1745,16 @@
     var done = [];
     if (S.mission.eq) done.push('等值分数');
     if (S.mission.improper) done.push('假分数数轴');
-    el.fractionMissionStatus.textContent = (done.length ? '已验证：' + done.join('、') + '。' : '尚未验证挑战。') +
+    /* 原来这里只报「已验证了什么」，从不说还缺什么；更要紧的是判定的第三项
+       （反思，见下面完成按钮）在状态行里从未出现过 —— 反思为空时点完成按钮
+       只走 say()，状态行一个字都不变，孩子看着「已验证：两项」却点不动，
+       也得不到任何书面解释。缺项清单在这里统一推导。 */
+    var missing = [];
+    if (!S.mission.eq) missing.push('验证等值分数');
+    if (!S.mission.improper) missing.push('在数轴上定位假分数');
+    if (!el.fractionReflect.value.trim()) missing.push('写一句你的发现');
+    el.fractionMissionStatus.textContent = (done.length ? '已验证：' + done.join('、') + '。' : '') +
+      (missing.length ? '还差：' + missing.join('、') + '。' : '三件都齐了，可以记录完成。') +
       (message ? ' 最近结果：' + message : '');
     el.fractionComplete.disabled = !(S.mission.eq && S.mission.improper);
   }
@@ -1464,13 +1801,16 @@
       document.querySelectorAll('[data-fraction-reflect]').forEach(function (choice) {
         choice.setAttribute('aria-pressed', String(choice === btn));
       });
+      /* 图卡是程序化赋值，不会触发 input 事件，所以要手动刷新缺项清单。 */
+      updateFractionMission();
       say('已选发现：' + btn.textContent);
     });
   });
 
   el.fractionComplete.addEventListener('click', function () {
     var reflection = el.fractionReflect.value.trim();
-    if (!reflection) { say('请先写一句反思'); el.fractionReflect.focus(); return; }
+    /* 原来只播报不写状态行。改成同时刷新状态行，缺项就写在孩子眼前。 */
+    if (!reflection) { updateFractionMission(); say('请先写一句你的发现，再记录完成'); el.fractionReflect.focus(); return; }
     var evidence = '验证 1/2=2/4，并在数轴定位 7/4=1又3/4。反思：' + reflection;
     var saved = window.Progress && Progress.complete('games/fraction-lab.html', evidence);
     el.fractionMissionStatus.textContent = saved ? '✓ 任务已完成并记录：' + evidence : '✓ 任务已完成；本机存储不可用，未能保存足迹。';
@@ -1480,6 +1820,13 @@
   // 画布点击涂色
   bindPaint(el.cvA, 'a');
   bindPaint(el.cvB, 'b');
+
+  /* 载入时刷新一次，并跟着反思输入实时更新。
+     此前本页从不在载入时调用这个函数，markup 里那句写死的文案就是孩子进页面后
+     唯一看到的清单 —— 而它只列了三项里的一项。正面样板见 nature/space.html
+     的 refreshStatus()：载入调用 + 绑 input 事件。 */
+  updateFractionMission();
+  el.fractionReflect.addEventListener('input', function () { updateFractionMission(); });
 
   // 尺寸自适应
   var rTimer = null;
@@ -1497,10 +1844,74 @@
   render();
 })();
 </script>
-<script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=17"></script>
-<script src="../data/playful.js?v=17"></script>
-<script src="../assets/js/playful.js?v=17"></script>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  function labels(){
+    var a = (document.getElementById("aLabel") || {}).textContent || "";
+    var b = (document.getElementById("bLabel") || {}).textContent || "";
+    var simp = (document.getElementById("roSimp") || {}).textContent || "";
+    return { a: a, b: b, simp: simp };
+  }
+  function checkStage(){
+    var L = labels();
+    if (guess1 && !guess1Done && L.a === "1/2" && L.b === "2/4") {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "same" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "上下同乘 2，得到等价分数：1/2=2/4，阴影一样多。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && (L.a === "3/6" || L.b === "3/6") && /1\/2/.test(L.simp)) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "half" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "3÷3 / 6÷3 = 1/2。约分是等价分解的反向。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && L.a === "2/3" && L.b === "3/4") {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "diff" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "通分后 8/12 与 9/12，3/4 更大。不是「分母大就大」。";
+    }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "已押。把 A 摆成 1/2、B 摆成 2/4，看阴影与最简。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "已押。把某一侧摆成 3/6，看「最简形式」。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut3").textContent = "已押。把 A 摆成 2/3、B 摆成 3/4 对照。";
+    });
+  });
+  document.addEventListener("fractionlab:change", checkStage);
+})();
+</script>
 <script>if (window.Progress) Progress.visit("games/fraction-lab.html", "分数实验台");</script>
 <script>
 /* ==========================================================================
@@ -1564,8 +1975,8 @@
     wins += 1;
     var stars = el('flStars');
     stars.textContent = '⭐'.repeat(Math.min(wins, 10));
-    stars.setAttribute('aria-label', '点心游戏已答对 ' + wins + ' 次');
-    el('flTotal').textContent = '答对 ' + wins + ' 次';
+    stars.setAttribute('aria-label', '点心游戏已答对 ' + wins + '\u00a0次');
+    el('flTotal').textContent = '答对 ' + wins + '\u00a0次';
   }
 
   /* ---- 面板切换：大图卡当标签 ---- */
@@ -1791,6 +2202,6 @@
   });
 })();
 </script>
-<script src="../assets/js/pwa.js?v=17"></script>
+<script src="../assets/js/pwa.js?v=488"></script>
 </body>
 </html>

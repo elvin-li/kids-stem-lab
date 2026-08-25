@@ -1,0 +1,884 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>土壤观察站 · 落叶到石子 | 少儿数理启蒙</title>
+<meta name="description" content="看土层剖面：落叶、表土、沙土或黏土、石子；比较谁漏水、谁保水。离线即可使用。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+ .hero { padding: 28px 0 10px; }
+ .hero h1 { margin: .15em 0 .3em; }
+ .lead { max-width: 58ch; color: var(--ink-mid); }
+ .kid-mission {
+ display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+ margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+ border: 1px solid color-mix(in srgb,var(--kit) 40%,var(--line));
+ border-radius: var(--r-lg);
+ background: linear-gradient(135deg,color-mix(in srgb,var(--kit) 16%,var(--surface)),var(--surface) 62%);
+ }
+ .mission-face {
+ width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+ border: 2px solid color-mix(in srgb,var(--kit) 42%,var(--line));
+ background: color-mix(in srgb,var(--kit) 14%,var(--surface)); font-size: 2.2rem;
+ }
+ .mission-face svg { width: 64px; height: 64px; display: block; }
+ .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+ .so-art { display: block; width: 100%; max-width: 520px; height: auto; margin: 0 auto; }
+ .so-sky { fill: color-mix(in srgb,var(--video) 10%,#e8f5ff); }
+ .so-grass { fill: color-mix(in srgb,var(--sci) 42%,#6aa85a); }
+ .so-litter { fill: color-mix(in srgb,var(--kit) 30%,#8a6a32); }
+ .so-top { fill: color-mix(in srgb,var(--kit) 52%,#4a2e18); }
+ .so-sand { fill: color-mix(in srgb,var(--kit) 22%,#e2c48a); }
+ .so-clay { fill: color-mix(in srgb,var(--danger) 24%,#b06a3a); }
+ .so-stone { fill: color-mix(in srgb,var(--ink) 20%,#9a948c); }
+ .so-leaf { fill: color-mix(in srgb,var(--kit) 45%,#6b4320); }
+ .so-root { fill: none; stroke: color-mix(in srgb,var(--sci) 40%,#6b4a28); stroke-width: 2; stroke-linecap: round; }
+ .so-grain { fill: color-mix(in srgb,var(--kit) 18%,#d8b878); stroke: color-mix(in srgb,var(--ink) 22%,transparent); stroke-width: 1; }
+ .so-fine { fill: color-mix(in srgb,var(--danger) 28%,#9a5530); }
+ .so-rock { fill: color-mix(in srgb,var(--ink) 28%,#b0aaa4); stroke: color-mix(in srgb,var(--ink) 30%,transparent); stroke-width: 1.2; }
+ .so-water { fill: color-mix(in srgb,var(--math) 50%,#5aa0d4); }
+ .so-label { font: 700 13px var(--font); fill: var(--ink); }
+ .so-ring { fill: none; stroke: var(--kit); stroke-width: 3; opacity: 0; }
+ .so-ring.on { opacity: 1; }
+ .kid-action-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+ .soil-atlas .kid-figure { --tone: var(--kit); }
+ .soil-atlas .kid-figure-art { padding: 6px; }
+ .soil-atlas .kid-figure-art > svg { width: 100%; max-width: 140px; height: auto; }
+ .soil-atlas .kid-figure-fact { display: block; }
+ .so-mini-bg { fill: color-mix(in srgb, var(--kit) 8%, #faf4ea); }
+ .so-silt { fill: color-mix(in srgb, var(--kit) 28%, #c9b07a); }
+ .so-loam-d { fill: color-mix(in srgb, var(--kit) 40%, #8a5a32); }
+ .so-bedrock { fill: color-mix(in srgb, var(--ink) 36%, #8a8680); }
+ .so-crack { fill: none; stroke: color-mix(in srgb, var(--ink) 40%, transparent); stroke-width: 1.4; }
+ .so-worm { fill: color-mix(in srgb, var(--kit) 30%, #c4846a); }
+ .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+ .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+ .ask li::before {
+ counter-increment: q; content: counter(q);
+ position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+ display: grid; place-items: center; background: color-mix(in srgb,var(--kit) 12%,var(--surface));
+ border: 1px solid color-mix(in srgb,var(--kit) 40%,var(--line)); color: var(--ink);
+ font: 800 .76rem var(--mono);
+ }
+ button, .btn { min-height: 44px; }
+ .stage + .kid-action-strip { margin-top: 8px; }
+ .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+ @media (max-width: 640px) {
+ .kid-mission { grid-template-columns: 1fr; padding: 12px; }
+ .mission-face { display: none; }
+ .stage { padding: 10px; }
+ .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+ .lead { max-width: none; }
+ }
+ /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+ @media (max-width: 480px) {
+ html[data-mode="kid"] .kid-mission { margin: 8px 0 10px; padding: 10px 12px; }
+ html[data-mode="kid"] .kid-mission .row { margin-bottom: .3em; }
+ html[data-mode="kid"] .kid-mission h1 { font-size: 1.5rem; }
+ html[data-mode="kid"] .kid-mission .lead { font-size: .92rem; line-height: 1.5; margin-bottom: .4em; }
+ html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+ html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+ html[data-mode="kid"] .so-art { max-height: 150px; }
+ html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .92rem; margin-bottom: 0; }
+ html[data-mode="kid"] .kid-action-strip { margin: 8px 0; }
+ }
+
+ .so-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+ .so-lab-panel { margin: 12px 0; padding: 10px; border: 1px solid color-mix(in srgb,var(--sci) 36%,var(--line)); border-radius: var(--r-lg); background: color-mix(in srgb,var(--sci) 8%,var(--surface)); }
+ .so-lab-panel .readout { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0; }
+ .so-lab-panel .readout div { padding:8px; border-radius:var(--r); background:var(--surface); border:1px solid var(--line); }
+ .so-lab-panel .readout span { display:block; font-size:.78rem; color:var(--ink-mid); }
+ .so-lab-panel .readout b { font:800 1.05rem var(--mono); color:var(--ink); }
+ .so-lab-panel label { display:block; font-weight:700; margin-top:8px; }
+ .so-lab-panel input[type="range"] { width:100%; min-height:44px; }
+ .so-lab-panel .kid-action-strip { flex-direction:column; align-items:stretch; gap:4px; margin:8px 0; }
+ .so-guess .pick-btns { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+ .guess-card { border-color: color-mix(in srgb,var(--sci) 45%,var(--line)); }
+ .guess-pick[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 18%,var(--surface)); color: var(--ink); }
+ .guess-out { font-weight: 750; color: var(--ink-mid); }
+ .guess-out b { color: var(--ink); }
+ @media (max-width:640px){
+ .hero .lead { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+ .so-lab-panel > p { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+ }
+ @media (max-width:480px){
+ [data-playful-companion], [data-playful-sticker] { display:none !important; }
+ .so-lab-panel .readout { grid-template-columns:1fr; }
+ }
+
+
+.photo-gap { display:grid; place-items:center; box-sizing:border-box; min-height:116px; padding:10px 8px; background:var(--surface-2); border-radius:12px; }
+.photo-gap-note { color:var(--ink-mid); font:700 .82rem/1.35 sans-serif; text-align:center; }
+.photo-gap-legend { color:var(--ink-mid); font-size:.92rem; }
+</style>
+</head>
+<body data-playful-page="nature/soil.html">
+<!-- ART:START 插画图库由 tools/art-build.mjs 生成，请改 tools/art-library.mjs -->
+<svg class="art-sprite" aria-hidden="true" focusable="false" width="0" height="0" viewBox="0 0 0 0">
+ <symbol id="art-geo-crust" viewBox="0 0 120 120">
+ <linearGradient id="ag-w36-gc-rk" x1="0" y1="0" x2=".25" y2="1">
+ <stop offset="0" stop-color="#d6b48a"/><stop offset=".4" stop-color="#a16207"/><stop offset="1" stop-color="#44403c"/>
+ </linearGradient>
+ <linearGradient id="ag-w36-gc-sl" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0" stop-color="#65a30d"/><stop offset=".35" stop-color="#6b4328"/><stop offset="1" stop-color="#44403c"/>
+ </linearGradient>
+ <path d="M12 28 C28 18 70 16 108 26 L114 104 C86 114 40 112 8 102 Z" fill="url(#ag-w36-gc-rk)" stroke="#292524" stroke-width="2"/>
+ <path d="M14 30 C30 22 68 20 106 28 L108 42 L16 44 Z" fill="url(#ag-w36-gc-sl)"/>
+ <g fill="none" stroke="#4d7c0f" stroke-width="2.4" stroke-linecap="round">
+ <path d="M24 32 C22 22 24 14 28 8"/><path d="M42 30 C40 20 44 12 48 6"/>
+ <path d="M62 28 C60 18 64 12 68 6"/><path d="M82 30 C80 20 84 12 88 8"/>
+ <path d="M98 32 C97 24 100 16 104 12"/>
+ </g>
+ <g fill="#4d7c0f" opacity=".7">
+ <ellipse cx="28" cy="30" rx="3" ry="2"/><ellipse cx="62" cy="28" rx="3.4" ry="2"/><ellipse cx="92" cy="30" rx="3" ry="2"/>
+ </g>
+ <g fill="#57534e" opacity=".55">
+ <circle cx="26" cy="38" r="1.6"/><circle cx="48" cy="37" r="1.3"/><circle cx="74" cy="39" r="1.5"/><circle cx="96" cy="37" r="1.2"/>
+ </g>
+ <g fill="none" stroke="#fde68a" stroke-width="1.7" opacity=".7">
+ <path d="M16 54 C40 50 74 52 110 48"/><path d="M14 68 C38 64 76 66 112 62"/>
+ <path d="M12 82 C36 78 78 80 112 76"/><path d="M10 94 C34 90 76 92 110 90"/>
+ </g>
+ <g fill="none" stroke="#78350f" stroke-width="1.1" opacity=".45">
+ <path d="M22 56 L28 66"/><path d="M54 52 L50 64"/><path d="M86 50 L90 62"/>
+ <path d="M34 70 L30 80"/><path d="M70 68 L76 80"/>
+ </g>
+ <path d="M64 42 L56 64 L70 84 L58 104" fill="none" stroke="#1c1917" stroke-width="3.2" stroke-linecap="round"/>
+ <path d="M64 42 L56 64 L70 84 L58 104" fill="none" stroke="#fde68a" stroke-width="1.15" opacity=".55"/>
+ <g fill="#a8a29e" opacity=".4">
+ <ellipse cx="36" cy="72" rx="6" ry="2.4"/><ellipse cx="88" cy="86" rx="7" ry="2.6"/>
+ </g>
+ <g stroke="#ea580c" stroke-width="2.3" stroke-linecap="round" fill="none">
+ <path d="M116 34 V100"/>
+ </g>
+ <path d="M111 40 L116 30 L121 40 Z" fill="#ea580c"/>
+ <path d="M111 96 L116 106 L121 96 Z" fill="#ea580c"/>
+ <ellipse cx="60" cy="112" rx="20" ry="3" fill="#1c1917" opacity=".12"/>
+ </symbol>
+ <symbol id="art-nature-soil-cut" viewBox="0 0 120 120">
+ <linearGradient id="ag-w21-sc-o" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0" stop-color="#4d7c0f"/><stop offset="1" stop-color="#1a2e05"/>
+ </linearGradient>
+ <linearGradient id="ag-w21-sc-a" x1="0" y1="0" x2=".12" y2="1">
+ <stop offset="0" stop-color="#d6b07a"/><stop offset="1" stop-color="#92400e"/>
+ </linearGradient>
+ <linearGradient id="ag-w21-sc-b" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0" stop-color="#b45309"/><stop offset="1" stop-color="#7c2d12"/>
+ </linearGradient>
+ <linearGradient id="ag-w21-sc-c" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0" stop-color="#a8a29e"/><stop offset="1" stop-color="#44403c"/>
+ </linearGradient>
+ <path d="M0 108 C38 100 84 116 120 106 V120 H0 Z" fill="#3f6212"/>
+ <path d="M12 18 L98 14 L114 104 L4 108 Z" fill="#e7e5e4" stroke="#292524" stroke-width="1.9"/>
+ <path d="M14 19 L96 16 L94 32 C70 36 40 30 18 34 Z" fill="url(#ag-w21-sc-o)"/>
+ <path d="M18 34 L94 32 L91 56 C64 62 38 54 24 58 Z" fill="url(#ag-w21-sc-a)"/>
+ <path d="M24 58 L91 56 L88 80 C60 86 40 78 28 82 Z" fill="url(#ag-w21-sc-b)"/>
+ <path d="M28 82 L88 80 L112 104 L6 108 Z" fill="url(#ag-w21-sc-c)"/>
+ <g fill="#4d7c0f">
+ <path d="M28 18 C26 6 34 2 36 18 Z"/><path d="M48 16 C46 0 56 -2 58 16 Z"/>
+ <path d="M68 16 C66 4 76 2 78 16 Z"/><path d="M86 16 C84 6 92 4 94 16 Z"/>
+ </g>
+ <g fill="none" stroke="#365314" stroke-width="1.5" stroke-linecap="round">
+ <path d="M40 34 C38 52 36 70 34 88"/><path d="M40 50 C28 62 22 70 18 78"/>
+ <path d="M62 32 C60 54 58 74 56 92"/><path d="M62 58 C74 70 82 78 88 86"/>
+ </g>
+ <path d="M30 70 C38 66 48 74 42 80 C36 84 28 76 30 70 Z" fill="#fda4af" stroke="#9f1239" stroke-width="1.1"/>
+ <circle cx="32" cy="72" r="1.2" fill="#111827"/>
+ <g fill="#78716c" stroke="#44403c" stroke-width=".8">
+ <ellipse cx="40" cy="92" rx="6" ry="3.4"/><ellipse cx="62" cy="96" rx="7.2" ry="3.8"/>
+ <ellipse cx="82" cy="90" rx="5.4" ry="3"/>
+ </g>
+ <g fill="#a16207" opacity=".45">
+ <ellipse cx="36" cy="46" rx="5" ry="2.2"/><ellipse cx="70" cy="50" rx="6" ry="2.4"/>
+ </g>
+ <path d="M16 20 L16 104" stroke="#292524" stroke-width="1.1" opacity=".35"/>
+ <g fill="none" stroke="#fde68a" stroke-width=".8" opacity=".4">
+ <path d="M16 34 H22"/><path d="M16 58 H22"/><path d="M16 82 H22"/>
+ </g>
+ </symbol>
+</svg>
+<!-- ART:END -->
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+ <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+ <div class="row" aria-label="主导航">
+ <a class="nav-link" href="../index.html">资源库</a>
+ <a class="nav-link" href="../pages/paths.html">学习路径</a>
+ <a class="nav-link" href="../games/index.html">互动实验</a>
+ <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+ <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+ <a class="nav-link" href="../pages/parents.html">家长指南</a>
+ <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+ </div>
+</div></nav>
+
+<main id="main" class="wrap">
+ <header class="hero kid-mission">
+ <div>
+ <p class="row"><span class="pill pill-sci">地球</span><span class="pill">5–11&nbsp;岁</span><span class="pill">本地观察</span></p>
+ <h1>土壤观察站</h1>
+ <p class="lead">土不是脏石头粉，是活的混合物：矿物颗粒、腐烂的叶子、水和气挤在一起，还有蚯蚓、菌和根在里面干活。表层常常更黑更松，下面更紧；沙粒大、缝大，水漏得快，黏土粒小、缝细，水留得住。没有一种土「永远最好」。台上「肥力」读数只比较腐殖和孔隙，不是某块地的说明书。不明的土不要尝，挖完填回，洗手再吃点心，不要把土层冲走。</p>
+ <div data-playful-companion></div>
+ <span data-playful-sticker></span>
+ </div>
+ <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="78" height="78"></div>
+ </header>
+
+
+ <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+ <h2 id="stageTitle">土层剖面图</h2>
+ <svg class="so-art" viewBox="0 0 420 280" role="img" aria-labelledby="soilTitle soilDesc">
+ <title id="soilTitle">土壤四层剖面与浇水比较</title>
+ <desc id="soilDesc">一个土坑剖面：从上到下是落叶层、表土、沙土或黏土、石子。后一幕把沙土和黏土并排放，看水漏下去还是留住。</desc>
+ <rect class="so-sky" width="420" height="280"/>
+ <g id="profileView">
+ <rect class="so-sky" width="420" height="58"/>
+ <path class="so-grass" d="M0 50 Q40 40 80 52 T160 48 T240 54 T320 46 T420 52 V70 H0 Z"/>
+ <rect class="so-litter" x="36" y="70" width="280" height="36"/>
+ <rect class="so-top" x="36" y="106" width="280" height="52"/>
+ <rect class="so-sand" x="36" y="158" width="140" height="56"/>
+ <rect class="so-clay" x="176" y="158" width="140" height="56"/>
+ <rect class="so-stone" x="36" y="214" width="280" height="50"/>
+ <path class="so-leaf" d="M58 82 C70 74 92 78 88 88 C80 94 62 92 58 82 Z"/>
+ <path class="so-leaf" d="M110 86 C124 76 148 82 140 92 C130 98 112 96 110 86 Z"/>
+ <path class="so-leaf" d="M176 80 C190 72 210 78 204 88 C194 94 178 90 176 80 Z"/>
+ <path class="so-leaf" d="M230 86 C246 78 268 84 260 94 C250 100 232 96 230 86 Z"/>
+ <path class="so-root" d="M90 106 C86 126 100 138 92 156"/>
+ <path class="so-root" d="M200 106 C210 128 190 140 206 156"/>
+ <path class="so-root" d="M270 106 C262 124 276 140 268 156"/>
+ <circle class="so-grain" cx="62" cy="176" r="7"/>
+ <circle class="so-grain" cx="86" cy="196" r="8"/>
+ <circle class="so-grain" cx="112" cy="174" r="6"/>
+ <circle class="so-grain" cx="138" cy="192" r="7"/>
+ <circle class="so-grain" cx="74" cy="188" r="5"/>
+ <circle class="so-fine" cx="198" cy="172" r="3"/>
+ <circle class="so-fine" cx="210" cy="180" r="2.5"/>
+ <circle class="so-fine" cx="222" cy="170" r="3"/>
+ <circle class="so-fine" cx="234" cy="186" r="2.4"/>
+ <circle class="so-fine" cx="248" cy="174" r="3"/>
+ <circle class="so-fine" cx="260" cy="192" r="2.6"/>
+ <circle class="so-fine" cx="274" cy="178" r="3"/>
+ <circle class="so-fine" cx="286" cy="188" r="2.4"/>
+ <circle class="so-fine" cx="206" cy="198" r="2.8"/>
+ <circle class="so-fine" cx="228" cy="200" r="2.5"/>
+ <circle class="so-fine" cx="252" cy="202" r="2.6"/>
+ <circle class="so-fine" cx="270" cy="200" r="2.4"/>
+ <ellipse class="so-rock" cx="80" cy="240" rx="16" ry="11"/>
+ <ellipse class="so-rock" cx="130" cy="246" rx="14" ry="10"/>
+ <ellipse class="so-rock" cx="182" cy="238" rx="18" ry="12"/>
+ <ellipse class="so-rock" cx="236" cy="248" rx="13" ry="9"/>
+ <ellipse class="so-rock" cx="280" cy="240" rx="15" ry="11"/>
+ <rect class="so-ring" id="ring0" x="34" y="68" width="284" height="40" rx="4"/>
+ <rect class="so-ring" id="ring1" x="34" y="104" width="284" height="56" rx="4"/>
+ <rect class="so-ring" id="ring2" x="34" y="156" width="284" height="60" rx="4"/>
+ <rect class="so-ring" id="ring3" x="34" y="212" width="284" height="54" rx="4"/>
+ <text class="so-label" x="328" y="92">落叶层</text>
+ <text class="so-label" x="328" y="136">表土</text>
+ <text class="so-label" x="328" y="178">沙土</text>
+ <text class="so-label" x="328" y="198">黏土</text>
+ <text class="so-label" x="328" y="244">石子</text>
+ </g>
+ <g id="pourView" hidden>
+ <rect class="so-sky" width="420" height="280"/>
+ <text class="so-label" x="86" y="28">沙土：水漏下去</text>
+ <text class="so-label" x="250" y="28">黏土：水留得住</text>
+ <rect x="48" y="48" width="140" height="200" fill="#efe4cf" stroke="color-mix(in srgb,var(--ink) 28%,transparent)" stroke-width="3"/>
+ <rect x="232" y="48" width="140" height="200" fill="#c98458" stroke="color-mix(in srgb,var(--ink) 28%,transparent)" stroke-width="3"/>
+ <circle class="so-grain" cx="78" cy="168" r="10"/>
+ <circle class="so-grain" cx="108" cy="196" r="11"/>
+ <circle class="so-grain" cx="142" cy="172" r="9"/>
+ <circle class="so-grain" cx="88" cy="214" r="8"/>
+ <circle class="so-grain" cx="128" cy="222" r="10"/>
+ <circle class="so-grain" cx="156" cy="204" r="8"/>
+ <circle class="so-fine" cx="252" cy="176" r="3"/>
+ <circle class="so-fine" cx="268" cy="188" r="2.6"/>
+ <circle class="so-fine" cx="286" cy="174" r="3"/>
+ <circle class="so-fine" cx="304" cy="192" r="2.5"/>
+ <circle class="so-fine" cx="322" cy="180" r="3"/>
+ <circle class="so-fine" cx="338" cy="198" r="2.6"/>
+ <circle class="so-fine" cx="258" cy="208" r="2.8"/>
+ <circle class="so-fine" cx="280" cy="214" r="2.5"/>
+ <circle class="so-fine" cx="302" cy="220" r="2.7"/>
+ <circle class="so-fine" cx="324" cy="210" r="2.4"/>
+ <circle class="so-fine" cx="346" cy="222" r="2.6"/>
+ <circle class="so-fine" cx="270" cy="232" r="2.5"/>
+ <circle class="so-fine" cx="296" cy="236" r="2.4"/>
+ <circle class="so-fine" cx="322" cy="232" r="2.6"/>
+ <g id="sandDrops">
+ <ellipse class="so-water" cx="96" cy="72" rx="6" ry="9"/>
+ <ellipse class="so-water" cx="128" cy="108" rx="5" ry="8"/>
+ <ellipse class="so-water" cx="110" cy="148" rx="5" ry="7"/>
+ <ellipse class="so-water" cx="140" cy="188" rx="4" ry="6"/>
+ <rect class="so-water" x="54" y="226" width="128" height="16" rx="4" opacity=".55"/>
+ </g>
+ <g id="clayPool">
+ <rect class="so-water" x="240" y="52" width="124" height="22" rx="6"/>
+ <ellipse class="so-water" cx="278" cy="86" rx="5" ry="7" opacity=".55"/>
+ <ellipse class="so-water" cx="318" cy="94" rx="4" ry="6" opacity=".4"/>
+ </g>
+ </g>
+ </svg>
+ <p class="live-text" id="soilSay" role="status" aria-live="polite">最上面是落叶层。枯叶盖住地面，慢慢变成土。</p>
+ </section>
+
+ <div class="kid-action-strip" role="group" aria-label="翻看土层">
+ <button class="btn btn-primary" type="button" id="nextLayer">下一步：看表土</button>
+ <button class="btn btn-ghost" type="button" id="resetLayer">重新从落叶看</button>
+ </div>
+
+<section class="card so-lab-panel" aria-labelledby="soLabTitle">
+ <h2 id="soLabTitle">土壤肥力台 · 真参数</h2>
+ <p>调<strong>腐殖质</strong>与<strong>孔隙通气</strong>。腐叶养料 + 空气缝隙，根才喝得好——土不是「脏东西」，是活的小生境。</p>
+ <div class="kid-action-strip" role="group" aria-label="真参数主操作">
+ <label for="soA">腐殖质：<span id="soALab">…</span></label>
+ <input class="input" id="soA" type="range" min="4" max="36" value="16" aria-valuetext="16">
+ <label for="soB">孔隙通气：<span id="soBLab">…</span></label>
+ <input class="input" id="soB" type="range" min="2" max="20" value="8" aria-valuetext="8">
+ </div>
+ <svg class="so-art" viewBox="0 0 640 220" role="img" aria-labelledby="soLabSvgTitle soLabSvgDesc">
+ <title id="soLabSvgTitle">土里有矿、有气、有水、有分解者，不是脏石头</title>
+ <desc id="soLabSvgDesc">深色腐殖层、矿物颗粒、气孔、水珠和一条蚯蚓。右边肥皂被划掉：脏就要洗掉是故事，土是活的小生境。</desc>
+ <rect fill="#e8e0c8" width="640" height="220"/>
+ <rect x="80" y="80" width="340" height="100" fill="#8a6a40"/>
+ <rect id="soHumus" x="80" y="80" width="340" height="36" fill="#4a2a14" opacity=".7"/>
+ <polygon points="120,168 132,148 148,168" fill="#c4a06a"/>
+ <polygon points="200,172 214,150 230,172" fill="#a89070"/>
+ <polygon points="340,166 352,148 368,166" fill="#8a7a60"/>
+ <circle class="so-pore" cx="160" cy="128" r="8" fill="#d8e8f0"/>
+ <circle class="so-pore" cx="240" cy="148" r="6" fill="#d8e8f0"/>
+ <circle class="so-pore" cx="300" cy="118" r="7" fill="#d8e8f0"/>
+ <ellipse id="soWater" cx="210" cy="136" rx="7" ry="5" fill="#3a7ca5" opacity=".55"/>
+ <ellipse id="soWorm" cx="280" cy="156" rx="22" ry="5" fill="#c2410c" opacity=".75"/>
+ <g id="soSoap" opacity="0.28">
+ <rect x="548" y="28" width="28" height="18" rx="4" fill="#f4f0e4" stroke="#8a7a60"/>
+ <path d="M542 22 L582 56 M582 22 L542 56" stroke="#c2410c" stroke-width="4"/>
+ </g>
+ <rect id="soBar" x="20" y="70" width="14" height="90" fill="#1a5a3a"/>
+ <text fill="#1a2a20" style="font:800 13px monospace" x="16" y="28">肥力台</text>
+ <text id="soStateLab" fill="#1a2a20" style="font:700 12px monospace" x="200" y="28">土不是脏石头</text>
+ </svg>
+ <div class="readout" aria-live="polite">
+ <div><span>腐殖</span><b id="soAOut">…</b></div>
+ <div><span>肥力（算）</span><b id="soSOut">…</b></div>
+ <div><span>好根？</span><b id="soOkOut">…</b></div>
+ </div>
+ <p class="live-text" id="soLabLive" role="status" aria-live="polite">矿、气、水、分解者都在。拖滑杆看根过不过得去。</p>
+ </section>
+ <section class="card guess-card so-guess" aria-labelledby="soGuessTitle">
+ <h2 id="soGuessTitle">先猜一猜，再拖滑杆</h2>
+ <p><b>第 1 题：</b>腐殖多、孔隙通（腐殖 30、孔隙 10），根会更好过吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜肥力">
+ <button class="btn guess-pick" type="button" data-so-g1="15" aria-pressed="false">几乎不变</button>
+ <button class="btn guess-pick" type="button" data-so-g1="20" aria-pressed="false">会更好过</button>
+ <button class="btn guess-pick" type="button" data-so-g1="30" aria-pressed="false">立刻长成大树</button>
+ </div>
+ <p class="guess-out" id="soGuessOut1" role="status" aria-live="polite">押好了</p>
+ <div id="soGuessBlock2" hidden>
+ <p><b>第 2 题：</b>腐殖 5、孔隙 3，还好根吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜够不够">
+ <button class="btn guess-pick" type="button" data-so-g2="yes" aria-pressed="false">好根</button>
+ <button class="btn guess-pick" type="button" data-so-g2="no" aria-pressed="false">偏瘦</button>
+ </div>
+ <p class="guess-out" id="soGuessOut2" role="status" aria-live="polite">押好了</p>
+ </div>
+ <div id="soGuessBlock3" hidden>
+ <p><b>第 3 题：</b>腐殖最少 4、孔隙最堵 2。根还会好过吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜又瘦又堵">
+ <button class="btn guess-pick" type="button" data-so-g3="yes" aria-pressed="false">会，土还在</button>
+ <button class="btn guess-pick" type="button" data-so-g3="no" aria-pressed="false">不会，又瘦又堵</button>
+ <button class="btn guess-pick" type="button" data-so-g3="zero" aria-pressed="false">土消失了</button>
+ </div>
+ <p class="guess-out" id="soGuessOut3" role="status" aria-live="polite">押好了</p>
+ </div>
+ </section>
+
+ <section class="card soil-atlas" aria-labelledby="layerTitle">
+ <h2 id="layerTitle">土壤图鉴</h2>
+ <p>点一层，比较颗粒大小：谁漏水，谁保水。对照上面的剖面图。</p>
+ <p class="photo-gap-legend">本站土壤照片是落叶层。沙、黏土、泥炭、冻土等没有各自的单独照片，缺图会写明，不会拿落叶图冒充每一层。</p>
+ <div class="kid-figure-grid" id="layerGrid" role="group" aria-label="土壤图鉴：十二种土和层">
+ <button class="kid-figure" type="button" id="soilFigLitter" data-soil-fig="litter" data-stage="0" aria-pressed="false" aria-label="落叶层：最上面的枯叶" data-say="落叶层：最上面的枯叶和小枝，还没变成土。比下面的腐殖质松、也更新。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">落叶层</span>
+ <span class="kid-figure-fact">最上面盖着还没烂完的枯叶小枝，盖住土缝，不是一袋已经死掉的灰。</span>
+ </button>
+ <button class="kid-figure" type="button" id="soilFigHumus" data-soil-fig="humus" data-stage="1" aria-pressed="false" aria-label="腐殖质表土：又黑又松" data-say="腐殖质 / 表土：落叶碎完变黑变松，根和蚯蚓住在这里。比沙细、比黏土松。">
+ <span class="kid-figure-art photo-gap" aria-hidden="true"><span class="photo-gap-note">本站没有腐殖质/表土单独照片</span></span>
+ <span class="kid-figure-cap">腐殖质 / 表土</span>
+ <span class="kid-figure-fact">落叶碎完变黑变松，根和蚯蚓住在这一层；团粒缝里既有气也有水，不是死灰。</span>
+ </button>
+ <button class="kid-figure" type="button" id="soilFigSand" data-soil-fig="sand" data-stage="2" aria-pressed="false" aria-label="沙：颗粒大，缝也大" data-say="沙：摸起来像砂糖，缝大所以漏水快；团粒没结好时，气还在、水却留不住。">
+ <span class="kid-figure-art photo-gap" aria-hidden="true"><span class="photo-gap-note">本站没有沙土单独照片</span></span>
+ <span class="kid-figure-cap">沙</span>
+ <span class="kid-figure-fact">沙粒最大、缝也最大，水漏得快，气倒留得住；它不是黏成一块的死灰土。</span>
+ </button>
+ <button class="kid-figure" type="button" id="soilFigSilt" data-soil-fig="silt" data-stage="2" aria-pressed="false" aria-label="粉砂：比沙细，比黏土粗" data-say="粉砂：摸起来像干面粉，粗细夹在沙和黏土中间，水走得慢一点，气还在缝里。">
+ <span class="kid-figure-art photo-gap" aria-hidden="true"><span class="photo-gap-note">本站没有粉砂单独照片</span></span>
+ <span class="kid-figure-cap">粉砂</span>
+ <span class="kid-figure-fact">粉砂比沙细、比黏土粗，摸起来像干面粉；缝中等，水走得比沙慢上一点。</span>
+ </button>
+ <button class="kid-figure" type="button" id="soilFigClay" data-soil-fig="clay" data-stage="2" aria-pressed="false" aria-label="黏土：颗粒最小，最保水" data-say="黏土：摸起来像牙膏，最保水；可是踩实了气被挤没，就变成难呼吸的一块。">
+ <span class="kid-figure-art photo-gap" aria-hidden="true"><span class="photo-gap-note">本站没有黏土单独照片</span></span>
+ <span class="kid-figure-cap">黏土</span>
+ <span class="kid-figure-fact">黏土颗粒最小，水走得最慢，也最保水；踩实了气被挤走，根就更难过了。</span>
+ </button>
+ <button class="kid-figure" type="button" id="soilFigLoam" data-soil-fig="loam" data-stage="2" aria-pressed="false" aria-label="壤土：沙、粉砂、黏土混在一起" data-say="壤土：三种颗粒混在一起，缝不大不小，团粒里才能同时留住气和水给根用。">
+ <span class="kid-figure-art photo-gap" aria-hidden="true"><span class="photo-gap-note">本站没有壤土单独照片</span></span>
+ <span class="kid-figure-cap">壤土</span>
+ <span class="kid-figure-fact">壤土把沙、粉砂、黏土混在一起，缝不大不小，团粒里才能又有气又有水。</span>
+ </button>
+ <button class="kid-figure" type="button" id="soilFigGravel" data-soil-fig="gravel" data-stage="3" aria-pressed="false" aria-label="石子：比沙大很多的石头粒" data-say="石子：比沙大很多的石头粒，缝太大，水留不住，也结不成有气有水的团粒。">
+ <span class="kid-figure-art photo-gap" aria-hidden="true"><span class="photo-gap-note">本站没有石子单独照片</span></span>
+ <span class="kid-figure-cap">石子</span>
+ <span class="kid-figure-fact">石子比沙大很多，缝太大，水几乎留不住，也留不住细根，更不像活的肥土。</span>
+ </button>
+ <button class="kid-figure" type="button" id="soilFigBedrock" data-soil-fig="bedrock" data-stage="3" aria-pressed="false" aria-label="基岩：最底下的整块石头" data-say="基岩：最底下的整块石头。上面的土都是它慢慢碎出来的，和松散的石子不一样。">
+ <span class="kid-figure-art photo-gap" aria-hidden="true"><span class="photo-gap-note">本站没有基岩单独照片</span></span>
+ <span class="kid-figure-cap">基岩</span>
+ <span class="kid-figure-fact">最底下是还没碎开的整块基岩；上面的土是它慢慢风化出来的，不是运来的灰。</span>
+ </button>
+ <button class="kid-figure" type="button" id="soilFigPeat" data-soil-fig="peat" aria-pressed="false" aria-label="泥炭：没完全烂完的植物" data-say="泥炭：植物泡在水里，没完全烂完。摸起来又湿又轻，比腐殖质更新、也更松。">
+ <span class="kid-figure-art photo-gap" aria-hidden="true"><span class="photo-gap-note">本站没有泥炭单独照片</span></span>
+ <span class="kid-figure-cap">泥炭</span>
+ <span class="kid-figure-fact">泥炭是泡在水里、还没完全烂完的植物，又湿又轻，还不是松散的腐殖质。</span>
+ </button>
+ <button class="kid-figure" type="button" id="soilFigCompost" data-soil-fig="compost" aria-pressed="false" aria-label="堆肥：厨余慢慢变成土" data-say="堆肥：菜叶果皮堆在一起，慢慢变黑变松。它会变成腐殖质，不是石头碎出来的。">
+ <span class="kid-figure-art photo-gap" aria-hidden="true"><span class="photo-gap-note">本站没有堆肥单独照片</span></span>
+ <span class="kid-figure-cap">堆肥</span>
+ <span class="kid-figure-fact">堆肥是厨余慢慢变黑变松，以后会变成腐殖质；它仍是活的一层，不是死灰。</span>
+ </button>
+ <button class="kid-figure" type="button" id="soilFigDesert" data-soil-fig="desert" aria-pressed="false" aria-label="沙漠土：几乎没有腐殖质" data-say="沙漠土：几乎全是沙，落叶很少，腐殖质几乎没有。缝很大，水留不住，植物很难扎根。">
+ <span class="kid-figure-art photo-gap" aria-hidden="true"><span class="photo-gap-note">本站没有沙漠土单独照片</span></span>
+ <span class="kid-figure-cap">沙漠土</span>
+ <span class="kid-figure-fact">沙漠土几乎没有腐殖质，沙缝留不住水，也难结成有气有水的团粒层。</span>
+ </button>
+ <button class="kid-figure" type="button" id="soilFigFrost" data-soil-fig="frost" aria-pressed="false" aria-label="冻土：常年冻着，水走不动" data-say="冻土：土里的水常年冻成冰。上面一层夏天会化，下面还是硬的，水和根都走不下去。">
+ <span class="kid-figure-art photo-gap" aria-hidden="true"><span class="photo-gap-note">本站没有冻土单独照片</span></span>
+ <span class="kid-figure-cap">冻土</span>
+ <span class="kid-figure-fact">冻土里的水冻成冰，水和根都走不动；化开的那一层才可能有气有水。</span>
+ </button>
+ </div>
+ <p class="live-text" id="layerSay" role="status" aria-live="polite">还没选土层。点一张，比一比颗粒。</p>
+ </section>
+
+
+ <section class="card" aria-labelledby="predictTitle">
+ <h2 id="predictTitle">猜一猜</h2>
+ <div class="kid-predict" style="--tone:var(--sci)"
+ data-kid-predict
+ data-kid-predict-explain="土里同时有矿物、腐烂的叶子、水和气，还有小生命；剖面一层一层不一样。挖开要填回，不要用嘴尝。"
+ data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+ data-kid-predict-again="押好了，点「看答案」。">
+ <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🪴</span><b>沙土和黏土，谁更容易「漏水」？</b></p>
+ <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：土为什么漏水或保水">
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="clay">黏土颗粒大，水一下就漏光</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="sand" data-kid-predict-correct>沙土颗粒更大、缝更大，水更容易往下漏</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="color">土越黑越漏水，跟颗粒无关</button>
+ </div>
+ <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+ <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+ </div>
+ </section>
+
+ <section class="task" aria-labelledby="taskTitle">
+ <h2 class="task-title" id="taskTitle">任务：谁保水，谁漏水</h2>
+ <p>先看完剖面图，尤其是沙土和黏土浇水那一幕。再选出：哪一种把水留住，哪一种让水漏过去。</p>
+ <div class="kid-tiles" role="group" aria-labelledby="holdCap">
+ <p id="holdCap">哪一种更保水？</p>
+ <button class="kid-tile" type="button" data-hold="sand" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">🟤</span><span class="kid-tile-label">沙土更保水</span></button>
+ <button class="kid-tile" type="button" data-hold="clay" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">🧱</span><span class="kid-tile-label">黏土更保水</span></button>
+ </div>
+ <div class="kid-tiles" role="group" aria-labelledby="drainCap">
+ <p id="drainCap">哪一种更让水漏下去？</p>
+ <button class="kid-tile" type="button" data-drain="sand" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">🟤</span><span class="kid-tile-label">沙土更漏水</span></button>
+ <button class="kid-tile" type="button" data-drain="clay" aria-pressed="false"><span class="kid-tile-art" aria-hidden="true">🧱</span><span class="kid-tile-label">黏土更漏水</span></button>
+ </div>
+ <button class="btn btn-primary" type="button" id="finishBtn" disabled>记下这次观察</button>
+ <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+ <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+ <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先看完土层剖面，再选谁保水、谁漏水。</p>
+ </section>
+
+ <section class="card" aria-labelledby="teachWhatTitle">
+ <h2 id="teachWhatTitle">土是活的混合物，不是脏石头粉</h2>
+ <p>先看剖面，再谈肥不肥。最上面是落叶层，枯叶盖住地面；往下表土更黑更松，根和蚯蚓多半住在这里；再往下沙土缝大、水漏得快，黏土缝细、水留得住。土里同时有矿物、腐殖质、气孔、水和分解者。「脏就要洗掉」是故事；洗手是卫生，不是把土层冲出花园。</p>
+ <p>落叶被微生物和蚯蚓拆开，变成黑松的腐殖质。颜色深不等于立刻很肥——肥不肥还要看孔隙里有没有气、根过不过得去。沙土漏水快，黏土保水多，植物偏好因种而异，没有一种土永远最好。团粒里既留得住水，也留得住气；踩实了两样都少。</p>
+ <p>因为表土冲走就没了、土里可能有看不见的脏东西，所以不口尝、挖完填回、洗手再吃点心，不要冲走土层，也不要挖别人的花坛。台上「肥力≈腐殖×孔隙÷15」是本页比较尺子：腐殖多、孔隙通，数字变大；两边都弱，根更难过。阈值 10 只是本页分界，不是某块地的说明书，更不是施肥课。</p>
+ </section>
+
+
+ <section class="card" aria-labelledby="lookTitle">
+ <h2 id="lookTitle">黑的一层在干活：碎叶子变成能吸水的土</h2>
+ <p>同一小坑，先只改「读剖面」这一项：写下颜色、湿度、有没有根和虫迹，再谈肥不肥。别把单一黑颜色当唯一标准。再对照沙和黏：颗粒大、缝大，水漏得快；颗粒小、缝细，水留得住。植物偏好因种而异，没有一种土永远最好。</p>
+ <p>完成句写「土是活的混合物」或「沙漏黏留」，不要写「土就是脏」。土里有矿物、气孔、水和分解者。「脏就要洗掉」是故事；洗手是卫生，不要把土层冲走。不明的土不口尝，挖完填回。</p>
+ <div class="kid-figure-grid" role="group" aria-label="主题细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">分解</span><span class="kid-figure-sub">循环</span><p class="kid-figure-fact">落叶被微生物和蚯蚓拆开，变成黑松的腐殖质。颜色深不等于立刻很肥。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">剖面</span><span class="kid-figure-sub">分层</span><p class="kid-figure-fact">表土常常更暗更松，下面一层更紧；先记下颜色和湿度，再猜哪一层更像表土。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">孔隙</span><span class="kid-figure-sub">水气</span><p class="kid-figure-fact">团粒里既留得住水，也留得住气；踩实了两样都少，根更难过，土不是实心砖。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/plant.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">根</span><span class="kid-figure-sub">伙伴</span><p class="kid-figure-fact">根会喂微生物一点糖，换回溶解的养分；这是交换，不是土自己变黑就突然很肥。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">污染</span><span class="kid-figure-sub">隐形</span><p class="kid-figure-fact">重金属和农药肉眼看不见，不明的土不要尝，更不要当零食吃，洗手也不能洗掉金属。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">尝土</span><span class="kid-figure-sub">红线</span><p class="kid-figure-fact">不口尝；挖完填回，洗手再吃点心。把「脏就要冲掉土层」整列划掉，土层走了回不来。</p></div>
+ </div>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>描剖面。</b>写颜色、湿度、有无根与虫迹四层信息。</li>
+ <li data-step="2"><b>谈分解。</b>谁把落叶变小？产物去哪？</li>
+ <li data-step="3"><b>捏团。</b>沙、壤、黏手感与保水如何不同？</li>
+ <li data-step="4"><b>写礼态。</b>为什么采样后要填回并洗手？</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>土里有小虫和叶子变成的黑营养，团粒缝里有气有水；玩完洗手，不要用嘴尝。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>土里有矿物、气孔、水和分解者，不是脏石头。表土更松，踩实了气就少。沙漏水、黏保水，没有一种永远最好。玩完洗手，不要把土层冲走。本页数字只比较肥力，不是说明书。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>腐殖质是难分解的大分子混合物，改善保水和缓冲，颜色深不等于立刻很肥。城市土常有看不见的污染，教学只用指定安全点。肥力≈腐殖×孔隙÷15 是示意尺子。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>土里有矿、有气、有水、有分解者，不是脏石头，也不是越黑越万能。表土冲走就没了、土里可能有看不见的脏东西，所以不口尝、挖完填回、洗手再吃点心。</p>
+ <ul class="ask-list">
+ <li>谁把落叶拆成黑松的土？</li>
+ <li>挖开一小坑，上面和下面颜色、松紧一样吗？</li>
+ <li>团粒里的缝是只留给水，还是也留给气？</li>
+ <li>不明的土能用舌头尝吗？</li>
+ <li>因为土里有分解者和看不见的脏东西、表土冲走就没了，所以不口尝、挖完填回、洗手再吃点心，不要冲走土层。</li>
+ </ul>
+ </section>
+
+
+ <section class="card" aria-labelledby="deepTitle">
+ <h2 id="deepTitle">腐殖质：不是「叶子碎屑」那么简单</h2>
+ <p>腐殖质是落叶被拆很久以后留下的，已经看不出叶子。它帮土留住水、也留住一些养分，可是颜色深不等于立刻很肥。完成句写对照：「新鲜落叶还是整片，腐殖质已经看不出叶子。」</p>
+ <p>蚯蚓钻的洞是通气和排水的管子，也把上下层搅匀一点。过度踩实或乱用药，会伤及这些免费工人。城市土常混进建筑垃圾，肉眼干净不等于安全可尝，教学只用指定安全点或花盆土。堆肥是加快分解，不是绕过洗手。</p>
+ <p>因为表土形成极慢、冲走就没了，所以挖完填回、不装走当纪念品。台上肥力数字只比较腐殖和孔隙，不是施肥说明书。</p>
+ <div class="kid-figure-grid" role="group" aria-label="专属事实卡">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">腐殖</span><span class="kid-figure-sub">大分子</span><p class="kid-figure-fact">腐殖质是落叶被拆很久以后留下的大分子，颜色深不等于立刻就很肥，还要看孔隙。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">对照</span><span class="kid-figure-sub">完成</span><p class="kid-figure-fact">写一句对照：新鲜落叶还是整片，腐殖质已经看不出叶子原来的样子，颜色深只是线索。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">通道</span><span class="kid-figure-sub">通气</span><p class="kid-figure-fact">蚯蚓钻的洞是通气和排水的管子，也把上下层搅匀一点；这是改土，不是把花园弄脏。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">城市</span><span class="kid-figure-sub">污染</span><p class="kid-figure-fact">城市土常混进建筑垃圾，教学只用指定安全点或花盆土，不挖路边花坛当标本。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art photo-gap" aria-hidden="true"><span class="photo-gap-note">本站没有堆肥单独照片</span></span><span class="kid-figure-cap">堆肥</span><span class="kid-figure-sub">连</span><p class="kid-figure-fact">堆肥是加快分解，不是绕过洗手；看完洗手，不要把土冲出花园，也别把堆肥当零食。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">肥力</span><span class="kid-figure-sub">多指</span><p class="kid-figure-fact">肥不肥要看孔隙和分解者，不能只看黑不黑；黑土也可能踩得很死，气和水都挤没了。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="fieldTitle">
+ <h2 id="fieldTitle">对照卡：表土 vs 下层土</h2>
+ <p>同一剖面里，两层常扮演不同角色。甲：表土有机质更多，根和微生物更忙，颜色常常更深。乙：下层矿物更多、更紧，常常帮根抓住，也存一点水。丙：否决句「土就是脏，越黑越万能」。完成句各写一个贡献词：养分、锚固或储水。</p>
+ <p>看完把土填回去压实，不要挖走当纪念品。本页肥力读数只比较腐殖和孔隙，不是两层的说明书，更不是「脏就要冲掉」。</p>
+ <div class="kid-figure-grid" role="group" aria-label="对照与细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">表土</span><span class="kid-figure-sub">活</span><p class="kid-figure-fact">表土有机质更多，根和微生物更忙，颜色常常更深，摸起来也更松，团粒里有气有水。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">下层</span><span class="kid-figure-sub">结构</span><p class="kid-figure-fact">下层矿物更多、更紧，常常帮根抓住，也存一点水；不是废土，也不是可以挖走的砖。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">贡献</span><span class="kid-figure-sub">各一</span><p class="kid-figure-fact">落叶留下养分，根留下孔，蚯蚓留下通气的洞；三样一起改土，不是谁单独把土变肥。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">填回</span><span class="kid-figure-sub">礼态</span><p class="kid-figure-fact">看完把土填回去轻轻压实，不要挖走当纪念品；土层走了就回不来，根和菌也一起走。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-ban" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">别把土装走</span><span class="kid-figure-sub">红线</span><p class="kid-figure-fact">土壤是活的层：挖走一块，根、虫和菌一起离开原地，不是一袋可以收藏的脏石头。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">剖面</span><span class="kid-figure-sub">读</span><p class="kid-figure-fact">先读颜色和松紧，再猜哪一层更像表土；不要一上来就说「很肥」，黑也不等于立刻能种。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="moreTitle">
+ <h2 id="moreTitle">剖面五分钟</h2>
+ <p>只在允许的地方挖大约十厘米见方的小坑，看五分钟：记下颜色、干湿、有没有根、虫或小石子。看完填回并压实。戴手套或看完洗手。不尝、不把大量土带回家，拍照不要带上能认出别人家的信息。</p>
+ <p>口头只要两句：「土是活的混合物，不是脏石头。」「沙漏水，黏留水。」有人说「脏就要冲掉」，让孩子指着落叶层和蚯蚓反驳。</p>
+ <p>不要挖公共花坛或别人的菜地。看见洞或蚓粪，记一句：分解者在改土，不是脏虫子。本页肥力数字不要抄进施肥手册。</p>
+ <div class="kid-figure-grid" role="group" aria-label="加厚事实">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">小坑</span><span class="kid-figure-sub">填回</span><p class="kid-figure-fact">只在允许的地方挖大约十厘米见方，看完填回并压实，不要装进口袋当纪念品。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">描述</span><span class="kid-figure-sub">四</span><p class="kid-figure-fact">记下颜色、干湿、有没有根、虫或小石子；五分钟看完就填回，不要再挖旁边一坑。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">洗手</span><span class="kid-figure-sub">必须</span><p class="kid-figure-fact">戴手套或看完洗手；洗手是卫生，不是把土层冲出花园的借口，土要填回原坑。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">5&nbsp;分钟</span><span class="kid-figure-sub">计时</span><p class="kid-figure-fact">五分钟只看这一小坑，看完填回压实，不要装走当标本，也不要当纪念品带走。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/soil.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">10&nbsp;厘米</span><span class="kid-figure-sub">计时</span><p class="kid-figure-fact">只挖大约十厘米看分层，不要把整块土装进口袋当纪念品带走，更深的坑会伤根。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/earthworm.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">蚯蚓</span><span class="kid-figure-sub">连</span><p class="kid-figure-fact">看见洞或蚓粪，记一句：分解者在改土、留通气的管子，不是把花园弄脏的虫子。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="boostTitle">
+ <h2 id="boostTitle">土是活的层，挖完要填回去</h2>
+ <p>土壤是矿物、有机质、孔缝里的水气和生物一起住的层，不是一袋死灰，也不是「脏土」。</p>
+ <p>板结和光秃会让土被水冲走；落叶覆盖和根系把团粒粘住，气和水才留得住。</p>
+ <p>团粒把矿物粘成小团，缝里同时有水和气；有机质像胶水，也像给微生物的粮仓。</p>
+ <p>入门只做手测质地和测酸碱，看沙黏和干湿；不要把强酸强碱当「肥料实验」。</p>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+ <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+ <p>想知道「谁漏水、谁保水」，就只改颗粒这一项。同一勺水、同一大小的杯子，先看沙土怎么漏，再看黏土怎么留。把「黑不黑」叠进同一档，分不清到底是缝的大小，还是颜色在骗人。</p>
+ <ul>
+ <li><b>只改这一项：</b>沙还是黏（或只比表土和下层）。</li>
+ <li><b>先保持不变：</b>同一勺水、同一小坑、同一双没去尝的手。</li>
+ <li><b>要观察的：</b>水漏下去还是留在表面；上面和下面颜色、松紧一样吗。</li>
+ <li><b>另开一行：</b>腐殖质不是新鲜落叶、不口尝、挖完填回，各记各的。</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+ <h2 id="askMoreTitle">还可以问下去</h2>
+ <ol>
+ <li>同样体积，表土为何常比下层更暗？暗一定等于立刻很肥吗？</li>
+ <li>沙土和黏土，哪个更保水、哪个更通气？没有一种永远最好，这句话要怎样落到一种具体植物上？</li>
+ <li>肉眼干净就能用舌头尝吗？挖完为什么要填回？「脏就要把土冲走」错在哪？</li>
+ </ol>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+ <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+ <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把阳离子交换提前塞进四岁耳朵。</p>
+ <div class="age-tiers" aria-label="给家长的分层讲法">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>土里有小虫和叶子变成的黑黑营养，不是脏石头。沙土漏水快，黏土留得住。玩完洗手，不要用嘴尝。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>土是矿物、腐殖、气、水和分解者的混合物。表土更松，踩实了气就少。颜色深不等于立刻很肥。挖完填回。本页数字只比较肥力，不是说明书。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>腐殖质改善保水和缓冲，不是新鲜碎叶。土壤形成极慢，流失可以很快。肥力≈腐殖×孔隙÷15 是示意尺子。城市土可能有看不见的污染，不尝、只用安全点。</p></div>
+ </div>
+ </section>
+
+ <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+ <h2 class="work-card-title" id="workTitle">作品表单：土壤观察</h2>
+ <p class="work-card-meta">只保存文字，存在这台设备上。花盆土、公园小路下雨后也能对照。不要挖别人的花坛。</p>
+ <div class="work-card-fields">
+ <div><label for="workType">作品类型</label>
+ <select class="input" id="workType" name="type">
+ <option value="observation">观察记录</option>
+ <option value="drawing">发现画</option>
+ <option value="explanation">我的解释</option>
+ </select>
+ </div>
+ <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：花盆里的土摸起来更像黏土"></div>
+ <div><label for="workContent">看见了什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="土层颜色、摸起来粗还是细，浇一点水后是很快漏下去还是留在表面。"></textarea></div>
+ <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+ </div>
+ <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+ </form>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+ <h2 id="askTitle">给家长的问题</h2>
+ <ul class="ask">
+ <li><b>先猜：</b>同样体积，表土为何常比下层更暗？</li>
+ <li><b>对照：</b>沙土与黏土，哪个更保水、哪个更通气？</li>
+ <li><b>任务：</b>能否说清「有机质」不是「还在的完整叶子」？</li>
+ <li><b>板结：</b>反复踩实操场土，根会遇到什么麻烦？</li>
+ <li><b>污染：</b>为什么肉眼干净≠安全可尝？</li>
+ <li><b>农业：</b>覆盖作物与少耕如何护土？一句即可。</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+ <h2 id="whyTitle">背后的原理</h2>
+ <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着剖面讲：最上面是落叶层，往下表土更黑更松，再往下矿物更多更紧。土里同时有矿物颗粒、腐殖质、气孔、水和分解者，不是「脏石头粉」。</p>
+ <p>落叶被微生物和蚯蚓拆开，变成腐殖质。颜色深不等于立刻很肥：还要看孔隙里有没有气、根过不过得去。沙土漏水快，黏土保水多，没有一种土永远最好。本页「肥力≈腐殖×孔隙÷15」只是比较尺子，阈值 10 是本页分界，不是某块地的说明书，更不是施肥课。</p>
+ <p>团粒里既留得住水也留得住气，踩实了两样都少。蚯蚓钻的洞是通气排水的管子，不是「把土弄脏」。根会喂微生物一点糖，换回溶解的养分。</p>
+ <p>因为表土冲走就没了、土里可能有看不见的脏东西，所以不口尝、挖完填回、洗手再吃点心。洗手是卫生，不是把土层冲出花园。不要挖别人的花坛。</p>
+ </section>
+
+ <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))" data-audience="parent">
+ <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">土壤公式卡 · 肥力≈腐殖×孔隙÷15（本页比较尺子）</p>
+ <p style="margin:0;color:var(--ink-mid);line-height:1.55">板结少气、沙土漏水快，都说明缝里气和水要成对留下。挖完洗手，土要填回原处。</p>
+ </div>
+
+
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+ <h2 id="nextTitle">接下来可以去</h2>
+ <p>带走句：土里有矿、有气、有水、有分解者，不是脏石头。因为表土冲走就没了、土里可能有看不见的脏东西，所以挖完填回、洗手再吃点心，不要冲走土层。岩石页看矿物从哪来；蚯蚓页看谁在钻通气的洞。</p>
+ <p class="row"><a class="btn btn-ghost" href="rocks.html">岩石与矿物</a><a class="btn btn-ghost" href="worms.html">蚯蚓观察站</a></p>
+ </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为土壤形成极慢、挖走就毁了别人的生境，所以户外观察请在大人陪同下进行，不要挖公共花坛或别人的菜地。本页不提供土壤污染检测。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+ "use strict";
+ var stage = 0, viewed = false, hold = "", drain = "", done = false;
+ var SAY = [
+ "最上面是落叶层。枯叶盖住地面，慢慢变成土。",
+ "表土颜色更深，松软，植物的根多半长在这里。",
+ "往下是沙土或黏土。沙粒大、缝大；黏土粒很小、缝很细。",
+ "最底下常见石子。缝很大，水会很快从旁边溜走。",
+ "同样浇一点水：沙土很快漏下去，黏土把水留住。"
+ ];
+ var BTN = ["下一步：看表土","下一步：看沙土和黏土","下一步：看石子","下一步：浇一浇水","已经看完剖面"];
+ function showProfile(on){
+ document.getElementById("profileView").hidden = !on;
+ document.getElementById("pourView").hidden = on;
+ }
+ function paint(){
+ var pouring = stage >= 4;
+ showProfile(!pouring);
+ if (!pouring) {
+ [0,1,2,3].forEach(function(i){
+ var ring = document.getElementById("ring"+i);
+ if (ring.classList) ring.classList.toggle("on", i === stage);
+ else ring.setAttribute("class", "so-ring"+(i===stage?" on":""));
+ });
+ }
+ document.getElementById("soilSay").textContent = SAY[stage];
+ document.getElementById("nextLayer").textContent = BTN[stage];
+ document.getElementById("nextLayer").disabled = stage >= 4;
+ if (stage >= 4) viewed = true;
+ syncTask();
+ }
+ document.getElementById("nextLayer").addEventListener("click", function(){
+ if (stage < 4) { stage += 1; paint(); }
+ });
+ document.getElementById("resetLayer").addEventListener("click", function(){ stage = 0; paint(); });
+ var grid = document.getElementById("layerGrid");
+ Array.prototype.forEach.call(grid.querySelectorAll("[data-soil-fig]"), function(btn){
+ btn.addEventListener("click", function(){
+ Array.prototype.forEach.call(grid.querySelectorAll("[data-soil-fig]"), function(n){
+ n.setAttribute("aria-pressed", n===btn ? "true" : "false");
+ });
+ document.getElementById("layerSay").textContent = btn.getAttribute("data-say") || "";
+ var next = btn.getAttribute("data-stage");
+ if (next !== null && next !== "") {
+ stage = Number(next);
+ paint();
+ }
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-hold]"), function(btn){
+ btn.addEventListener("click", function(){
+ hold = btn.getAttribute("data-hold");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-hold]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+ syncTask();
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-drain]"), function(btn){
+ btn.addEventListener("click", function(){
+ drain = btn.getAttribute("data-drain");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-drain]"), function(n){ n.setAttribute("aria-pressed", n===btn?"true":"false"); });
+ syncTask();
+ });
+ });
+ function syncTask(){
+ var status = document.getElementById("taskStatus");
+ var finish = document.getElementById("finishBtn");
+ if (done) {
+ finish.disabled = true;
+ return;
+ }
+ if (!viewed) {
+ finish.disabled = true;
+ status.textContent = "尚未完成：先看完土层剖面，点到「浇一浇水」那一幕。";
+ return;
+ }
+ if (!hold || !drain) {
+ finish.disabled = true;
+ status.textContent = "剖面看过了。再选：谁更保水，谁更让水漏下去。";
+ return;
+ }
+ if (hold !== "clay" || drain !== "sand") {
+ finish.disabled = true;
+ status.textContent = "再看看浇水那张图：水是留在黏土表面，还是从沙土缝里漏下去？";
+ return;
+ }
+ finish.disabled = false;
+ status.textContent = "选好了。点「记下这次观察」就会记进足迹。";
+ }
+ document.getElementById("finishBtn").addEventListener("click", function(){
+ if (!viewed || hold !== "clay" || drain !== "sand" || done) return;
+ done = true;
+ if (window.Progress) Progress.complete("nature/soil.html", "黏土保水，沙土漏水");
+ document.getElementById("taskStatus").textContent = "完成啦：黏土更保水，沙土更让水漏下去。";
+ this.disabled = true;
+ });
+ paint();
+})();
+</script>
+<script>
+
+(function(){
+ "use strict";
+ var a = document.getElementById("soA");
+ var b = document.getElementById("soB");
+ if (!a || !b) return;
+ var g1 = "", g2 = "", g3 = "";
+ var g1Done = false, g2Done = false, g3Done = false;
+ function score(){ return Math.round(Number(a.value) * Number(b.value) / 15); }
+ function paint(){
+ var s = score();
+ var ok = s >= 10;
+ document.getElementById("soALab").textContent = a.value;
+ document.getElementById("soBLab").textContent = b.value;
+ a.setAttribute("aria-valuetext", a.value);
+ b.setAttribute("aria-valuetext", b.value);
+ document.getElementById("soAOut").textContent = a.value;
+ document.getElementById("soSOut").textContent = String(s);
+ document.getElementById("soOkOut").textContent = ok ? "好根" : "偏瘦";
+ document.getElementById("soStateLab").textContent = ok ? "土不是脏石头" : "腐殖少，或气孔堵了";
+ document.getElementById("soLabLive").textContent = ok
+ ? "矿、气、水、分解者都在。脏就要洗掉土层，是故事。"
+ : "腐殖少或气孔堵了，根不好过。";
+ var hum = Number(a.value);
+ var pore = Number(b.value);
+ var humus = document.getElementById("soHumus");
+ if (humus) {
+ var hh = 18 + hum * 1.1;
+ if (hh > 72) hh = 72;
+ humus.setAttribute("height", String(hh));
+ humus.setAttribute("opacity", String(0.35 + hum / 60));
+ }
+ var pores = document.querySelectorAll(".so-pore");
+ for (var i = 0; i < pores.length; i++) {
+ pores[i].setAttribute("r", String(4 + pore * 0.25 + (i % 2)));
+ }
+ var water = document.getElementById("soWater");
+ if (water) water.setAttribute("opacity", String(0.25 + pore / 40));
+ var worm = document.getElementById("soWorm");
+ if (worm) worm.setAttribute("opacity", ok ? "0.8" : "0.18");
+ var soap = document.getElementById("soSoap");
+ if (soap) soap.setAttribute("opacity", ok ? "0.12" : "0.42");
+ var bh = 30 + s * 2.5;
+ document.getElementById("soBar").setAttribute("height", String(bh));
+ document.getElementById("soBar").setAttribute("y", String(180 - bh));
+
+ if (g1 && !g1Done && Number(a.value) === 30 && Number(b.value) === 10 && s === 20) {
+ g1Done = true;
+ document.getElementById("soGuessOut1").innerHTML = (g1 === "20" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "腐殖够、气孔通，根才过得去。";
+ document.getElementById("soGuessBlock2").hidden = false;
+ }
+ if (g2 && !g2Done && Number(a.value) <= 5 && Number(b.value) <= 3 && !ok) {
+ g2Done = true;
+ document.getElementById("soGuessOut2").innerHTML = (g2 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "腐殖少、孔隙堵，偏瘦。";
+ document.getElementById("soGuessBlock3").hidden = false;
+ }
+ if (g3 && !g3Done && Number(a.value) === 4 && Number(b.value) === 2) {
+ g3Done = true;
+ document.getElementById("soGuessOut3").innerHTML = (g3 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "又瘦又堵，根不好过。";
+ }
+ }
+ a.addEventListener("input", paint); b.addEventListener("input", paint);
+ Array.prototype.forEach.call(document.querySelectorAll("[data-so-g1]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g1Done) return;
+ g1 = btn.getAttribute("data-so-g1");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-so-g1]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("soGuessOut1").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-so-g2]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g2Done) return;
+ g2 = btn.getAttribute("data-so-g2");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-so-g2]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("soGuessOut2").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-so-g3]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g3Done) return;
+ g3 = btn.getAttribute("data-so-g3");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-so-g3]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("soGuessOut3").textContent = "押好了";
+ });
+ });
+ paint();
+})();
+
+</script>
+<script>if (window.Progress) Progress.visit("nature/soil.html", "土壤观察站");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

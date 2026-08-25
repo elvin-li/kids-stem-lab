@@ -6,11 +6,24 @@
 @page { margin: 14mm; }
 
 @media print {
+  /* 每一条都必须带 !important，否则这整块在默认状态下等于没写。
+     原因是特异度而不是顺序：kid.css 的孩子调色板挂在 html[data-mode="kid"]（0,1,1），
+     比这里的 :root（0,1,0）高一档，即使 print.css 后加载也压不过它——而
+     Progress 的 mode 默认就是 kid，所以「默认状态」正是孩子模式。
+     后果最明显的是 --on-accent：kid.css 把它定为 #ffffff，于是序号圆点、
+     A/B 结果字母这类「深底白字」在纸上变成白纸白字（ramp-and-roll 的
+     三步序号 1/2/3 和 A/B 就是这样整块消失的，check-print.mjs 量到 1:1）。
+     自定义属性支持 !important，这里逐条加上，让纸上的调色板真正说话。 */
   :root {
-    --bg: #fff; --bg-soft: #fff; --surface: #fff; --surface-2: #fff;
-    --line: #aaa; --line-soft: #d2d2d2;
-    --ink: #111; --ink-mid: #333; --ink-dim: #555;
-    --shadow: none; --shadow-lg: none; --glow: none;
+    --bg: #fff !important; --bg-soft: #fff !important;
+    --surface: #fff !important; --surface-2: #fff !important;
+    --line: #aaa !important; --line-soft: #d2d2d2 !important;
+    --ink: #111 !important; --ink-mid: #333 !important; --ink-dim: #555 !important;
+    --shadow: none !important; --shadow-lg: none !important; --glow: none !important;
+    /* 屏幕上 --on-accent 是压在强调色块上的白字。纸上强调色块不会输出
+       （下面声明了 print-color-adjust: economy，Chrome 打印默认也不输出背景），
+       白字就落到白纸上了，所以这里翻成深色。 */
+    --on-accent: #111 !important;
   }
 
   *, *::before, *::after {
@@ -30,11 +43,32 @@
   }
   body::before { display: none !important; }
 
+  /* 打印是给家长的。孩子模式是默认值（Progress 的 mode 默认 kid），而 kid.css 里那条
+       html[data-mode="kid"] [data-audience="parent"] { display: none !important }
+     没有媒体限定，打印时同样命中，会把「背后的原理」和「给家长的问题」整块收走——
+     那两样恰恰是本文件所属契约要求打印版必须保留的，也正是家长想带离屏幕的内容。
+     所以在打印媒体里放开家长层。
+     用 revert 而不是写死 block：让元素回到 UA 默认值，div/p/ul 各自成块、
+     span 仍是行内，不会因为强制 block 把行内标记撑成一行一个。 */
+  html[data-mode="kid"] [data-audience="parent"] { display: revert !important; }
+  /* 但交互外壳即使标了 data-audience="parent" 也不该出现在纸上。
+     上面那条的特异度是 (0,2,1)，比下面那条通用的元素选择器 (0,0,1) 高，
+     两条都带 !important 时它会赢——第一版就因此把 13 个页面的作品表单外壳
+     和 turtle-geometry 的「回到起点重画」按钮放到了纸上。
+     用 :is() 把特异度提到 (0,3,1) 重新压回去；:is() 取参数里最高的那一档。 */
+  html[data-mode="kid"] [data-audience="parent"]:is(form, button, input, select, textarea, canvas, video, iframe, .no-print, [data-print="hide"]) {
+    display: none !important;
+  }
+
   /* 只隐藏交互外壳；说明、提问、任务和完成文字继续打印。
      .no-print 与 [data-print="hide"] 等价，页面里两种写法都在用。 */
+  /* form 必须和它的字段一起隐藏。以前只列了 input/select/textarea/button，
+     `<form>` 容器本身是靠孩子模式那条 [data-audience="parent"] 规则顺带藏住的；
+     上面在打印里放开家长层之后，作品表单的外壳（标题、说明、空白边框）就露到纸上了。
+     契约「打印」一节明写要隐藏表单，这里补上容器本身。 */
   .nav, .foot, .skip-link, .toast, .filters, .actions, .tools,
   .ctrl, .task-actions, .note-actions, .playful-confetti,
-  button, input, select, textarea, video, iframe, canvas,
+  form, button, input, select, textarea, video, iframe, canvas,
   svg.interactive, [role="dialog"], .no-print, [data-print="hide"] {
     display: none !important;
   }
@@ -95,6 +129,43 @@
     border: 1px solid #ccc !important;
   }
 
+  /* ---- 屏幕上有意做成深色的场景，在纸上必须翻成深字 ----
+     这些区域的底色都来自 CSS：背景渐变、rgba 蒙版、或者 JS 写的内联 background。
+     而 Chrome 打印对话框里「背景图形」默认是关闭的 —— 底色不输出，只剩白纸。
+     区域里的浅色文字又是写死的（#fff / #ffe9a8 / #dce8f7 / #f1f5f9 …），
+     上面那段 :root 重置只换 token，管不到写死的值。结果就是白纸白字，整块内容消失。
+     实测这样丢掉的文字有 107 处，其中 43 处正好是 1.00:1。
+     守门的是 `node tools/check-rendered-contrast.mjs --print`：
+     它把媒体切成 print，并且只把 CSS 背景当作不输出、SVG 形状的 fill 仍然算
+     （SVG 的 fill 是内容，不受「背景图形」开关影响）。 */
+  .zone, .zone *,
+  .ocean-story, .ocean-story *,
+  .theater-hero, .theater-hero *,
+  .light-path, .light-path *,
+  .stratum, .stratum *,
+  .fossil-result, .fossil-result *,
+  .ship-rail, .ship-rail *,
+  .sw-chip, .sw-chip *,
+  .canvas-label, .stage-label, .board-prompt, .sun-label, .card-step,
+  /* insects 的「记录单」序号：counter 写在 ::after 里，color 写死 #fff、底色是
+     background:var(--sci)。这一条特别值得记：**`check-rendered-contrast.mjs`
+     完全不看伪元素**（它遍历文字节点，::after 的 content 不是文字节点），
+     所以 --print 模式对它是绿的，两个打印审计都抓不到。而这张记录单恰恰是
+     整个项目里最该打出来带走的东西，序号整组消失等于表格没了编号。 */
+  .rs-list > li::after,
+  /* ocean 舞台上的深底读数。它们是绝对定位、压在渐变上，落进了 --print 模式
+     「取不到准确底色、不予判定」的那一批里——是未验证，不是验证合格。
+     这里直接按「背景不输出」处理，纸上一律深字。 */
+  .depth-tags span, .stage-readouts span, .stage-readouts b {
+    color: #111 !important;
+  }
+  /* SVG 文字由 fill 上色，不是 color。
+     只对「文字确实压在 CSS 背景上」的图做翻转 —— .light-svg 的五个色名标注排在色柱
+     下方的空白处，那块底色正是 CSS 渐变，打印时会掉。
+     不要按整张 svg 一刀切：同一张图里另一些文字是压在会打印的 SVG 形状上的
+     （strata-mini 的地层带、safeStage 的地面），一刀切会把它们变成深底深字。 */
+  .light-svg text { fill: #111 !important; }
+
   a { color: #111 !important; text-decoration: underline !important; text-underline-offset: 2px; }
   a[href^="http://"]::after,
   a[href^="https://"]::after {
@@ -104,4 +175,29 @@
     font-weight: 400;
     overflow-wrap: anywhere;
   }
+}
+
+/* ---------- 家庭医药箱：别让红旗段在纸上被切成两半 ---------- */
+@media print {
+  /* 契约「打印」一节要求避免卡片和图表标题被跨页截断。红旗信号段是这一册的全部价值，
+     被分页切开时家长很可能只看到前半截——而「什么时候别在家等」这种清单，
+     漏掉后半截比整段不印更危险。
+     这几个类名只出现在 pages/medicine-cabinet.html 与 pages/med-*.html 里，
+     所以写在共享层不会影响其余 46 个页面；而写在共享层的好处是**以后新增速查页自动继承**，
+     不必在每页的 <style> 里再抄一遍 @media print（那种复制迟早会漏掉一页，
+     而漏掉的那一页在屏幕上完全看不出区别）。
+     `break-inside: avoid` 只在「块本身放得进一页」时才有意义，否则浏览器无处可放、
+     照样会切。这一点用 tools/_print-overflow.mjs 实测过：A4 可印宽 688px 下，
+     19 页里没有任何一个 .flag / .duo > div / .cond-card 超过一页高，所以这条是真能生效的。 */
+  .flag,
+  .duo > div,
+  .cond > .cond-card { break-inside: avoid; }
+  .med-tbl caption { break-after: avoid; }
+  .med-tbl tr { break-inside: avoid; }
+  /* 屏幕上用 overflow-x:auto + min-width 让宽表横滚，纸上没有滚动条——
+     纸比 min-width 窄时超出的那一截既不换行也不缩小，直接被裁掉，
+     而屏幕上的任何审计都看不到。当前各页 min-width 是 440–560px，A4 下还放得进，
+     但把上限交给运气不是办法，这里在打印媒体里直接解除横滚约束。 */
+  .tbl-wrap { overflow: visible; }
+  .med-tbl { min-width: 0; }
 }

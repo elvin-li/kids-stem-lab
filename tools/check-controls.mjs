@@ -17,11 +17,12 @@
  * WCAG 2.5.5 对「排在正文行内的链接」有豁免，本工具把这类单独归为豁免项而不报错，
  * 否则家长指南那些正文里的引用链接会淹掉真正的问题。
  */
-import { spawn } from 'node:child_process';
-import { access, mkdtemp, readdir, rm } from 'node:fs/promises';
+import { access, mkdtemp, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
+import { acquireChromeLease } from './chrome-lease.mjs';
+import { spawnChrome, stopChrome } from './chrome-lifecycle.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const PORT = 9950 + (process.pid % 40);
@@ -88,6 +89,15 @@ class CDP {
       for (const pending of client.waiting.values()) pending.fail(new Error('Chrome WebSocket 已关闭'));
       client.waiting.clear();
     };
+    /* 这个浏览器一律不许写下载文件。门禁会逐个点击页面上可见的按钮，
+       其中就有「保存图片」「导出 JSON」「导出代码」这类导出控件——Chrome 的
+       默认行为会把文件真的存进 ~/Downloads，跑一轮门禁就多出十几个文件
+       （doodle-pad 的画、symmetry 的对称作品、足迹 JSON、评估 txt…），
+       几轮下来上百个。审计只关心「点下去有没有报错、有没有请求离开设备」，
+       落盘对结论没有任何贡献，纯属污染用户的下载目录。
+       deny 也顺带让「点导出」这条路径本身仍然被走到，不影响判定。 */
+    /* 下载禁用是安全边界：失败时必须在创建 target、点击页面之前终止。 */
+    await client.send('Browser.setDownloadBehavior', { behavior: 'deny' });
     return client;
   }
   send(method, params = {}, sessionId) {
@@ -231,55 +241,82 @@ const requested = argv.map((arg) => {
 const list = requested.length ? requested : await htmlPages();
 
 const chromePath = await findChrome();
-const profile = await mkdtemp(join(tmpdir(), 'controls-chrome-'));
-const chrome = spawn(chromePath, [
-  `--remote-debugging-port=${PORT}`,
-  `--user-data-dir=${profile}`,
-  '--headless=new', '--no-first-run', '--no-default-browser-check',
-  '--disable-gpu', '--hide-scrollbars', '--mute-audio', '--disable-extensions',
-  '--allow-file-access-from-files', `--window-size=${width},900`,
-  'about:blank'
-], { stdio: 'ignore' });
+await acquireChromeLease();
+
+/* Chrome 做成「可重启」而不是启动一次用到底。
+   原因：一个长驻实例要连开几十个 target，机器负载高的时候会整个死掉，
+   之后每个 createTarget 都超时，剩下的页面全部报假失败——在死浏览器上重试没有意义。
+   端口每次换一个，避免和正在退出的旧实例撞上；profile 也重新建一个，
+   否则旧 profile 里的锁文件会让新实例起不来。 */
+let chrome = null;
+let profile = null;
+let port = PORT;
 
 async function cleanup() {
-  if (!chrome.killed) chrome.kill();
-  await new Promise((done) => {
-    if (chrome.exitCode !== null || chrome.signalCode !== null) return done();
-    const timer = setTimeout(done, 3000);
-    chrome.once('exit', () => { clearTimeout(timer); done(); });
-  });
-  try { await rm(profile, { recursive: true, force: true }); } catch { /* 不遮盖结果 */ }
+  const dyingBrowser = browser;
+  const dyingChrome = chrome;
+  if (dyingBrowser) {
+    try { dyingBrowser.close(); } catch { /* 已经断了 */ }
+  }
+  if (dyingChrome) await stopChrome(dyingChrome);
+  if (browser === dyingBrowser) browser = null;
+  if (chrome === dyingChrome) {
+    chrome = null;
+    profile = null;
+  }
 }
 
-/* 由其他线程持有的文件：和 check-headings / check-raf / check-theme 一样单列不阻断。
-   见 CONTRACT.md「门禁」一节。 */
-const HELD_BY_OTHERS = new Set([
-  'games/number-blocks.html',
-  'games/turtle-geometry.html'
-]);
+async function launchChrome() {
+  port = 9950 + ((port - 9950 + 1) % 40);
+  const nextProfile = await mkdtemp(join(tmpdir(), 'controls-chrome-'));
+  const nextChrome = await spawnChrome(chromePath, [
+    `--remote-debugging-port=${port}`,
+    `--user-data-dir=${nextProfile}`,
+    '--headless=new', '--no-first-run', '--no-default-browser-check',
+    '--disable-gpu', '--hide-scrollbars', '--mute-audio', '--disable-extensions',
+    '--allow-file-access-from-files', `--window-size=${width},900`,
+    'about:blank'
+  ], { cleanupPath: nextProfile });
+  profile = nextProfile;
+  chrome = nextChrome;
+  let wsUrl = null;
+  for (let attempt = 0; attempt < 60 && !wsUrl; attempt++) {
+    await wait(250);
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/json/version`);
+      if (response.ok) wsUrl = (await response.json()).webSocketDebuggerUrl;
+    } catch { /* Chrome 尚未就绪 */ }
+  }
+  if (!wsUrl) throw new Error('Chrome 调试端口未就绪');
+  return CDP.attach(wsUrl);
+}
+
+/* 曾经这里有一个 HELD_BY_OTHERS 豁免集（number-blocks / turtle-geometry 单列不阻断）。
+   那两个线程已经收尾：去掉豁免后这两页在 kid 与 parent@768 下都是全部控件 ≥ 44×44、
+   焦点圈可见，所以豁免过期了，28 页一视同仁。见 CONTRACT.md「门禁」一节。
+   44×44 和可见焦点是给小孩子的硬要求，不该有页面长期挂在豁免名单上。 */
 
 let browser;
 let badPages = 0;
 let totalChecked = 0;
 let totalExempt = 0;
 let focusChecked = 0;
-const held = [];
 try {
-  let wsUrl = null;
-  for (let attempt = 0; attempt < 60 && !wsUrl; attempt++) {
-    await wait(250);
-    try {
-      const response = await fetch(`http://127.0.0.1:${PORT}/json/version`);
-      if (response.ok) wsUrl = (await response.json()).webSocketDebuggerUrl;
-    } catch { /* Chrome 尚未就绪 */ }
-  }
-  if (!wsUrl) throw new Error('Chrome 调试端口未就绪');
-  browser = await CDP.attach(wsUrl);
+  browser = await launchChrome();
 
   console.log(`控件审计：${list.length} 个页面，视口 ${width}px，mode=${mode}，` +
     `触控目标下限 ${MIN}×${MIN}，每页抽 ${FOCUS_SAMPLE} 个控件验证键盘焦点`);
 
-  for (const page of list) {
+  /* 基础设施类错误：一个长驻 Chrome 要连开几十个 target，机器负载高的时候会整个死掉，
+     之后每个 createTarget 都失败。这类错误和「这一页控件不合规」是两件事——
+     判据很硬：真缺陷会给出具体数值（控件尺寸、焦点圈），基础设施问题只有超时和掉线。
+     原来 Target.createTarget / attachToTarget 写在 try **外面**，所以它一失败异常就逃出
+     整个循环、进程直接死掉，前面已经跑完的页面结果全部丢失（实测跑到第 26 页
+     撞上 Failed to open a new tab，前 25 页的结论一起没了）。
+     现在把建 target 也纳入保护，并对这类错误换一个全新 target 重试一次。 */
+  const TRANSIENT = /超时|timeout|WebSocket 已关闭|Session with given id not found|Failed to open a new tab|Target closed|Inspected target|调试端口未就绪/i;
+
+  async function auditOnce(page) {
     const { targetId } = await browser.send('Target.createTarget', { url: 'about:blank' });
     const { sessionId } = await browser.send('Target.attachToTarget', { targetId, flatten: true });
     try {
@@ -345,11 +382,7 @@ try {
       }
       if (noRing.length) problems.push(`${noRing.length} 个控件键盘聚焦后没有可见焦点指示`);
 
-      if (problems.length && HELD_BY_OTHERS.has(page)) {
-        for (const d of small) held.push(`${page}: ${d.where}「${d.text}」 ${d.w}×${d.h}`);
-        for (const d of noRing) held.push(`${page}: 焦点不可见：${d}`);
-        console.log(`· ${page}（其他线程持有，单列不阻断：${problems.join('、')}）`);
-      } else if (problems.length) {
+      if (problems.length) {
         badPages++;
         console.error(`✗ ${page}（${checked} 个控件${exempt ? `，${exempt} 个正文行内链接已豁免` : ''}）`);
         for (const d of small) {
@@ -360,23 +393,38 @@ try {
         console.log(`✓ ${page}（${checked} 个控件全部 ≥ ${MIN}×${MIN}` +
           `${exempt ? `，${exempt} 个正文行内链接已豁免` : ''}；抽查 ${rounds} 个焦点圈均可见）`);
       }
-    } catch (error) {
-      badPages++;
-      console.error(`✗ ${page}: ${error.message}`);
     } finally {
       await browser.send('Target.closeTarget', { targetId }).catch(() => {});
     }
   }
+
+  for (const page of list) {
+    let lastError = null;
+    let retried = false;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try { lastError = null; await auditOnce(page); break; }
+      catch (error) {
+        lastError = error;
+        if (attempt === 2 || !TRANSIENT.test(error.message)) break;
+        retried = true;
+        /* 整个换一个 Chrome 再重试，而不是只换 target：
+           这类错误多半意味着旧实例已经死了，在死实例上重试拿不到任何结果。 */
+        await cleanup();
+        await wait(1200);
+        browser = await launchChrome();
+      }
+    }
+    if (lastError) {
+      badPages++;
+      console.error(`✗ ${page}: ${lastError.message}`
+        + (retried ? '（已重试一次仍失败，这不像是偶发超时；先看机器负载，别急着改页面）' : ''));
+    }
+  }
 } finally {
-  if (browser) browser.close();
   await cleanup();
 }
 
 console.log(`\n=== ${list.length} 页，共检查 ${totalChecked} 个控件` +
   `（${totalExempt} 个正文行内链接按 WCAG 2.5.5 豁免），` +
   `抽查 ${focusChecked} 个键盘焦点，${badPages} 页有问题 ===`);
-if (held.length) {
-  console.log('（另有其他线程持有的文件，本工具不阻断，等对方收尾）');
-  for (const h of held) console.log(`  ${h}`);
-}
 process.exit(badPages ? 1 : 0);

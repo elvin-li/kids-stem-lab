@@ -7,11 +7,12 @@
  *
  * 参数：页面 [选择器|-] [视口宽=1100] [kid|parent|-] [输出路径] [截图前依次点击的选择器…]
  */
-import { spawn } from 'node:child_process';
-import { access, mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname, basename } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
+import { acquireChromeLease } from './chrome-lease.mjs';
+import { spawnChrome, stopChrome, registerOwnedPath } from './chrome-lifecycle.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const PORT = 9500 + (process.pid % 200);
@@ -62,13 +63,19 @@ async function findChrome() {
   throw new Error('找不到 Chrome，这个工具只能在装了 Chrome 的机器上跑');
 }
 
+await acquireChromeLease();
+/* 先解析 executable、再建 profile：反过来的话，没装 Chrome 的机器上 findChrome
+   一抛，刚建好的临时目录就没人清了（spawnChrome 从未被调用、从未接管它）。
+   建完立即预登记，信号落在「已建目录、Chrome 未接管」的窗口里时也能删掉。 */
+const chromePath = await findChrome();
 const profile = await mkdtemp(join(tmpdir(), 'art-shot-'));
-const chrome = spawn(await findChrome(), [
+registerOwnedPath(profile);
+const chrome = await spawnChrome(chromePath, [
   `--remote-debugging-port=${PORT}`, `--user-data-dir=${profile}`, '--headless=new',
   '--no-first-run', '--no-default-browser-check', '--disable-gpu', '--hide-scrollbars',
   '--mute-audio', '--disable-extensions', '--allow-file-access-from-files',
   '--force-color-profile=srgb', 'about:blank'
-], { stdio: 'ignore' });
+], { cleanupPath: profile });
 
 let browser;
 try {
@@ -82,6 +89,14 @@ try {
   }
   if (!wsUrl) throw new Error('Chrome 调试端口未就绪');
   browser = await CDP.attach(wsUrl);
+  /* 这个浏览器一律不许写下载文件。截图靠 CDP 抓屏、结果由本工具自己写到显式路径，
+     浏览器下载对它没有用处；但本工具会执行页面 JS（_shot 的 action 参数、art-shot 的
+     点击参数），一旦碰到「保存图片」「导出 JSON」这类控件，Chrome 默认行为就会把文件
+     真的写进 ~/Downloads。实测确实出现过一张 doodle-pad 导出的图。
+     由 check-no-downloads.mjs 盯着，不再给截图工具开豁免。 */
+  /* 下载禁用是安全边界：失败时必须在导航、注入脚本、点击之前终止，
+     不能用 try/catch 吞掉再继续跑。 */
+  await browser.send('Browser.setDownloadBehavior', { behavior: 'deny' });
   const { targetId } = await browser.send('Target.createTarget', { url: 'about:blank' });
   const { sessionId } = await browser.send('Target.attachToTarget', { targetId, flatten: true });
   await browser.send('Page.enable', {}, sessionId);
@@ -134,8 +149,9 @@ try {
   console.error('✗ ' + e.message);
   process.exitCode = 1;
 } finally {
-  if (browser) browser.close();
-  if (!chrome.killed) chrome.kill();
-  await wait(300);
-  try { await rm(profile, { recursive: true, force: true }); } catch { /* 忽略 */ }
+  try {
+    if (browser) browser.close();
+  } finally {
+    await stopChrome(chrome);
+  }
 }

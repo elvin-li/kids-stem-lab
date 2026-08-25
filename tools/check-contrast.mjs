@@ -2,9 +2,15 @@
 /* 静态对比度门禁：不依赖浏览器。
    pages/design-system.html 里那张对比度表是运行时用 getComputedStyle 算的，
    这台机器没有 Chrome，等于没有任何自动校验。这个脚本把同一套 WCAG 2.1 公式
-   搬到 Node 里，直接解析 base.css / kid.css 的 token 块，覆盖三套主题：
-     默认浅色（:root）、深色（html[data-theme="dark"]）、孩子模式（html[data-mode="kid"]）。
-   只看共享层声明的 token —— 页面局部写死的颜色不在范围内（那些是插画用色）。 */
+   搬到 Node 里，直接解析 base.css / kid.css 的 token 块，覆盖两套主题：
+     默认浅色（:root）、孩子模式（html[data-mode="kid"]）。
+   只看共享层声明的 token —— 页面局部写死的颜色不在范围内（那些是插画用色）。
+
+   原来还有第三套 html[data-theme="dark"]。那套主题是不可达代码（全站没有任何
+   HTML 或 JS 设置 data-theme，Progress 的固定偏好里也没有主题项），已从 base.css 删除。
+   它被删的一个直接原因就在这个文件里：三套主题一律阻断，于是深色专属的
+   --on-accent on --accent-deep = 5.01 长期是全站最紧的几组之一，
+   让一套没人看得见的调色板反过来限制浅色主题能选什么颜色。 */
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -62,17 +68,15 @@ function contrast(a, b) {
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
 
-/* ---- 三套主题 ---- */
+/* ---- 两套主题：屏幕上真实可达的就这两套 ---- */
 const base = read('assets/css/base.css');
 const kid = read('assets/css/kid.css');
 
 const light = tokenBlock(base, ':root');
-const dark = new Map([...light, ...tokenBlock(base, 'html[data-theme="dark"]')]);
 const kidTheme = new Map([...light, ...tokenBlock(kid, 'html[data-mode="kid"]')]);
 
 const themes = [
   ['默认浅色', light],
-  ['深色 data-theme="dark"', dark],
   ['孩子模式 data-mode="kid"', kidTheme]
 ];
 
@@ -139,4 +143,4 @@ if (failures.length) {
   for (const f of failures) console.log(`  - ${f}`);
   process.exit(1);
 }
-console.log('\n✓ 三套主题的 token 组合全部达标');
+console.log(`\n✓ ${themes.length} 套主题的 token 组合全部达标`);

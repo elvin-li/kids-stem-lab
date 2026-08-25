@@ -3,10 +3,11 @@
  *   node tools/check-theme.mjs             # 全站
  *   node tools/check-theme.mjs nature/x.html
  *
- * 为什么需要它：check-contrast.mjs 只算三套主题的 token × token 组合，
- * 页面 <style> 里硬编码的颜色字面量它一个都看不到。本站默认主题是浅色，
- * 暗色只由 <html data-theme="dark"> 可选启用，但页面里还留着一批当年
- * 为暗底写的字面量。它们在浅底上会变成：
+ * 为什么需要它：check-contrast.mjs 只算两套主题的 token × token 组合，
+ * 页面 <style> 里硬编码的颜色字面量它一个都看不到。本站屏幕上只有浅色主题
+ * （另有 kid.css 的 html[data-mode="kid"] 童趣调色板），但页面里还留着一批
+ * 当年为暗底写的字面量——那套 html[data-theme="dark"] 主题已因不可达而删除，
+ * 为它写的颜色却留在各页 <style> 里。它们在浅底上会变成：
  *
  *   A. 深底 + 深字   同一条规则里既写了深色背景又写了深色文字，或者
  *                    深色背景的容器让子元素继承 --ink（深色）→ 几乎不可读。
@@ -46,18 +47,18 @@ const ALLOW = new Map([
 
   /* ---- 太空站：夜空是内容语义，页面里已注明「.solar 恒为深色夜空底，
          因此用固定亮色，不跟随主题的深色墨水变量」 ---- */
-  ['nature/space.html .space-scene',
-    '星空场景：白色星点画在 #081126 夜空上，内部只有 emoji 和固定亮色标签'],
+  /* 原来这里还有 nature/space.html .space-scene 与 .size-compare 两条豁免，
+     它们对应的 CSS 规则已随死代码清理删除（两个 class 在 markup 和 JS 里都不剩，
+     运行时零命中），豁免跟着失效——本工具会把匹配不到规则的 ALLOW 条目报出来提醒清理，
+     就是靠那个提示发现的。 */
   ['nature/space.html .space-stage .solar',
     '太阳系轨道台：.planet .nm 用固定亮色 #cbdaf6，.sun-label 用 #ffd979'],
   ['nature/space.html .scale-visual svg',
     '比例示意图：SVG 内部自带浅色描边与浅色 <text>'],
-  ['nature/space.html .size-compare',
-    '大小对比图：深色夜空底 + 浅色刻度，图例 .size-legend 在图外用 --ink-mid'],
 
   /* ---- 深海下潜：越深越暗是内容语义 ---- */
   ['nature/ocean.html .ocean-story',
-    '下潜插画：从天蓝渐到 #07142e 深渊，图内只有 emoji，标签自带浅色'],
+    '下潜插画：从天蓝渐到 #07142e 深渊，图内角色是内联 SVG，标签自带浅色'],
   ['nature/ocean.html .light-svg',
     '光穿透深度图：深蓝底 + 浅色刻度线与浅色 <text>'],
   ['nature/ocean.html .oc-lift-stage',
@@ -76,12 +77,29 @@ const ALLOW = new Map([
     '抗震小测插图：SVG 内部自带浅色取色']
 ]);
 
-/* 浅色主题（base.css :root）的 token。运行时从文件解析，避免和样式表脱节。 */
+/* 浅色主题（base.css :root）的 token。运行时从文件解析，避免和样式表脱节。
+   块的结尾用花括号配对找，不要用「下一条已知规则的选择器」当分界：
+   原来这里写的是 css.indexOf('html[data-theme="dark"]')，那条深色主题规则删掉之后
+   indexOf 返回 -1，就会退回 css.length，把 base.css 从 :root 到文件末尾**全部**
+   当成 token 块解析——底下所有组件规则里的自定义属性都会被当成主题 token，
+   静默污染整张表。配对花括号只依赖 CSS 自身结构，删改后面的规则都不会影响它。 */
 async function lightTokens() {
   const css = await readFile(join(ROOT, 'assets/css/base.css'), 'utf8');
   const start = css.indexOf(':root');
-  const end = css.indexOf('html[data-theme="dark"]');
-  const block = css.slice(start, end > 0 ? end : css.length);
+  if (start < 0) throw new Error('base.css 里找不到 :root 块');
+  const open = css.indexOf('{', start);
+  if (open < 0) throw new Error('base.css 的 :root 后面找不到 {');
+  let depth = 0;
+  let end = -1;
+  for (let i = open; i < css.length; i++) {
+    if (css[i] === '{') depth++;
+    else if (css[i] === '}') {
+      depth--;
+      if (depth === 0) { end = i; break; }
+    }
+  }
+  if (end < 0) throw new Error('base.css 的 :root 块大括号不闭合');
+  const block = css.slice(open, end + 1);
   const out = new Map();
   for (const m of block.matchAll(/(--[\w-]+)\s*:\s*([^;}]+)[;}]/g)) {
     out.set(m[1], m[2].trim());
@@ -325,15 +343,11 @@ if (requested.length && targets.length !== requested.length) {
   process.exit(1);
 }
 
-/* 由其他线程持有的文件：和 check-headings / check-raf 一样单独列出、不阻断，
-   等对方收尾。见 CONTRACT.md「门禁」一节。 */
-const HELD_BY_OTHERS = new Set([
-  'games/number-blocks.html',
-  'games/turtle-geometry.html'
-]);
+/* 曾经这里有一个 HELD_BY_OTHERS 豁免集（number-blocks / turtle-geometry 单列不阻断）。
+   那两个线程已经收尾：去掉豁免后本工具仍然 exit 0，所以豁免过期了，28 页一视同仁。
+   见 CONTRACT.md「门禁」一节。 */
 
 const errors = [];
-const held = [];
 const notes = [];
 const usedAllow = new Set();
 let ruleCount = 0;
@@ -483,13 +497,6 @@ for (const rel of targets) {
   }
 }
 
-/* 把其他线程持有的文件挪出阻断集 */
-for (let i = errors.length - 1; i >= 0; i--) {
-  const file = errors[i].split(':')[0];
-  if (HELD_BY_OTHERS.has(file)) held.push(...errors.splice(i, 1));
-}
-held.reverse();
-
 console.log(`主题审计：${targets.length} 个 HTML、${ruleCount} 条内联规则、` +
   `浅色 token ${TOKENS.size} 个（背景合成基准 --bg=${TOKENS.get('--bg')}）`);
 
@@ -511,7 +518,3 @@ if (errors.length) {
   process.exit(1);
 }
 console.log('\n  ✓ 内联样式里的硬编码颜色在浅色主题下都成立');
-if (held.length) {
-  console.log('（另有其他线程持有的文件，本工具不阻断，等对方收尾）');
-  for (const h of held) console.log(`  ${h}`);
-}

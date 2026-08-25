@@ -1,0 +1,128 @@
+/* 家庭医药箱分区的共享外壳：pages/medicine-cabinet.html 与 pages/med-*.html 专用。
+ *
+ * 为什么单独一层，而不是继续每页写一遍 <style>：
+ * 抽取之前，这一册 19 个页面各自带着约 58 行内联样式，其中**有 39 行在 19 页里逐字节相同**，
+ * 合计 1114 行里约 700 行是纯复制。复制本身不算错，真正的代价是「改一处要记得改十九处」：
+ * 打印防跨页那条规则就是活例子——它先只写进了后一批 11 页，8 个早期页面漏掉了，
+ * 而漏掉的那 8 页在屏幕上完全看不出区别，只有打印出来才发现红旗段被切成两半。
+ *
+ * 加载顺序是 base.css → kid.css → **med.css** → print.css（最后一个带 media="print"）。
+ * 夹在 kid.css 之后，是为了能覆盖孩子模式的外壳；排在 print.css 之前，
+ * 是为了不夺走 print.css 对打印稿的最终决定权（`check-contract.mjs` 只校验
+ * base < kid < print 的相对次序，插在中间不违反契约）。
+ *
+ * 这里只放**全部 19 页都用**的骨架。留在各页 <style> 里的应当只有该页独有的东西：
+ *   - `.med-tbl { min-width: … }`：各页表格列数不同，横滚阈值本就该各自定；
+ *   - 总览页的 `.med-grid` / `.med-card` / `.filter-row` / `.count-line` / `.principles`；
+ *   - 个别页面自己的小组件。
+ * 新增速查页时不要再往页面里抄这一份。
+ */
+
+html, body { max-width: 100%; overflow-x: hidden; }
+
+/* ---------- 页头 ---------- */
+.med-head { padding: 34px 0 4px; }
+.med-head h1 { margin: .1em 0 .35em; max-width: 24ch; line-height: 1.12; }
+.med-lede { max-width: 68ch; margin: 0 0 12px; font-size: 1.02rem; color: var(--ink-mid); line-height: 1.7; }
+.crumbs { margin: 0 0 8px; font-size: .8rem; color: var(--ink-dim); }
+.crumbs a { color: var(--ink-mid); }
+.pill-alert { color: var(--danger); }
+
+/* ---------- 红旗信号段 ----------
+   浅底深字加左粗边。Chrome 打印默认不输出背景色，所以可读性不能依赖底色：
+   靠边框和深色文字，纸上照样成立。跨页不切开的规则在 print.css 里。 */
+.flag { margin: 22px 0 8px; padding: 16px 18px; border: 2px solid var(--danger); border-left-width: 8px; border-radius: var(--r); background: color-mix(in oklab, var(--danger) 7%, var(--surface)); }
+.flag h2 { margin: 0 0 6px; font-size: 1.14rem; color: var(--danger); }
+.flag h3 { margin: 0 0 6px; font-size: 1.04rem; color: var(--danger); }
+.flag p { margin: 0 0 8px; font-size: .9rem; color: var(--ink-mid); }
+.flag ul { margin: 0; padding-left: 1.25em; }
+/* 中文正文用 break-word 而不是 anywhere。两者都只在「否则就要溢出」时才启用应急断点，
+   但 `anywhere` 的应急断点**参与 min-content 计算**，元素最小宽度会变成「最宽的那一个字」；
+   配合下面 .duo / .cond 那两个 `minmax(min(262px,100%),1fr)` 栅格和 `min-width: 0`，
+   列就被允许塌到一字宽，出现「一字一行」。`break-word` 不参与内在尺寸计算，没有这个副作用，
+   而对中文正文来说两者的断行能力毫无差别——中文本来处处可断。
+   真正需要 `anywhere` 的只有长 URL，见文件末尾的 `.srcs a`。 */
+.flag li { margin: 6px 0; font-size: .93rem; line-height: 1.62; color: var(--ink); overflow-wrap: break-word; }
+.flag li b { color: var(--danger); }
+
+/* ---------- 章节 ---------- */
+.sec { margin-top: 40px; scroll-margin-top: 78px; }
+.sec > h2 { margin: 0 0 8px; }
+.sec-note { max-width: 70ch; margin: 0 0 14px; font-size: .92rem; color: var(--ink-mid); line-height: 1.7; }
+
+/* ---------- 「该做 / 不要做」双栏 ---------- */
+.duo { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(262px, 100%), 1fr)); }
+.duo > div { min-width: 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r); }
+.duo-do { border-left: 6px solid var(--sci); background: color-mix(in oklab, var(--sci) 6%, var(--surface)); }
+.duo-dont { border-left: 6px solid var(--danger); background: color-mix(in oklab, var(--danger) 6%, var(--surface)); }
+.duo h3 { margin: 0 0 6px; font-size: 1rem; }
+.duo ul { margin: 0; padding-left: 1.2em; }
+.duo li { margin: 6px 0; font-size: .89rem; line-height: 1.62; color: var(--ink-mid); overflow-wrap: break-word; }
+.duo li b { color: var(--ink); }
+
+/* ---------- 表格 ----------
+   `.med-tbl` 的 min-width 由各页自己给：列数不同，该横滚的阈值也不同。
+   打印时 print.css 会把横滚和 min-width 一起解除，避免纸比容器窄时被裁掉。
+   右缘淡影用 local/scroll 叠层：内容滚走时露出阴影，提示「还能横滑」——
+   否则 375px 下右缘截字看起来像一张完整卡片，家长不知道表还有列。 */
+.tbl-wrap {
+  overflow-x: auto;
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  background:
+    linear-gradient(90deg, var(--surface), transparent) 0 0 / 28px 100%,
+    linear-gradient(270deg, var(--surface), transparent) 100% 0 / 28px 100%,
+    radial-gradient(farthest-side at 0 50%, rgba(36, 58, 52, .14), transparent) 0 0 / 12px 100%,
+    radial-gradient(farthest-side at 100% 50%, rgba(36, 58, 52, .2), transparent) 100% 0 / 14px 100%,
+    var(--surface);
+  background-repeat: no-repeat;
+  background-attachment: local, local, scroll, scroll;
+}
+.med-tbl { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.med-tbl caption { padding: 11px 13px; border-bottom: 1px solid var(--line); text-align: left; font-weight: 800; color: var(--ink); }
+.med-tbl th, .med-tbl td { padding: 10px 13px; border-bottom: 1px solid var(--line-soft); text-align: left; vertical-align: top; line-height: 1.58; }
+.med-tbl th { background: var(--surface-2); color: var(--ink); font-weight: 800; }
+.med-tbl td { color: var(--ink-mid); }
+.med-tbl td b { color: var(--ink); }
+.med-tbl tbody tr:last-child td { border-bottom: 0; }
+
+/* ---------- 要点列表与步骤 ---------- */
+.facts { margin: 0; padding-left: 1.35em; }
+.facts li { margin: 9px 0; font-size: .93rem; line-height: 1.68; color: var(--ink-mid); }
+.facts li b { color: var(--ink); }
+.steps { margin: 12px 0 0; padding-left: 1.35em; }
+.steps li { margin: 10px 0; font-size: .92rem; line-height: 1.66; color: var(--ink-mid); }
+.steps li b { color: var(--ink); }
+
+/* ---------- 病种卡 ----------
+   `.cond .card.cond-card` 用三个类 (0,3,0) 写实底，是为了压过 kid.css 的
+   `html[data-mode="kid"] .card` (0,2,1)：裸 .cond-card 在家长模式下够用，
+   一切到孩子模式就又变回 .card 的渐变，而渐变上的文字
+   check-rendered-contrast 只能记成「未判定」，未判定不算通过。 */
+.cond { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(268px, 100%), 1fr)); }
+.cond-card { display: flex; min-width: 0; flex-direction: column; gap: 8px; padding: 15px 16px; border-top: 5px solid var(--tone, var(--math)); }
+.cond .card.cond-card { background: var(--surface); }
+.cond-card h3 { margin: 0; font-size: 1.04rem; }
+.cond-card p { margin: 0; font-size: .88rem; color: var(--ink-mid); line-height: 1.62; overflow-wrap: break-word; }
+.cond-card p b { color: var(--ink); }
+.cond-card ul { margin: 0; padding-left: 1.2em; }
+.cond-card li { margin: 5px 0; font-size: .87rem; color: var(--ink-mid); line-height: 1.6; }
+
+/* ---------- 来源与免责声明 ---------- */
+.srcs { margin: 10px 0 0; padding-left: 1.3em; font-size: .84rem; color: var(--ink-mid); line-height: 1.72; }
+.srcs a { overflow-wrap: anywhere; }
+.disc { margin-top: 34px; padding: 15px 17px; border: 1px dashed var(--line); border-radius: var(--r); background: var(--surface-2); font-size: .86rem; color: var(--ink-mid); line-height: 1.68; }
+.disc b { color: var(--ink); }
+.disc p { margin: 0 0 7px; }
+.disc p:last-child { margin-bottom: 0; }
+
+/* ---------- 页内分流按钮 ---------- */
+.more { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+@media (max-width: 480px) {
+  .med-head { padding-top: 22px; }
+  .more .btn { width: 100%; justify-content: center; }
+}

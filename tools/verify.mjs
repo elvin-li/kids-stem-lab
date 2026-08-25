@@ -7,11 +7,12 @@
  * 每页检查 file:// 加载、站内资源、运行时异常、控件交互、基础键盘可达性，
  * 并在 375 / 768 / 1280 三档视口检查横向溢出。
  */
-import { spawn } from 'node:child_process';
-import { access, mkdtemp, readdir, rm } from 'node:fs/promises';
+import { access, mkdtemp, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
+import { acquireChromeLease } from './chrome-lease.mjs';
+import { spawnChrome, stopChrome } from './chrome-lifecycle.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const PORT = 9400 + (process.pid % 300);
@@ -74,6 +75,15 @@ class CDP {
       for (const pending of client.waiting.values()) pending.fail(new Error('Chrome WebSocket 已关闭'));
       client.waiting.clear();
     };
+    /* 这个浏览器一律不许写下载文件。门禁会逐个点击页面上可见的按钮，
+       其中就有「保存图片」「导出 JSON」「导出代码」这类导出控件——Chrome 的
+       默认行为会把文件真的存进 ~/Downloads，跑一轮门禁就多出十几个文件
+       （doodle-pad 的画、symmetry 的对称作品、足迹 JSON、评估 txt…），
+       几轮下来上百个。审计只关心「点下去有没有报错、有没有请求离开设备」，
+       落盘对结论没有任何贡献，纯属污染用户的下载目录。
+       deny 也顺带让「点导出」这条路径本身仍然被走到，不影响判定。 */
+    /* 下载禁用是安全边界：失败时必须在创建 target、点击页面之前终止。 */
+    await client.send('Browser.setDownloadBehavior', { behavior: 'deny' });
     return client;
   }
   send(method, params = {}, sessionId) {
@@ -115,24 +125,20 @@ const list = only.length ? only.map((arg) => {
 }) : await pages();
 
 const chromePath = await findChrome();
+await acquireChromeLease();
 const profile = await mkdtemp(join(tmpdir(), 'verify-chrome-'));
-const chrome = spawn(chromePath, [
+const chrome = await spawnChrome(chromePath, [
   `--remote-debugging-port=${PORT}`,
   `--user-data-dir=${profile}`,
   '--headless=new', '--no-first-run', '--no-default-browser-check',
   '--disable-gpu', '--hide-scrollbars', '--mute-audio', '--disable-extensions',
   '--allow-file-access-from-files', '--window-size=1280,900',
   'about:blank'
-], { stdio: 'ignore' });
+], { cleanupPath: profile });
 
 async function cleanup() {
-  if (!chrome.killed) chrome.kill();
-  await new Promise((done) => {
-    if (chrome.exitCode !== null || chrome.signalCode !== null) return done();
-    const timer = setTimeout(done, 3000);
-    chrome.once('exit', () => { clearTimeout(timer); done(); });
-  });
-  try { await rm(profile, { recursive: true, force: true }); } catch { /* 不遮盖测试结果 */ }
+  if (browser) browser.close();
+  await stopChrome(chrome);
 }
 
 let browser;
@@ -340,7 +346,6 @@ try {
   bad++;
   console.error(`验证器失败: ${error.message}`);
 } finally {
-  if (browser) browser.close();
   await cleanup();
 }
 

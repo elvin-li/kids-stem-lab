@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>冷光工坊 · 互动实验室</title>
+<meta name="description" content="荧光棒掰一下会亮，手却不烫。蜡烛会烫。亮和烫是两件事。本页用 8+4×亮度 当比较尺子，不是测出来的真实温度。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+
+  .hero { padding: 28px 0 10px; }
+  .hero h1 { margin: .15em 0 .3em; }
+  .lead { max-width: 58ch; color: var(--ink-mid); }
+  .kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--phys) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--phys) 12%,var(--surface)),var(--surface) 62%);
+  }
+  .mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--phys) 36%,var(--line));
+    background: color-mix(in srgb,var(--phys) 12%,var(--surface)); font-size: 2.2rem;
+  }
+  .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .cl-art { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+  .cl-lab { fill: var(--ink); font: 700 13px var(--mono); text-anchor: middle; }
+  /* 亮/暗状态交叉淡入；火苗摇曳、荧光棒光晕轻轻呼吸 */
+  .cl-fade { opacity: 0; transition: opacity .5s var(--ease); }
+  .cl-art[data-kind="glow"] #glowOn { opacity: 1; }
+  .cl-art[data-kind="candle"] #candleOn { opacity: 1; }
+  #flame { transform-box: fill-box; transform-origin: 50% 92%; animation: clFlick .7s ease-in-out infinite alternate; }
+  @keyframes clFlick { from { transform: scale(1,1); } to { transform: scale(.93,1.07) skewX(-2deg); } }
+  .cl-breathe { animation: clPulse 2.4s ease-in-out infinite alternate; }
+  @keyframes clPulse { from { opacity: 1; } to { opacity: .55; } }
+  .cl-art[data-kind="glow"] .cl-stick-lit { animation: clSnap .55s var(--ease) 1; transform-box: fill-box; transform-origin: center; }
+  @keyframes clSnap { 0% { transform: rotate(0deg); } 30% { transform: rotate(-5deg); } 70% { transform: rotate(4deg); } 100% { transform: rotate(0deg); } }
+  html[data-playful-motion="reduced"] .cl-art * { transition: none !important; animation: none !important; }
+  .readout { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); margin-top: 10px; }
+  .readout b { display: block; font: 800 1.12rem/1.2 var(--mono); color: var(--ink); }
+  .readout span { font-size: .78rem; color: var(--ink-dim); }
+  .kid-action-strip { display: grid; gap: 10px; margin: 12px 0; }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pick-btns .btn { white-space: nowrap; }
+  .cl-atlas .kid-figure { --tone: var(--phys); }
+  .cl-atlas .kid-figure-art { padding: 6px; }
+  .cl-atlas .kid-figure-art > svg { width: 100%; max-width: 120px; height: auto; }
+  .cl-atlas .kid-figure-fact { display: block; }
+  .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+  .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+  .ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--phys) 16%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--phys) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+  button, .btn { min-height: 44px; }
+  @media (max-width: 640px) { .kid-hero-scene { grid-template-columns: 1fr; } .mission-face { display: none; } }
+  /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .92rem; line-height: 1.5; margin-bottom: .4em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .cl-art { max-height: 150px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .92rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 8px 0; }
+  }
+
+
+  .kid-mission { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center; }
+  .mission-copy h1 { margin: .2em 0 .12em; }
+  .mission-copy p { max-width: 52ch; margin: .2em 0 0; color: var(--ink-mid); }
+  .tag-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .mission-face { overflow: hidden; }
+  .mission-face img.photo-real { width: 78px; height: 78px; object-fit: cover; border-radius: 50%; display: block; }
+  .mission-character { overflow: hidden; }
+  .mission-character img.photo-real { width: 76px; height: 76px; object-fit: cover; border-radius: 50%; display: block; }
+.ad-photo-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 10px;align-items:end}.ad-photo-strip figure{margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface-2)}.ad-photo-strip img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}.ad-photo-strip figcaption{padding:6px 8px;font-size:.78rem;font-weight:800;color:var(--ink-mid);line-height:1.35}.ad-photo-strip .is-contrast figcaption{color:color-mix(in srgb,var(--warn) 70%,var(--ink))}@media (max-width:480px){.ad-photo-strip{gap:6px}.ad-photo-strip figcaption{font-size:.7rem;padding:4px 6px}}
+</style>
+</head>
+<body data-playful-page="games/chemilum-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<a class="skip-link" href="#stage">跳到实验画面</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="kid-hero-scene" aria-labelledby="clStoryTitle">
+    <div class="mission-copy">
+      <div class="tag-row">
+        <span class="pill pill-phys">物理</span>
+        <span class="pill">6–11&nbsp;岁</span>
+        <span class="pill">约 10&nbsp;分钟</span>
+      </div>
+      <h1 id="clStoryTitle">亮着会烫手，还是不烫？</h1>
+      <p class="lead">荧光棒掰亮几乎不烫，蜡烛亮却常烫——亮度不是温度的代名词。本页用「冷光升温=0；热光=8+4×亮度」当比较尺子（不是实验室测温），让孩子亲手拆开「亮」与「烫」。真蜡烛与真荧光棒请大人拿；液体勿入口入眼。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-character" aria-hidden="true"><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="stage kid-visual-stage" id="stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">同一张桌子，冷光还是热光</h2>
+    <div class="ad-photo-strip" role="group" aria-label="真图对照"><figure><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="640" height="360" loading="lazy"><figcaption>本页要认的样子</figcaption></figure><figure><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="640" height="360" loading="lazy"><figcaption>对照台上零件：哪里像、哪里不像</figcaption></figure></div>
+<svg class="cl-art" viewBox="0 0 420 280" role="img" aria-labelledby="clTitle clDesc">
+      <title id="clTitle">荧光棒和蜡烛舞台</title>
+      <desc id="clDesc">左边荧光棒，右边蜡烛。冷光几乎不烫，热光会烫。</desc>
+      <!-- 黄昏的房间 -->
+      <rect width="420" height="196" fill="#4a5c72"/>
+      <rect width="420" height="60" fill="#415266"/>
+      <!-- 窗与夜空 -->
+      <rect x="26" y="22" width="128" height="128" rx="6" fill="#8a6a40"/>
+      <rect x="34" y="30" width="53" height="53" fill="#3a4f68"/>
+      <rect x="93" y="30" width="53" height="53" fill="#3a4f68"/>
+      <rect x="34" y="89" width="53" height="53" fill="#3a4f68"/>
+      <rect x="93" y="89" width="53" height="53" fill="#3a4f68"/>
+      <path d="M120 44 a11 11 0 1 0 8 19 a13 13 0 0 1 -8 -19 Z" fill="#f4e9c8"/>
+      <circle cx="48" cy="46" r="2" fill="#f4e9c8"/>
+      <circle cx="70" cy="64" r="1.6" fill="#f4e9c8"/>
+      <circle cx="56" cy="104" r="1.6" fill="#f4e9c8"/>
+      <circle cx="112" cy="112" r="2" fill="#f4e9c8"/>
+      <!-- 墙上小挂画 -->
+      <rect x="322" y="40" width="66" height="48" rx="4" fill="#5d7089" stroke="#8a6a40" stroke-width="3"/>
+      <path d="M330 76 l14 -16 l12 10 l10 -14 l14 20" fill="none" stroke="#95a9c0" stroke-width="3" stroke-linecap="round"/>
+      <!-- 书桌 -->
+      <rect y="196" width="420" height="10" fill="#a5794a"/>
+      <rect y="206" width="420" height="74" fill="#8a6444"/>
+      <path d="M40 232 h70 M170 244 h64 M300 236 h70" stroke="#7a5738" stroke-width="3" stroke-linecap="round"/>
+      <!-- 荧光棒（未掰亮：躺在小木架上） -->
+      <g id="glowOff">
+        <path d="M96 196 l14 -18 h12 l14 18 Z" fill="#6b4f2e"/>
+        <g transform="rotate(-24 116 172)">
+          <rect x="66" y="164" width="100" height="16" rx="8" fill="#9aa87c"/>
+          <rect x="62" y="163" width="12" height="18" rx="3" fill="#6b7280"/>
+          <rect x="158" y="163" width="12" height="18" rx="3" fill="#6b7280"/>
+          <path d="M80 172 h72" stroke="#b8c49a" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+        </g>
+      </g>
+      <!-- 荧光棒（掰亮） -->
+      <g id="glowOn" class="cl-fade">
+        <g class="cl-breathe">
+          <ellipse cx="116" cy="168" rx="64" ry="42" fill="#c8f06a" opacity=".1"/>
+          <ellipse cx="116" cy="168" rx="46" ry="30" fill="#c8f06a" opacity=".16"/>
+          <ellipse cx="116" cy="168" rx="30" ry="20" fill="#d2f47e" opacity=".24"/>
+        </g>
+        <g class="cl-stick-lit">
+          <g transform="rotate(-24 116 172)">
+            <rect x="66" y="164" width="100" height="16" rx="8" fill="#cdf05e"/>
+            <rect x="62" y="163" width="12" height="18" rx="3" fill="#8a95a3"/>
+            <rect x="158" y="163" width="12" height="18" rx="3" fill="#8a95a3"/>
+            <path d="M80 172 h72" stroke="#eaffb0" stroke-width="5" stroke-linecap="round"/>
+          </g>
+        </g>
+        <path d="M56 136 l4 8 M64 130 l-3 8 M172 140 l-6 6 M178 152 l-8 2" stroke="#eaffb0" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <!-- 蜡烛（一直在桌上） -->
+      <ellipse cx="300" cy="196" rx="34" ry="9" fill="#c98a3c"/>
+      <rect x="286" y="138" width="28" height="58" rx="4" fill="#f4ecd8"/>
+      <path d="M290 138 q2 12 -1 20 M310 138 q-2 10 1 18" stroke="#e4d8bc" stroke-width="3" fill="none"/>
+      <line x1="300" y1="138" x2="300" y2="128" stroke="#5a4632" stroke-width="2.5"/>
+      <!-- 蜡烛（点燃） -->
+      <g id="candleOn" class="cl-fade">
+        <g class="cl-breathe">
+          <ellipse cx="300" cy="120" rx="56" ry="46" fill="#f4a83c" opacity=".12"/>
+          <ellipse cx="300" cy="122" rx="36" ry="32" fill="#f4a83c" opacity=".18"/>
+        </g>
+        <g id="flame">
+          <path d="M300 96 C291 110 290 120 300 128 C310 120 309 110 300 96 Z" fill="#f4a83c"/>
+          <path d="M300 106 C295 114 295 120 300 125 C305 120 305 114 300 106 Z" fill="#ffe08a"/>
+          <ellipse cx="300" cy="126" rx="4" ry="3" fill="#7ab0d8" opacity=".85"/>
+        </g>
+        <path d="M282 84 q-4 -10 2 -18 M300 76 q-4 -10 2 -18 M318 84 q-4 -10 2 -18" fill="none" stroke="#e8c9a0" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>
+      </g>
+      <!-- 状态牌 -->
+      <rect x="204" y="14" width="112" height="28" rx="14" fill="#ffffff" stroke="#c2cedd" stroke-width="1.5"/>
+      <text class="cl-lab" id="stateLab" x="260" y="33">还没选</text>
+    </svg>
+    <div class="readout">
+      <div><span>这盏灯</span><b id="kindOut">还没选</b></div>
+      <div><span>摸起来</span><b id="heatOut">——</b></div>
+      <div><span>能量多变成</span><b id="energyOut">还没看</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">先点一次荧光棒，再点一次蜡烛。比较谁几乎不烫，谁会烫手。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="冷光主操作">
+    <div class="pick-btns">
+      <button class="btn btn-primary" type="button" id="toGlow">掰亮荧光棒</button>
+      <button class="btn" type="button" id="toCandle">点燃蜡烛</button>
+      <button class="btn" type="button" id="toOff">都关掉</button>
+    </div>
+  </div>
+
+  <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">这在教什么</h2>
+    <p>冷光是化学反应把能量多变成光，所以几乎不烫。热光先把东西烧热，热到发亮，所以会烫。萤火虫和荧光棒都是冷光这一边。真蜡烛和真荧光棒请大人拿。</p>
+  </section>
+
+  <section class="card cl-atlas" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">冷光图鉴</h2>
+    <p>点一张，对照舞台：谁几乎不烫，谁把能量变成热。</p>
+    <div class="kid-figure-grid" role="group" aria-label="冷光图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-cl-atlas="glow" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">荧光棒</span><span class="kid-figure-fact">两液混匀，化学能变成光几乎不烫，不是蜡烛那种着火发热。</span></button>
+      <button class="kid-figure" type="button" data-cl-atlas="candle" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">蜡烛</span><span class="kid-figure-fact">蜡烛会烫，很多能量变成热，这是着火发光，不是冷光。</span></button>
+      <button class="kid-figure" type="button" data-cl-atlas="mix" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">两种液体</span><span class="kid-figure-fact">分开不亮，混在一起才亮</span></button>
+      <button class="kid-figure" type="button" data-cl-atlas="snap" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">掰一下</span><span class="kid-figure-fact">里面的小管破了，液体才相遇</span></button>
+      <button class="kid-figure" type="button" data-cl-atlas="cold" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">几乎不烫</span><span class="kid-figure-fact">能量多变成光，很少变成热</span></button>
+      <button class="kid-figure" type="button" data-cl-atlas="hot" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">会烫</span><span class="kid-figure-fact">先烧热，热到发亮</span></button>
+      <button class="kid-figure" type="button" data-cl-atlas="bug" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">萤火虫</span><span class="kid-figure-fact">活着的冷光，和荧光棒是亲戚</span></button>
+      <button class="kid-figure" type="button" data-cl-atlas="led" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">LED</span><span class="kid-figure-fact">也比较凉，但是用电，不是混液体</span></button>
+      <button class="kid-figure" type="button" data-cl-atlas="fade" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">慢慢暗</span><span class="kid-figure-fact">反应做完，光就弱了，不是电池没电</span></button>
+      <button class="kid-figure" type="button" data-cl-atlas="fridge" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">放进冰箱</span><span class="kid-figure-fact">冷了反应变慢，看起来能亮更久</span></button>
+      <button class="kid-figure" type="button" data-cl-atlas="cut" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">不要剪开</span><span class="kid-figure-fact">里面的液体不要沾手，更不要进嘴</span></button>
+      <button class="kid-figure" type="button" data-cl-atlas="sameh" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/firefly.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">同一张桌</span><span class="kid-figure-fact">比的是烫不烫，不是谁更亮</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照荧光棒和蜡烛哪里不一样。</p>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：冷光和热光都试</h2>
+    <p>先看一次荧光棒，再看一次蜡烛。比较谁几乎不烫，谁会烫手。两头都试过即可完成。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先试一次荧光棒，或一次蜡烛。</p>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：冷光观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。真荧光棒和蜡烛请大人拿。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：荧光棒不烫，蜡烛会烫"></div>
+      <div><label for="workContent">能量变成了什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下荧光棒和蜡烛摸起来有什么不同，光是从哪来的。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的 3&nbsp;个问题</h2>
+    <ul class="ask">
+      <li><b>先猜：</b>荧光棒亮着的时候，摸起来会不会像蜡烛一样烫？</li>
+      <li><b>对照萤火虫页：</b>虫子尾巴和荧光棒，是不是都把能量多变成光？</li>
+      <li><b>安全：</b>真荧光棒不要剪开、不要进嘴。真蜡烛请大人点，孩子离远一点。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>化学发光是反应释放的能量直接激发分子发光，热损失很小。荧光棒里小管破裂后两种液体混合，反应开始，随后慢慢变暗。温度低则反应慢、看起来更久。蜡烛是燃烧：先加热，再热辐射可见光。LED 用电致发光，也比较凉，但机理不同。本页不写化学方程式，也不鼓励拆棒。真火和化学液体请大人管。</p>
+  </section>
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>同一条线索还可以在隔壁站继续看。</p>
+    <p class="row"><a class="btn btn-ghost" href="../nature/fireflies.html">萤火虫观察站</a><a class="btn btn-ghost" href="heat-lab.html">热学工坊</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">真荧光棒不要剪开。真蜡烛请大人点。本页只比较烫不烫，不写化学方程式。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var kind = "";
+  var seen = { glow:false, candle:false, done:false };
+  function render(){
+    /* 亮暗状态与光晕、火苗动画全部由 CSS 按 data-kind 驱动 */
+    document.querySelector(".cl-art").setAttribute("data-kind", kind);
+    if (kind === "glow") {
+      document.getElementById("kindOut").textContent = "荧光棒";
+      document.getElementById("heatOut").textContent = "几乎不烫";
+      document.getElementById("energyOut").textContent = "光";
+      document.getElementById("stateLab").textContent = "冷光";
+      document.getElementById("live").textContent = "咔哒掰一下，两种液体混在一起，整根棒亮起绿光，摸上去几乎不烫。";
+    } else if (kind === "candle") {
+      document.getElementById("kindOut").textContent = "蜡烛";
+      document.getElementById("heatOut").textContent = "会烫";
+      document.getElementById("energyOut").textContent = "很多热";
+      document.getElementById("stateLab").textContent = "热光";
+      document.getElementById("live").textContent = "蜡在燃烧，火苗一晃一晃。先变热，再发亮，手不能靠近。";
+    } else {
+      document.getElementById("kindOut").textContent = "还没选";
+      document.getElementById("heatOut").textContent = "——";
+      document.getElementById("energyOut").textContent = "还没看";
+      document.getElementById("stateLab").textContent = "还没选";
+      document.getElementById("live").textContent = "先点一次荧光棒，再点一次蜡烛。比较谁几乎不烫，谁会烫手。";
+    }
+    if (kind === "glow") seen.glow = true;
+    if (kind === "candle") seen.candle = true;
+    var status = document.getElementById("taskStatus");
+    if (seen.done) return;
+    if (seen.glow && seen.candle) {
+      seen.done = true;
+      if (window.Progress) Progress.complete("games/chemilum-lab.html", "试过荧光棒和蜡烛，比较过烫不烫");
+      status.textContent = "完成啦：荧光棒几乎不烫，蜡烛会烫。";
+    } else if (!seen.glow && !seen.candle) {
+      status.textContent = "尚未完成：先试一次荧光棒，或一次蜡烛。";
+    } else if (!seen.glow) {
+      status.textContent = "还差：再点「掰亮荧光棒」。";
+    } else {
+      status.textContent = "还差：再点「点燃蜡烛」。";
+    }
+  }
+  var ATLAS = {
+    glow:"荧光棒：掰一下混匀就亮，几乎不烫。",
+    candle:"蜡烛：会烫，很多能量变成热。",
+    mix:"两种液体：分开不亮，混在一起才亮。",
+    snap:"掰一下：里面的小管破了，液体才相遇。",
+    cold:"几乎不烫：能量多变成光，很少变成热。",
+    hot:"会烫：先烧热，热到发亮。",
+    bug:"萤火虫：活着的冷光，和荧光棒是亲戚。",
+    led:"LED：也比较凉，但是用电，不是混液体。",
+    fade:"慢慢暗：反应做完，光就弱了，不是电池没电。",
+    fridge:"放进冰箱：冷了反应变慢，看起来能亮更久。",
+    cut:"不要剪开：里面的液体不要沾手，更不要进嘴。",
+    sameh:"同一张桌：比的是烫不烫，不是谁更亮。"
+  };
+  document.getElementById("toGlow").addEventListener("click", function(){ kind = "glow"; render(); });
+  document.getElementById("toCandle").addEventListener("click", function(){ kind = "candle"; render(); });
+  document.getElementById("toOff").addEventListener("click", function(){ kind = ""; render(); });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-cl-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-cl-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-cl-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+      if (key === "glow" || key === "mix" || key === "snap" || key === "cold" || key === "bug" || key === "fade" || key === "fridge") kind = "glow";
+      else if (key === "candle" || key === "hot") kind = "candle";
+      else if (key === "cut" || key === "sameh" || key === "led") kind = "";
+      render();
+    });
+  });
+  render();
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/chemilum-lab.html", "冷光工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

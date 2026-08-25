@@ -1,9 +1,10 @@
 /* 共享童趣层 E2E：不修改站点 HTML，在临时 fixture 中动态接入 classic scripts。 */
-import { spawn } from 'node:child_process';
-import { access, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { acquireChromeLease } from './chrome-lease.mjs';
+import { spawnChrome, stopChrome, registerOwnedPath } from './chrome-lifecycle.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const PORT = 9900 + (process.pid % 80);
@@ -39,6 +40,15 @@ class CDP {
         message.error ? waiter.reject(new Error(message.error.message)) : waiter.resolve(message.result);
       } else if (message.method && client.onEvent) client.onEvent(message);
     };
+    /* 这个浏览器一律不许写下载文件。门禁会逐个点击页面上可见的按钮，
+       其中就有「保存图片」「导出 JSON」「导出代码」这类导出控件——Chrome 的
+       默认行为会把文件真的存进 ~/Downloads，跑一轮门禁就多出十几个文件
+       （doodle-pad 的画、symmetry 的对称作品、足迹 JSON、评估 txt…），
+       几轮下来上百个。审计只关心「点下去有没有报错、有没有请求离开设备」，
+       落盘对结论没有任何贡献，纯属污染用户的下载目录。
+       deny 也顺带让「点导出」这条路径本身仍然被走到，不影响判定。 */
+    /* 下载禁用是安全边界：失败时必须在创建 target、点击页面之前终止。 */
+    await client.send('Browser.setDownloadBehavior', { behavior: 'deny' });
     return client;
   }
   send(method, params = {}, sessionId) {
@@ -54,7 +64,12 @@ class CDP {
   close() { this.socket.close(); }
 }
 
+await acquireChromeLease();
+const chromePath = await findChrome();
 const temp = await mkdtemp(join(tmpdir(), 'playful-e2e-'));
+/* 从 mkdtemp 到 spawnChrome 接管 cleanupPath 之间还要异步写 fixture；
+   信号落在这个窗口时，预登记保证整棵 temp 树一并被删。 */
+registerOwnedPath(temp);
 const profile = join(temp, 'profile');
 const fixture = join(temp, 'fixture.html');
 const script = (relative) => pathToFileURL(join(ROOT, relative)).href;
@@ -79,6 +94,27 @@ const html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><tit
   <label>动效<select id="motion" data-playful-preference="motion">
     <option value="system">系统</option><option value="full">完整</option><option value="reduced">减少</option>
   </select></label>
+  <!-- 选项组：容器和按钮上都写 .kid-choice。这是站内真实存在的写法
+       （symmetry-studio 的「数对称轴」那组），也正是当初让 bindKidChoice 的
+       closest("[data-kid-choice-group],.kid-choice") 命中按钮自己、
+       方向键静默失效的形状。这里固定住它，防止再退回去。 -->
+  <div id="choices" class="kid-choice" data-kid-choice-group role="group" aria-label="测试选项组">
+    <button class="kid-choice" type="button" data-kid-choice data-value="a">甲</button>
+    <button class="kid-choice" type="button" data-kid-choice data-value="b">乙</button>
+    <button class="kid-choice" type="button" data-kid-choice data-value="c">丙</button>
+  </div>
+  <div id="predict" class="kid-predict" data-kid-predict
+       data-kid-predict-explain="因为三种颜料把各段光都吃掉了。"
+       data-kid-predict-hint="先押一个再点按钮。"
+       data-kid-predict-again="押好了，点按钮试试看。">
+    <p class="kid-predict-q"><b>三种颜料混在一起会变成什么？</b></p>
+    <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜">
+      <button class="kid-predict-pick" type="button" data-kid-choice data-value="white">白色</button>
+      <button class="kid-predict-pick" type="button" data-kid-choice data-value="dark" data-kid-predict-correct>灰棕色</button>
+    </div>
+    <button id="predict-go" type="button" data-kid-predict-verify>混给我看</button>
+    <p id="predict-answer" data-kid-predict-answer>先押一个。</p>
+  </div>
 </main>
 <script>try { localStorage.clear(); } catch (error) { /* fixture 安全降级 */ }</script>
 <script src="${script('data/explorations.js')}"></script>
@@ -93,24 +129,15 @@ let browser;
 let fatal;
 async function cleanup() {
   if (browser) browser.close();
-  if (chrome && chrome.exitCode === null) chrome.kill();
-  if (chrome) {
-    await new Promise((resolve) => {
-      if (chrome.exitCode !== null) return resolve();
-      const timer = setTimeout(resolve, 2500);
-      chrome.once('exit', () => { clearTimeout(timer); resolve(); });
-    });
-  }
-  await rm(temp, { recursive: true, force: true }).catch(() => {});
+  await stopChrome(chrome);
 }
 
 try {
-  const chromePath = await findChrome();
-  chrome = spawn(chromePath, [
+  chrome = await spawnChrome(chromePath, [
     `--remote-debugging-port=${PORT}`, `--user-data-dir=${profile}`,
     '--headless=new', '--no-first-run', '--no-default-browser-check', '--disable-gpu',
     '--allow-file-access-from-files', '--mute-audio', 'about:blank'
-  ], { stdio: 'ignore' });
+  ], { cleanupPath: temp });
 
   let debuggerUrl;
   for (let attempt = 0; attempt < 60 && !debuggerUrl; attempt++) {
@@ -188,6 +215,19 @@ try {
   check(await evaluate('const data = JSON.parse(Progress.exportJSON()); data.preferences.motion = "full"; data.preferences.ageGroup = "10-12"; const imported = Progress.importJSON(JSON.stringify(data)); return imported && document.getElementById("motion").value === "full" && document.getElementById("age").value === "10-12" && document.documentElement.dataset.playfulMotion === "full" && document.documentElement.dataset.playfulAge === "10-12";'), '导入偏好后控件与根状态自动同步');
   check(await evaluate('const reset = Progress.reset(); return reset && document.getElementById("motion").value === "system" && document.getElementById("age").value === "all" && document.documentElement.dataset.playfulMotion === "reduced" && document.documentElement.dataset.playfulAge === "all";'), '重置后控件恢复默认并重新跟随系统');
 
+  /* ---- 选项组方向键导航 + 猜一猜卡 ----
+     必须排在下面的 Progress.complete() 之前：完成会解锁收藏卡并触发 showCard()，
+     那是原生 <dialog> 的 showModal()，按规范锁住焦点，之后对背景按钮调 .focus()
+     会被弹回对话框的关闭按钮，activeElement 断言就不再成立。 */
+  check(await evaluate('const picks = [...document.getElementById("choices").querySelectorAll("[data-kid-choice]")]; picks[0].focus(); picks[0].click(); picks[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true })); return document.activeElement === picks[1] && picks[1].getAttribute("aria-pressed") === "true" && picks[0].getAttribute("aria-pressed") === "false";'), '选项按钮自带 .kid-choice 类时方向键仍在整组内移动并转移选中态');
+  check(await evaluate('const picks = [...document.getElementById("choices").querySelectorAll("[data-kid-choice]")]; picks[2].focus(); picks[2].click(); picks[2].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true })); return document.activeElement === picks[0];'), '方向键在选项组内循环回到第一个');
+  check(await evaluate('const picks = [...document.getElementById("choices").querySelectorAll("[data-kid-choice]")]; picks[0].focus(); picks[0].dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true })); return document.activeElement === picks[2];'), 'End 键跳到选项组最后一个');
+  /* ---- 猜一猜卡：押注 → 揭示 → 广播，判定与文案都在卡片身上 ---- */
+  check(await evaluate('let fired = 0; const card = document.getElementById("predict"); const onFire = () => { fired += 1; }; card.addEventListener("playful:predict", onFire); document.getElementById("predict-go").click(); card.removeEventListener("playful:predict", onFire); return /先押一个再点按钮/.test(document.getElementById("predict-answer").textContent) && !card.hasAttribute("data-kid-predict-state") && fired === 0;'), '猜一猜卡未押注时只给提示，不揭示答案也不广播事件');
+  check(await evaluate('const card = document.getElementById("predict"); let detail = null; card.addEventListener("playful:predict", event => { detail = event.detail; }, { once: true }); card.querySelector("[data-value=white]").click(); document.getElementById("predict-go").click(); const text = document.getElementById("predict-answer").textContent; return card.getAttribute("data-kid-predict-state") === "wrong" && /白色/.test(text) && /灰棕色/.test(text) && /因为三种颜料/.test(text) && detail && detail.correct === false && detail.value === "white" && detail.pageId === "games/wave-maker.html";'), '押错时同时说出「你猜的」与「结果」，并广播 correct=false');
+  check(await evaluate('const card = document.getElementById("predict"); card.querySelector("[data-value=dark]").click(); return !card.hasAttribute("data-kid-predict-state") && /押好了/.test(document.getElementById("predict-answer").textContent);'), '换一个猜测就收回上一轮结论');
+  check(await evaluate('const card = document.getElementById("predict"); let detail = null; card.addEventListener("playful:predict", event => { detail = event.detail; }, { once: true }); document.getElementById("predict-go").click(); return card.getAttribute("data-kid-predict-state") === "right" && detail && detail.correct === true && detail.value === "dark";'), '押对时状态为 right 并广播 correct=true');
+  check(await evaluate('const answer = document.getElementById("predict-answer"), mark = answer.querySelector(".kid-predict-mark"); return answer.getAttribute("role") === "status" && answer.getAttribute("aria-live") === "polite" && Boolean(mark) && mark.getAttribute("aria-hidden") === "true";'), '猜一猜答案区是 role=status + aria-live，装饰符号对读屏隐藏');
   const earned = await evaluate('return Progress.complete("games/wave-maker.html", "造出增强与抵消");');
   check(Boolean(earned?.evidence), '页面仍由 Progress.complete() 判定完成');
   check(await evaluate('return document.getElementById("sticker").dataset.earned === "true" && /波浪倾听者/.test(document.getElementById("sticker").textContent);'), '完成事件即时解锁派生收藏卡');

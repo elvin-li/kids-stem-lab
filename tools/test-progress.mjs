@@ -252,7 +252,7 @@ test('works 数量上限 60 且导入执行单项 12KiB/总量 96KiB 限制', ()
   };
   const target = fresh({ catalog: false });
   const input = JSON.stringify(validV3({ works }));
-  assert.ok(input.length < 256 * 1024, '测试输入应在导入入口上限内');
+  assert.ok(input.length < 1024 * 1024, '测试输入应在导入入口上限内');
   assert.equal(target.P.importJSON(input), true);
   const imported = target.P.getWorks();
   assert.ok(imported.length > 0 && imported.length < 45, `总量限制后实际 ${imported.length}`);
@@ -342,14 +342,14 @@ test('导入拒绝 v1/v2、损坏和超大 JSON，原数据不变', () => {
   const revision = P.all().revision;
   assert.equal(P.importJSON('{bad'), false);
   assert.equal(P.importJSON(validV2()), false);
-  assert.equal(P.importJSON('x'.repeat(256 * 1024 + 1)), false);
+  assert.equal(P.importJSON('x'.repeat(1024 * 1024 + 1)), false);
   assert.equal(P.all().revision, revision);
 });
 
 test('v3 清洗 pages/recent/notes/completions 数量和日期', () => {
   const pages = {}, notes = {}, completions = {}, recent = [];
-  for (let i = 0; i < 130; i++) {
-    const id = `games/page-${String(i).padStart(3, '0')}.html`;
+  for (let i = 0; i < 1700; i++) {
+    const id = `games/page-${String(i).padStart(4, '0')}.html`;
     pages[id] = { n: i ? 1 : 999999999, first: NOW, last: NOW, title: `页面${i}` };
     notes[id] = { t: `笔记${i}`, on: NOW };
     completions[id] = { at: NOW, evidence: `证据${i}` };
@@ -357,11 +357,11 @@ test('v3 清洗 pages/recent/notes/completions 数量和日期', () => {
   }
   const { P } = fresh({ catalog: false, seed: { [V3]: validV3({ revision: -1, updatedAt: 'bad', pages, notes, completions, recent }) } });
   const data = P.all();
-  assert.equal(Object.keys(data.pages).length, 100);
-  assert.equal(Object.keys(data.notes).length, 100);
-  assert.equal(Object.keys(data.completions).length, 100);
+  assert.equal(Object.keys(data.pages).length, 1600);
+  assert.equal(Object.keys(data.notes).length, 1600);
+  assert.equal(Object.keys(data.completions).length, 1600);
   assert.equal(data.recent.length, 12);
-  assert.equal(data.pages['games/page-000.html'].n, 1000000);
+  assert.equal(data.pages['games/page-0000.html'].n, 1000000);
   assert.equal(data.revision, 0);
   assert.equal(data.updatedAt, null);
 });

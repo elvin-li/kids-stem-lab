@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>光与影 · 光走直线 | 少儿数理启蒙</title>
 <meta name="description" content="拖动灯和物体，看影子怎么变大变小；再用红绿蓝三盏灯玩加色混合。给 5–10 岁小朋友的光学直觉启蒙。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=17">
-<link rel="stylesheet" href="../assets/css/kid.css?v=17">
-<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#fff8ec">
-<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
 <style>
   * { box-sizing: border-box; }
   html, body { max-width: 100%; overflow-x: hidden; }
@@ -206,6 +206,11 @@
     .stage-foot { align-items:flex-start; }
     .legend { gap:7px 10px; }
   }
+  .guess-card { border-color: color-mix(in srgb,var(--phys) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--phys); background: color-mix(in srgb,var(--phys) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+  .pick-btns { display:flex; gap:8px; flex-wrap:wrap; }
 
   /* 本页儿童视觉层：首屏先看见空间关系，再动手。 */
   .theater-hero.kid-story-intro { margin:14px 0 10px; padding:16px clamp(36px,7vw,72px); border-radius:22px; }
@@ -320,6 +325,53 @@
   .ls-badge { fill:#ffffff; stroke:#3a2c14; stroke-width:2.5; }
   .ls-ink { fill:#2a2114; font-weight:800; }
   .ls-ink-soft { fill:#5d5138; }
+  /* 压在饱和色块（绿影 / 红影 / 黑影）上的字。只用在 SVG 形状之内，
+     不用作浅底上的描边 —— 浅底上的近白描边等于没画。
+     #fdf6e3 对 #146b39 是 6.7:1、对 #d92b1f 是 4.9:1、对 #241a10 更高，两套主题都够。 */
+  .ls-ink-lite { fill:#fdf6e3; font-weight:800; }
+
+  /* ---------- 手电筒：筒身 + 前端反光碗 + 张开的锥形光束 ----------
+     光束是「这是一把手电筒」的识别关键，所以它必须是一块有面积的形状，
+     不能只靠几条线；写成 SVG <path> 的 fill 而不是 CSS 背景，打印时才会留下
+     （Chrome 打印默认不输出 CSS 背景，但 SVG 的 fill 是内容，照样印）。 */
+  .ls-torch-body { fill:#7d92bb; stroke:#3a2c14; stroke-width:2.4; stroke-linejoin:round; }
+  .ls-torch-grip { fill:none; stroke:#3a2c14; stroke-width:2; stroke-linecap:round; }
+  .ls-torch-bowl { fill:#ccd9ee; stroke:#3a2c14; stroke-width:2.4; stroke-linejoin:round; }
+  .ls-torch-lens { fill:#fff3b0; stroke:#3a2c14; stroke-width:2.4; }
+  /* 光束用半透明暖黄 + 实描边：半透明是为了让底下的场景还能透出来，
+     描边保证在奶油底（#fdf6e3）上仍能看出锥形的两条斜边。 */
+  .ls-beam { fill:#ffdf7a; fill-opacity:.55; stroke:#e8a400; stroke-width:1.8; stroke-linejoin:round; }
+
+  /* 灯泡的灯头与「会左右移动」的双箭头 */
+  .ls-lamp-cap { fill:#a9a294; stroke:#3a2c14; stroke-width:2.4; stroke-linejoin:round; }
+  .ls-arrow { fill:#b45309; }
+  /* 挡光道具的底座：比板身更深，才看得出「板立在座子上」 */
+  .ls-prop-foot { fill:#6f4520; stroke:#3a2c14; stroke-width:2.4; stroke-linejoin:round; }
+  /* 图鉴里分隔两半画面的中线，只是版面用，不表示光线，所以不用 .ls-ray 的暖色 */
+  .ls-divide { fill:none; stroke:#c9b993; stroke-width:2; stroke-dasharray:4 4; }
+
+  /* ---------- 加色混合：半透明彩光圆 + 交集处显式画出的合成色 ----------
+     不用 mix-blend-mode：它在 file:// 下没问题，但打印时是否合成由渲染器决定，
+     而且一旦被 isolation / 背景丢失影响，合成色会整块变错 —— 而合成色恰好是这题
+     全部的信息量。所以三个彩光圆只负责「谁照到哪儿」，重叠区一律另画一个
+     不透明形状（几何用两圆/三圆交集精确算出），颜色是写死的、不依赖混合模式。 */
+  .ls-lit-r { fill:#e5342b; fill-opacity:.72; stroke:#3a2c14; stroke-width:2; }
+  .ls-lit-g { fill:#1f9d55; fill-opacity:.72; stroke:#3a2c14; stroke-width:2; }
+  .ls-lit-b { fill:#2563c9; fill-opacity:.72; stroke:#3a2c14; stroke-width:2; }
+  .ls-add-y { fill:#ffd400; stroke:#3a2c14; stroke-width:2; }
+  .ls-add-c { fill:#2ec5da; stroke:#3a2c14; stroke-width:2; }
+  .ls-add-m { fill:#d43ba8; stroke:#3a2c14; stroke-width:2; }
+  /* 三色齐 = 白。白色块必须有深描边，否则在奶油底上整块消失。 */
+  .ls-add-w { fill:#ffffff; stroke:#3a2c14; stroke-width:2; }
+  /* 颜料（减色）那一半：三块半透明颜料，交集是红/绿/蓝，三层齐是近黑 */
+  .ls-pig-c { fill:#2ec5da; fill-opacity:.72; stroke:#3a2c14; stroke-width:2; }
+  .ls-pig-m { fill:#d43ba8; fill-opacity:.72; stroke:#3a2c14; stroke-width:2; }
+  .ls-pig-y { fill:#ffd400; fill-opacity:.72; stroke:#3a2c14; stroke-width:2; }
+  /* 不透明纯色块，同时给彩色影子那张图当灯身与影子色用 */
+  .ls-hue-r { fill:#d92b1f; stroke:#3a2c14; stroke-width:2; }
+  .ls-hue-g { fill:#146b39; stroke:#3a2c14; stroke-width:2; }
+  .ls-hue-b { fill:#2352b0; stroke:#3a2c14; stroke-width:2; }
+  .ls-hue-k { fill:#241a10; stroke:#3a2c14; stroke-width:2; }
 
   .ls-meters { display:grid; gap:14px; margin:0 0 12px; }
   .ls-dist-picks { grid-template-columns:repeat(auto-fit,minmax(96px,1fr)); margin:0 0 10px; }
@@ -342,11 +394,14 @@
   /* 原来靠读句子才能选的地方，换成大图卡；下拉与文本框移到家长层 */
   .ls-pick-cap { margin:0 0 6px; color:var(--ink-mid); font-weight:750; font-size:.86rem; }
   .ls-source-picks { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0; }
-  .ls-source-picks .kid-tile { min-height:92px; padding:9px 5px; }
-  .ls-source-picks .kid-tile > .kid-tile-art { font-size:1.35rem; }
+  .ls-source-picks .kid-tile { min-height:104px; padding:9px 5px; }
   .ls-preset-picks { grid-template-columns:repeat(auto-fit,minmax(80px,1fr)); gap:8px; margin:0; }
-  .ls-preset-picks .kid-tile { min-height:92px; padding:9px 5px; }
-  .ls-preset-picks .kid-tile > .kid-tile-art { font-size:1.2rem; }
+  .ls-preset-picks .kid-tile { min-height:104px; padding:9px 5px; }
+  /* 图卡里的插画装在 .kid-tile-art 这层 span 里，kid.css 的 `.kid-tile > svg`
+     （子选择器）匹配不到，不补这条 SVG 会按内在尺寸铺满整格。原先这两处是
+     emoji，所以只需要 font-size；换成内联插画后 font-size 就成了死声明。 */
+  .ls-source-picks .kid-tile-art > svg,
+  .ls-preset-picks .kid-tile-art > svg { display:block; width:clamp(50px,13vw,66px); height:auto; }
   .ls-predict-picks,
   .ls-phrase-picks { grid-template-columns:repeat(auto-fit,minmax(92px,1fr)); gap:9px; margin:0 0 8px; }
   .ls-predict-picks .kid-tile,
@@ -371,6 +426,7 @@
     <a class="nav-link" href="../nature/index.html">探索</a>
     <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
   </div>
 </div></nav>
 
@@ -380,12 +436,13 @@
     <div class="hero-copy">
       <div class="row">
         <span class="pill pill-sci">科学 · 光学</span>
-        <span class="pill">5–10 岁</span>
-        <span class="pill">约 12 分钟</span>
+        <span class="pill">5–10&nbsp;岁</span>
+        <span class="pill">约 12&nbsp;分钟</span>
       </div>
       <div data-playful-companion></div>
       <h1 id="lightStoryTitle">小灯泡闪闪的影子剧场</h1>
-      <p class="story-line">小灯泡闪闪今晚第一次当灯光师，可幕布上的影子一会儿太小、一会儿又跑出墙。快来搬动灯和道具，帮它完成首演吧！</p>
+      <p class="live-text" data-edu-point role="note"><b>这一页在学：</b>影子是光被挡住的暗区；光源一移，影子方向就变。</p>
+      <p class="story-line">因为光沿直线走、挡住光才会在后方成影，所以只挪灯或道具，就能看见影子变大、变小或跑出幕布。</p>
       <span data-playful-sticker></span>
       <div class="playful-story-actions">
         <button class="btn btn-sm" id="lightSurpriseBtn" type="button" data-playful-random-task="#lightSurprise">抽一张导演小纸条</button>
@@ -443,7 +500,7 @@
             <span class="hint" id="tip">拖动左边的灯或中间的道具；也可以点下面的大按钮。</span>
           </div>
         </div>
-        <div class="shadow-hot-actions kid-action-strip" id="shadowHotActions" aria-label="影子快捷操作">
+        <div class="shadow-hot-actions kid-action-strip" id="shadowHotActions" role="group" aria-label="影子快捷操作">
           <button type="button" data-shadow-action="lamp-near" aria-label="把灯搬到靠近道具的地方，影子会变大"><span aria-hidden="true">☀→▰</span><br>灯靠近道具</button>
           <button type="button" data-shadow-action="lamp-far" aria-label="把灯搬到远离道具的地方，影子会变小"><span aria-hidden="true">☀←▰</span><br>灯远离道具</button>
           <button type="button" data-shadow-action="lamp-high" aria-label="把灯举高，影子会从墙上缩下来、躺到地板上"><span aria-hidden="true">☀↑</span><br>把灯举高</button>
@@ -462,7 +519,7 @@
             <div class="ctrl-head"><label for="lampX">把灯左右搬一搬</label><b id="lampXOut">30%</b></div>
             <div class="kid-slide-row">
               <span class="kid-slide-end" aria-hidden="true">⬅️</span>
-              <input class="input" type="range" id="lampX" min="2" max="60" step="1" value="30">
+              <input class="input" type="range" id="lampX" min="2" max="78" step="1" value="30">
               <span class="kid-slide-end" aria-hidden="true">➡️</span>
             </div>
           </div>
@@ -478,7 +535,7 @@
             <div class="ctrl-head"><label for="objX">把道具搬近或搬远</label><b id="objXOut">45%</b></div>
             <div class="kid-slide-row">
               <span class="kid-slide-end" aria-hidden="true">☀</span>
-              <input class="input" type="range" id="objX" min="12" max="82" step="1" value="45">
+              <input class="input" type="range" id="objX" min="6" max="81" step="1" value="45">
               <span class="kid-slide-end" aria-hidden="true">🧱</span>
             </div>
           </div>
@@ -506,17 +563,17 @@
               <button class="kid-tile" type="button" data-sources="1" aria-pressed="true" aria-label="点亮 1 盏灯，墙上出现 1 个影子">
                 <span class="kid-tile-art" aria-hidden="true">🔦</span>
                 <span class="kid-tile-label">1 盏灯</span>
-                <span class="kid-tile-sub">1 个影子</span>
+                <span class="kid-tile-sub">1&nbsp;个影子</span>
               </button>
               <button class="kid-tile" type="button" data-sources="2" aria-pressed="false" aria-label="点亮 2 盏灯，墙上出现 2 个影子">
                 <span class="kid-tile-art" aria-hidden="true">🔦🔦</span>
                 <span class="kid-tile-label">2 盏灯</span>
-                <span class="kid-tile-sub">2 个影子</span>
+                <span class="kid-tile-sub">2&nbsp;个影子</span>
               </button>
               <button class="kid-tile" type="button" data-sources="3" aria-pressed="false" aria-label="点亮 3 盏灯，墙上出现 3 个影子">
                 <span class="kid-tile-art" aria-hidden="true">🔦🔦🔦</span>
                 <span class="kid-tile-label">3 盏灯</span>
-                <span class="kid-tile-sub">3 个影子</span>
+                <span class="kid-tile-sub">3&nbsp;个影子</span>
               </button>
             </div>
           </div>
@@ -642,8 +699,90 @@
   </section>
 
   <section class="card science-note" aria-labelledby="teachWhatTitle">
-    <h2 id="teachWhatTitle">这在教什么</h2>
+    <h2 id="teachWhatTitle">灯靠近，影子常常变大；挡住光才留下暗区</h2>
     <p><b>光沿直线传播。</b>道具挡住光就留下影子；灯离道具越近，影子越大。换成红、绿、蓝三盏灯，还能发现光的加色混合。</p>
+  </section>
+
+
+  <section class="card guess-card" aria-labelledby="guessTitleLs">
+    <h2 id="guessTitleLs">先猜一猜，再照</h2>
+    <p><b>第 1 题：</b>手离灯更近时，墙上影子通常？</p>
+    <div class="pick-btns" role="group" aria-label="猜灯近影子">
+      <button class="btn guess-pick" type="button" data-guess1="small" aria-pressed="false">变小，因为灯更亮</button>
+      <button class="btn guess-pick" type="button" data-guess1="big" aria-pressed="false">变大：挡住更多扩散的光</button>
+      <button class="btn guess-pick" type="button" data-guess1="same" aria-pressed="false">大小不变</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。把灯拉近手，看影子边框。</p>
+
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>灯拉远、手离墙更近时，墙上影子通常？</p>
+      <div class="pick-btns" role="group" aria-label="猜灯远影子">
+        <button class="btn guess-pick" type="button" data-guess2="big" aria-pressed="false">变得更大</button>
+        <button class="btn guess-pick" type="button" data-guess2="small" aria-pressed="false">常常变小</button>
+        <button class="btn guess-pick" type="button" data-guess2="color" aria-pressed="false">一定变成彩色</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后把灯拉远一点，对照影子边框。</p>
+    </div>
+
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>灯离手更近时，影子放大倍数会变大、变小，还是跟距离无关？</p>
+      <div class="pick-btns" role="group" aria-label="猜放大率">
+        <button class="btn guess-pick" type="button" data-guess3="up" aria-pressed="false">放大变多，影子常更大</button>
+        <button class="btn guess-pick" type="button" data-guess3="down" aria-pressed="false">放大变少</button>
+        <button class="btn guess-pick" type="button" data-guess3="same" aria-pressed="false">跟距离无关</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">想一想相似三角形：灯—物—影共线。</p>
+    </div>
+  </section>
+
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))" data-audience="parent">
+    <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">光影公式卡 · 放大率 M≈d₂/d₁（灯—墙 / 灯—物）</p>
+    <p style="margin:0;color:var(--ink-mid);line-height:1.55">灯、物体顶点、影子顶点近似共线，相似三角形给出 M。灯越近物（d₁↓）→M↑→影常更大。本页是剧场示意。</p>
+  </div>
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--phys)"
+         data-kid-predict
+         data-kid-predict-explain="灯是点亮源时，物体离灯越近，挡住的那束光在墙上张得越大，影子常变大。灯拉远，影子常变小。影子形状还跟手的姿势有关。本页是剧场示意。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🔦</span><b>小灯泡靠近手，影子通常会怎样？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：灯靠近影子怎样">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="small">影子变小，因为灯更亮</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="big" data-kid-predict-correct>影子通常变大：遮光物体挡住更多扩散开的光线</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="color">影子会变成彩色</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">灯靠近，影子常常变大；手一比，轮廓会改</h2>
+    <p>影子是光被挡住后墙上的「暗区」。先动灯，再动手。</p>
+    <div class="kid-figure-grid" role="group" aria-label="四个主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="0" y="76" width="120" height="14" fill="#c4a06a"/><rect x="96" y="8" width="24" height="68" fill="#d8c8b0"/><path d="M18 58 H42 V70 H18 Z" fill="#6b5344"/><path d="M22 34 L38 34 L42 58 H18 Z" fill="#4a4a58"/><circle cx="30" cy="30" r="8" fill="#f0c14a" stroke="#c47a12"/><path d="M38 34 L52 40 M38 28 L54 28 M34 22 L40 12" stroke="#f0c14a" stroke-width="1.6"/><rect x="56" y="40" width="14" height="22" fill="#8a6a40" stroke="#3a2a18"/><polygon points="72,40 96,18 96,76 72,62" fill="#3a2a18" opacity=".55"/><line x1="30" y1="38" x2="56" y2="44" stroke="#f6d36a" stroke-width="1.2"/></svg></span><span class="kid-figure-cap">灯近</span><span class="kid-figure-sub">影常变大</span><p class="kid-figure-fact">灯靠近，遮住更大一张光锥，影常变大；光直线走，挡才成影，影跟着灯移动。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="0" y="76" width="120" height="14" fill="#c4a06a"/><rect x="96" y="8" width="24" height="68" fill="#d8c8b0"/><circle cx="14" cy="16" r="6" fill="#f0c14a" stroke="#c47a12"/><path d="M14 22 L14 30" stroke="#4a4a58" stroke-width="2"/><rect x="10" y="30" width="8" height="6" fill="#4a4a58"/><path d="M20 18 L50 36 M18 22 L50 44 M16 26 L48 52" stroke="#f6d36a" stroke-width="1.2"/><rect x="52" y="40" width="14" height="18" fill="#8a6a40" stroke="#3a2a18"/><polygon points="68,42 96,36 96,66 68,58" fill="#3a2a18" opacity=".4"/><rect x="8" y="70" width="16" height="6" fill="#6b5344"/></svg></span><span class="kid-figure-cap">灯远</span><span class="kid-figure-sub">影常变小</span><p class="kid-figure-fact">灯拉远，光线更平行一点，影常变小；影随光源移动，不要拿灯对眼对日。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#cfe8f6" width="120" height="90"/><path d="M40 70 V40 M48 70 V28 M56 70 V24 M64 70 V32 M72 70 V44" stroke="#c4a06a" stroke-width="6"/><ellipse cx="92" cy="56" rx="16" ry="12" fill="#4a6080"/></svg></span><span class="kid-figure-cap">手势</span><span class="kid-figure-sub">改轮廓</span><p class="kid-figure-fact">同一只手能挡住不同形状，墙上变出鸟或狗；光直线走，挡到哪影就在哪。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#efe6c8" width="120" height="90"/><rect x="72" y="12" width="28" height="66" fill="#c4a06a"/><ellipse cx="86" cy="50" rx="10" ry="16" fill="#6b5344"/><circle cx="28" cy="28" r="8" fill="#f0c14a"/></svg></span><span class="kid-figure-cap">墙</span><span class="kid-figure-sub">屏幕</span><p class="kid-figure-fact">影子要落在屏上才看得见；光被挡住才成暗区，灯一挪，影就跟着走，别对日看。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>做大影。</b>灯靠近或手靠近灯。</li>
+      <li data-step="2"><b>做小影。</b>灯拉远。</li>
+      <li data-step="3"><b>改姿势。</b>轮廓变了吗？</li>
+      <li data-step="4"><b>排除「灯亮影大」。</b>关键是几何，不是音量式的亮。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>灯靠近，影子常常变大；手一比，墙上的暗影会变形状。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>点光源与遮挡物的几何关系决定影的大小；多个灯会出多个影。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>可谈本影/半影；本页剧场用单灯主线。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>影子是光的几何，不是颜料印上去的。</p>
+    <ul class="ask-list">
+      <li>怎样做出一大一小两个影？</li>
+      <li>手不动只动灯会怎样？</li>
+      <li>两个手电筒呢？</li>
+    </ul>
   </section>
 
   <section class="task formal-task kid-story-steps" aria-labelledby="lightTaskTitle">
@@ -704,7 +843,37 @@
       </div>
       <button class="btn btn-primary" id="lightComplete" type="button" disabled>记录任务完成</button>
     </div>
-    <p class="task-status status" id="lightTaskStatus" role="status" aria-live="polite">尚未完成：请操作出明显不同的一大一小两个影子。</p>
+    <p class="task-status status" id="lightTaskStatus" role="status" aria-live="polite">尚未完成：先做出明显不同的一大一小两个影子，再选一句你的发现。</p>
+
+    <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+      <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+      <p>想知道「影子变大靠不靠灯走近」，就只改灯到物体的距离。同一块挡光物、同一面墙、同一盏灯，先贴近做一次大影，再拉远做一次小影。换材料、改灯的大小，都是另一次对照，不要和「灯距」叠在同一档里讲。</p>
+      <ul>
+        <li><b>只改这一项：</b>灯到物体的距离（近 / 远）。</li>
+        <li><b>先保持不变：</b>同一块材料、同一面墙、灯的大小先不动。</li>
+        <li><b>要观察的：</b>影高变了多少、倍数条是不是跟着走。</li>
+        <li><b>另开一行：</b>灯距不动，只换半透明材料，影子是变淡还是变大。</li>
+      </ul>
+    </section>
+
+    <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+      <h2 id="askMoreTitle">还可以问下去</h2>
+      <ol>
+        <li>手电筒离手越近，墙上的影子越大。太阳离我们那么远，为什么人影差不多和人一样高？</li>
+        <li>把灯拧得更亮，影子会不会跟着变大？亮度和灯距是同一件事吗？</li>
+        <li>中午影子短、傍晚影子长，改的是灯距还是光线打到地面的角度？</li>
+      </ol>
+    </section>
+
+    <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+      <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+      <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把「本影半影」提前塞进四岁耳朵。</p>
+      <div class="age-tiers" aria-label="给家长的分层讲法">
+        <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>灯靠近，影子常常变大；灯拉远，影子缩回去。影子不是颜料印在墙上。能做出一大一小两个影就够了。</p></div>
+        <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>影高跟灯距走：灯到物越近，倍数越大。灯更亮不等于影更大。材料改深浅，不改大小。</p></div>
+        <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>放大率 M = d₂ / d₁。太阳极远，M≈1。半影来自光源有面积。本页是二维截面，不是光度学。</p></div>
+      </div>
+    </section>
 
     <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="lightWorkTitle">
       <h3 class="work-card-title" id="lightWorkTitle">作品表单：留一份灯光记录</h3>
@@ -737,7 +906,7 @@
         <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">▮</span>材料（挡光的东西）</li>
         <li style="--tone:var(--ink-dim)"><span class="kid-legend-mark" aria-hidden="true">◼</span>墙上的影子</li>
       </ul>
-      <div class="kid-figure-grid" id="lsAtlasGrid" aria-label="材料图鉴：六张大图卡">
+      <div class="kid-figure-grid" id="lsAtlasGrid" role="group" aria-label="材料图鉴：六张大图卡">
         <button class="kid-figure" type="button" data-ls-mat="wood" aria-pressed="false">
           <span class="kid-figure-art" aria-hidden="true">
             <svg viewBox="0 0 120 90" focusable="false">
@@ -753,7 +922,7 @@
           </span>
           <span class="kid-figure-cap">木板</span>
           <span class="kid-figure-sub">不透明</span>
-          <span class="kid-figure-fact">光一点也过不去 → 影子最黑</span>
+          <span class="kid-figure-fact">木板一点光也过不去，墙上影子最黑；光直线走，挡才成影，不要拿灯对眼对日。</span>
         </button>
         <button class="kid-figure" type="button" data-ls-mat="card" aria-pressed="false">
           <span class="kid-figure-art" aria-hidden="true">
@@ -771,7 +940,7 @@
           </span>
           <span class="kid-figure-cap">纸板</span>
           <span class="kid-figure-sub">不透明</span>
-          <span class="kid-figure-fact">光也过不去 → 影子几乎一样黑</span>
+          <span class="kid-figure-fact">纸板也挡光，影子几乎一样黑；挡得多影就深，灯一挪影跟着走，不是纸自己涂黑。</span>
         </button>
         <button class="kid-figure" type="button" data-ls-mat="frost" aria-pressed="false">
           <span class="kid-figure-art" aria-hidden="true">
@@ -789,7 +958,7 @@
           </span>
           <span class="kid-figure-cap">毛玻璃</span>
           <span class="kid-figure-sub">半透明</span>
-          <span class="kid-figure-fact">透过去一半 → 影子变淡</span>
+          <span class="kid-figure-fact">毛玻璃透过去一半，影子变淡；光还能走，只是被打散，挡得少影就浅，别对日看。</span>
         </button>
         <button class="kid-figure" type="button" data-ls-mat="gauze" aria-pressed="false">
           <span class="kid-figure-art" aria-hidden="true">
@@ -807,7 +976,7 @@
           </span>
           <span class="kid-figure-cap">薄纱</span>
           <span class="kid-figure-sub">半透明</span>
-          <span class="kid-figure-fact">大半都透过去 → 影子很淡</span>
+          <span class="kid-figure-fact">薄纱大半都透过去，影子很淡；光直线穿过小孔，挡得少才淡，影仍随灯移动。</span>
         </button>
         <button class="kid-figure" type="button" data-ls-mat="glass" aria-pressed="false">
           <span class="kid-figure-art" aria-hidden="true">
@@ -825,7 +994,7 @@
           </span>
           <span class="kid-figure-cap">清玻璃</span>
           <span class="kid-figure-sub">透明</span>
-          <span class="kid-figure-fact">光几乎全透过 → 几乎没有影子</span>
+          <span class="kid-figure-fact">清玻璃几乎全透过，几乎没有影子；挡得极少才几乎无影，不要对着太阳看。</span>
         </button>
         <button class="kid-figure" type="button" data-ls-mat="water" aria-pressed="false">
           <span class="kid-figure-art" aria-hidden="true">
@@ -844,12 +1013,12 @@
           </span>
           <span class="kid-figure-cap">水</span>
           <span class="kid-figure-sub">透明</span>
-          <span class="kid-figure-fact">光穿过去还会拐弯 → 影子很淡</span>
+          <span class="kid-figure-fact">光穿过去还会拐弯，影子很淡；水挡得少，影仍随灯移动，别拿强光对眼对日。</span>
         </button>
       </div>
       <div class="kid-speech-row ls-say-row">
         <span class="kid-mascot" aria-hidden="true">🔦</span>
-        <p class="kid-speech" id="lsAtlasSay" role="status" aria-live="polite">点一张卡，主舞台就换成那种材料的影子。</p>
+        <p class="kid-speech" id="lsAtlasSay" role="status" aria-live="polite">挡光的影子黑，透光的影子淡。点一张卡对照舞台。</p>
       </div>
       <details class="parent-deep-dive" data-audience="parent">
         <summary>家长深读：材料图鉴在教什么</summary>
@@ -890,10 +1059,10 @@
           <div class="kid-meter-head">
             <span class="kid-meter-icon" aria-hidden="true">📏</span>
             <span id="lsSizeLabel">影子有多大</span>
-            <span class="kid-meter-value" id="lsSizeValue">2.0 倍</span>
+            <span class="kid-meter-value" id="lsSizeValue">2.0&nbsp;倍</span>
           </div>
           <div class="kid-meter-track" id="lsSizeMeter" role="img" aria-labelledby="lsSizeLabel lsSizeValue"><span class="kid-meter-fill"></span></div>
-          <p class="kid-meter-note">满格是 4 倍。<span class="mono">影高 ÷ 物高 = 灯到墙 ÷ 灯到物</span>：灯越靠近材料，倍数越大。</p>
+          <p class="kid-meter-note">满格是 4&nbsp;倍。<span class="mono">影高 ÷ 物高 = 灯到墙 ÷ 灯到物</span>：灯越靠近材料，倍数越大。</p>
         </div>
         <div class="kid-meter" style="--tone:var(--math)">
           <div class="kid-meter-head">
@@ -913,7 +1082,7 @@
         <span class="ls-dots-cap" id="lsDarkDotsCap">用点点数挡光（十格）：</span>
         <span class="kid-dots" id="lsDarkDots" role="img" aria-labelledby="lsDarkDotsCap"></span>
       </p>
-      <p class="kid-speech" id="lsMeterSay" role="status" aria-live="polite">挪一挪灯，两条量表会一起告诉你影子有多大、有多黑。</p>
+      <p class="kid-speech" id="lsMeterSay" role="status" aria-live="polite">灯走近，影子变大；影子有多黑，只看材料挡不挡光，不跟灯走。</p>
       <details class="parent-deep-dive" data-audience="parent">
         <summary>家长深读：两条量表在教什么</summary>
         <p><b>这在教什么：</b>把两件常被混在一起的事拆开——影子的<b>大小</b>只由几何位置决定，影子的<b>深浅</b>只由材料的透光率决定。孩子看到第二条不随灯移动，就会自己发现「这是两件事」。</p>
@@ -951,7 +1120,7 @@
       <p class="kid-speech" id="lsQuizSay" role="status" aria-live="polite">先比一比两边的影子谁高，再点一张大图卡。</p>
       <p class="ls-quiz-score">
         <span class="ls-quiz-stars" id="lsQuizStars" role="img" aria-label="已经猜对 0 次"></span>
-        <span id="lsQuizTotal">猜对 0 次</span>
+        <span id="lsQuizTotal">猜对 0&nbsp;次</span>
       </p>
       <details class="parent-deep-dive" data-audience="parent">
         <summary>家长深读：这个小游戏在教什么</summary>
@@ -970,8 +1139,11 @@
       <h3>给家长的追问</h3>
       <ol class="qlist">
         <li><b>预测：</b>“把灯往道具那边推近一点，影子会变大还是变小？”先猜再拖，很多孩子会猜反。猜完再看量表上的倍数对不对得上。</li>
+        <li><b>钉死灯距：</b>“影子变大，是灯更亮了，还是灯更近了？”让他指着绿色虚线：灯到墙没变，灯到材料变短，比值才变大。</li>
         <li><b>再问一层：</b>“把灯举高会怎样？”影子会从墙上缩下来、躺到地板上——因为光线在到墙之前就落地了。这正是正午影子短、傍晚影子长的原因，画面里会如实画出这两种情况。</li>
+        <li><b>太阳对照：</b>“手电筒贴手，影子能撑满墙；太阳那么远，人影为什么差不多和人一样高？”远到 d₂/d₁ ≈ 1，倍数塌回 1。</li>
         <li><b>观察：</b>“影子的边缘是刀切一样整齐的吗？”把灯变大，找一找模糊的半影；再问“为什么灯小的时候边缘就很利？”</li>
+        <li><b>拆开两件事：</b>“灯距改的是大小，材料改的是深浅。你刚才动的是哪一条量表？”第二条不随灯移动，就是在说「这是两件事」。</li>
         <li><b>推理：</b>“毛玻璃和清玻璃都是玻璃，为什么影子不一样黑？”接着问“红光加绿光会得到什么颜色？用蜡笔混红和绿呢？”让孩子用真蜡笔对比光的加色。</li>
       </ol>
       <p class="hint" style="margin-top:10px">线下延伸：关灯，用手机手电筒和一个杯子在墙上做同样的实验，量一量影子的高度；再换成保鲜膜、烘焙纸、毛巾各挡一次，把影子按深浅排队。</p>
@@ -980,6 +1152,8 @@
     <section class="card">
       <h2 style="font-size:1.15rem">背后的原理</h2>
       <p><b>光沿直线传播。</b>正因为光不会绕弯，物体背后才会出现一块光到不了的区域，那就是影子。把灯、物体顶点、影子顶点三点连起来，永远是一条直线 —— 这是所有影子几何的唯一秘密。</p>
+      <h3>影子大小跟灯距，不跟灯有多亮</h3>
+      <p>孩子常把「灯更亮」和「影子更大」绑在一起。本页的对照把这件事拆开：灯走近，<code>d₁</code> 变小，倍数 <code>d₂ / d₁</code> 变大，影子撑大；灯拉远，倍数往 1 靠，影子缩回接近物高。亮度改的是墙上有多刺眼，不是影高。所以完成句要写成「灯近影大」，不要写成「灯亮影大」。太阳极远，<code>d₂/d₁ ≈ 1</code>，阳光下的影子才和人差不多高。</p>
       <h3>相似三角形与影子的放大率</h3>
       <p>灯到物体的距离叫 <code>d₁</code>，灯到墙的距离叫 <code>d₂</code>，那么<b>放大率</b> <code>M = 影高 / 物高 = d₂ / d₁</code>。灯、物体顶点、影子顶点这三点连成一条直线，于是「灯—物体」和「灯—墙」构成两个相似三角形，对应边成比例——这就是整条公式的全部来源，页面上那条绿色虚线画的正是这条线。</p>
       <p class="hint">一个容易被跳过的前提：<code>M = 影高 / 物高</code> 这一步要求<b>灯和物体底边差不多齐高</b>（光轴贴着地面）。灯举高以后，那条「灯 → 物顶」的光线会斜着往下走，先落到地板上，墙上的影子就变短甚至消失。所以画面里同时给出 <code>影高 ÷ 物高</code> 和 <code>灯到墙 ÷ 灯到物</code> 两个数：灯放低时两个数相等，灯举高时孩子会看到它们分开——这个「分开」本身就是值得追问的现象，而不是程序算错了。</p>
@@ -999,6 +1173,17 @@
   </div>
 
   <p class="lab-exit"><a class="btn btn-ghost" href="index.html"><span aria-hidden="true">←</span> 回到实验室目录</a></p>
+  <!-- 追问清单放在孩子层：本页原先 4 条带问号的条目全部在家长层。 -->
+  <section class="card" aria-labelledby="lightAskTitle" style="margin-top:18px">
+    <h2 id="lightAskTitle">还可以问下去</h2>
+    <ul class="ask-list">
+      <li>在太阳下面，你的影子什么时候最短？为什么中午和傍晚不一样？</li>
+      <li>手电筒离手越近，墙上的影子就越大。太阳离我们那么远，为什么影子和你差不多大？</li>
+      <li>影子边上有时有一圈模糊的边。把灯换小一点，那圈模糊会变宽还是变窄？</li>
+      <li>先猜「把物体挪到灯和墙的正中间，影子会变多大」，再上去移一移对一对。</li>
+    </ul>
+  </section>
+
   <footer class="foot wrap" style="padding-left:0;padding-right:0">
     少儿数理启蒙 · 互动实验 — 光与影。所有绘制在你的浏览器里完成，不联网。
   </footer>
@@ -1655,9 +1840,9 @@
       return (i + 1) + ' 号墙上影高 ' + ((g.floorY - s.wallTop) * mpp).toFixed(2) + ' m';
     });
     shadowText.textContent = S.sourceCount === 1
-      ? '一盏灯形成一个影子：墙上影高 ' + shaM.toFixed(2) + ' m，是道具的 ' + mag.toFixed(2) + ' 倍。'
+      ? '一盏灯形成一个影子：墙上影高 ' + shaM.toFixed(2) + ' m，是道具的 ' + mag.toFixed(2) + '\u00a0倍。'
         + (penCm > 2 ? '边缘有一条 ' + penCm.toFixed(1) + ' cm 宽的软边（半影）。' : '光源很小，影子边缘很利。')
-      : S.sourceCount + ' 盏灯形成 ' + S.sourceCount + ' 个方向略有不同的影子：' + parts.join('、')
+      : S.sourceCount + ' 盏灯形成 ' + S.sourceCount + '\u00a0个方向略有不同的影子：' + parts.join('、')
         + '。重叠越多，区域越暗。';
     updateLightTask();
   }
@@ -2092,8 +2277,11 @@
       legend.innerHTML = '<span><i style="background:#fffbe4"></i>灯（光源）</span>' +
         '<span><i style="background:#adbeea"></i>挡光道具</span>' +
         '<span><i style="background:#d3cdc2"></i>被照亮的墙</span>' +
-        '<span><i style="background:#2b3557"></i>本影 umbra</span>' +
-        '<span><i style="background:#4a5680"></i>半影 penumbra</span>' +
+        /* 这两条原来写「本影 umbra」「半影 penumbra」：拉丁文挂在孩子舞台的图例上，
+           而白话解释（「只能看见灯的一部分的地方」）锁在家长层，孩子读不到。
+           改成先说孩子的话，术语放进括号，家长要用时仍能对上。 */
+        '<span><i style="background:#2b3557"></i>全黑的影子（本影）</span>' +
+        '<span><i style="background:#4a5680"></i>模糊的软边（半影）</span>' +
         '<span><i style="background:#6ee7a0"></i>关键光线</span>';
       tip.textContent = '拖动灯或道具；按 O 键切换键盘控制对象，方向键微调。';
       cv.setAttribute('aria-label', '影子实验画面：一间侧视的小屋子，左边一盏灯，中间立着挡光道具，右边是墙（幕布）。拖动灯和道具，墙上和地板上的影子随几何关系变化。');
@@ -2120,10 +2308,80 @@
   requestDraw();   // 走 requestDraw 而不是裸 rAF：否则首帧待执行时 rafId 仍为 0，交互唤醒会重复排帧
 })();
 </script>
-<script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=17"></script>
-<script src="../data/playful.js?v=17"></script>
-<script src="../assets/js/playful.js?v=17"></script>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var guess1 = "";
+  var guess1Done = false;
+  var guess2 = "";
+  var guess2Done = false;
+  var guess3 = "";
+  var guess3Done = false;
+  var sawMove1 = false, sawMove2 = false, sawMove3 = false;
+  function checkGuess(){
+    if (guess1 && !guess1Done && sawMove1) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "big" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "灯越近，手挡住的锥形光在墙上张得越大，影子通常更大。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && sawMove2) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "small" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "灯拉远，挡住的光锥在墙上张得更小，影子常常变小。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && sawMove3) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "up" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "M≈d₂/d₁；d₁ 变小则 M 变大，影子常更大。";
+    }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。把灯拉近手，看影子边框再揭晓。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。把灯拉远一点，对照影子边框。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut3").textContent = "押好了。先搬一次灯，再对照影子变大还是变小。";
+    });
+  });
+  ["lampX", "lampY"].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.addEventListener("input", function(){
+      if (guess1 && !guess1Done) sawMove1 = true;
+      else if (guess2 && !guess2Done) sawMove2 = true;
+      else if (guess3 && !guess3Done) sawMove3 = true;
+      checkGuess();
+    });
+  });
+})();
+</script>
 <script>if (window.Progress) Progress.visit("games/light-and-shadow.html", "光与影");</script>
 <script>
 /* 图像优先三件套：① 材料图鉴 ② 影子量表 ③ 灯往哪边走 */
@@ -2148,15 +2406,15 @@
      pass 决定舞台上要不要画穿过去的光线：none 全挡 / soft 打散 / clear 原样通过。 */
   var MAT = {
     wood:  { cap: "木板", kind: "不透明", dark: 100, slab: "ls-slab-wood",  pass: "none",
-      say: "木板把光全挡住了，墙上是最黑的影子，一点光都漏不过去。" },
+      say: "木板把光全挡住，墙上留下最黑的暗区；光直线走，挡得住才成影，别对日看。" },
     card:  { cap: "纸板", kind: "不透明", dark: 90,  slab: "ls-slab-card",  pass: "none",
-      say: "纸板也不透明，影子几乎一样黑；再叠一层会更黑一点。" },
+      say: "纸板也不透明，光直线走就被挡住，墙上几乎一样黑；再叠一层会更黑一点。" },
     frost: { cap: "毛玻璃", kind: "半透明", dark: 55, slab: "ls-slab-frost", pass: "soft",
-      say: "毛玻璃让一半的光透过去，但把光打散了：影子变淡，形状也看不清。" },
+      say: "毛玻璃让一半的光透过去，却把光打散了，影子变淡，轮廓也看不清，别对日看。" },
     gauze: { cap: "薄纱", kind: "半透明", dark: 30,  slab: "ls-slab-gauze", pass: "soft",
-      say: "薄纱上有好多小洞，大半的光都钻过去了，影子只剩淡淡一片。" },
+      say: "薄纱上有好多小洞，大半的光沿直线钻过去，影子只剩淡淡一片，随灯挪。" },
     glass: { cap: "清玻璃", kind: "透明", dark: 8,   slab: "ls-slab-glass", pass: "clear",
-      say: "清玻璃几乎不挡光，墙上几乎没有影子 —— 只剩边框一条细影。" },
+      say: "清玻璃几乎不挡光，墙上几乎没有影子，只剩边框细影；不要拿它对着太阳看。" },
     water: { cap: "水", kind: "透明", dark: 14,      slab: "ls-slab-water", pass: "clear",
       say: "水也是透明的，影子很淡；不过光穿进水里会拐一下弯，影子边上会有亮纹。" }
   };
@@ -2238,18 +2496,18 @@
     /* 顶部信息条：名字 + 三档词 + 两个数字 */
     stageArt.appendChild(sv("rect", { x: 8, y: 6, width: 304, height: 26, rx: 13, "class": "ls-badge" }));
     stageArt.appendChild(svText(18, 25, m.cap + " · " + m.kind, "ls-ink", 15, "start"));
-    stageArt.appendChild(svText(302, 25, "影子 " + mag.toFixed(1) + " 倍 · 挡光 " + m.dark + "%", "ls-ink-soft", 13, "end"));
+    stageArt.appendChild(svText(302, 25, "影子 " + mag.toFixed(1) + "\u00a0倍 · 挡光 " + m.dark + "%", "ls-ink-soft", 13, "end"));
 
     /* 地面标签 */
     stageArt.appendChild(svText(LX, 184, "灯", "ls-ink", 13));
     stageArt.appendChild(svText(n1(objX), 184, m.cap, "ls-ink", 13));
     stageArt.appendChild(svText(WALLX + WALLW / 2, 178, "影子", "ls-ink", 13));
-    stageArt.appendChild(svText(WALLX + WALLW / 2, 193, mag.toFixed(1) + " 倍", "ls-ink-soft", 12));
+    stageArt.appendChild(svText(WALLX + WALLW / 2, 193, mag.toFixed(1) + "\u00a0倍", "ls-ink-soft", 12));
 
     if (stageSvg) {
       stageSvg.setAttribute("aria-label",
         "影子主舞台：材料是" + m.cap + "（" + m.kind + "），挡住 " + m.dark +
-        "% 的光，墙上的影子是物体的 " + mag.toFixed(1) + " 倍高，灯离材料 " + state.dist.toFixed(2) + " 米。");
+        "% 的光，墙上的影子是物体的 " + mag.toFixed(1) + "\u00a0倍高，灯离材料 " + state.dist.toFixed(2) + "\u00a0米。");
     }
   }
 
@@ -2292,7 +2550,7 @@
   function drawMeters() {
     var m = MAT[state.mat];
     var mag = magNow();
-    if (sizeValue) sizeValue.textContent = mag.toFixed(1) + " 倍";
+    if (sizeValue) sizeValue.textContent = mag.toFixed(1) + "\u00a0倍";
     setMeter(sizeMeter, mag, MAG_MAX);
     if (darkValue) darkValue.textContent = m.dark + "%";
     setMeter(darkMeter, m.dark, 100);
@@ -2301,7 +2559,7 @@
     var darkOk = m.dark >= 60;
     if (testSize) {
       testSize.setAttribute("data-ok", bigOk ? "true" : "false");
-      testSize.textContent = (bigOk ? "✓" : "○") + " 影子比材料大一倍（现在 " + mag.toFixed(1) + " 倍）";
+      testSize.textContent = (bigOk ? "✓" : "○") + " 影子比材料大一倍（现在 " + mag.toFixed(1) + "\u00a0倍）";
     }
     if (testDark) {
       testDark.setAttribute("data-ok", darkOk ? "true" : "false");
@@ -2310,7 +2568,7 @@
     paintDarkDots(m.dark);
     if (meterSay) {
       meterSay.textContent = "灯离" + m.cap + " " + state.dist.toFixed(2) + " m，灯到墙 " + D2.toFixed(2) +
-        " m：影子是材料的 " + mag.toFixed(1) + " 倍高。" + m.cap + "挡住 " + m.dark + "% 的光，所以影子" +
+        " m：影子是材料的 " + mag.toFixed(1) + "\u00a0倍高。" + m.cap + "挡住 " + m.dark + "% 的光，所以影子" +
         (m.dark >= 60 ? "很黑" : (m.dark >= 25 ? "很淡" : "几乎看不出来")) + "。";
     }
   }
@@ -2332,7 +2590,7 @@
     refresh();
     if (announce && meterSay) {
       meterSay.textContent = "灯放到离" + MAT[state.mat].cap + " " + state.dist.toFixed(2) + " m 的地方：影子变成 " +
-        magNow().toFixed(1) + " 倍高。" + meterSay.textContent;
+        magNow().toFixed(1) + "\u00a0倍高。" + meterSay.textContent;
     }
   }
 
@@ -2408,8 +2666,8 @@
     if (quizArt) {
       quizArt.setAttribute("aria-label",
         "影子的前后对比：左边「刚才」的影子约是材料的 " + quizNow.before.toFixed(1) +
-        " 倍高，右边「现在」的影子约是材料的 " + quizNow.after.toFixed(1) +
-        " 倍高，材料位置没变，灯的位置画成问号。");
+        "\u00a0倍高，右边「现在」的影子约是材料的 " + quizNow.after.toFixed(1) +
+        "\u00a0倍高，材料位置没变，灯的位置画成问号。");
     }
   }
 
@@ -2444,12 +2702,12 @@
         quizWins += 1;
         if (quizStars) {
           quizStars.textContent = new Array(Math.min(quizWins, 10) + 1).join("⭐");
-          quizStars.setAttribute("aria-label", "已经猜对 " + quizWins + " 次");
+          quizStars.setAttribute("aria-label", "已经猜对 " + quizWins + "\u00a0次");
         }
-        if (quizTotal) quizTotal.textContent = "猜对 " + quizWins + " 次";
+        if (quizTotal) quizTotal.textContent = "猜对 " + quizWins + "\u00a0次";
         if (quizSay) {
-          quizSay.textContent = "✓ 猜对了！影子从 " + quizNow.before.toFixed(1) + " 倍变成 " + quizNow.after.toFixed(1) +
-            " 倍，" + (grew ? "变大了，所以灯靠近了材料。" : "变小了，所以灯走远了。") + "按「换一题」再来一个。";
+          quizSay.textContent = "✓ 猜对了！影子从 " + quizNow.before.toFixed(1) + "\u00a0倍变成 " + quizNow.after.toFixed(1) +
+            "\u00a0倍，" + (grew ? "变大了，所以灯靠近了材料。" : "变小了，所以灯走远了。") + "按「换一题」再来一个。";
         }
         if (window.Playful && Playful.confetti) Playful.confetti(quizArt && quizArt.parentNode);
         return;
@@ -2474,6 +2732,6 @@
   quizNext();
 })();
 </script>
-<script src="../assets/js/pwa.js?v=17"></script>
+<script src="../assets/js/pwa.js?v=488"></script>
 </body>
 </html>

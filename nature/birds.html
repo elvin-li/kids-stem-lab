@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>鸟类观察站 · 喙与脚 | 少儿数理启蒙</title>
+<meta name="description" content="比较十六种常见鸟的喙和脚，推断它们吃什么、在哪里停。离线即可使用。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+ .hero { padding: 28px 0 10px; }
+ .hero h1 { margin: .15em 0 .3em; }
+ .lead { max-width: 58ch; color: var(--ink-mid); }
+ .kid-hero-scene {
+ display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+ margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+ border: 1px solid color-mix(in srgb,var(--video) 40%,var(--line));
+ border-radius: var(--r-lg);
+ background: linear-gradient(135deg,color-mix(in srgb,var(--video) 14%,var(--surface)),var(--surface) 62%);
+ }
+ .mission-face {
+ width: 78px; height: 78px; overflow: hidden; display: grid; place-items: center; border-radius: 50%;
+ border: 2px solid color-mix(in srgb,var(--video) 42%,var(--line));
+ background: color-mix(in srgb,var(--video) 14%,var(--surface)); font-size: 2.2rem;
+ }
+ .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+ .bd-art { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+ .bd-sky { fill: color-mix(in srgb,var(--video) 12%,#e7f4ff); }
+ .bd-ground { fill: color-mix(in srgb,var(--sci) 16%,#e4f0d8); }
+ .bd-body { fill: color-mix(in srgb,var(--ink) 22%,#c9d0d6); stroke: color-mix(in srgb,var(--ink) 40%,transparent); stroke-width: 2; }
+ .bd-beak { fill: #e0a14a; stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.4; }
+ /* 脚的路径全是开放线段（M…L…），fill 撑不出任何面积——原先只写 fill 时
+ 舞台上的脚整只是隐形的。必须用描边画。 */
+ .bd-foot { fill: none; stroke: #c9844a; stroke-width: 5; stroke-linecap: round; }
+ .bd-eye { fill: var(--ink); }
+ .bird-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit,minmax(min(168px,100%),1fr)); }
+ .bird-card {
+ display: grid; gap: 6px; min-height: 148px; padding: 10px; text-align: left;
+ border: 2px solid var(--line); border-radius: var(--r); background: var(--surface);
+ }
+ .bird-card[aria-pressed="true"] { border-color: var(--video); box-shadow: 0 0 0 3px color-mix(in srgb,var(--video) 24%,transparent); }
+ .bird-card b { font-size: 1rem; }
+ .bird-card span { font-size: .82rem; color: var(--ink-mid); }
+ .kid-action-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+ .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+ .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+ .ask li::before {
+ counter-increment: q; content: counter(q);
+ position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+ display: grid; place-items: center; background: color-mix(in srgb,var(--video) 16%,var(--surface));
+ border: 1px solid color-mix(in srgb,var(--video) 40%,var(--line)); color: var(--ink);
+ font: 800 .76rem var(--mono);
+ }
+ button, .btn { min-height: 44px; }
+ .stage + .kid-action-strip { margin-top: 8px; }
+ .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+ @media (max-width: 640px) {
+ .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+ .mission-face { display: none; }
+ .stage { padding: 10px; }
+ .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+ .lead { max-width: none; }
+ }
+
+ .bi-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+ .bi-lab-panel { margin: 12px 0; padding: 10px; border: 1px solid color-mix(in srgb,var(--sci) 36%,var(--line)); border-radius: var(--r-lg); background: color-mix(in srgb,var(--sci) 8%,var(--surface)); }
+ .bi-lab-panel .readout { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0; }
+ .bi-lab-panel .readout div { padding:8px; border-radius:var(--r); background:var(--surface); border:1px solid var(--line); }
+ .bi-lab-panel .readout span { display:block; font-size:.78rem; color:var(--ink-mid); }
+ .bi-lab-panel .readout b { font:800 1.05rem var(--mono); color:var(--ink); }
+ .bi-lab-panel label { display:block; font-weight:700; margin-top:8px; }
+ .bi-lab-panel input[type="range"] { width:100%; min-height:44px; }
+ .bi-lab-panel .kid-action-strip { flex-direction:column; align-items:stretch; gap:4px; margin:8px 0; }
+ .bi-guess .pick-btns { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+ .guess-card { border-color: color-mix(in srgb,var(--sci) 45%,var(--line)); }
+ .guess-pick[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 18%,var(--surface)); color: var(--ink); }
+ .guess-out { font-weight: 750; color: var(--ink-mid); }
+ .guess-out b { color: var(--ink); }
+ @media (max-width:640px){
+ .hero .lead { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+ .bi-lab-panel > p { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+ }
+ @media (max-width:480px){
+ [data-playful-companion], [data-playful-sticker] { display:none !important; }
+ .bi-lab-panel .readout { grid-template-columns:1fr; }
+ }
+
+</style>
+</head>
+<body data-playful-page="nature/birds.html">
+<!-- ART:START 插画图库由 tools/art-build.mjs 生成，请改 tools/art-library.mjs -->
+<svg class="art-sprite" aria-hidden="true" focusable="false" width="0" height="0" viewBox="0 0 0 0">
+ <symbol id="art-nature-flamingo" viewBox="0 0 120 120">
+ <linearGradient id="ag-n68fl-pk" x1=".18" y1="0" x2=".8" y2="1">
+ <stop offset="0" stop-color="#fecdd3"/><stop offset=".44" stop-color="#fb7185"/><stop offset="1" stop-color="#be123c"/>
+ </linearGradient>
+ <linearGradient id="ag-n68fl-lg" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0" stop-color="#fdba74"/><stop offset="1" stop-color="#ea580c"/>
+ </linearGradient>
+ <!-- 浅滩：S 颈折两下、喙中段突然下折、单腿站 -->
+ <path d="M0 104 C40 96 80 114 120 102 V120 H0 Z" fill="#38bdf8" opacity=".38"/>
+ <path d="M0 112 C50 106 86 118 120 110 V120 H0 Z" fill="#d6c09a" opacity=".55"/>
+ <ellipse cx="64" cy="114" rx="22" ry="3.2" fill="#083344" opacity=".12"/>
+ <path d="M72 52 C100 32 128 42 128 68 C118 80 88 78 72 62 Z" fill="#fda4af" stroke="#9f1239" stroke-width="1.3"/>
+ <path d="M60 84 C54 58 76 44 94 56 C102 64 100 82 84 88 C70 94 60 92 60 84 Z"
+ fill="url(#ag-n68fl-pk)" stroke="#9a2850" stroke-width="1.7"/>
+ <path d="M58 62 C46 26 24 14 20 38 C16 56 36 68 54 62" fill="none" stroke="url(#ag-n68fl-pk)" stroke-width="7.6" stroke-linecap="round"/>
+ <path d="M20 40 C14 30 10 34 14 44 C18 52 28 50 30 42 Z" fill="#f4729a" stroke="#9a2850" stroke-width="1.35"/>
+ <circle cx="18" cy="36" r="1.95" fill="#1a1010"/><circle cx="17.3" cy="35.2" r=".5" fill="#fff"/>
+ <path d="M16 42 C-2 54 -10 74 10 74 C24 74 32 58 28 46 Z" fill="#1c1917"/>
+ <path d="M16 42 C6 48 -2 58 8 62 L28 46 Z" fill="#fda4af"/>
+ <path d="M74 80 L70 118" stroke="url(#ag-n68fl-lg)" stroke-width="3.9" stroke-linecap="round"/>
+ <path d="M70 118 L88 120" stroke="#c2410c" stroke-width="3.3" stroke-linecap="round"/>
+ <path d="M80 76 C90 102 84 116 74 118" fill="none" stroke="#fb923c" stroke-width="2.2" opacity=".4" stroke-linecap="round"/>
+ </symbol>
+ <symbol id="art-nature-owl" viewBox="0 0 120 120">
+ <linearGradient id="ag-n59ow-fe" x1=".25" y1="0" x2=".7" y2="1">
+ <stop offset="0" stop-color="#f0d9a8"/><stop offset=".5" stop-color="#a16207"/><stop offset="1" stop-color="#3f2a14"/>
+ </linearGradient>
+ <linearGradient id="ag-n59ow-fc" x1=".4" y1=".2" x2=".6" y2="1">
+ <stop offset="0" stop-color="#f5e6c8"/><stop offset="1" stop-color="#d6b07a"/>
+ </linearGradient>
+ <!-- 夜枝：面盘、耳簇、钩喙 -->
+ <path d="M78 6 H94 V76 H78 Z" fill="#7c4a1e"/>
+ <path d="M83 6 H87 V76 H83 Z" fill="#a16207" opacity=".35"/>
+ <ellipse cx="86" cy="14" rx="15" ry="7" fill="#16a34a"/>
+ <path d="M0 104 C40 96 82 112 120 102 V120 H0 Z" fill="#3f6212"/>
+ <ellipse cx="56" cy="114" rx="20" ry="3.4" fill="#1a2e05" opacity=".25"/>
+ <path d="M36 52 C34 24 48 12 60 12 C78 12 88 28 86 54 C84 88 72 104 58 106 C40 104 34 80 36 52 Z"
+ fill="url(#ag-n59ow-fe)" stroke="#3a2414" stroke-width="1.85"/>
+ <path d="M44 8 L50 28 L58 16 Z" fill="#6b4328" stroke="#3a2414" stroke-width="1.1"/>
+ <path d="M76 8 L70 28 L62 16 Z" fill="#6b4328" stroke="#3a2414" stroke-width="1.1"/>
+ <ellipse cx="60" cy="48" rx="22" ry="18" fill="url(#ag-n59ow-fc)" stroke="#6b4328" stroke-width="1.3"/>
+ <g fill="none" stroke="#a16207" stroke-width="1.05" opacity=".55">
+ <ellipse cx="60" cy="48" rx="16" ry="13"/><ellipse cx="60" cy="48" rx="10" ry="8"/>
+ </g>
+ <circle cx="50" cy="48" r="5.2" fill="#fbbf24"/><circle cx="50" cy="48" r="2.6" fill="#111827"/>
+ <circle cx="49.2" cy="47" r=".7" fill="#fff"/>
+ <circle cx="70" cy="48" r="5.2" fill="#fbbf24"/><circle cx="70" cy="48" r="2.6" fill="#111827"/>
+ <circle cx="69.2" cy="47" r=".7" fill="#fff"/>
+ <path d="M56 54 L60 64 L64 54 Z" fill="#1c1917"/>
+ <path d="M50 104 L42 118 M66 104 L74 118" stroke="#3a2414" stroke-width="3.4" stroke-linecap="round"/>
+ </symbol>
+ <symbol id="art-nature-pelican" viewBox="0 0 120 120">
+ <linearGradient id="ag-n68pl-fe" x1=".2" y1="0" x2=".78" y2="1">
+ <stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#e2e8f0"/><stop offset="1" stop-color="#94a3b8"/>
+ </linearGradient>
+ <linearGradient id="ag-n68pl-pc" x1=".35" y1="0" x2=".65" y2="1">
+ <stop offset="0" stop-color="#fde68a"/><stop offset=".55" stop-color="#f59e0b"/><stop offset="1" stop-color="#b45309"/>
+ </linearGradient>
+ <!-- 浅滩：下垂喉囊几乎有身体那么大，上喙只是一条细梁 -->
+ <path d="M0 96 C40 88 80 106 120 94 V120 H0 Z" fill="#0e7490" opacity=".42"/>
+ <g fill="#7dd3fc" opacity=".28">
+ <ellipse cx="20" cy="106" rx="12" ry="3"/><ellipse cx="100" cy="108" rx="14" ry="3.2"/>
+ </g>
+ <path d="M0 84 H36 L48 100 H0 Z" fill="#c4a574" opacity=".7"/>
+ <ellipse cx="58" cy="114" rx="24" ry="3.4" fill="#083344" opacity=".18"/>
+ <path d="M20 76 C16 46 56 34 90 48 C100 56 98 78 78 86 C50 96 20 92 20 76 Z"
+ fill="url(#ag-n68pl-fe)" stroke="#64748b" stroke-width="1.85"/>
+ <path d="M80 44 C72 32 86 26 94 36 C100 46 92 56 82 54 Z" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3"/>
+ <path d="M90 44 L128 26" stroke="#f59e0b" stroke-width="5.8" stroke-linecap="round"/>
+ <path d="M88 46 C110 54 128 80 116 106 C96 122 64 106 62 80 C62 62 74 46 88 46 Z"
+ fill="url(#ag-n68pl-pc)" stroke="#b45309" stroke-width="1.7"/>
+ <path d="M88 44 L124 34" stroke="#78350f" stroke-width="1.5"/>
+ <circle cx="84" cy="38" r="2.1" fill="#111827"/><circle cx="83.3" cy="37.1" r=".55" fill="#fff"/>
+ <path d="M34 88 L22 114 M60 90 L68 116" stroke="#f59e0b" stroke-width="3.9" stroke-linecap="round"/>
+ </symbol>
+ <symbol id="art-nature-toucan" viewBox="0 0 120 120">
+ <linearGradient id="ag-n51tc-bl" x1="0" y1=".2" x2="1" y2=".75">
+ <stop offset="0" stop-color="#22c55e"/><stop offset=".28" stop-color="#fde047"/><stop offset=".58" stop-color="#f97316"/><stop offset="1" stop-color="#dc2626"/>
+ </linearGradient>
+ <linearGradient id="ag-n51tc-bd" x1=".2" y1="0" x2=".8" y2="1">
+ <stop offset="0" stop-color="#334155"/><stop offset="1" stop-color="#020617"/>
+ </linearGradient>
+ <!-- 枝上：彩虹巨喙几乎比身子长，白喉蓝眼圈 -->
+ <path d="M90 0 H108 V90 H90 Z" fill="#7c4a1e"/>
+ <path d="M96 0 H100 V90 H96 Z" fill="#a16207" opacity=".3"/>
+ <ellipse cx="99" cy="12" rx="18" ry="8" fill="#16a34a"/>
+ <path d="M0 104 C40 96 80 114 120 100 V120 H0 Z" fill="#3f6212"/>
+ <ellipse cx="56" cy="114" rx="20" ry="3.2" fill="#14532d" opacity=".2"/>
+ <path d="M28 78 C34 50 64 40 86 58 C96 70 88 94 66 102 C42 112 24 96 28 78 Z"
+ fill="url(#ag-n51tc-bd)" stroke="#020617" stroke-width="1.7"/>
+ <path d="M36 88 Q58 110 78 84" fill="#f8fafc"/>
+ <ellipse cx="48" cy="52" rx="14" ry="13" fill="#020617"/>
+ <path d="M50 42 C86 8 136 12 138 46 C140 68 116 90 74 76 C56 68 48 54 50 42 Z"
+ fill="url(#ag-n51tc-bl)" stroke="#7c2d12" stroke-width="1.75"/>
+ <path d="M70 38 C98 24 126 28 134 48" fill="none" stroke="#fef08a" stroke-width="3" opacity=".55"/>
+ <path d="M72 68 C102 76 126 66 134 50" fill="none" stroke="#7c2d12" stroke-width="1.35" opacity=".45"/>
+ <circle cx="44" cy="48" r="5.4" fill="#38bdf8"/>
+ <circle cx="44" cy="48" r="2.25" fill="#111827"/><circle cx="43.2" cy="47.1" r=".7" fill="#fff"/>
+ <path d="M36 98 L22 118 M58 100 L74 118" stroke="#020617" stroke-width="3.7" stroke-linecap="round"/>
+ </symbol>
+ <symbol id="art-nature-weaver" viewBox="0 0 120 120">
+ <linearGradient id="ag-pg1-wv-fe" x1=".12" y1=".08" x2=".88" y2="1">
+ <stop offset="0" stop-color="#fef08a"/><stop offset=".45" stop-color="#eab308"/><stop offset="1" stop-color="#a16207"/>
+ </linearGradient>
+ <linearGradient id="ag-pg1-wv-nst" x1=".35" y1="0" x2=".7" y2="1">
+ <stop offset="0" stop-color="#e7c48a"/><stop offset=".55" stop-color="#b45309"/><stop offset="1" stop-color="#7c2d12"/>
+ </linearGradient>
+ <path d="M0 102 C38 94 82 110 120 98 V120 H0 Z" fill="#3f6212"/>
+ <ellipse cx="42" cy="114" rx="24" ry="4" fill="#1a1408" opacity=".18"/>
+ <path d="M4 16 C42 8 78 18 118 10" fill="none" stroke="#7c4a1e" stroke-width="7" stroke-linecap="round"/>
+ <path d="M4 16 C42 8 78 18 118 10" fill="none" stroke="#e7c48a" stroke-width="2" opacity=".4"/>
+ <path d="M88 20 C78 36 74 58 86 76 C94 88 112 86 116 66 C118 46 106 26 92 20 Z" fill="url(#ag-pg1-wv-nst)" stroke="#5a3410" stroke-width="1.6"/>
+ <path d="M98 72 C100 84 108 90 112 86 C110 78 104 72 98 72 Z" fill="#3f2a10"/>
+ <g fill="none" stroke="#fde68a" stroke-width="1.15" opacity=".55">
+ <path d="M90 32 C84 50 88 64 96 74"/><path d="M102 28 C98 50 102 68 110 76"/><path d="M84 50 C98 52 110 48 116 56"/>
+ </g>
+ <path d="M18 60 C22 44 50 38 66 50 C76 58 76 74 64 82 C48 94 22 90 16 74 Z" fill="url(#ag-pg1-wv-fe)" stroke="#854d0e" stroke-width="1.8"/>
+ <path d="M28 54 C42 46 58 50 66 62" fill="none" stroke="#fefce8" stroke-width="3" opacity=".42" stroke-linecap="round"/>
+ <path d="M14 52 C12 42 28 34 40 42 C46 50 38 64 24 66 C16 66 12 60 14 52 Z" fill="#1c1917"/>
+ <path d="M14 56 L0 64 L15 66 Z" fill="#292524" stroke="#0c0a09" stroke-width="1.1"/>
+ <circle cx="22" cy="50" r="2.6" fill="#fde68a"/><circle cx="22.3" cy="50.1" r="1.35" fill="#111827"/>
+ <circle cx="21.5" cy="49.3" r=".55" fill="#fff"/>
+ <path d="M60 64 C82 50 96 74 70 78 Z" fill="#ca8a04" stroke="#854d0e" stroke-width="1.3"/>
+ <path d="M32 82 L26 104 M50 84 L56 106" stroke="#854d0e" stroke-width="2.3" stroke-linecap="round"/>
+ <path d="M24 104 L20 108 M56 106 L60 110" stroke="#78350f" stroke-width="1.6"/>
+ <ellipse cx="40" cy="72" rx="6" ry="3.4" fill="#facc15" opacity=".4"/>
+ </symbol>
+</svg>
+<!-- ART:END -->
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+ <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+ <div class="row" aria-label="主导航">
+ <a class="nav-link" href="../index.html">资源库</a>
+ <a class="nav-link" href="../pages/paths.html">学习路径</a>
+ <a class="nav-link" href="../games/index.html">互动实验</a>
+ <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+ <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+ <a class="nav-link" href="../pages/parents.html">家长指南</a>
+ <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+ </div>
+</div></nav>
+
+<main id="main" class="wrap">
+ <header class="hero kid-hero-scene">
+ <div>
+ <p class="row"><span class="pill pill-sci">生命</span><span class="pill">5–12&nbsp;岁</span><span class="pill">本地观察</span></p>
+ <h1>鸟类观察站</h1>
+ <p class="lead">鸟是有羽毛、下蛋、用肺呼吸的动物——不是「会飞的才算」。飞羽连成能推空气的面，绒羽把空气锁住当棉衣；同一只鸟身上不同形状的羽干干不同的活，不是衣服装饰。蝙蝠用皮膜飞，是哺乳动物；鸵鸟跑、企鹅把翅膀改成桨，仍是鸟。本页练「飞羽推进、绒羽保温、不飞也是鸟」；远观不掏巢、不追着拍，窗玻璃可贴画打破假天空。舞台上的「停稳」数字只比较趾抓和枝面，不是某一种的说明书，更不是观鸟鉴定手册。</p>
+ <div data-playful-companion></div>
+ <span data-playful-sticker></span>
+ </div>
+ <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="78" height="78"></div>
+ </header>
+
+
+ <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+ <h2 id="stageTitle">这只鸟的嘴和脚在解决什么问题</h2>
+ <svg class="bd-art" id="birdStage" viewBox="0 0 480 220" role="img" aria-labelledby="bdTitle bdDesc">
+ <title id="bdTitle">鸟的身体结构舞台</title>
+ <desc id="bdDesc">一只侧面的鸟：喙、身体和脚会随着你点的图卡改变形状。</desc>
+ <rect class="bd-sky" width="480" height="220"/>
+ <path class="bd-ground" d="M0 168 H480 V220 H0 Z"/>
+ <use href="#art-nature-owl" x="150" y="8" width="190" height="190"/>
+ <path class="bd-beak" id="beak" d="M352 96 L402 100 L352 108 Z"/>
+ <path class="bd-foot" id="foot" d="M230 162 L214 196 M230 162 L230 198 M230 162 L248 196"/>
+ </svg>
+ <p class="live-text" id="stageSay" role="status" aria-live="polite">点下面一张鸟卡，看它的喙和脚怎么变。</p>
+ <div class="kid-action-strip" role="group" aria-label="不翻页也能换一只鸟">
+ <button class="btn btn-primary" type="button" id="stageNextBird">看下一只鸟</button>
+ </div>
+ </section>
+
+<section class="card bi-lab-panel" aria-labelledby="biLabTitle">
+ <h2 id="biLabTitle">鸟类停栖台 · 真参数</h2>
+ <p>调<strong>脚趾抓力</strong>与<strong>枝面摩擦</strong>。脚解决停哪里。认鸟看羽毛、喙和蛋：会飞的不都是鸟，企鹅不飞也是鸟。</p>
+ <div class="kid-action-strip" role="group" aria-label="真参数主操作">
+ <label for="biA">脚趾抓力：<span id="biALab">…</span></label>
+ <input class="input" id="biA" type="range" min="4" max="36" value="16" aria-valuetext="16">
+ <label for="biB">枝面摩擦：<span id="biBLab">…</span></label>
+ <input class="input" id="biB" type="range" min="2" max="20" value="8" aria-valuetext="8">
+ </div>
+ <svg class="bi-art" viewBox="0 0 640 220" role="img" aria-labelledby="biLabSvgTitle biLabSvgDesc">
+ <title id="biLabSvgTitle">有羽有蛋才是鸟</title>
+ <desc id="biLabSvgDesc">爪子抓得紧能停稳。右边羽毛和蛋是认鸟的线索；蝙蝠皮膜被划掉：会飞的不都是鸟。</desc>
+ <rect fill="#dcecff" width="640" height="220"/>
+ <rect x="40" y="150" width="360" height="16" rx="6" fill="#8a6a40"/>
+ <ellipse cx="220" cy="120" rx="36" ry="22" fill="#6a7a8a"/>
+ <path id="biFoot" d="M200 140 L190 160 M210 140 L210 165 M230 140 L245 160" fill="none" stroke="#c9844a" stroke-width="5" stroke-linecap="round"/>
+ <path id="biFeather" d="M430 48 L458 88 L438 84 Z" fill="#c4a06a"/>
+ <ellipse id="biEgg" cx="478" cy="92" rx="10" ry="14" fill="#f5f0e0" stroke="#c8c0a8"/>
+ <g id="biBat" opacity="0.28">
+ <path d="M548 36 L568 56 L588 36 L578 60 L558 60 Z" fill="#6a6a70"/>
+ <path d="M532 20 L604 76 M604 20 L532 76" stroke="#c2410c" stroke-width="4"/>
+ </g>
+ <rect id="biBar" x="20" y="70" width="14" height="90" fill="#1a5a3a"/>
+ <text fill="#1a2a20" style="font:800 13px monospace" x="16" y="28">停栖台</text>
+ <text id="biStateLab" fill="#1a2a20" style="font:700 12px monospace" x="160" y="28">有羽有蛋才是鸟</text>
+ </svg>
+ <div class="readout" aria-live="polite">
+ <div><span>趾抓</span><b id="biAOut">…</b></div>
+ <div><span>停稳（算）</span><b id="biSOut">…</b></div>
+ <div><span>够稳？</span><b id="biOkOut">…</b></div>
+ </div>
+ <p class="live-text" id="biLabLive" role="status" aria-live="polite">爪子抓得紧才能停稳在枝上。认鸟要看羽毛、喙和蛋，不看它会不会飞。</p>
+ </section>
+ <section class="card guess-card bi-guess" aria-labelledby="biGuessTitle">
+ <h2 id="biGuessTitle">先猜一猜，再拖滑杆</h2>
+ <p><b>第 1 题：</b>趾抓够、枝面够（趾抓 28、枝面 10），停稳会更明显吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜停稳">
+ <button class="btn guess-pick" type="button" data-bi-g1="14" aria-pressed="false">几乎不变</button>
+ <button class="btn guess-pick" type="button" data-bi-g1="20" aria-pressed="false">会更明显</button>
+ <button class="btn guess-pick" type="button" data-bi-g1="28" aria-pressed="false">会过头</button>
+ </div>
+ <p class="guess-out" id="biGuessOut1" role="status" aria-live="polite">先押一个，再拖到 脚趾抓力 28、枝面摩擦 10。</p>
+ <div id="biGuessBlock2" hidden>
+ <p><b>第 2 题：</b>趾抓 5、枝面 3，还够稳吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜够不够">
+ <button class="btn guess-pick" type="button" data-bi-g2="yes" aria-pressed="false">够稳</button>
+ <button class="btn guess-pick" type="button" data-bi-g2="no" aria-pressed="false">偏滑</button>
+ </div>
+ <p class="guess-out" id="biGuessOut2" role="status" aria-live="polite">押好后拖到 脚趾抓力 5、枝面摩擦 3。</p>
+ </div>
+ <div id="biGuessBlock3" hidden>
+ <p><b>第 3 题：</b>趾抓最少 4、枝面最弱 2。还能明显够稳吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜最低档">
+ <button class="btn guess-pick" type="button" data-bi-g3="yes" aria-pressed="false">能，还在</button>
+ <button class="btn guess-pick" type="button" data-bi-g3="no" aria-pressed="false">不能，两边都太弱</button>
+ <button class="btn guess-pick" type="button" data-bi-g3="zero" aria-pressed="false">变成 0，没了</button>
+ </div>
+ <p class="guess-out" id="biGuessOut3" role="status" aria-live="polite">押好后趾抓 4、枝面 2。</p>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="birdAtlasTitle">
+ <h2 id="birdAtlasTitle">鸟喙图鉴</h2>
+ <p>先看嘴的形状，再猜它在解决什么吃饭问题。点一张，上面的鸟会跟着变。</p>
+ <div class="kid-figure-grid bird-grid" id="birdGrid" role="group" aria-label="十六种鸟的图鉴"></div>
+ </section>
+
+ <div class="kid-action-strip">
+ <button class="btn" type="button" id="compareBtn" disabled>和上一只比较</button>
+ <p class="live-text" id="compareSay" role="status" aria-live="polite">先点两只不同的鸟，再比较它们的喙。</p>
+ </div>
+
+ <section class="card" aria-labelledby="predictTitle">
+ <h2 id="predictTitle">猜一猜</h2>
+ <div class="kid-predict" style="--tone:var(--video)"
+ data-kid-predict
+ data-kid-predict-explain="认鸟先看羽毛、蛋和喙：飞羽推空气，绒羽把空气锁住；会飞的不都算鸟。"
+ data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+ data-kid-predict-again="押好了，点「看答案」。">
+ <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🦆</span><b>绿头鸭的嘴扁得像把小漏勺。它最可能怎么吃饭？</b></p>
+ <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：扁嘴的鸭子怎么吃饭">
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="peck">在树皮里凿虫子</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="filter" data-kid-predict-correct>在水里滤小东西</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="chase">在空中追虫子</button>
+ </div>
+ <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+ <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+ </div>
+ </section>
+
+ <section class="task" aria-labelledby="taskTitle">
+ <h2 class="task-title" id="taskTitle">任务：说出一只鸟的喙在干什么</h2>
+ <p>选一只鸟，再点一句最符合它的话。对了就会记进足迹。</p>
+ <div class="kid-tiles" id="jobPicks" role="group" aria-label="这只喙在干什么"></div>
+ <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+ <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+ <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先点一只鸟，再选它的喙在干什么。</p>
+ </section>
+
+ <section class="card" aria-labelledby="feetTitle">
+ <h2 id="feetTitle">脚也是工具</h2>
+ <p>嘴管吃饭，脚管落脚。看完喙，再看它站在哪、怎么站——同一只鸟的两件工具，讲的是同一种生活。</p>
+ <div class="kid-figure-grid" role="group" aria-label="五种鸟脚的图鉴">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/sparrows.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">抓枝脚</span><span class="kid-figure-sub">麻雀、锡嘴雀 · 三趾朝前一趾朝后</span><p class="kid-figure-fact">一蹲下肌腱就把脚趾锁在树枝上，睡着了也不掉，不是用意志力抓紧。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/woodpeckers.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">对趾脚</span><span class="kid-figure-sub">啄木鸟、鹦鹉 · 两趾朝前两趾朝后</span><p class="kid-figure-fact">两趾朝前两趾朝后像两副抓钩，竖着的树干也能扒稳，不是只会抓横枝。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/pelican.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">蹼脚</span><span class="kid-figure-sub">鸭、鹈鹕 · 趾间连着皮</span><p class="kid-figure-fact">脚一张开就是船桨，往后一蹬水，身体就往前滑。上了岸反而走得摇摇摆摆。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/flamingo.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">涉水长腿</span><span class="kid-figure-sub">白鹭、鹤、火烈鸟 · 腿长趾长</span><p class="kid-figure-fact">腿长能站进更深的水，趾摊开把体重摊在烂泥上，不是腿细就站不稳。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/owl.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">利爪</span><span class="kid-figure-sub">鹰、猫头鹰 · 弯钩一样的爪尖</span><p class="kid-figure-fact">抓住就收紧，猎物挣不脱。仔细看，它们落在枝头时爪尖是收着的，不扎自己。</p></div>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="numsTitle">
+ <h2 id="numsTitle">鸟身上的惊人数字</h2>
+ <div class="kid-figure-grid" role="group" aria-label="四个关于鸟的数字">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/hummingbirds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">每秒约&nbsp;50&nbsp;次</span><span class="kid-figure-sub">蜂鸟扇翅膀的速度</span><p class="kid-figure-fact">快到只能看见一团影子，还能悬停在花前倒着飞——所以它才能把细喙准准地探进花管。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/owl.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">约&nbsp;270&nbsp;度</span><span class="kid-figure-sub">猫头鹰脖子能转的角度</span><p class="kid-figure-fact">眼窝里几乎转不动眼球，只好把整颗头当眼球来转，不是脖子爱表演。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/arctic-terns.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">约&nbsp;7&nbsp;万&nbsp;km</span><span class="kid-figure-sub">北极燕鸥一年飞的路</span><p class="kid-figure-fact">夏天飞去北极、冬天去南极，一年的路就极长，不是随便换个池塘过冬。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/woodpeckers.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">每秒约&nbsp;20&nbsp;次</span><span class="kid-figure-sub">啄木鸟敲树的速度</span><p class="kid-figure-fact">头骨像戴了头盔一样能卸力，舌头绕着头骨收纳——凿子嘴配上减震头，才敢这么敲。</p></div>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="howTitle">
+ <h2 id="howTitle">怎么观察一只鸟</h2>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>先站住别动。</b>离得远一点，声音放小——鸟先看到你，你才看不到鸟。</li>
+ <li data-step="2"><b>看嘴的形状。</b>更像镊子、漏勺、钩子还是钳子？先选工具，再猜食物。</li>
+ <li data-step="3"><b>看脚和落点。</b>它站在枝头、水面还是泥地上？脚长什么样？</li>
+ <li data-step="4"><b>说出猜想再验证。</b>「我猜它吃……因为……」，然后看它真的吃了什么。</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>看嘴的形状就知道它大概吃什么，看脚就知道它爱停在哪，不是只会飞。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>喙和脚是鸟随身带的工具箱：吃什么样的饭，就配什么样的嘴；停在什么地方，就长什么样的脚。反过来，看到工具就能倒推它的生活。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>「由形状倒推功能」是生物学最常用的推理。血缘很远的鸟解决同一个问题，工具会越长越像（雨燕和家燕都在空中兜虫，嘴都短而宽）；血缘很近的鸟吃不同的饭，工具反而分开——加拉帕戈斯的地雀就是一家人长出了十几种嘴。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>把「它长什么样」变成「它靠什么生活」的证据链——先观察结构，再推测功能，最后想办法验证。这条链比记住鸟的名字重要得多。</p>
+ <ul class="ask-list">
+ <li>窗台上那只鸟的喙，更像镊子还是钳子？</li>
+ <li>它落下来的第一件事是用脚做什么？</li>
+ <li>同一棵树上，有没有两种嘴形不一样的鸟？它们抢同一种食物吗？</li>
+ </ul>
+ </section>
+
+
+<section class="card" aria-labelledby="teachWhatTitle">
+ <h2 id="teachWhatTitle">飞羽推空气，绒羽把空气锁住</h2>
+ <p>先点「飞羽」，再对照「绒羽」。鸟有羽毛、下蛋、用肺呼吸。羽毛做两件主要的事：又长又硬的飞羽连成能推空气的面，根部蓬松的绒羽锁住空气当棉衣。胸骨上的龙骨突给飞肌提供附着，点到即可，本页不要求默画骨骼。</p>
+ <p>蝙蝠用皮肤膜当翅膀，是哺乳动物，身上没有羽毛。鸵鸟把能量改去跑，企鹅把翅膀改成桨，它们仍是鸟。鸟不等于「都会飞」，夜里飞的也不一定是鸟。</p>
+ <p>因为亲鸟会弃巢、惊飞会摔雏，所以远观不掏巢、不追着拍、不投喂面包。玻璃窗反光会造成撞击，家里可以贴画打破假天空。舞台上的「停稳≈趾抓×枝面」只比较「抓得稳不稳」，不是某一种的说明书，更不是观鸟鉴定课。</p>
+ </section>
+
+ <section class="card" aria-labelledby="lookTitle">
+ <h2 id="lookTitle">飞羽推空气，绒羽锁空气</h2>
+ <p>同一只鸟、同一身羽毛，先只改能指出来的一件事：又长又硬的飞羽连成面、向下向后推空气；根部蓬松的绒把空气锁住。再看企鹅或鸵鸟：不会飞，可仍有羽毛、仍下蛋、仍用肺呼吸。这样比，才知道「有翅膀就会飞」不够当身份证。</p>
+ <p>完成句写「飞羽推进」或「绒羽保温」。禁止「有翅膀就是鸟」和「不会飞就不是鸟」。蝙蝠是膜翼哺乳。不掏巢、不追拍；窗户可以贴画，免得撞玻璃。</p>
+ <div class="kid-figure-grid" role="group" aria-label="主题细节">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/feathers.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">飞羽</span><span class="kid-figure-sub">推进面</span><p class="kid-figure-fact">飞羽连成一片硬面，向下向后推空气，身体才往前，不是软毛自己会飞。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/feathers.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">绒羽</span><span class="kid-figure-sub">锁空气</span><p class="kid-figure-fact">绒羽把空气锁在缝里才暖和，一湿就塌下去漏风，不是永远自带棉袄。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">蝙蝠</span><span class="kid-figure-sub">膜翼</span><p class="kid-figure-fact">蝙蝠用手指撑开皮膜飞，身上没有羽毛，是哺乳动物，不要把它算进鸟。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/penguin.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">企鹅</span><span class="kid-figure-sub">翅当桨</span><p class="kid-figure-fact">企鹅仍下蛋、仍有羽毛，翅膀改成桨在水里推，不在天上飞也不改物种。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">蛋+羽</span><span class="kid-figure-sub">鸟的线索</span><p class="kid-figure-fact">下蛋加上羽毛就是认鸟的线索，不会飞也可以，别只把翅膀当身份证。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/nest.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">掏巢</span><span class="kid-figure-sub">不要</span><p class="kid-figure-fact">掏巢会让卵和雏鸟暴露，追着拍也会让亲鸟不敢回来，两条都不要做。</p></div>
+ </div>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>点飞羽。</b>看它是不是长而硬。</li>
+ <li data-step="2"><b>点绒羽。</b>挤一挤（想象）空气在不在。</li>
+ <li data-step="3"><b>点蝙蝠。</b>膜，不是羽。</li>
+ <li data-step="4"><b>点鸵鸟或企鹅。</b>鸟，却不在天上飞。</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>鸟用硬羽毛推空气，用软绒毛保暖。有的鸟不飞，也还是鸟。我们不掏巢。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>飞羽构成翼面，绒羽隔热，湿了就垮。蝙蝠是哺乳膜翼。鸵鸟跑、企鹅游，翅膀改了用途。恒温要吃得勤。认鸟看羽毛、蛋和肺，不看会不会飞。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>龙骨突发达与否和飞肌相关，但不是「是不是鸟」的判据。羽毛是角蛋白。窗撞是城市里真实的死亡原因。本页数字只用来比较，不是鉴定手册。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能分开飞羽和绒羽，用羽毛+蛋+肺认鸟，并否定「鸟=会飞」和「蝙蝠是鸟」。完成看的是对照，不是背「会飞」。</p>
+ <ul class="ask-list">
+ <li>绒羽能用来飞吗？湿了以后先垮的是飞还是暖？</li>
+ <li>蝙蝠有羽毛吗？夜里飞的一定是鸟吗？</li>
+ <li>企鹅为什么还算鸟？它有羽毛、下蛋、用肺呼吸吗？</li>
+ <li>为什么不能掏巢、不能追着拍？窗户为什么要贴画？</li>
+ </ul>
+ </section>
+
+
+ <section class="card" aria-labelledby="deepTitle">
+ <h2 id="deepTitle">龙骨、恒温，以及窗玻璃</h2>
+ <p>会飞的鸟胸骨正中常有高高的龙骨，飞肌贴在上面。鸵鸟龙骨不明显，能量改去跑。龙骨发达与否和飞有关，但不是「是不是鸟」的判据——判据先落在羽毛、蛋和肺。本页不要求默画骨骼。</p>
+ <p>恒温意味着即使停着也在烧能量，所以鸟要频繁取食。绒羽湿透，隔热垮掉，这和<a href="../games/oil-lab.html">油膜工坊</a>里「洗掉就湿」是亲戚话题，也和<a href="penguins.html">企鹅观察站</a>的油羽锁气是同一本账。</p>
+ <p>窗玻璃映出天空，鸟会当成通道。贴画或挂饰打破反射，比事后「它自己撞的」有用。这是可干预的人为结构，不是鸟笨。</p>
+ <p>掏巢、持续追拍，会让成鸟弃巢或幼鸟过早离巢。不投喂面包，食谱会被改掉。本页「停稳」读数只比较趾抓，不是观鸟鉴定说明书。</p>
+ <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">龙骨</span><span class="kid-figure-sub">飞肌附着</span><p class="kid-figure-fact">会飞的鸟胸前龙骨高，飞肌才有地方抓；跑鸟常常扁平，龙骨不是「是不是鸟」的判据。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/hummingbird.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">恒温</span><span class="kid-figure-sub">一直烧</span><p class="kid-figure-fact">鸟一直在烧热量保持体温，停食很快就会冷，勤吃是生理账，不是嘴馋。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">玻璃</span><span class="kid-figure-sub">假天空</span><p class="kid-figure-fact">玻璃把天空和树映出来，鸟会当通道撞上去；贴画是为了打破反光，不是装饰。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/nest.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">巢</span><span class="kid-figure-sub">别掏</span><p class="kid-figure-fact">就算不伸手去掏，跟拍到亲鸟不敢回巢，幼鸟一样会挨饿，远远看就够。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="fieldTitle">
+ <h2 id="fieldTitle">对照：飞羽推进 · 绒羽保温 · 蝙蝠膜翼</h2>
+ <p>三列里两列是鸟的两种羽，一列是完全不同的翅膀材料。甲：飞羽羽轴两侧常不对称，连成翼面，向下向后推空气。乙：绒羽没有完整的「一片板」，蓬松锁空气，湿了就失去这层。丙：蝙蝠用手指拉着皮膜，是哺乳动物，夜里飞的不一定是鸟。</p>
+ <p>否决句：「有翅膀就会飞，所以是鸟。」也否决「企鹅不会飞所以不是鸟」。本页读数只比较方向，不是鉴定手册。</p>
+ <div class="kid-figure-grid" role="group" aria-label="三列对照">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/feathers.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">飞羽</span><span class="kid-figure-sub">推空气</span><p class="kid-figure-fact">飞羽轴硬、羽片能扣在一起成面，扇下去才推得动空气，散开就推不动。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/feathers.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">绒羽</span><span class="kid-figure-sub">锁空气</span><p class="kid-figure-fact">绒羽没有硬轴连片，专管锁空气；湿透一垮，保温先失败，不是飞不起来那么简单。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">膜翼</span><span class="kid-figure-sub">哺乳</span><p class="kid-figure-fact">展开翅膀能看见一根根手指撑着皮，没有飞羽也没有绒羽，所以蝙蝠不是鸟。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/penguin.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">企鹅</span><span class="kid-figure-sub">翅改桨</span><p class="kid-figure-fact">企鹅的短翅在水里当桨推水，天上飞不起来，可它仍下蛋有羽，还是鸟。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/birds.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">蛋</span><span class="kid-figure-sub">线索</span><p class="kid-figure-fact">先找蛋壳和羽毛这两条线索，会不会飞排后面，鸵鸟和企鹅才不会被踢出去。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/nest.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">红线</span><span class="kid-figure-sub">不掏巢</span><p class="kid-figure-fact">窗上贴画打破反光，野外不掏巢不追拍，两处规则不要并成一句空话。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="moreTitle">
+ <h2 id="moreTitle">两种羽，一个「不飞也是鸟」</h2>
+ <p>在纸上画一张表：飞羽=推进，绒羽=保温。第三行写企鹅或鸵鸟：仍是鸟。蝙蝠单独写：膜+哺乳。完成句点名羽毛：例如「认鸟看羽毛、蛋和肺，不看会不会飞。」</p>
+ <p>口头只要两句：「硬羽推空气，软绒锁空气。」「不掏巢，不追拍。」有人说「有翅膀就是鸟」，让孩子指着蝙蝠反驳。</p>
+ <p>家里可看一看哪扇窗映出天空，商量要不要贴画。远观，不投喂面包。本页数字不要抄进鉴定手册。<a href="feathers.html">羽毛观察站</a>看飞羽和绒羽怎么分工；<a href="bats.html">蝙蝠观察站</a>看皮膜飞的不是鸟。</p>
+ <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/feathers.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">两种羽</span><span class="kid-figure-sub">推/暖</span><p class="kid-figure-fact">摸起来硬而齐的是飞羽在推空气，软而密的是绒羽在锁暖，不要混成一种毛。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/penguin.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">不飞</span><span class="kid-figure-sub">仍是鸟</span><p class="kid-figure-fact">翅膀改去划水只是换了工作，羽毛和蛋还在，用途变了不能把它开除出鸟类。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/bats.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">不是鸟</span><span class="kid-figure-sub">膜翼</span><p class="kid-figure-fact">夜里只看见剪影会把蝙蝠当成鸟，凑近看是皮膜和毛，没有羽毛那一层。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/nest.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">巢和窗</span><span class="kid-figure-sub">不掏/可贴</span><p class="kid-figure-fact">撞玻璃会骨折或内伤，不是拍一下就飞走；巢不要掏，窗贴画是在减撞击。</p></div>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="boostTitle">
+ <h2 id="boostTitle">飞羽推空气，绒羽把空气锁住</h2>
+ <p>飞行是套件工程：羽、肌附着骨、轻结构、高效呼吸，缺一块就飞不稳。飞羽与绒羽分工：一块推空气，一块锁空气。龙骨突是胸肌底座，不会飞的跑鸟常常不明显。</p>
+ <p>蝙蝠同是飞，材料是膜，身上没有羽毛。不会飞是特化，不是「翅膀坏了」：企鹅改成桨，鸵鸟改去跑。观鸟不扰巢、不追；地上的幼鸟先远观，处置听专业指引，不要私自带回。</p>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+ <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+ <p>想知道「不会飞还算不算鸟」，就只改会不会上天这一项。同一套判据——羽毛、蛋、肺——先看会飞的雀，再看企鹅或鸵鸟。把「蝙蝠也会飞」叠进同一档，分不清到底是鸟改了用途，还是分类错了。</p>
+ <ul>
+ <li><b>只改这一项：</b>会飞还是不会飞（或飞羽还是绒羽）。</li>
+ <li><b>先保持不变：</b>有没有羽毛、下不下蛋、用不用肺。</li>
+ <li><b>要观察的：</b>飞羽推不推得动空气；绒羽锁不锁得住暖。</li>
+ <li><b>另开一行：</b>蝙蝠的皮膜、窗玻璃的假天空，不要和「是不是鸟」叠在一起。</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+ <h2 id="askMoreTitle">还可以问下去</h2>
+ <ol>
+ <li>绒羽湿透之后，先垮的是飞还是暖？和油膜工坊、企鹅页的油羽，哪一句能连上？</li>
+ <li>把「有翅膀」当成鸟的定义，蝙蝠和企鹅各会怎样被分错？</li>
+ <li>窗贴画是装饰还是在改「假天空」？追着拍到成鸟不敢回巢，和掏巢差在哪？</li>
+ </ol>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+ <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+ <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把龙骨突提前塞进四岁耳朵。</p>
+ <div class="age-tiers" aria-label="给家长的分层讲法">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>鸟用硬羽毛推空气，用软绒毛保暖。有的鸟不飞，也还是鸟。我们不掏巢、不追它。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>飞羽构成翼面，绒羽隔热。蝙蝠是哺乳膜翼。鸵鸟跑、企鹅游，翅膀改了用途。恒温要吃得勤。本页数字只用来比较，不是鉴定手册。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>判据落在羽、蛋、肺和系统发育，不是「会不会上天」。龙骨突与飞肌相关。窗撞是可干预的结构问题。繁殖期干扰提高弃巢。幼鸟处置听专业指引。</p></div>
+ </div>
+ </section>
+
+ <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+ <h2 class="work-card-title" id="workTitle">作品表单：鸟类观察</h2>
+ <p class="work-card-meta">只保存文字，存在这台设备上。窗外看见的鸟也可以记在这里。</p>
+ <div class="work-card-fields">
+ <div><label for="workType">作品类型</label>
+ <select class="input" id="workType" name="type">
+ <option value="observation">观察记录</option>
+ <option value="explanation">我的解释</option>
+ <option value="photo-note">照片备注</option>
+ </select>
+ </div>
+ <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：麻雀的圆锥喙适合嗑种子"></div>
+ <div><label for="workContent">喙和脚</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下喙的形状、脚的样子，以及你推断它吃什么、站在哪。"></textarea></div>
+ <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+ </div>
+ <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+ </form>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+ <h2 id="askTitle">给家长的问题</h2>
+ <ul class="ask">
+ <li>把「有翅膀」当成鸟的定义，蝙蝠和企鹅各会怎样被分错？让他再指一次羽毛、蛋和肺。</li>
+ <li>绒羽湿透之后，先垮的是飞还是暖？和油膜工坊、企鹅页的油羽，哪一句能连上？</li>
+ <li>龙骨突要不要让孩子摸鸡骨架？若摸，该看的是突起还是「所有鸟都一样」？它能当「是不是鸟」的判据吗？</li>
+ <li>窗贴画是装饰还是在改「假天空」？鸟撞玻璃是它笨，还是结构问题？</li>
+ <li>追着拍到成鸟不敢回巢，和掏巢差在哪？对幼鸟是不是同一类伤害？</li>
+ <li>本页「停稳」读数能当某一种的鉴定手册吗？它比较的是趾抓，还是说明书？</li>
+ <li>地上掉下来的幼鸟，先远观还是抱回家？专业指引和私自饲养差在哪？</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+ <h2 id="whyTitle">背后的原理</h2>
+ <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：鸟有羽毛、下蛋、用肺呼吸。羽毛是表皮衍生物：正羽提供气动面，绒羽提供滞留空气的隔热层。龙骨突的发达程度与胸肌、飞行能力相关，但不是「是不是鸟」的判据。</p>
+ <p>翼的同源结构在蝙蝠变成皮膜、在企鹅变成桨状肢，说明前肢可以改用途。分类应落在羽、蛋、肺和系统发育，而不是「会不会上天」。恒温的维持成本高，湿羽使隔热失效。</p>
+ <p>本页「停稳≈趾抓×枝面÷14」只是比较尺子，用来让孩子看见「抓得住枝才停得稳」，不是某一种的鉴定说明书，也不是观鸟名录。城市玻璃的镜面反射造成撞击，是可干预的结构问题。</p>
+ <p>观察安全：不掏巢、不追拍、不投喂面包；窗可贴画；地上幼鸟先远观，处置听专业指引。本页不提供物种鉴定、不教饲养。</p>
+ </section>
+
+ <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))" data-audience="parent">
+ <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">鸟类公式卡 · 停稳≈趾抓×枝面÷14；停稳≥10 更稳；喙管吃、脚管停</p>
+ <p style="margin:0;color:var(--ink-mid);line-height:1.55">真实还靠腱锁定与爪弯；走禽与攀禽脚型不同。停稳公式只是本页比较尺子，不是鉴定说明书。因为亲鸟会弃巢、面包会改食谱，所以远观不掏巢、不投喂面包。</p>
+ </div>
+
+
+<section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+ <h2 id="nextTitle">接下来可以去</h2>
+ <p>带走句：认鸟看羽毛、蛋和肺，不看会不会飞。羽毛页看飞羽和绒羽怎么分工；蝙蝠页看皮膜飞的不是鸟；企鹅页看翅膀当桨仍是鸟。</p>
+ <p class="row"><a class="btn btn-ghost" href="feathers.html">羽毛观察站</a><a class="btn btn-ghost" href="bats.html">蝙蝠观察站</a><a class="btn btn-ghost" href="penguins.html">企鹅观察站</a></p>
+ </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为亲鸟会弃巢、面包会改食谱，所以远观不掏巢、不投喂面包。本页不提供物种鉴定。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+ "use strict";
+ var BIRDS = [
+ { id:"sparrow", name:"麻雀", icon:"🪶", beak:"圆锥短喙", foot:"三前一后，抓树枝", job:"嗑开草籽", d:"M352 96 L392 102 L352 110 Z", f:"M230 162 L214 196 M230 162 L230 198 M230 162 L248 196" },
+ { id:"swallow", name:"家燕", icon:"🕊️", beak:"又短又宽", foot:"细爪，几乎不走路", job:"张嘴兜虫子", d:"M352 94 L378 102 L352 110 Z", f:"M232 162 L226 188 M232 162 L240 188" },
+ { id:"heron", name:"白鹭", icon:"🦢", beak:"又长又尖", foot:"长趾，浅水站立", job:"当矛刺鱼", d:"M352 98 L430 102 L352 106 Z", f:"M226 162 L210 206 M234 162 L234 208 M242 162 L258 206" },
+ { id:"duck", name:"绿头鸭", icon:"🦆", beak:"扁扁的滤食喙", foot:"趾间有蹼", job:"滤水里的小东西", d:"M352 92 L410 96 L410 108 L352 112 Z", f:"M218 168 Q230 198 248 168 M230 168 V198" },
+ { id:"eagle", name:"猛禽", icon:"🦅", beak:"钩状尖喙", foot:"利爪", job:"撕开肉食", d:"M352 90 L398 86 L360 112 Z", f:"M222 162 L206 196 L214 196 M230 162 L230 198 M238 162 L254 196 L246 196" },
+ { id:"woodpecker", name:"啄木鸟", icon:"🪵", beak:"凿子般直喙", foot:"两前两后", job:"凿开树皮找虫", d:"M352 94 L418 100 L352 108 Z", f:"M220 162 L208 196 M228 162 L220 196 M236 162 L248 196 M244 162 L256 196" },
+ { id:"humming", name:"蜂鸟", icon:"🌺", beak:"细管长喙", foot:"几乎不落地", job:"探进花管吸蜜", d:"M352 98 L438 100 L352 104 Z", f:"M232 162 L228 180 M232 162 L238 180" },
+ { id:"owl", name:"猫头鹰", icon:"🦉", beak:"短钩喙", foot:"利爪夜捕", job:"撕开夜行猎物", d:"M352 92 L386 88 L358 112 Z", f:"M222 162 L208 196 L216 196 M230 162 L230 198 M238 162 L252 196 L244 196" },
+ { id:"crane", name:"鹤", icon:"🦩", beak:"又长又直", foot:"长腿涉水", job:"当矛刺鱼", d:"M352 98 L440 100 L352 104 Z", f:"M226 162 L214 210 M234 162 L234 212 M244 162 L258 210" },
+ { id:"finch", name:"锡嘴雀", icon:"🐤", beak:"又短又厚", foot:"三前一后", job:"嗑开草籽", d:"M352 94 L378 108 L352 114 Z", f:"M230 162 L216 196 M230 162 L230 198 M230 162 L246 196" },
+ { id:"pelican", name:"鹈鹕", icon:"🪿", beak:"带喉囊的长喙", foot:"全蹼", job:"滤水里的小东西", d:"M352 88 L430 86 L430 118 L352 110 Z", f:"M218 168 Q232 204 250 168 M230 168 V200" },
+ { id:"swift", name:"雨燕", icon:"🪁", beak:"又短又宽", foot:"细爪几乎不走", job:"张嘴兜虫子", d:"M352 96 L372 104 L352 110 Z", f:"M232 162 L228 178 M232 162 L238 178" },
+ { id:"flamingo", name:"火烈鸟", icon:"🌸", beak:"向下弯的滤食喙", foot:"长腿涉水", job:"滤泥里的小虾", d:"M352 96 L392 104 L424 136 L404 138 L368 110 L352 108 Z", f:"M226 162 L214 214 M234 162 L234 216 M244 162 L258 214" },
+ { id:"crossbill", name:"交嘴雀", icon:"🌲", beak:"上下交叉的喙", foot:"三前一后，抓松枝", job:"撬开松果鳞片", d:"M352 92 L404 82 L392 94 L352 100 Z M352 108 L400 120 L388 108 L352 102 Z", f:"M230 162 L216 196 M230 162 L230 198 M230 162 L246 196" },
+ { id:"parrot", name:"鹦鹉", icon:"🦜", beak:"又厚又弯的钳喙", foot:"两前两后，抓树枝", job:"掰开硬壳果", d:"M352 88 L406 98 L358 120 Z", f:"M220 162 L208 196 M228 162 L220 196 M236 162 L248 196 M244 162 L256 196" },
+ { id:"avocet", name:"反嘴鹬", icon:"〰️", beak:"向上弯的长喙", foot:"长趾浅水走", job:"扫水里的小虫", d:"M352 108 L400 100 L436 78 L416 86 L364 108 L352 110 Z", f:"M226 162 L212 206 M234 162 L234 208 M244 162 L258 206" }
+ ];
+ var JOBS = ["嗑开草籽","张嘴兜虫子","当矛刺鱼","滤水里的小东西","撕开肉食","凿开树皮找虫","探进花管吸蜜","撕开夜行猎物","滤泥里的小虾","撬开松果鳞片","掰开硬壳果","扫水里的小虫"];
+ var current = null, prev = null, done = false;
+ var grid = document.getElementById("birdGrid");
+ var picks = document.getElementById("jobPicks");
+ function draw(bird){
+ document.getElementById("beak").setAttribute("d", bird.d);
+ document.getElementById("foot").setAttribute("d", bird.f);
+ document.getElementById("stageSay").textContent = bird.name+"：喙是"+bird.beak+"，脚是"+bird.foot+"。";
+ }
+ var BIRD_PHOTOS = {
+  sparrow: "sparrows.jpg", swallow: "swallow.jpg", heron: "heron.jpg",
+  woodpecker: "woodpecker.jpg", humming: "hummingbird.jpg", owl: "owl.jpg",
+  crane: "crane.jpg", pelican: "pelican.jpg", swift: "swifts.jpg",
+  flamingo: "flamingo.jpg", crossbill: "crossbills.jpg", avocet: "avocets.jpg"
+ };
+ var BIRD_FACTS = {
+  sparrow: "圆锥短喙嗑开草籽，不是白鹭那种长矛嘴去刺鱼。",
+  swallow: "又短又宽的嘴张着兜虫子，不是站着嗑籽的短圆锥喙。",
+  heron: "又长又尖的嘴当矛刺鱼，不是麻雀那种短圆锥嗑籽。",
+  duck: "扁嘴在水里滤小东西，不是凿树皮的凿子嘴，也不是钩肉。",
+  eagle: "钩状尖喙撕开肉食，不是滤水的扁嘴，也不是嗑籽的短喙。",
+  woodpecker: "凿子直喙凿开树皮找虫，两趾朝前两趾朝后，不是只会抓横枝。",
+  humming: "细管长喙探进花管吸蜜，能悬停，不是只会往前飞的家燕。",
+  owl: "短钩喙加利爪夜里捕，面盘收声；仍是鸟，不是蝙蝠那种膜翼兽。",
+  crane: "又长又直的嘴当矛刺鱼，长腿涉水，不是火烈鸟那种向下弯的滤食喙。",
+  finch: "又短又厚的喙嗑开草籽，不是钩肉的猛禽嘴，也不是滤水的扁嘴。",
+  pelican: "带喉囊的长喙舀水滤食，全蹼划水，不是扁嘴绿头鸭那种浅滤。",
+  swift: "镰刀翅几乎不落地，张嘴兜虫子，不是家燕那种叉尾泥巢。",
+  flamingo: "向下弯的喙滤泥里的小虾，长腿涉水，不是白鹭那种直矛嘴。",
+  crossbill: "上下交叉的喙撬开松果鳞片，不是锡嘴雀那种又短又厚嗑籽。",
+  parrot: "又厚又弯的钳喙掰开硬壳果，两趾朝前两趾朝后，不是三前一后。",
+  avocet: "向上弯的长喙扫水里的小虫，不是白鹭那种直直往下刺。"
+ };
+ BIRDS.forEach(function(bird){
+ var b = document.createElement("button");
+ b.className = "kid-figure bird-card"; b.type = "button"; b.setAttribute("aria-pressed","false");
+ b.setAttribute("aria-label","查看"+bird.name+"图鉴");
+ var artHref = {
+ sparrow: "#art-nature-weaver", swallow: "#art-nature-weaver", finch: "#art-nature-weaver",
+ swift: "#art-nature-weaver", humming: "#art-nature-weaver",
+ owl: "#art-nature-owl", eagle: "#art-nature-owl",
+ flamingo: "#art-nature-flamingo", heron: "#art-nature-flamingo", crane: "#art-nature-flamingo", avocet: "#art-nature-flamingo",
+ pelican: "#art-nature-pelican", duck: "#art-nature-pelican",
+ toucan: "#art-nature-toucan", parrot: "#art-nature-toucan", woodpecker: "#art-nature-toucan", crossbill: "#art-nature-toucan"
+ }[bird.id] || "#art-nature-weaver";
+ var artFill = {
+ sparrow: "#d5f0ff", swallow: "#c8e4f4", finch: "#e8f3d8", swift: "#b7daf2", humming: "#cfe8d8",
+ owl: "#e8dcc8", eagle: "#efe0cc",
+ flamingo: "#f8c8d8", heron: "#b7d8ee", crane: "#dce8f0", avocet: "#c8dce8",
+ pelican: "#7eb6d4", duck: "#9ed4e6",
+ parrot: "#cfe8b0", woodpecker: "#dce8c8", crossbill: "#e8f3d8"
+ }[bird.id] || "#d5f0ff";
+ var photo = BIRD_PHOTOS[bird.id];
+ var fact = BIRD_FACTS[bird.id] || bird.job;
+ var artSpan = document.createElement("span");
+ artSpan.className = "kid-figure-art";
+ artSpan.setAttribute("aria-hidden", "true");
+ if (photo) {
+  var imgEl = document.createElement("img");
+  imgEl.className = "photo-real";
+  imgEl.alt = "";
+  imgEl.width = 240;
+  imgEl.height = 180;
+  imgEl.src = "../assets/photos/" + photo;
+  artSpan.appendChild(imgEl);
+ } else {
+  artSpan.innerHTML = '<svg viewBox="0 0 120 90" focusable="false"><rect fill="'+artFill+'" width="120" height="90"/><use href="'+artHref+'" x="4" y="-16" width="112" height="112"/></svg>';
+ }
+ var cap = document.createElement("span");
+ cap.className = "kid-figure-cap";
+ cap.textContent = bird.name;
+ var sub = document.createElement("span");
+ sub.className = "kid-figure-sub";
+ sub.textContent = bird.beak;
+ var factEl = document.createElement("span");
+ factEl.className = "kid-figure-fact";
+ factEl.textContent = fact;
+ b.appendChild(artSpan);
+ b.appendChild(cap);
+ b.appendChild(sub);
+ b.appendChild(factEl);
+ b.addEventListener("click", function(){
+ if (current && current.id !== bird.id) prev = current;
+ current = bird;
+ Array.prototype.forEach.call(grid.querySelectorAll(".bird-card"), function(n){ n.setAttribute("aria-pressed", n===b?"true":"false"); });
+ draw(bird);
+ document.getElementById("compareBtn").disabled = !prev;
+ if (!done) document.getElementById("taskStatus").textContent = "已选"+bird.name+"。再点一句：它的喙在干什么？";
+ });
+ grid.appendChild(b);
+ });
+ JOBS.forEach(function(job){
+ var b = document.createElement("button");
+ b.className = "kid-tile"; b.type = "button";
+ b.setAttribute("aria-pressed","false");
+ b.innerHTML = '<span class="kid-tile-label">'+job+'</span>';
+ b.addEventListener("click", function(){
+ Array.prototype.forEach.call(picks.querySelectorAll(".kid-tile"), function(n){ n.setAttribute("aria-pressed", n===b?"true":"false"); });
+ if (!current) {
+ document.getElementById("taskStatus").textContent = "先点一只鸟，再选它的喙在干什么。";
+ return;
+ }
+ if (done) return;
+ if (job !== current.job) {
+ document.getElementById("taskStatus").textContent = "再看看"+current.name+"的喙形状，换一句试试。";
+ return;
+ }
+ done = true;
+ if (window.Progress) Progress.complete("nature/birds.html", current.name+"的喙用来"+current.job);
+ document.getElementById("taskStatus").textContent = "完成啦："+current.name+"的喙用来"+current.job+"。";
+ });
+ picks.appendChild(b);
+ });
+ document.getElementById("compareBtn").addEventListener("click", function(){
+ if (!current || !prev) return;
+ document.getElementById("compareSay").textContent = prev.name+"的喙是"+prev.beak+"，"+current.name+"的喙是"+current.beak+"。它们吃的东西大概不一样。";
+ });
+ var stageIdx = -1;
+ document.getElementById("stageNextBird").addEventListener("click", function(){
+ var list = grid.querySelectorAll(".bird-card");
+ if (!list.length) return;
+ stageIdx = (stageIdx + 1) % list.length;
+ list[stageIdx].click();
+ });
+})();
+</script>
+<script>
+
+(function(){
+ "use strict";
+ var a = document.getElementById("biA");
+ var b = document.getElementById("biB");
+ if (!a || !b) return;
+ var g1 = "", g2 = "", g3 = "";
+ var g1Done = false, g2Done = false, g3Done = false;
+ function score(){ return Math.round(Number(a.value) * Number(b.value) / 14); }
+ function paint(){
+ var s = score();
+ var ok = s >= 10;
+ document.getElementById("biALab").textContent = a.value;
+ document.getElementById("biBLab").textContent = b.value;
+ a.setAttribute("aria-valuetext", a.value);
+ b.setAttribute("aria-valuetext", b.value);
+ document.getElementById("biAOut").textContent = a.value;
+ document.getElementById("biSOut").textContent = String(s);
+ document.getElementById("biOkOut").textContent = ok ? "够稳" : "偏滑";
+ document.getElementById("biStateLab").textContent = ok ? "有羽有蛋才是鸟" : "会飞的不都是鸟";
+ document.getElementById("biLabLive").textContent = ok
+ ? "爪子抓得紧才能停稳在枝上。认鸟要看羽毛、喙和蛋，不看它会不会飞。"
+ : "抓不紧或枝太滑，就站不住。蝙蝠会飞、还喂奶，身上没羽毛，所以不是鸟。";
+ document.getElementById("biFoot").setAttribute("stroke-width", String(3.5 + Number(a.value) * 0.08));
+ var bat = document.getElementById("biBat");
+ if (bat) bat.setAttribute("opacity", ok ? "0.12" : "0.4");
+ var bh = 30 + s * 2.5;
+ document.getElementById("biBar").setAttribute("height", String(bh));
+ document.getElementById("biBar").setAttribute("y", String(180 - bh));
+
+ if (g1 && !g1Done && Number(a.value) === 28 && Number(b.value) === 10 && s === 20) {
+ g1Done = true;
+ document.getElementById("biGuessOut1").innerHTML = (g1 === "20" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "爪子抓得紧、枝够涩，才停得稳。认鸟仍看羽和蛋。";
+ document.getElementById("biGuessBlock2").hidden = false;
+ }
+ if (g2 && !g2Done && Number(a.value) <= 5 && Number(b.value) <= 3 && !ok) {
+ g2Done = true;
+ document.getElementById("biGuessOut2").innerHTML = (g2 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "抓得松、枝太滑，站不住。";
+ document.getElementById("biGuessBlock3").hidden = false;
+ }
+ if (g3 && !g3Done && Number(a.value) === 4 && Number(b.value) === 2) {
+ g3Done = true;
+ document.getElementById("biGuessOut3").innerHTML = (g3 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "抓最松、枝最滑，停不住。会飞也不等于是鸟。";
+ }
+}
+ a.addEventListener("input", paint); b.addEventListener("input", paint);
+ Array.prototype.forEach.call(document.querySelectorAll("[data-bi-g1]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g1Done) return;
+ g1 = btn.getAttribute("data-bi-g1");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-bi-g1]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("biGuessOut1").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-bi-g2]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g2Done) return;
+ g2 = btn.getAttribute("data-bi-g2");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-bi-g2]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("biGuessOut2").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-bi-g3]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g3Done) return;
+ g3 = btn.getAttribute("data-bi-g3");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-bi-g3]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("biGuessOut3").textContent = "押好了";
+ });
+ });
+ paint();
+})();
+
+</script>
+<script>if (window.Progress) Progress.visit("nature/birds.html", "鸟类观察站");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

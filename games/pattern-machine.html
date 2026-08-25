@@ -5,15 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>规律机器 · 互动实验室</title>
 <meta name="description" content="给机器喂一个数，它吐出另一个数。孩子通过输入输出猜出隐藏规则，从算术走向代数思维。">
-<link rel="stylesheet" href="../assets/css/base.css?v=17">
-<link rel="stylesheet" href="../assets/css/kid.css?v=17">
-<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#fff8ec">
-<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
 <style>
-  .hd { padding: 28px 0 18px; }
-  .hd .row { margin-bottom: 14px; }
   .lede { font-size: 1.03rem; color: var(--ink-mid); max-width: 62ch; }
   .lede b { color: var(--ink); }
 
@@ -68,7 +66,10 @@
   .feed .input { width: 96px; flex: none; text-align: center; font-family: var(--mono); }
   .feed-hint {
     font-size: .82rem; font-weight: 600; color: var(--warn);
-    border: 1px solid rgba(251,191,36,.4); background: rgba(251,191,36,.1);
+    /* 原来写死的 rgba(251,191,36,.4) 是为暗底写的琥珀色高光描边，浅底上只有 1.19:1，
+       等于没画——这枚提示胶囊是 JS 动态写进来的反馈，圈不出来就混进正文里了。
+       换成和 --surface 混的 --warn（不和 --line 混：孩子模式的 --line 是暖棕 #f0c98a）。 */
+    border: 1px solid color-mix(in srgb,var(--warn) 55%,var(--surface)); background: color-mix(in srgb,var(--warn) 10%,var(--surface));
     padding: 4px 10px; border-radius: 999px;
   }
 
@@ -190,6 +191,11 @@
   .pattern-track .track-arrow { fill:var(--warn); }
   .rail-choice { flex:1 1 92px; display:grid; grid-template-columns:42px auto; align-items:center; justify-content:center; gap:8px; min-height:52px; }
   .rail-choice svg { width:36px; height:36px; overflow:visible; }
+  /* 标签不换行。`flex:1 1 92px` 减去 42px 图标和 8px 间距，文字轨道只剩约 42px，
+     正好卡在「正方形」三个字的宽度上，于是折成「正方」+「形」。
+     三个字的控件标签断开没有任何好处；nowrap 之后 flex 项的 min-content 下限
+     会自动把按钮撑到放得下整个词，不会溢出。 */
+  .rail-choice span { white-space:nowrap; }
   .next-piece-icon { width:54px; height:54px; display:grid; place-items:center; border-radius:16px; background:var(--surface); border:2px solid var(--line); }
   .next-piece-icon svg { width:38px; height:38px; }
   .next-piece-icon [data-shape] { display:none; }
@@ -245,8 +251,16 @@
       justify-content:center;
     }
   }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+  @media (max-width:480px) {
+    html[data-mode="kid"] .story-hero { margin:6px 0 4px; padding:6px 10px; }
+    html[data-mode="kid"] .story-hero h1 { font-size:1.22rem; }
+    html[data-mode="kid"] .story-goal { font-size:.84rem; margin-top:4px; }
+    html[data-mode="kid"] .story-guide { display:none; }
+    html[data-mode="kid"] .pattern-rail.kid-visual-stage { padding:6px; gap:6px; }
+    html[data-mode="kid"] .pattern-track { min-height:64px; }
+    html[data-mode="kid"] .pattern-rail .kid-action-strip { margin:4px 0; }
+    html[data-mode="kid"] .pattern-rail .rail-choice { min-height:48px; font-size:.86rem; }
+    html[data-mode="kid"] .playful-companion { display: none; }
   }
 
   /* 规律侦探社 */
@@ -254,6 +268,7 @@
   .story-hero { position:relative; display:grid; grid-template-columns:auto minmax(0,1fr); gap:16px; align-items:center; margin:22px 0 14px; padding:24px clamp(16px,4vw,30px); overflow:hidden; border:1px solid rgba(167,139,250,.42); border-radius:var(--r-lg); background:linear-gradient(135deg,rgba(167,139,250,.16),rgba(110,168,254,.08) 60%,var(--surface)); }
   .story-hero::after { content:"? → 7"; position:absolute; right:20px; top:12px; color:rgba(167,139,250,.17); font:800 clamp(2.2rem,8vw,5rem)/1 var(--mono); pointer-events:none; }
   .story-guide { position:relative; z-index:1; width:88px; height:88px; display:grid; place-items:center; border-radius:45% 55% 48% 52%; background:linear-gradient(145deg,#ddd3ff,#8b5cf6); color:#24134f; font-size:2.55rem; box-shadow:0 10px 28px rgba(139,92,246,.25); transform:rotate(3deg); }
+  .story-hero .story-guide > svg { width:1.75em; height:1.75em; }
   .story-copy { position:relative; z-index:1; min-width:0; }
   .story-kicker { margin:0 0 5px; color:var(--phys); font-weight:800; font-size:.82rem; }
   .story-hero h1 { margin:0; }
@@ -265,7 +280,6 @@
   .learning-layers summary { min-height:48px; display:flex; align-items:center; cursor:pointer; color:var(--ink); font-weight:800; }
   .learning-layers details > div { padding:0 0 16px; color:var(--ink-mid); }
   main#main > * { order:0 !important; }
-  [hidden] { display:none !important; }
   button, .btn, .chip, .modebar button, .opt, select, input[type="range"] { min-height:44px; }
   .quick button { min-width:44px; min-height:44px; }
   canvas { max-width:100%; }
@@ -455,6 +469,11 @@
   @media (max-width:560px) {
     .pm-card { padding:12px; }
   }
+  .guess-card { border-color: color-mix(in srgb,var(--math) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--math); background: color-mix(in srgb,var(--math) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+  .pick-btns { display:flex; gap:8px; flex-wrap:wrap; }
 </style>
 </head>
 <body data-playful-page="games/pattern-machine.html">
@@ -469,21 +488,42 @@
     <a class="nav-link" href="../nature/index.html">探索</a>
     <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
   </div>
 </div></nav>
 
 <main id="main" class="wrap">
 
-  <header class="story-hero kid-hero-scene">
-    <div class="story-guide" aria-hidden="true">🕵️</div>
+  <header class="story-hero kid-mission">
+    <div class="story-guide" aria-hidden="true">
+      <svg viewBox="0 0 72 56" focusable="false" aria-hidden="true">
+        <path class="pm-hopper" d="M8 16 H28 L24 28 H12 Z"/>
+        <rect class="pm-body" x="8" y="28" width="32" height="20" rx="5"/>
+        <circle class="pm-gear" cx="18" cy="38" r="6"/>
+        <circle class="pm-gear-hub" cx="18" cy="38" r="2"/>
+        <rect class="pm-pipe" x="40" y="32" width="8" height="10"/>
+        <circle class="pm-dot-in" cx="12" cy="8" r="3"/>
+        <circle class="pm-dot-in" cx="20" cy="8" r="3"/>
+        <circle class="pm-dot-in" cx="16" cy="14" r="3"/>
+        <circle class="pm-dot-out" cx="54" cy="32" r="3.1"/>
+        <circle class="pm-dot-out" cx="62" cy="32" r="3.1"/>
+        <circle class="pm-dot-out" cx="70" cy="32" r="3.1"/>
+        <circle class="pm-dot-out" cx="54" cy="41" r="3.1"/>
+        <circle class="pm-dot-out" cx="62" cy="41" r="3.1"/>
+        <circle class="pm-dot-out" cx="70" cy="41" r="3.1"/>
+      </svg>
+    </div>
     <div class="story-copy">
       <p class="story-kicker">星星侦探递来一封密件</p>
       <div class="row">
         <span class="pill pill-math">数学 · 代数思维</span>
-        <span class="pill">适合 6–12 岁</span>
-        <span class="pill">规律与函数</span>
+        <span class="pill">适合 6–12&nbsp;岁</span>
+        <!-- 原来写「规律与函数」。「函数」在本页的解释全都在家长层，孩子层这个标签
+             等于给孩子一个没人解释的词。 -->
+        <span class="pill">找规律 · 猜规则</span>
       </div>
       <h1>破解会变数字的机器</h1>
+      <p class="live-text" data-edu-point role="note"><b>这一页在学：</b>规律是重复的规则；被打乱后要找出哪一格坏了。</p>
       <p class="story-goal"><b>喂一个数进去：</b>收集“进 → 出”线索，猜出机器藏的规则。</p>
     </div>
   </header>
@@ -568,7 +608,7 @@
       <p class="play-tip">点图章盖出一排，再让小机器<b>猜你的规律</b>。</p>
       <div class="stamp-row" id="stampPicks" role="group" aria-label="选择要盖的图章"></div>
       <div class="tile-row build-strip" id="stampRow" role="img" aria-label="我盖出的队伍：还是空的"></div>
-      <p class="play-say" id="stampSay" role="status" aria-live="polite"><span class="face" aria-hidden="true">🤖</span><span>盖 4 个以上，我就来猜。</span></p>
+      <p class="play-say" id="stampSay" role="status" aria-live="polite"><span class="face" aria-hidden="true">🤖</span><span>盖 4&nbsp;个以上，我就来猜。</span></p>
       <div class="play-tools">
         <button class="btn btn-primary btn-sm" type="button" id="stampGuess">机器来猜 🤖</button>
         <button class="btn btn-sm" type="button" id="stampUndo">退一个 ←</button>
@@ -596,7 +636,7 @@
         <li style="--tone:var(--math)"><span class="kid-legend-mark" aria-hidden="true">⚙</span>齿轮：藏着规则</li>
         <li style="--tone:var(--sci)"><span class="kid-legend-mark" aria-hidden="true">▶</span>出口：数字出来</li>
       </ul>
-      <div class="kid-figure-grid" id="pmAtlasGrid" style="--tone:var(--math)" aria-label="机器图鉴：六张大图卡">
+      <div class="kid-figure-grid" id="pmAtlasGrid" style="--tone:var(--math)" role="group" aria-label="机器图鉴：六张大图卡">
         <button class="kid-figure" type="button" data-pm-machine="add3" aria-pressed="false">
           <span class="kid-figure-art" aria-hidden="true">
             <svg viewBox="0 0 120 90" focusable="false">
@@ -611,15 +651,18 @@
               <circle class="pm-gear-hub" cx="47" cy="63" r="2.5"/>
               <rect class="pm-pipe" x="76" y="58" width="12" height="11"/>
               <path class="pm-pipe" d="M88 54 L100 49 L100 78 L88 73 Z"/>
-              <circle class="pm-token-out" cx="109" cy="63" r="9"/>
-              <circle class="pm-token-in" cx="26" cy="13" r="9"/>
+              <circle class="pm-token-out" cx="109" cy="63" r="11"/>
+              <circle class="pm-dot-out" cx="104" cy="58" r="1.6"/><circle class="pm-dot-out" cx="104" cy="63" r="1.6"/><circle class="pm-dot-out" cx="104" cy="68" r="1.6"/>
+              <circle class="pm-dot-out" cx="114" cy="58" r="1.6"/><circle class="pm-dot-out" cx="114" cy="63" r="1.6"/><circle class="pm-dot-out" cx="114" cy="68" r="1.6"/>
+              <circle class="pm-token-in" cx="26" cy="13" r="11"/>
+              <circle class="pm-dot-in" cx="22" cy="9" r="1.7"/><circle class="pm-dot-in" cx="26" cy="13" r="1.7"/><circle class="pm-dot-in" cx="30" cy="17" r="1.7"/>
               <rect class="pm-badge" x="46" y="21" width="36" height="18" rx="9"/>
               <text class="pm-ink" x="64" y="35" text-anchor="middle" font-size="13">+3</text>
             </svg>
           </span>
           <span class="kid-figure-cap">加法机</span>
           <span class="kid-figure-sub">进来就 +3</span>
-          <span class="kid-figure-fact">进 3 → 出 6</span>
+          <span class="kid-figure-fact">加法机：进 3 吐出 6，因为每步都加同一个 3，这条规则重复才算数。下一组也对上才算。</span>
         </button>
         <button class="kid-figure" type="button" data-pm-machine="mul2" aria-pressed="false">
           <span class="kid-figure-art" aria-hidden="true">
@@ -635,15 +678,18 @@
               <circle class="pm-gear-hub" cx="52" cy="65" r="3"/>
               <rect class="pm-pipe" x="76" y="58" width="12" height="11"/>
               <path class="pm-pipe" d="M88 54 L100 49 L100 78 L88 73 Z"/>
-              <circle class="pm-token-out" cx="109" cy="63" r="9"/>
-              <circle class="pm-token-in" cx="26" cy="13" r="9"/>
+              <circle class="pm-token-out" cx="109" cy="63" r="11"/>
+              <circle class="pm-dot-out" cx="104" cy="58" r="1.6"/><circle class="pm-dot-out" cx="104" cy="63" r="1.6"/><circle class="pm-dot-out" cx="104" cy="68" r="1.6"/>
+              <circle class="pm-dot-out" cx="114" cy="58" r="1.6"/><circle class="pm-dot-out" cx="114" cy="63" r="1.6"/><circle class="pm-dot-out" cx="114" cy="68" r="1.6"/>
+              <circle class="pm-token-in" cx="26" cy="13" r="11"/>
+              <circle class="pm-dot-in" cx="22" cy="9" r="1.7"/><circle class="pm-dot-in" cx="26" cy="13" r="1.7"/><circle class="pm-dot-in" cx="30" cy="17" r="1.7"/>
               <rect class="pm-badge" x="46" y="21" width="36" height="18" rx="9"/>
               <text class="pm-ink" x="64" y="35" text-anchor="middle" font-size="13">×2</text>
             </svg>
           </span>
           <span class="kid-figure-cap">乘法机</span>
-          <span class="kid-figure-sub">变成 2 倍</span>
-          <span class="kid-figure-fact">进 3 → 出 6</span>
+          <span class="kid-figure-sub">变成 2&nbsp;倍</span>
+          <span class="kid-figure-fact">乘法机：进 3 也吐出 6，却是变成 2&nbsp;倍；只看一组还分不清加还是乘。再进一次才拆得开。</span>
         </button>
         <button class="kid-figure" type="button" data-pm-machine="step2" aria-pressed="false">
           <span class="kid-figure-art" aria-hidden="true">
@@ -661,15 +707,19 @@
               <circle class="pm-gear-hub" cx="62" cy="65" r="2.2"/>
               <rect class="pm-pipe" x="76" y="58" width="12" height="11"/>
               <path class="pm-pipe" d="M88 54 L100 49 L100 78 L88 73 Z"/>
-              <circle class="pm-token-out" cx="109" cy="63" r="9"/>
-              <circle class="pm-token-in" cx="26" cy="13" r="9"/>
+              <circle class="pm-token-out" cx="109" cy="63" r="11"/>
+              <circle class="pm-dot-out" cx="104" cy="57.5" r="1.45"/><circle class="pm-dot-out" cx="104" cy="63" r="1.45"/><circle class="pm-dot-out" cx="104" cy="68.5" r="1.45"/>
+              <circle class="pm-dot-out" cx="109" cy="63" r="1.45"/>
+              <circle class="pm-dot-out" cx="114" cy="57.5" r="1.45"/><circle class="pm-dot-out" cx="114" cy="63" r="1.45"/><circle class="pm-dot-out" cx="114" cy="68.5" r="1.45"/>
+              <circle class="pm-token-in" cx="26" cy="13" r="11"/>
+              <circle class="pm-dot-in" cx="22" cy="9" r="1.7"/><circle class="pm-dot-in" cx="26" cy="13" r="1.7"/><circle class="pm-dot-in" cx="30" cy="17" r="1.7"/>
               <rect class="pm-badge" x="41" y="21" width="46" height="18" rx="9"/>
               <text class="pm-ink" x="64" y="35" text-anchor="middle" font-size="11">×2+1</text>
             </svg>
           </span>
           <span class="kid-figure-cap">两步机</span>
           <span class="kid-figure-sub">先 ×2 再 +1</span>
-          <span class="kid-figure-fact">进 3 → 出 7</span>
+          <span class="kid-figure-fact">两步机：进 3 先乘 2 再加 1 才吐出 7；一组对上了也不能就定死这条规则。再试一组才敢认。</span>
         </button>
         <button class="kid-figure" type="button" data-pm-machine="sub4" aria-pressed="false">
           <span class="kid-figure-art" aria-hidden="true">
@@ -686,15 +736,17 @@
               <path class="pm-arrow" d="M60 54 h8 v10 h5 l-9 10 l-9 -10 h5 z"/>
               <rect class="pm-pipe" x="76" y="58" width="12" height="11"/>
               <path class="pm-pipe" d="M88 54 L100 49 L100 78 L88 73 Z"/>
-              <circle class="pm-token-out" cx="109" cy="63" r="9"/>
-              <circle class="pm-token-in" cx="26" cy="13" r="9"/>
+              <circle class="pm-token-out" cx="109" cy="63" r="11"/>
+              <path class="pm-tooth" d="M102 63 H116"/>
+              <circle class="pm-token-in" cx="26" cy="13" r="11"/>
+              <circle class="pm-dot-in" cx="22" cy="9" r="1.7"/><circle class="pm-dot-in" cx="26" cy="13" r="1.7"/><circle class="pm-dot-in" cx="30" cy="17" r="1.7"/>
               <rect class="pm-badge" x="46" y="21" width="36" height="18" rx="9"/>
               <text class="pm-ink" x="64" y="35" text-anchor="middle" font-size="13">−4</text>
             </svg>
           </span>
           <span class="kid-figure-cap">减法机</span>
           <span class="kid-figure-sub">进来就 −4</span>
-          <span class="kid-figure-fact">进 3 → 出 −1</span>
+          <span class="kid-figure-fact">减法机：进 3 吐出 −1，因为每步都减同一个 4，结果就会比零还要小。不是随便变小好看。</span>
         </button>
         <button class="kid-figure" type="button" data-pm-machine="square" aria-pressed="false">
           <span class="kid-figure-art" aria-hidden="true">
@@ -710,15 +762,19 @@
               <circle class="pm-gear-hub" cx="52" cy="65" r="3.8"/>
               <rect class="pm-pipe" x="76" y="58" width="12" height="11"/>
               <path class="pm-pipe" d="M88 54 L100 49 L100 78 L88 73 Z"/>
-              <circle class="pm-token-out" cx="109" cy="63" r="9"/>
-              <circle class="pm-token-in" cx="26" cy="13" r="9"/>
+              <circle class="pm-token-out" cx="109" cy="63" r="12"/>
+              <circle class="pm-dot-out" cx="103.5" cy="57.5" r="1.35"/><circle class="pm-dot-out" cx="109" cy="57.5" r="1.35"/><circle class="pm-dot-out" cx="114.5" cy="57.5" r="1.35"/>
+              <circle class="pm-dot-out" cx="103.5" cy="63" r="1.35"/><circle class="pm-dot-out" cx="109" cy="63" r="1.35"/><circle class="pm-dot-out" cx="114.5" cy="63" r="1.35"/>
+              <circle class="pm-dot-out" cx="103.5" cy="68.5" r="1.35"/><circle class="pm-dot-out" cx="109" cy="68.5" r="1.35"/><circle class="pm-dot-out" cx="114.5" cy="68.5" r="1.35"/>
+              <circle class="pm-token-in" cx="26" cy="13" r="11"/>
+              <circle class="pm-dot-in" cx="22" cy="9" r="1.7"/><circle class="pm-dot-in" cx="26" cy="13" r="1.7"/><circle class="pm-dot-in" cx="30" cy="17" r="1.7"/>
               <rect class="pm-badge" x="44" y="21" width="40" height="18" rx="9"/>
               <text class="pm-ink" x="64" y="35" text-anchor="middle" font-size="11">n×n</text>
             </svg>
           </span>
           <span class="kid-figure-cap">平方机</span>
           <span class="kid-figure-sub">自己乘自己</span>
-          <span class="kid-figure-fact">进 3 → 出 9</span>
+          <span class="kid-figure-fact">平方机：进 3 吐出 9，是自己乘自己，不是加几；改规则答案就变。下一组才验得住。</span>
         </button>
         <button class="kid-figure" type="button" data-pm-machine="flip" aria-pressed="false">
           <span class="kid-figure-art" aria-hidden="true">
@@ -735,15 +791,18 @@
               <path class="pm-arrow" d="M49 76 l-7 -4 l7 -4 z"/>
               <rect class="pm-pipe" x="76" y="58" width="12" height="11"/>
               <path class="pm-pipe" d="M88 54 L100 49 L100 78 L88 73 Z"/>
-              <circle class="pm-token-out" cx="109" cy="63" r="9"/>
-              <circle class="pm-token-in" cx="26" cy="13" r="9"/>
+              <circle class="pm-token-out" cx="109" cy="63" r="11"/>
+              <circle class="pm-dot-out" cx="104.5" cy="58.5" r="1.6"/><circle class="pm-dot-out" cx="113.5" cy="58.5" r="1.6"/>
+              <circle class="pm-dot-out" cx="104.5" cy="67.5" r="1.6"/><circle class="pm-dot-out" cx="113.5" cy="67.5" r="1.6"/>
+              <circle class="pm-token-in" cx="26" cy="13" r="11"/>
+              <circle class="pm-dot-in" cx="22" cy="9" r="1.7"/><circle class="pm-dot-in" cx="26" cy="13" r="1.7"/><circle class="pm-dot-in" cx="30" cy="17" r="1.7"/>
               <rect class="pm-badge" x="44" y="21" width="40" height="18" rx="9"/>
               <text class="pm-ink" x="64" y="35" text-anchor="middle" font-size="11">单双</text>
             </svg>
           </span>
           <span class="kid-figure-cap">交替机</span>
           <span class="kid-figure-sub">单加双减</span>
-          <span class="kid-figure-fact">进 3 → 出 4</span>
+          <span class="kid-figure-fact">交替机：进 3 是奇数就加 1 吐出 4；偶数会减 1，规则必须对着单双走。不是随便加减。</span>
         </button>
       </div>
       <div class="kid-speech-row pm-say-row">
@@ -788,7 +847,7 @@
         <span class="pm-dots-cap" id="pmSolvedDotsCap">猜对的机器（六格）：</span>
         <span class="kid-dots" id="pmSolvedDots" role="img" aria-labelledby="pmSolvedDotsCap"></span>
       </p>
-      <p class="kid-speech" id="pmMeterSay" role="status" aria-live="polite">先在上面点一张机器卡。</p>
+      <p class="kid-speech" id="pmMeterSay" role="status" aria-live="polite">把 1 到 5 喂进去，加的条短，乘的更长，平方最长。</p>
       <details class="parent-deep-dive" data-audience="parent">
         <summary>家长深读：两条量表在教什么</summary>
         <p><b>学习目标：</b>第一条把「增长速度」变成一个能比长短的量。喂 1 到 5，加法机只长 4，乘法机长 8，平方机长 24 —— 孩子不用会算斜率，也能直接看出「乘的机器比加的机器长得快，平方机最猛」。这是后面斜率与二次增长的直觉底子。</p>
@@ -816,7 +875,7 @@
       <p class="kid-speech" id="pmQuizSay" role="status" aria-live="polite">看三组线索，再点一张大图卡。</p>
       <p class="pm-quiz-score">
         <span class="pm-quiz-stars" id="pmQuizStars" role="img" aria-label="已经猜对 0 次"></span>
-        <span id="pmQuizTotal">猜对 0 次</span>
+        <span id="pmQuizTotal">猜对 0&nbsp;次</span>
       </p>
       <details class="parent-deep-dive" data-audience="parent">
         <summary>家长深读：猜机器规则在教什么</summary>
@@ -835,11 +894,14 @@
       <p><b>为什么要多组数据才能确定规则。</b>只有「进 3 出 6」这一组，加法机和乘法机都成立；两组也常常分不开。三组之所以管用，是因为每多一组就能排除一批候选 —— ③里的干扰项都刻意选成「一定会在第三组对不上」，所以「再看看第三组」是真能判出对错的动作，不是敷衍。同时要跟孩子说清另一半：<b>例子再多也只是还没被推翻，不等于被证明</b>。真正确定规则要靠一句一般化的说法（「输出 = 2 × 输入 + 1」），不是靠例子的数量。这也是「喂 0 进去」特别值钱的原因：<span class="kv">a × 0 + b = b</span>，一次就把加数暴露出来，再喂 1 就能算出乘数。</p>
       <p><b>逆运算的意义。</b>机器往前走是「进 → 出」，倒着走是「出 → 进」，用的正好是相反的运算：加法机倒回去要减，乘法机倒回去要除；两步机倒回去要<b>先减 1 再除以 2</b> —— 连顺序都得反过来。这就是解方程的全部动作：把 2x+1=7 里的「+1」和「×2」依次撤销。玩法很简单：家长报一个出来的数，让孩子猜进去的是几。他做到了，就是在没有符号的情况下解了一次方程。减法机还顺手带出负数：3 进去出 −1，想倒回去必须加 4。</p>
 
-      <h4>一起追问：给家长的三个问题</h4>
+      <h4>一起追问：给家长的问题</h4>
       <ol class="qs">
         <li>「你怎么知道规则是这个？再给它一个没试过的数，还成立吗？」—— 把「猜对了」和「检验过了」分开。</li>
         <li>「如果喂 0 进去会出来什么？先说出来，再动手试。」—— 先预测再验证，比直接看答案有用得多。</li>
         <li>「我告诉你出来的是 7，你能倒回去猜进去的是几吗？」—— 这就是逆运算，也是解方程的第一步。</li>
+        <li>「前三个都对，就一定说明规则对吗？找一个前面都对、后面不对的例子。」—— 有限样本不能唯一确定规则。</li>
+        <li>「2、4、8、16 下一个一定是 32 吗？每次加的数自己也在变，会走出另一条路。」—— 候选可以有两条。</li>
+        <li>「把这条规律用拍手、跺脚再做一遍。还对得上吗？」—— 抓的是规则，不是颜色装饰。</li>
       </ol>
 
       <h4>常见误区</h4>
@@ -980,7 +1042,7 @@
 
           <div class="verdict" id="growVerdict">
             <div class="verdict-main" id="gvMain">先数一数前几个图形</div>
-            <div class="verdict-sub" id="gvSub">第 1 个几块？第 2 个几块？每次多了几块？</div>
+            <div class="verdict-sub" id="gvSub">第 1&nbsp;个几块？第 2&nbsp;个几块？每次多了几块？</div>
           </div>
 
           <div class="tbl-scroll">
@@ -1016,7 +1078,7 @@
           <div class="guess">
             <div class="rule-pre">输出 = <b id="rulePre">?</b></div>
             <div class="opts" id="opts"></div>
-            <p class="hint" id="guessHint" style="margin:0">至少喂 2 个数再猜，才不是瞎猜。</p>
+            <p class="hint" id="guessHint" style="margin:0">至少喂 2&nbsp;个数再猜，才不是瞎猜。</p>
           </div>
         </div>
 
@@ -1069,20 +1131,71 @@
         </div>
       </div>
 
-      <div class="panel parent-deep-dive" data-audience="parent">
-        <h3>给家长的提问脚本</h3>
+      <div class="panel parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+        <h3 id="askTitle">给家长的提问脚本</h3>
         <ol class="qs" id="parentQs">
           <li>「你怎么知道规则是这个？换一个数字试试，还成立吗？」</li>
           <li>「如果我喂 0 进去会出来什么？先猜，再试。」</li>
           <li>「能不能用一句话说清这台机器在干什么？」</li>
+          <li>「前三个都对，第四个会不会对不上？你能故意造一个『前面都对、后面不对』的例子吗？」</li>
+          <li>「2、4、8、16 的下一个一定是 32 吗？还有没有别的说得通的规则？」</li>
+          <li>「颜色换了、顺序没换，还是同一条规律吗？规律是规则，还是装饰？」</li>
         </ol>
       </div>
     </aside>
   </div>
 
+
+  <section class="card guess-card" aria-labelledby="guessTitlePm" style="border-color:color-mix(in srgb,var(--math) 45%,var(--line))">
+    <h2 id="guessTitlePm">先猜一猜：数值规律</h2>
+    <p><b>第 1 题：</b>机器吐出 2、4、6、8… 下一步是几？（每次加 2）</p>
+    <div class="pick-btns" role="group" aria-label="猜 2 4 6 8 下一步" style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn guess-pick" type="button" data-guess1="9" aria-pressed="false">9</button>
+      <button class="btn guess-pick" type="button" data-guess1="10" aria-pressed="false">10</button>
+      <button class="btn guess-pick" type="button" data-guess1="12" aria-pressed="false">12</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite" style="font-weight:750;color:var(--ink-mid)">押一个。再到上面「接着排」或任务卡里用「每次加一样多」验证。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>机器吐出 2、4、8、16… 下一步是几？（每次乘 2）</p>
+      <div class="pick-btns" role="group" aria-label="猜 2 4 8 16 下一步" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn guess-pick" type="button" data-guess2="18" aria-pressed="false">18</button>
+        <button class="btn guess-pick" type="button" data-guess2="30" aria-pressed="false">30</button>
+        <button class="btn guess-pick" type="button" data-guess2="32" aria-pressed="false">32</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite" style="font-weight:750;color:var(--ink-mid)">押好后再到「接着排」答对一题揭晓。注意：这题是乘，不是加。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>机器吐出 3、5、8、12…（差是 +2、+3、+4）。下一步是几？</p>
+      <div class="pick-btns" role="group" aria-label="猜假规律反例" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn guess-pick" type="button" data-guess3="15" aria-pressed="false">15（以为每次加 3）</button>
+        <button class="btn guess-pick" type="button" data-guess3="17" aria-pressed="false">17（差再加 1：+5）</button>
+        <button class="btn guess-pick" type="button" data-guess3="14" aria-pressed="false">14（以为每次加 2）</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite" style="font-weight:750;color:var(--ink-mid)">押好后再去「接着排」答对一题揭晓。差不固定时，不能硬套「每次加一样多」。</p>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--math)"
+         data-kid-predict
+         data-kid-predict-explain="规律是「同样的一步」重复做。先找出步子（加几、乘几、形状轮换），再预测下一步，最后用新项检验。假规律经不起检验。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🤖</span><b>机器吐出 2、4、6、8… 下一个更像什么？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：规律机器下一步">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="9">一定是 9，因为越来越大</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="10" data-kid-predict-correct>更像 10：每次加 2 的规律</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="random">机器心情不好，没有规律</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
   <section class="task mission" aria-labelledby="patternMissionTitle">
     <div class="card" style="margin-bottom:14px">
-      <h2 style="font-size:1.1rem">这在教什么</h2>
+      <h2 style="font-size:1.1rem">先从进出猜规则，再用新数字找反例</h2>
       <p style="margin:0">从“进 → 出”的线索猜规则，再用新数字检验。孩子会从算答案走向描述所有答案的代数思维。</p>
     </div>
     <h2 class="task-title" id="patternMissionTitle">正式任务 · 破解真假规律</h2>
@@ -1153,13 +1266,42 @@
       <div><label for="patternReflect">我的发现</label><textarea class="input" id="patternReflect" placeholder="例如：前两点符合，不代表后面的点也符合。"></textarea></div>
       <button class="btn btn-primary" id="patternComplete" type="button" disabled>把破案记录存进足迹</button>
     </div>
-    <p class="task-status status" id="patternMissionStatus" role="status" aria-live="polite">尚未完成：先提交两个数列假设。</p>
+    <p class="task-status status" id="patternMissionStatus" role="status" aria-live="polite">尚未完成：分对两个数列、找到一个反例、写一句你的发现。</p>
     <div class="playful-quest" style="--quest-accent:var(--phys)" aria-labelledby="patternStoryTitle">
       <div class="playful-quest-head"><div><h3 id="patternStoryTitle">规律侦探社的密件</h3><p class="playful-story">每个输入都是线索。带上反例，规则才经得起检验。</p></div><div data-playful-companion role="note" aria-label="星星伙伴提示"></div></div>
       <div class="playful-tools"><button class="btn btn-sm" type="button" data-playful-random-task="#patternSurprise">拆开另一封密件</button><p class="playful-task-output" id="patternSurprise" data-playful-task-output role="status" aria-live="polite">密件里藏着一条额外规律。</p></div>
       <div class="playful-evidence"><span data-playful-sticker aria-label="规律机器收藏卡位"></span><span data-playful-feedback aria-live="polite"></span></div>
+
+  <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">先说出规则，再猜下一个；只看「变大」不够</h2>
+    <p>先说规则，再猜下一个。只看「变大」不够。</p>
+    <div class="kid-figure-grid" role="group" aria-label="四个主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="24" cy="40" r="14" fill="#ffe0a3" stroke="#2a2114" stroke-width="2"/><circle cx="20" cy="36" r="2.4" fill="#8a4b09"/><circle cx="28" cy="44" r="2.4" fill="#8a4b09"/><circle cx="60" cy="40" r="16" fill="#ffe0a3" stroke="#2a2114" stroke-width="2"/><circle cx="54" cy="34" r="2.4" fill="#8a4b09"/><circle cx="66" cy="34" r="2.4" fill="#8a4b09"/><circle cx="54" cy="46" r="2.4" fill="#8a4b09"/><circle cx="66" cy="46" r="2.4" fill="#8a4b09"/><circle cx="96" cy="40" r="17" fill="#bff0d3" stroke="#2a2114" stroke-width="2"/><circle cx="90" cy="32" r="2.3" fill="#0d6b3d"/><circle cx="96" cy="32" r="2.3" fill="#0d6b3d"/><circle cx="102" cy="32" r="2.3" fill="#0d6b3d"/><circle cx="90" cy="48" r="2.3" fill="#0d6b3d"/><circle cx="96" cy="48" r="2.3" fill="#0d6b3d"/><circle cx="102" cy="48" r="2.3" fill="#0d6b3d"/><text x="22" y="80" font-size="12" fill="#3a2a18">2 4 6</text></svg></span><span class="kid-figure-cap">加几</span><span class="kid-figure-sub">等差</span><p class="kid-figure-fact">每一步都加上同一个数，才叫这条规则；改一次加几，后面全变。不是数字碰巧变大。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M36 22 L84 70 M84 22 L36 70" stroke="#c2410c" stroke-width="10" stroke-linecap="round"/><text x="18" y="84" font-size="12" fill="#3a2a18">2 6 18</text></svg></span><span class="kid-figure-cap">乘几</span><span class="kid-figure-sub">更陡</span><p class="kid-figure-fact">每一步都乘同一个数，才会越来越陡；不是随便把数字变大好看。单看一组不够定。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="28" cy="46" r="12" fill="#3b82f6"/><rect x="50" y="34" width="24" height="24" fill="#e8b84a"/><path d="M88 58 L100 34 L112 58 Z" fill="#c45a7a"/><path d="M28 70 H112" stroke="#3a2a18" stroke-width="2" stroke-dasharray="4 3"/></svg></span><span class="kid-figure-cap">轮换</span><span class="kid-figure-sub">形状色</span><p class="kid-figure-fact">形状或颜色按固定顺序循环，重复那一段才叫图案；改一条，花就变。好看不算。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M48 12 H72 V32 L88 70 A20 20 0 0 1 32 70 L48 32 Z" fill="#7dd3fc" stroke="#3a2a18" stroke-width="3"/><rect x="48" y="8" width="24" height="10" fill="#8a857c"/><path d="M52 48 L58 60 L70 40" fill="none" stroke="#3a7a48" stroke-width="4"/></svg></span><span class="kid-figure-cap">检验</span><span class="kid-figure-sub">真假</span><p class="kid-figure-fact">新出来的一项对不上，就换规则；只看前面好看，还不算验证过。下一格也要对上。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>读前几项。</b>写出差别。</li>
+      <li data-step="2"><b>猜规则。</b>一句话说清。</li>
+      <li data-step="3"><b>预测下一项。</b>先押后看。</li>
+      <li data-step="4"><b>检验。</b>假规律就丢掉。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>看它每次加了几，再猜下一个。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>区分加性规律、倍增与周期轮换；用下一项检验。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>可谈多种候选规则与否证；避免过拟合前三项。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>预测必须带着可检验的规则。</p>
+    <ul class="ask-list">
+      <li>你的规则一句话怎么说？</li>
+      <li>怎样证明它是假的？</li>
+      <li>颜色规律和数字规律能一起吗？</li>
+    </ul>
+  </section>
+
       <form class="work-card work-card-form" data-playful-work-form aria-labelledby="patternWorkTitle">
-        <h4 id="patternWorkTitle">作品表单 · 保存规律密件</h4>
+        <h3 id="patternWorkTitle">作品表单 · 保存规律密件</h3>
         <div class="work-card-fields">
           <div><label for="patternWorkType">作品类型</label><select class="input" id="patternWorkType" name="type"><option value="explanation">我的解释</option><option value="prediction">预测卡</option><option value="model">模型说明</option></select></div>
           <div><label for="patternWorkName">规律名称</label><input class="input" id="patternWorkName" name="title" required maxlength="80" placeholder="例如：每次多 3"></div>
@@ -1168,6 +1310,36 @@
         </div>
         <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">密件只保存在这台设备上。</p>
       </form>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「前三项对了是不是规则就对」，就只改候选规则这一项。同一串开头，先按「每次加 2」往下写，再按「每次乘 2」往下写。不要同时换材料、换颜色，那是另一次对照。</p>
+    <ul>
+      <li><b>只改这一项：</b>你猜的那条规则（加几 / 乘几 / 轮换）。</li>
+      <li><b>先保持不变：</b>已经看见的那几项。</li>
+      <li><b>要观察的：</b>下一项或一个没试过的输入，还对得上吗。</li>
+      <li><b>另开一行：</b>用拍手、积木重摆同一条规律，看他抓的是规则还是颜色。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>日历上一列日子为什么总是差 7？差 7 是装饰，还是「一星期」这条规则？</li>
+      <li>红蓝蓝红蓝蓝的珠子，重复的那一小段是哪几颗？说得出单元，才不是在猜颜色。</li>
+      <li>楼梯每级放 1、2、3&nbsp;颗石子，第 5 级要放几颗？不一层层摆，你怎么知道？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把「反例」提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>看每次加了几，或哪两个图形在轮换。能说出「接下来是谁」就够了。规律是规则，不是把队伍摆好看。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>区分加性、倍增和周期。用下一项检验。喂 0 进去，常常能看见加数。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>前三项符合不等于规则正确。1、2、4 之后可以是 8，也可以是 7。要自己找一个反例。</p></div>
     </div>
   </section>
 
@@ -1192,16 +1364,16 @@
     <h3 style="margin:22px 0 10px">按年龄分层：同一个页面能玩很多年</h3>
     <div class="learning-layers">
       <details open>
-        <summary><span class="layer-age">4–6 岁</span>看得见、摸得着的重复</summary>
+        <summary><span class="layer-age">4–6&nbsp;岁</span>看得见、摸得着的重复</summary>
         <div>
-          <p>目标：认出重复单元，能延续 2~3 个，并且自己造一条。这个年龄段<b>不需要任何符号或算式</b>，全部用图形、动作和声音完成。</p>
+          <p>目标：认出重复单元，能延续 2~3&nbsp;个，并且自己造一条。这个年龄段<b>不需要任何符号或算式</b>，全部用图形、动作和声音完成。</p>
           <p>本页玩「接着排」的“两个换”和“成双”，以及「我来造规律」。“三个换”（ABC）对四岁偏难，孩子熟练之后再解锁。</p>
           <p>怎么问：「重复的那一小段是什么？」「接下来该谁了？」「你能用拍手把这个规律做出来吗？」不要问“为什么”，四五岁还很难用语言解释结构。</p>
           <p>过关标准：能用积木/贝壳/餐具把屏幕上的规律<b>换一种材料重摆一遍</b>。</p>
         </div>
       </details>
       <details>
-        <summary><span class="layer-age">7–9 岁</span>从图形规律走到数字规律</summary>
+        <summary><span class="layer-age">7–9&nbsp;岁</span>从图形规律走到数字规律</summary>
         <div>
           <p>目标：把“每次多几个”说成数，会用“差”这个概念，能预测第 10 层而不必一层层画出来。</p>
           <p>本页玩「越来越多」，再打开家长模式下的「生长图形」：数第 N 个图形有几块。关键提问是<b>「能不能不画出来就知道？」</b>——这一问把孩子从数数推向计算。</p>
@@ -1210,9 +1382,9 @@
         </div>
       </details>
       <details>
-        <summary><span class="layer-age">10–12 岁</span>规则、变量与反例</summary>
+        <summary><span class="layer-age">10–12&nbsp;岁</span>规则、变量与反例</summary>
         <div>
-          <p>目标：用一句一般化的语句描述所有情况（“第 N 层有 2N−1 个”），并理解<b>符合前几项不等于规则正确</b>。</p>
+          <p>目标：用一句一般化的语句描述所有情况（“第 N 层有 2N−1&nbsp;个”），并理解<b>符合前几项不等于规则正确</b>。</p>
           <p>本页玩「猜规则」的两步和挑战档，再做正式任务里的反例检验。核心体验是：1、2、4 之后可以是 8（翻倍），也可以是 7（每次多的量加 1）——<b>有限的数据不能唯一确定规则</b>。这一课比任何公式都重要。</p>
           <p>可以引入变量写法：把“每次多 4 块，开头 1 块”写成 4N−3，再代入 N=1 检查。差固定 → 一次关系；差本身在变 → 二次关系。</p>
           <p>过关标准：能给出一条“前三项都符合但第四项不符合”的假规则，也就是自己造一个反例。</p>
@@ -1225,7 +1397,7 @@
       <li><b>餐桌串串</b>用勺子和叉子交替摆一排，问孩子下一个放什么。换成两颗葡萄一颗草莓，就变成 AAB。</li>
       <li><b>身体规律</b>拍手、拍腿、拍手、拍腿……让孩子接下去。再问：能不能用积木把这个规律“画”出来？</li>
       <li><b>散步找规律</b>人行道砖、栏杆、地砖花纹、斑马线。问“重复的一段有多长”，比问“这是什么规律”更好回答。</li>
-      <li><b>楼梯数列</b>上楼时每级台阶放 1、2、3 颗小石子，问第 5 级要放几颗。这就是生长规律的实物版。</li>
+      <li><b>楼梯数列</b>上楼时每级台阶放 1、2、3&nbsp;颗小石子，问第 5 级要放几颗。这就是生长规律的实物版。</li>
       <li><b>穿珠子</b>给一条“红蓝蓝红蓝蓝”的开头，让孩子接着穿完。穿错了不要拆，让他自己对照开头找。</li>
       <li><b>故意出错</b>家长摆一排，故意放错一个，让孩子当检查员。角色一换，孩子的注意力会明显提高。</li>
     </ul>
@@ -1240,8 +1412,9 @@
   </section>
 
   <!-- ================= 原理 ================= -->
-  <section class="panel why" style="margin-top:22px">
-    <h3>背后的原理</h3>
+  <section class="panel why" style="margin-top:22px" aria-labelledby="whyTitle">
+    <h3 id="whyTitle">背后的原理</h3>
+    <p>规律是一条能拿新数据去检验的规则，不是把队伍摆好看。颜色、排队、装饰可以换材料重做；对不上的那一项，才说明这条规则该丢掉。</p>
     <div class="grid-2">
       <div>
         <p>
@@ -1272,6 +1445,17 @@
   </section>
 
   <p class="lab-exit"><a class="btn btn-ghost" href="index.html"><span aria-hidden="true">←</span> 回到实验室目录</a></p>
+  <!-- 追问清单放在孩子层：本页原先 7 条带问号的条目全部在家长层。 -->
+  <section class="card" aria-labelledby="patternAskTitle" style="margin-top:18px">
+    <h2 id="patternAskTitle">还可以问下去</h2>
+    <ul class="ask-list">
+      <li>前三个数都对，就一定说明你猜的规律是对的吗？试着找一个「前面都对、后面不对」的例子。</li>
+      <li>2、4、8、16…… 下一个一定是 32 吗？还有别的说得通的答案吗？</li>
+      <li>日历上一个星期占一行。为什么同一列的日子，相差总是 7？</li>
+      <li>自己编一条规律，让大人只看三组数来猜。他猜对了吗？你是怎么骗到他的？</li>
+    </ul>
+  </section>
+
   <footer class="foot wrap-narrow" style="text-align:center">
     做完可以聊聊：还有哪些「机器」藏在生活里？（比如价格表、身高年龄表）
   </footer>
@@ -1446,10 +1630,22 @@
     var done = [];
     if (MISSION.sequences) done.push('线性/非线性数列');
     if (MISSION.counterexample) done.push('反例');
-    el.patternMissionStatus.textContent = (done.length ? '已验证：' + done.join('、') + '。' : '尚未验证挑战。') +
+    /* 同 fraction-lab：原来只报「已验证了什么」，从不说还缺什么，而判定的第三项
+       （反思）在状态行里从未出现 —— 为空时点完成按钮只走 say()，状态行不变。 */
+    var missing = [];
+    if (!MISSION.sequences) missing.push('分对两个数列');
+    if (!MISSION.counterexample) missing.push('找到一个反例');
+    if (!el.patternReflect.value.trim()) missing.push('写一句你的发现');
+    el.patternMissionStatus.textContent = (done.length ? '已验证：' + done.join('、') + '。' : '') +
+      (missing.length ? '还差：' + missing.join('、') + '。' : '三件都齐了，可以记录完成。') +
       (message ? ' 最近结果：' + message : '');
     el.patternComplete.disabled = !(MISSION.sequences && MISSION.counterexample);
   }
+
+  /* 载入时刷新一次，并跟着反思输入实时更新。此前本页从不在载入时调用它，
+     markup 里那句只列了三项里的一项。 */
+  updatePatternMission();
+  el.patternReflect.addEventListener('input', function () { updatePatternMission(); });
 
   // ============================================================
   //  猜规则：渲染
@@ -1494,7 +1690,7 @@
     } else {
       el.guessHint.textContent = enough
         ? '选一个你认为对的规则。'
-        : '至少喂 2 个数再猜，才不是瞎猜。（还差 ' + (2 - G.log.length) + ' 个）';
+        : '至少喂 2\u00a0个数再猜，才不是瞎猜。（还差 ' + (2 - G.log.length) + '\u00a0个）';
     }
   }
 
@@ -1800,7 +1996,7 @@
       },
       count: function (n) { return n * (n + 1) / 2; },
       formula: 'N × (N + 1) ÷ 2',
-      why: '第 N 个比第 N−1 个多 N 块，所以是 1+2+…+N。'
+      why: '第 N 个比第 N−1\u00a0个多 N 块，所以是 1+2+…+N。'
     },
     lshape: {
       name: 'L 形',
@@ -1905,9 +2101,9 @@
       var cv = document.createElement('canvas');
       var cnt = P.count(n);
       cv.setAttribute('role', 'img');
-      cv.setAttribute('aria-label', '第 ' + n + ' 个图形，' + cnt + ' 块方块');
+      cv.setAttribute('aria-label', '第 ' + n + '\u00a0个图形，' + cnt + ' 块方块');
       box.appendChild(cv);
-      box.appendChild(ce('div', 'fig-cap', '第 ' + n + ' 个 · ' + cnt + ' 块'));
+      box.appendChild(ce('div', 'fig-cap', '第 ' + n + '\u00a0个 · ' + cnt + ' 块'));
       el.figs.appendChild(box);
       drawFigure(cv, n, W.pat, false);
     }
@@ -1917,9 +2113,9 @@
     if (W.solved) {
       var cvT = document.createElement('canvas');
       cvT.setAttribute('role', 'img');
-      cvT.setAttribute('aria-label', '第 ' + W.askN + ' 个图形，' + P.count(W.askN) + ' 块方块');
+      cvT.setAttribute('aria-label', '第 ' + W.askN + '\u00a0个图形，' + P.count(W.askN) + ' 块方块');
       t.appendChild(cvT);
-      t.appendChild(ce('div', 'fig-cap', '第 ' + W.askN + ' 个 · ' + P.count(W.askN) + ' 块'));
+      t.appendChild(ce('div', 'fig-cap', '第 ' + W.askN + '\u00a0个 · ' + P.count(W.askN) + ' 块'));
       el.figs.appendChild(t);
       drawFigure(cvT, W.askN, W.pat, true);
     } else {
@@ -1930,7 +2126,7 @@
       q.textContent = '?';
       q.setAttribute('aria-hidden', 'true');
       t.appendChild(q);
-      t.appendChild(ce('div', 'fig-cap', '第 ' + W.askN + ' 个 · ? 块'));
+      t.appendChild(ce('div', 'fig-cap', '第 ' + W.askN + '\u00a0个 · ? 块'));
       el.figs.appendChild(t);
     }
 
@@ -1966,7 +2162,7 @@
     if (raw === '') {
       el.growVerdict.className = 'verdict bad';
       el.gvMain.textContent = '先写一个数';
-      el.gvSub.textContent = '猜猜第 ' + W.askN + ' 个图形有几块，写在框里。';
+      el.gvSub.textContent = '猜猜第 ' + W.askN + '\u00a0个图形有几块，写在框里。';
       say('请先填一个数字');
       return;
     }
@@ -1981,17 +2177,17 @@
     if (v === right) {
       W.solved = true; W.wins++;
       el.growVerdict.className = 'verdict good';
-      el.gvMain.textContent = '对了！第 ' + W.askN + ' 个是 ' + right + ' 块';
+      el.gvMain.textContent = '对了！第 ' + W.askN + '\u00a0个是 ' + right + ' 块';
       el.gvSub.textContent = '公式：' + P.formula + '。' + P.why;
       toast('答对了！' + right + ' 块');
-      say('答对了，第 ' + W.askN + ' 个图形有 ' + right + ' 块。公式是 ' + P.formula);
+      say('答对了，第 ' + W.askN + '\u00a0个图形有 ' + right + ' 块。公式是 ' + P.formula);
       renderGrow();
     } else {
       el.growVerdict.className = 'verdict bad';
       el.gvMain.textContent = v + ' 还不对，再数一次';
       var d = P.count(W.shown) - P.count(W.shown - 1);
-      el.gvSub.textContent = '提示：第 ' + (W.shown - 1) + ' 个到第 ' + W.shown +
-        ' 个多了 ' + d + ' 块。往后每一步多多少？把它们加起来。';
+      el.gvSub.textContent = '提示：第 ' + (W.shown - 1) + '\u00a0个到第 ' + W.shown +
+        '\u00a0个多了 ' + d + ' 块。往后每一步多多少？把它们加起来。';
       say('还不对，再试试');
     }
   }
@@ -2002,9 +2198,10 @@
     el.growIn.value = '';
     el.growVerdict.className = 'verdict';
     el.gvMain.textContent = '先数一数前几个图形';
-    el.gvSub.textContent = '第 1 个几块？第 2 个几块？每次多了几块？';
+    el.gvSub.textContent = '第 1\u00a0个几块？第 2\u00a0个几块？每次多了几块？';
     if (newPat) W.pat = newPat;
     renderGrow();
+    say('图形题已重置，请再数一数');
   }
 
   // ============================================================
@@ -2089,9 +2286,10 @@
     W.solved = false;
     el.growIn.value = '';
     el.growVerdict.className = 'verdict';
-    el.gvMain.textContent = '第 ' + W.askN + ' 个有几块？';
+    el.gvMain.textContent = '第 ' + W.askN + '\u00a0个有几块？';
     el.gvSub.textContent = '先找出每次多几块的规律。';
     renderGrow();
+    say('改成预测第 ' + W.askN + '\u00a0个图形');
   });
   el.growCheck.addEventListener('click', checkGrow);
   el.growIn.addEventListener('keydown', function (e) {
@@ -2101,10 +2299,10 @@
     var P = PATTERNS[W.pat];
     W.solved = true;
     el.growVerdict.className = 'verdict';
-    el.gvMain.textContent = '第 ' + W.askN + ' 个是 ' + P.count(W.askN) + ' 块';
+    el.gvMain.textContent = '第 ' + W.askN + '\u00a0个是 ' + P.count(W.askN) + ' 块';
     el.gvSub.textContent = '公式：' + P.formula + '。' + P.why;
     renderGrow();
-    say('第 ' + W.askN + ' 个图形有 ' + P.count(W.askN) + ' 块');
+    say('第 ' + W.askN + '\u00a0个图形有 ' + P.count(W.askN) + ' 块');
   });
   el.growReset.addEventListener('click', function () { resetGrow(null); toast('重新出题'); });
   el.revealF.addEventListener('click', function () {
@@ -2140,7 +2338,8 @@
 
   el.patternComplete.addEventListener('click', function () {
     var reflection = el.patternReflect.value.trim();
-    if (!reflection) { say('请先写一句反思'); el.patternReflect.focus(); return; }
+    /* 原来只播报不写状态行，缺项对孩子不可见。 */
+    if (!reflection) { updatePatternMission(); say('请先写一句你的发现，再记录完成'); el.patternReflect.focus(); return; }
     var evidence = '正确区分固定差数列与平方数列，并用 x=3 找到 y=2x 对 y=x² 的反例。反思：' + reflection;
     var saved = window.Progress && Progress.complete('games/pattern-machine.html', evidence);
     el.patternMissionStatus.textContent = saved ? '✓ 任务已完成并记录：' + evidence : '✓ 任务已完成；本机存储不可用，未能保存足迹。';
@@ -2365,7 +2564,7 @@
       b.type = 'button';
       b.className = 'tile';
       b.textContent = it.e;
-      b.setAttribute('aria-label', '第 ' + (i + 1) + ' 个：' + it.n);
+      b.setAttribute('aria-label', '第 ' + (i + 1) + '\u00a0个：' + it.n);
       b.addEventListener('click', function () { oddAnswer(i, b); });
       row.appendChild(b);
     });
@@ -2419,7 +2618,7 @@
         line.appendChild(dot);
       }
       line.setAttribute('role', 'img');
-      line.setAttribute('aria-label', '第 ' + (r + 1) + ' 层有 ' + count + ' 个');
+      line.setAttribute('aria-label', '第 ' + (r + 1) + ' 层有 ' + count + '\u00a0个');
       rowsHost.appendChild(line);
     }
     var qline = document.createElement('div');
@@ -2456,7 +2655,7 @@
       b.type = 'button';
       b.className = 'pick-tile num';
       b.textContent = String(v);
-      b.setAttribute('aria-label', '选 ' + v + ' 个');
+      b.setAttribute('aria-label', '选 ' + v + '\u00a0个');
       b.addEventListener('click', function () { growAnswer(v, b, step); });
       picks.appendChild(b);
     });
@@ -2484,8 +2683,8 @@
         dot.setAttribute('aria-hidden', 'true');
         GR.qline.appendChild(dot);
       }
-      GR.qline.setAttribute('aria-label', '第 4 层有 ' + GR.answer + ' 个');
-      saySlot(id('growSay'), '🎉', '对了！每层多 ' + step + ' 个，所以是 ' + GR.answer + ' 个。');
+      GR.qline.setAttribute('aria-label', '第 4 层有 ' + GR.answer + '\u00a0个');
+      saySlot(id('growSay'), '🎉', '对了！每层多 ' + step + '\u00a0个，所以是 ' + GR.answer + '\u00a0个。');
     } else {
       btn.className = 'pick-tile num bad';
       saySlot(id('growSay'), '🤔', '再数一次：第 1 层到第 2 层多了几个？');
@@ -2545,7 +2744,7 @@
       }
       ST.seq.push(it);
       stampRender();
-      saySlot(id('stampSay'), '🖐️', '盖上了 ' + it.n + '，一共 ' + ST.seq.length + ' 个。');
+      saySlot(id('stampSay'), '🖐️', '盖上了 ' + it.n + '，一共 ' + ST.seq.length + '\u00a0个。');
     });
     stampPicks.appendChild(b);
   });
@@ -2562,7 +2761,7 @@
   });
   id('stampGuess').addEventListener('click', function () {
     if (ST.seq.length < 4) {
-      saySlot(id('stampSay'), '🤖', '再多盖几个（至少 4 个），我才猜得出来。');
+      saySlot(id('stampSay'), '🤖', '再多盖几个（至少 4\u00a0个），我才猜得出来。');
       return;
     }
     var unit = findUnit(ST.seq);
@@ -2585,10 +2784,82 @@
   stampRender();
 })();
 </script>
-<script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=17"></script>
-<script src="../data/playful.js?v=17"></script>
-<script src="../assets/js/playful.js?v=17"></script>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var guess1 = "", guess1Done = false, sawNext = false;
+  var guess2 = "", guess2Done = false, sawNext2 = false;
+  var guess3 = "", guess3Done = false, sawNext3 = false;
+  function checkGuess(){
+    if (guess1 && !guess1Done && sawNext) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "10" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "2、4、6、8 每次加 2，下一步是 10。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && sawNext2) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "32" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "2、4、8、16 每次乘 2，下一步是 32。和「每次加一样多」不是同一条规律。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && sawNext3) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "17" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "差是 +2、+3、+4，下一步再 +5→17。差不固定＝假「每次加一样多」；要用新项检验。";
+    }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。去上面「接着排」答对一题再揭晓。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。再去「接着排」答对一题揭晓。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut3").textContent = "押好了。再去「接着排」答对一题揭晓。";
+    });
+  });
+  var scoreEl = document.getElementById("nextScore");
+  if (scoreEl) {
+    var last = parseInt(scoreEl.textContent, 10) || 0;
+    var obs = new MutationObserver(function(){
+      var n = parseInt(scoreEl.textContent, 10) || 0;
+      if (n > last) {
+        if (guess1 && !guess1Done) sawNext = true;
+        else if (guess1Done && guess2 && !guess2Done) sawNext2 = true;
+        else if (guess2Done && guess3 && !guess3Done) sawNext3 = true;
+        last = n;
+        checkGuess();
+      }
+    });
+    obs.observe(scoreEl, { childList: true, characterData: true, subtree: true });
+  }
+})();
+</script>
 <script>if (window.Progress) Progress.visit("games/pattern-machine.html", "规律机器");</script>
 <script>
 /* 图像优先三件套：① 机器图鉴 ② 两条量表 ③ 猜机器规则
@@ -2615,22 +2886,22 @@
   var PM = {
     add3:   { cap: "加法机", sym: "+3",   art: "➕", rule: function (x) { return x + 3; },
       text: "x + 3", word: "进来的数加 3", ins: [1, 2, 3], fixed: true,
-      say: "每个数进去都多 3：3 进去，出来 6。它把整条数线整体往右搬了 3 格。" },
+      say: "每个数进去都多 3：3 进去，出来 6。它把整条数线整体往右搬了 3 格。下一组也要加同一个 3。" },
     mul2:   { cap: "乘法机", sym: "×2",   art: "✖️", rule: function (x) { return 2 * x; },
-      text: "2 × x", word: "变成 2 倍", ins: [1, 2, 4], fixed: true,
-      say: "进去的数变成 2 倍：3 进去，出来 6。和加法机在 3 这一点上一样，别的点就不一样了。" },
+      text: "2 × x", word: "变成 2\u00a0倍", ins: [1, 2, 4], fixed: true,
+      say: "进去的数变成 2\u00a0倍：3 进去，出来 6。和加法机在 3 这一点上一样，别的点就不一样了。" },
     step2:  { cap: "两步机", sym: "×2+1", art: "🧩", rule: function (x) { return 2 * x + 1; },
       text: "2 × x + 1", word: "先乘 2，再加 1", ins: [1, 2, 3], fixed: true,
-      say: "两步：先乘 2，再加 1。3 进去先变 6，再变 7。喂 0 进去就能看见那个 +1。" },
+      say: "两步：先乘 2，再加 1。3 进去先变 6，再变 7。喂 0 进去就能看见那个 +1。一组对上也不定死。" },
     sub4:   { cap: "减法机", sym: "−4",   art: "➖", rule: function (x) { return x - 4; },
       text: "x − 4", word: "进来的数减 4", ins: [5, 6, 7], fixed: true,
-      say: "每个数进去都少 4：3 进去，出来 −1，比 0 还小。想倒回去，就得再加 4。" },
+      say: "每个数进去都少 4：3 进去，出来 −1，比 0 还小。想倒回去，就得再加 4。换个数也要减 4。" },
     square: { cap: "平方机", sym: "n×n",  art: "🧮", rule: function (x) { return x * x; },
       text: "x × x", word: "自己乘自己", ins: [1, 2, 3], fixed: false,
-      say: "自己乘自己：3 进去，出来 9。每次多的量自己也在变大，所以它长得最快。" },
+      say: "自己乘自己：3 进去，出来 9。每次多的量自己也在变大，所以它长得最快。加几到不了。" },
     flip:   { cap: "交替机", sym: "单双",  art: "🔁", rule: function (x) { return x % 2 === 0 ? x - 1 : x + 1; },
       text: "单数 +1，双数 −1", word: "单数加 1，双数减 1", ins: [1, 2, 3], fixed: false,
-      say: "看单双：3 是单数所以 +1，出来 4；4 是双数就 −1，出来 3。它一上一下地走。" }
+      say: "看单双：3 是单数所以 +1，出来 4；4 是双数就 −1，出来 3。它一上一下地走。要对着单双才算。" }
   };
   var ORDER = ["add3", "mul2", "step2", "sub4", "square", "flip"];
   var STAGE_IN = 3;               /* 主舞台固定喂 3，六台机器才好直接比 */
@@ -2908,8 +3179,8 @@
       });
       quizWins += 1;
       quizStars.textContent = new Array(Math.min(quizWins, 10) + 1).join("⭐");
-      quizStars.setAttribute("aria-label", "已经猜对 " + quizWins + " 次");
-      quizTotal.textContent = "猜对 " + quizWins + " 次";
+      quizStars.setAttribute("aria-label", "已经猜对 " + quizWins + "\u00a0次");
+      quizTotal.textContent = "猜对 " + quizWins + "\u00a0次";
       if (solvedKeys.indexOf(quizNow) < 0) solvedKeys.push(quizNow);
       drawSolvedMeter();
       if (current) drawGrowMeter(current);
@@ -2974,6 +3245,6 @@
   quizNext();
 })();
 </script>
-<script src="../assets/js/pwa.js?v=17"></script>
+<script src="../assets/js/pwa.js?v=488"></script>
 </body>
 </html>

@@ -23,11 +23,9 @@ import { join, relative, resolve } from 'node:path';
    fs 拿它当字面路径会 ENOENT。其余工具用的都是 import.meta.dirname，这里保持一致。 */
 const ROOT = resolve(import.meta.dirname, '..');
 
-/* 其他线程持有的文件：报告但不阻断，等对方收尾 */
-const THREAD_OWNED = new Set([
-  'games/number-blocks.html',
-  'games/turtle-geometry.html',
-]);
+/* 曾经这里有一个 THREAD_OWNED 豁免集（number-blocks / turtle-geometry 报告但不阻断）。
+   那两个线程已经收尾：去掉豁免后本工具仍然 exit 0，所以豁免过期了，28 页一视同仁。
+   rAF 空转是电量问题，不该有任何页面长期挂在豁免名单上。 */
 
 function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {
@@ -75,28 +73,36 @@ for (const file of files) {
 
   const hasCancel = /cancelAnimationFrame\s*\(/.test(text);
   const storesId = sites.some((s) => /=\s*(?:window\s*\.\s*)?requestAnimationFrame\s*\(/.test(s.text));
-  /* 条件排帧：`if (...) { ... requestAnimationFrame(` 写在同一行 */
-  const conditional = sites.some((s) => /^\s*if\s*\(.+\)\s*\{?.*requestAnimationFrame\s*\(/.test(s.text));
+  /* 条件排帧：同一行上 `if (...)` 出现在 requestAnimationFrame 之前，
+     且两者之间没有 ; { }（否则 `if (x) { foo(); } rAF(loop);` 这种
+     「if 和排帧无关」的写法会被误当成有守卫）。
+
+     原来这里写的是 /^\s*if\s*\(.+\)\s*\{?.*requestAnimationFrame\s*\(/，
+     带 ^ 锚点，要求这一行**以 if 开头**。于是照本工具自己的报错建议写、
+     但把循环体放在一行里的代码会被误报成永久循环：
+         function loop(){ draw(); if (running || settle > 0) { rafId = rAF(loop); } else { rafId = 0; } }
+     这与本文件开头声明的偏向（「宁可漏过也不误报」）正好相反。
+     更要紧的是，7 个含递归 rAF 的页面里有 5 页 cancelAnimationFrame 都没有、
+     完全靠这一条过关，所以谁把循环体重排成一行（本站有几页的内联脚本本来就是
+     压缩成单行的），这 5 页会立刻集体变红——而它们的耗电行为一点没变。
+     去掉锚点后，这 7 页的判定与改动前逐页一致（已逐页比对过）。 */
+  const conditional = sites.some((s) => /if\s*\([^{};]*\)\s*\{?[^;{}]*requestAnimationFrame\s*\(/.test(s.text));
 
   if ((storesId && hasCancel) || conditional) { guarded++; continue; }
 
   problems.push({
     rel,
     detail: recursive.map((s) => `行 ${s.line}：${s.text}`),
-    owned: THREAD_OWNED.has(rel),
   });
 }
 
-const blocking = problems.filter((p) => !p.owned);
-const deferred = problems.filter((p) => p.owned);
-
 console.log(`审计 ${files.length} 个 HTML：${loopPages} 页含递归 rAF 循环，${guarded} 页有停机手段`);
 
-if (!blocking.length) {
+if (!problems.length) {
   console.log('✓ 逐帧循环都能停下来（记录 rafId + cancel，或条件排帧）');
 } else {
-  console.log(`\n✗ ${blocking.length} 页存在永久 rAF 循环（空闲时仍每秒重画 60 次）：`);
-  for (const p of blocking) {
+  console.log(`\n✗ ${problems.length} 页存在永久 rAF 循环（空闲时仍每秒重画 60 次）：`);
+  for (const p of problems) {
     console.log(`  ${p.rel}`);
     p.detail.forEach((d) => console.log(`    ${d}`));
   }
@@ -105,12 +111,4 @@ if (!blocking.length) {
   console.log('  再用捕获阶段的 document 事件委托 requestDraw() 唤醒。');
 }
 
-if (deferred.length) {
-  console.log('\n（另有其他线程持有的文件，本工具不阻断，等对方收尾）');
-  for (const p of deferred) {
-    console.log(`  ${p.rel}`);
-    p.detail.forEach((d) => console.log(`    ${d}`));
-  }
-}
-
-process.exit(blocking.length ? 1 : 0);
+process.exit(problems.length ? 1 : 0);

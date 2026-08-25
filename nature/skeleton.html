@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>骨骼观察站 · 盒子与杠杆 | 少儿数理启蒙</title>
+<meta name="description" content="比较头骨、脊柱、肋骨、四肢、关节和昆虫外骨骼。选两块，说出谁更像保护、谁更像活动。离线即可使用。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+ .hero { padding: 28px 0 10px; }
+ .hero h1 { margin: .15em 0 .3em; }
+ .lead { max-width: 58ch; color: var(--ink-mid); }
+ .kid-hero-scene {
+ display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+ margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+ border: 1px solid color-mix(in srgb,var(--phys) 36%,var(--line));
+ border-radius: var(--r-lg);
+ background: linear-gradient(135deg,color-mix(in srgb,var(--phys) 12%,var(--surface)),var(--surface) 62%);
+ }
+ .mission-face {
+ width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+ border: 2px solid color-mix(in srgb,var(--phys) 40%,var(--line));
+ background: color-mix(in srgb,var(--phys) 12%,var(--surface)); font-size: 2.2rem;
+ }
+ .stage.kid-visual-stage { min-height: 228px; }
+ .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+ .sk-art { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+ .sk-sky { fill: color-mix(in srgb,var(--phys) 8%,#f4efe6); }
+ .sk-bone { fill: color-mix(in srgb,var(--surface) 80%,#fff); stroke: color-mix(in srgb,var(--ink) 42%,transparent); stroke-width: 2; }
+ .sk-hole { fill: color-mix(in srgb,var(--phys) 10%,#efe4d2); }
+ .sk-cart { fill: color-mix(in srgb,var(--warn) 28%,#e8c878); stroke: color-mix(in srgb,var(--ink) 30%,transparent); stroke-width: 1.4; }
+ .sk-exo { fill: color-mix(in srgb,var(--sci) 28%,#6aaa58); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.6; }
+ .sk-bug { fill: color-mix(in srgb,var(--kit) 36%,#8a6238); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.4; }
+ .sk-joint { fill: color-mix(in srgb,var(--math) 22%,#8aa8c0); stroke: color-mix(in srgb,var(--ink) 36%,transparent); stroke-width: 1.6; }
+ .sk-frame { fill: color-mix(in srgb,var(--surface) 86%,#fff); stroke: color-mix(in srgb,var(--ink) 16%,transparent); stroke-width: 2; }
+ .sk-ring { fill: none; stroke: var(--phys); stroke-width: 3; opacity: 0; }
+ .sk-ring.on { opacity: 1; }
+ .sk-label { fill: var(--ink); font: 800 13px var(--mono); }
+ .kid-action-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+ .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+ .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink); }
+ .ask li::before {
+ counter-increment: q; content: counter(q);
+ position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+ display: grid; place-items: center; background: color-mix(in srgb,var(--phys) 16%,var(--surface));
+ border: 1px solid color-mix(in srgb,var(--phys) 40%,var(--line)); color: var(--ink);
+ font: 800 .76rem var(--mono);
+ }
+ button, .btn { min-height: 44px; }
+ .stage + .kid-action-strip { margin-top: 8px; }
+ .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+ .sk-atlas .kid-figure { --tone: var(--phys); }
+ .sk-atlas .kid-figure[data-sk="skull"] { --tone: var(--math); }
+ .sk-atlas .kid-figure[data-sk="spine"] { --tone: var(--phys); }
+ .sk-atlas .kid-figure[data-sk="rib"] { --tone: var(--kit); }
+ .sk-atlas .kid-figure[data-sk="arm"] { --tone: var(--sci); }
+ .sk-atlas .kid-figure[data-sk="leg"] { --tone: var(--warn); }
+ .sk-atlas .kid-figure[data-sk="joint"] { --tone: var(--video); }
+ .sk-atlas .kid-figure[data-sk="cart"] { --tone: var(--warn); }
+ .sk-atlas .kid-figure[data-sk="exo"] { --tone: var(--sci); }
+ .sk-atlas .kid-figure-art { padding: 6px; }
+ .sk-atlas .kid-figure-art > svg { width: 100%; max-width: 132px; height: auto; }
+ .sk-atlas .kid-figure-fact { display: block; }
+ .sk-choice-row { display: grid; gap: 8px; margin: 10px 0; }
+ .sk-choice-row .kid-choice { margin: 0; }
+ .sk-choice-row .kid-choice button { white-space: nowrap; }
+ @media (max-width: 640px) {
+ .kid-hero-scene { grid-template-columns: 1fr; padding: 10px 12px; margin-top: 6px; }
+ .hero > div > .row { display: none; }
+ .hero { padding: 8px 0 4px; }
+ .hero h1 { margin: 0 0 .12em; font-size: 1.35rem; }
+ .mission-face { display: none; }
+ .stage { padding: 8px; }
+ .stage h2 { font-size: 1.08rem; margin: 0 0 6px; }
+ .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+ .lead { max-width: none; }
+ }
+
+ .sk-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+ .sk-lab-panel { margin: 12px 0; padding: 10px; border: 1px solid color-mix(in srgb,var(--sci) 36%,var(--line)); border-radius: var(--r-lg); background: color-mix(in srgb,var(--sci) 8%,var(--surface)); }
+ .sk-lab-panel .readout { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0; }
+ .sk-lab-panel .readout div { padding:8px; border-radius:var(--r); background:var(--surface); border:1px solid var(--line); }
+ .sk-lab-panel .readout span { display:block; font-size:.78rem; color:var(--ink-mid); }
+ .sk-lab-panel .readout b { font:800 1.05rem var(--mono); color:var(--ink); }
+ .sk-lab-panel label { display:block; font-weight:700; margin-top:8px; }
+ .sk-lab-panel input[type="range"] { width:100%; min-height:44px; }
+ .sk-lab-panel .kid-action-strip { flex-direction:column; align-items:stretch; gap:4px; margin:8px 0; }
+ .sk-guess .pick-btns { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+ .guess-card { border-color: color-mix(in srgb,var(--sci) 45%,var(--line)); }
+ .guess-pick[aria-pressed="true"] { border-color: var(--sci); background: color-mix(in srgb,var(--sci) 18%,var(--surface)); color: var(--ink); }
+ .guess-out { font-weight: 750; color: var(--ink-mid); }
+ .guess-out b { color: var(--ink); }
+ @media (max-width:640px){
+ .hero .lead { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+ .sk-lab-panel > p { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+ }
+ @media (max-width:480px){
+ [data-playful-companion], [data-playful-sticker] { display:none !important; }
+ .sk-lab-panel .readout { grid-template-columns:1fr; }
+ }
+
+</style>
+</head>
+<body data-playful-page="nature/skeleton.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+ <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+ <div class="row" aria-label="主导航">
+ <a class="nav-link" href="../index.html">资源库</a>
+ <a class="nav-link" href="../pages/paths.html">学习路径</a>
+ <a class="nav-link" href="../games/index.html">互动实验</a>
+ <a class="nav-link" href="../nature/index.html" aria-current="page">探索</a>
+ <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+ <a class="nav-link" href="../pages/parents.html">家长指南</a>
+ <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+ </div>
+</div></nav>
+<main id="main" class="wrap">
+ <header class="hero">
+ <div>
+ <p class="row"><span class="pill pill-sci">生命</span><span class="pill">5–11&nbsp;岁</span><span class="pill">本地观察</span></p>
+ <h1>骨骼观察站</h1>
+ <p class="lead">骨头是杆，关节是轴，肌肉一拉才会弯——不是不会动的石头架子，也不是骨头自己会跳。颅和肋骨围出空腔保护脑子和心肺，这是盒子，不是杠杆；长骨当杆，用来够、举、走。肌肉只能拉、不能推，所以屈和伸要两组肌轮流干活。昆虫的硬壳在外面，长大必须蜕；人的骨头在皮里面，可以跟着长。本页练「杠杆臂、关节轴、保护腔」；因为标本是曾经活过的身体，所以只看不拆、不拿真骨头吓人。舞台上的「支撑」数字只是比较尺子，不是某一个人的体检表，更不是骨科课。</p>
+ <div data-playful-companion></div>
+ <span data-playful-sticker></span>
+ </div>
+ <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="78" height="78"></div>
+ </header>
+
+
+ <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+ <h2 id="stageTitle">两块骨头并排放</h2>
+ <svg class="sk-art" viewBox="0 0 560 240" role="img" aria-labelledby="skTitle skDesc">
+ <title id="skTitle">骨骼比较舞台</title>
+ <desc id="skDesc">左右两块空地。你点中的两块骨头会分别画到两边，方便比谁保护、谁活动。</desc>
+ <rect class="sk-sky" width="560" height="240"/>
+ <rect class="sk-frame" x="16" y="14" width="252" height="186" rx="14"/>
+ <rect class="sk-frame" x="292" y="14" width="252" height="186" rx="14"/>
+ <ellipse class="sk-ring" id="ringA" cx="142" cy="107" rx="128" ry="96"/>
+ <ellipse class="sk-ring" id="ringB" cx="418" cy="107" rx="128" ry="96"/>
+ <g id="slotA" transform="translate(22 20)"></g>
+ <g id="slotB" transform="translate(298 20)"></g>
+ <text class="sk-label" id="labA" x="142" y="228" text-anchor="middle">左边还空着</text>
+ <text class="sk-label" id="labB" x="418" y="228" text-anchor="middle">右边还空着</text>
+ </svg>
+ <p class="live-text" id="live" role="status" aria-live="polite">两边都空着。到图鉴里点两块骨头，比谁保护、谁活动。</p>
+ </section>
+
+ <div class="kid-action-strip" role="group" aria-label="比较保护和活动">
+ <span>点两块，再说谁更像保护、谁更像活动</span>
+ <button class="btn" type="button" id="clearPick">清空选择</button>
+ </div>
+
+<section class="card sk-lab-panel" aria-labelledby="skLabTitle">
+ <h2 id="skLabTitle">骨骼支撑台 · 真参数</h2>
+ <p>调<strong>骨密度</strong>与<strong>杠杆力臂</strong>。骨头轻而韧，关节杠杆帮省力——不是「石头架子」。</p>
+ <div class="kid-action-strip" role="group" aria-label="真参数主操作">
+ <label for="skA">骨密度：<span id="skALab">…</span></label>
+ <input class="input" id="skA" type="range" min="4" max="36" value="16" aria-valuetext="16">
+ <label for="skB">杠杆力臂：<span id="skBLab">…</span></label>
+ <input class="input" id="skB" type="range" min="2" max="20" value="8" aria-valuetext="8">
+ </div>
+ <svg class="sk-art" viewBox="0 0 640 220" role="img" aria-labelledby="skLabSvgTitle skLabSvgDesc">
+ <title id="skLabSvgTitle">骨是杆，肌来拉；不是石头架子</title>
+ <desc id="skLabSvgDesc">骨头轻而韧，肌肉一拉才会弯。右边石头架子被划掉。</desc>
+ <rect fill="#e8e4dc" width="640" height="220"/>
+ <line id="skBone" x1="200" y1="160" x2="320" y2="80" stroke="#f0ebe0" stroke-width="14"/>
+ <circle cx="200" cy="160" r="12" fill="#e8e0d0"/>
+ <circle cx="320" cy="80" r="10" fill="#e8e0d0"/>
+ <g id="skStone" opacity="0.28">
+ <rect x="536" y="20" width="56" height="48" fill="#8a857c"/>
+ <path d="M520 12 L608 76 M608 12 L520 76" stroke="#c2410c" stroke-width="4"/>
+ </g>
+ <rect id="skBar" x="20" y="70" width="14" height="90" fill="#1a5a3a"/>
+ <text fill="#1a2a20" style="font:800 13px monospace" x="16" y="28">支撑台</text>
+ <text id="skStateLab" fill="#1a2a20" style="font:700 12px monospace" x="160" y="28">骨是杆，肌来拉</text>
+ </svg>
+ <div class="readout" aria-live="polite">
+ <div><span>骨密</span><b id="skAOut">…</b></div>
+ <div><span>支撑（算）</span><b id="skSOut">…</b></div>
+ <div><span>稳立？</span><b id="skOkOut">…</b></div>
+ </div>
+ <p class="live-text" id="skLabLive" role="status" aria-live="polite">骨头是杠杆，钙存在骨里当库。拖滑杆看杆能不能撑住。</p>
+ </section>
+ <section class="card guess-card sk-guess" aria-labelledby="skGuessTitle">
+ <h2 id="skGuessTitle">先猜一猜，再拖滑杆</h2>
+ <p><b>第 1 题：</b>骨密够、杠杆够（骨密 30、杠杆 10）。骨头是杆、肌肉来拉，还是石头架子自己会走？</p>
+ <div class="pick-btns" role="group" aria-label="猜支撑">
+ <button class="btn guess-pick" type="button" data-sk-g1="20" aria-pressed="false">骨是杆，肌来拉</button>
+ <button class="btn guess-pick" type="button" data-sk-g1="30" aria-pressed="false">石头架子自己走</button>
+ </div>
+ <p class="guess-out" id="skGuessOut1" role="status" aria-live="polite">押好了</p>
+ <div id="skGuessBlock2" hidden>
+ <p><b>第 2 题：</b>骨密 5、杠杆 3，还稳立吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜够不够">
+ <button class="btn guess-pick" type="button" data-sk-g2="yes" aria-pressed="false">稳立</button>
+ <button class="btn guess-pick" type="button" data-sk-g2="no" aria-pressed="false">偏软</button>
+ </div>
+ <p class="guess-out" id="skGuessOut2" role="status" aria-live="polite">押好了</p>
+ </div>
+ <div id="skGuessBlock3" hidden>
+ <p><b>第 3 题：</b>骨密最少 4、杠杆最弱 2。还能明显稳立吗？</p>
+ <div class="pick-btns" role="group" aria-label="猜最低档">
+ <button class="btn guess-pick" type="button" data-sk-g3="yes" aria-pressed="false">能，还在</button>
+ <button class="btn guess-pick" type="button" data-sk-g3="no" aria-pressed="false">不能，两边都太弱</button>
+ <button class="btn guess-pick" type="button" data-sk-g3="zero" aria-pressed="false">变成 0，没了</button>
+ </div>
+ <p class="guess-out" id="skGuessOut3" role="status" aria-live="polite">押好了</p>
+ </div>
+ </section>
+
+ <section class="card" aria-labelledby="teachWhatTitle">
+ <h2 id="teachWhatTitle">先找杠杆臂、关节和肌肉拉力</h2>
+ <p>先点「上肢」或「关节」，再对照「头骨」。弯胳膊时先找到肘：骨头是杆，关节是轴，肌肉只能拉、不能推——所以屈肘靠内侧那组肌，伸肘靠外侧另一组。没有关节，杆再硬也弯不了；没有肌肉拉，杆再硬也不会自己跳。骨头不是「不会动的石头架子」，更不是玩具弹簧。</p>
+ <p>颅和肋骨围出空腔，保护脑子和心肺，这是另一套活：保护，不是杠杆。头骨几乎不弯，不要和肘叠成「都会动」。昆虫的硬壳在外面，长大必须蜕；人的骨头在皮里面，可以跟着长。不要写成「人没有壳所以更弱」。钙让骨硬，胶原让骨韧，两样配合才不容易一折就断。</p>
+ <p>因为标本是曾经活过的身体，所以只看不拆、不拿真骨头吓人，也不要用力按别人的骨头。舞台上的「支撑」读数只比较「骨密和杠杆」，用来让孩子看见杆够硬、轴会转，才撑得住，不是某一个人的体检表，更不是骨科说明书。</p>
+ </section>
+
+ <section class="card sk-atlas" aria-labelledby="atlasTitle">
+ <h2 id="atlasTitle">骨骼图鉴</h2>
+ <p>下面有 12&nbsp;张卡。点两张，比谁更像保护、谁更像活动。再点一次同一张可以取消。</p>
+ <div class="kid-figure-grid" role="group" aria-label="骨骼图鉴：十二种骨头">
+ <button class="kid-figure" type="button" id="skFigSkull" data-sk="skull" aria-pressed="false" aria-label="头骨：像头盔，保护脑子" data-say="头骨像头盔，把脑子包在空腔里面；它是保护盒，几乎不弯，也不会自己跳。">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">头骨</span>
+ <span class="kid-figure-fact">颅骨像头盔，围出空腔保护脑子，这是钙磷盒子，不是杠杆，也不会自己跳。</span>
+ </button>
+ <button class="kid-figure" type="button" id="skFigSpine" data-sk="spine" aria-pressed="false" aria-label="脊柱：一节节骨头，保护脊髓" data-say="脊柱一节节叠起来，中间藏着脊髓；它撑住身体，也保护这条线，不是铁棍。">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">脊柱</span>
+ <span class="kid-figure-fact">脊柱一节节骨头，中间走脊髓，既能弯一点，又保护这条线，不是一根铁棍。</span>
+ </button>
+ <button class="kid-figure" type="button" id="skFigRib" data-sk="rib" aria-pressed="false" aria-label="肋骨：像笼子，保护心和肺" data-say="肋骨：弯成一圈圈笼子，把心和肺护在里面。吸气时笼子会轻轻打开一点。">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">肋骨</span>
+ <span class="kid-figure-fact">肋骨像笼子，保护心和肺，这是盒子不是杠杆；呼吸时笼子会轻轻开合。</span>
+ </button>
+ <button class="kid-figure" type="button" id="skFigArm" data-sk="arm" aria-pressed="false" aria-label="上肢：胳膊和手，是杠杆" data-say="上臂、前臂和手连在一起，长骨像杠杆，关节是轴，肌肉一拉才会够、举、抓。">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">上肢</span>
+ <span class="kid-figure-fact">胳膊和手是杠杆：骨头当杆，关节当轴，肌肉一拉才会弯，骨头自己不会跳。</span>
+ </button>
+ <button class="kid-figure" type="button" id="skFigLeg" data-sk="leg" aria-pressed="false" aria-label="下肢：腿和脚，撑住走路" data-say="下肢：大腿、小腿和脚。骨头更长更粗，像杠杆把身体撑起来，一步一步往前走。">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">下肢</span>
+ <span class="kid-figure-fact">腿和脚撑住走路，长骨当杆，关节当轴，肌肉只能拉、不能推，要两组轮流。</span>
+ </button>
+ <button class="kid-figure" type="button" id="skFigJoint" data-sk="joint" aria-pressed="false" aria-label="关节：骨头接头，能弯" data-say="关节：两块骨头碰头的地方。有的像铰链只往一边弯，有的能转。没有关节，杠杆就动不了。">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">关节</span>
+ <span class="kid-figure-fact">关节是骨头接头，能弯。没有关节，杆再硬也只能直着顶，关节不是装饰缝。</span>
+ </button>
+ <button class="kid-figure" type="button" id="skFigCart" data-sk="cart" aria-pressed="false" aria-label="软骨：软垫，让骨头不互相磨" data-say="软骨：关节里的软垫。骨头活动时它垫在中间，减少摩擦。耳朵和鼻尖摸起来软，也有软骨。">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">软骨</span>
+ <span class="kid-figure-fact">软骨是软垫，让骨头不互相磨。本页不讲治病，关节疼要告诉大人就医。</span>
+ </button>
+ <button class="kid-figure" type="button" id="skFigExo" data-sk="exo" aria-pressed="false" aria-label="昆虫外骨骼：骨头长在外面当盔甲" data-say="昆虫外骨骼：盔甲穿在外面，既撑住身体，也保护里面的软组织。人的骨头在里面，这是对照。">
+ <span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/beetle.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">昆虫外骨骼</span>
+ <span class="kid-figure-fact">昆虫的硬壳长在外面当盔甲，长大必须蜕；人的骨头在皮里面，可以跟着长。</span>
+ </button>
+ <button class="kid-figure" type="button" id="skFigPelvis" data-sk="pelvis" aria-pressed="false" aria-label="骨盆：托住内脏，接下肢" data-say="骨盆：像一只碗，托住肚子里的器官，也把上身的重量交给两条腿。它更像保护，也连着活动。">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">骨盆</span>
+ <span class="kid-figure-fact">骨盆像一只碗，托住内脏再接下肢，既是盒子又连杠杆，不要只写成一块板。</span>
+ </button>
+ <button class="kid-figure" type="button" id="skFigFinger" data-sk="finger" aria-pressed="false" aria-label="指骨：一节一节能弯" data-say="指骨：一根手指好几节短骨头。关节让它们弯起来去抓东西，更像活动。">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">指骨</span>
+ <span class="kid-figure-fact">手指一节一节，弯起来去抓东西，每节都是小杠杆，少一节轴就少一处弯。</span>
+ </button>
+ <button class="kid-figure" type="button" id="skFigJaw" data-sk="jaw" aria-pressed="false" aria-label="下颌：能开合的骨头" data-say="下颌：头上唯一能大开大合的骨头。它带着牙齿去咬，更像活动，不是头盔。">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">下颌</span>
+ <span class="kid-figure-fact">下颌能开合，带着牙齿去咬，关节在耳前附近，不是骨头自己张嘴，肌肉在拉。</span>
+ </button>
+ <button class="kid-figure" type="button" id="skFigSternum" data-sk="sternum" aria-pressed="false" aria-label="胸骨：肋骨在前面的汇合处" data-say="胸骨：胸口正中那块扁骨头。左右肋骨在这里汇合，把心和肺护在笼子里。更像保护。">
+ <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span>
+ <span class="kid-figure-cap">胸骨</span>
+ <span class="kid-figure-fact">胸骨在胸口正中，肋骨在这里汇合，围成保护心肺的笼子，不要按压演示。</span>
+ </button>
+ </div>
+ <p class="live-text" id="atlasSay" role="status" aria-live="polite">还没选。点两块骨头，比一比谁保护、谁活动。</p>
+ </section>
+
+
+ <section class="card" aria-labelledby="predictTitle">
+ <h2 id="predictTitle">猜一猜</h2>
+ <div class="kid-predict" style="--tone:var(--sci)"
+ data-kid-predict
+ data-kid-predict-explain="内骨骼杠杆 → 运动；无骨难支撑行走。外骨骼要蜕皮长大。"
+ data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+ data-kid-predict-again="押好了，点「看答案」。">
+ <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🦴</span><b>头骨和手指骨，主要差在哪一类「工作」？</b></p>
+ <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：骨头的保护与杠杆">
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="same">都只负责让身体变重，没有别的用</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="jobs" data-kid-predict-correct>头骨更像保护盒；四肢骨常当杠杆帮肌肉干活</button>
+ <button class="kid-predict-pick" type="button" data-kid-choice data-value="jelly">大人骨头是果冻，小孩才是硬的</button>
+ </div>
+ <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+ <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+ </div>
+ </section>
+
+ <section class="task" aria-labelledby="taskTitle">
+ <h2 class="task-title" id="taskTitle">任务：选两块骨头，说出谁保护、谁活动</h2>
+ <p>先点两张图鉴卡。再给每一张挑：更像保护，还是更像活动。一张保护、一张活动，选对以后点「记下这次比较」。</p>
+ <div class="sk-choice-row">
+ <p id="jobACap">第一块更像什么</p>
+ <div class="kid-choice" id="jobA" role="group" aria-labelledby="jobACap">
+ <button type="button" data-slot="a" data-job="protect" aria-pressed="false">更像保护</button>
+ <button type="button" data-slot="a" data-job="move" aria-pressed="false">更像活动</button>
+ </div>
+ </div>
+ <div class="sk-choice-row">
+ <p id="jobBCap">第二块更像什么</p>
+ <div class="kid-choice" id="jobB" role="group" aria-labelledby="jobBCap">
+ <button type="button" data-slot="b" data-job="protect" aria-pressed="false">更像保护</button>
+ <button type="button" data-slot="b" data-job="move" aria-pressed="false">更像活动</button>
+ </div>
+ </div>
+ <div class="kid-action-strip" role="group" aria-label="记下这次比较">
+ <button class="btn btn-primary" type="button" id="confirmBtn" disabled>记下这次比较</button>
+ </div>
+ <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+ <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+ <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先点一块更像保护的，再点一块更像活动的。</p>
+ </section>
+
+
+ <section class="card" aria-labelledby="lookTitle">
+ <h2 id="lookTitle">骨头是杆，关节是轴，肌肉一拉才会弯</h2>
+ <p>同一条胳膊，先只改「有没有关节、谁在拉」：先摸肘这个轴，再弯一下，看是肌肉在拉杆，不是骨头自己跳。这样比，才知道「会动」靠的是杠杆，不是架子自己活了。屈和伸要两组肌轮流拉，因为肌肉只能拉、不能推——只有一组肌，弯下去以后就伸不回来。</p>
+ <p>对照头骨：围成盒子保护脑子，几乎不弯。完成句写「杠杆」或「内骨骼」。禁止「骨头只是架子不会动」，也禁止「骨头自己会跳」。骨折护具让关节先少转，保护的是愈合，不是让骨头「自己跳回来」。因为标本是曾经活过的身体，所以只看不拆、不拿真骨头吓人。</p>
+ <div class="kid-figure-grid" role="group" aria-label="主题细节">
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">骨</span><span class="kid-figure-sub">杠杆</span><p class="kid-figure-fact">骨头是杆，肌肉一拉，关节处才会弯。骨头自己不会跳，也不是石头架子。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">关节</span><span class="kid-figure-sub">活动</span><p class="kid-figure-fact">骨头要在接头处才能拐弯。少了这颗轴，再硬的杆也只能直着顶，轴不是画上去的缝。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">肌肉</span><span class="kid-figure-sub">拉力</span><p class="kid-figure-fact">肌肉只能拉，不能推。所以屈和伸要两组肌轮流干活，骨头自己不会跳。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">保护</span><span class="kid-figure-sub">腔</span><p class="kid-figure-fact">颅和肋骨围出空腔，保护脑子和心肺。这是盒子，不是杠杆，不要拿它当棍子撬。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/beetle.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">外骨骼</span><span class="kid-figure-sub">对照</span><p class="kid-figure-fact">虫壳穿在外面，长大必须蜕；人的钙磷骨在皮里面，可以跟着长，两套不要糊。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">吓人</span><span class="kid-figure-sub">真骨</span><p class="kid-figure-fact">不拿真骨头吓人，也不拆标本玩。标本是曾经活过的身体，只看不拆，更不要乱敲。</p></div>
+ </div>
+ <ol class="kid-story-steps">
+ <li data-step="1"><b>指关节。</b>肘、膝、指节：骨头在这里才能弯。</li>
+ <li data-step="2"><b>说拉力。</b>肌肉只能拉，对侧那组负责拉回去。</li>
+ <li data-step="3"><b>对照外骨。</b>昆虫壳在外，人骨在内。</li>
+ <li data-step="4"><b>写完成句。</b>点名杠杆或内骨骼，禁止「架子不会动」。</li>
+ </ol>
+ <div class="age-tiers" aria-label="按年龄分层的解释">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>骨头像棍子，肌肉拉它才会动；能弯的地方叫关节。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>肌肉只能拉不能推，所以弯和伸要两组肌轮流干活。肋骨像笼子护心肺。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>力臂：支点在关节，负荷在手或脚，拉力在肌附着点。本页只建立杠杆直觉，不做计算课。</p></div>
+ </div>
+ <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能把骨头说成杆、关节说成轴、肌肉说成只能拉，并否定「架子不会动」和「骨头自己会跳」。完成看的是杠杆对照，不是背「有骨头」。</p>
+ <ul class="ask-list">
+ <li>谁让骨头动？肌肉能推吗？</li>
+ <li>关节在杠杆里相当于什么？</li>
+ <li>昆虫的硬壳在哪？长大怎么换？</li>
+ <li>能拿真骨头吓人、拆标本玩吗？</li>
+ <li>因为标本是曾经活过的身体、不是玩具，所以只看不拆，不拿真骨头吓人。</li>
+ </ul>
+ </section>
+
+
+ <section class="card" aria-labelledby="deepTitle">
+ <h2 id="deepTitle">保护与造血点到</h2>
+ <p>颅骨和肋骨围出空腔，保护脑子、心和肺——这是盒子，不是杠杆。吸气时肋笼会轻轻打开一点，仍是保护腔在让路，不要写成「头骨也会弯」。长骨内部的骨髓参与造血，点到为止，本页不展开成医学课。钙让骨硬，胶原让骨韧，两样配合才不容易一折就断。</p>
+ <p>昆虫的外骨骼在外面，长大必须蜕；人的内骨骼在皮里面，可以跟着长。不要写成「人没有壳所以更弱」，也不要写成「骨头自己会跳」。力臂里：支点在关节，负荷在手或脚，拉力在肌附着点——本页只建立直觉，不做计算课。</p>
+ <p>本页「支撑≈骨密×杠杆÷15」只是比较尺子，用来让孩子看见「杆够硬、轴会转，才撑得住」，不是某一个人的体检表，更不是骨科说明书。不要把读数抄进「谁的骨头更硬」比赛。</p>
+ <p>因为标本是曾经活过的身体，所以只看不拆、不拿真骨头吓人。不要用力按别人的骨头。模型可以摸，真骨头和标本不当玩具。本页不是医疗建议。</p>
+ <div class="kid-figure-grid" role="group" aria-label="专属事实卡">
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">杠杆</span><span class="kid-figure-sub">臂</span><p class="kid-figure-fact">骨头当杆，关节当支点，肌肉负责拉。三件凑齐才是一套，少了关节就弯不了。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">拮抗</span><span class="kid-figure-sub">肌</span><p class="kid-figure-fact">一边拉屈、一边拉伸，成对干活。一组休息，另一组才能把臂拉回去，骨不会自己跳。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/beetle.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">保护</span><span class="kid-figure-sub">外骨</span><p class="kid-figure-fact">外骨骼限制连续增大，要长大就得蜕皮。人骨在里面，不必整副脱掉，液压撑是别的门。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/beetle.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">蜕皮</span><span class="kid-figure-sub">外骨</span><p class="kid-figure-fact">外骨骼要长大就得蜕掉旧壳。对照人骨：里面的钙磷杆可以慢慢加长，不必整副脱。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">模型</span><span class="kid-figure-sub">杠杆</span><p class="kid-figure-fact">钙磷骨头当杆，关节当轴，肌肉来拉；少一件就动不了，不要写成骨头自己跳。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">惊吓</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">标本只准看，不许拿真骨吓人，也不许拆开玩；那是曾经活过的身体，不是敲锤玩具。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="fieldTitle">
+ <h2 id="fieldTitle">对照卡：屈肘杠杆 · 外骨骼蜕皮 · 惊吓否决</h2>
+ <p>三列用同一套支撑。甲：屈肘时肌肉拉骨头绕关节转，对侧那组负责拉回去。乙：昆虫壳在外，长大必须蜕；人骨在内，可以跟着长。丙：拿骨吓人是否决。否决句：「骨头自己会跳。」</p>
+ <p>头骨写在保护列，不要和杠杆叠成「都会弯」。脊柱一节节叠起来，中间藏着脊髓，既撑住又保护，另开一行，不要和肘抢「谁更会弯」。本页读数只比较方向，不是某一个人的说明书。</p>
+ <div class="kid-figure-grid" role="group" aria-label="对照与细节">
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">甲</span><span class="kid-figure-sub">拉</span><p class="kid-figure-fact">屈肘：肌肉拉骨头绕关节转。完成句写「肌肉在拉」，不要写骨头会跳，杆自己不动。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/beetle.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">乙</span><span class="kid-figure-sub">蜕</span><p class="kid-figure-fact">昆虫要蜕皮才能换更大的壳。人的骨头在里面，不必整副脱掉，没有骨靠液压是别的门。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">丙</span><span class="kid-figure-sub">吓</span><p class="kid-figure-fact">真骨不要乱敲，也不要拿来吓人；标本是曾经活过的身体，只看不拆不敲。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">自跳误会</span><span class="kid-figure-sub">拆</span><p class="kid-figure-fact">骨头不会自己跳，要肌肉拉。把它写成石头架子或会跳的架子都不对。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">系统</span><span class="kid-figure-sub">肌骨</span><p class="kid-figure-fact">肌肉、骨头、关节才是一套。少了关节，杆再硬也弯不了，不是骨头在发脾气。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">关节</span><span class="kid-figure-sub">关键</span><p class="kid-figure-fact">没有关节，杆再硬也弯不了。关节是轴，不是装饰缝，软垫让骨头不互相磨。</p></div>
+ </div>
+ </section>
+
+
+ <section class="card" aria-labelledby="moreTitle">
+ <h2 id="moreTitle">一分钟杠杆账</h2>
+ <p>在纸上画一根骨、一个关节、一个拉的箭头。写「肌肉在拉」。完成句点名关节：例如「肌肉拉骨头，关节处才会弯。」旁边再画一个盒子当头骨，写「保护，不是杠杆」。屈和伸各画一组箭头，才看得出肌肉不能推。</p>
+ <p>口头只要两句：「骨头是杆，关节是轴。」「肌肉只能拉，不能推。」有人说「骨头自己会跳」，让孩子指着拉的箭头反驳。有人说「人没有壳所以更弱」，让他指着头骨和肋笼：保护腔在里面。</p>
+ <p>因为标本是曾经活过的身体，所以只看不拆、不拿真骨头吓人。人体页看整台机器；肺页看另一套杠杆把气推进来。本页数字不要抄进体检单，也不要当成骨科作业。</p>
+ <div class="kid-figure-grid" role="group" aria-label="加厚事实">
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">画</span><span class="kid-figure-sub">箭头</span><p class="kid-figure-fact">完成句要写肌肉在拉这根杆；写成石头架子或会自己跳的架子，两句都不对。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">拉力</span><span class="kid-figure-sub">写</span><p class="kid-figure-fact">写「肌肉在拉骨头」，不要写骨头自己会跳。完成句点名谁在拉，杆不会自己跳。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">句子</span><span class="kid-figure-sub">写</span><p class="kid-figure-fact">骨头是被拉的钙磷杆，不是自己会动的架子，也不是不会动的石头，关节才是轴。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">尊重</span><span class="kid-figure-sub">强调</span><p class="kid-figure-fact">标本只看，不吓人、不拆、不乱敲。因为那是曾经活过的身体，不是玩具锤。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/skeleton.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">棍子被拉</span><span class="kid-figure-sub">口语</span><p class="kid-figure-fact">回家说得出：肌肉在拉这根棍子，骨头自己不会跳。昆虫壳在外，人骨在里。</p></div>
+ <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/beetle.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">对照</span><span class="kid-figure-sub">一句</span><p class="kid-figure-fact">人骨在内可以跟着长；虫壳在外，长大必须蜕。两套骨架不要糊，液压撑是别的门。</p></div>
+ </div>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+ <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+ <p>想知道「这块骨是保护还是活动」，就只改功能这一项。同一具骨架，先看头骨围不围得住脑子，再看肘能不能绕轴转。把「骨头自己会跳」叠进同一档，分不清到底是杠杆，还是吓唬人。</p>
+ <ul>
+ <li><b>只改这一项：</b>这块骨主要是盒子还是杆（或肌肉拉还是没拉）。</li>
+ <li><b>先保持不变：</b>同一条胳膊、同一个肘、同一次轻轻弯。</li>
+ <li><b>要观察的：</b>关节在哪、哪一组肌在拉、头骨弯不弯。</li>
+ <li><b>另开一行：</b>昆虫外骨骼要蜕皮，不要和「人骨会不会自己跳」叠在一起。</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+ <h2 id="askMoreTitle">还可以问下去</h2>
+ <ol>
+ <li>肌肉只能拉不能推。如果只有一组肌，胳膊弯下去以后怎么伸回来？</li>
+ <li>头骨几乎不弯，肘很会弯。都是骨头，差在形状还是差在有没有关节？</li>
+ <li>昆虫壳在外，人骨在内。长大时谁必须脱掉旧壳？谁可以跟着长？</li>
+ </ol>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+ <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+ <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把力臂计算提前塞进四岁耳朵。</p>
+ <div class="age-tiers" aria-label="给家长的分层讲法">
+ <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>骨头像棍子，肌肉拉它才会动；能弯的地方叫关节。头骨像头盔，保护脑子。不拿真骨头吓人。</p></div>
+ <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>肌肉只能拉不能推，所以弯和伸要两组肌轮流干活。肋骨像笼子护心肺。本页数字只用来比较，不是体检表。</p></div>
+ <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>力臂：支点在关节，负荷在手或脚，拉力在肌附着点。外骨骼限制连续增大。观察礼貌：只看不拆，是在尊重曾经活过的身体，不只是礼貌。</p></div>
+ </div>
+ </section>
+
+ <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+ <h2 class="work-card-title" id="workTitle">作品表单：骨骼观察</h2>
+ <p class="work-card-meta">只保存文字，存在这台设备上。摸自己的膝盖、手肘也可以记。本页不是医疗建议。</p>
+ <div class="work-card-fields">
+ <div><label for="workType">作品类型</label>
+ <select class="input" id="workType" name="type">
+ <option value="observation">观察记录</option>
+ <option value="explanation">我的解释</option>
+ <option value="model">模型说明</option>
+ </select>
+ </div>
+ <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：头骨保护，上肢活动"></div>
+ <div><label for="workContent">谁保护、谁活动</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下两块骨头，以及你为什么觉得一个更像盒子、一个更像杠杆。"></textarea></div>
+ <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+ </div>
+ <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+ </form>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+ <h2 id="askTitle">给家长的问题</h2>
+ <ul class="ask">
+ <li>力臂里，杆、轴、拉力各是谁？让他再指一次肘。</li>
+ <li>骨折护具让关节先少转，保护的是愈合，还是让骨头「自己跳回来」？</li>
+ <li>昆虫壳在外，长大必须蜕；人骨在内，可以跟着长。哪一句不能对调？</li>
+ <li>头骨几乎不弯，上肢很会弯。都是骨头，为什么不能写成「都会动」？</li>
+ <li>肌肉只能拉不能推。对侧那组肌不干活，胳膊还伸得回去吗？</li>
+ <li>本页「支撑」读数能当某一个人的体检表吗？它比较的是杆和轴，还是说明书？</li>
+ <li>因为标本是曾经活过的身体，所以为什么只看不拆、不拿真骨头吓人？</li>
+ </ul>
+ </section>
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+ <h2 id="whyTitle">背后的原理</h2>
+ <p>舞台上不写这些词，留给孩子用眼睛看。内骨骼与肌肉组成杠杆系统：骨是杆，关节是轴，肌只能拉。对侧肌负责拉回去，所以弯和伸是两组轮流干活。颅和胸廓围出空腔保护中枢和心肺，是另一套活：盒子，不是杆。把「都会弯」写成一句，就把保护和杠杆搅在一起了。</p>
+ <p>外骨骼在体外承重，限制连续增大，长大必须蜕。钙盐提供刚度，胶原提供韧性。本页「支撑≈骨密×杠杆÷15」只是比较尺子，用来让孩子看见杆够硬、轴会转，才撑得住，不是某一个人的体检表，更不是骨科说明书。</p>
+ <p>常见误会：骨头只是架子不会动、骨头自己会跳、人没有壳所以更弱、标本可以拆着玩、护具是让骨头自己跳回来。纠正：护具先少转，保护的是愈合。</p>
+ <p>观察安全：模型可以摸，真骨头和标本不当玩具；不拿来吓人，不拆，不按别人的骨。因为标本是曾经活过的身体，所以只看不拆。本页不是医疗建议，也不教急救手法。</p>
+ </section>
+
+ <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))" data-audience="parent">
+ <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">骨骼公式卡 · 支撑≈骨密×杠杆÷15（本页比较尺子）；支撑≥10 更稳立；活组织可重建</p>
+ <p style="margin:0;color:var(--ink-mid);line-height:1.55">钙与运动帮骨健康。模型简化；真实还有软骨与肌肉协作。</p>
+ </div>
+
+
+
+ <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+ <h2 id="nextTitle">接下来可以去</h2>
+ <p>带走句：骨头是杆，关节是轴，肌肉一拉才会弯；不是石头架子。因为标本是曾经活过的身体，所以只看不拆、不拿真骨头吓人。人体页看整台机器；肺页看另一套杠杆把气推进来。</p>
+ <p class="row"><a class="btn btn-ghost" href="human-body.html">人体机器</a><a class="btn btn-ghost" href="lungs.html">肺观察站</a></p>
+ </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页是示意模型，不是医疗建议，也不代替骨科或儿科诊治。不要用力按别人的骨头。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+ "use strict";
+ var NS = "http://www.w3.org/2000/svg";
+ var NAMES = { skull:"头骨", spine:"脊柱", rib:"肋骨", arm:"上肢", leg:"下肢", joint:"关节", cart:"软骨", exo:"昆虫外骨骼", pelvis:"骨盆", finger:"指骨", jaw:"下颌", sternum:"胸骨" };
+ var JOB = { skull:"protect", spine:"protect", rib:"protect", arm:"move", leg:"move", joint:"move", cart:"move", exo:"protect", pelvis:"protect", finger:"move", jaw:"move", sternum:"protect" };
+ var JOBS = { protect:"更像保护", move:"更像活动" };
+ var ART = {
+ skull: '<rect class="sk-sky" width="230" height="166"/><ellipse class="sk-bone" cx="115" cy="72" rx="52" ry="44"/><path class="sk-bone" d="M78 98 Q115 142 152 98"/><ellipse class="sk-hole" cx="94" cy="70" rx="11" ry="13"/><ellipse class="sk-hole" cx="136" cy="70" rx="11" ry="13"/>',
+ spine: '<rect class="sk-sky" width="230" height="166"/><rect class="sk-bone" x="94" y="14" width="42" height="22" rx="6"/><rect class="sk-bone" x="94" y="42" width="42" height="22" rx="6"/><rect class="sk-bone" x="94" y="70" width="42" height="22" rx="6"/><rect class="sk-bone" x="94" y="98" width="42" height="22" rx="6"/><rect class="sk-bone" x="94" y="126" width="42" height="22" rx="6"/>',
+ rib: '<rect class="sk-sky" width="230" height="166"/><rect class="sk-bone" x="106" y="18" width="18" height="122" rx="6"/><path class="sk-bone" d="M112 42 Q48 54 54 76 Q48 98 112 110" fill="none" stroke-width="7"/><path class="sk-bone" d="M118 42 Q182 54 176 76 Q182 98 118 110" fill="none" stroke-width="7"/><path class="sk-bone" d="M112 58 Q62 70 68 86 Q62 102 112 114" fill="none" stroke-width="6"/><path class="sk-bone" d="M118 58 Q168 70 162 86 Q168 102 118 114" fill="none" stroke-width="6"/>',
+ arm: '<rect class="sk-sky" width="230" height="166"/><rect class="sk-bone" x="24" y="74" width="70" height="18" rx="8"/><rect class="sk-bone" x="112" y="52" width="18" height="72" rx="8"/><circle class="sk-joint" cx="108" cy="82" r="12"/><rect class="sk-bone" x="138" y="48" width="32" height="10" rx="4"/><rect class="sk-bone" x="138" y="64" width="36" height="10" rx="4"/><rect class="sk-bone" x="138" y="80" width="32" height="10" rx="4"/>',
+ leg: '<rect class="sk-sky" width="230" height="166"/><rect class="sk-bone" x="100" y="10" width="24" height="64" rx="8"/><circle class="sk-joint" cx="112" cy="80" r="13"/><rect class="sk-bone" x="100" y="88" width="24" height="50" rx="8"/><rect class="sk-bone" x="88" y="136" width="64" height="16" rx="7"/>',
+ joint: '<rect class="sk-sky" width="230" height="166"/><rect class="sk-bone" x="18" y="74" width="78" height="20" rx="8"/><rect class="sk-bone" x="128" y="36" width="20" height="86" rx="8"/><circle class="sk-joint" cx="118" cy="82" r="18"/>',
+ cart: '<rect class="sk-sky" width="230" height="166"/><rect class="sk-bone" x="48" y="22" width="134" height="42" rx="12"/><rect class="sk-cart" x="56" y="70" width="118" height="22" rx="8"/><rect class="sk-bone" x="48" y="98" width="134" height="42" rx="12"/>',
+ exo: '<rect class="sk-sky" width="230" height="166"/><ellipse class="sk-exo" cx="115" cy="96" rx="46" ry="34"/><ellipse class="sk-bug" cx="115" cy="50" rx="26" ry="18"/><path class="sk-bug" d="M78 86 L46 68 M76 108 L42 116 M152 86 L184 68 M154 108 L188 116" fill="none" stroke-width="4"/>',
+ pelvis: '<rect class="sk-sky" width="230" height="166"/><path class="sk-bone" d="M48 64 Q115 32 182 64 L168 122 Q115 146 62 122 Z"/><ellipse class="sk-hole" cx="90" cy="96" rx="14" ry="16"/><ellipse class="sk-hole" cx="140" cy="96" rx="14" ry="16"/>',
+ finger: '<rect class="sk-sky" width="230" height="166"/><rect class="sk-bone" x="36" y="96" width="52" height="18" rx="6"/><rect class="sk-bone" x="92" y="70" width="44" height="18" rx="6"/><rect class="sk-bone" x="140" y="44" width="36" height="18" rx="6"/><circle class="sk-joint" cx="90" cy="105" r="6"/><circle class="sk-joint" cx="138" cy="79" r="6"/>',
+ jaw: '<rect class="sk-sky" width="230" height="166"/><ellipse class="sk-bone" cx="115" cy="58" rx="36" ry="28"/><path class="sk-bone" d="M78 76 Q115 128 152 76"/><ellipse class="sk-hole" cx="100" cy="54" rx="5" ry="6"/><ellipse class="sk-hole" cx="130" cy="54" rx="5" ry="6"/>',
+ sternum: '<rect class="sk-sky" width="230" height="166"/><rect class="sk-bone" x="104" y="28" width="22" height="112" rx="6"/><path class="sk-cart" d="M104 52 H52 M126 52 H178 M104 84 H46 M126 84 H184 M104 116 H56 M126 116 H174" fill="none" stroke-width="6"/>'
+ };
+ var picked = [];
+ var jobs = { a:"", b:"" };
+ var done = false;
+ var slotA = document.getElementById("slotA");
+ var slotB = document.getElementById("slotB");
+
+ function setPressed(sel, on){
+ Array.prototype.forEach.call(document.querySelectorAll(sel), function(n){
+ n.setAttribute("aria-pressed", on(n) ? "true" : "false");
+ });
+ }
+ function fillSlot(slot, id){
+ while (slot.firstChild) slot.removeChild(slot.firstChild);
+ if (!id || !ART[id]) return;
+ var wrap = document.createElementNS(NS, "g");
+ wrap.innerHTML = ART[id];
+ slot.appendChild(wrap);
+ }
+ function hasPair(){ return picked.length === 2; }
+ function expectedOk(){
+ if (!hasPair() || !jobs.a || !jobs.b) return false;
+ return jobs.a === JOB[picked[0]] && jobs.b === JOB[picked[1]] && jobs.a !== jobs.b;
+ }
+ function paintStage(){
+ var a = picked[0] || "";
+ var b = picked[1] || "";
+ fillSlot(slotA, a);
+ fillSlot(slotB, b);
+ document.getElementById("labA").textContent = a ? NAMES[a] : "左边还空着";
+ document.getElementById("labB").textContent = b ? NAMES[b] : "右边还空着";
+ document.getElementById("ringA").setAttribute("class", a ? "sk-ring on" : "sk-ring");
+ document.getElementById("ringB").setAttribute("class", b ? "sk-ring on" : "sk-ring");
+ document.getElementById("jobACap").textContent = a ? NAMES[a]+"更像什么" : "第一块更像什么";
+ document.getElementById("jobBCap").textContent = b ? NAMES[b]+"更像什么" : "第二块更像什么";
+ var live = document.getElementById("live");
+ if (!a) live.textContent = "两边都空着。到图鉴里点两块骨头，比谁保护、谁活动。";
+ else if (!b) live.textContent = NAMES[a]+"到了左边。再点另一块，放到右边。";
+ else live.textContent = "左边是"+NAMES[a]+"，右边是"+NAMES[b]+"。谁更像保护，谁更像活动？";
+ }
+ function sync(){
+ var status = document.getElementById("taskStatus");
+ var btn = document.getElementById("confirmBtn");
+ if (done) {
+ btn.disabled = true;
+ return;
+ }
+ if (picked.length < 2) {
+ btn.disabled = true;
+ status.textContent = "尚未完成：先点一块更像保护的，再点一块更像活动的。";
+ return;
+ }
+ if (JOB[picked[0]] === JOB[picked[1]]) {
+ btn.disabled = true;
+ status.textContent = "这两块工作一样。请再选：一块保护，一块活动。";
+ return;
+ }
+ if (!jobs.a || !jobs.b) {
+ btn.disabled = true;
+ status.textContent = "两块都选好了。再给每一块挑：更像保护，还是更像活动。";
+ return;
+ }
+ if (jobs.a === jobs.b) {
+ btn.disabled = true;
+ status.textContent = "两个角色现在一样。任务是说出谁更像保护、谁更像活动。";
+ return;
+ }
+ if (!expectedOk()) {
+ btn.disabled = true;
+ status.textContent = "再比一比：头骨、脊柱、肋骨、外骨骼更像保护；上肢、下肢、关节、软骨更像活动。";
+ return;
+ }
+ btn.disabled = false;
+ status.textContent = NAMES[picked[0]]+JOBS[jobs.a]+"，"+NAMES[picked[1]]+JOBS[jobs.b]+"。点「记下这次比较」。";
+ }
+ Array.prototype.forEach.call(document.querySelectorAll("[data-sk]"), function(btn){
+ btn.addEventListener("click", function(){
+ var id = btn.getAttribute("data-sk");
+ var i = picked.indexOf(id);
+ if (i >= 0) picked.splice(i, 1);
+ else {
+ if (picked.length >= 2) picked.shift();
+ picked.push(id);
+ }
+ jobs = { a:"", b:"" };
+ setPressed("[data-sk]", function(n){ return picked.indexOf(n.getAttribute("data-sk")) >= 0; });
+ setPressed("[data-job]", function(){ return false; });
+ document.getElementById("atlasSay").textContent = btn.getAttribute("data-say") || "";
+ paintStage();
+ sync();
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-slot]"), function(btn){
+ btn.addEventListener("click", function(){
+ var slot = btn.getAttribute("data-slot");
+ var job = btn.getAttribute("data-job");
+ if (slot === "a" && !picked[0]) return;
+ if (slot === "b" && !picked[1]) return;
+ jobs[slot] = job;
+ setPressed(slot === "a" ? "#jobA [data-job]" : "#jobB [data-job]", function(n){ return n.getAttribute("data-job") === job; });
+ sync();
+ });
+ });
+ document.getElementById("clearPick").addEventListener("click", function(){
+ if (done) return;
+ picked = [];
+ jobs = { a:"", b:"" };
+ setPressed("[data-sk]", function(){ return false; });
+ setPressed("[data-job]", function(){ return false; });
+ document.getElementById("atlasSay").textContent = "还没选。点两块骨头，比一比谁保护、谁活动。";
+ paintStage();
+ sync();
+ });
+ document.getElementById("confirmBtn").addEventListener("click", function(){
+ if (done || !expectedOk()) return;
+ done = true;
+ var evidence = NAMES[picked[0]]+"（"+JOBS[jobs.a]+"）和"+NAMES[picked[1]]+"（"+JOBS[jobs.b]+"）";
+ if (window.Progress) Progress.complete("nature/skeleton.html", evidence);
+ document.getElementById("taskStatus").textContent = "完成啦：你比较了"+NAMES[picked[0]]+"和"+NAMES[picked[1]]+"，一个更像保护，一个更像活动。";
+ this.disabled = true;
+ });
+ paintStage();
+ sync();
+})();
+</script>
+<script>
+
+(function(){
+ "use strict";
+ var a = document.getElementById("skA");
+ var b = document.getElementById("skB");
+ if (!a || !b) return;
+ var g1 = "", g2 = "", g3 = "";
+ var g1Done = false, g2Done = false, g3Done = false;
+ function score(){ return Math.round(Number(a.value) * Number(b.value) / 15); }
+ function paint(){
+ var s = score();
+ var ok = s >= 10;
+ document.getElementById("skALab").textContent = a.value;
+ document.getElementById("skBLab").textContent = b.value;
+ a.setAttribute("aria-valuetext", a.value);
+ b.setAttribute("aria-valuetext", b.value);
+ document.getElementById("skAOut").textContent = a.value;
+ document.getElementById("skSOut").textContent = String(s);
+ document.getElementById("skOkOut").textContent = ok ? "稳立" : "偏软";
+ document.getElementById("skStateLab").textContent = ok ? "骨是杆，肌来拉" : "太软，撑不住";
+ document.getElementById("skLabLive").textContent = ok
+ ? "骨头是杠杆，钙存在骨里当库；关节是轴，肌肉一拉才会弯。不是石头架子。"
+ : "骨太稀或杠杆不对，架子软，站不稳。钙库空了，杆也撑不住。";
+ var st = document.getElementById("skStone");
+ if (st) st.setAttribute("opacity", ok ? "0.12" : "0.4");
+ 
+ document.getElementById("skBone").setAttribute("stroke-width", String(8 + Number(a.value) * 0.25));
+ var bh = 30 + s * 2.5;
+ document.getElementById("skBar").setAttribute("height", String(bh));
+ document.getElementById("skBar").setAttribute("y", String(180 - bh));
+
+ if (g1 && !g1Done && Number(a.value) === 30 && Number(b.value) === 10 && s === 20) {
+ g1Done = true;
+ document.getElementById("skGuessOut1").innerHTML = (g1 === "20" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "骨头是杆，肌肉来拉。不是石头架子自己走。";
+ document.getElementById("skGuessBlock2").hidden = false;
+ }
+ if (g2 && !g2Done && Number(a.value) <= 5 && Number(b.value) <= 3 && !ok) {
+ g2Done = true;
+ document.getElementById("skGuessOut2").innerHTML = (g2 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "骨稀、杠杆不对，架子软，站不稳。";
+ document.getElementById("skGuessBlock3").hidden = false;
+ }
+ if (g3 && !g3Done && Number(a.value) === 4 && Number(b.value) === 2) {
+ g3Done = true;
+ document.getElementById("skGuessOut3").innerHTML = (g3 === "no" ? "<b>押对了！</b>" : "<b>揭晓：</b>") + "骨最稀、杠杆最差，撑不住。";
+ }
+}
+ a.addEventListener("input", paint); b.addEventListener("input", paint);
+ Array.prototype.forEach.call(document.querySelectorAll("[data-sk-g1]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g1Done) return;
+ g1 = btn.getAttribute("data-sk-g1");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-sk-g1]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("skGuessOut1").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-sk-g2]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g2Done) return;
+ g2 = btn.getAttribute("data-sk-g2");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-sk-g2]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("skGuessOut2").textContent = "押好了";
+ });
+ });
+ Array.prototype.forEach.call(document.querySelectorAll("[data-sk-g3]"), function(btn){
+ btn.addEventListener("click", function(){
+ if (g3Done) return;
+ g3 = btn.getAttribute("data-sk-g3");
+ Array.prototype.forEach.call(document.querySelectorAll("[data-sk-g3]"), function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+ document.getElementById("skGuessOut3").textContent = "押好了";
+ });
+ });
+ paint();
+})();
+
+</script>
+<script>if (window.Progress) Progress.visit("nature/skeleton.html", "骨骼观察站");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

@@ -20,9 +20,11 @@ import path from 'node:path';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIRS = ['.', 'pages', 'games', 'nature'];
 
-/* 这些是别的线程正在改的文件，本工具照实报告，但单独列出来，
-   方便区分「我引入的回归」和「等对方线程收尾的存量问题」。 */
-const THREAD_OWNED = new Set(['games/number-blocks.html']);
+/* 曾经这里有一个 THREAD_OWNED 豁免集，把 games/number-blocks.html 单列不阻断，
+   等持有它的线程收尾。那个线程已经收尾：把豁免去掉后本工具仍然 exit 0，
+   所以豁免已经过期，全部 28 页现在一视同仁地阻断。
+   不要留空集合 + 死分支——那会变成新的不可达代码，也会诱使后来者往里加页面
+   来「让门禁变绿」。真要再分线程，用 git 分支或直接修，不要削弱门禁。 */
 
 function htmlFiles() {
   const out = [];
@@ -89,21 +91,13 @@ for (const rel of files) {
   }
 }
 
-const mine = problems.filter((p) => !THREAD_OWNED.has(p.rel));
-const owned = problems.filter((p) => THREAD_OWNED.has(p.rel));
-
 console.log(`审计 ${files.length} 个 HTML 的标题层级`);
 
-if (mine.length) {
-  console.log(`\n✗ ${mine.length} 处层级问题：`);
-  for (const p of mine) console.log(`  ${p.rel}  ${p.msg}`);
+if (problems.length) {
+  console.log(`\n✗ ${problems.length} 处层级问题：`);
+  for (const p of problems) console.log(`  ${p.rel}  ${p.msg}`);
 } else {
   console.log('✓ 每页一个 h1、h1 在最前、无跳级');
 }
 
-if (owned.length) {
-  console.log(`\n（另有 ${owned.length} 处在其他线程持有的文件里，本工具不阻断，等对方收尾）`);
-  for (const p of owned) console.log(`  ${p.rel}  ${p.msg}`);
-}
-
-process.exit(mine.length ? 1 : 0);
+process.exit(problems.length ? 1 : 0);

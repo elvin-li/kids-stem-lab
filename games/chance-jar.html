@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>概率罐子 · 连抽两次全黄，就能说罐子骗人吗？</title>
+<meta name="description" content="罐子里蓝多黄少，多抽几次，抽出的比例才慢慢靠近罐子。只抽一两次很容易碰巧。单次结果不能证明谁幸运。本页不是彩票，也不保证下一次一定怎样。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  .hero { padding: 28px 0 10px; }
+  .hero h1 { margin: .15em 0 .3em; }
+  .lead { max-width: 58ch; color: var(--ink-mid); }
+  .kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--math) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--math) 12%,var(--surface)),var(--surface) 62%);
+  }
+  .mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--math) 36%,var(--line));
+    background: color-mix(in srgb,var(--math) 12%,var(--surface)); font-size: 2.2rem;
+  }
+  .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .cj-art { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+  .cj-sky { fill: color-mix(in srgb,var(--video) 10%,#eef7ff); }
+  .cj-desk { fill: color-mix(in srgb,var(--kit) 16%,#efe0c8); }
+  .cj-glass { fill: color-mix(in srgb,var(--math) 14%,#dceaf8); stroke: color-mix(in srgb,var(--ink) 38%,transparent); stroke-width: 3; }
+  .cj-neck { fill: color-mix(in srgb,var(--math) 10%,#e7f0f8); stroke: color-mix(in srgb,var(--ink) 38%,transparent); stroke-width: 3; }
+  .cj-rim { fill: color-mix(in srgb,var(--ink) 18%,#c5d0da); }
+  .cj-shine { fill: #fff; opacity: .35; }
+  .cj-ball-b { fill: color-mix(in srgb,var(--math) 78%,#3d6fb8); stroke: color-mix(in srgb,var(--ink) 46%,transparent); stroke-width: 1.6; }
+  .cj-ball-y { fill: color-mix(in srgb,var(--warn) 78%,#e8b84a); stroke: color-mix(in srgb,var(--ink) 46%,transparent); stroke-width: 1.6; }
+  .cj-spec { fill: #fff; opacity: .45; }
+  .cj-pad { fill: color-mix(in srgb,var(--surface-2) 80%,#fff); stroke: color-mix(in srgb,var(--ink) 28%,transparent); stroke-width: 2; stroke-dasharray: 7 5; }
+  .cj-pad.has { stroke-dasharray: none; }
+  .cj-cap { fill: var(--ink); font: 800 16px var(--font); text-anchor: middle; }
+  .cj-note { fill: var(--ink-mid); font: 700 13px var(--font); text-anchor: middle; }
+  .cj-jar { transform-box: fill-box; transform-origin: center; }
+  .cj-jar.shake { animation: cj-wobble .45s ease; }
+  @keyframes cj-wobble {
+    0%,100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+  }
+  @media (prefers-reduced-motion: reduce) { .cj-jar.shake { animation: none; } }
+  .readout { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); margin-top: 10px; }
+  .readout b { display: block; font: 800 1.2rem/1.2 var(--mono); color: var(--ink); }
+  .readout span { font-size: .78rem; color: var(--ink-dim); }
+  .bars { display: grid; gap: 8px; margin-top: 12px; }
+  .bar-row { display: grid; grid-template-columns: 5.5em minmax(0,1fr); gap: 8px; align-items: center; }
+  .bar-label { font-size: .82rem; font-weight: 800; color: var(--ink); }
+  .bar-track {
+    display: flex; height: 22px; overflow: hidden;
+    border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2);
+  }
+  .bar-blue { background: color-mix(in srgb,var(--math) 72%,var(--surface)); min-width: 0; }
+  .bar-yellow { background: color-mix(in srgb,var(--warn) 72%,var(--surface)); min-width: 0; }
+  .hist-dots { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; min-height: 18px; }
+  .hist-dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid color-mix(in srgb,var(--ink) 30%,var(--line)); }
+  .hist-dot.b { background: color-mix(in srgb,var(--math) 78%,#3d6fb8); }
+  .hist-dot.y { background: color-mix(in srgb,var(--warn) 78%,#e8b84a); }
+  .compare-box { margin-top: 10px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--r); color: var(--ink-mid); }
+  .kid-action-strip { display: grid; gap: 10px; margin: 12px 0; }
+  .mix-row { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit,minmax(min(220px,100%),1fr)); }
+  .mix-card { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); }
+  .mix-card p { margin: 0; font-weight: 800; }
+  .mix-btns, .verdict-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+  .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+  .ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--math) 16%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--math) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+  button, .btn { min-height: 44px; }
+  .stage + .kid-action-strip { margin-top: 8px; }
+  .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+  @media (max-width: 640px) {
+    .kid-hero-scene { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+  /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .92rem; line-height: 1.5; margin-bottom: .4em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .cj-art { max-height: 150px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+    html[data-mode="kid"] .readout b { font-size: .95rem; }
+    html[data-mode="kid"] .readout span { font-size: .72rem; }
+    html[data-mode="kid"] .kid-visual-stage > p:not(.live-text) { font-size: .9rem; margin: .1em 0 .4em; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .92rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 8px 0; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+    html[data-mode="kid"] .bars { gap: 6px; margin-top: 8px; }
+    html[data-mode="kid"] .hist-dots { margin-top: 6px; }
+  }
+
+  .guess-card { border-color: color-mix(in srgb,var(--math) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--math); background: color-mix(in srgb,var(--math) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.ad-photo-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 10px;align-items:end}.ad-photo-strip figure{margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface-2)}.ad-photo-strip img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}.ad-photo-strip figcaption{padding:6px 8px;font-size:.78rem;font-weight:800;color:var(--ink-mid);line-height:1.35}.ad-photo-strip .is-contrast figcaption{color:color-mix(in srgb,var(--warn) 70%,var(--ink))}@media (max-width:480px){.ad-photo-strip{gap:6px}.ad-photo-strip figcaption{font-size:.7rem;padding:4px 6px}}
+</style>
+</head>
+<body data-playful-page="games/chance-jar.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-hero-scene">
+    <div>
+      <p class="row"><span class="pill pill-math">数学</span><span class="pill">6–11&nbsp;岁</span><span class="pill">约 12&nbsp;分钟</span></p>
+      <h1>连抽两次全黄，就能说罐子骗人吗？</h1>
+      <p class="lead">罐子里蓝球更多，多抽几次，抽出的蓝也会多一点；只摸一两次，碰巧全黄也正常，不能证明罐子骗人。本页用有放回的抽取看长期：摸完放回去，每一次机会一样。不给人贴「运气好」的标签，也不保证下一次一定怎样。不是彩票说明书，不教赌博。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><img class="photo-real" src="../assets/photos/beans.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">摇一摇，再摸一个球</h2>
+    <div class="ad-photo-strip" role="group" aria-label="真实现象参照"><figure><img class="photo-real" src="../assets/photos/beans.jpg" alt="" width="640" height="360" loading="lazy"><figcaption>生活里能看见的参照</figcaption></figure><figure><img class="photo-real" src="../assets/photos/beans.jpg" alt="" width="640" height="360" loading="lazy"><figcaption>再看台上的结构图：零件对上号</figcaption></figure></div>
+<p>先数罐子里有几颗蓝、几颗黄。摸完放回去，所以每一次的机会都一样。</p>
+    <svg class="cj-art" id="jarArt" viewBox="0 0 640 300" role="img" aria-labelledby="jarTitle jarDesc">
+      <title id="jarTitle">概率罐子舞台</title>
+      <desc id="jarDesc">左边一只玻璃罐装着蓝球和黄球，右边是刚摸出来、准备放回去的那一颗。</desc>
+      <rect class="cj-sky" width="640" height="300"/>
+      <rect class="cj-desk" y="248" width="640" height="52"/>
+      <defs>
+        <clipPath id="jarClip"><ellipse cx="178" cy="176" rx="100" ry="96"/></clipPath>
+      </defs>
+      <g id="jarGroup" class="cj-jar">
+        <rect class="cj-neck" x="148" y="42" width="60" height="36" rx="8"/>
+        <rect class="cj-rim" x="138" y="36" width="80" height="14" rx="6"/>
+        <ellipse class="cj-glass" cx="178" cy="176" rx="104" ry="100"/>
+        <ellipse class="cj-shine" cx="148" cy="150" rx="18" ry="40"/>
+        <g id="ballsLayer" clip-path="url(#jarClip)"></g>
+      </g>
+      <rect class="cj-pad" id="drawnPad" x="410" y="88" width="168" height="148" rx="18"/>
+      <circle id="drawnBall" class="cj-ball-b" cx="494" cy="148" r="36" opacity="0.18"/>
+      <text class="cj-cap" id="drawnCap" x="494" y="204">还没抽</text>
+      <text class="cj-note" x="494" y="226">摸完放回去</text>
+    </svg>
+    <div class="readout">
+      <div><span>罐子里</span><b id="mixOut">7&nbsp;蓝 / 3&nbsp;黄</b></div>
+      <div><span>已经抽了</span><b id="sampleCount">0&nbsp;次</b></div>
+      <div><span>样本里</span><b id="tallyOut">还没有球</b></div>
+      <div><span>刚摸到</span><b id="lastDrawOut">—</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">点「摇一摇」打乱球的位置，再摸一个球。</p>
+    <div class="kid-action-strip" role="group" aria-label="改配比、摇罐子和抽球">
+      <div class="mix-row">
+        <article class="mix-card">
+          <p id="blueName">蓝球</p>
+          <div class="mix-btns">
+            <button class="btn btn-ghost" type="button" id="subBlue" aria-label="蓝球减少一个">蓝球 −1</button>
+            <button class="btn btn-primary" type="button" id="addBlue" aria-label="蓝球增加一个">蓝球 +1</button>
+          </div>
+          <p id="mixBlue">7&nbsp;个</p>
+        </article>
+        <article class="mix-card">
+          <p id="yellowName">黄球</p>
+          <div class="mix-btns">
+            <button class="btn btn-ghost" type="button" id="subYellow" aria-label="黄球减少一个">黄球 −1</button>
+            <button class="btn btn-primary" type="button" id="addYellow" aria-label="黄球增加一个">黄球 +1</button>
+          </div>
+          <p id="mixYellow">3&nbsp;个</p>
+        </article>
+      </div>
+      <div class="verdict-row">
+        <button class="btn" type="button" id="presetEven">改成 5&nbsp;蓝 5&nbsp;黄</button>
+        <button class="btn" type="button" id="presetRare">改成 1&nbsp;蓝 9&nbsp;黄</button>
+        <button class="btn" type="button" id="presetDefault">改回 7&nbsp;蓝 3&nbsp;黄</button>
+      </div>
+      <div class="verdict-row">
+        <button class="btn" type="button" id="shakeJar">摇一摇</button>
+        <button class="btn btn-primary" type="button" id="drawOne">摸一个球</button>
+        <button class="btn btn-primary" type="button" id="drawTen">连抽 10&nbsp;次</button>
+        <button class="btn btn-ghost" type="button" id="resetDraws">清空样本</button>
+      </div>
+      <div class="verdict-row">
+        <button class="btn" type="button" id="keepJar">记下这个罐子</button>
+        <button class="btn" type="button" id="compareJars" disabled>比较两个罐子</button>
+        <button class="btn btn-primary" type="button" id="likeJar" disabled>看起来像罐子</button>
+        <button class="btn" type="button" id="unlikeJar" disabled>看起来不太像</button>
+      </div>
+    </div>
+    <div class="bars">
+      <div class="bar-row">
+        <span class="bar-label" id="trueLabel">罐子比例</span>
+        <div class="bar-track" aria-labelledby="trueLabel">
+          <span class="bar-blue" id="trueBarBlue"></span>
+          <span class="bar-yellow" id="trueBarYellow"></span>
+        </div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label" id="sampleLabel">抽出比例</span>
+        <div class="bar-track" aria-labelledby="sampleLabel">
+          <span class="bar-blue" id="sampleBarBlue"></span>
+          <span class="bar-yellow" id="sampleBarYellow"></span>
+        </div>
+      </div>
+    </div>
+    <div class="hist-dots" id="histDots" aria-hidden="true"></div>
+    <p class="compare-box" id="jarAOut">还没有记下另一个罐子。抽满 10&nbsp;次后可以记下，再换配比比较。</p>
+  </section>
+
+  <section class="card guess-card" aria-labelledby="guessTitleCj">
+    <h2 id="guessTitleCj">先猜一猜，再抽</h2>
+    <p><b>第 1 题：</b>罐子 7&nbsp;蓝 3&nbsp;黄。长期来看，摸到蓝球的机会大约是？</p>
+    <div class="pick-btns" role="group" aria-label="猜真实比例">
+      <button class="btn guess-pick" type="button" data-guess1="three" aria-pressed="false">大约 3/10（数黄球）</button>
+      <button class="btn guess-pick" type="button" data-guess1="seven" aria-pressed="false">大约 7/10（蓝÷总数）</button>
+      <button class="btn guess-pick" type="button" data-guess1="half" aria-pressed="false">一定正好一半</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。看「罐子比例」色带，对照 7&nbsp;蓝 / 3&nbsp;黄。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>只抽 2&nbsp;次碰巧全黄。能不能断定「罐子几乎都是黄」？</p>
+      <div class="pick-btns" role="group" aria-label="猜频数与概率">
+        <button class="btn guess-pick" type="button" data-guess2="sure" aria-pressed="false">可以，两次就够</button>
+        <button class="btn guess-pick" type="button" data-guess2="more" aria-pressed="false">不能；次数太少波动大，要多抽</button>
+        <button class="btn guess-pick" type="button" data-guess2="magic" aria-pressed="false">罐子会变魔术，比例每次都改</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后连抽满 10&nbsp;次，比较「抽出比例」和「罐子比例」。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>罐子改成 0&nbsp;蓝 10&nbsp;黄。还能摸到蓝球吗？</p>
+      <div class="pick-btns" role="group" aria-label="猜全黄罐子">
+        <button class="btn guess-pick" type="button" data-guess3="zero" aria-pressed="false">不能，罐子里没有蓝</button>
+        <button class="btn guess-pick" type="button" data-guess3="half" aria-pressed="false">还能，大约一半</button>
+        <button class="btn guess-pick" type="button" data-guess3="ten" aria-pressed="false">一定摸到蓝</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后把蓝球调到 0、黄球 10，看「罐子比例」色带。</p>
+    </div>
+  </section>
+
+          <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">抽满十次才开始像样；一次黄不能证明运气人格</h2>
+    <p>先数罐子里有几颗蓝、几颗黄，看上面的「罐子比例」色带。再点「连抽 10&nbsp;次」，对照下面「抽出比例」色带像不像。也可以先只抽两次，看色带会不会碰巧全黄；再抽满十次，看它是不是慢慢靠近罐子。改配比、记下两个罐子再比，是另一次对照。</p>
+    <p>罐子里本来有几颗，叫构成。抽出来记下的只是一小撮。次数少时，碰巧连着摸到同一种也正常，不能证明罐子骗人，也不能证明谁幸运。蓝球加多了，长期摸到蓝的次数才应该往上走——改的是罐子，不是谁突然更幸运。摸完放回去，所以每一次的机会都一样。</p>
+    <p>舞台上的次数和色带是本页比较尺子，用来看见「抽得越多越靠近」，不是保证下一次一定怎样，也不是电脑伪随机的说明书。罐子改成 0&nbsp;蓝 10&nbsp;黄，摸不到蓝，这是构成，不是运气被关掉。不要用十次结果给人贴永久标签，本页不教赌博，也不是彩票说明书。</p>
+  </section>
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">概率图鉴</h2>
+    <p>点一张，对照上面的罐子：抽出的样本，和罐子里的真实比例，不是一回事。</p>
+    <div class="kid-figure-grid" role="group" aria-label="概率图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-cj-atlas="sample" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="44" y="10" width="32" height="10" rx="3" fill="#c4b49a" stroke="#3a2a18" stroke-width="1.6"/><rect x="50" y="20" width="20" height="8" fill="#d8c4a0" stroke="#3a2a18" stroke-width="1.2"/><path d="M38 28 H82 L88 78 H32 Z" fill="#d7eaf6" stroke="#3a2a18" stroke-width="2" opacity=".92"/><ellipse cx="60" cy="28" rx="22" ry="6" fill="#cfe4f2" stroke="#3a2a18" stroke-width="1.6"/><circle cx="48" cy="50" r="7" fill="#c2410c" stroke="#7f1d1d"/><circle cx="64" cy="46" r="7" fill="#1c66c2" stroke="#1c3a66"/><circle cx="72" cy="60" r="7" fill="#c2410c" stroke="#7f1d1d"/><circle cx="52" cy="64" r="7" fill="#1c66c2" stroke="#1c3a66"/><circle cx="62" cy="70" r="6" fill="#c2410c" stroke="#7f1d1d"/><circle cx="44" cy="72" r="5.5" fill="#1c66c2" stroke="#1c3a66"/><ellipse cx="46" cy="47" rx="2" ry="1.2" fill="#fff" opacity=".45"/><ellipse cx="62" cy="43" rx="2" ry="1.2" fill="#fff" opacity=".45"/></svg></span><span class="kid-figure-cap">样本</span><span class="kid-figure-fact">抽出来记下的球只是一小撮，样本少会偏，不是罐子里全部，更不是该轮到谁</span></button>
+      <button class="kid-figure" type="button" data-cj-atlas="true" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="44" y="8" width="32" height="10" rx="3" fill="#c4b49a" stroke="#3a2a18"/><path d="M36 22 H84 L90 78 H30 Z" fill="#d7eaf6" stroke="#3a2a18" stroke-width="2"/><ellipse cx="60" cy="22" rx="24" ry="6" fill="#cfe4f2" stroke="#3a2a18"/><rect x="38" y="48" width="28" height="22" rx="2" fill="#3d6fb8"/><rect x="66" y="48" width="16" height="22" rx="2" fill="#e8b84a"/><circle cx="48" cy="38" r="5" fill="#3d6fb8"/><circle cx="62" cy="36" r="5" fill="#3d6fb8"/><circle cx="74" cy="40" r="5" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">真实比例</span><span class="kid-figure-fact">罐子里本来蓝黄各几个，这叫构成，摇匀后每次独立摸，不会每次都改</span></button>
+      <button class="kid-figure" type="button" data-cj-atlas="once" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><ellipse cx="40" cy="52" rx="22" ry="26" fill="#dceaf8" stroke="#5a3a20" stroke-width="3"/><circle cx="40" cy="50" r="8" fill="#3d6fb8"/><circle cx="86" cy="44" r="16" fill="#e8b84a" stroke="#5a3a20"/></svg></span><span class="kid-figure-cap">抽一次</span><span class="kid-figure-fact">摇匀后只摸一颗，这一颗很容易碰巧，不能代表整罐，更不是该轮到红的了</span></button>
+      <button class="kid-figure" type="button" data-cj-atlas="ten" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="20" cy="32" r="6" fill="#3d6fb8"/><circle cx="36" cy="32" r="6" fill="#3d6fb8"/><circle cx="52" cy="32" r="6" fill="#e8b84a"/><circle cx="68" cy="32" r="6" fill="#3d6fb8"/><circle cx="84" cy="32" r="6" fill="#3d6fb8"/><circle cx="28" cy="58" r="6" fill="#e8b84a"/><circle cx="44" cy="58" r="6" fill="#3d6fb8"/><circle cx="60" cy="58" r="6" fill="#3d6fb8"/><circle cx="76" cy="58" r="6" fill="#e8b84a"/><circle cx="92" cy="58" r="6" fill="#3d6fb8"/></svg></span><span class="kid-figure-cap">抽十次</span><span class="kid-figure-fact">连抽 10&nbsp;次，色带才开始像样，样本少仍可能偏，别急着说该轮到某一种了</span></button>
+      <button class="kid-figure" type="button" data-cj-atlas="allblue" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><ellipse cx="60" cy="50" rx="32" ry="28" fill="#dceaf8" stroke="#5a3a20" stroke-width="3"/><circle cx="46" cy="46" r="8" fill="#3d6fb8"/><circle cx="64" cy="42" r="8" fill="#3d6fb8"/><circle cx="74" cy="56" r="8" fill="#3d6fb8"/><circle cx="52" cy="60" r="8" fill="#3d6fb8"/></svg></span><span class="kid-figure-cap">全蓝罐子</span><span class="kid-figure-fact">罐子里全是蓝，摇匀以后怎么摸也摸不到黄，这是构成，不是运气被关了</span></button>
+      <button class="kid-figure" type="button" data-cj-atlas="rare" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="28" cy="36" r="10" fill="#3d6fb8"/><circle cx="52" cy="36" r="10" fill="#3d6fb8"/><circle cx="76" cy="36" r="10" fill="#e8b84a"/><circle cx="100" cy="36" r="10" fill="#3d6fb8"/><circle cx="40" cy="62" r="10" fill="#3d6fb8"/><circle cx="64" cy="62" r="10" fill="#3d6fb8"/><circle cx="88" cy="62" r="7" fill="#d05050"/></svg></span><span class="kid-figure-cap">几乎没有红</span><span class="kid-figure-fact">某一种很少，抽到很难，十次里一次没有也正常，样本少会偏，不是该轮到</span></button>
+      <button class="kid-figure" type="button" data-cj-atlas="lucky" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="24" cy="45" r="10" fill="#e8b84a"/><circle cx="48" cy="45" r="10" fill="#e8b84a"/><circle cx="72" cy="45" r="10" fill="#e8b84a"/><circle cx="96" cy="45" r="10" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">碰巧全中</span><span class="kid-figure-fact">次数少时连着摸到同一种也正常，每次独立，不是罐子变了，也不是该轮到</span></button>
+      <button class="kid-figure" type="button" data-cj-atlas="lln" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="16" y="22" width="40" height="14" fill="#3d6fb8"/><rect x="56" y="22" width="48" height="14" fill="#e8b84a"/><rect x="16" y="42" width="58" height="14" fill="#3d6fb8"/><rect x="74" y="42" width="30" height="14" fill="#e8b84a"/><rect x="16" y="62" width="70" height="14" fill="#3d6fb8"/><rect x="86" y="62" width="18" height="14" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">越大越接近</span><span class="kid-figure-fact">抽得越多，抽出的比例才慢慢靠近罐子，不是保证下一次该轮到红的了</span></button><button class="kid-figure" type="button" data-cj-atlas="half" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="40" cy="48" r="16" fill="#3d6fb8"/><circle cx="80" cy="48" r="16" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">一半一半</span><span class="kid-figure-fact">蓝黄一样多，抽到谁都常见，两次仍可能全是一种，每次独立不是该轮到</span></button><button class="kid-figure" type="button" data-cj-atlas="none" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="20" fill="#eef3fb" stroke="#8a857c" stroke-width="3"/><path d="M48 46 H72" stroke="#d05050" stroke-width="4"/></svg></span><span class="kid-figure-cap">一次也没有</span><span class="kid-figure-fact">某一种很少，抽几次也可能抽不到，还不等于罐子里没有，样本少会偏</span></button><button class="kid-figure" type="button" data-cj-atlas="mix" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="36" cy="40" r="10" fill="#3d6fb8"/><circle cx="58" cy="56" r="10" fill="#e8b84a"/><circle cx="82" cy="40" r="10" fill="#3d6fb8"/></svg></span><span class="kid-figure-cap">两种都有</span><span class="kid-figure-fact">罐子里两种都在，抽得多了记录里通常也会出现两种，不是排队轮流出现</span></button><button class="kid-figure" type="button" data-cj-atlas="guess" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><rect x="36" y="22" width="48" height="50" rx="8" fill="#d9d3ea" stroke="#5a3a20"/><text x="60" y="54" text-anchor="middle" font-size="22" font-weight="800" fill="#3a2a18">?</text></svg></span><span class="kid-figure-cap">先猜再抽</span><span class="kid-figure-fact">先说罐子里谁更多，再摇匀摸，对照的是构成不是运气人格，也不是该轮到</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照罐子里的比例和抽出的样本。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--math)"
+         data-kid-predict
+         data-kid-predict-explain="红球比例更高 → 长期红频率应上移。次数少时波动大；单次不能证明「运气人格」。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🎱</span><b>罐子里蓝球更多。只抽 2&nbsp;次就断定「几乎总是蓝」，可靠吗？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：抽很少次能不能断定">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="sure">抽 2&nbsp;次就够了，一定代表整个罐子</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="more" data-kid-predict-correct>次数太少波动大；抽得越多，越接近真实比例</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="magic">罐子会变魔术，比例每次都改</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：抽满 10&nbsp;次再判断</h2>
+    <p>至少抽 10&nbsp;次，看看样本和罐子里的比例像不像。也可以改配比，记下两个罐子再比较。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：还差至少 10&nbsp;次抽取。</p>
+  </section>
+
+
+            <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">先抽满 10&nbsp;次，再看频率有没有靠近比例</h2>
+    <p>舞台上先只改抽取次数。同一罐子、同一种配比，先看两次的色带会不会碰巧全黄，再连抽满 10&nbsp;次，记下蓝和黄各几个，对照两条色带。这样比，才知道长期跟着罐子走，不是谁突然走运。换罐子是另一次对照，不要和「次数太少」叠在同一档里讲。</p>
+    <p>回家只带两句：「抽得越多，越靠近罐子」；「一次不够定案」。不要写成「今天运气不好」，也不要保证下一次一定摸到哪种。有人说「罐子骗人」或「同学运气差」，让孩子先指数上面的「罐子比例」，再说抽出的只是一小撮。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="46" y="10" width="28" height="8" rx="2" fill="#c4b49a" stroke="#3a2a18" stroke-width="1.4"/><path d="M40 22 H80 L86 78 H34 Z" fill="#d7eaf6" stroke="#3a2a18" stroke-width="1.8"/><ellipse cx="60" cy="22" rx="20" ry="5" fill="#cfe4f2" stroke="#3a2a18"/><circle cx="48" cy="48" r="7" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="64" cy="46" r="7" fill="#e8b84a" stroke="#3a2a18" stroke-width="1"/><circle cx="70" cy="62" r="7" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="52" cy="64" r="7" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="60" cy="72" r="6" fill="#e8b84a" stroke="#3a2a18" stroke-width="1"/></svg></span><span class="kid-figure-cap">真实比例</span><span class="kid-figure-sub">构成</span><p class="kid-figure-fact">罐子里本来蓝黄各有几颗，这叫构成。摸之前先数清楚，每次摇匀再摸。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="46" y="10" width="28" height="8" rx="2" fill="#c4b49a" stroke="#3a2a18" stroke-width="1.4"/><path d="M40 22 H80 L86 78 H34 Z" fill="#d7eaf6" stroke="#3a2a18" stroke-width="1.8"/><ellipse cx="60" cy="22" rx="20" ry="5" fill="#cfe4f2" stroke="#3a2a18"/><circle cx="50" cy="56" r="6" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="66" cy="60" r="6" fill="#e8b84a" stroke="#3a2a18" stroke-width="1"/><circle cx="56" cy="70" r="6" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="96" cy="28" r="10" fill="#e8b84a" stroke="#3a2a18"/><path d="M88 40 C92 52 100 58 108 50" fill="none" stroke="#c4a06a" stroke-width="4"/></svg></span><span class="kid-figure-cap">抽一次</span><span class="kid-figure-sub">碰巧</span><p class="kid-figure-fact">只摸一次很容易碰巧，不能拿这一颗给整罐定案，也不是轮到某种颜色了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="18" cy="32" r="7" fill="#1c66c2"/><circle cx="36" cy="32" r="7" fill="#1c66c2"/><circle cx="54" cy="32" r="7" fill="#e8b84a"/><circle cx="72" cy="32" r="7" fill="#1c66c2"/><circle cx="90" cy="32" r="7" fill="#1c66c2"/><circle cx="18" cy="60" r="7" fill="#e8b84a"/><circle cx="36" cy="60" r="7" fill="#1c66c2"/><circle cx="54" cy="60" r="7" fill="#1c66c2"/><circle cx="72" cy="60" r="7" fill="#e8b84a"/><circle cx="90" cy="60" r="7" fill="#1c66c2"/></svg></span><span class="kid-figure-cap">抽十次</span><span class="kid-figure-sub">开始像样</span><p class="kid-figure-fact">连抽 10&nbsp;次，抽出的比例才开始靠近罐子，样本少仍会偏，别急着说该轮到谁。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="24" cy="46" r="9" fill="#e8b84a" stroke="#3a2a18"/><circle cx="48" cy="46" r="9" fill="#e8b84a" stroke="#3a2a18"/><circle cx="72" cy="46" r="9" fill="#e8b84a" stroke="#3a2a18"/><circle cx="96" cy="46" r="9" fill="#e8b84a" stroke="#3a2a18"/></svg></span><span class="kid-figure-cap">碰巧全中</span><span class="kid-figure-sub">小样本</span><p class="kid-figure-fact">碰巧连着摸到同一种，每次仍独立，不等于罐子变了，也不等于谁幸运。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="46" y="10" width="28" height="8" rx="2" fill="#c4b49a" stroke="#3a2a18" stroke-width="1.4"/><path d="M40 22 H80 L86 78 H34 Z" fill="#d7eaf6" stroke="#3a2a18" stroke-width="1.8"/><ellipse cx="60" cy="22" rx="20" ry="5" fill="#cfe4f2" stroke="#3a2a18"/><circle cx="48" cy="50" r="6" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="62" cy="48" r="6" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="70" cy="62" r="6" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="52" cy="66" r="6" fill="#e8b84a" stroke="#3a2a18" stroke-width="1"/><circle cx="44" cy="72" r="6" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><text x="96" y="28" font-size="16" font-weight="800" fill="#1c66c2">+蓝</text></svg></span><span class="kid-figure-cap">加蓝球</span><span class="kid-figure-sub">构成变</span><p class="kid-figure-fact">蓝球加多了，长期摸到蓝的才应更多，不是人变更幸运，也不是该轮到蓝。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="30" y="28" width="60" height="28" rx="4" fill="#ffe08a" stroke="#3a2a18"/><text x="60" y="48" text-anchor="middle" font-size="11" font-weight="800">幸运?</text><circle cx="60" cy="46" r="24" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M44 30 L76 62" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">贴标签</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">抽十次不能给人贴标签，更不能说谁幸运谁倒霉，样本少本来就会偏。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>抽满 10&nbsp;次。</b>记下蓝和黄各几个，对照色带。</li>
+      <li data-step="2"><b>改构成。</b>换蓝黄个数，再抽 10&nbsp;次。</li>
+      <li data-step="3"><b>比两行。</b>频率有没有跟着罐子走。</li>
+      <li data-step="4"><b>写完成句。</b>先看构成。划掉「运气人格」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>罐子里蓝的多，多抽几次，蓝也会多一点。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>只抽一次很容易碰巧。抽满十次才开始像样，仍可能有点偏。蓝球加多了，长期摸到蓝的才应更多，不是人变更幸运。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>频率是有限次的估计，罐子比例是理想构成。小样本波动大。本页不保证下一次，也不给人贴永久标签。机会写成目标个数÷总数，只是比较尺子，不是彩票说明书。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能把长期频率连到构成，并把单次结果说成碰巧。完成看的是对照，不是背「概率」两个字。</p>
+    <ul class="ask-list">
+      <li>罐子 7&nbsp;蓝 3&nbsp;黄，只抽 2&nbsp;次全黄：能不能断定罐子几乎都是黄？</li>
+      <li>连抽满 10&nbsp;次以后，两条色带为什么常常更接近，却仍可能差一点？</li>
+      <li>把蓝球加多再抽：改的是罐子，还是人突然更幸运？</li>
+      <li>一次摸到黄，能证明同学运气差吗？</li>
+    </ul>
+  </section>
+
+
+          <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">全蓝罐子摸不到黄；稀有颜色很难，不是门被施了咒</h2>
+    <p>全蓝罐子摸不到别的颜色，这是构成，不是运气被关掉。某一种很少时，抽到很难；十次里一次都没有，仍可能只是波动，还不等于罐子里没有。反过来：蓝很多，连抽两次全黄也正常，不能据此改口说罐子几乎都是黄。</p>
+    <p>样本和总体不是一回事。把十次当成「罐子的真相」会骗人，因为十次仍可能有点偏。抽得更多会更靠近，但本页不保证下一次一定怎样，也不是电脑伪随机的说明书。天气预报说下雨机会大、那天没下，和本页「一次可以不像罐子」是同一家人。</p>
+    <p>条形统计台看怎么把次数画成条。本页只教罐子里的构成和抽出的一小撮：先数里面有什么，再抽，再对照色带。不教赌博策略，不给人贴「运气人格」，也不保证下一次必中。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="46" y="10" width="28" height="8" rx="2" fill="#c4b49a" stroke="#3a2a18" stroke-width="1.4"/><path d="M40 22 H80 L86 78 H34 Z" fill="#d7eaf6" stroke="#3a2a18" stroke-width="1.8"/><ellipse cx="60" cy="22" rx="20" ry="5" fill="#cfe4f2" stroke="#3a2a18"/><circle cx="48" cy="48" r="7" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="64" cy="46" r="7" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="70" cy="62" r="7" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="52" cy="64" r="7" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="60" cy="72" r="6" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/></svg></span><span class="kid-figure-cap">全蓝</span><span class="kid-figure-sub">构成</span><p class="kid-figure-fact">罐子里全是蓝球，摇匀以后摸不到黄。这叫构成，不是谁把运气开关关掉了。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="46" y="10" width="28" height="8" rx="2" fill="#c4b49a" stroke="#3a2a18" stroke-width="1.4"/><path d="M40 22 H80 L86 78 H34 Z" fill="#d7eaf6" stroke="#3a2a18" stroke-width="1.8"/><ellipse cx="60" cy="22" rx="20" ry="5" fill="#cfe4f2" stroke="#3a2a18"/><circle cx="48" cy="50" r="7" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="64" cy="48" r="7" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="70" cy="64" r="7" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="52" cy="66" r="7" fill="#1c66c2" stroke="#3a2a18" stroke-width="1"/><circle cx="78" cy="36" r="5" fill="#c2410c" stroke="#3a2a18" stroke-width="1"/></svg></span><span class="kid-figure-cap">稀有色</span><span class="kid-figure-sub">很难</span><p class="kid-figure-fact">某一种很少，抽到很难。十次里一次都没有，仍可能只是样本太少才会偏。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="20" y="50" width="28" height="24" fill="#1c66c2"/><rect x="52" y="58" width="16" height="16" fill="#e8b84a"/><path d="M88 22 H108 V70 H88 Z" fill="#d7eaf6" stroke="#3a2a18"/><text x="40" y="44" font-size="9" font-weight="800">抽出</text></svg></span><span class="kid-figure-cap">样本</span><span class="kid-figure-sub">一小撮</span><p class="kid-figure-fact">抽出来的只是一小撮，不是罐子里全部的球。十次也会偏，不是该轮到。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="28" y="18" width="64" height="54" rx="6" fill="#3a2a18"/><rect x="36" y="28" width="14" height="22" fill="#fff"/><rect x="53" y="28" width="14" height="22" fill="#fff"/><rect x="70" y="28" width="14" height="22" fill="#fff"/><text x="43" y="44" text-anchor="middle" font-size="10">7</text><circle cx="60" cy="46" r="24" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M44 30 L76 62" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">赌博</span><span class="kid-figure-sub">不教</span><p class="kid-figure-fact">这一页只看罐子里的球，不教赌博，也不保证下一次就该轮到红的了。</p></div>
+    </div>
+  </section>
+
+
+          <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：十次频率 · 一次碰巧 · 运气人格</h2>
+    <p>三列用同一罐子、同一种配比。先只改抽取次数：十次，频率开始像样；一次或两次，很容易碰巧全黄。「运气人格」整列划掉：先改构成再看长期，不要用两颗球给人贴标签。</p>
+    <p>记下两个罐子再比，是加试：蓝球多的那边，抽出的蓝是不是也更多。十次仍可能没完全跟着走，这也是本页要看见的——靠近不是贴死，更不是保证下一次。</p>
+    <p>本页不保证下一次一定怎样，也不把随机说成「电脑算好了必中」。罐子改成 0&nbsp;蓝，摸不到蓝，那是里面没有，不是门被施了咒。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="18" cy="36" r="6" fill="#1c66c2"/><circle cx="34" cy="36" r="6" fill="#1c66c2"/><circle cx="50" cy="36" r="6" fill="#e8b84a"/><circle cx="66" cy="36" r="6" fill="#1c66c2"/><circle cx="82" cy="36" r="6" fill="#1c66c2"/><circle cx="18" cy="60" r="6" fill="#e8b84a"/><circle cx="34" cy="60" r="6" fill="#1c66c2"/><circle cx="50" cy="60" r="6" fill="#1c66c2"/><circle cx="66" cy="60" r="6" fill="#e8b84a"/><circle cx="82" cy="60" r="6" fill="#1c66c2"/><circle cx="104" cy="16" r="8" fill="#3d9a58"/></svg></span><span class="kid-figure-cap">十次</span><span class="kid-figure-sub">像样</span><p class="kid-figure-fact">连抽十次，蓝黄的次数才开始靠近罐子里的真实比例，仍可能有点偏。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="16" fill="#e8b84a" stroke="#3a2a18"/><text x="60" y="78" text-anchor="middle" font-size="10" font-weight="800">×1</text><circle cx="104" cy="16" r="8" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">一次</span><span class="kid-figure-sub">碰巧</span><p class="kid-figure-fact">只抽一次不能定案，那一颗可能只是碰巧，还不等于罐子骗人，每次独立。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="44" cy="42" r="14" fill="#f3d2a6" stroke="#3a2a18"/><circle cx="76" cy="42" r="14" fill="#f3d2a6" stroke="#3a2a18"/><path d="M28 22 L92 68 M92 22 L28 68" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">人格</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">摸到什么不是谁比较幸运。把「运气人格」整列划掉，也划掉「该轮到红的了」。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="28" y="18" width="64" height="54" fill="#fff" stroke="#3a2a18"/><path d="M38 36 H80 M38 48 H70" stroke="#3a2a18" stroke-width="2"/><path d="M78 58 L96 74 L92 58 Z" fill="#e8b84a" stroke="#3a2a18"/></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">构成</span><p class="kid-figure-fact">回家只记：先看罐子里有什么，一次不够就再抽几次，每一次都要摇匀再摸。</p></div>
+    </div>
+  </section>
+
+
+          <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">两行各记十次里蓝出现几次</h2>
+    <p>在纸上画两行：原构成写 10&nbsp;次里蓝出现几次，改配比后再写一回。两行并排，比背「大数定律」有用。页眉写上罐子里本来有几颗蓝、几颗黄，免得把样本当成整罐。</p>
+    <p>口头只要两句：「改的是罐子。」「一次不够定案。」标题禁止「我运气差」。有人连抽两次全黄就说罐子骗人，让孩子指着上面的色带、再数十次那一行反驳。</p>
+    <p>邻居页是条形统计台：本页只教罐子里的构成和抽出的一小撮。不教赌博，不给人贴幸运或倒霉的标签，也不把十次结果写成彩票说明书。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="34" y="16" width="52" height="62" rx="4" fill="#fff" stroke="#3a2a18" stroke-width="1.8"/><rect x="44" y="10" width="32" height="12" rx="3" fill="#c4b49a" stroke="#3a2a18"/><path d="M44 36 H76 M44 48 H76 M44 60 H68" stroke="#8a857c" stroke-width="2"/></svg></span><span class="kid-figure-cap">两行</span><span class="kid-figure-sub">各十次</span><p class="kid-figure-fact">两行各记十次，写下蓝球出现了几次，对照罐子里本来有几颗，看会不会偏。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="56" cy="40" rx="28" ry="18" fill="#fff" stroke="#3a2a18" stroke-width="1.8"/><path d="M44 54 L40 70 L56 58" fill="#fff" stroke="#3a2a18" stroke-width="1.8"/><circle cx="46" cy="40" r="3" fill="#3a2a18"/><circle cx="56" cy="40" r="3" fill="#3a2a18"/><circle cx="66" cy="40" r="3" fill="#3a2a18"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">是罐子</span><p class="kid-figure-fact">回家说得出：是罐子里的球在变，不是人变幸运了，也不是该轮到某种颜色。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M16 74 H104" stroke="#5a3a20" stroke-width="2"/><rect x="28.0" y="46" width="16" height="28" fill="#6ea8fe" stroke="#1c3a66" stroke-width="1.1"/><rect x="52.0" y="30" width="16" height="44" fill="#3d9a58" stroke="#1c3a66" stroke-width="1.1"/><rect x="76.0" y="54" width="16" height="20" fill="#e8b84a" stroke="#1c3a66" stroke-width="1.1"/></svg></span><span class="kid-figure-cap">图表</span><span class="kid-figure-sub">邻居</span><p class="kid-figure-fact">条形统计台把次数画成条。本页只教罐子里的构成和抽出的一小撮。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="32" y="30" width="56" height="26" rx="4" fill="#ffe08a" stroke="#3a2a18"/><text x="60" y="48" text-anchor="middle" font-size="10" font-weight="800">倒霉?</text><circle cx="60" cy="46" r="24" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M44 30 L76 62" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">标签</span><span class="kid-figure-sub">禁</span><p class="kid-figure-fact">不要因为抽到的颜色，就给人贴上幸运或倒霉的标签，每次摸都是独立的。</p></div>
+    </div>
+  </section>
+
+
+      <section class="card" aria-labelledby="thickTitle">
+    <h2 id="thickTitle">长期频率跟着罐子走</h2>
+    <p>蓝球多，抽很多次以后，抽出的蓝才慢慢靠近罐子里的比例。改一次配比再记一行：构成变了，长期频率才应该跟着走。单次抽中抽不中，不能证明罐子「运气好」，也不能证明人「运气差」，更不能证明罐子被施了咒。</p>
+    <p>次数少会跳，次数多才稳。本页仍不保证下一次一定怎样。完成句点名「构成」：里面有多少，长期才像多少。禁止把罐子说成有人格，也禁止用十次结果给人贴永久标签。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「抽出的比例靠不靠罐子」，就先只改抽取次数这一项。同一罐子、同一种配比，先看两次的色带，再看满 10&nbsp;次的色带。换罐子是另一次对照，不要和「次数太少」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>抽取次数（2&nbsp;次 / 满 10&nbsp;次）；或只改蓝黄个数。</li>
+      <li><b>先保持不变：</b>有放回，每一次机会一样；先不要同时改配比又改次数。</li>
+      <li><b>要观察的：</b>两条色带像不像，蓝黄各几个。</li>
+      <li><b>另开一行：</b>记下这个罐子，换配比再抽 10&nbsp;次，看样本有没有跟着走。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>抛一枚均匀的硬币，连出两次反面，第三次一定是正面吗？这和本页「两次全黄」像在哪？</li>
+      <li>班级里抽签，前三个都抽到男生。能不能说签筒「偏心」？还要再看签筒里本来有几张？</li>
+      <li>天气预报说下雨的机会比较大，结果那天没下。是预报骗人，还是一次结果本来就可以和长期比例不一样？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把「方差」「大数定律」提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>罐子里蓝的多，多抽几次，蓝也会多一点。能指着色带说「有点像」就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>只抽一次很容易碰巧。抽满十次才开始像样。改的是罐子，不是人的运气。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>频率是估计，罐子比例是理想构成。小样本波动大。本页不保证下一次，不是伪随机说明书，也不给人贴永久标签。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：记下这次抽样</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="drawing">发现画</option>
+          <option value="model">模型说明</option>
+          <option value="explanation">我的解释</option>
+          <option value="photo-note">照片备注</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：7&nbsp;蓝 3&nbsp;黄，抽 10&nbsp;次得到 6&nbsp;个蓝"></div>
+      <div><label for="workContent">样本和罐子像不像，为什么</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下罐子里的个数、抽了几次、蓝黄各几个，再说说像还是不像。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+            <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>罐子 7&nbsp;蓝 3&nbsp;黄，孩子连抽两次全黄就说罐子骗人——让他看「罐子比例」色带，还是看刚摸到的那两颗？十次那一行怎么拆这句？</li>
+      <li>把蓝球加多再抽 10&nbsp;次，抽出的蓝却没明显变多：下一步是再抽一轮，还是改口说「人变倒霉了」？</li>
+      <li>为什么不能用十次结果说同学运气差？差在「构成」还是「人格」？</li>
+      <li>全蓝罐子如果摸到黄，该先查罐子里到底有没有黄，还是先查手？</li>
+      <li>本页能当彩票说明书吗？能保证下一次一定摸到蓝吗？</li>
+      <li>天气预报说下雨机会大、那天没下：和本页「一次可以不像罐子」像在哪？</li>
+    </ul>
+  </section>
+
+            <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：上面那条色带是罐子里本来有几颗（构成）；下面那条是抽出来记下的一小撮（频率）。摸完放回去，每一次机会一样。连抽两次全黄，先看上面的色带，不要先给人贴标签。</p>
+    <p>机会可以写成目标个数除以总数，例如 7÷10。抽出的比例是有限次的估计。抽得越多，常常越靠近罐子，但本页不保证下一次一定怎样，也不是伪随机说明书。这是比较尺子，不是自然定律，更不是彩票说明书。</p>
+    <p>次数少，波动大，碰巧全中也正常。改变构成，长期频率才应该跟着走。单次结果不能证明运气人格，也不能证明罐子被施了咒。全蓝罐子摸不到黄，那是里面没有，不是运气被关掉。</p>
+    <p>不给人贴永久标签，不教赌博。舞台用有放回的均匀抽取做示意，不涉及无放回的更复杂算法。天气预报说下雨机会大、那天没下，和本页「一次可以不像罐子」是同一家人。</p>
+  </section>
+
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--math) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--math) 8%,var(--surface))" data-audience="parent">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">概率公式卡 · 机会=目标个数÷总数（本页比较尺子，不是自然定律）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">抽出比例是相对频率；抽得越多常常越靠近罐子比例，仍不保证下一次。两次不够断定。本页不是彩票，也不给人贴运气人格。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：抽得越多，越靠近罐子；一次不够定案。条形统计台把次数画成条；估算站练大概有多少；数感积木继续拆同一个数。</p>
+    <p class="row"><a class="btn btn-ghost" href="graph-lab.html">条形统计台</a><a class="btn btn-ghost" href="estimation-station.html">估算站</a><a class="btn btn-ghost" href="number-blocks.html">数感积木</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页用有放回的均匀抽取做示意，不涉及组合计数和无放回的超几何分布。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var MAX = 12;
+  var NS = "http://www.w3.org/2000/svg";
+  var state = { blue:7, yellow:3, draws:[], last:null, jarA:null, done:false };
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  var seenCj = { mix73:false, tenDraws:false, mix0:false };
+
+  function total(){ return state.blue + state.yellow; }
+  function countB(list){
+    var n = 0, i;
+    for (i = 0; i < list.length; i += 1) if (list[i] === "B") n += 1;
+    return n;
+  }
+  function pickOne(){
+    var t = total();
+    if (t < 1) return null;
+    return Math.floor(Math.random() * t) < state.blue ? "B" : "Y";
+  }
+  function setMix(blue, yellow){
+    if (blue < 0 || yellow < 0 || blue > MAX || yellow > MAX) return;
+    if (blue + yellow < 1) return;
+    if (blue === state.blue && yellow === state.yellow) return;
+    state.blue = blue;
+    state.yellow = yellow;
+    state.draws = [];
+    state.last = null;
+    paintBalls();
+    render();
+    document.getElementById("live").textContent = "罐子换了，样本已清空。重新抽。";
+  }
+  function paintBalls(){
+    var layer = document.getElementById("ballsLayer");
+    while (layer.firstChild) layer.removeChild(layer.firstChild);
+    var colors = [], i, r, c, idx = 0;
+    for (i = 0; i < state.blue; i += 1) colors.push("B");
+    for (i = 0; i < state.yellow; i += 1) colors.push("Y");
+    for (i = colors.length - 1; i > 0; i -= 1) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = colors[i]; colors[i] = colors[j]; colors[j] = tmp;
+    }
+    var n = colors.length;
+    var cols = n <= 4 ? Math.max(n, 1) : (n <= 9 ? 3 : 4);
+    var rows = Math.ceil(n / cols) || 1;
+    for (r = 0; r < rows; r += 1) {
+      var inRow = Math.min(cols, n - r * cols);
+      for (c = 0; c < inRow; c += 1) {
+        var x = 178 + (c - (inRow - 1) / 2) * 38 + (Math.random() - 0.5) * 10;
+        var y = 128 + r * 36 + (Math.random() - 0.5) * 8;
+        var ball = document.createElementNS(NS, "circle");
+        ball.setAttribute("class", colors[idx] === "B" ? "cj-ball-b" : "cj-ball-y");
+        ball.setAttribute("cx", String(x));
+        ball.setAttribute("cy", String(y));
+        ball.setAttribute("r", "15");
+        layer.appendChild(ball);
+        var spec = document.createElementNS(NS, "circle");
+        spec.setAttribute("class", "cj-spec");
+        spec.setAttribute("cx", String(x - 5));
+        spec.setAttribute("cy", String(y - 5));
+        spec.setAttribute("r", "4");
+        layer.appendChild(spec);
+        idx += 1;
+      }
+    }
+  }
+  function setBar(blueEl, yellowEl, b, y){
+    var t = b + y;
+    if (!t) {
+      blueEl.style.width = "0%";
+      yellowEl.style.width = "0%";
+      return;
+    }
+    blueEl.style.width = ((100 * b) / t).toFixed(1) + "%";
+    yellowEl.style.width = ((100 * y) / t).toFixed(1) + "%";
+  }
+  function paintHist(){
+    var box = document.getElementById("histDots");
+    while (box.firstChild) box.removeChild(box.firstChild);
+    var start = Math.max(0, state.draws.length - 20);
+    var i;
+    for (i = start; i < state.draws.length; i += 1) {
+      var dot = document.createElement("span");
+      dot.className = "hist-dot " + (state.draws[i] === "B" ? "b" : "y");
+      box.appendChild(dot);
+    }
+  }
+  function mixText(){
+    return state.blue + "\u00a0蓝 / " + state.yellow + "\u00a0黄";
+  }
+  function jarSummary(jar){
+    var b = countB(jar.draws);
+    return "蓝" + jar.blue + "\u00a0个 / 黄" + jar.yellow + "\u00a0个，抽出蓝" + b + "\u00a0个、黄" + (jar.draws.length - b) + "\u00a0个（共 " + jar.draws.length + "\u00a0次）";
+  }
+  function render(){
+    var n = state.draws.length;
+    var b = countB(state.draws);
+    var y = n - b;
+    var t = total();
+    if (guess1 && !guess1Done && state.blue === 7 && state.yellow === 3) seenCj.mix73 = true;
+    if (guess2 && !guess2Done && n >= 10) seenCj.tenDraws = true;
+    if (guess3 && !guess3Done && state.blue === 0 && state.yellow === 10) seenCj.mix0 = true;
+    if (guess1 && !guess1Done && seenCj.mix73) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "seven" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "机会 = 蓝球个数 ÷ 总数 = 7/10。上面「罐子比例」色带就是这个数。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && seenCj.tenDraws) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "more" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "频数是样本里数出来的；概率是罐子里的长期比例。抽 2\u00a0次波动很大，抽满更多次才慢慢靠近。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && seenCj.mix0) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "zero" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "蓝=0 时机会 = 0÷10 = 0。色带全黄——没有蓝球就永远摸不到蓝。";
+    }
+    document.getElementById("mixOut").textContent = mixText();
+    document.getElementById("mixBlue").textContent = state.blue + "\u00a0个";
+    document.getElementById("mixYellow").textContent = state.yellow + "\u00a0个";
+    document.getElementById("sampleCount").textContent = n + "\u00a0次";
+    document.getElementById("tallyOut").textContent = n ? ("蓝 " + b + "\u00a0个 / 黄 " + y + "\u00a0个") : "还没有球";
+    document.getElementById("lastDrawOut").textContent = state.last === "B" ? "蓝球" : (state.last === "Y" ? "黄球" : "—");
+    setBar(document.getElementById("trueBarBlue"), document.getElementById("trueBarYellow"), state.blue, state.yellow);
+    setBar(document.getElementById("sampleBarBlue"), document.getElementById("sampleBarYellow"), b, y);
+    paintHist();
+    var drawn = document.getElementById("drawnBall");
+    var pad = document.getElementById("drawnPad");
+    var cap = document.getElementById("drawnCap");
+    if (state.last) {
+      drawn.setAttribute("class", state.last === "B" ? "cj-ball-b" : "cj-ball-y");
+      drawn.setAttribute("opacity", "1");
+      pad.setAttribute("class", "cj-pad has");
+      cap.textContent = state.last === "B" ? "蓝球" : "黄球";
+    } else {
+      drawn.setAttribute("class", "cj-ball-b");
+      drawn.setAttribute("opacity", "0.18");
+      pad.setAttribute("class", "cj-pad");
+      cap.textContent = "还没抽";
+    }
+    var ready = n >= 10;
+    document.getElementById("likeJar").disabled = !ready;
+    document.getElementById("unlikeJar").disabled = !ready;
+    var other = state.jarA;
+    var different = !!(other && (other.blue !== state.blue || other.yellow !== state.yellow));
+    document.getElementById("compareJars").disabled = !(ready && other && other.draws.length >= 10 && different);
+    if (other) {
+      document.getElementById("jarAOut").textContent = "已记下的罐子：" + jarSummary(other) + "。现在这个罐子：" + jarSummary({ blue:state.blue, yellow:state.yellow, draws:state.draws });
+    }
+    if (!state.done) {
+      var status = document.getElementById("taskStatus");
+      if (n < 10) status.textContent = "尚未完成：还差至少 " + (10 - n) + "\u00a0次抽取。";
+      else status.textContent = "已经抽了 " + n + "\u00a0次。点「看起来像」或「看起来不太像」，也可以记下这个罐子再换一种配比。";
+    }
+    document.getElementById("subBlue").disabled = state.blue <= 0 || t <= 1;
+    document.getElementById("subYellow").disabled = state.yellow <= 0 || t <= 1;
+    document.getElementById("addBlue").disabled = state.blue >= MAX;
+    document.getElementById("addYellow").disabled = state.yellow >= MAX;
+  }
+  function finish(evidence, message){
+    if (window.Progress) Progress.complete("games/chance-jar.html", evidence);
+    state.done = true;
+    document.getElementById("taskStatus").textContent = message;
+    document.getElementById("live").textContent = message;
+  }
+  document.getElementById("addBlue").addEventListener("click", function(){ setMix(state.blue + 1, state.yellow); });
+  document.getElementById("subBlue").addEventListener("click", function(){ setMix(state.blue - 1, state.yellow); });
+  document.getElementById("addYellow").addEventListener("click", function(){ setMix(state.blue, state.yellow + 1); });
+  document.getElementById("subYellow").addEventListener("click", function(){ setMix(state.blue, state.yellow - 1); });
+  document.getElementById("presetEven").addEventListener("click", function(){ setMix(5, 5); });
+  document.getElementById("presetRare").addEventListener("click", function(){ setMix(1, 9); });
+  document.getElementById("presetDefault").addEventListener("click", function(){ setMix(7, 3); });
+  document.getElementById("shakeJar").addEventListener("click", function(){
+    var g = document.getElementById("jarGroup");
+    g.classList.remove("shake");
+    void g.getBoundingClientRect();
+    g.classList.add("shake");
+    paintBalls();
+    document.getElementById("live").textContent = "罐子摇过了，球还在里面，只是换了位置。";
+  });
+  document.getElementById("drawOne").addEventListener("click", function(){
+    var color = pickOne();
+    if (!color) return;
+    state.draws.push(color);
+    state.last = color;
+    render();
+    document.getElementById("live").textContent = "摸到一颗" + (color === "B" ? "蓝" : "黄") + "球，已经放回去了。";
+  });
+  document.getElementById("drawTen").addEventListener("click", function(){
+    var i, color = null;
+    for (i = 0; i < 10; i += 1) {
+      color = pickOne();
+      if (!color) break;
+      state.draws.push(color);
+    }
+    state.last = color;
+    render();
+    document.getElementById("live").textContent = "一口气抽了 10\u00a0次，都放回去再抽。看看下面两条色带。";
+  });
+  document.getElementById("resetDraws").addEventListener("click", function(){
+    state.draws = [];
+    state.last = null;
+    render();
+    document.getElementById("live").textContent = "样本清空了。罐子没变，可以重新抽。";
+  });
+  document.getElementById("keepJar").addEventListener("click", function(){
+    if (state.draws.length < 10) {
+      document.getElementById("live").textContent = "先抽满 10\u00a0次再记下，比较才公平。";
+      return;
+    }
+    state.jarA = { blue:state.blue, yellow:state.yellow, draws:state.draws.slice() };
+    render();
+    document.getElementById("live").textContent = "已记下这个罐子。改配比，再抽 10\u00a0次，就可以比较。";
+  });
+  document.getElementById("compareJars").addEventListener("click", function(){
+    var a = state.jarA;
+    if (!a || a.draws.length < 10 || state.draws.length < 10) return;
+    if (a.blue === state.blue && a.yellow === state.yellow) {
+      document.getElementById("live").textContent = "两个罐子配比一样，先改一改蓝黄个数再比。";
+      return;
+    }
+    var aB = countB(a.draws), bB = countB(state.draws);
+    var aP = a.blue / (a.blue + a.yellow);
+    var bP = state.blue / total();
+    var aObs = aB / a.draws.length;
+    var bObs = bB / state.draws.length;
+    var sameWay = (aP - bP) * (aObs - bObs) > 0;
+    var evidence = "罐子甲 " + a.blue + "\u00a0蓝/" + a.yellow + "\u00a0黄，样本蓝" + aB + "/" + a.draws.length + "；罐子乙 " + state.blue + "\u00a0蓝/" + state.yellow + "\u00a0黄，样本蓝" + bB + "/" + state.draws.length;
+    var msg = sameWay
+      ? "完成啦：两个罐子的样本也跟着配比走，蓝球多的那边抽到的蓝也更多。"
+      : "完成啦：记下了两个罐子。这次样本没有完全跟着配比走，10\u00a0次还可能骗人。";
+    document.getElementById("jarAOut").textContent = "比较：甲 " + jarSummary(a) + "；乙 " + jarSummary({ blue:state.blue, yellow:state.yellow, draws:state.draws });
+    finish(evidence, msg);
+  });
+  function judge(like){
+    var n = state.draws.length;
+    if (n < 10) {
+      document.getElementById("live").textContent = "先抽满 10\u00a0次再判断。";
+      return;
+    }
+    var b = countB(state.draws);
+    var trueP = state.blue / total();
+    var obsP = b / n;
+    var close = Math.abs(obsP - trueP) <= 0.2;
+    var evidence = n + "\u00a0次抽取：蓝" + b + "\u00a0个、黄" + (n - b) + "\u00a0个；罐子蓝" + state.blue + "\u00a0个、黄" + state.yellow + "\u00a0个；判断：" + (like ? "像" : "不太像");
+    var msg;
+    if (like && close) msg = "完成啦：样本和罐子的比例差不多。";
+    else if (like && !close) msg = "完成啦：你觉得像。这次差得有点远，小样本会骗人。";
+    else if (!like && !close) msg = "完成啦：这次样本和罐子差得比较明显。再多抽几次会更接近。";
+    else msg = "完成啦：你觉得不像。其实已经挺接近罐子的比例了。";
+    finish(evidence, msg);
+  }
+  document.getElementById("likeJar").addEventListener("click", function(){ judge(true); });
+  document.getElementById("unlikeJar").addEventListener("click", function(){ judge(false); });
+  var ATLAS = {
+    sample:"样本：抽出来记下的球只是一小撮，样本少会偏，不是罐子里全部，更不是该轮到谁。",
+    true:"真实比例：罐子里本来蓝黄各几个，这叫构成，摇匀后每次独立摸，不会每次都改。",
+    once:"抽一次：只摸一次很容易碰巧，不能拿这一颗给整罐定案，也不是轮到某种颜色了。",
+    ten:"抽十次：连抽 10\u00a0次，色带才开始像样，样本仍可能偏，不是该轮到某一种了。",
+    allblue:"全蓝罐子：罐子里全是蓝，摇匀以后怎么摸也摸不到黄，这是构成，不是运气被关了。",
+    rare:"几乎没有红：某一种很少，抽到很难，十次里一次没有也正常，样本少会偏。",
+    lucky:"碰巧全中：次数少时连着摸到同一种也正常，每次独立，不是罐子变了。",
+    lln:"越大越接近：抽得越多，抽出的比例才慢慢靠近罐子，不是保证下一次。",
+    half:"一半一半：蓝黄一样多，抽到谁都常见，两次仍可能全是一种，每次独立。",
+    none:"一次也没有：某一种很少，抽几次也可能抽不到，还不等于罐子里没有。",
+    mix:"两种都有：罐子里两种都在，抽得多了记录里通常也会出现两种，不是排队轮流。",
+    guess:"先猜再抽：先说罐子里谁更多，再摇匀摸，对照的是构成不是运气，也不是该轮到。"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-cj-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-cj-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-cj-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。看罐子比例色带；也可点「改回 7 蓝 3 黄」。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。连抽满 10\u00a0次，对照两条色带。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut3").textContent = "押好了。把蓝调到 0、黄调到 10，看罐子比例。";
+    });
+  });
+  paintBalls();
+  render();
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/chance-jar.html", "概率罐子");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

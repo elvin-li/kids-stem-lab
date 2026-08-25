@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>时钟工坊 · 长针指着 6，是 6&nbsp;分钟，还是半小时？</title>
+<meta name="description" content="钟面是圆形数轴：短针管小时，长针管分钟。半点长针指 6，是 30&nbsp;分钟不是 6&nbsp;分钟。时针角≈30×时+0.5×分是本页比较尺子。周期计时，摆和齿轮是示意，不是修表教程。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  .hero { padding: 28px 0 10px; }
+  .hero h1 { margin: .15em 0 .3em; }
+  .lead { max-width: 58ch; color: var(--ink-mid); }
+  .kid-mission {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--math) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--math) 12%,var(--surface)),var(--surface) 62%);
+  }
+  .mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--math) 36%,var(--line));
+    background: color-mix(in srgb,var(--math) 12%,var(--surface)); font-size: 2.2rem;
+  }
+  .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .clock-wrap { display: grid; place-items: center; }
+  .clock { display: block; width: min(100%, 320px); height: auto; }
+  @media (max-width: 480px) { .clock { width: min(100%, 256px); } }
+  .ck-face { fill: var(--surface); stroke: color-mix(in srgb,var(--math) 50%,var(--line)); stroke-width: 6; }
+  .ck-tick { stroke: color-mix(in srgb,var(--ink) 45%,transparent); stroke-linecap: round; }
+  .ck-num { fill: var(--ink); font: 800 18px var(--mono); text-anchor: middle; }
+  .ck-hour { stroke: color-mix(in srgb,var(--math) 80%,#1b3a6b); stroke-width: 8; stroke-linecap: round; }
+  .ck-min { stroke: color-mix(in srgb,var(--sci) 76%,#14532d); stroke-width: 5; stroke-linecap: round; }
+  .ck-hub { fill: color-mix(in srgb,var(--math) 70%,#1b3a6b); }
+  .target {
+    margin: 10px auto 0; padding: 10px 14px; max-width: 22rem; text-align: center;
+    border: 2px dashed color-mix(in srgb,var(--math) 46%,var(--line));
+    border-radius: var(--r); background: color-mix(in srgb,var(--math) 8%,var(--surface));
+  }
+  .target b { display: block; font: 800 clamp(1.6rem,6vw,2.2rem)/1.1 var(--mono); }
+  .kid-action-strip { display: grid; gap: 8px; margin: 12px 0; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); }
+  .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+  .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+  .ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--math) 16%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--math) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+  button, .btn { min-height: 44px; }
+  .stage + .kid-action-strip { margin-top: 8px; }
+  .kid-action-strip .btn { min-height: 44px; min-width: 44px; }
+  @media (max-width: 640px) {
+    .kid-mission { grid-template-columns: 1fr; padding: 12px; }
+    .mission-face { display: none; }
+    .stage { padding: 10px; }
+    .kid-action-strip { margin: 8px 0 0; gap: 6px; }
+    .lead { max-width: none; }
+  }
+  /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-mission { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-mission .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-mission h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-mission .lead { font-size: .88rem; line-height: 1.5; margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .clock { max-height: 150px; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .92rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 6px 0; }
+    html[data-mode="kid"] .playful-companion { display: none; }
+    html[data-mode="kid"] [data-playful-sticker] { display: none; }
+    html[data-mode="kid"] .target { margin-top: 6px; padding: 6px 10px; }
+  }
+
+  .guess-card { border-color: color-mix(in srgb,var(--math) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--math); background: color-mix(in srgb,var(--math) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pick-btns .btn { white-space: nowrap; }
+</style>
+</head>
+<body data-playful-page="games/clock-workshop.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="hero kid-mission">
+    <div>
+      <p class="row"><span class="pill pill-math">数学</span><span class="pill">5–8&nbsp;岁</span><span class="pill">约 10&nbsp;分钟</span></p>
+      <h1>长针指着 6，是 6&nbsp;分钟，还是半小时？</h1>
+      <p class="lead">同一面钟，短针管小时，长针管分钟。半点时长针指着 6，那是 30&nbsp;分钟，不是 6&nbsp;分钟；过了整点，短针已经往前爬。钟靠一件重复得均匀的事来计时，摆和齿轮在本页只是示意，不是修表教程。</p>
+      <p class="teach-note" data-ad-learn><b>学什么：</b>时针、分针各走各的圈；整点、半点要看两针位置，不是只看数字大。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-face" aria-hidden="true"><svg viewBox="0 0 120 90" width="70" height="52" focusable="false" aria-hidden="true"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="36" fill="#fffdf8" stroke="#3a2a18" stroke-width="3"/><circle cx="60" cy="46" r="31" fill="none" stroke="#d5c4a8" stroke-width="2"/><circle cx="60" cy="18" r="1.6" fill="#3a2a18"/><circle cx="88" cy="46" r="1.6" fill="#3a2a18"/><circle cx="60" cy="74" r="1.6" fill="#3a2a18"/><circle cx="32" cy="46" r="1.6" fill="#3a2a18"/><text x="60" y="28" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">12</text><text x="84" y="50" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">3</text><text x="60" y="72" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">6</text><text x="36" y="50" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="60" y2="18" stroke="#c5c0b4" stroke-width="2.2" stroke-linecap="round"/><line x1="60" y1="46" x2="44" y2="30" stroke="#1c66c2" stroke-width="6" stroke-linecap="round"/><circle cx="60" cy="46" r="4" fill="#c2410c"/></svg></div>
+  </header>
+
+  <section class="stage kid-visual-stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">把针拨到这个时刻</h2>
+    <div class="clock-wrap">
+      <svg class="clock" viewBox="0 0 240 240" role="img" aria-labelledby="clockTitle clockDesc">
+        <title id="clockTitle">可拨动的钟面</title>
+        <desc id="clockDesc">一个圆钟，12&nbsp;个数字，短针表示小时，长针表示分钟。</desc>
+        <circle class="ck-face" cx="120" cy="120" r="108"/>
+        <g id="ticks"></g>
+        <g id="nums"></g>
+        <line class="ck-hour" id="hourHand" x1="120" y1="120" x2="120" y2="68"/>
+        <line class="ck-min" id="minHand" x1="120" y1="120" x2="120" y2="42"/>
+        <circle class="ck-hub" cx="120" cy="120" r="7"/>
+      </svg>
+    </div>
+    <div class="kid-action-strip" role="group" aria-label="拨动时针和分针">
+      <button class="btn" type="button" id="hourDown" aria-label="时针减一小时">时针 −1</button>
+      <button class="btn btn-primary" type="button" id="hourUp" aria-label="时针加一小时">时针 +1</button>
+      <button class="btn" type="button" id="minDown" aria-label="分针减五分钟">分针 −5</button>
+      <button class="btn btn-primary" type="button" id="minUp" aria-label="分针加五分钟">分针 +5</button>
+      <button class="btn" type="button" id="checkBtn">对一对</button>
+    </div>
+    <div class="target">
+      <span>请拨到</span>
+      <b id="targetText">3:00</b>
+      <span id="nowText">现在是 12:00</span>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">先看短针指几，再把长针拨到正确的大格。</p>
+  </section>
+
+  <section class="card guess-card" aria-labelledby="guessTitleCk">
+    <h2 id="guessTitleCk">先猜一猜，再拨</h2>
+    <p><b>第 1 题：</b>拨到 3:30。短针（时针）应该停在哪？</p>
+    <div class="pick-btns" role="group" aria-label="猜 3 点半时针">
+      <button class="btn guess-pick" type="button" data-guess1="three" aria-pressed="false">正正指着 3</button>
+      <button class="btn guess-pick" type="button" data-guess1="mid" aria-pressed="false">停在 3 和 4 正中间</button>
+      <button class="btn guess-pick" type="button" data-guess1="six" aria-pressed="false">跟着长针指 6</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。把钟拨到 3:30，看短针有没有离开 3。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>3:00 时短针在 3。每过 1&nbsp;小时短针转几大格？</p>
+      <div class="pick-btns" role="group" aria-label="猜时针步长">
+        <button class="btn guess-pick" type="button" data-guess2="one" aria-pressed="false">大约 1 大格</button>
+        <button class="btn guess-pick" type="button" data-guess2="five" aria-pressed="false">5 大格，和分针一样</button>
+        <button class="btn guess-pick" type="button" data-guess2="jump" aria-pressed="false">整点才跳一下，半点不动</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后从 3:00 拨到 4:00，看短针。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>拨到 6:00。时针角≈？</p>
+      <div class="pick-btns" role="group" aria-label="猜时针角度">
+        <button class="btn guess-pick" type="button" data-guess3="90" aria-pressed="false">约 90°</button>
+        <button class="btn guess-pick" type="button" data-guess3="180" aria-pressed="false">180° = 30×6</button>
+        <button class="btn guess-pick" type="button" data-guess3="360" aria-pressed="false">约 360°</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">押好后拨到 6:00，看 live 读数里的时针角。</p>
+    </div>
+  </section>
+
+        <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">短针管小时，长针管分钟；半点长针在 6，不是 6&nbsp;分钟</h2>
+    <p>先把钟拨到 3:00，看短针指 3、长针回 12。再拨到半点，看长针指 6——那是 30&nbsp;分钟，不是 6&nbsp;分钟。再从 3:00 拨到 4:00，看短针是不是大约走了一大格。连续对上三个时刻即可，不比赛谁喊得快。</p>
+    <p>钟面是圆形的数轴。短针一大格是 1&nbsp;小时，长针一大格是 5&nbsp;分钟。过了整点，短针已经离开数字往前爬，不会钉在原地。数字钟方便，但遮住这圈几何。</p>
+    <p>舞台上「时针角≈30×时+0.5×分」「分针角=6×分」是本页比较尺子，用来看见短针在爬、长针一大格是 5&nbsp;分钟，不是修表校准手册。摆钟、齿轮在本页只是示意周期计时，不教拆机芯、不上油、不调游丝。</p>
+  </section>
+
+  <section class="card" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">钟面图鉴</h2>
+    <p>点一张，先认哪根针管小时、哪根针管分钟。</p>
+    <div class="kid-figure-grid" role="group" aria-label="钟面图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-ckw-atlas="hour" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="36" fill="#fffdf8" stroke="#3a2a18" stroke-width="3"/><circle cx="60" cy="46" r="31" fill="none" stroke="#d5c4a8" stroke-width="2"/><g stroke="#3a2a18" stroke-width="1.6" stroke-linecap="round"><path d="M60 14 V20 M96 46 H90 M60 78 V72 M24 46 H30"/></g><text x="60" y="30" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">12</text><text x="84" y="50" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">3</text><text x="60" y="72" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">6</text><text x="36" y="50" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="60" y2="18" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><line x1="60" y1="46" x2="42" y2="32" stroke="#1c66c2" stroke-width="6.5" stroke-linecap="round"/><circle cx="60" cy="46" r="4.2" fill="#c2410c"/><text x="38" y="28" font-size="8" font-weight="800" fill="#1c66c2">短</text></svg></span><span class="kid-figure-cap">短针</span><span class="kid-figure-fact">短针管小时。走过一大格是 1&nbsp;小时，看它指着哪一个数字，长针那圈另算六十分。</span></button>
+      <button class="kid-figure" type="button" data-ckw-atlas="min" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="36" fill="#fffdf8" stroke="#3a2a18" stroke-width="3"/><circle cx="60" cy="46" r="31" fill="none" stroke="#d5c4a8" stroke-width="2"/><g stroke="#3a2a18" stroke-width="1.6" stroke-linecap="round"><path d="M60 14 V20 M96 46 H90 M60 78 V72 M24 46 H30"/></g><text x="60" y="30" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">12</text><text x="84" y="50" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">3</text><line x1="60" y1="46" x2="88" y2="46" stroke="#0b7a45" stroke-width="3" stroke-linecap="round"/><line x1="60" y1="46" x2="48" y2="34" stroke="#1c66c2" stroke-width="6" stroke-linecap="round"/><circle cx="60" cy="46" r="4" fill="#c2410c"/><text x="92" y="42" font-size="8" font-weight="800" fill="#0b7a45">长</text></svg></span><span class="kid-figure-cap">长针</span><span class="kid-figure-fact">长针管分钟。走过一大格是 5&nbsp;分钟，一圈 12 大格才是 60&nbsp;分钟，先认清哪根是长针。</span></button>
+      <button class="kid-figure" type="button" data-ckw-atlas="h3" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="36" fill="#fffdf8" stroke="#3a2a18" stroke-width="3"/><g stroke="#3a2a18" stroke-width="1.6"><path d="M60 14 V20 M96 46 H90 M60 78 V72 M24 46 H30"/></g><text x="60" y="30" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">12</text><text x="84" y="50" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">3</text><line x1="60" y1="46" x2="86" y2="46" stroke="#1c66c2" stroke-width="6" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="18" stroke="#0b7a45" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="46" r="4" fill="#c2410c"/></svg></span><span class="kid-figure-cap">3:00</span><span class="kid-figure-fact">3&nbsp;点整：短针指着 3，长针回到 12，两根针大约张开直角，先认刻度再读这两根针。</span></button>
+      <button class="kid-figure" type="button" data-ckw-atlas="h6" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="36" fill="#fffdf8" stroke="#3a2a18" stroke-width="3"/><g stroke="#3a2a18" stroke-width="1.6"><path d="M60 14 V20 M96 46 H90 M60 78 V72 M24 46 H30"/></g><text x="60" y="30" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">12</text><text x="60" y="72" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">6</text><line x1="60" y1="46" x2="60" y2="72" stroke="#1c66c2" stroke-width="6" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="18" stroke="#0b7a45" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="46" r="4" fill="#c2410c"/></svg></span><span class="kid-figure-cap">6:00</span><span class="kid-figure-fact">6&nbsp;点整：短针指着 6，长针仍在 12，两根针差不多拉成一条线，先认刻度再读数。</span></button>
+      <button class="kid-figure" type="button" data-ckw-atlas="half" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="36" fill="#fffdf8" stroke="#3a2a18" stroke-width="3"/><g stroke="#3a2a18" stroke-width="1.6"><path d="M60 14 V20 M96 46 H90 M60 78 V72 M24 46 H30"/></g><text x="60" y="30" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">12</text><text x="60" y="72" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">6</text><line x1="60" y1="46" x2="74" y2="62" stroke="#1c66c2" stroke-width="6" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="74" stroke="#0b7a45" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="46" r="4" fill="#c2410c"/></svg></span><span class="kid-figure-cap">半点</span><span class="kid-figure-fact">半点时长针指 6，那是 6&nbsp;个 5&nbsp;分钟、一共 30&nbsp;分钟，不是 6&nbsp;分钟，先数大格再报分钟数。</span></button>
+      <button class="kid-figure" type="button" data-ckw-atlas="quarter" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="36" fill="#fffdf8" stroke="#3a2a18" stroke-width="3"/><g stroke="#3a2a18" stroke-width="1.6"><path d="M60 14 V20 M96 46 H90 M60 78 V72 M24 46 H30"/></g><text x="60" y="30" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">12</text><text x="84" y="50" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">3</text><line x1="60" y1="46" x2="70" y2="34" stroke="#1c66c2" stroke-width="6" stroke-linecap="round"/><line x1="60" y1="46" x2="88" y2="46" stroke="#0b7a45" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="46" r="4" fill="#c2410c"/></svg></span><span class="kid-figure-cap">一刻</span><span class="kid-figure-fact">一刻时长针指 3，经过了 3&nbsp;个 5&nbsp;分钟，是 15&nbsp;分钟不是 3&nbsp;分钟；对着 3 那个刻度报一刻。</span></button>
+      <button class="kid-figure" type="button" data-ckw-atlas="crawl" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="36" fill="#fffdf8" stroke="#3a2a18" stroke-width="3"/><g stroke="#3a2a18" stroke-width="1.6"><path d="M60 14 V20 M96 46 H90"/></g><text x="60" y="30" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">12</text><text x="84" y="50" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">3</text><line x1="60" y1="46" x2="74" y2="28" stroke="#1c66c2" stroke-width="6" stroke-linecap="round"/><line x1="60" y1="46" x2="88" y2="40" stroke="#0b7a45" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="46" r="4" fill="#c2410c"/><path d="M60 20 A16 16 0 0 1 74 28" fill="none" stroke="#c2410c" stroke-width="2" stroke-dasharray="3 2"/></svg></span><span class="kid-figure-cap">短针会爬</span><span class="kid-figure-fact">过了整点，短针已经离开那个数字往前爬，不会钉在刻度上不动，刻度上能看见它挪开。</span></button>
+      <button class="kid-figure" type="button" data-ckw-atlas="grid12" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="46" r="36" fill="#fffdf8" stroke="#3a2a18" stroke-width="3"/><g stroke="#3a2a18" stroke-width="1.6"><path d="M60 14 V20 M96 46 H90 M60 78 V72 M24 46 H30"/></g><text x="60" y="30" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">12</text><text x="84" y="50" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">3</text><text x="60" y="72" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">6</text><text x="36" y="50" text-anchor="middle" font-size="9" font-weight="800" fill="#3a2a18">9</text><g fill="#c2410c"><circle cx="78" cy="22" r="2.2"/><circle cx="90" cy="34" r="2.2"/><circle cx="90" cy="58" r="2.2"/><circle cx="78" cy="70" r="2.2"/><circle cx="42" cy="22" r="2.2"/><circle cx="30" cy="34" r="2.2"/><circle cx="30" cy="58" r="2.2"/><circle cx="42" cy="70" r="2.2"/></g></svg></span><span class="kid-figure-cap">12 大格</span><span class="kid-figure-fact">一圈 12&nbsp;个大格，每格 5&nbsp;分钟，走满一圈才是 60&nbsp;分钟，长针走完这一圈才回到十二。</span></button>
+      <button class="kid-figure" type="button" data-ckw-atlas="h9" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="45" r="28" fill="#fff" stroke="#1c66c2" stroke-width="3"/><line x1="60" y1="45" x2="40" y2="45" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="45" x2="60" y2="22" stroke="#0b7a45" stroke-width="3" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">9:00</span><span class="kid-figure-fact">9&nbsp;点整：短针指着 9，长针回到 12，先认清哪根管小时，刻度上两根针分得很开。</span></button>
+      <button class="kid-figure" type="button" data-ckw-atlas="h12" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="45" r="28" fill="#fff" stroke="#1c66c2" stroke-width="3"/><line x1="60" y1="45" x2="60" y2="24" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="45" x2="60" y2="18" stroke="#0b7a45" stroke-width="3" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">12:00</span><span class="kid-figure-fact">12&nbsp;点整：两根针叠在一起，都指着 12，长针走完了一圈 60&nbsp;分钟，先认刻度再谈整点。</span></button>
+      <button class="kid-figure" type="button" data-ckw-atlas="threeq" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="45" r="28" fill="#fff" stroke="#1c66c2" stroke-width="3"/><line x1="60" y1="45" x2="48" y2="58" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="45" x2="38" y2="45" stroke="#0b7a45" stroke-width="3" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">三刻</span><span class="kid-figure-fact">三刻时长针指 9，那是 9&nbsp;个 5&nbsp;分钟、一共 45&nbsp;分钟，不是 9&nbsp;分钟；对着 9 那个刻度报三刻。</span></button>
+      <button class="kid-figure" type="button" data-ckw-atlas="pair" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#eef3fb" width="120" height="90"/><circle cx="60" cy="45" r="28" fill="#fff" stroke="#1c66c2" stroke-width="3"/><line x1="60" y1="45" x2="74" y2="32" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="45" x2="82" y2="45" stroke="#0b7a45" stroke-width="3" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">两根一起看</span><span class="kid-figure-fact">先看短针指着几点，再看长针过了几大格；一大格 5&nbsp;分钟，一圈 60，刻度一圈才是六十分。</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照上面的钟。</p>
+  </section>
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--math)"
+         data-kid-predict
+         data-kid-predict-explain="分针走一圈 360°；时针也慢移。夹角常取较小角（≤180°）。数字钟遮住圆周几何。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🕞</span><b>3 点半的时候，短短的时针指在哪？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：3 点半的时针">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="three">正正地指着 3</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="mid" data-kid-predict-correct>停在 3 和 4 的正中间</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="six">指着 6，因为是「半」</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：连续对上三个时刻</h2>
+    <p>卡片上会出现整点、半点或 5&nbsp;分钟一格的时刻。拨完点「对一对」。对上三次即完成。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：还差 3&nbsp;个时刻。</p>
+  </section>
+
+
+        <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">连续对上三个时刻，先认哪根针管什么</h2>
+    <p>舞台上比的是两根针各管什么。同一面钟。先指短针、长针，再说 3:00、6:00、半点。半点时长针指 6，是 30&nbsp;分钟，不是 6&nbsp;分钟。这样比，才知道读钟靠的是两把尺子叠在一起，不是数字自己会说话。</p>
+    <p>回家只带两句：「短针管小时，长针管分钟」；「长针指 6 是半小时」。不要写成「6 就是 6&nbsp;分钟」或「我来修这只表」。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="42" y2="32" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="18" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/><text x="36" y="24" font-size="8" font-weight="800" fill="#1c66c2">短</text></svg></span><span class="kid-figure-cap">短针</span><span class="kid-figure-sub">小时</span><p class="kid-figure-fact">短针只管点。它走过钟面上一大格，就是一小时；长针那一圈六十格另算。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="60" y2="28" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="88" y2="46" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/><text x="92" y="40" font-size="8" font-weight="800" fill="#0b7a45">长</text></svg></span><span class="kid-figure-cap">长针</span><span class="kid-figure-sub">分钟</span><p class="kid-figure-fact">长针管分钟，走过一大格就是 5&nbsp;分钟，不是 1&nbsp;分钟；一圈才 60，先数大格再报分。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="72" y2="58" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="74" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/></svg></span><span class="kid-figure-cap">半点</span><span class="kid-figure-sub">指 6</span><p class="kid-figure-fact">长针指 6 是走过 6 大格、30&nbsp;分钟，不是 6&nbsp;分钟；每一大格是 5&nbsp;分钟，半圈不是六点整。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="70" y2="36" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="88" y2="46" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/></svg></span><span class="kid-figure-cap">一刻</span><span class="kid-figure-sub">指 3</span><p class="kid-figure-fact">长针指 3，经过了 3&nbsp;个 5&nbsp;分钟，是 15&nbsp;分钟不是 3&nbsp;分钟；先数大格，一刻先对着刻度数十。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="48" y2="24" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="18" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/><path d="M48 22 Q60 10 70 20" fill="none" stroke="#c2410c" stroke-width="2" stroke-dasharray="3 2"/></svg></span><span class="kid-figure-cap">短针会爬</span><span class="kid-figure-sub">非整点</span><p class="kid-figure-fact">刚过整点，短针已经离开原来的数字一点点，刻度上能看见它在爬，不是整点才跳。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="22" y="28" width="76" height="36" rx="6" fill="#1a1a1a"/><text x="60" y="52" text-anchor="middle" font-size="18" font-weight="800" fill="#4ade80">15:30</text></svg></span><span class="kid-figure-cap">数字钟</span><span class="kid-figure-sub">遮几何</span><p class="kid-figure-fact">数字钟方便，但看不见两针指着哪条刻度，也看不见短针在慢慢爬，刻度被数字挡住了。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>指两针。</b>谁管小时，谁管分钟。</li>
+      <li data-step="2"><b>对 3:00。</b>短针指 3，长针回 12。</li>
+      <li data-step="3"><b>对半点。</b>长针在 6，说清是 30&nbsp;分钟不是 6&nbsp;分钟。</li>
+      <li data-step="4"><b>写完成句。</b>两针分工。划掉「6 就是 6&nbsp;分钟」和「我来修表」。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>短针管小时，长针管分钟。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>长针指 6 是半小时。过了整点，短针已经往前爬。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>分针走一圈 360°；时针也慢移。夹角常取较小角。数字钟遮住圆周关系。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能分清两针，并把半点说成 30&nbsp;分钟，而不是 6&nbsp;分钟。完成看的是对照，不是修表，也不比赛谁算得快。</p>
+    <ul class="ask-list">
+      <li>哪根管小时？</li>
+      <li>半点长针在哪？</li>
+      <li>短针会停在整点吗？</li>
+      <li>数字钟少看了什么？</li>
+    </ul>
+  </section>
+
+
+        <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">夹角取较小角；本页不比赛谁算得快，也不修表</h2>
+    <p>同一面钟，先只改时刻。3:00 两针大约直角，6:00 大约平角。题目若约定较小角，要先说清。连续对上三个时刻，是为了看见短针在爬，不是为了抢答，也不是考试卷。</p>
+    <p>钟表的心脏是「一件重复得足够均匀的事」：影子转一圈、摆摆一下、石英抖一下。摆和齿轮在本页只是示意这种周期，不教拆机芯、不上油、不调游丝。本页不是修表教程。</p>
+    <p>数字钟把几何收进芯片。学认针，是把时间重新铺回圆周。邻居页是角度工坊：钟面是圆上的角。</p>
+    <p>本页只练 12&nbsp;小时制模拟钟面，不涉及 24&nbsp;小时制和秒针。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="84" y2="46" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="18" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/><path d="M60 46 H78 V30" fill="none" stroke="#c2410c" stroke-width="2"/></svg></span><span class="kid-figure-cap">3:00</span><span class="kid-figure-sub">直角</span><p class="kid-figure-fact">3&nbsp;点整，短针指 3、长针回 12，两根针大约张开直角，差不多 90&nbsp;度，先认指针再看口。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="60" y2="68" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="18" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/></svg></span><span class="kid-figure-cap">6:00</span><span class="kid-figure-sub">平角</span><p class="kid-figure-fact">6&nbsp;点整，短针指 6、长针回 12，两根针差不多拉成一条直线，大约 180&nbsp;度，先认指针再看口。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="50" y2="26" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="70" y2="22" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/><path d="M42 22 H54" stroke="#c2410c" stroke-width="2"/></svg></span><span class="kid-figure-cap">短针爬</span><span class="kid-figure-sub">连续</span><p class="kid-figure-fact">不到整点时，短针也已经往下一个数字爬过去一点，不会等整点才跳。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="84" y2="46" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="18" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/><circle cx="60" cy="46" r="24" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M44 30 L76 62" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">竞赛</span><span class="kid-figure-sub">不比</span><p class="kid-figure-fact">这一页不比赛谁读得快，先看清短针、长针各指着哪一条刻度，刻度比谁喊得快要紧。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：3:00 · 半点 · 「6 就是 6&nbsp;分钟」</h2>
+    <p>三列用同一面钟。先只改时刻。一次改两根针乱拨，分不清到底是谁在报错。</p>
+    <p>3:00：短针 3，长针 12。半点：长针 6，是 30&nbsp;分钟。「6 就是 6&nbsp;分钟」整列划掉：一大格是 5&nbsp;分钟。「我来修这只表」也划掉：摆和齿轮只是示意。</p>
+    <p>夹角是加试：3:00 大约直角，6:00 大约平角，常取较小角。本页角度公式用来比较方向，不是修表校准。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="84" y2="46" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="18" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/><circle cx="104" cy="16" r="8" fill="#3d9a58"/></svg></span><span class="kid-figure-cap">3:00</span><span class="kid-figure-sub">整点</span><p class="kid-figure-fact">3&nbsp;点整：短针指着 3，长针回到 12，先认清哪根管小时、哪根管分，刻度上先认哪根管点。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="72" y2="58" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="74" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/><circle cx="104" cy="16" r="8" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">半点</span><span class="kid-figure-sub">30&nbsp;分</span><p class="kid-figure-fact">半点时长针指着 6，那是半圈 30&nbsp;分钟，不是把 6 当成 6&nbsp;分钟，半圈先数大格再报。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="60" y2="68" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="18" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/><text x="60" y="88" text-anchor="middle" font-size="9" font-weight="800" fill="#c2410c">不是 6&nbsp;分</text><path d="M28 22 L92 68 M92 22 L28 68" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">6&nbsp;分钟</span><span class="kid-figure-sub">否决</span><p class="kid-figure-fact">「长针指 6 就是 6&nbsp;分钟」整句划掉：每一大格是 5&nbsp;分钟，一圈 60，半圈不是六点整的分。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="28" y="18" width="64" height="54" fill="#fff" stroke="#3a2a18"/><path d="M38 36 H80 M38 48 H70" stroke="#3a2a18" stroke-width="2"/><path d="M78 58 L96 74 L92 58 Z" fill="#e8b84a" stroke="#3a2a18"/></svg></span><span class="kid-figure-cap">完成句</span><span class="kid-figure-sub">两针分工</span><p class="kid-figure-fact">回家只记：短针管点、长针管分；一大格 5&nbsp;分钟，过了整点短针会爬开，刻度上一圈六十分。</p></div>
+    </div>
+  </section>
+
+
+        <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">三个时刻各写短针、长针指谁</h2>
+    <p>在纸上写三行：3:00、6:00、半点。各写短针、长针指着哪个数字。半点那一行要写清「30&nbsp;分钟，不是 6&nbsp;分钟」。</p>
+    <p>口头加一句「短针会爬」。标题禁止「我算得快」和「我来修表」。邻居页是角度工坊：钟面是圆上的角；摆钟工坊看周期本身。</p>
+    <p>本页不拆真钟，不上油，不调游丝。家里的石英表和摆钟，只看针，不打开后盖。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="34" y="16" width="52" height="62" rx="4" fill="#fff" stroke="#3a2a18" stroke-width="1.8"/><rect x="44" y="10" width="32" height="12" rx="3" fill="#c4b49a" stroke="#3a2a18"/><path d="M44 36 H76 M44 48 H76 M44 60 H68" stroke="#8a857c" stroke-width="2"/><path d="M44 36 H76 M44 48 H76 M44 60 H68" stroke="#3a2a18" stroke-width="2"/></svg></span><span class="kid-figure-cap">三行</span><span class="kid-figure-sub">时刻</span><p class="kid-figure-fact">写下三个时刻，每个都写清短针指着几、长针过了几大格，不要只抄数字钟。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><ellipse cx="56" cy="40" rx="28" ry="18" fill="#fff" stroke="#3a2a18" stroke-width="1.8"/><path d="M44 54 L40 70 L56 58" fill="#fff" stroke="#3a2a18" stroke-width="1.8"/><circle cx="46" cy="40" r="3" fill="#3a2a18"/><circle cx="56" cy="40" r="3" fill="#3a2a18"/><circle cx="66" cy="40" r="3" fill="#3a2a18"/></svg></span><span class="kid-figure-cap">口令</span><span class="kid-figure-sub">会爬</span><p class="kid-figure-fact">回家说得出：长针一大格是 5&nbsp;分钟，一圈 60；短针过了整点会爬开，刻度能看见它挪开。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="84" y2="46" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="18" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/><path d="M60 46 A16 16 0 0 0 76 46" fill="none" stroke="#c2410c" stroke-width="2.4"/></svg></span><span class="kid-figure-cap">角</span><span class="kid-figure-sub">邻居</span><p class="kid-figure-fact">邻居页是角工坊：钟面刻度围成一圈，两根针夹的是圆上的角，指针夹的口能对三角板。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="60" cy="46" r="30" fill="#fffdf8" stroke="#3a2a18" stroke-width="2.4"/><text x="60" y="28" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">12</text><text x="82" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">3</text><text x="60" y="70" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">6</text><text x="38" y="50" text-anchor="middle" font-size="8" font-weight="800" fill="#3a2a18">9</text><line x1="60" y1="46" x2="84" y2="46" stroke="#1c66c2" stroke-width="5" stroke-linecap="round"/><line x1="60" y1="46" x2="60" y2="18" stroke="#0b7a45" stroke-width="2.2" stroke-linecap="round"/><circle cx="60" cy="46" r="3.2" fill="#c2410c"/><circle cx="60" cy="46" r="24" fill="none" stroke="#c2410c" stroke-width="4"/><path d="M44 30 L76 62" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/></svg></span><span class="kid-figure-cap">竞赛</span><span class="kid-figure-sub">不比</span><p class="kid-figure-fact">先认清哪根是短针、哪根是长针，再看刻度，不要比谁喊得快，一圈六十分先数格。</p></div>
+    </div>
+  </section>
+
+
+      <section class="card" aria-labelledby="thickTitle">
+    <h2 id="thickTitle">钟面是折起来的数轴</h2>
+    <p>带走句：时针转一圈 360°，一大格大约 30°——先估角，再读钟。分针一大格 6°。时针也会跟着慢慢走，不是整点才跳。</p>
+    <p>对照：12 点与 6 点夹角 180°，不是把数字相减；取较小的那个夹角。完成句点名「圆数轴」，不要只报时刻。</p>
+    <p>计时靠的是周期：同一件事重复得足够均匀，再数它重复了多少次。摆和齿轮在本页只是示意，不是修表教程。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「长针指 6 是不是 6&nbsp;分钟」，就只改这一个时刻。同一面钟，先拨到 3:00 看两针，再拨到半点看长针在哪。从 3:00 拨到 4:00 看短针爬了多少，是另一次对照，不要和「半点」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>时刻（整点 / 半点）。</li>
+      <li><b>先保持不变：</b>同一面钟、先认清哪根是短针。</li>
+      <li><b>要观察的：</b>长针指 6 时，说的是 6&nbsp;分钟还是 30&nbsp;分钟。</li>
+      <li><b>另开一行：</b>过了整点十分钟，短针还钉在数字上吗？</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>不看钟，闭眼数到 60，睁眼看长针走了多远。你数快了还是慢了？钟靠的是更稳的重复。</li>
+      <li>3 点整两针大约张开直角，6 点整大约拉成一条直线。数字相减能代替量角吗？</li>
+      <li>家里哪些钟有针、哪些只有数字？打开后盖去「修一修」，本页允许吗？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把夹角公式提前塞进五岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>短针管小时，长针管分钟。长针指 6 是半小时，不是 6&nbsp;分钟。能指对两根针就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>长针一大格是 5&nbsp;分钟。过了整点，短针已经往前爬。数字钟看不见这圈几何。本页不比赛谁算得快，也不修表。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>时针角≈30×时+0.5×分，分针角=6×分，夹角常取较小角。这是比较尺子，不是修表校准。计时是数稳定的重复：摆、石英、原子钟是同一家族的不同尺度。</p></div>
+    </div>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：认钟记录</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="explanation">我的解释</option>
+          <option value="drawing">发现画</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：长针指 6 就是半点"></div>
+      <div><label for="workContent">孩子怎么认的</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下他先看哪根针，以及哪个时刻最容易混。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>孩子把长针指 6 读成 6&nbsp;分钟——哪一张图鉴能拆？他先看的是哪根针？</li>
+      <li>过了 3:00 十分钟，短针还钉在 3 上吗？哪一句四岁听得懂？试「短针会慢慢爬开」。</li>
+      <li>数字钟少看了哪一层几何？夹角、短针爬，哪一句他能指着钟面说？</li>
+      <li>较小角约定没说清时，怎么先开口？3:00 是直角还是把 3 和 12 相减？</li>
+      <li>本页能当考试计时器吗？能当修表教程吗？摆和齿轮打开后盖看吗？</li>
+      <li>时针角≈30×时+0.5×分，是修表校准还是本页比较尺子？数字能抄进钟表店吗？</li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="historyTitle">
+    <h2 id="historyTitle">人是怎么学会看时间的</h2>
+    <div class="kid-figure-grid" role="group" aria-label="四种古老的计时工具">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><circle cx="86" cy="18" r="10" fill="#e8b84a"/><ellipse cx="60" cy="70" rx="36" ry="10" fill="#c4a06a" stroke="#3a2a18"/><path d="M60 70 L60 36" stroke="#3a2a18" stroke-width="3"/><path d="M60 70 L84 58" fill="#5a3a20" opacity=".45" stroke="none"/><path d="M60 70 L84 58 L64 70 Z" fill="#5a3a20" opacity=".35"/></svg></span><span class="kid-figure-cap">日晷</span><span class="kid-figure-sub">让影子当指针</span><p class="kid-figure-fact">太阳移动，影子跟着转——钟面上的数字为什么按现在这个方向转？因为北半球的日晷影子就是这么转的，「顺时针」这个词是它留下的。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M30 16 H58 L44 46 L58 76 H30 L44 46 Z" fill="#e8d9a8" stroke="#3a2a18" stroke-width="1.8"/><path d="M36 22 H52 L44 36 Z" fill="#c4a06a"/><rect x="72" y="20" width="28" height="50" rx="3" fill="#8ec5e8" stroke="#3a2a18"/><path d="M84 20 V70" stroke="#fff" stroke-width="2" opacity=".5"/></svg></span><span class="kid-figure-cap">沙漏和水钟</span><span class="kid-figure-sub">让流动当节拍</span><p class="kid-figure-fact">阴天和夜里日晷罢工，人们改数「流走了多少沙、滴了多少水」。它们量的不是「几点」，而是「过了多久」——这两个问题不一样。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="36" y="8" width="48" height="74" rx="4" fill="#8a5a2a" stroke="#3a2a18"/><circle cx="60" cy="32" r="14" fill="#fffdf8"/><line x1="60" y1="32" x2="60" y2="22" stroke="#1c66c2" stroke-width="2"/><line x1="60" y1="48" x2="60" y2="72" stroke="#e8b84a" stroke-width="3"/><circle cx="60" cy="76" r="4" fill="#e8b84a"/></svg></span><span class="kid-figure-cap">摆钟</span><span class="kid-figure-sub">让摇摆当心跳</span><p class="kid-figure-fact">同一根摆，摆一下的时间几乎不变。本页的摆和齿轮只是示意周期，不是修表教程，不要打开后盖。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><rect x="18" y="16" width="36" height="58" rx="6" fill="#2a2a2a"/><text x="36" y="50" text-anchor="middle" font-size="9" fill="#4ade80">12:00</text><rect x="64" y="22" width="40" height="46" rx="3" fill="#d5dce2" stroke="#3a2a18"/><circle cx="84" cy="44" r="10" fill="none" stroke="#1c66c2" stroke-width="2"/></svg></span><span class="kid-figure-cap">石英与原子钟</span><span class="kid-figure-sub">数更快的心跳</span><p class="kid-figure-fact">手表里的石英片每秒抖 32768&nbsp;次，原子钟数的「心跳」更快得多——你手机上的时间，就是靠原子钟对出来的。</p></div>
+    </div>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>短针说「几点」，长针说「过了多少分」。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>钟面其实是两把叠在一起的尺子：外圈一把量 60&nbsp;分钟，数字一把量 12&nbsp;小时。同一个「9」，对长针是 45&nbsp;分，对短针是 9&nbsp;点——先认清在替谁读数，再报时间。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>所有钟表的心脏都是「一件重复得足够均匀的事」：影子转一圈、摆摆一下、石英抖一下。计时的历史就是找到越来越稳的重复，再数它重复了多少次——「时间」在钟表里，其实是一个计数问题。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>钟面是双刻度的圆形数轴，读钟是在练「同一符号在不同尺子上代表不同的数」；而计时史展示了测量的本质——用稳定的重复去数不可见的流逝。</p>
+    <ul class="ask-list">
+      <li>不看钟，闭眼数到 60，睁眼看长针走了多远？你数快了还是慢了？</li>
+      <li>家里哪些钟有针、哪些只有数字？哪种更容易看出「还剩多久」？</li>
+      <li>用台灯和一支铅笔做个小日晷，影子一小时挪多远？</li>
+    </ul>
+  </section>
+
+          <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：钟面把 12&nbsp;小时和 60&nbsp;分钟映射到同一圆周。短针一大格是 1&nbsp;小时，长针一大格是 5&nbsp;分钟。时针随分钟慢移，故非整点已离开刻度。半点长针指 6，是 30&nbsp;分钟，不是 6&nbsp;分钟。</p>
+    <p>计时靠的是周期：找到一件重复得足够均匀的事，再数它重复了多少次。日晷的影子、沙漏的流、摆的一下、石英的抖动，是同一家族的不同尺度。本页的摆和齿轮只是示意，不是修表教程：不拆机芯、不上油、不调游丝。</p>
+    <p>本页「时针角≈30×时+0.5×分」「分针角=6×分」只是比较尺子，用来看见短针在爬、长针一大格对应 30°，不是修表校准手册，也不是考试计时器。夹角常取不超过 180° 的较小角。</p>
+    <p>数字显示遮住该几何。本页强调观察而非竞赛，只练 12&nbsp;小时制模拟钟面，不涉及 24&nbsp;小时制和秒针。</p>
+  </section>
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))" data-audience="parent">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">钟面公式卡 · 时针角≈30×时+0.5×分；分针角=6×分（本页尺子）</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">一时针一小时约 1 大格（30°）；半点已走一半。用来比较「整点」和「半点」，不是修表校准。家长钉「短针连续爬，不整点才跳」；长针指 6 是 30&nbsp;分钟。摆和齿轮是示意，不是修表教程。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>带走句：短针管点、长针管分；长针指 6 是半小时。摆钟工坊看周期本身怎么稳；角度工坊看钟面上的直角和平角。</p>
+    <p class="row"><a class="btn btn-ghost" href="pendulum-lab.html">摆钟工坊</a><a class="btn btn-ghost" href="angle-lab.html">角度工坊</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">本页只练 12&nbsp;小时制模拟钟面，不涉及 24&nbsp;小时制和秒针。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var hour = 12, minute = 0, targetH = 3, targetM = 0, ok = 0, done = false;
+  var guess1 = "", guess2 = "", guess3 = "";
+  var guess1Done = false, guess2Done = false, guess3Done = false;
+  var seenClock = { half330:false, h3to4:false, h600:false };
+  var NS = "http://www.w3.org/2000/svg";
+  (function drawFace(){
+    var ticks = document.getElementById("ticks"), nums = document.getElementById("nums"), i;
+    for (i = 0; i < 60; i += 1) {
+      var a = i * 6 * Math.PI / 180, inner = i % 5 === 0 ? 88 : 96;
+      var line = document.createElementNS(NS,"line");
+      line.setAttribute("class","ck-tick");
+      line.setAttribute("x1", String(120 + Math.sin(a)*inner));
+      line.setAttribute("y1", String(120 - Math.cos(a)*inner));
+      line.setAttribute("x2", String(120 + Math.sin(a)*102));
+      line.setAttribute("y2", String(120 - Math.cos(a)*102));
+      line.setAttribute("stroke-width", i % 5 === 0 ? "3" : "1.4");
+      ticks.appendChild(line);
+    }
+    for (i = 1; i <= 12; i += 1) {
+      var ang = i * 30 * Math.PI / 180;
+      var t = document.createElementNS(NS,"text");
+      t.setAttribute("class","ck-num");
+      t.setAttribute("x", String(120 + Math.sin(ang)*72));
+      t.setAttribute("y", String(120 - Math.cos(ang)*72 + 6));
+      t.textContent = String(i);
+      nums.appendChild(t);
+    }
+  })();
+  function pad(n){ return n < 10 ? "0"+n : String(n); }
+  function label(h, m){ return (h === 0 ? 12 : h) + ":" + pad(m); }
+  function setHand(id, deg, len){
+    var r = deg * Math.PI / 180;
+    document.getElementById(id).setAttribute("x2", String(120 + Math.sin(r)*len));
+    document.getElementById(id).setAttribute("y2", String(120 - Math.cos(r)*len));
+  }
+  function nextTarget(){
+    var bag = [
+      [1,0],[2,0],[4,0],[5,0],[7,0],[8,0],[10,0],
+      [3,30],[6,30],[9,30],[12,30],
+      [2,15],[4,45],[8,20],[11,10],[5,25]
+    ];
+    var pick = bag[Math.floor(Math.random()*bag.length)];
+    if (pick[0] === targetH && pick[1] === targetM) pick = bag[(bag.indexOf(pick)+1)%bag.length];
+    targetH = pick[0]; targetM = pick[1];
+    document.getElementById("targetText").textContent = label(targetH, targetM);
+  }
+  function checkGuessClock(){
+    if (hour % 12 === 3 && minute === 30) seenClock.half330 = true;
+    if (hour % 12 === 4 && minute === 0) seenClock.h3to4 = true;
+    if (hour % 12 === 6 && minute === 0) seenClock.h600 = true;
+    if (guess1 && !guess1Done && seenClock.half330) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "mid" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "时针连续爬：3:30 已走到 3 与 4 正中。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && seenClock.half330 && seenClock.h3to4) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "one" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "一时针一小时约走 1 大格；半点已走一半。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && seenClock.h600) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "180" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "6:00 时针角≈30×6 = <b>180°</b>。";
+    }
+  }
+  function render(){
+    checkGuessClock();
+    var h = hour % 12;
+    var hourDeg = h * 30 + minute * 0.5;
+    var minDeg = minute * 6;
+    setHand("hourHand", hourDeg, 48);
+    setHand("minHand", minDeg, 74);
+    document.getElementById("nowText").textContent = "现在是 " + label(hour, minute);
+    document.getElementById("live").textContent = "现在 " + label(hour, minute) +
+      "：时针约 " + Math.round(hourDeg) + "°（≈30×时+0.5×分），分针 " + minDeg + "°（×6）。";
+  }
+  function bumpHour(d){ hour = ((hour - 1 + d + 12) % 12) + 1; render(); }
+  function bumpMin(d){
+    minute += d;
+    if (minute >= 60) { minute = 0; bumpHour(1); return; }
+    if (minute < 0) { minute = 55; bumpHour(-1); return; }
+    render();
+  }
+  document.getElementById("hourUp").addEventListener("click", function(){ bumpHour(1); });
+  document.getElementById("hourDown").addEventListener("click", function(){ bumpHour(-1); });
+  document.getElementById("minUp").addEventListener("click", function(){ bumpMin(5); });
+  document.getElementById("minDown").addEventListener("click", function(){ bumpMin(-5); });
+  document.getElementById("checkBtn").addEventListener("click", function(){
+    var live = document.getElementById("live");
+    var match = (hour % 12) === (targetH % 12) && minute === targetM;
+    if (!match) {
+      live.textContent = "还没到。短针看小时，长针每大格是 5\u00a0分钟。";
+      return;
+    }
+    if (!done) ok += 1;
+    live.textContent = "对了，就是 " + label(targetH, targetM) + "。";
+    var status = document.getElementById("taskStatus");
+    if (ok >= 3 && !done) {
+      done = true;
+      if (window.Progress) Progress.complete("games/clock-workshop.html", "连续对上三个时刻");
+      status.textContent = "完成啦：已经连续对上三个时刻。";
+    } else if (!done) {
+      status.textContent = "已对上 "+ok+"\u00a0个，还差 "+(3-ok)+"\u00a0个。";
+      nextTarget();
+    } else {
+      nextTarget();
+    }
+  });
+  var ATLAS = {
+    hour:"短针管小时。走过一大格是 1\u00a0小时，看它指着哪一个数字，长针那圈另算六十分。",
+    min:"长针管分钟。走过一大格是 5\u00a0分钟，一圈 12 大格才是 60\u00a0分钟，先认清哪根是长针。",
+    h3:"3:00：短针指着 3，长针回到 12，两根针大约张开直角，先认刻度再读这两根针。",
+    h6:"6:00：短针指着 6，长针仍在 12，两根针差不多拉成一条线，先认刻度再读数。",
+    half:"半点：长针指 6，那是 6\u00a0个 5\u00a0分钟、一共 30\u00a0分钟，不是 6\u00a0分钟，先数大格再报分钟数。",
+    quarter:"一刻：长针指 3，经过了 3\u00a0个 5\u00a0分钟，是 15\u00a0分钟不是 3\u00a0分钟；对着 3 那个刻度报一刻。",
+    crawl:"短针会爬：过了整点，短针已经离开那个数字往前爬，不会钉在刻度上不动，刻度上能看见它挪开。",
+    grid12:"12 大格：一圈 12\u00a0个大格，每格 5\u00a0分钟，走满一圈才是 60\u00a0分钟，长针走完这一圈才回到十二。",
+    h9:"9:00：短针指着 9，长针回到 12，先认清哪根管小时，刻度上两根针分得很开。",
+    h12:"12:00：两根针叠在一起，都指着 12，长针走完了一圈 60\u00a0分钟，先认刻度再谈整点。",
+    threeq:"三刻：长针指 9，那是 9\u00a0个 5\u00a0分钟、一共 45\u00a0分钟，不是 9\u00a0分钟；对着 9 那个刻度报三刻。",
+    pair:"两根一起看：先看短针指着几点，再看长针过了几大格；一大格 5\u00a0分钟，一圈 60，刻度一圈才是六十分。"
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-ckw-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-ckw-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-ckw-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+    });
+  });
+  nextTarget();
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。去舞台上对照读数验证。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。继续对照舞台验证。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess3Done)return; guess3=btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      document.getElementById("guessOut3").textContent="已押。拨到 6:00。"; });
+  });
+  render();
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/clock-workshop.html", "时钟工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

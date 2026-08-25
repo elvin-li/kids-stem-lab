@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>斜坡滚球 · 能量去哪了 | 少儿数理启蒙</title>
 <meta name="description" content="调节斜坡角度、摩擦和球的质量，用实时能量柱看势能怎么变成动能、又怎么被摩擦变成热。还能先猜球停在哪里。" />
-<link rel="stylesheet" href="../assets/css/base.css?v=17">
-<link rel="stylesheet" href="../assets/css/kid.css?v=17">
-<link rel="stylesheet" href="../assets/css/print.css" media="print">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#fff8ec">
-<link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
 <style>
   html, body { max-width:100%; overflow-x:hidden; }
   *, *::before, *::after { box-sizing:border-box; }
@@ -20,6 +20,8 @@
   .ramp-kid-shell { position:relative; display:grid; gap:14px; margin:0; padding:clamp(12px,3vw,22px); overflow:hidden; isolation:isolate; }
   .ramp-kid-shell::before { content:""; position:absolute; inset:-30% -12% auto 42%; height:240px; border-radius:50%; background:radial-gradient(circle,rgba(167,139,250,.2),transparent 68%); z-index:-1; pointer-events:none; }
   .hero-top { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:14px; }
+  .mission-face { width:78px; height:78px; display:grid; place-items:center; overflow:hidden; border-radius:50%; border:2px solid color-mix(in srgb,var(--phys) 36%,var(--line)); background:color-mix(in srgb,var(--phys) 12%,var(--surface)); }
+  .mission-face svg { display:block; }
   .hero-top h1 { margin:2px 0 5px; font-size:clamp(1.55rem,5vw,2.5rem); line-height:1.08; }
   .hero-top p { margin:0; color:var(--ink-mid); }
   .story-eyebrow { color:var(--phys)!important; font-weight:850; letter-spacing:.04em; }
@@ -86,7 +88,9 @@
   .fair-card textarea { min-height:120px; resize:vertical; }
 
   .section-kicker { margin:0 0 5px; color:var(--phys); font-size:.76rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
-  .science-note { border-color:rgba(74,222,128,.42); background:linear-gradient(135deg,rgba(74,222,128,.09),var(--surface-2)); }
+  /* 同 gravity-drop 的 .science-note：原来写死的 rgba(74,222,128,.42) 是为暗底写的绿色
+     高光描边，浅底上只有 1.21:1，等于没画。两页这一块保持同一套写法。 */
+  .science-note { border-color:color-mix(in srgb,var(--sci) 55%,var(--surface)); background:linear-gradient(135deg,color-mix(in srgb,var(--sci) 9%,var(--surface)),var(--surface-2)); }
   .teach-lead { margin:.2em 0 .9em; color:var(--ink-mid); font-size:1rem; }
   .teach-lead b { color:var(--ink); }
 
@@ -117,9 +121,8 @@
   @media (max-width:760px) {
     .fig-grid { grid-template-columns:minmax(0,1fr); }
     .hero-top { grid-template-columns:minmax(0,1fr); }
-    .story-track { display:none; }
+    .story-track, .mission-face { display:none; }
     .parent-grid { grid-template-columns:minmax(0,1fr); }
-    .rr-compare { grid-template-columns:minmax(0,1fr); }
   }
   @media (max-width:480px) {
     .lab-head { margin:8px 0 6px; }
@@ -148,8 +151,12 @@
     .kid-action-strip { grid-template-columns:minmax(0,1.35fr) minmax(92px,.65fr); }
     .task-fields { grid-template-columns:minmax(0,1fr); }
   }
-  @media (prefers-reduced-motion:reduce) {
-    *, *::before, *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
+  .guess-card { border-color: color-mix(in srgb,var(--phys) 45%,var(--line)); }
+  .guess-pick[aria-pressed="true"] { border-color: var(--phys); background: color-mix(in srgb,var(--phys) 18%,var(--surface)); color: var(--ink); }
+  .guess-out { font-weight: 750; color: var(--ink-mid); }
+  .guess-out b { color: var(--ink); }
+  .pick-btns { display:flex; gap:8px; flex-wrap:wrap; }
+  @media (prefers-reduced-motion: reduce) {
     .story-ball { animation:none; }
   }
 
@@ -195,70 +202,167 @@
 
   /* 完成卡：图形化的完成反馈，按钮就在卡里 */
   .rr-done-card { margin-top:12px; }
-  .rr-done-card[hidden] { display:none !important; }
   .rr-done-card > div { min-width:0; }
   .rr-done-card .kid-done-row { margin-top:9px; }
 
-  /* 小游戏外壳（页面独有前缀，不覆盖共享类） */
-  .rr-games { margin:22px 0 0; padding:clamp(14px,3vw,22px); border:3px solid color-mix(in srgb,var(--phys) 30%,var(--line)); border-radius:var(--r-xl,28px); background:color-mix(in srgb,var(--phys) 6%,var(--surface)); }
-  .rr-games-title { display:flex; align-items:center; gap:9px; margin:0 0 4px; font-size:clamp(1.12rem,3.6vw,1.5rem); }
-  .rr-games-title > span { font-size:1.4em; }
-  .rr-games-sub { margin:0 0 12px; color:var(--ink-mid); }
-  .rr-tabs { grid-template-columns:repeat(4,minmax(0,1fr)); margin:0 0 12px; }
-  .rr-tabs .kid-tile { min-height:96px; }
-  .rr-panel { display:grid; gap:11px; padding:clamp(11px,2.4vw,17px); border:3px dashed var(--line); border-radius:var(--r-lg,22px); background:var(--surface); }
-  .rr-panel[hidden] { display:none !important; }
-  .rr-ask { display:flex; align-items:center; justify-content:center; gap:8px; margin:0; color:var(--ink); font-weight:800; font-size:clamp(1.02rem,3.4vw,1.24rem); text-align:center; }
-  .rr-ask > span[aria-hidden="true"] { font-size:1.4em; line-height:1; }
-  .rr-say { min-height:1.6em; margin:0; color:var(--ink); font-weight:800; text-align:center; }
-  .rr-actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
-  .rr-actions .btn { min-height:48px; }
-  .rr-stage { display:grid; place-items:center; padding:8px; border:2px solid var(--line-soft); border-radius:var(--r,18px); background:color-mix(in srgb,var(--math) 5%,var(--surface-2)); }
-  .rr-stage svg { display:block; width:100%; max-width:460px; height:auto; }
-  .rr-picks { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
-  .rr-picks .kid-figure { min-width:118px; max-width:190px; }
-  .rr-picks .kid-figure-art { min-height:72px; font-size:clamp(2.1rem,7vw,2.9rem); }
-  .rr-compare { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-  .rr-compare > * { min-width:0; padding:10px; border:2px solid var(--line-soft); border-radius:var(--r,18px); background:var(--surface-2); text-align:center; }
-  .rr-compare h3 { margin:0 0 6px; font-size:.98rem; }
-  .rr-compare svg { display:block; width:100%; height:auto; }
-  .rr-compare-num { margin:4px 0 0; font:800 clamp(1.2rem,5vw,1.7rem)/1 var(--mono); color:var(--ink); }
-  .rr-surface-grid { margin:0; }
-  .rr-surface-grid .kid-figure-art { min-height:86px; }
-  .rr-score { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:13px 0 0; }
-  .rr-stars { min-height:1.4em; font-size:1.4rem; line-height:1; letter-spacing:2px; }
-  .rr-note { margin:0; color:var(--ink-mid); font-size:.9rem; }
+  /* 这里原来有五条小游戏外壳的尺寸微调（.rr-tabs / .rr-actions / .rr-picks /
+     .rr-surface-grid 各自套一个共享类）。四个 rr- 前缀的容器 class 在 markup 和 JS 里
+     都一处不剩，后代选择器的锚点不存在，整条就永远匹配不到，所以连带删掉——
+     里面提到的 .kid-tile / .btn / .kid-figure / .kid-figure-art 都还活着，
+     只是不再被这四个已消失的容器约束。 */
+  /* 「这在教什么」四幅对比图：颜色跟着每格的 --tone 走 */
+  .rrx-bg { fill:color-mix(in srgb,var(--tone,var(--phys)) 9%,var(--surface)); }
+  .rrx-ramp { fill:color-mix(in srgb,var(--tone,var(--phys)) 24%,var(--surface)); stroke:color-mix(in srgb,var(--tone,var(--phys)) 62%,var(--line)); stroke-width:2.4; stroke-linejoin:round; }
+  /* 球一律描边：纯填充的球压在坡面或底色上只有 1.2–2.6:1，达不到图形要求的 3:1 */
+  .rrx-ball { fill:color-mix(in srgb,var(--tone,var(--phys)) 74%,var(--surface)); stroke:color-mix(in srgb,var(--tone,var(--phys)) 55%,var(--ink)); stroke-width:2; }
+  .rrx-ball-dim { fill:color-mix(in srgb,var(--tone,var(--phys)) 30%,var(--surface)); stroke:color-mix(in srgb,var(--tone,var(--phys)) 72%,var(--line)); stroke-width:2; }
+  .rrx-arrow { fill:color-mix(in srgb,var(--tone,var(--phys)) 72%,var(--surface)); }
+  .rrx-arrow-dim { fill:color-mix(in srgb,var(--tone,var(--phys)) 34%,var(--surface)); }
+  .rrx-ground, .rrx-rough, .rrx-track, .rrx-track-dim, .rrx-stop, .rrx-heat, .rrx-same, .rrx-axis {
+    fill:none; stroke:color-mix(in srgb,var(--tone,var(--phys)) 62%,var(--line)); stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round;
+  }
+  .rrx-rough { stroke-width:2.4; }
+  .rrx-track-dim { stroke:color-mix(in srgb,var(--tone,var(--phys)) 34%,var(--line)); }
+  .rrx-stop { stroke-width:3.4; }
+  .rrx-heat { stroke-width:2.2; opacity:.75; }
+  .rrx-axis { stroke-dasharray:5 5; stroke:color-mix(in srgb,var(--warn) 72%,var(--line)); }
+  .rrx-same { stroke-width:3; stroke:color-mix(in srgb,var(--tone,var(--phys)) 52%,var(--line)); }
 
   /* 小游戏 SVG 取色一律走 class，属性里不写 var() */
-  .rr-svg-sky     { fill:color-mix(in srgb,var(--math) 9%,#eaf6ff); }
   .rr-svg-grass   { fill:color-mix(in srgb,var(--sci) 30%,#dcf3cd); }
   .rr-svg-soil    { fill:color-mix(in srgb,var(--code) 26%,#e2bd8c); }
-  .rr-svg-soil-dk { fill:color-mix(in srgb,var(--code) 44%,#c79a63); }
-  .rr-svg-shine   { fill:none; stroke:#ffffff; stroke-width:3; stroke-linecap:round; opacity:.75; }
   .rr-svg-edge    { fill:none; stroke:color-mix(in srgb,var(--sci) 62%,transparent); stroke-width:3; stroke-linecap:round; }
   .rr-svg-ball    { fill:color-mix(in srgb,var(--math) 74%,#2f6fd0); }
-  .rr-svg-ball-hi { fill:#ffffff; opacity:.8; }
-  .rr-svg-ice     { fill:color-mix(in srgb,var(--video) 16%,#dff3ff); }
-  .rr-svg-wood    { fill:color-mix(in srgb,var(--code) 30%,#e6c093); }
-  .rr-svg-carpet  { fill:color-mix(in srgb,var(--kit) 20%,#f6cfe0); }
-  .rr-svg-tex     { fill:none; stroke:color-mix(in srgb,var(--ink) 26%,transparent); stroke-width:2; stroke-linecap:round; }
-  .rr-svg-pole    { fill:none; stroke:color-mix(in srgb,var(--ink) 55%,transparent); stroke-width:2.5; stroke-linecap:round; }
-  .rr-svg-flag-a  { fill:color-mix(in srgb,var(--warn) 74%,transparent); }
-  .rr-svg-flag-b  { fill:color-mix(in srgb,var(--sci) 70%,transparent); }
-  .rr-svg-bay     { fill:color-mix(in srgb,var(--warn) 12%,transparent); stroke:color-mix(in srgb,var(--warn) 76%,transparent); stroke-width:3; stroke-dasharray:8 6; }
-  .rr-svg-dash    { fill:none; stroke:color-mix(in srgb,var(--sci) 68%,transparent); stroke-width:2.5; stroke-dasharray:6 5; }
-  .rr-svg-tick    { stroke:color-mix(in srgb,var(--ink) 34%,transparent); stroke-width:2; stroke-linecap:round; }
-  .rr-svg-num     { fill:color-mix(in srgb,var(--ink) 72%,transparent); font:800 11px var(--mono); }
-  .rr-svg-glyph   { font-size:20px; }
-  .rr-svg-wall    { fill:color-mix(in srgb,var(--danger) 34%,#d9a6a0); }
   .rr-tile-slope  { overflow:visible; }
+
+  /* ======================================================================
+     三档对照图（前缀 rr-fig-）
+     为什么这么做：高度／质量／表面这三组原来各是三个 emoji（📗🪑🚪、🎈⚽🪨、
+     🧊🪵🧶）。同一组里换成三个不相干的物体，「档次」这层关系就丢了——书和椅子
+     和门之间没有共同的量尺，读者看不出 0.6 / 1.2 / 1.8 m 的比例。
+     改法是让一组之内共用同一套坐标：同一条地面基线、同一条坡面、同一个球心
+     位置，只让被比的那一项变。三张图叠起来看就是一把尺。
+     取色一律走 class，SVG 属性里不写 var()：同一套语义色在浅色主题和孩子模式
+     下由两份主题变量各自解析，不必逐页改；写进属性就没法被主题层覆盖。
+     ====================================================================== */
+  /* 地面基线：三组共用的那把「尺」，必须是全图最实的一条线，
+     所以用中性墨色而不是学科色，避免和坡面／球抢注意力。 */
+  .rr-fig-ground { fill:none; stroke:color-mix(in srgb,var(--ink) 62%,var(--surface)); stroke-width:3; stroke-linecap:round; }
+  /* 坡面走物理紫，和页头 .pill-phys、.story-eyebrow 同一支色 */
+  .rr-fig-ramp { fill:color-mix(in srgb,var(--phys) 15%,var(--surface)); }
+  .rr-fig-ramp-line { fill:none; stroke:color-mix(in srgb,var(--phys) 72%,var(--ink)); stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+  /* 对照用的第二条坡：虚线 + 减淡，读者一眼分出「现在这条」和「另一种可能」 */
+  .rr-fig-ramp-ghost { fill:none; stroke:color-mix(in srgb,var(--phys) 52%,var(--surface)); stroke-width:2.2; stroke-dasharray:4 3; stroke-linecap:round; }
+  /* 高度／等高参考线用中性虚线：它是量尺，不是某个变量 */
+  .rr-fig-guide { fill:none; stroke:color-mix(in srgb,var(--ink) 46%,var(--surface)); stroke-width:1.8; stroke-dasharray:3 3; stroke-linecap:round; }
+  /* 参照物（书／椅／门）用编程橙调出木头感，和紫色坡面明显分开 */
+  .rr-fig-prop { fill:color-mix(in srgb,var(--code) 18%,var(--surface)); stroke:color-mix(in srgb,var(--code) 72%,var(--ink)); stroke-width:2; stroke-linejoin:round; }
+  .rr-fig-prop-line { fill:none; stroke:color-mix(in srgb,var(--code) 72%,var(--ink)); stroke-width:2; stroke-linecap:round; }
+  /* 球一律描边：纯填充的球压在坡面或底色上只有 1.2–2.6:1，达不到图形要求的 3:1。
+     蓝色对应页面图例里的「🔵 蓝球 = 会滚的球」。 */
+  .rr-fig-ball { fill:color-mix(in srgb,var(--math) 56%,var(--surface)); stroke:color-mix(in srgb,var(--math) 56%,var(--ink)); stroke-width:2.2; }
+  .rr-fig-ball-dim { fill:color-mix(in srgb,var(--math) 20%,var(--surface)); stroke:color-mix(in srgb,var(--ink) 42%,var(--surface)); stroke-width:2; }
+  /* 质量三档：半径完全相同，只让填充密度 + 描边粗细变化。
+     不敢改半径是有原因的——把重球画大，孩子会读成「大球滚得远」，
+     而这一页最想纠正的恰好是「重＝远」这个误解。 */
+  .rr-fig-ball-light { fill:color-mix(in srgb,var(--math) 12%,var(--surface)); stroke:color-mix(in srgb,var(--math) 58%,var(--ink)); stroke-width:1.6; }
+  .rr-fig-ball-mid { fill:color-mix(in srgb,var(--math) 40%,var(--surface)); stroke:color-mix(in srgb,var(--math) 58%,var(--ink)); stroke-width:2.8; }
+  .rr-fig-ball-heavy { fill:color-mix(in srgb,var(--math) 66%,var(--surface)); stroke:color-mix(in srgb,var(--math) 58%,var(--ink)); stroke-width:4.2; }
+  /* 球内纹理：近墨色，压在最深的 66% 蓝上仍有 3:1 以上 */
+  .rr-fig-grain { fill:none; stroke:color-mix(in srgb,var(--ink) 72%,var(--math)); stroke-width:1.4; stroke-linecap:round; }
+  /* 档次条：三格小方块，填几格＝第几档。三张图里位置尺寸完全一样，
+     这是「同组可比」的第二条保险——就算纹理在小尺寸下糊掉，格子还数得清。 */
+  .rr-fig-pip { fill:var(--surface); stroke:color-mix(in srgb,var(--ink) 48%,var(--surface)); stroke-width:1.6; }
+  .rr-fig-pip-on { fill:color-mix(in srgb,var(--ink) 58%,var(--surface)); stroke:color-mix(in srgb,var(--ink) 58%,var(--surface)); stroke-width:1.6; }
+  /* 表面三档的截面。冰走青色（冷）、木走橙色（暖）、地毯走粉色（织物），
+     三种色相各不相同，缩到 46px 也不会互相误认。 */
+  .rr-fig-slab-ice { fill:color-mix(in srgb,var(--video) 14%,var(--surface)); stroke:color-mix(in srgb,var(--video) 68%,var(--ink)); stroke-width:2.2; stroke-linejoin:round; }
+  .rr-fig-slab-wood { fill:color-mix(in srgb,var(--code) 15%,var(--surface)); stroke:color-mix(in srgb,var(--code) 70%,var(--ink)); stroke-width:2.2; stroke-linejoin:round; }
+  .rr-fig-slab-rug { fill:color-mix(in srgb,var(--kit) 13%,var(--surface)); stroke:color-mix(in srgb,var(--kit) 66%,var(--ink)); stroke-width:2.2; stroke-linejoin:round; }
+  .rr-fig-gloss { fill:none; stroke:color-mix(in srgb,var(--video) 62%,var(--ink)); stroke-width:2; stroke-linecap:round; }
+  .rr-fig-wood { fill:none; stroke:color-mix(in srgb,var(--code) 58%,var(--ink)); stroke-width:1.5; stroke-linecap:round; }
+  .rr-fig-pile { fill:none; stroke:color-mix(in srgb,var(--kit) 62%,var(--ink)); stroke-width:2; stroke-linecap:round; }
+  /* 停止线 / 距离箭头沿用画面图例：绿＝真的停这 */
+  .rr-fig-stop { fill:none; stroke:color-mix(in srgb,var(--sci) 68%,var(--ink)); stroke-width:2.8; stroke-linecap:round; }
+  .rr-fig-run { fill:none; stroke:color-mix(in srgb,var(--sci) 68%,var(--ink)); stroke-width:2.4; stroke-linecap:round; }
+  .rr-fig-run-dim { fill:none; stroke:color-mix(in srgb,var(--ink) 44%,var(--surface)); stroke-width:2; stroke-dasharray:4 3; stroke-linecap:round; }
+  .rr-fig-arrow { fill:color-mix(in srgb,var(--sci) 68%,var(--ink)); }
+  .rr-fig-arrow-dim { fill:color-mix(in srgb,var(--ink) 44%,var(--surface)); }
+  /* 摩擦／阻力一律红：它是唯一「往回拉」的量，需要和前进方向的绿色对立 */
+  .rr-fig-drag { fill:color-mix(in srgb,var(--danger) 62%,var(--ink)); }
+  .rr-fig-drag-line { fill:none; stroke:color-mix(in srgb,var(--danger) 62%,var(--ink)); stroke-width:2.4; stroke-linecap:round; }
+  .rr-fig-heat { fill:none; stroke:color-mix(in srgb,var(--code) 66%,var(--ink)); stroke-width:2; stroke-linecap:round; }
+  /* 控制变量三格：锁住的格子上斜纹，改动的那格用 --warn 高亮。
+     --warn 是本页「只改变：」那条 callout 已经在用的语义色，两处对上。
+     这里刻意不画天平——本页 480 行左右的注释已经否掉过那个隐喻：
+     天平称的是轻重，讲不出「哪几项按住不动、哪一项换掉了」。 */
+  .rr-fig-cell-lock { fill:color-mix(in srgb,var(--ink) 7%,var(--surface)); stroke:color-mix(in srgb,var(--ink) 44%,var(--surface)); stroke-width:2; }
+  .rr-fig-cell-change { fill:color-mix(in srgb,var(--warn) 15%,var(--surface)); stroke:color-mix(in srgb,var(--warn) 74%,var(--ink)); stroke-width:2.8; }
+  .rr-fig-hatch { fill:none; stroke:color-mix(in srgb,var(--ink) 30%,var(--surface)); stroke-width:1.4; stroke-linecap:round; }
+  .rr-fig-ok { fill:none; stroke:color-mix(in srgb,var(--sci) 72%,var(--ink)); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+  .rr-fig-no { fill:none; stroke:color-mix(in srgb,var(--danger) 68%,var(--ink)); stroke-width:3; stroke-linecap:round; }
+  /* 能量条：紫＝势能、蓝＝动能、橙＝热，和家长区「详细能量读数」的三条色带一致 */
+  .rr-fig-pe { fill:color-mix(in srgb,var(--phys) 58%,var(--surface)); }
+  .rr-fig-ke { fill:color-mix(in srgb,var(--math) 58%,var(--surface)); }
+  .rr-fig-q { fill:color-mix(in srgb,var(--code) 58%,var(--surface)); }
+  .rr-fig-frame { fill:none; stroke:color-mix(in srgb,var(--ink) 46%,var(--surface)); stroke-width:1.6; }
+  /* 放大镜：讲「摩擦力从哪来」必须把表面放大，否则只能说空话 */
+  .rr-fig-lens { fill:none; stroke:color-mix(in srgb,var(--ink) 62%,var(--surface)); stroke-width:2.6; stroke-linecap:round; }
+  .rr-fig-lens-in { fill:color-mix(in srgb,var(--surface) 88%,var(--ink)); }
+  .rr-fig-block { fill:color-mix(in srgb,var(--math) 30%,var(--surface)); stroke:color-mix(in srgb,var(--math) 58%,var(--ink)); stroke-width:2.2; stroke-linejoin:round; }
+  .rr-fig-tooth { fill:none; stroke:color-mix(in srgb,var(--ink) 66%,var(--surface)); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .rr-fig-tick { fill:none; stroke:color-mix(in srgb,var(--ink) 50%,var(--surface)); stroke-width:1.6; stroke-linecap:round; }
+
+  /* 仓鼠吉祥物：圆身、短耳、腮鼓。原来是 🐹，各系统字体画出来差别很大，
+     而这只是本页唯一的角色，必须和文案里的「它」对得上。 */
+  .rr-ham-body { fill:color-mix(in srgb,var(--code) 26%,var(--surface)); stroke:color-mix(in srgb,var(--code) 72%,var(--ink)); stroke-width:2.4; stroke-linejoin:round; }
+  .rr-ham-belly { fill:color-mix(in srgb,var(--surface) 88%,var(--code)); }
+  .rr-ham-ear { fill:color-mix(in srgb,var(--kit) 30%,var(--surface)); stroke:color-mix(in srgb,var(--code) 72%,var(--ink)); stroke-width:2; }
+  .rr-ham-cheek { fill:color-mix(in srgb,var(--kit) 26%,var(--surface)); stroke:color-mix(in srgb,var(--code) 58%,var(--ink)); stroke-width:1.8; }
+  .rr-ham-ink { fill:color-mix(in srgb,var(--ink) 88%,var(--code)); }
+  .rr-ham-line { fill:none; stroke:color-mix(in srgb,var(--ink) 72%,var(--code)); stroke-width:1.8; stroke-linecap:round; }
+  /* 吉祥物窝是个有固定宽高比的圆角块，用百分比让插画跟着它缩放；
+     共享层的 .kid-mascot 只给了 font-size，SVG 不吃字号，必须自己定尺寸。 */
+  .rr-mascot-fig { display:block; width:82%; height:auto; }
+  /* 图形步骤条里的插图。共享层 .kid-steps-visual .kid-tile-art 是靠 font-size
+     控制 emoji 大小的（2.3rem／4-6 岁 2.8rem／手机 1.7rem），所以这里用 em：
+     高度锁 1em，和原来 emoji 的行高占位一致，步骤条不会变高；
+     宽度放到 1.95em，好让「三个格子并排」这种横向构图有地方画。 */
+  .rr-step-fig { display:block; width:1.95em; height:1em; }
+
+  /* ======================================================================
+     看图涨知识 · 小图鉴（前缀 rr-atlas-）
+     结构对齐 nature/ocean.html 的 .ocx-card 与 nature/earth.html 的 .geo-card：
+     关键词 + 一句话 + 可折叠明细 + 一条在家能做的观察。插图全部内联 SVG，
+     没有 emoji——图鉴要讲的是关系（能量换形式、力的方向、比例），emoji 讲不了。
+     ====================================================================== */
+  .rr-atlas { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,246px),1fr)); gap:12px; margin-top:12px; }
+  .rr-atlas > * { min-width:0; }
+  .rr-atlas-card { min-width:0; overflow-wrap:anywhere; padding:13px 14px; border:1px solid var(--line-soft); border-radius:var(--r); background:var(--surface); }
+  /* 插图底色比卡片底稍深一档，让线条不至于「浮」在纯白上 */
+  .rr-atlas-art { display:block; width:100%; height:auto; margin:0 0 9px; border-radius:var(--r-sm); background:color-mix(in srgb,var(--phys) 7%,var(--surface-2)); }
+  .rr-atlas-name { display:block; margin:0; color:var(--ink); font-size:1rem; font-weight:850; line-height:1.35; }
+  .rr-atlas-sum { margin:6px 0 0; color:var(--ink-mid); font-size:.87rem; line-height:1.55; }
+  .rr-atlas-more { margin-top:8px; border-top:1px dashed var(--line-soft); }
+  .rr-atlas-more > summary { display:flex; align-items:center; gap:6px; min-height:44px; padding:6px 0 4px; list-style:none; color:var(--sci); font-size:.85rem; font-weight:800; cursor:pointer; }
+  .rr-atlas-more > summary::-webkit-details-marker { display:none; }
+  .rr-atlas-more > summary::after { content:"＋"; margin-left:auto; color:var(--ink-dim); font-size:1.05rem; }
+  .rr-atlas-more[open] > summary { color:var(--ink); }
+  .rr-atlas-more[open] > summary::after { content:"－"; }
+  .rr-atlas-extra { padding:2px 0 6px; }
+  .rr-atlas-extra p { margin:0 0 8px; color:var(--ink-mid); font-size:.85rem; line-height:1.6; }
+  .rr-atlas-extra b { color:var(--ink); }
+  .rr-atlas-tip { margin:0; padding:8px 10px; border-radius:var(--r-sm); background:color-mix(in srgb,var(--sci) 10%,var(--surface)); color:var(--ink-mid); font-size:.82rem; line-height:1.55; }
+  /* 「在家试试」用文字标签而不是 🔍：这一块整体不用 emoji，
+     一个放大镜图标重复六次也只是噪声。 */
+  .rr-atlas-tip-tag { display:inline-block; margin-right:5px; padding:1px 7px; border-radius:999px; background:color-mix(in srgb,var(--sci) 74%,var(--ink)); color:var(--on-accent); font-size:.74rem; font-weight:850; }
+  html[data-mode="kid"] .rr-atlas-more > summary { min-height:48px; font-size:.92rem; }
+  html[data-mode="kid"] .rr-atlas-card { border-width:2px; border-radius:var(--r-lg); }
 
   @media (max-width:560px) {
     .rr-var-tiles { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
     .rr-var-tiles .kid-tile { min-height:88px; padding:8px 4px; font-size:.86rem; }
     .rr-var-tiles .kid-tile-sub { display:none; }
-    .rr-tabs { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .rr-compare { grid-template-columns:minmax(0,1fr); }
   }
 </style>
 </head>
@@ -275,6 +379,7 @@
     <a class="nav-link" href="../nature/index.html">探索</a>
     <a class="nav-link" href="../pages/progress.html">我的足迹</a>
     <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
   </div>
 </div></nav>
 
@@ -283,8 +388,8 @@
   <header class="lab-head">
     <div class="row">
       <span class="pill pill-phys">物理 · 能量与摩擦</span>
-      <span class="pill">7–12 岁</span>
-      <span class="pill">约 15 分钟</span>
+      <span class="pill">7–12&nbsp;岁</span>
+      <span class="pill">约 15&nbsp;分钟</span>
     </div>
   </header>
   <!-- 插画舞台：不识字也能看懂这一页在玩什么 -->
@@ -294,12 +399,48 @@
        data-playful-scene-desc="一条斜坡从高处滑下来接到平地，太阳和云朵挂在上面">
     <div class="rr-scene-copy">
       <div class="kid-speech-row">
-        <span class="kid-mascot" aria-hidden="true">🐹</span>
-        <p class="kid-speech">坡越高，球冲出去就<b>越远</b>。</p>
+        <!-- 本页角色画成仓鼠：圆身、短耳、腮鼓。原来是 🐹，各系统字体差别很大，
+             有的画成侧脸、有的只有一颗头，和旁白里那个「它」对不上。 -->
+        <span class="kid-mascot" aria-hidden="true">
+          <svg class="rr-mascot-fig" viewBox="0 0 64 56" aria-hidden="true" focusable="false">
+            <circle class="rr-ham-ear" cx="17" cy="14" r="7"/>
+            <circle class="rr-ham-ear" cx="47" cy="14" r="7"/>
+            <path class="rr-ham-body" d="M32 9 C46 9 57 20 57 32 C57 45 46 53 32 53 C18 53 7 45 7 32 C7 20 18 9 32 9 Z"/>
+            <ellipse class="rr-ham-belly" cx="32" cy="43" rx="14" ry="9"/>
+            <!-- 腮鼓要略微鼓出身体轮廓，才读得出「塞满了东西的脸」 -->
+            <ellipse class="rr-ham-cheek" cx="15" cy="37" rx="9" ry="7.5"/>
+            <ellipse class="rr-ham-cheek" cx="49" cy="37" rx="9" ry="7.5"/>
+            <circle class="rr-ham-ink" cx="24" cy="28" r="3.4"/>
+            <circle class="rr-ham-ink" cx="40" cy="28" r="3.4"/>
+            <circle class="rr-ham-belly" cx="25.2" cy="26.8" r="1.2"/>
+            <circle class="rr-ham-belly" cx="41.2" cy="26.8" r="1.2"/>
+            <path class="rr-ham-ink" d="M32 33 l3.4 2.6 h-6.8 z"/>
+            <path class="rr-ham-line" d="M32 36 q-4.5 4 -7.5 .8 M32 36 q4.5 4 7.5 .8"/>
+            <ellipse class="rr-ham-cheek" cx="24" cy="50" rx="4.5" ry="3"/>
+            <ellipse class="rr-ham-cheek" cx="40" cy="50" rx="4.5" ry="3"/>
+          </svg>
+        </span>
+        <p class="kid-speech">坡放得越高，球到坡底换成的速度本钱越多，平地上冲出去常常就越<b>远</b>。</p>
       </div>
       <ol class="kid-steps-visual" aria-label="三步玩法">
-        <li><span class="kid-tile-art" aria-hidden="true">⛰️</span>调坡度</li>
-        <li><span class="kid-tile-art" aria-hidden="true">🖐️</span>放手</li>
+        <!-- ⛰️ 是一座山，可这一步要调的是「角度」。改成一条绕坡底转动的斜坡：
+             实线是当下的角度，虚线是另一个角度，坡底那道小弧就是角度本身。
+             两条坡共用同一个坡底，所以变的只有倾角。 -->
+        <li><span class="kid-tile-art" aria-hidden="true">
+          <svg class="rr-step-fig" viewBox="0 0 78 40" aria-hidden="true" focusable="false">
+            <path class="rr-fig-ramp" d="M26 16 L60 33 L26 33 Z"/>
+            <path class="rr-fig-ground" d="M5 33 H73"/>
+            <path class="rr-fig-ramp-ghost" d="M60 33 L34 6"/>
+            <path class="rr-fig-guide" d="M26 16 Q28.8 10 34 6"/>
+            <path class="rr-fig-ramp-line" d="M26 16 L60 33"/>
+            <path class="rr-fig-tick" d="M44 33 Q44 29.2 45.7 25.9"/>
+            <circle class="rr-fig-ball" cx="29.6" cy="13.3" r="4"/>
+          </svg>
+        </span>调坡度</li>
+        <!-- 原来写「放手」，可全页没有任何可见按钮含这两个字：主按钮写的是「插旗并放球」。
+           家长念「放手」，孩子在屏幕上找不到。改成与按钮逐字一致。
+           （对照 games/gravity-drop.html：那页引导说「松手」，按钮原文就是「松手」。） -->
+      <li><span class="kid-tile-art" aria-hidden="true">🖐️</span>插旗并放球</li>
         <li><span class="kid-tile-art" aria-hidden="true">📍</span>看停在哪</li>
       </ol>
     </div>
@@ -312,9 +453,10 @@
       <div>
         <p class="story-eyebrow">斜坡 A/B 试车</p>
         <h1 id="rampStoryTitle">哪一条斜坡滚得更远？</h1>
-        <p>先做 A，再只改一项做 B。</p>
+      <p class="live-text" data-edu-point role="note"><b>这一页在学：</b>斜面用更长的路换省力；势能变动能，摩擦变热——不是魔法推力。</p>
+        <p>因为斜坡越高球开始时的重力势能通常越多，所以一次只改一个条件，才能看出是谁让球滚得更远。</p>
       </div>
-      <div class="story-track" aria-hidden="true"><span>⛰️</span><span class="story-ball">🔵</span><span class="story-flag">🚩</span></div>
+      <div class="mission-face" aria-hidden="true"><svg viewBox="0 0 120 90" width="70" height="52" focusable="false" aria-hidden="true"><rect fill="#f6efe3" width="120" height="90"/><polygon points="6,80 48,12 58,12 58,80" fill="#c4a06a" stroke="#3a2a18" stroke-width="1.5"/><line x1="58" y1="80" x2="114" y2="80" stroke="#3a2a18" stroke-width="3"/><circle cx="100" cy="72" r="8" fill="#d07050" stroke="#5a3a20" stroke-width="1.5"/><ellipse cx="97" cy="69" rx="2.4" ry="1.8" fill="#f0c8a0"/><path d="M40 28 Q58 70 90 72" fill="none" stroke="#c2410c" stroke-width="2" stroke-dasharray="4 3"/><polygon points="112,72 102,66 102,78" fill="#3a2a18"/><circle cx="36" cy="30" r="5" fill="#d07050" opacity=".45"/></svg></div>
     </div>
 
     <ol class="kid-story-steps" aria-label="三步试车">
@@ -337,7 +479,7 @@
       <p class="hint stage-hint" data-audience="parent">点跑道插旗；空格键可放球或暂停。</p>
     </div>
 
-    <div class="kid-action-strip" aria-label="试车操作">
+    <div class="kid-action-strip" role="group" aria-label="试车操作">
       <button class="btn btn-primary" id="check" type="button"><span aria-hidden="true">🚩</span> <span id="checkLabel">插旗并放球</span></button>
       <button class="btn btn-ghost" id="reset" type="button"><span aria-hidden="true">🔄</span> 重来</button>
       <button id="go" type="button" hidden>放球出发</button>
@@ -347,15 +489,49 @@
     <div class="rr-vars">
       <div class="rr-var-block">
         <p class="rr-var-label" id="rrHeightLabel"><span aria-hidden="true">🪜</span>坡有多高 · <b id="rrHeightNow">0.60 m</b></p>
+        <!-- 三档高度：原来是 📗🪑🚪，三个不相干的物体，读者看不出 0.6 / 1.2 / 1.8 m
+             这个 1:2:3 的比例。现在三张图共用同一条地面线（y=40）和同一个坡底
+             （x=44），坡面倾角也一样，所以变的只有起点高度：坡顶依次落在
+             y=32 / 24 / 16，正好是 8 / 16 / 24 三档，比例和滑杆上的数值一致。
+             右边那件参照物（书 / 椅 / 门）也站在同一条地面线上、高度与坡顶齐平，
+             虚线把两者连起来——「一本书高」这句话于是能被直接量出来。 -->
         <div class="kid-tiles rr-var-tiles" role="group" aria-labelledby="rrHeightLabel">
           <button class="kid-tile" type="button" data-rr-h="0.6" aria-pressed="false" aria-label="矮坡，像一本书那么高">
-            <span class="kid-tile-art" aria-hidden="true">📗</span><span class="kid-tile-label">矮</span><span class="kid-tile-sub">一本书</span>
+            <svg viewBox="0 0 64 48" aria-hidden="true" focusable="false">
+              <path class="rr-fig-ramp" d="M36 32 L44 40 L36 40 Z"/>
+              <path class="rr-fig-ramp-line" d="M36 32 L44 40"/>
+              <path class="rr-fig-ground" d="M3 40 H61"/>
+              <path class="rr-fig-guide" d="M36 32 H48"/>
+              <rect class="rr-fig-prop" x="48" y="36" width="12" height="4" rx="1"/>
+              <rect class="rr-fig-prop" x="49.5" y="32" width="9" height="4" rx="1"/>
+              <circle class="rr-fig-ball" cx="40.2" cy="30.6" r="4"/>
+            </svg>
+            <span class="kid-tile-label">矮</span><span class="kid-tile-sub">一本书</span>
           </button>
           <button class="kid-tile" type="button" data-rr-h="1.2" aria-pressed="false" aria-label="中等高的坡，像一把椅子那么高">
-            <span class="kid-tile-art" aria-hidden="true">🪑</span><span class="kid-tile-label">中</span><span class="kid-tile-sub">一把椅子</span>
+            <svg viewBox="0 0 64 48" aria-hidden="true" focusable="false">
+              <path class="rr-fig-ramp" d="M28 24 L44 40 L28 40 Z"/>
+              <path class="rr-fig-ramp-line" d="M28 24 L44 40"/>
+              <path class="rr-fig-ground" d="M3 40 H61"/>
+              <path class="rr-fig-guide" d="M28 24 H48"/>
+              <rect class="rr-fig-prop" x="48" y="24" width="3.5" height="11.5" rx="1"/>
+              <rect class="rr-fig-prop" x="48" y="31" width="12" height="3.2" rx="1"/>
+              <path class="rr-fig-prop-line" d="M50 34.2 V40 M58 34.2 V40"/>
+              <circle class="rr-fig-ball" cx="32.2" cy="22.6" r="4"/>
+            </svg>
+            <span class="kid-tile-label">中</span><span class="kid-tile-sub">一把椅子</span>
           </button>
           <button class="kid-tile" type="button" data-rr-h="1.8" aria-pressed="false" aria-label="高坡，像一扇门那么高">
-            <span class="kid-tile-art" aria-hidden="true">🚪</span><span class="kid-tile-label">高</span><span class="kid-tile-sub">一扇门</span>
+            <svg viewBox="0 0 64 48" aria-hidden="true" focusable="false">
+              <path class="rr-fig-ramp" d="M20 16 L44 40 L20 40 Z"/>
+              <path class="rr-fig-ramp-line" d="M20 16 L44 40"/>
+              <path class="rr-fig-ground" d="M3 40 H61"/>
+              <path class="rr-fig-guide" d="M20 16 H48"/>
+              <rect class="rr-fig-prop" x="48" y="16" width="12" height="24" rx="1.5"/>
+              <circle class="rr-fig-prop" cx="57.2" cy="29" r="1.5"/>
+              <circle class="rr-fig-ball" cx="24.2" cy="14.6" r="4"/>
+            </svg>
+            <span class="kid-tile-label">高</span><span class="kid-tile-sub">一扇门</span>
           </button>
         </div>
       </div>
@@ -394,16 +570,51 @@
       </div>
 
       <div class="rr-var-block">
-        <p class="rr-var-label" id="rrMassLabel"><span aria-hidden="true">⚖️</span>球有多重 · <b id="rrMassNow">0.80 kg</b></p>
+        <p class="rr-var-label" id="rrMassLabel"><span aria-hidden="true">⚖️</span>球有多重 · <b id="rrMassNow">0.80&nbsp;kg</b></p>
+        <!-- 三档质量：原来是 🎈⚽🪨。气球、足球、石头的体积差了几十倍，孩子会读成
+             「大的重」，而这一页最想纠正的恰好是「重＝滚得远」这类由体积／重量
+             混在一起造成的误解。现在三颗球半径完全相同（r=7）、坡与落点完全相同，
+             轻重只由内部纹理密度（1／3／5 道）和描边粗细（1.6／2.8／4.2）表达；
+             右下角三格档次条再补一层可数的刻度，小尺寸下纹理糊掉也还能数格子。 -->
         <div class="kid-tiles rr-var-tiles" role="group" aria-labelledby="rrMassLabel">
           <button class="kid-tile" type="button" data-rr-m="0.2" aria-pressed="false" aria-label="很轻的球，0.2 公斤">
-            <span class="kid-tile-art" aria-hidden="true">🎈</span><span class="kid-tile-label">轻</span><span class="kid-tile-sub">0.2 kg</span>
+            <svg viewBox="0 0 64 48" aria-hidden="true" focusable="false">
+              <path class="rr-fig-ramp" d="M18 18 L40 40 L18 40 Z"/>
+              <path class="rr-fig-ramp-line" d="M18 18 L40 40"/>
+              <path class="rr-fig-ground" d="M3 40 H61"/>
+              <circle class="rr-fig-ball-light" cx="24.4" cy="14.5" r="7"/>
+              <circle class="rr-fig-grain" cx="24.4" cy="14.5" r="3.4"/>
+              <rect class="rr-fig-pip-on" x="44" y="30" width="5" height="6" rx="1"/>
+              <rect class="rr-fig-pip" x="51" y="30" width="5" height="6" rx="1"/>
+              <rect class="rr-fig-pip" x="58" y="30" width="5" height="6" rx="1"/>
+            </svg>
+            <span class="kid-tile-label">轻</span><span class="kid-tile-sub">0.2&nbsp;kg</span>
           </button>
           <button class="kid-tile" type="button" data-rr-m="0.8" aria-pressed="false" aria-label="中等重的球，0.8 公斤">
-            <span class="kid-tile-art" aria-hidden="true">⚽</span><span class="kid-tile-label">中</span><span class="kid-tile-sub">0.8 kg</span>
+            <svg viewBox="0 0 64 48" aria-hidden="true" focusable="false">
+              <path class="rr-fig-ramp" d="M18 18 L40 40 L18 40 Z"/>
+              <path class="rr-fig-ramp-line" d="M18 18 L40 40"/>
+              <path class="rr-fig-ground" d="M3 40 H61"/>
+              <circle class="rr-fig-ball-mid" cx="24.4" cy="14.5" r="7"/>
+              <path class="rr-fig-grain" d="M19.8 11 H29 M18.9 14.5 H29.9 M19.8 18 H29"/>
+              <rect class="rr-fig-pip-on" x="44" y="30" width="5" height="6" rx="1"/>
+              <rect class="rr-fig-pip-on" x="51" y="30" width="5" height="6" rx="1"/>
+              <rect class="rr-fig-pip" x="58" y="30" width="5" height="6" rx="1"/>
+            </svg>
+            <span class="kid-tile-label">中</span><span class="kid-tile-sub">0.8&nbsp;kg</span>
           </button>
           <button class="kid-tile" type="button" data-rr-m="2.5" aria-pressed="false" aria-label="很重的球，2.5 公斤">
-            <span class="kid-tile-art" aria-hidden="true">🪨</span><span class="kid-tile-label">重</span><span class="kid-tile-sub">2.5 kg</span>
+            <svg viewBox="0 0 64 48" aria-hidden="true" focusable="false">
+              <path class="rr-fig-ramp" d="M18 18 L40 40 L18 40 Z"/>
+              <path class="rr-fig-ramp-line" d="M18 18 L40 40"/>
+              <path class="rr-fig-ground" d="M3 40 H61"/>
+              <circle class="rr-fig-ball-heavy" cx="24.4" cy="14.5" r="7"/>
+              <path class="rr-fig-grain" d="M21.1 9 H27.7 M19.3 11.75 H29.5 M18.9 14.5 H29.9 M19.3 17.25 H29.5 M21.1 20 H27.7"/>
+              <rect class="rr-fig-pip-on" x="44" y="30" width="5" height="6" rx="1"/>
+              <rect class="rr-fig-pip-on" x="51" y="30" width="5" height="6" rx="1"/>
+              <rect class="rr-fig-pip-on" x="58" y="30" width="5" height="6" rx="1"/>
+            </svg>
+            <span class="kid-tile-label">重</span><span class="kid-tile-sub">2.5&nbsp;kg</span>
           </button>
         </div>
       </div>
@@ -483,12 +694,18 @@
     <p class="change-callout"><span aria-hidden="true">🔀</span><span>只改变：</span><b id="changedVariable">先完成 A 轮</b></p>
     <p class="child-status" data-audience="parent"><span>停止 <b id="actV">—</b></span> · <span>差 <b id="errV" class="mono">—</b></span></p>
     <p id="fairResult" role="status" aria-live="polite">先插旗，再放球，完成 A 轮。</p>
+    <!-- 任务陈述。本页此前是 11 个实验里唯一没有的一个：.task-title 被「给家长的陪伴追问」
+         占着，状态行只说「还差两轮」，读者得先猜出这一页要做什么。打印版尤其明显——
+         纸上只剩一句「还差两轮：A 轮 + 只改一项的 B 轮」，没有上下文。
+         文字取自 data/explorations.js 里给本页定的 task，保持目录与页面一致。 -->
+    <h2 class="task-title" id="rampMissionTitle">正式任务 · 一次只改一样</h2>
+    <p>先插旗预测球会停在哪里，跑完 A 轮；再<b>只改一样</b>（高度、角度、跑道或球重）跑 B 轮，最后比较预测和结果。</p>
     <p class="task-status status" id="rampTaskStatus" role="status" aria-live="polite">还差两轮：A 轮 + 只改一项的 B 轮。</p>
     <div class="kid-result-card rr-done-card" id="rrDoneCard" hidden>
       <span aria-hidden="true">🏅</span>
       <div>
         <b id="rrDoneTitle">公平比较通过</b>
-        <p id="rrDoneText">只改了一项，两轮停的地方不一样。</p>
+        <p id="rrDoneText">只改了一项，两轮停的地方就不一样，才能看出到底是哪一项在起作用。</p>
         <div class="kid-done-row"><button class="btn btn-primary kid-done-btn" id="rampComplete" type="button" disabled><span aria-hidden="true">🏅</span> 记录完成</button></div>
       </div>
     </div>
@@ -496,28 +713,160 @@
     <span data-playful-sticker></span>
   </section>
 
+
+  <section class="card guess-card" aria-labelledby="guessTitleRr">
+    <h2 id="guessTitleRr">先猜一猜，再滚</h2>
+    <p><b>第 1 题：</b>同一小球，坡更陡时通常？</p>
+    <div class="pick-btns" role="group" aria-label="猜陡坡">
+      <button class="btn guess-pick" type="button" data-guess1="slow" aria-pressed="false">一定更慢</button>
+      <button class="btn guess-pick" type="button" data-guess1="fast" aria-pressed="false">常常加速更快</button>
+      <button class="btn guess-pick" type="button" data-guess1="color" aria-pressed="false">只看球的颜色</button>
+    </div>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite">押一个。换陡坡与缓坡各滚一次对照。</p>
+
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>同一坡度，换成更粗糙的表面，小球通常？</p>
+      <div class="pick-btns" role="group" aria-label="猜摩擦">
+        <button class="btn guess-pick" type="button" data-guess2="faster" aria-pressed="false">一定更快</button>
+        <button class="btn guess-pick" type="button" data-guess2="slower" aria-pressed="false">常常更慢：摩擦吃掉更多</button>
+        <button class="btn guess-pick" type="button" data-guess2="color" aria-pressed="false">只看球的颜色</button>
+      </div>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite">押好后换粗糙面滚一次对照。</p>
+    </div>
+
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>坡更陡时，沿坡往下推的力会更大、更小，还是跟坡度无关？</p>
+      <div class="pick-btns" role="group" aria-label="猜正弦分量">
+        <button class="btn guess-pick" type="button" data-guess3="up" aria-pressed="false">分量更大，更容易加速</button>
+        <button class="btn guess-pick" type="button" data-guess3="down" aria-pressed="false">分量更小</button>
+        <button class="btn guess-pick" type="button" data-guess3="zero" aria-pressed="false">分量与坡度无关</button>
+      </div>
+      <p class="guess-out" id="guessOut3" role="status" aria-live="polite">想一想：更陡时沿坡方向的重力分量。</p>
+    </div>
+  </section>
+
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--phys) 8%,var(--surface))" data-audience="parent">
+    <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">斜坡公式卡 · 沿坡分量≈g×sinθ；摩擦还会再减</p>
+    <p style="margin:0;color:var(--ink-mid);line-height:1.55">更陡→sinθ 更大→沿坡加速分量更大。粗糙面会吃掉一部分，终点快慢还要对照实验。本页不是方程式课。</p>
+  </div>
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--phys)"
+         data-kid-predict
+         data-kid-predict-explain="斜坡更陡，沿坡方向的重力分量更大，小球更容易加速。摩擦、球的形状、坡面材质也会改结果。本页用来对照「哪条更远/更快」，不是方程式课。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🎢</span><b>同一小球，更陡的斜坡通常会怎样？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：陡坡怎样改变滚动">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="slower">更陡一定更慢，因为路更吓人</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="faster" data-kid-predict-correct>更陡常常加速更快，滚得更猛（还要看摩擦与终点）</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="color">只取决于球的颜色</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">坡越高滚越远；跑道越糙停得越早</h2>
+    <p>一次只改一个条件：坡度、表面或小球，才能看清是谁让它加速或刹住。</p>
+    <div class="kid-figure-grid" role="group" aria-label="四个主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><polygon points="6,80 48,12 58,12 58,80" fill="#c4a06a" stroke="#3a2a18" stroke-width="1.5"/><line x1="58" y1="80" x2="114" y2="80" stroke="#3a2a18" stroke-width="3"/><circle cx="100" cy="72" r="8" fill="#d07050" stroke="#5a3a20" stroke-width="1.5"/><ellipse cx="97" cy="69" rx="2.4" ry="1.8" fill="#f0c8a0"/><path d="M40 28 Q58 70 90 72" fill="none" stroke="#c2410c" stroke-width="2" stroke-dasharray="4 3"/><polygon points="112,72 102,66 102,78" fill="#3a2a18"/><circle cx="36" cy="30" r="5" fill="#d07050" opacity=".45"/></svg></span><span class="kid-figure-cap">更陡</span><span class="kid-figure-sub">分量更大</span><p class="kid-figure-fact">坡越陡，沿坡往下推的那份力越大，球就更容易自己加速滚下去，不是因为圆。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><polygon points="8,78 92,52 100,52 100,78" fill="#d8c4a0" stroke="#3a2a18" stroke-width="1.5"/><line x1="100" y1="78" x2="114" y2="78" stroke="#8a857c" stroke-width="3"/><circle cx="70" cy="56" r="7" fill="#d07050" stroke="#5a3a20"/><ellipse cx="68" cy="53" rx="2" ry="1.6" fill="#f0c8a0"/><path d="M78 60 H96" stroke="#c2410c" stroke-width="2" stroke-dasharray="4 3"/><polygon points="98,60 90,56 90,64" fill="#8a857c"/></svg></span><span class="kid-figure-cap">更缓</span><span class="kid-figure-sub">加速慢</span><p class="kid-figure-fact">坡很缓时，沿坡往下推的力变小，球加速就慢，常常走不远，甚至停在坡上。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#e8f4fa" width="120" height="90"/><path d="M10 72 L70 28 L70 72 Z" fill="#c5e4f4"/><path d="M70 70 H112" stroke="#8ec5e8" stroke-width="4"/><circle cx="56" cy="36" r="7" fill="#d07050"/></svg></span><span class="kid-figure-cap">滑</span><span class="kid-figure-sub">摩擦小</span><p class="kid-figure-fact">同样陡的坡，表面越滑，摩擦吃掉的速度越少，球也可能冲得更快更远。</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><svg viewBox="0 0 120 90" focusable="false"><rect fill="#f6efe3" width="120" height="90"/><path d="M10 72 L70 28 L70 72 Z" fill="#c4a06a"/><path d="M70 70 l6 -5 6 5 6 -5 6 5 6 -5 6 5 6 -5" fill="none" stroke="#6b4328" stroke-width="3"/><circle cx="80" cy="58" r="7" fill="#d07050"/><path d="M92 42 V72" stroke="#c2410c" stroke-width="3"/></svg></span><span class="kid-figure-cap">糙</span><span class="kid-figure-sub">摩擦大</span><p class="kid-figure-fact">粗糙的跑道会用摩擦偷走一些速度，所以同样的坡，球也常常更早停住。</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>选两条坡。</b>只比陡缓。</li>
+      <li data-step="2"><b>同一球。</b>别换球作弊。</li>
+      <li data-step="3"><b>看谁远。</b>或谁先到。</li>
+      <li data-step="4"><b>再改表面。</b>结论还成立吗？</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>坡越陡，球常常自己加速得更猛，更快冲到坡底；坡平了就只会慢慢溜。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>重力沿坡那一份会随坡变陡而变大，所以加速更明显；摩擦还会再抵消一部分。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>可以谈沿坡分量和能量怎么换，但本页只做定性对照，数字只是比较尺子。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>一次只改一项，看陡坡怎样让球更容易自己加速滚下去。</p>
+    <ul class="ask-list">
+      <li>只改坡度时谁赢？</li>
+      <li>换地毯会怎样？</li>
+      <li>球变重一定更快吗？</li>
+    </ul>
+  </section>
+
   <section class="card science-note" aria-labelledby="rampTeachTitle">
     <p class="section-kicker">这在教什么</p>
-    <h2 id="rampTeachTitle">这在教什么</h2>
+    <h2 id="rampTeachTitle">放得越高滚得越远；跑道越糙停得越早</h2>
     <p class="teach-lead" data-audience="parent"><b>球停在哪里，是被“高度”和“摩擦”一起决定的。</b>放得越高，球到坡底时越快、滚得越远；跑道越粗糙，球停得越早。质量在这个模型里被约掉，所以换成更重的球，停的位置几乎不动。</p>
     <ul class="kid-figure-grid" aria-label="这一页要发现的四件事">
+      <!-- 这四格原先是 🪜🧶⚖️🔀 四个 emoji。站里其他十个实验页的这个槽位都画了
+           SVG，只有这一页是 emoji，而且表达不了要说的关系：一把梯子讲不出「高度差
+           带来更远的落点」，一个天平讲不出「质量被约掉」。改成四幅对比图。 -->
       <li class="kid-figure" style="--tone:var(--phys)">
-        <span class="kid-figure-art" aria-hidden="true">🪜</span>
+        <span class="kid-figure-art" aria-hidden="true">
+          <svg viewBox="0 0 120 90" aria-hidden="true" focusable="false">
+            <rect class="rrx-bg" x="0" y="0" width="120" height="90"/>
+            <path class="rrx-ramp" d="M10 72 L50 20 L50 72 Z"/>
+            <path class="rrx-ground" d="M6 74 H114"/>
+            <!-- 两颗球必须落在坡面「外侧」：坡面是 (10,72)→(50,20) 这条斜边，
+                 球心压进三角形里就会和坡的填色叠在一起，几乎看不见 -->
+            <circle class="rrx-ball" cx="42" cy="23" r="7"/>
+            <circle class="rrx-ball-dim" cx="22" cy="50" r="6"/>
+            <path class="rrx-track" d="M56 62 H100"/>
+            <path class="rrx-arrow" d="M100 62 l-8 -5 v10 z"/>
+            <path class="rrx-track-dim" d="M56 84 H78"/>
+            <path class="rrx-arrow-dim" d="M78 84 l-8 -5 v10 z"/>
+          </svg>
+        </span>
         <span class="kid-figure-cap">放得高</span>
         <span class="kid-figure-sub">滚得更远</span>
       </li>
       <li class="kid-figure" style="--tone:var(--code)">
-        <span class="kid-figure-art" aria-hidden="true">🧶</span>
+        <span class="kid-figure-art" aria-hidden="true">
+          <svg viewBox="0 0 120 90" aria-hidden="true" focusable="false">
+            <rect class="rrx-bg" x="0" y="0" width="120" height="90"/>
+            <path class="rrx-ramp" d="M10 68 L44 24 L44 68 Z"/>
+            <path class="rrx-rough" d="M6 72 l7 -6 l7 6 l7 -6 l7 6 l7 -6 l7 6 l7 -6 l7 6 l7 -6 l7 6 l7 -6 l7 6 l7 -6 l7 6"/>
+            <path class="rrx-heat" d="M50 58 h-9 M56 66 h-11"/>
+            <circle class="rrx-ball" cx="62" cy="58" r="8"/>
+            <path class="rrx-stop" d="M76 42 V72"/>
+          </svg>
+        </span>
         <span class="kid-figure-cap">跑道糙</span>
         <span class="kid-figure-sub">早早停下</span>
       </li>
       <li class="kid-figure" style="--tone:var(--math)">
-        <span class="kid-figure-art" aria-hidden="true">⚖️</span>
+        <span class="kid-figure-art" aria-hidden="true">
+          <svg viewBox="0 0 120 90" aria-hidden="true" focusable="false">
+            <rect class="rrx-bg" x="0" y="0" width="120" height="90"/>
+            <path class="rrx-ground" d="M6 42 H104 M6 80 H104"/>
+            <!-- 终点虚线要穿过两颗球的球心，否则「停在同一处」读不出来 -->
+            <path class="rrx-axis" d="M78 8 V88"/>
+            <circle class="rrx-ball" cx="78" cy="31" r="11"/>
+            <circle class="rrx-ball" cx="78" cy="74" r="6"/>
+            <path class="rrx-track" d="M18 31 H36"/>
+            <path class="rrx-arrow" d="M42 31 l-9 -5.5 v11 z"/>
+            <path class="rrx-track" d="M22 74 H40"/>
+            <path class="rrx-arrow" d="M46 74 l-9 -5.5 v11 z"/>
+          </svg>
+        </span>
         <span class="kid-figure-cap">换重球</span>
         <span class="kid-figure-sub">停在同一处</span>
       </li>
       <li class="kid-figure" style="--tone:var(--sci)">
-        <span class="kid-figure-art" aria-hidden="true">🔀</span>
+        <span class="kid-figure-art" aria-hidden="true">
+          <svg viewBox="0 0 120 90" aria-hidden="true" focusable="false">
+            <rect class="rrx-bg" x="0" y="0" width="120" height="90"/>
+            <path class="rrx-track" d="M16 22 H102 M16 46 H102 M16 70 H102"/>
+            <circle class="rrx-ball" cx="38" cy="22" r="7"/>
+            <path class="rrx-track" d="M50 22 H64"/>
+            <path class="rrx-arrow" d="M70 22 l-9 -5.5 v11 z"/>
+            <circle class="rrx-ball-dim" cx="58" cy="46" r="6"/>
+            <circle class="rrx-ball-dim" cx="58" cy="70" r="6"/>
+            <path class="rrx-same" d="M74 42 h12 M74 50 h12 M74 66 h12 M74 74 h12"/>
+          </svg>
+        </span>
         <span class="kid-figure-cap">只改一项</span>
         <span class="kid-figure-sub">才看得清</span>
       </li>
@@ -525,13 +874,13 @@
 
     <div class="learning-layers" data-audience="parent">
       <details>
-        <summary><span class="layer-age">4–6 岁</span>一句话版本</summary>
+        <summary><span class="layer-age">4–6&nbsp;岁</span>一句话版本</summary>
         <div>
           <p>把球放高一点，它就会滚得更远。</p>
         </div>
       </details>
       <details>
-        <summary><span class="layer-age">7–9 岁</span>再说清楚一点</summary>
+        <summary><span class="layer-age">7–9&nbsp;岁</span>再说清楚一点</summary>
         <div>
           <p>球举得高的时候，身上存着一份“能滚的本钱”。放手以后，这份本钱会一点一点变成速度：越往下滚，球就越快。所以起点越高，到坡底时越快，冲出去也越远。</p>
           <p>坡越陡，球在坡上加速得越猛，很快就冲到底；坡很平的时候，球慢慢溜，甚至可能停在坡上不动——因为摩擦把它抓住了。</p>
@@ -540,7 +889,7 @@
         </div>
       </details>
       <details>
-        <summary><span class="layer-age">10–12 岁</span>进阶：能量转换与变量控制</summary>
+        <summary><span class="layer-age">10–12&nbsp;岁</span>进阶：能量转换与变量控制</summary>
         <div>
           <p>球在高度 <code>h</code> 时具有重力势能 <code>PE = m·g·h</code>。下滚过程中它转成动能 <code>KE = ½·m·v²</code>，同时摩擦不断把一部分变成热 <code>Q</code>。能量总量不变，只是换了形式。</p>
           <p>忽略摩擦时，坡底速度满足 <code>½·m·v² = m·g·h</code>，两边的 <code>m</code> 可以约掉，得到 <code>v = √(2·g·h)</code>：<b>坡底速度只由高度决定，跟球有多重无关，也跟坡有多陡无关。</b>陡坡只是让球更快地到达坡底，不会让它到得更快（速度更大）。</p>
@@ -646,6 +995,36 @@
     </ol>
   </section>
 
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「停得更远靠不靠放得更高」，就只改高度这一项。同一只球、同一条跑道、同一个倾角，先低处滚一次，再垫高滚一次。改球重、换地毯，都是另一次对照，不要和「高度」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>高度（或只改倾角、只改跑道、只改球重——一次只挑一项）。</li>
+      <li><b>先保持不变：</b>另外三项全部锁住。</li>
+      <li><b>要观察的：</b>停在哪、两轮差多远。球必须真正滚到停下。</li>
+      <li><b>另开一行：</b>同一高度，只改球重，停止距离变了没有。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>坡很陡的时候，球为什么更容易自己滚起来？重力是竖直往下的，沿坡那一份是怎么来的？</li>
+      <li>坡放得很平，球不动了——是重力消失了，还是顺着坡的那一份太小，被摩擦赢了？</li>
+      <li>重球和轻球停在同一个地方，为什么被重球撞到会更疼？「滚多远」和「撞多狠」是同一件事吗？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把「势能动能」提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>放高一点，本钱多，滚得更远。坡越陡，越容易自己滚起来。地毯会把它刹住。一次只改一样。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>高度决定到坡底能换成多少速度。沿坡推它的，是重力的一部分，不是坡自己在吸。重球轻球常常停在同一处，撞起来却不一样疼。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>沿坡分量约 mg sinθ。无摩擦时 v=√(2gh)，与倾角无关。有摩擦后 Q=μmg cosθ·d。本页数字是比较尺子。</p></div>
+    </div>
+  </section>
+
   <details class="parent-deep-dive" data-audience="parent">
     <summary>家长区：学习目标、陪伴追问、科学原理与作品</summary>
 
@@ -668,7 +1047,7 @@
           </div>
         </div>
         <div class="ctrl">
-          <div class="ctrl-head"><label for="mass">球的质量</label><b id="massOut">0.50 kg</b></div>
+          <div class="ctrl-head"><label for="mass">球的质量</label><b id="massOut">0.50&nbsp;kg</b></div>
           <input class="input" type="range" id="mass" min="0.1" max="3" step="0.05" value="0.5">
         </div>
         <div class="ctrl">
@@ -697,9 +1076,11 @@
       </ol>
       <ol class="qlist">
         <li><b>指向变量：</b>“这两轮你一共改了几样？如果改了两样，你怎么知道是哪一样起作用？”</li>
+        <li><b>重力分量：</b>“重力是往下掉的，为什么球会顺着斜坡走？”让孩子用手比：竖直往下的力，有一份贴着坡面在推。坡越陡，这一份越大。</li>
         <li><b>逼近误解：</b>“重的球是不是一定滚得更远？”让孩子先猜，再用球重滑块验证。这是本页最有价值的一次意外。</li>
         <li><b>区分两件事：</b>“重球和轻球停在同一个地方，那被哪个撞到更疼？”帮孩子把“停多远”和“撞多狠”分开。</li>
         <li><b>追问摩擦：</b>“球慢下来的时候，它的速度去哪了？”引导到“变成了热”，而不是“消失了”。</li>
+        <li><b>卡住的坡：</b>“坡放得很平，球不动了。重力消失了吗？”没有。顺着坡的那一份太小，摩擦把它锁住了。</li>
         <li><b>陡与快：</b>“同样的高度换成更陡的坡，球到坡底会更快吗？”正确答案是速度一样、时间更短，这一点连大人也常混。</li>
       </ol>
       <h3 style="font-size:1rem">离屏延伸活动</h3>
@@ -734,6 +1115,8 @@
     <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="teachTitle">
       <h2 id="teachTitle">背后的原理</h2>
       <p><b>能量守恒。</b>球在高处拥有重力势能 <code>PE = m·g·h</code>；下滚时变成动能 <code>KE = ½·m·v²</code>，摩擦做功变成热 <code>Q = μ·m·g·cosθ·d</code>。理想模型中 <code>PE + KE + Q = m·g·h</code>。能量不会消失，只会换一种形式。</p>
+      <h3>沿坡往下推的，是重力的一个分量</h3>
+      <p>重力竖直向下。斜面上只有一部分沿着坡：大约是 <code>mg sinθ</code>。坡越陡，<code>sinθ</code> 越大，沿坡的力越大，球越容易自己滚起来。垂直于坡的那一份 <code>mg cosθ</code> 把球压在面上，摩擦就靠它。坡很平时，沿坡分量小过静摩擦，球停在坡上——不是重力消失了，是顺着坡的那一份不够。高度决定到坡底能换成多少速度本钱；倾角决定这份力有多大、要花多久滚完。孩子说「坡想让它滚」，可以改写成「重力有一部分顺着坡在推」。</p>
       <h3>高度决定“本钱”，角度决定“花多久”</h3>
       <p>在无摩擦的理想情形下，坡底速度只由下落高度决定：<code>½mv² = mgh</code>，得 <code>v = √(2gh)</code>，其中不含角度。换成更陡的坡，同一高度下到坡底的速度相同，只是路程更短、时间更少、平均加速度更大。孩子感觉“陡的更快”，指的通常是“更快到底”，而不是“到底时更快”。</p>
       <p>加上摩擦后角度就有影响了：坡越陡，斜面上的路程越短，摩擦耗掉的能量 <code>Q</code> 越少，坡底速度反而略高。这也是本页里“只改角度”仍会改变停止距离的原因。</p>
@@ -750,7 +1133,7 @@
         <li><b>推理：</b>同高度时，改变角度为何仍可能改变坡底速度？</li>
         <li><b>迁移：</b>要让球停得更远，你会优先调哪一项？为什么？</li>
       </ol>
-      <p class="hint">本模拟说明：使用固定步长 1/480 秒积分；把球当作沿斜面滑动的质点，用单一摩擦系数概括滚动与滑动阻力，未区分滚动摩擦、未计入空气阻力与球的转动惯量，因此数值只用于比较趋势，不代表真实测量值。</p>
+      <p class="hint">本模拟说明：使用固定步长 1/480&nbsp;秒积分；把球当作沿斜面滑动的质点，用单一摩擦系数概括滚动与滑动阻力，未区分滚动摩擦、未计入空气阻力与球的转动惯量，因此数值只用于比较趋势，不代表真实测量值。</p>
     </section>
   </details>
 
@@ -886,13 +1269,13 @@
       errV.textContent = err.toFixed(2) + ' m';
       var good = err <= Math.max(0.15, S.d * 0.12);
       errV.style.color = good ? C.sci : C.warn;
-      if (good) toast('预测很接近，误差 ' + err.toFixed(2) + ' 米');
-      else toast('相差 ' + err.toFixed(2) + ' 米，比较条件再试一次');
-      announce('球停在离坡底 ' + S.d.toFixed(2) + ' 米，你的预测差 ' + err.toFixed(2) + ' 米。');
+      if (good) toast('预测很接近，误差 ' + err.toFixed(2) + '\u00a0米');
+      else toast('相差 ' + err.toFixed(2) + '\u00a0米，比较条件再试一次');
+      announce('球停在离坡底 ' + S.d.toFixed(2) + '\u00a0米，你的预测差 ' + err.toFixed(2) + '\u00a0米。');
       recordFairTrial(err, hitWall);
       S.predLocked = false;
     } else {
-      announce('球停在离坡底 ' + S.d.toFixed(2) + ' 米。');
+      announce('球停在离坡底 ' + S.d.toFixed(2) + '\u00a0米。');
       updateABDisplay();
     }
     if (hitWall) toast('冲到跑道尽头了，把摩擦调大一点');
@@ -1364,7 +1747,7 @@
     if (S.trials.length >= 2 || !S.predLocked) return;
     // 冲到跑道尽头时读数被截断（只能知道「至少 6 米」），不是一次可用的测量，不计入公平比较。
     if (hitWall) {
-      fairResult.textContent = '这一轮冲出了跑道尽头，只能读到“至少 ' + RUNWAY.toFixed(0) + ' 米”，不算一次有效试车。把坡调矮一点或把摩擦调大一点，重新锁定预测再试。';
+      fairResult.textContent = '这一轮冲出了跑道尽头，只能读到“至少 ' + RUNWAY.toFixed(0) + '\u00a0米”，不算一次有效试车。把坡调矮一点或把摩擦调大一点，重新锁定预测再试。';
       announce(fairResult.textContent);
       updateRampTask();
       updateABDisplay();
@@ -1385,10 +1768,10 @@
       } else if (Math.abs(a.actual - b.actual) < 0.05) {
         // 两轮停止距离几乎一样：变量改得太小，看不出影响，不算完成一次有效对比。
         fairChanged = VAR_LABELS[changed[0]];
-        fairResult.textContent = '只改了' + fairChanged + '，但两轮停的地方几乎一样（相差不到 5 厘米），还看不出影响。请点“重来再试”，把' + fairChanged + '改得更明显一些。';
+        fairResult.textContent = '只改了' + fairChanged + '，但两轮停的地方几乎一样（相差不到 5\u00a0厘米），还看不出影响。请点“重来再试”，把' + fairChanged + '改得更明显一些。';
       } else {
         fairPassed = true; fairChanged = VAR_LABELS[changed[0]];
-        fairResult.textContent = '公平通过：只改变了' + fairChanged + '，两轮停止距离相差 ' + Math.abs(a.actual - b.actual).toFixed(2) + ' 米。';
+        fairResult.textContent = '公平通过：只改变了' + fairChanged + '，两轮停止距离相差 ' + Math.abs(a.actual - b.actual).toFixed(2) + '\u00a0米。';
       }
     }
     updateRampTask();
@@ -1543,7 +1926,7 @@
      后面所有控件都绑不上。别再按 id 绑不存在的控件。 */
   var muEl = bindRange('mu', 'muOut', function (v) { return v.toFixed(2); },
     function (v) { S.mu = Math.min(0.5, Math.max(0, v)); syncMuChips(); running = false; reset(true); });
-  bindRange('mass', 'massOut', function (v) { return v.toFixed(2) + ' kg'; },
+  bindRange('mass', 'massOut', function (v) { return v.toFixed(2) + '\u00a0kg'; },
     function (v) { S.m = Math.min(3, Math.max(0.1, v)); running = false; reset(true); });
   bindRange('ts', 'tsOut', function (v) { return v.toFixed(2) + '×'; },
     function (v) { S.timeScale = Math.min(1, Math.max(0.15, v)); });
@@ -1570,7 +1953,7 @@
     S.pred = Math.min(RUNWAY, Math.max(0, v));
     predEl.value = String(S.pred);
     predOut.textContent = S.pred.toFixed(2) + ' m';
-    if (!silent) announce('预测位置 ' + S.pred.toFixed(2) + ' 米');
+    if (!silent) announce('预测位置 ' + S.pred.toFixed(2) + '\u00a0米');
   }
   predEl.addEventListener('input', function () {
     if (running || S.predLocked) { predEl.value = String(S.pred); return; }
@@ -1599,7 +1982,7 @@
     errV.textContent = '…';
     errV.style.color = C.mid;
     start();
-    announce((S.trials.length ? 'B' : 'A') + ' 轮预测已锁定在 ' + S.pred.toFixed(2) + ' 米，开始运行。');
+    announce((S.trials.length ? 'B' : 'A') + ' 轮预测已锁定在 ' + S.pred.toFixed(2) + '\u00a0米，开始运行。');
   });
 
   // 点击地面放旗
@@ -1634,11 +2017,97 @@
   requestDraw();   // 走 requestDraw 而不是裸 rAF：否则首帧待执行时 rafId 仍为 0，交互唤醒会重复排帧
 })();
 </script>
-<script src="../data/explorations.js"></script>
-<script src="../assets/js/progress.js?v=17"></script>
-<script src="../data/playful.js?v=17"></script>
-<script src="../assets/js/playful.js?v=17"></script>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var guess1 = "";
+  var guess1Done = false;
+  var guess2 = "";
+  var guess2Done = false;
+  var guess3 = "";
+  var guess3Done = false;
+  var sawGentle = false, sawSteep = false, sawIcy = false, sawRough = false;
+  var sawRoll1 = false, sawRoll2 = false, sawSteep3 = false, sawRoll3 = false;
+  function checkGuess(){
+    if (guess1 && !guess1Done && sawGentle && sawSteep && sawRoll1) {
+      guess1Done = true;
+      document.getElementById("guessOut1").innerHTML = (guess1 === "fast" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "更陡时沿坡的重力分量更大，小球常常加速更快（还要看摩擦）。";
+      document.getElementById("guessBlock2").hidden = false;
+    }
+    if (guess2 && !guess2Done && sawIcy && sawRough && sawRoll2) {
+      guess2Done = true;
+      document.getElementById("guessOut2").innerHTML = (guess2 === "slower" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "更粗糙时摩擦更大，常常滚得更慢、更短。";
+      document.getElementById("guessBlock3").hidden = false;
+    }
+    if (guess3 && !guess3Done && sawSteep3 && sawRoll3) {
+      guess3Done = true;
+      document.getElementById("guessOut3").innerHTML = (guess3 === "up" ? "<b>押对了！</b>" : "<b>揭晓：</b>") +
+        "坡更陡，沿坡往下的分量更大。";
+    }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess1Done) return;
+      guess1 = btn.getAttribute("data-guess1") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut1").textContent = "押好了。换陡坡与缓坡各滚一次对照。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess2Done) return;
+      guess2 = btn.getAttribute("data-guess2") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut2").textContent = "押好了。换冰面和地毯各滚一次。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){
+      if (guess3Done) return;
+      guess3 = btn.getAttribute("data-guess3") || "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("guessOut3").textContent = "押好了。先用更陡的坡滚一次，再对照 g×sinθ。";
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-rr-ang]"), function(btn){
+    btn.addEventListener("click", function(){
+      var a = btn.getAttribute("data-rr-ang");
+      if (guess1 && !guess1Done && a === "15") sawGentle = true;
+      if (guess1 && !guess1Done && a === "42") sawSteep = true;
+      if (guess3 && !guess3Done && a === "42") sawSteep3 = true;
+      checkGuess();
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-rr-mu]"), function(btn){
+    btn.addEventListener("click", function(){
+      var m = btn.getAttribute("data-rr-mu");
+      if (guess2 && !guess2Done && m === "0.12") sawIcy = true;
+      if (guess2 && !guess2Done && m === "0.44") sawRough = true;
+      checkGuess();
+    });
+  });
+  var checkBtn = document.getElementById("check");
+  if (checkBtn) checkBtn.addEventListener("click", function(){
+    if (guess1 && !guess1Done) sawRoll1 = true;
+    if (guess2 && !guess2Done) sawRoll2 = true;
+    if (guess3 && !guess3Done) sawRoll3 = true;
+    checkGuess();
+  });
+})();
+</script>
 <script>if (window.Progress) Progress.visit("games/ramp-and-roll.html", "斜坡滚球");</script>
-<script src="../assets/js/pwa.js?v=17"></script>
+<script src="../assets/js/pwa.js?v=488"></script>
 </body>
 </html>

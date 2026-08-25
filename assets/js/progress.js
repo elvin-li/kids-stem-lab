@@ -9,10 +9,12 @@
   var V2_KEY = "kids-stem:progress:v2";
   var V1_KEY = "kids-stem:progress:v1";
   var EVENT_NAME = "kids-stem:progress";
-  var MAX_PAGES = 100;
+  /* 目录已有约 1390 个详情页且还在长；上限必须始终大于目录规模，
+     否则 allowlist/visit 会静默丢掉排在后面的页面。 */
+  var MAX_PAGES = 1600;
   var MAX_RECENT = 12;
-  var MAX_NOTES = 100;
-  var MAX_COMPLETIONS = 100;
+  var MAX_NOTES = 1600;
+  var MAX_COMPLETIONS = 1600;
   var MAX_WORKS = 60;
   var MAX_TITLE = 40;
   var MAX_NOTE = 300;
@@ -21,7 +23,9 @@
   var MAX_WORK_CONTENT = 8000;
   var MAX_WORK_BYTES = 12 * 1024;
   var MAX_WORKS_BYTES = 96 * 1024;
-  var MAX_JSON = 256 * 1024;
+  /* 1600 页 + 1600 条笔记/完成 + 96 KiB 作品的现实子集通常远低于 1 MiB；
+     localStorage 每源约 5 MiB，1 MiB 仍是读入/导入的安全防御上限。 */
+  var MAX_JSON = 1024 * 1024;
   var MAX_VISITS = 1000000;
   var WORK_TYPES = ["observation", "prediction", "drawing", "model", "explanation", "photo-note"];
   var PREFERENCE_DEFAULTS = {
@@ -68,7 +72,8 @@
   function allowlist() {
     if (!Array.isArray(global.EXPLORATIONS)) return null;
     var allowed = dict();
-    global.EXPLORATIONS.slice(0, MAX_PAGES).forEach(function (item) {
+    /* 白名单必须收下整个目录：slice 截断会让排在后面的页面永远记不上足迹。 */
+    global.EXPLORATIONS.forEach(function (item) {
       if (!item || typeof item !== "object") return;
       var id = cleanText(item.id, 160);
       if (fallbackId(id)) allowed[id] = true;

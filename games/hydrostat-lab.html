@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>水囊工坊 · 互动实验室</title>
+<meta name="description" content="水几乎压不扁。左边被捏掉的水顺着管子跑到右边。本页用 12 格水量当比较尺子，不是海星体内的真实毫升数。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+
+  .hero { padding: 28px 0 10px; }
+  .hero h1 { margin: .15em 0 .3em; }
+  .lead { max-width: 58ch; color: var(--ink-mid); }
+  .kid-hero-scene {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+    margin: 12px 0 14px; padding: clamp(14px,3vw,22px);
+    border: 1px solid color-mix(in srgb,var(--phys) 34%,var(--line));
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg,color-mix(in srgb,var(--phys) 12%,var(--surface)),var(--surface) 62%);
+  }
+  .mission-face {
+    width: 78px; height: 78px; display: grid; place-items: center; border-radius: 50%;
+    border: 2px solid color-mix(in srgb,var(--phys) 36%,var(--line));
+    background: color-mix(in srgb,var(--phys) 12%,var(--surface)); font-size: 2.2rem;
+  }
+  .stage { padding: 14px; border: 2px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .hy-art { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+  .hy-desk { fill: color-mix(in srgb,var(--kit) 10%,#f6efe3); }
+  .hy-floor { fill: color-mix(in srgb,var(--kit) 28%,#c4a06a); }
+  .hy-lab { fill: var(--ink); font: 700 13px var(--mono); }
+  .readout { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); margin-top: 10px; }
+  .readout b { display: block; font: 800 1.12rem/1.2 var(--mono); color: var(--ink); }
+  .readout span { font-size: .78rem; color: var(--ink-dim); }
+  .kid-action-strip { display: grid; gap: 10px; margin: 12px 0; }
+  .pick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pick-btns .btn { white-space: nowrap; }
+  .hy-atlas .kid-figure { --tone: var(--phys); }
+  .hy-atlas .kid-figure-art { padding: 6px; }
+  .hy-atlas .kid-figure-art > svg { width: 100%; max-width: 120px; height: auto; }
+  .hy-atlas .kid-figure-fact { display: block; }
+  .ask { counter-reset: q; list-style: none; padding: 0; margin: 0; }
+  .ask li { position: relative; padding-left: 34px; margin-bottom: 12px; color: var(--ink-mid); }
+  .ask li::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 0; top: 1px; width: 23px; height: 23px; border-radius: 50%;
+    display: grid; place-items: center; background: color-mix(in srgb,var(--phys) 16%,var(--surface));
+    border: 1px solid color-mix(in srgb,var(--phys) 40%,var(--line)); color: var(--ink);
+    font: 800 .76rem var(--mono);
+  }
+  button, .btn { min-height: 44px; }
+  @media (max-width: 640px) { .kid-hero-scene { grid-template-columns: 1fr; } .mission-face { display: none; } }
+  /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .kid-hero-scene { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-hero-scene .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-hero-scene h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-hero-scene .lead { font-size: .92rem; line-height: 1.5; margin-bottom: .4em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .hy-art { max-height: 150px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .92rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 8px 0; }
+  }
+
+
+  .kid-mission { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center; }
+  .mission-copy h1 { margin: .2em 0 .12em; }
+  .mission-copy p { max-width: 52ch; margin: .2em 0 0; color: var(--ink-mid); }
+  .tag-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .mission-face { overflow: hidden; }
+  .mission-face img.photo-real { width: 78px; height: 78px; object-fit: cover; border-radius: 50%; display: block; }
+  .mission-character { overflow: hidden; }
+  .mission-character img.photo-real { width: 76px; height: 76px; object-fit: cover; border-radius: 50%; display: block; }
+</style>
+</head>
+<body data-playful-page="games/hydrostat-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<a class="skip-link" href="#stage">跳到实验画面</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="kid-mission" aria-labelledby="hyStoryTitle">
+    <div class="mission-copy">
+      <div class="tag-row">
+        <span class="pill pill-phys">物理</span>
+        <span class="pill">6–11&nbsp;岁</span>
+        <span class="pill">约 10&nbsp;分钟</span>
+      </div>
+      <h1 id="hyStoryTitle">水会跑到另一边，还是漏光变软？</h1>
+      <p class="lead">静水骨骼：柔软体壁包着不可压缩的液体，肌肉挤压液体就能变硬、伸长或弯曲——像灌满水的软管。漏了会塌。模型防漏；不拿活体动物挤压演示。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-character" aria-hidden="true"><img class="photo-real" src="../assets/photos/starfish.jpg" alt="" width="78" height="78"></div>
+  </header>
+
+  <section class="stage kid-visual-stage" id="stage" aria-labelledby="stageTitle">
+    <h2 id="stageTitle">同一只袋子，捏紧还是漏水</h2>
+    <svg class="hy-art" viewBox="0 0 420 280" role="img" aria-labelledby="hyTitle hyDesc">
+      <title id="hyTitle">水囊舞台</title>
+      <desc id="hyDesc">桌上有一只装满水的软袋子。捏一头会鼓起来变硬；漏了水就塌下去。</desc>
+      <rect class="hy-desk" width="420" height="280"/>
+      <rect class="hy-floor" y="232" width="420" height="48"/>
+      <ellipse id="bag" cx="180" cy="150" rx="70" ry="36" fill="#8ec5e8" stroke="#3a2a18" stroke-width="3"/>
+      <ellipse id="hand" cx="120" cy="150" rx="16" ry="22" fill="#f4dce8" opacity="0"/>
+      <path id="drip" d="M250 186 Q254 206 250 220" fill="none" stroke="#0e7490" stroke-width="4" opacity="0"/>
+      <text class="hy-lab" id="stateLab" x="270" y="80">还没选</text>
+    </svg>
+    <div class="readout">
+      <div><span>袋子</span><b id="bagOut">还没选</b></div>
+      <div><span>里面的水</span><b id="inOut">——</b></div>
+      <div><span>硬还是软</span><b id="holdOut">还没看</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">先捏一头一次，再让它漏一点水。看谁会变硬。</p>
+  </section>
+
+  <div class="kid-action-strip" role="group" aria-label="水囊主操作">
+    <div class="pick-btns">
+      <button class="btn btn-primary" type="button" id="toSqueeze">捏一头</button>
+      <button class="btn" type="button" id="toLeak">漏一点水</button>
+    </div>
+  </div>
+
+  <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">这在教什么</h2>
+    <p>水几乎压不扁。你捏袋子的一头，水只能往另一头跑，那边就鼓起来，整只袋子变硬。漏了水，里面空了，袋子就塌。骨头是硬架子；水囊是软皮加不能压扁的水。海星管足、蚯蚓身子都是这件事。</p>
+  </section>
+
+  <section class="card hy-atlas" aria-labelledby="atlasTitle">
+    <h2 id="atlasTitle">水囊图鉴</h2>
+    <p>点一张，对照舞台：谁靠水传力变硬，谁只是空壳或骨头。</p>
+    <div class="kid-figure-grid" role="group" aria-label="水囊图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-hy-atlas="squeeze" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/starfish.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">捏一头</span><span class="kid-figure-fact">水几乎压不扁，捏一头只能跑到另一头把整袋顶硬，漏了就软，不是皮变成铁。</span></button>
+      <button class="kid-figure" type="button" data-hy-atlas="leak" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/starfish.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">漏水</span><span class="kid-figure-fact">水一跑掉立刻软塌塌，皮还在硬没了，不是骨头变没。</span></button>
+      <button class="kid-figure" type="button" data-hy-atlas="water" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/starfish.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">装满水</span><span class="kid-figure-fact">水几乎压不扁，力会传过去</span></button>
+      <button class="kid-figure" type="button" data-hy-atlas="air" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/starfish.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">装满气</span><span class="kid-figure-fact">气能压扁，捏一头不会那么硬</span></button>
+      <button class="kid-figure" type="button" data-hy-atlas="glove" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/starfish.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">橡胶手套</span><span class="kid-figure-fact">家里就能装水试的软皮</span></button>
+      <button class="kid-figure" type="button" data-hy-atlas="foot" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/starfish.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">海星管足</span><span class="kid-figure-fact">活着的一只只小水囊</span></button>
+      <button class="kid-figure" type="button" data-hy-atlas="worm" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/worms.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">蚯蚓</span><span class="kid-figure-fact">身子也是软皮加水，没有骨头</span></button>
+      <button class="kid-figure" type="button" data-hy-atlas="bone" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/starfish.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">骨头</span><span class="kid-figure-fact">另一件事：硬架子，不是水囊</span></button>
+      <button class="kid-figure" type="button" data-hy-atlas="tongue" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/starfish.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">舌头</span><span class="kid-figure-fact">人嘴里也有软的液压肌肉</span></button>
+      <button class="kid-figure" type="button" data-hy-atlas="closed" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/starfish.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">封住口</span><span class="kid-figure-fact">口要封严，水才跑不掉</span></button>
+      <button class="kid-figure" type="button" data-hy-atlas="open" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/starfish.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">口开着</span><span class="kid-figure-fact">和漏水一样，捏了也硬不起来</span></button>
+      <button class="kid-figure" type="button" data-hy-atlas="sameh" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/starfish.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">同一只袋</span><span class="kid-figure-fact">比的是捏紧还是漏水，不是谁更大</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照袋子为什么硬或软。</p>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：捏紧和漏水都试</h2>
+    <p>先捏一头一次，再让它漏一点水。看谁会变硬。两头都试过即可完成。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+    <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先试一次捏一头，或一次漏水。</p>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：水囊观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：捏一头变硬，漏水就软"></div>
+      <div><label for="workContent">谁让袋子变硬</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下捏一头和漏水时，袋子硬还是软，你觉得水去了哪里。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的 3&nbsp;个问题</h2>
+    <ul class="ask">
+      <li><b>先猜：</b>捏装满水的手套，另一头会瘪还是鼓？</li>
+      <li><b>对照海星页：</b>管足伸长的时候，是不是也在把水压进去？</li>
+      <li><b>厨房试：</b>拉链袋装半袋水、挤掉气、封严，捏一头。漏水请在水槽里做。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>液体几乎不可压缩。封闭容器里一点受力，压强向各处传递——这是帕斯卡原理的儿童版，本页不写帕斯卡数字。软壁容器因此会在另一侧鼓起，整体变硬，叫液压骨骼。漏水或开口等于卸压，骨架消失。空气可压缩，同样软袋装气时手感不同。海星水管系统、蚯蚓体腔、人的舌头都靠这件事。真袋子请在水槽试，不要对着电源。</p>
+  </section>
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>同一条线索还可以在隔壁站继续看。</p>
+    <p class="row"><a class="btn btn-ghost" href="../nature/starfish.html">海星观察站</a><a class="btn btn-ghost" href="hydraulic-lab.html">液压工坊</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">漏水请在水槽里做。本页只比较捏紧和漏水，不是解剖课。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var kind = "";
+  var seen = { squeeze:false, leak:false, done:false };
+  function render(){
+    var bag = document.getElementById("bag");
+    var hand = document.getElementById("hand");
+    var drip = document.getElementById("drip");
+    if (kind === "squeeze") {
+      bag.setAttribute("rx", "52");
+      bag.setAttribute("ry", "42");
+      bag.setAttribute("cx", "200");
+      bag.setAttribute("fill", "#6eb8de");
+      hand.setAttribute("opacity", "1");
+      drip.setAttribute("opacity", "0");
+      document.getElementById("bagOut").textContent = "捏一头";
+      document.getElementById("inOut").textContent = "往另一头跑";
+      document.getElementById("holdOut").textContent = "变硬";
+      document.getElementById("stateLab").textContent = "鼓起来";
+      document.getElementById("live").textContent = "水几乎压不扁，只能往另一头跑。袋子鼓起来，摸着变硬。";
+    } else if (kind === "leak") {
+      bag.setAttribute("rx", "70");
+      bag.setAttribute("ry", "16");
+      bag.setAttribute("cx", "180");
+      bag.setAttribute("fill", "#c5dce8");
+      hand.setAttribute("opacity", "0");
+      drip.setAttribute("opacity", "1");
+      document.getElementById("bagOut").textContent = "漏水";
+      document.getElementById("inOut").textContent = "水跑掉了";
+      document.getElementById("holdOut").textContent = "软塌塌";
+      document.getElementById("stateLab").textContent = "塌了";
+      document.getElementById("live").textContent = "水漏出去，里面空了，袋子软塌塌。没有水，就没有液压骨架。";
+    } else {
+      bag.setAttribute("rx", "70");
+      bag.setAttribute("ry", "36");
+      bag.setAttribute("cx", "180");
+      bag.setAttribute("fill", "#8ec5e8");
+      hand.setAttribute("opacity", "0");
+      drip.setAttribute("opacity", "0");
+      document.getElementById("bagOut").textContent = "还没选";
+      document.getElementById("inOut").textContent = "——";
+      document.getElementById("holdOut").textContent = "还没看";
+      document.getElementById("stateLab").textContent = "还没选";
+      document.getElementById("live").textContent = "先捏一头一次，再让它漏一点水。看谁会变硬。";
+    }
+    if (kind === "squeeze") seen.squeeze = true;
+    if (kind === "leak") seen.leak = true;
+    var status = document.getElementById("taskStatus");
+    if (seen.done) return;
+    if (seen.squeeze && seen.leak) {
+      seen.done = true;
+      if (window.Progress) Progress.complete("games/hydrostat-lab.html", "试过捏一头和漏水，比较过硬还是软");
+      status.textContent = "完成啦：捏一头变硬，漏水就软。水在传力。";
+    } else if (!seen.squeeze && !seen.leak) {
+      status.textContent = "尚未完成：先试一次捏一头，或一次漏水。";
+    } else if (!seen.squeeze) {
+      status.textContent = "还差：再点「捏一头」。";
+    } else {
+      status.textContent = "还差：再点「漏一点水」。";
+    }
+  }
+  var ATLAS = {
+    squeeze:"捏一头：水往另一头跑，袋子变硬。",
+    leak:"漏水：水跑掉，立刻软塌塌。",
+    water:"装满水：水几乎压不扁，力会传过去。",
+    air:"装满气：气能压扁，捏一头不会那么硬。",
+    glove:"橡胶手套：家里就能装水试的软皮。",
+    foot:"海星管足：活着的一只只小水囊。",
+    worm:"蚯蚓：身子也是软皮加水，没有骨头。",
+    bone:"骨头：另一件事，硬架子，不是水囊。",
+    tongue:"舌头：人嘴里也有软的液压肌肉。",
+    closed:"封住口：口要封严，水才跑不掉。",
+    open:"口开着：和漏水一样，捏了也硬不起来。",
+    sameh:"同一只袋：比的是捏紧还是漏水，不是谁更大。"
+  };
+  document.getElementById("toSqueeze").addEventListener("click", function(){ kind = "squeeze"; render(); });
+  document.getElementById("toLeak").addEventListener("click", function(){ kind = "leak"; render(); });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-hy-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-hy-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-hy-atlas]"), function(n){
+        n.setAttribute("aria-pressed", n === btn ? "true" : "false");
+      });
+      document.getElementById("atlasSay").textContent = ATLAS[key] || "";
+      if (key === "squeeze" || key === "water" || key === "glove" || key === "foot" || key === "worm" || key === "tongue" || key === "closed") kind = "squeeze";
+      else if (key === "leak" || key === "open") kind = "leak";
+      render();
+    });
+  });
+  render();
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/hydrostat-lab.html", "水囊工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>

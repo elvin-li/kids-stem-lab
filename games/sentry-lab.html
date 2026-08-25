@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="kid">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>哨兵工坊 · 互动实验室</title>
+<meta name="description" content="同一群。留人抬头看，天上的鹰就看得见；全都低头挖，鹰来了谁也不知道。本页用哨×25 当比较尺子，不是真狐獴的警戒公式。">
+<link rel="stylesheet" href="../assets/css/base.css?v=488">
+<link rel="stylesheet" href="../assets/css/kid.css?v=488">
+<link rel="stylesheet" href="../assets/css/print.css?v=488" media="print">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#fff8ec">
+<link rel="icon" href="../assets/icons/app-icon.svg?v=488" type="image/svg+xml">
+<style>
+  html, body { overflow-x:hidden; }
+  button, .btn, .chip, input, select, textarea, .input { min-height:44px; }
+  button, .btn { touch-action:manipulation; }
+  :root { --touch:52px; --touch-lg:64px; }
+  .tag-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .kid-mission { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; margin:10px 0 8px; padding:clamp(12px,2.4vw,18px); border:1px solid color-mix(in srgb,var(--phys) 34%,var(--line)); border-radius:22px; background:linear-gradient(135deg,color-mix(in srgb,var(--phys) 14%,var(--surface)),var(--surface) 62%); }
+  .mission-copy h1 { margin:.2em 0 .12em; font-size:clamp(1.45rem,4.6vw,2.15rem); line-height:1.12; }
+  .mission-copy p { max-width:52ch; margin:.2em 0 0; color:var(--ink-mid); }
+  .mission-character { width:76px; min-height:76px; display:grid; place-items:center; border:2px solid color-mix(in srgb,var(--phys) 32%,var(--line)); border-radius:50%; background:radial-gradient(circle at 38% 32%,var(--surface),color-mix(in srgb,var(--phys) 18%,var(--surface))); }
+  .mission-character svg { width:52px; height:52px; }
+  .kid-visual-stage { position:relative; margin-bottom:14px; padding:clamp(10px,2vw,16px); border:3px solid color-mix(in srgb,var(--phys) 42%,var(--line)); border-radius:24px; background:var(--surface); box-shadow:0 8px 0 color-mix(in srgb,var(--kit) 26%,transparent); }
+  .stage-head { display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-bottom:8px; }
+  .stage-head h2 { margin:0; font-size:clamp(1.1rem,3.6vw,1.4rem); }
+  .stage-head p { margin:2px 0 0; color:var(--ink-mid); font-size:.88rem; }
+  .condition-badge { flex:none; padding:6px 10px; border:1px solid color-mix(in srgb,var(--phys) 45%,var(--line)); border-radius:99px; background:color-mix(in srgb,var(--phys) 12%,var(--surface)); color:var(--ink); font-size:.8rem; font-weight:900; }
+  .st-art { display:block; width:100%; max-width:960px; height:auto; margin:0 auto; }
+  .st-toys { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:12px 0 0; }
+  .st-toy { min-height:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:10px 8px; border:3px solid var(--line); border-radius:22px; background:var(--surface-2); color:var(--ink); font-weight:900; font-size:1.05rem; line-height:1.2; }
+  .st-toy svg { width:72px; height:64px; }
+  .st-toy[aria-pressed="true"] { border-color:var(--phys); background:color-mix(in srgb,var(--phys) 16%,var(--surface)); }
+  .st-toy-go { border-color:color-mix(in srgb,var(--warn) 55%,var(--line)); background:color-mix(in srgb,var(--warn) 12%,var(--surface)); }
+  .st-toy:active { transform:translateY(2px); }
+  .kid-speech-row { margin:10px 0 0; }
+  .kid-speech { font-size:1.05rem; font-weight:800; }
+  .st-atlas .kid-figure { display:flex; flex-direction:column; gap:6px; align-items:stretch; margin:0; padding:10px; text-align:center; }
+  .st-atlas .kid-figure-art { padding:4px; }
+  .st-atlas .kid-figure-art > svg { width:100%; max-width:128px; height:auto; }
+  .st-atlas .kid-figure-fact { display:block; }
+  .kid-band { margin:0 0 16px; padding:clamp(12px,2.4vw,18px); border:3px solid var(--line); border-radius:24px; background:linear-gradient(158deg,var(--surface),var(--surface-2)); box-shadow:0 6px 0 color-mix(in srgb,var(--kit) 26%,transparent); }
+  .kid-band-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .kid-band-emoji { flex:none; display:grid; place-items:center; width:48px; height:48px; border:3px solid var(--line); border-radius:46% 54% 50% 50%; background:var(--surface); }
+  .kid-band-emoji svg { width:30px; height:30px; }
+  .kid-band-head h2 { margin:0; font-size:clamp(1.05rem,3.4vw,1.32rem); }
+  .kid-band-head p { margin:2px 0 0; color:var(--ink-mid); font-size:.86rem; }
+  .kid-status { display:block; margin:10px 0 0; padding:10px 14px; border:3px solid var(--line-soft); border-radius:999px; background:var(--surface); color:var(--ink); font-size:.95rem; font-weight:800; }
+  .kid-icon-row { display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 0; }
+  .kid-icon-row .kid-icon-btn { flex:1 1 120px; }
+  .kid-icon-btn[aria-pressed="true"], .guess-pick[aria-pressed="true"] { border-color:var(--phys); background:color-mix(in srgb,var(--phys) 16%,var(--surface)); color:var(--ink); }
+  .parent-sliders { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
+  .readout { display:grid; gap:8px; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); margin-top:8px; }
+  .readout b { display:block; font:800 1.08rem/1.2 var(--mono); color:var(--ink); }
+  .readout span { font-size:.76rem; color:var(--ink-dim); }
+  .st-ruler { margin:8px 0 0; font-size:.86rem; color:var(--ink-mid); }
+  .guess-out { font-weight:750; color:var(--ink-mid); }
+  .guess-out b { color:var(--ink); }
+  .teach-lead { margin:.2em 0 .7em; color:var(--ink-mid); }
+  .teach-lead b { color:var(--ink); }
+  .teach-points { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0; padding:0; list-style:none; }
+  .teach-points li { padding:12px; border:1px solid var(--line-soft); border-radius:14px; background:var(--surface-2); color:var(--ink-mid); font-size:.9rem; }
+  .teach-points b { display:block; margin-bottom:3px; color:var(--ink); }
+  .ask { counter-reset:q; list-style:none; padding:0; margin:0; }
+  .ask li { position:relative; padding-left:34px; margin-bottom:12px; color:var(--ink-mid); }
+  .ask li::before { counter-increment:q; content:counter(q); position:absolute; left:0; top:1px; width:23px; height:23px; border-radius:50%; display:grid; place-items:center; background:color-mix(in srgb,var(--phys) 16%,var(--surface)); border:1px solid color-mix(in srgb,var(--phys) 40%,var(--line)); color:var(--ink); font:800 .76rem var(--mono); }
+  .parent-deep-dive { margin-top:16px; }
+  .science-note { border-color:color-mix(in srgb,var(--sci) 55%,var(--surface)); background:linear-gradient(135deg,color-mix(in srgb,var(--sci) 9%,var(--surface)),var(--surface-2)); }
+  .why h3 { margin-top:1.1em; }
+  .kid-action-strip { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+
+  .st-sky { fill:#f3d7a4; }
+  .st-sky-hi { fill:#f7e6c4; }
+  .st-sun { fill:#f4c24a; }
+  .st-dune { fill:#e2c48a; }
+  .st-sand { fill:#d4b06a; }
+  .st-rock { fill:#8a6a40; }
+  .st-hole { fill:#5a3a20; }
+  .st-fur { fill:#c4a06a; }
+  .st-fur-dk { fill:#b8905a; }
+  .st-belly { fill:#e8d2a8; }
+  .st-mask { fill:#3a2a18; }
+  .st-eye { fill:#1f2937; }
+  .st-eye-w { fill:#f6efe3; }
+  .st-nose { fill:#3a2a18; }
+  .st-hawk { fill:#4a6080; }
+  .st-hawk-near { fill:#2a3040; }
+  .st-bug { fill:#6a8a3a; }
+  .st-skin { fill:color-mix(in srgb,var(--kit) 18%,#f0c8a8); }
+  .st-hair { fill:color-mix(in srgb,var(--ink) 42%,#5a3a28); }
+  .st-shirt { fill:color-mix(in srgb,var(--sci) 40%,#5a8a48); }
+  .st-eye-white { fill:var(--surface); }
+  .st-pupil { fill:var(--ink); }
+  .st-brow { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; }
+  .st-mouth { fill:none; stroke:var(--ink); stroke-width:2; stroke-linecap:round; }
+  .st-shadow { fill:color-mix(in srgb,var(--ink) 16%,transparent); }
+  .st-shout { fill:#c45a3a; }
+
+  #hawkFar, #hawkNear, #senA, #senB, #senC, #senD, #digC, #runG, #shoutMark { transition:opacity .28s ease; }
+  .st-art[data-hawk="0"] #hawkFar, .st-art[data-hawk="0"] #hawkNear { opacity:0; }
+  .st-art[data-hawk="loom"] #hawkFar { opacity:.45; }
+  .st-art[data-hawk="loom"] #hawkNear { opacity:0; }
+  .st-art[data-hawk="far"] #hawkFar { opacity:1; }
+  .st-art[data-hawk="far"] #hawkNear { opacity:0; }
+  .st-art[data-hawk="near"] #hawkFar { opacity:0; }
+  .st-art[data-hawk="near"] #hawkNear { opacity:1; }
+  .st-art[data-sen="0"] #senA, .st-art[data-sen="0"] #senB, .st-art[data-sen="0"] #senC, .st-art[data-sen="0"] #senD { opacity:0; }
+  .st-art[data-sen="1"] #senA { opacity:1; }
+  .st-art[data-sen="1"] #senB, .st-art[data-sen="1"] #senC, .st-art[data-sen="1"] #senD { opacity:0; }
+  .st-art[data-sen="2"] #senA, .st-art[data-sen="2"] #senB { opacity:1; }
+  .st-art[data-sen="2"] #senC, .st-art[data-sen="2"] #senD { opacity:0; }
+  .st-art[data-sen="3"] #senA, .st-art[data-sen="3"] #senB, .st-art[data-sen="3"] #senC { opacity:1; }
+  .st-art[data-sen="3"] #senD { opacity:0; }
+  .st-art[data-sen="4"] #senA, .st-art[data-sen="4"] #senB, .st-art[data-sen="4"] #senC, .st-art[data-sen="4"] #senD { opacity:1; }
+  .st-art[data-safe="1"] #runG { opacity:1; }
+  .st-art[data-safe="1"] #shoutMark { opacity:1; }
+  .st-art[data-safe="0"] #runG, .st-art[data-safe="0"] #shoutMark { opacity:0; }
+  .st-art[data-kind="prairie"] #meerFaceA { opacity:.2; }
+  html[data-playful-motion="reduced"] .st-art * { transition:none !important; }
+  @media (prefers-reduced-motion: reduce) {
+    #hawkFar, #hawkNear, #senA, #senB, #senC, #senD, .st-toy:active { transition:none; }
+  }
+  main :where(.kid-visual-stage,.teach-points) > * { min-width:0; }
+  @media (max-width:720px) {
+    .mission-character { display:none; }
+    .kid-mission { grid-template-columns:1fr; }
+    .teach-points { grid-template-columns:1fr; }
+    .parent-sliders { grid-template-columns:1fr; }
+  }
+  @media (max-width:520px) {
+    .st-toys { grid-template-columns:1fr; }
+    .kid-mission .pill:nth-child(n+2) { display:none; }
+    .st-toy { min-height:72px; flex-direction:row; justify-content:flex-start; padding:8px 12px; }
+    .st-toy svg { width:52px; height:46px; }
+  }
+
+  /* 手机孩子模式：页头与舞台收紧纵向占位，让首要操作条落进首屏。 */
+  @media (max-width: 480px) {
+    html[data-mode="kid"] .playful-companion { display: none; }
+    html[data-mode="kid"] .kid-mission { margin: 8px 0 10px; padding: 10px 12px; }
+    html[data-mode="kid"] .kid-mission .row { margin-bottom: .3em; }
+    html[data-mode="kid"] .kid-mission h1 { font-size: 1.5rem; }
+    html[data-mode="kid"] .kid-mission .lead { font-size: .92rem; line-height: 1.5; margin-bottom: .4em; }
+    html[data-mode="kid"] .kid-visual-stage { padding: 10px; }
+    html[data-mode="kid"] .kid-visual-stage h2 { font-size: 1.05rem; margin-bottom: .35em; }
+    html[data-mode="kid"] .st-art { max-height: 110px; }
+    html[data-mode="kid"] .readout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+    html[data-mode="kid"] .readout b { font-size: .95rem; }
+    html[data-mode="kid"] .kid-visual-stage .live-text { font-size: .88rem; margin-bottom: 0; }
+    html[data-mode="kid"] .kid-action-strip { margin: 8px 0; }
+  }
+</style>
+</head>
+<body data-playful-page="games/sentry-lab.html">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<a class="skip-link" href="#stage">跳到实验画面</a>
+<nav class="nav"><div class="nav-in wrap">
+  <a class="brand" href="../index.html"><span class="brand-mark">K</span> 少儿数理启蒙</a>
+  <div class="row" aria-label="主导航">
+    <a class="nav-link" href="../index.html">资源库</a>
+    <a class="nav-link" href="../pages/paths.html">学习路径</a>
+    <a class="nav-link" href="../games/index.html" aria-current="page">互动实验</a>
+    <a class="nav-link" href="../nature/index.html">探索</a>
+    <a class="nav-link" href="../pages/progress.html">我的足迹</a>
+    <a class="nav-link" href="../pages/parents.html">家长指南</a>
+    <a class="nav-link" href="../pages/medicine-cabinet.html">医药箱</a>
+  </div>
+</div></nav>
+
+<main id="main" class="wrap">
+  <header class="kid-mission" aria-labelledby="stStoryTitle">
+    <div class="mission-copy">
+      <div class="tag-row">
+        <span class="pill pill-phys">物理</span>
+        <span class="pill">6–11&nbsp;岁</span>
+        <span class="pill">约 10&nbsp;分钟</span>
+      </div>
+      <h1 id="stStoryTitle">有人看天，还是全低头？</h1>
+      <p class="lead">留一两只抬头看天，鹰还在远处就能叫一声，同伴来得及进洞；全都低头挖虫，发现时鹰已到头顶。站岗少吃所以要轮班，叫声是公共信号，不是摆造型。看影像学习，不拍手惊吓笼养动物取乐，也不逗园里的狐獴站起来。</p>
+      <div data-playful-companion></div>
+      <span data-playful-sticker></span>
+    </div>
+    <div class="mission-character" aria-hidden="true">
+      <svg viewBox="0 0 64 64" focusable="false">
+        <rect class="st-fur" x="26" y="18" width="12" height="32" rx="6"/>
+        <circle class="st-fur" cx="32" cy="16" r="9"/>
+        <ellipse class="st-mask" cx="28" cy="16" rx="3" ry="2.4"/>
+        <ellipse class="st-mask" cx="36" cy="16" rx="3" ry="2.4"/>
+        <ellipse class="st-fur" cx="18" cy="52" rx="8" ry="4"/>
+      </svg>
+    </div>
+  </header>
+
+  <section class="kid-visual-stage" id="stage" aria-labelledby="stageTitle">
+    <div class="stage-head">
+      <div>
+        <h2 id="stageTitle">哨兵玩具台</h2>
+        <p>点下面三个大按钮，看谁看得见天上的鹰，谁还在低头挖。</p>
+      </div>
+      <span class="condition-badge" id="stateBadge">还没看</span>
+    </div>
+
+    <svg class="st-art" id="stArt" viewBox="0 0 720 400" role="img" aria-labelledby="stTitle stDesc">
+      <title id="stTitle">沙地上的狐獴：有的站直看天，有的低头挖洞</title>
+      <desc id="stDesc">哨兵越多才看得住天上的鹰。威胁越大，远处的鹰越大。3只、4只要看得见。全都低头挖虫子时，鹰已经到了头顶。舞台上不写警戒分、威胁这些词。</desc>
+      <rect class="st-sky" width="720" height="400"/>
+      <rect class="st-sky-hi" width="720" height="80"/>
+      <circle class="st-sun" cx="86" cy="58" r="26"/>
+      <path class="st-dune" d="M0 210 C120 180 220 200 320 188 C430 174 520 200 720 186 V400 H0 Z"/>
+      <rect class="st-sand" y="268" width="720" height="132"/>
+      <ellipse class="st-rock" cx="168" cy="262" rx="38" ry="16"/>
+      <path class="st-rock" d="M148 262 L168 228 L196 262 Z"/>
+      <ellipse class="st-hole" cx="120" cy="318" rx="36" ry="14"/>
+      <ellipse class="st-dune" cx="120" cy="308" rx="40" ry="10"/>
+      <ellipse class="st-bug" cx="210" cy="330" rx="7" ry="3"/>
+      <ellipse class="st-bug" cx="232" cy="338" rx="5" ry="2.4"/>
+
+      <g id="hawkFar">
+        <path class="st-hawk" d="M520 48 L568 62 L528 58 L500 78 L516 60 Z"/>
+        <path class="st-hawk" d="M568 62 L600 70 L572 66" fill="none" stroke="#4a6080" stroke-width="3"/>
+      </g>
+      <g id="hawkNear" opacity="0">
+        <path class="st-hawk-near" d="M300 36 L420 78 L330 70 L250 110 L290 68 Z"/>
+        <path class="st-hawk-near" d="M420 78 L470 96 L430 86" fill="none" stroke="#2a3040" stroke-width="5"/>
+      </g>
+
+      <g id="senA">
+        <ellipse class="st-shadow" cx="262" cy="262" rx="16" ry="6"/>
+        <rect class="st-fur" x="252" y="168" width="20" height="88" rx="10"/>
+        <ellipse class="st-belly" cx="262" cy="220" rx="7" ry="22"/>
+        <circle class="st-fur" cx="262" cy="158" r="16"/>
+        <g id="meerFaceA">
+          <ellipse class="st-mask" cx="254" cy="156" rx="5" ry="4"/>
+          <ellipse class="st-mask" cx="270" cy="156" rx="5" ry="4"/>
+          <circle class="st-eye-w" cx="254" cy="156" r="2.2"/>
+          <circle class="st-eye-w" cx="270" cy="156" r="2.2"/>
+          <circle class="st-eye" cx="254.4" cy="155.4" r="1.1"/>
+          <circle class="st-eye" cx="270.4" cy="155.4" r="1.1"/>
+          <ellipse class="st-nose" cx="262" cy="164" rx="3" ry="2"/>
+        </g>
+        <path class="st-fur-dk" d="M248 248 L252 262 M276 248 L272 262" stroke="#8a6a40" stroke-width="4"/>
+      </g>
+      <g id="senB" opacity="0">
+        <ellipse class="st-shadow" cx="318" cy="258" rx="14" ry="5"/>
+        <rect class="st-fur-dk" x="310" y="178" width="16" height="74" rx="8"/>
+        <circle class="st-fur-dk" cx="318" cy="170" r="13"/>
+        <ellipse class="st-mask" cx="312" cy="168" rx="4" ry="3.2"/>
+        <ellipse class="st-mask" cx="324" cy="168" rx="4" ry="3.2"/>
+        <circle class="st-eye" cx="312.4" cy="167.6" r="1.1"/>
+        <circle class="st-eye" cx="324.4" cy="167.6" r="1.1"/>
+      </g>
+      <g id="senC" opacity="0">
+        <ellipse class="st-shadow" cx="372" cy="256" rx="13" ry="5"/>
+        <rect class="st-fur" x="364" y="186" width="16" height="66" rx="8"/>
+        <circle class="st-fur" cx="372" cy="178" r="12"/>
+        <ellipse class="st-mask" cx="366" cy="176" rx="3.6" ry="3"/>
+        <ellipse class="st-mask" cx="378" cy="176" rx="3.6" ry="3"/>
+        <circle class="st-eye" cx="366.4" cy="175.6" r="1"/>
+        <circle class="st-eye" cx="378.4" cy="175.6" r="1"/>
+      </g>
+      <g id="senD" opacity="0">
+        <ellipse class="st-shadow" cx="214" cy="260" rx="13" ry="5"/>
+        <rect class="st-fur-dk" x="206" y="184" width="16" height="70" rx="8"/>
+        <circle class="st-fur-dk" cx="214" cy="176" r="12"/>
+        <ellipse class="st-mask" cx="208" cy="174" rx="3.6" ry="3"/>
+        <ellipse class="st-mask" cx="220" cy="174" rx="3.6" ry="3"/>
+        <circle class="st-eye" cx="208.4" cy="173.6" r="1"/>
+        <circle class="st-eye" cx="220.4" cy="173.6" r="1"/>
+      </g>
+      <path id="shoutMark" class="st-shout" d="M278 132 L286 118 L294 132 Z" opacity="0"/>
+
+      <g id="digA">
+        <ellipse class="st-shadow" cx="200" cy="332" rx="22" ry="7"/>
+        <ellipse class="st-fur" cx="200" cy="322" rx="22" ry="10"/>
+        <circle class="st-fur" cx="178" cy="318" r="9"/>
+        <ellipse class="st-mask" cx="174" cy="316" rx="3" ry="2.2"/>
+        <circle class="st-eye" cx="174" cy="316" r="1"/>
+      </g>
+      <g id="digB">
+        <ellipse class="st-shadow" cx="390" cy="336" rx="20" ry="6"/>
+        <ellipse class="st-fur-dk" cx="390" cy="326" rx="20" ry="9"/>
+        <circle class="st-fur-dk" cx="410" cy="322" r="8"/>
+        <circle class="st-eye" cx="414" cy="320" r="1"/>
+      </g>
+      <g id="digC">
+        <ellipse class="st-shadow" cx="248" cy="348" rx="18" ry="6"/>
+        <ellipse class="st-fur" cx="248" cy="340" rx="18" ry="8"/>
+        <circle class="st-fur" cx="230" cy="338" r="8"/>
+      </g>
+      <g id="runG" opacity="0">
+        <ellipse class="st-fur" cx="148" cy="300" rx="16" ry="7" transform="rotate(-20 148 300)"/>
+        <circle class="st-fur" cx="132" cy="292" r="7"/>
+      </g>
+
+      <g id="kidG">
+        <ellipse class="st-shadow" cx="640" cy="316" rx="28" ry="7"/>
+        <rect class="st-shirt" x="622" y="268" width="36" height="40" rx="10"/>
+        <circle class="st-skin" cx="640" cy="248" r="18"/>
+        <path class="st-hair" d="M624 246 Q640 226 656 246 Q652 236 640 232 Q628 236 624 246 Z"/>
+        <g id="faceNorm">
+          <ellipse class="st-eye-white" cx="634" cy="246" rx="3.4" ry="3.2"/>
+          <ellipse class="st-eye-white" cx="646" cy="246" rx="3.4" ry="3.2"/>
+          <circle class="st-pupil" cx="634.6" cy="246" r="1.3"/>
+          <circle class="st-pupil" cx="646.6" cy="246" r="1.3"/>
+          <path class="st-mouth" d="M634 256 Q640 260 646 256"/>
+        </g>
+        <g id="faceHappy" opacity="0">
+          <path class="st-mouth" d="M628 246 Q634 240 640 246"/>
+          <path class="st-mouth" d="M640 246 Q646 240 652 246"/>
+          <path class="st-mouth" d="M632 256 Q640 264 648 256"/>
+        </g>
+        <g id="faceSad" opacity="0">
+          <ellipse class="st-eye-white" cx="634" cy="248" rx="3" ry="2.2"/>
+          <ellipse class="st-eye-white" cx="646" cy="248" rx="3" ry="2.2"/>
+          <circle class="st-pupil" cx="634.4" cy="248.4" r="1.1"/>
+          <circle class="st-pupil" cx="646.4" cy="248.4" r="1.1"/>
+          <path class="st-brow" d="M628 240 L640 246"/>
+          <path class="st-brow" d="M652 240 L640 246"/>
+          <path class="st-mouth" d="M634 260 Q640 254 646 260"/>
+        </g>
+      </g>
+    </svg>
+  </section>
+
+  <div class="kid-speech-row">
+    <p class="kid-speech" id="kidSay" role="status" aria-live="polite">先点「留2只看天」，看谁喊了、谁往洞里跑。再点「全低头挖洞」，看鹰到了头顶。</p>
+  </div>
+
+  <div class="kid-action-strip st-toys" role="group" aria-label="三个好玩的大按钮">
+    <button class="st-toy" type="button" id="toWatch" aria-pressed="false">
+      <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+        <rect class="st-fur" x="20" y="14" width="10" height="28" rx="5"/>
+        <circle class="st-fur" cx="25" cy="12" r="6"/>
+        <rect class="st-fur-dk" x="40" y="18" width="8" height="24" rx="4"/>
+        <circle class="st-fur-dk" cx="44" cy="16" r="5"/>
+        <ellipse class="st-fur" cx="16" cy="52" rx="8" ry="4"/>
+      </svg>
+      留2只看天
+    </button>
+    <button class="st-toy" type="button" id="toDown" aria-pressed="false">
+      <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+        <ellipse class="st-fur" cx="22" cy="44" rx="12" ry="6"/>
+        <ellipse class="st-fur-dk" cx="48" cy="48" rx="11" ry="5"/>
+        <path class="st-hawk" d="M28 10 L50 18 L32 16 L20 26 Z"/>
+      </svg>
+      全低头挖洞
+    </button>
+    <button class="st-toy st-toy-go" type="button" id="toOne">
+      <svg viewBox="0 0 72 64" focusable="false" aria-hidden="true">
+        <rect class="st-fur" x="30" y="12" width="10" height="30" rx="5"/>
+        <circle class="st-fur" cx="35" cy="10" r="6"/>
+        <ellipse class="st-fur" cx="20" cy="52" rx="8" ry="4"/>
+      </svg>
+      只留1只
+    </button>
+  </div>
+  <p class="task-status status" id="taskStatus" role="status" aria-live="polite">尚未完成：先有哨试一次，或无哨试一次。</p>
+
+  <section class="kid-band" aria-labelledby="guessTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false"><circle class="st-skin" cx="16" cy="16" r="12"/><ellipse class="st-eye-white" cx="12" cy="14" rx="3" ry="3"/><ellipse class="st-eye-white" cx="20" cy="14" rx="3" ry="3"/><circle class="st-pupil" cx="12.4" cy="14" r="1.2"/><circle class="st-pupil" cx="20.4" cy="14" r="1.2"/><path class="st-mouth" d="M11 20 Q16 24 21 20"/></svg>
+      </span>
+      <div>
+        <h2 id="guessTitle">先猜一猜</h2>
+        <p>先押，再点按钮看对不对。</p>
+      </div>
+    </div>
+    <p><b>第 1 题：</b>威胁 2 需要警戒≥40。1 只哨警戒 25，够不够？</p>
+    <div class="kid-icon-row" role="group" aria-label="猜够不够">
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="yes" aria-pressed="false"><span class="kid-tile-label">够，1 只就行</span></button>
+      <button class="kid-icon-btn guess-pick" type="button" data-guess1="no" aria-pressed="false"><span class="kid-tile-label">不够，要至少 2 只</span></button>
+    </div>
+    <p class="guess-out kid-status" id="guessOut1" role="status" aria-live="polite">押好后点「只留1只」，再点「留2只看天」。</p>
+    <div id="guessBlock2" hidden>
+      <p><b>第 2 题：</b>哨从 1 加到 2，食物/时会怎样？</p>
+      <div class="kid-icon-row" role="group" aria-label="猜食物">
+        <button class="kid-icon-btn guess-pick" type="button" data-guess2="up" aria-pressed="false"><span class="kid-tile-label">变多</span></button>
+        <button class="kid-icon-btn guess-pick" type="button" data-guess2="down" aria-pressed="false"><span class="kid-tile-label">变少（觅食的人少了）</span></button>
+      </div>
+      <p class="guess-out kid-status" id="guessOut2" role="status" aria-live="polite">看家长区读数：食物=(6−哨)×2。</p>
+    </div>
+    <div id="guessBlock3" hidden>
+      <p><b>第 3 题：</b>4 只全去放哨。食物/时会变成 0 吗？</p>
+      <div class="kid-icon-row" role="group" aria-label="猜全哨">
+        <button class="kid-icon-btn guess-pick" type="button" data-guess3="left" aria-pressed="false"><span class="kid-tile-label">还剩一点，不是 0</span></button>
+        <button class="kid-icon-btn guess-pick" type="button" data-guess3="zero" aria-pressed="false"><span class="kid-tile-label">变成 0，全去看天</span></button>
+        <button class="kid-icon-btn guess-pick" type="button" data-guess3="more" aria-pressed="false"><span class="kid-tile-label">比 1 只哨时更多</span></button>
+      </div>
+      <p class="guess-out kid-status" id="guessOut3" role="status" aria-live="polite">押好后把哨滑到 4，看食物读数。</p>
+    </div>
+  </section>
+
+        <section class="card" aria-labelledby="teachWhatTitle">
+    <h2 id="teachWhatTitle">有人看天更安全，全低头就来不及</h2>
+    <p>先点「留2只看天」，看鹰来时同伴跑不跑得及。再点「全低头挖洞」，看鹰是不是已经到头顶。最好再点一次「只留1只」：按本页尺子，常常还不够。</p>
+    <p>狐獴留人看天，是用一部分觅食时间换整群的安全。信号一来，同伴往洞里跑。全员低头挖虫时，鹰到了头顶才发现。假警报太多，大家会浪费挖虫时间。黑眼圈挡光，不是眼影。</p>
+    <p>本页「哨×25、食物＝(6−哨)×2、看见⇔警戒≥威胁×20」是比较尺子，不是真狐獴的秒表，也不写发现鹰要几秒。不惊吓笼养动物取乐。野外保持距离。不要逗园里的狐獴站起来。</p>
+  </section>
+
+  <section class="kid-band st-atlas" aria-labelledby="atlasTitle">
+    <div class="kid-band-head">
+      <span class="kid-band-emoji" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false"><rect class="st-fur" x="12" y="8" width="8" height="16" rx="4"/><circle class="st-fur" cx="16" cy="7" r="5"/><ellipse class="st-fur" cx="8" cy="26" rx="5" ry="3"/></svg>
+      </span>
+      <div>
+        <h2 id="atlasTitle">点一张贴纸卡，舞台就演戏</h2>
+        <p>留哨、全低头、轮班、草原犬鼠，点哪张演哪幕。</p>
+      </div>
+    </div>
+<div class="kid-figure-grid" role="group" aria-label="哨兵图鉴：十二张卡">
+      <button class="kid-figure" type="button" data-st-atlas="watch" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">留一只当哨</span><span class="kid-figure-fact">留一只抬头看天，鹰来了才能叫出来；站着是在值班看天，不是摆造型给人拍照</span></button>
+      <button class="kid-figure" type="button" data-st-atlas="down" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">全都低头</span><span class="kid-figure-fact">眼睛都对着沙，天上就是空白：鹰到头顶才发现；全低头虫子更多，账上却少了安全</span></button>
+      <button class="kid-figure" type="button" data-st-atlas="same" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">同一群</span><span class="kid-figure-fact">台上比的是有没有人看天，不是换成更大一群；同一群、同样的威胁，只改哨几只</span></button>
+      <button class="kid-figure" type="button" data-st-atlas="seen" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">看见鹰</span><span class="kid-figure-fact">哨兵叫一声，大家往洞里跑，不必每人自己抬头；叫声是公共信号，不是谁胆子大</span></button>
+      <button class="kid-figure" type="button" data-st-atlas="miss" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">没人看见</span><span class="kid-figure-fact">全都低头挖洞，等发现时鹰已经到了头顶；再跑就晚了，不是「它们不够团结」</span></button>
+      <button class="kid-figure" type="button" data-st-atlas="meer" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">狐獴</span><span class="kid-figure-fact">狐獴是活着的轮班哨：站着在看天，站久了会累所以要换班；不是终身不吃的英雄岗</span></button>
+      <button class="kid-figure" type="button" data-st-atlas="turn" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">轮一班</span><span class="kid-figure-fact">站久了会累、少挖虫，换另一只，天上仍有眼睛；轮班摊成本，不是同一只永远站着</span></button>
+      <button class="kid-figure" type="button" data-st-atlas="prairie" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/prairie-dogs.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">草原犬鼠</span><span class="kid-figure-fact">草原犬鼠也会留哨，却不是狐獴，沙地和洞也不一样；近邻对照，不要画成同一种</span></button>
+      <button class="kid-figure" type="button" data-st-atlas="pounce" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">先蹲再扑</span><span class="kid-figure-fact">先蹲再扑是隔壁弹跳页的账；本页只比有没有人看天，不要把跳高和放哨缝成一句</span></button>
+      <button class="kid-figure" type="button" data-st-atlas="rock" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">站高一点</span><span class="kid-figure-fact">站到土堆或石头上，看得更远，鹰还在远处就能喊；站高是为了视野，不是爬得越高越勇敢</span></button>
+      <button class="kid-figure" type="button" data-st-atlas="glare" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">黑眼圈</span><span class="kid-figure-fact">黑眼圈挡住刺眼的光，让哨看得更清楚；是挡光的毛色，不是画眼影，也不是勇敢标志</span></button>
+      <button class="kid-figure" type="button" data-st-atlas="safe" aria-pressed="false"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">别爬围栏</span><span class="kid-figure-fact">家里用积木当哨练轮班；园里不要拍手、不要逗狐獴站起来，那是强加假警报</span></button>
+    </div>
+    <p class="live-text" id="atlasSay" role="status" aria-live="polite">点一张图鉴，对照为什么留哨看得见、全低头看不见。</p>
+  </section>
+
+
+  <section class="card" aria-labelledby="predictTitle">
+    <h2 id="predictTitle">猜一猜</h2>
+    <div class="kid-predict" style="--tone:var(--sci)"
+         data-kid-predict
+         data-kid-predict-explain="更多哨兵更安全，但觅食人手变少。这是本页权衡尺子，不是真狐獴的秒表。"
+         data-kid-predict-hint="先押一个你猜的答案，再点「看答案」。"
+         data-kid-predict-again="押好了，点「看答案」。">
+      <p class="kid-predict-q"><span class="kid-predict-icon" aria-hidden="true">🐿️</span><b>一群都低头挖虫子，一只也不抬头看天——遇到老鹰时怎样？</b></p>
+      <div class="kid-predict-picks" data-kid-choice-group role="group" aria-label="猜一猜：没有哨兵会怎样">
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="fine">全低头也没关系，虫子会提醒大家</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="risk" data-kid-predict-correct>没有哨，危险来了常发现得晚；有哨才换来「有人看天」</button>
+        <button class="kid-predict-pick" type="button" data-kid-choice data-value="magic">哨兵有魔法盾，鹰不敢来</button>
+      </div>
+      <button class="btn btn-primary kid-predict-go" type="button" data-kid-predict-verify><span aria-hidden="true">🔍</span> 看答案</button>
+      <p class="kid-predict-answer" data-kid-predict-answer>先押一个，再点「看答案」。</p>
+    </div>
+  </section>
+
+  <section class="task" aria-labelledby="taskTitle">
+    <h2 class="task-title" id="taskTitle">任务：有哨和无哨都试</h2>
+    <p>先留至少 1 只哨点一次，再把哨调到 0 点一次。两头都试过即可完成。点「留2只看天」或「只留1只」，再点「全低头挖洞」就会记上。</p>
+    <button class="btn" type="button" data-playful-random-task="#surpriseOut">抽一张惊喜任务</button>
+    <p id="surpriseOut" data-playful-task-output>开放式提示不会代替上面的正式任务。</p>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="rulerTitle">
+    <h2 id="rulerTitle">给家长的本页尺子</h2>
+    <p class="st-ruler">本页比较尺子：留人抬头看才压得住天上的威胁；全去挖食物，鹰来了谁也不知道。这不是真狐獴的警戒公式，也不写「几秒发现鹰」。孩子主操作是上面三个大按钮；滑杆留给想自己调的大人。</p>
+    <div class="parent-sliders">
+      <div><label for="sentries">哨兵几只：<span id="senLab">1</span></label>
+        <input class="input" id="sentries" type="range" min="0" max="4" value="1" aria-valuetext="1 只"></div>
+      <div><label for="threat">威胁等级：<span id="thrLab">2</span></label>
+        <input class="input" id="threat" type="range" min="1" max="5" value="2" aria-valuetext="2"></div>
+    </div>
+    <div class="readout">
+      <div><span>警戒分</span><b id="alertOut">——</b></div>
+      <div><span>食物/时</span><b id="foodOut">——</b></div>
+      <div><span>结果</span><b id="goOut">还没看</b></div>
+    </div>
+    <p class="live-text" id="live" role="status" aria-live="polite">多留哨才看得见。全低头，鹰到了头顶。多一只放哨，找食物的就少了。先押再点大按钮。</p>
+  </section>
+
+
+        <section class="card" aria-labelledby="lookTitle">
+    <h2 id="lookTitle">有人看天，全低头就会来不及</h2>
+    <p>舞台上只改一件事：有没有人抬头看天。同一群。先点「留2只看天」，看鹰来时同伴跑不跑得及；再点「全低头挖洞」，看鹰是不是已经到头顶。这样比，才知道安全靠的是有人看天，不是「它们勇敢所以不怕」。</p>
+    <p>回家只带两句：「有哨才看得见」；「全低头来不及」。不要写成「只留一只也行」或「它们不怕所以全低头」。只留一只按本页尺子常常不够。黑眼圈挡光，不是眼影。假警报也会浪费挖虫时间。</p>
+    <div class="kid-figure-grid" role="group" aria-label="主题细节">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">看天</span><span class="kid-figure-sub">换安全</span><p class="kid-figure-fact">留人抬头看天，大家少挖一点虫，却换来整群的眼睛；少吃是成本，换来的是来得及进洞</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">全低头</span><span class="kid-figure-sub">来不及</span><p class="kid-figure-fact">全都低头挖洞，等发现鹰时它已经到了头顶；虫子当时更多，安全这一列却是空的</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">信号</span><span class="kid-figure-sub">一声</span><p class="kid-figure-fact">哨兵叫一声，同伴就往洞里跑，不必每人自己去看天；信号省下的是整群的抬头时间</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">只留一只</span><span class="kid-figure-sub">本页不够</span><p class="kid-figure-fact">只留一只看天，按这一页的尺子常常还不够；「总比没有好」过不了台上「看见」那一档</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">黑眼圈</span><span class="kid-figure-sub">挡光</span><p class="kid-figure-fact">眼圈是挡光用的，让哨兵在亮处仍看得清；不是化妆，也不是「画了才算值班」</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">惊吓</span><span class="kid-figure-sub">不要</span><p class="kid-figure-fact">野外要离得更远，不要拍手吓它们；台上尺子不问秒数，不必编「发现要几秒」</p></div>
+    </div>
+    <ol class="kid-story-steps">
+      <li data-step="1"><b>留两只看天。</b>点「留2只看天」，鹰来时谁先跑。</li>
+      <li data-step="2"><b>全低头挖洞。</b>点「全低头挖洞」，鹰在哪。</li>
+      <li data-step="3"><b>只留一只。</b>点「只留1只」，本页尺子够不够。</li>
+      <li data-step="4"><b>否决勇敢说。</b>看的是位置，不是胆量。假警报也花钱。</li>
+    </ol>
+    <div class="age-tiers" aria-label="按年龄分层的解释">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁 · 一句话</b><p>留人抬头看天，大家才来得及躲。全都挖虫子，鹰来了才看见。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>警戒是时间换安全。轮值分摊成本。假警报太多，觅食账会亏。只留一只按本页常常不够。本页阈值是尺子，不写发现要几秒。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁 · 进阶</b><p>哨兵行为在多种社会性哺乳类出现。本页不写发现潜伏期的秒数。黑眼圈减少眩光。惊吓笼养个体是在消耗它的警戒预算。</p></div>
+    </div>
+    <p class="teach-note" data-audience="parent"><b>这在教什么：</b>孩子要能演示有哨/无哨两种结局，并否定「只留一只也行」和「它们不怕所以全低头」。完成看的是对照，不是背「哨兵」两个字。</p>
+    <ul class="ask-list">
+      <li>全低头时鹰在哪？有哨时呢？</li>
+      <li>只留一只，本页尺子够不够？</li>
+      <li>黑眼圈是眼影吗？假警报会怎样？</li>
+      <li>能拍手吓园里的狐獴吗？</li>
+    </ul>
+  </section>
+
+
+      <section class="card" aria-labelledby="deepTitle">
+    <h2 id="deepTitle">假警报也花钱，以及草原犬鼠是近邻</h2>
+    <p>同一群，先只改有没有人看天。假警报让大家停挖、往洞跑，真鹰没来，虫子少了一截。哨不能无限加，也不能零：全去放哨，没人挖虫；全去挖虫，没人看天。</p>
+    <p>草原犬鼠也有哨兵，不是本页的狐獴。点到「近邻」，不要画成同一种。发现要几秒，本页故意不写。写成定律会假精确。</p>
+    <p>黑眼圈挡光，让哨看得更清楚，不是眼影，也不是勇敢的标志。玻璃缸外拍手取乐，等于人工制造假警报，请不要做。</p>
+    <p>本页「哨×25、食物＝(6−哨)×2、看见⇔警戒≥威胁×20」是比较尺子，不是真狐獴的秒表。野外保持距离。不要逗园里的狐獴站起来。</p>
+    <div class="kid-figure-grid" role="group" aria-label="再挖一层的事实">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">假警报</span><span class="kid-figure-sub">耗虫</span><p class="kid-figure-fact">假警报让大家停挖往洞跑，真鹰没来，虫子就少了一截；白跑一趟也要记在账上</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/prairie-dogs.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">草原犬鼠</span><span class="kid-figure-sub">近邻</span><p class="kid-figure-fact">草原犬鼠也会留哨，洞和叫声都不是狐獴那一套；近邻可以对照，不要涂成同一身毛</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">秒数</span><span class="kid-figure-sub">不写</span><p class="kid-figure-fact">台上的尺子只问留几只哨、天上有多危险，不是秒表；编秒数是假精确，过不了本页</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">拍手</span><span class="kid-figure-sub">假警报</span><p class="kid-figure-fact">玻璃缸外拍手取乐，等于故意制造假警报；圈养个体会被吓跑、少吃，请不要做</p></div>
+    </div>
+  </section>
+
+
+      <section class="card" aria-labelledby="fieldTitle">
+    <h2 id="fieldTitle">对照：有哨更安全 · 全员觅食 · 假警报代价</h2>
+    <p>三列用同一群。先只改谁抬头。一次改两样，分不清到底是谁让大家来得及。</p>
+    <p>有哨：鹰还在远处就被看见，同伴有时间进洞。本页两只常够。全员觅食：警戒掉到零，发现时已经晚。虫子多了一点，命的账可能亏。假警报：大家都跑了，鹰没来。安全动作本身也有成本。</p>
+    <p>「它们勇敢所以不怕」整列划掉：看的是位置，不是胆量。只留一只按本页常常不够，另开一行。秒数不编。</p>
+    <div class="kid-figure-grid" role="group" aria-label="三列对照">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">有哨</span><span class="kid-figure-sub">来得及</span><p class="kid-figure-fact">留两只看天，鹰还在远处就能看见，同伴来得及进洞；本页「看见」靠的是有人在岗</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">全低头</span><span class="kid-figure-sub">来不及</span><p class="kid-figure-fact">一个哨也不留，发现时鹰已经到头顶，再跑就晚了；全低头不是「更专心吃饭」的好策略</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">假警报</span><span class="kid-figure-sub">耗时间</span><p class="kid-figure-fact">大家都跑了、鹰却没来，进洞本身也花掉挖虫时间；这证明信号有成本，不证明哨兵没用</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">眼圈</span><span class="kid-figure-sub">挡光</span><p class="kid-figure-fact">黑眼圈挡住刺眼的光，值班才看得清远处；不是化妆，也不是勇敢徽章，毛色在干活</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">尺子</span><span class="kid-figure-sub">哨×威胁</span><p class="kid-figure-fact">尺子比的是留几只哨乘上天上有多危险，不是在计秒；数字是比较，不是动物园手册</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">红线</span><span class="kid-figure-sub">不惊吓</span><p class="kid-figure-fact">看见真狐獴要离远一点，不要拍手、不要逗它站起来；站着是它自己的班，不是表演</p></div>
+    </div>
+  </section>
+
+
+      <section class="card" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">两只看天，全低头一叉</h2>
+    <p>在纸上画两格：一格有两只抬头，一格全都埋头。完成句写「有人看天更安全」。两格并排，比背「哨兵」有用。</p>
+    <p>口头只要两句：「有哨才看得见。」「全低头来不及。」旁边加一句「假叫也会浪费吃饭时间」。不要写「它们比较团结所以安全」。只留一只：按本页不够。秒数不编。</p>
+    <p>复述：不拍手吓笼里的动物。野外离远一点。不要逗园里的狐獴站起来。</p>
+    <div class="kid-figure-grid" role="group" aria-label="记录与带走">
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">有/无哨</span><span class="kid-figure-sub">两结局</span><p class="kid-figure-fact">有没有人看天，比的是眼睛对着哪，不是谁更勇敢；低头挖虫的不是逃兵，哨也不是英雄</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">一只</span><span class="kid-figure-sub">不够</span><p class="kid-figure-fact">只留一只看天，按这一页的尺子还不够安全；再留一只，鹰在远处那一档才亮得起来</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">假警报</span><span class="kid-figure-sub">有成本</span><p class="kid-figure-fact">假警报不是白跑一趟：停挖、进洞，虫子真的会少；叫得越多越好，账上会先把午饭吃掉</p></div>
+      <div class="kid-figure"><span class="kid-figure-art" aria-hidden="true"><img class="photo-real" src="../assets/photos/meerkat.jpg" alt="" width="240" height="180"></span><span class="kid-figure-cap">不吓</span><span class="kid-figure-sub">不编秒</span><p class="kid-figure-fact">回家只记三句：留哨才能看见，全低头就来不及，不要编秒数；积木轮班，不吓真动物</p></div>
+    </div>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="fairTitle">
+    <h2 id="fairTitle">怎样才算公平的一次比较</h2>
+    <p>想知道「看得见靠不靠有人看天」，就只改哨兵几只这一项。同一群、同样的天上威胁，先留两只看天试一次，再全低头试一次。只留一只、假警报，是另一次对照，不要和「全低头」叠在同一档里讲。</p>
+    <ul>
+      <li><b>只改这一项：</b>有没有人看天（留2只 / 全低头）。</li>
+      <li><b>先保持不变：</b>同一群、威胁先不动。</li>
+      <li><b>要观察的：</b>鹰来时同伴跑不跑得及、鹰在远处还是已到头顶。</li>
+      <li><b>另开一行：</b>只留一只按本页够不够；假警报会不会少挖虫子。</li>
+    </ul>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askMoreTitle">
+    <h2 id="askMoreTitle">还可以问下去</h2>
+    <ol>
+      <li>冬天暖气片装在窗下，是为了让热空气先升。狐獴留人看天，是为了让谁先看见？两件「有人在岗」像在哪？</li>
+      <li>假警报让大家都跑了、鹰却没来。这能证明「哨兵没用」吗，还是证明「信号也有成本」？</li>
+      <li>草原犬鼠也会留哨。能把它画成本页的狐獴吗？差在同一种还是近邻？</li>
+      <li>指着舞台：留两只抬头和全低头，鹰分别在远处还是头顶？「看见」靠的是哪一列？</li>
+      <li>站岗少吃，为什么还要轮班？同一只永远站着，账上会先缺哪一笔？</li>
+      <li>园里拍手或逗它站起来，是在帮它练警戒，还是把假警报强加给圈养个体？</li>
+    </ol>
+  </section>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="ageLayerTitle">
+    <h2 id="ageLayerTitle">按年龄分层的讲法</h2>
+    <p>同一个现象，三个年龄段讲到哪一层。建议只讲孩子当前那一层，讲完就停，不要把进阶词提前塞进四岁耳朵。</p>
+    <div class="age-tiers" aria-label="给家长的分层讲法">
+      <div class="age-tier tier-kid"><b>4–6&nbsp;岁</b><p>留人抬头看天，大家才来得及躲。全都挖虫子，鹰来了才看见。能指着舞台说「看见 / 来不及」就够了。</p></div>
+      <div class="age-tier tier-mid"><b>7–9&nbsp;岁</b><p>警戒是时间换安全。只留一只按本页常常不够。假警报也花钱。黑眼圈挡光，不是眼影。本页数字只用来比较，不写发现要几秒。</p></div>
+      <div class="age-tier tier-adv"><b>10–12&nbsp;岁</b><p>哨兵把个体警戒时间转化为群体探测率。虚警消耗取食。本页阈值是尺子，不是野外测时。惊吓圈养个体是强加虚警。</p></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="boostTitle">
+    <h2 id="boostTitle">有人看天，全员才能低头吃；假警报也花钱</h2>
+    <p>哨兵把「谁看天」集中到几只身上，叫声或姿势让大家都知道。轮流站岗，成本才摊得开。</p>
+    <p>假警报也会打断觅食，所以不是叫得越多越好。有的动物选择自己藏起来，那是另一条路。</p>
+    <p>不要敲门吓它们取乐。优先看影像，不敲笼子逼反应。</p>
+  </section>
+
+  <section class="card" aria-labelledby="boostR30Title">
+    <h2 id="boostR30Title">回家对照：留哨一格，全低头一格</h2>
+    <p>画两格：一格有两只抬头，一格全都埋头。完成句写「有人看天更安全」。</p>
+    <p>旁边加一句「假叫也会浪费吃饭时间」。不要写「它们比较团结所以安全」。</p>
+  </section>
+
+  <form class="work-card work-card-form parent-deep-dive" data-audience="parent" data-playful-work-form data-print="hide" aria-labelledby="workTitle">
+    <h2 class="work-card-title" id="workTitle">作品表单：哨兵观察</h2>
+    <p class="work-card-meta">只保存文字，存在这台设备上。</p>
+    <div class="work-card-fields">
+      <div><label for="workType">作品类型</label>
+        <select class="input" id="workType" name="type">
+          <option value="observation">观察记录</option>
+          <option value="prediction">预测卡</option>
+          <option value="explanation">我的解释</option>
+        </select>
+      </div>
+      <div><label for="workTitleIn">记录名称</label><input class="input" id="workTitleIn" name="title" required maxlength="80" placeholder="例如：留哨看得见，全低头看不见"></div>
+      <div><label for="workContent">谁看得见鹰</label><textarea class="input" id="workContent" name="content" required maxlength="4000" placeholder="写下留哨和全低头时你看见了什么，你觉得狐獴为什么要换班。"></textarea></div>
+      <button class="btn btn-primary btn-sm" type="submit">保存记录</button>
+    </div>
+    <p class="work-card-status" data-playful-work-status role="status" aria-live="polite">填好名称和记录后即可保存。</p>
+  </form>
+
+        <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="askTitle">
+    <h2 id="askTitle">给家长的问题</h2>
+    <ul class="ask">
+      <li>全低头虫子更多，为什么还不是更好的策略？账本上还有哪一列？让他再指一次鹰在哪。</li>
+      <li>只留一只，孩子说「总比没有好」——本页尺子怎样回答「够不够」？试「按这一页，常常还不够」。</li>
+      <li>假警报能不能证明「哨兵没用」？还是证明「信号也有成本」？</li>
+      <li>黑眼圈若被说成化妆，怎样改口成挡光？它是勇敢的标志吗？</li>
+      <li>为什么不写「发现鹰要几秒」？假精确会怎样？本页能当动物园手册吗？</li>
+      <li>玻璃缸外拍手：是在帮它练警戒，还是在强加假警报？红线怎么说？</li>
+    </ul>
+  </section>
+
+        <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">背后的原理</h2>
+    <p>舞台上不写这些词，留给孩子用眼睛看。家长可以指着图讲：留人抬头看天，鹰还在远处就能看见，同伴来得及进洞。全都低头挖虫，鹰到了头顶才发现。看的是位置，不是胆量。</p>
+    <p>哨兵行为把个体的警戒时间转化为群体的探测率。收益是降低被捕食风险，成本是减少取食。轮值分摊成本。本页「哨×25、食物＝(6−哨)×2、看见⇔警戒≥威胁×20」只是比较尺子，不是真狐獴的秒表，也不写发现要几秒。</p>
+    <p>虚警消耗取食时间，真实系统存在权衡，不会把哨兵加到全体。近缘的草原犬鼠是对照，不是同种。眼周深色毛减少眩光，不是眼影。</p>
+    <p>人为惊吓把虚警强加给圈养个体。观察距离同时保护人和动物的能量账。不要逗园里的狐獴站起来。</p>
+  </section>
+
+  
+    <div style="margin-top:12px;padding:12px;border:1px solid color-mix(in srgb,var(--sci) 40%,var(--line));border-radius:var(--r);background:color-mix(in srgb,var(--sci) 8%,var(--surface))">
+      <p style="margin:0 0 6px;font-weight:900;color:var(--ink)">哨兵公式卡 · 警戒=哨×25；食物=(6−哨)×2</p>
+      <p style="margin:0;color:var(--ink-mid);line-height:1.55">看见⇔警戒≥威胁×20。家长钉「安全换食物」权衡，不是魔法盾。</p>
+    </div>
+
+  <section class="card parent-deep-dive" data-audience="parent" aria-labelledby="nextTitle">
+    <h2 id="nextTitle">接下来可以去</h2>
+    <p>同一条线索还可以在隔壁站继续看。</p>
+    <p class="row"><a class="btn btn-ghost" href="../nature/meerkats.html">狐獴观察站</a><a class="btn btn-ghost" href="../games/pounce-lab.html">弹跳工坊</a></p>
+  </section>
+</main>
+<footer class="foot" data-audience="parent"><div class="wrap">因为人为惊吓会把虚警强加给它、打断轮值，所以不要逗园里的狐獴站起来。本页只比较留哨和全低头。</div></footer>
+<script src="../data/explorations.js?v=488"></script>
+<script src="../assets/js/progress.js?v=488"></script>
+<script src="../data/playful.js?v=488"></script>
+<script src="../assets/js/playful.js?v=488"></script>
+<script>
+(function(){
+  "use strict";
+  var sen=1, thr=2, did=false, lastSafe=null, kind="meer";
+  var seen={watch:false,down:false,done:false};
+  var guess1="",guess1Done=false,saw1=false,saw2=false,guess2="",guess2Done=false,sawF1=false,sawF2=false,guess3="",guess3Done=false,saw4=false;
+  function el(id){ return document.getElementById(id); }
+  function alertPts(){ return sen*25; }
+  function need(){ return thr*20; }
+  function food(){ return (6-sen)*2; }
+  function safe(){ return alertPts()>=need(); }
+  function setOp(id, v){ var n=el(id); if(n) n.setAttribute("opacity", String(v)); }
+  function faces(mode){
+    setOp("faceNorm", mode==="norm" ? 1 : 0);
+    setOp("faceHappy", mode==="happy" ? 1 : 0);
+    setOp("faceSad", mode==="sad" ? 1 : 0);
+  }
+  function pressBtns(which){
+    ["toWatch","toDown","toOne"].forEach(function(id){
+      var n=el(id); if(n) n.setAttribute("aria-pressed", id===which ? "true" : "false");
+    });
+  }
+  function senShow(){ return String(Math.min(4, Math.max(0, sen))); }
+  function hawkMode(){
+    if(!did) return "loom";
+    if(safe()) return "far";
+    return "near";
+  }
+  function kidVoice(){
+    if(!did) return "先点「留2只看天」，看谁喊了、谁往洞里跑。再点「全低头挖洞」，看鹰到了头顶。";
+    if(sen===0) return "全都低头，鹰已经到了头顶。谁也没看见。";
+    if(safe()) return "看见了！哨一叫，大家往洞里跑。";
+    return "一只在看，可是还不够，鹰已经靠近了。";
+  }
+  function render(fromUser){
+    var a=alertPts(), n=need(), f=food(), ok=safe();
+    var art=el("stArt");
+    if(art){
+      art.setAttribute("data-sen", senShow());
+      art.setAttribute("data-hawk", hawkMode());
+      art.setAttribute("data-safe", (did && ok) ? "1" : "0");
+      art.setAttribute("data-kind", kind);
+    }
+    var hawk=el("hawkFar");
+    if(hawk){
+      var hs=0.68 + (thr-1)*0.17;
+      hawk.setAttribute("transform", "translate(544 62) scale("+hs.toFixed(2)+") translate(-544 -62)");
+    }
+    if(!did) faces("norm");
+    else if(ok) faces("happy");
+    else faces("sad");
+
+    el("alertOut").textContent = a + "\u00a0分";
+    el("foodOut").textContent = f + "\u00a0份";
+    el("goOut").textContent = did?(ok?"安全报了":"太晚了"):"还没看";
+    el("senLab").textContent = String(sen);
+    el("sentries").setAttribute("aria-valuetext", sen+" 只");
+    el("sentries").value = String(sen);
+    el("thrLab").textContent = String(thr);
+    el("threat").setAttribute("aria-valuetext", String(thr));
+    el("threat").value = String(thr);
+    var badge=el("stateBadge");
+    var line;
+    if(!did) line="还没看";
+    else if(ok) line="看见了";
+    else if(sen===0) line="没人看见";
+    else line="不够";
+    if(badge) badge.textContent=line;
+    var say=el("kidSay");
+    if(say) say.textContent=kidVoice();
+    var live=el("live");
+    if(live) live.textContent="多留哨才看得见。全低头，鹰到了头顶。多一只放哨，找食物的就少了。"+(did?(ok?"刚才看见了。":"刚才不够。"):"先押再点上面的大按钮。");
+
+    if(fromUser&&did){
+      if(sen>=1){ seen.watch=true; if(guess1&&!guess1Done&&sen===1&&thr===2)saw1=true; if(guess1&&!guess1Done&&sen===2&&thr===2)saw2=true; }
+      if(sen===0) seen.down=true;
+      if(guess1&&!guess1Done&&sen===2&&thr===2)saw2=true;
+      if(guess2&&!guess2Done&&sen===1&&thr===2)sawF1=true;
+      if(guess2&&!guess2Done&&sen===2&&thr===2)sawF2=true;
+      if(guess3&&!guess3Done&&sen===4)saw4=true;
+      checkGuess(); updateTask();
+    }
+  }
+  function checkGuess(){
+    if(guess1&&!guess1Done&&saw1&&saw2){
+      guess1Done=true;
+      el("guessOut1").innerHTML=(guess1==="no"?"<b>押对了！</b>":"<b>揭晓：</b>")+"一只哨兵看不过来，要两只警戒分才压得住。";
+      el("guessBlock2").hidden=false;
+    }
+    if(guess2&&!guess2Done&&sawF1&&sawF2){
+      guess2Done=true;
+      el("guessOut2").innerHTML=(guess2==="down"?"<b>押对了！</b>":"<b>揭晓：</b>")+"多一只去放哨，找食物的就少了。";
+      el("guessBlock3").hidden=false;
+    }
+    if(guess3&&!guess3Done&&saw4){
+      guess3Done=true;
+      el("guessOut3").innerHTML=(guess3==="left"?"<b>押对了！</b>":"<b>揭晓：</b>")+"全去放哨，食物也不会立刻变成 0。";
+    }
+  }
+  function updateTask(){
+    var st=el("taskStatus"); if(!st||seen.done)return;
+    if(seen.watch&&seen.down){seen.done=true;if(window.Progress)Progress.complete("games/sentry-lab.html","试过有哨安全与无哨失手");st.textContent="完成啦：要有够的哨兵，警戒分才压得住威胁。";}
+    else if(!seen.watch)st.textContent=seen.down?"还差：至少留 1 只哨再试。":"尚未完成：先有哨试一次，或无哨试一次。";
+    else st.textContent="还差：哨调到 0 再试。";
+  }
+  function go(){ did=true; lastSafe=safe(); render(true); }
+  function doWatch(){ kind="meer"; sen=2; thr=2; pressBtns("toWatch"); go(); }
+  function doDown(){ kind="meer"; sen=0; thr=2; pressBtns("toDown"); go(); }
+  function doOne(){ kind="meer"; sen=1; thr=2; pressBtns("toOne"); go(); }
+
+  el("sentries").addEventListener("input", function(){ did=false; kind="meer"; sen=+this.value; render(false); if(guess3&&!guess3Done&&sen===4){ saw4=true; checkGuess(); } });
+  el("threat").addEventListener("input", function(){ did=false; kind="meer"; thr=+this.value; render(false); });
+  el("toWatch").addEventListener("click", doWatch);
+  el("toDown").addEventListener("click", doDown);
+  el("toOne").addEventListener("click", doOne);
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess1Done)return; guess1=btn.getAttribute("data-guess1");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess1]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      el("guessOut1").textContent="押好了。先点「只留1只」，再点「留2只看天」。"; });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess2Done)return; guess2=btn.getAttribute("data-guess2");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      el("guessOut2").textContent="押好了。再点「只留1只」，再点「留2只看天」，对照食物。"; });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
+    btn.addEventListener("click", function(){ if(guess3Done)return; guess3=btn.getAttribute("data-guess3");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+      el("guessOut3").textContent="押好了。把哨滑到 4，看食物读数。"; });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-st-atlas]"), function(btn){
+    btn.addEventListener("click", function(){
+      var key=btn.getAttribute("data-st-atlas");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-st-atlas]"), function(n){n.setAttribute("aria-pressed",n===btn?"true":"false");});
+      el("atlasSay").textContent=(btn.querySelector(".kid-figure-fact")||{}).textContent||"";
+      kind="meer";
+      if(key==="watch"){sen=1;thr=2;}
+      else if(key==="seen"||key==="meer"||key==="rock"||key==="glare"||key==="turn"||key==="safe"){sen=2;thr=2;}
+      else if(key==="down"||key==="miss"){sen=0;thr=2;}
+      else if(key==="same"){sen=1;thr=2;}
+      else if(key==="prairie"){sen=2;thr=2;kind="prairie";}
+      else if(key==="pounce"){sen=2;thr=2;}
+      pressBtns("");
+      go();
+    });
+  });
+  document.addEventListener("playful:preference", function(){ render(false); });
+  render(false);
+})();
+</script>
+<script>if (window.Progress) Progress.visit("games/sentry-lab.html", "哨兵工坊");</script>
+<script src="../assets/js/pwa.js?v=488"></script>
+</body>
+</html>
