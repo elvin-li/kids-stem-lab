@@ -3504,6 +3504,12 @@ window.ILLUSTRATIONS = (function () {
       '<path d="M38 60 C42 52 44 44 44 36"/><path d="M52 48 C56 42 58 34 58 26"/><path d="M30 68 C32 62 32 56 30 50"/>' +
       "</g>" +
       '<path d="M14 84 C14 70 18 60 26 54" fill="none" stroke="#3f7b46" stroke-width="4" stroke-linecap="round"/>' +
+      /* 描述里点名的那株小苗：大叶子右下的空地上，一根茎顶着两片子叶，
+         配色沿用 ui/sprout 的苗绿，土堆用同一个棕。 */
+      '<path d="M101 88 C105 84 113 84 117 88Z" fill="#b98a5a"/>' +
+      '<path d="M109 85 L109 73" stroke="#3f7b46" stroke-width="3.4" stroke-linecap="round"/>' +
+      '<path d="M109 77 C109 70 105 66 99 66 C99 72 103 77 109 77Z" fill="#79bf5c" stroke="#3f7b46" stroke-width="1.4" stroke-linejoin="round"/>' +
+      '<path d="M109 74 C109 67 113 63 118 63 C118 69 115 74 109 74Z" fill="#5da84a" stroke="#3f7b46" stroke-width="1.4" stroke-linejoin="round"/>' +
       '<g transform="translate(84 58)">' +
       '<ellipse cx="0" cy="0" rx="15" ry="13" fill="#d1495b"/>' +
       '<path d="M0 -13 L0 13" stroke="#2b1a10" stroke-width="2"/>' +
