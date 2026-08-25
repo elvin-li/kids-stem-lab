@@ -2815,9 +2815,11 @@ window.ILLUSTRATIONS = (function () {
     '<ellipse cx="24" cy="28" rx="2.6" ry="12" fill="#33251a"/>' +
     '<g stroke="#33251a" stroke-width="1.8" stroke-linecap="round" fill="none"><path d="M23 17 C21 12 18 9 15 8"/><path d="M25 17 C27 12 30 9 33 8"/></g>');
 
-  defLife("nymph", "若虫", "一只没有翅膀的小若虫，外形已经很像成虫。",
+  defLife("nymph", "若虫", "一只没有翅膀的小若虫，六条腿分列两侧，外形已经很像成虫。",
+    /* 正面视角两侧都看得见，腿要一侧三条共六条（和放大镜舞台一致）。 */
     '<g stroke="#4d7a3a" stroke-width="2" stroke-linecap="round" fill="none">' +
-    '<path d="M17 28 L8 24 L4 28"/><path d="M17 32 L8 36 L5 41"/><path d="M31 28 L40 24 L44 28"/><path d="M31 33 L40 37 L43 42"/></g>' +
+    '<path d="M17 27 L8 23 L4 27"/><path d="M16 32 L6 32 L2 36"/><path d="M18 37 L10 41 L7 46"/>' +
+    '<path d="M31 27 L40 23 L44 27"/><path d="M32 32 L42 32 L46 36"/><path d="M30 37 L38 41 L41 46"/></g>' +
     '<ellipse cx="24" cy="33" rx="9" ry="11" fill="#7cb35c"/>' +
     '<ellipse cx="24" cy="20" rx="7.5" ry="6.5" fill="#8fc45c"/>' +
     '<circle cx="21" cy="19" r="2" fill="#22341a"/><circle cx="27" cy="19" r="2" fill="#22341a"/>' +
