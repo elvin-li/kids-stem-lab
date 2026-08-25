@@ -71,7 +71,15 @@ var x=pool[Math.floor(Math.random()*pool.length)],go=document.getElementById("ra
 /* 渲染那边已经守着 window.Playful 了，这里少一道守卫：童趣层没加载时点一下就抛异常，
    连带把「打开实验」的链接也设不上。抽到的实验本身不依赖童趣层。 */
 var task=window.Playful&&Playful.randomTask?Playful.randomTask(x.id):null;
-document.getElementById("randomTask").textContent=task?x.icon+" "+x.title+" · "+task.lead+"："+task.text:x.icon+" "+x.title+" · 任务："+x.task;go.href=x.file;go.textContent="打开“"+x.title+"” →";go.hidden=false;});window.addEventListener("kids-stem:progress",render);render();
+document.getElementById("randomTask").textContent=task?x.icon+" "+x.title+" · "+task.lead+"："+task.text:x.icon+" "+x.title+" · 任务："+x.task;go.href=x.file;go.textContent="打开“"+x.title+"” →";go.hidden=false;});window.addEventListener("kids-stem:progress",render);
+/* 从实验页按「返回」回来时，浏览器在 load 之后、pageshow 之前才把四个筛选下拉
+   恢复成上次的选择，而且一个事件也不发：下拉写着「数学」，网格里摆的却是刚才
+   按默认「全部学科」画好的 11 张卡——筛选器和结果各说各话；bfcache 整页复活时
+   「去过／完成」的状态角标也停在离开前那一刻（进度事件发生在实验页的窗口里，
+   这边听不到）。专题目录页早补过同一步：按恢复后的筛选和最新足迹重画一次即可；
+   首次打开是 navigate，render() 在下面照常跑，不用重复。 */
+window.addEventListener("pageshow",function(event){var nav=performance.getEntriesByType?performance.getEntriesByType("navigation")[0]:null;if(event.persisted||(nav&&(nav.type==="back_forward"||nav.type==="reload")))render();});
+render();
 })();
 </script><script src="../assets/js/pwa.js?v=52"></script>
 </body></html>

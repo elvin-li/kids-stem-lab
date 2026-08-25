@@ -1784,6 +1784,27 @@
   el.toast.classList.remove('on');   // setLevel 会 toast，首屏不需要
   resetGrow('stair');
   setMode('guess');
+
+  /* 从别的页面按「返回」回来时，浏览器在 load 之后、pageshow 之前才把上次的
+     表单值放回来，而且一个事件也不发：生长方式下拉写着「十字」，图形摆的却是
+     开局的楼梯；「要预测第几个」滑块和题面各说各话；发现句躺在文本框里，
+     快捷句按钮却全部熄灭。自然七页已补过同样一步；实验页多一道「值真的被
+     恢复动过才补发」——这页下拉的事件会重新出题，没被恢复动过的控件不该被
+     白白惊动。bfcache 整页复活（persisted）时脚本状态原样都在，更不能重新
+     出题，只需按存好的偏好重对齐偏好控件。 */
+  var restoredFields = Array.prototype.map.call(document.querySelectorAll('input, select, textarea'), function (field) {
+    return { field: field, initial: field.value };
+  });
+  window.addEventListener('pageshow', function (event) {
+    var nav = performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null;
+    var rebuilt = !event.persisted && nav && (nav.type === 'back_forward' || nav.type === 'reload');
+    if (!event.persisted && !rebuilt) return;
+    if (rebuilt) restoredFields.forEach(function (entry) {
+      if (entry.field.value === entry.initial || entry.field.hasAttribute('data-playful-preference')) return;
+      entry.field.dispatchEvent(new Event(entry.field.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true }));
+    });
+    if (window.Playful && Playful.syncPreferences) Playful.syncPreferences(document);
+  });
 })();
 </script>
 <script src="../data/explorations.js"></script>
