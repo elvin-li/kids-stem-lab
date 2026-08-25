@@ -834,7 +834,8 @@
     "卵": "卵：生命刚开始，先记录形状、数量和附着位置，不要触碰。",
     "幼虫／若虫": "幼虫：主要任务是吃和长大，外形可能与成虫很不同。",
     "蛹": "蛹：外表安静，身体内部正在重组；不是一颗没有生命的壳。",
-    "成虫": "成虫：身体分区和翅更容易辨认，通常能够繁殖。"
+    "成虫": "成虫：身体分区和翅更容易辨认，通常能够繁殖。",
+    "无法判断": "无法判断也是诚实的记录：先写下现在看到的特征，过些时间再观察一次。"
   };
 
   function selectOne(button, selector) {
@@ -853,13 +854,24 @@
     });
   });
 
+  var lifeStageSelect = document.getElementById("lifeStage");
   [].forEach.call(document.querySelectorAll(".life-node[data-stage]"), function (button) {
     button.addEventListener("click", function () {
       var stage = button.getAttribute("data-stage");
       selectOne(button, ".life-node");
-      document.getElementById("lifeStage").value = stage;
+      lifeStageSelect.value = stage;
       lookResult.textContent = stageNotes[stage];
     });
+  });
+  /* 下拉框标着「舞台上选中的阶段」，原来只有按钮→下拉单向同步：直接改下拉后，
+     舞台仍亮着旧阶段、说明卡还讲旧阶段，两处和下拉互相矛盾。反向也要跟上；
+     「无法判断」没有对应按钮，就把四个节点全部熄掉。 */
+  lifeStageSelect.addEventListener("change", function () {
+    var stage = lifeStageSelect.value;
+    [].forEach.call(document.querySelectorAll(".life-node[data-stage]"), function (button) {
+      button.setAttribute("aria-pressed", button.getAttribute("data-stage") === stage ? "true" : "false");
+    });
+    if (stageNotes[stage]) lookResult.textContent = stageNotes[stage];
   });
 
   [].forEach.call(document.querySelectorAll(".quick-picks[data-fill] .kid-choice"), function (button) {
