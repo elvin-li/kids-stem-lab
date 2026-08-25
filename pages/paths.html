@@ -789,6 +789,17 @@ Array.prototype.slice.call(document.querySelectorAll("[data-plan-age]")).forEach
 /* 年龄卡上原本只有一个 emoji，看不出这一阶段在做什么。换成共享插图里的路线横幅。 */
 var art=route.querySelector("[data-route-art]")||route.querySelector(".t-art"),slug="route/"+route.dataset.routeArt;
 if(art&&window.ILLUSTRATIONS&&ILLUSTRATIONS.hasArt(slug)&&ILLUSTRATIONS.renderArt(art,slug,{decorative:true}))art.classList.add("has-art");});document.getElementById("makePlan").addEventListener("click",make);document.getElementById("printPlan").addEventListener("click",function(){document.body.classList.add("print-plan");window.print();});window.addEventListener("afterprint",function(){document.body.classList.remove("print-plan");});var saved=read();if(saved&&saved.items){age.value=saved.age||"4-6";time.value=saved.time||"60";interest.value=saved.interest||"all";device.value=saved.device||"mixed";render(saved);msg.textContent="已恢复上次保存的计划";}
+/* 按「返回」回到这页——资料区其余五页上一轮都补过返回导航的重同步，唯独这页缺着。
+   bfcache 整页复活时 <html data-mode> 冻着出发前的值：在别的页面切过孩子/家长模式
+   再回来，「今天就能做」卡、导语、阶段跳转条和页脚这些分两层的内容还按旧模式摆，
+   导航里的模式下拉也停在旧值；按存好的偏好重对齐即可。back_forward 重建时浏览器在
+   load 之后、pageshow 之前才把四个规划下拉恢复成上次拨到的位置，而且一个事件也不发——
+   上面那次恢复刚按保存的计划把下拉和地图对齐，这一步又把没生成过的旧选择盖回下拉上：
+   下拉写着「10–12 岁」，下面的地图和「已恢复上次保存的计划」讲的还是 4–6 岁那份。
+   把下拉拨回保存的计划（和首次打开一致）；不能改调 make()，那会悄悄把没人要求生成的
+   新计划存进本机、盖掉保存好的那份。没保存过计划就没有地图可失同步，下拉不动。
+   首次打开是 navigate，一概不补。 */
+window.addEventListener("pageshow",function(event){var nav=performance.getEntriesByType?performance.getEntriesByType("navigation")[0]:null;var rebuilt=!event.persisted&&nav&&(nav.type==="back_forward"||nav.type==="reload");if(!event.persisted&&!rebuilt)return;if(rebuilt){var kept=read();if(kept&&kept.items){age.value=kept.age||"4-6";time.value=kept.time||"60";interest.value=kept.interest||"all";device.value=kept.device||"mixed";}}if(window.Playful&&Playful.syncPreferences)Playful.syncPreferences(document);});
 })();
 </script>
 <script src="../assets/js/pwa.js?v=54"></script>
