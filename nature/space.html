@@ -1608,8 +1608,10 @@
  desc:"离太阳最近的行星，几乎没有大气。白天能到 430℃，夜里降到 -180℃——同一天里温差 600\u00a0度以上。它绕太阳一圈只要 88\u00a0天，是跑得最快的行星。",
  wow:"水星上看日出，太阳会先升起、停住、往回落一点，再重新升起。因为它自转和公转的速度太接近了。",
  q:"mercury planet" },
- { id:"venus", zh:"金星", en:"Venus", emoji:"🔥", col:"#e8c07a",
- au:0.72, dkm:12104, g:0.91, day:243, year:0.62, tempC:464, moons:0,
+/* year 用 0.6152（224.7 天）而不是 0.62：数据卡按 Math.round(year×365) 显示，
+ 0.62 会算出「一年 226 地球天」，和本页三处「一年 225 天（比一天 243 天短）」打架。 */
+{ id:"venus", zh:"金星", en:"Venus", emoji:"🔥", col:"#e8c07a",
+au:0.72, dkm:12104, g:0.91, day:243, year:0.6152, tempC:464, moons:0,
  tag:"最热的行星",
  desc:"大小几乎和地球一样，却是太阳系最热的地方。厚厚的二氧化碳大气把热量牢牢锁住，地表气压是地球的 90\u00a0倍——相当于在海里下潜 900\u00a0米。",
  wow:"金星自转的方向和其他行星相反。在金星上，太阳从西边升起。",
@@ -2333,7 +2335,9 @@
  { answer:"jupiter", options:["jupiter", "saturn", "venus", "neptune"], hint:"看花纹：一条条横着的带子，右下角还有一个大红点。" },
  { answer:"mars", options:["mars", "mercury", "earth", "jupiter"], hint:"看颜色：像铁锈那样的红棕色，上边还有一小块白。" },
  { answer:"earth", options:["earth", "neptune", "moon", "venus"], hint:"看颜色：蓝色里夹着绿色的块，还有白色的云。" },
- { answer:"neptune", options:["neptune", "uranus", "earth", "saturn"], hint:"看蓝的深浅：这颗蓝得很深，而且看不到环。" },
+ /* 提示不能说「看不到环」：#art-neptune 明明画了两道又细又暗的环
+ （真实的海王星也有暗环），孩子照提示会把画上有环的这颗排除掉。 */
+{ answer:"neptune", options:["neptune", "uranus", "earth", "saturn"], hint:"看蓝的深浅：这颗蓝得很深，环细得几乎看不见。" },
  { answer:"uranus", options:["uranus", "neptune", "saturn", "venus"], hint:"看颜色和环的方向：颜色很淡，环几乎是立着的。" }
  ];
  var NAMES = { moon: "月球" };
@@ -2367,14 +2371,16 @@
  return got;
  }
 
- function drawTarget(key) {
- var source = document.querySelector('[data-spx-art="' + key + '"] svg');
- quizArtBody.textContent = "";
- if (!source) return;
- [].slice.call(source.children).forEach(function (node) {
- quizArtBody.appendChild(node.cloneNode(true));
- });
- }
+/* ① 图鉴卡里早已换成实拍照片（<img>），卡里没有 <svg> 可克隆——
+ 原来这里 querySelector('[data-spx-art] svg') 永远拿到 null 然后 return，
+ 「猜猜这是哪颗星」的舞台从头到尾是一块空画布，六轮全在对着空图猜。
+ 图库符号 #art-太阳系各星 一直都在（下面的选项瓦片用的就是它们），直接引用。 */
+function drawTarget(key) {
+quizArtBody.textContent = "";
+var use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+use.setAttribute("href", "#art-" + key);
+quizArtBody.appendChild(use);
+}
 
  function shuffle(list) {
  var out = list.slice();
