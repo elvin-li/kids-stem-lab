@@ -681,6 +681,10 @@
  <button type="button" data-slot="a" data-move="tilt" aria-pressed="false">身体倾斜</button>
  <button type="button" data-slot="a" data-move="hurt" aria-pressed="false">受伤警告</button>
  <button type="button" data-slot="a" data-move="temp" aria-pressed="false">冷和热</button>
+ <button type="button" data-slot="a" data-move="scratch" aria-pressed="false">轻刮发痒</button>
+ <button type="button" data-slot="a" data-move="fuel" aria-pressed="false">该吃东西</button>
+ <button type="button" data-slot="a" data-move="water" aria-pressed="false">身体缺水</button>
+ <button type="button" data-slot="a" data-move="where" aria-pressed="false">手脚在哪</button>
  </div>
  </div>
  <div class="se-choice-row">
@@ -694,6 +698,10 @@
  <button type="button" data-slot="b" data-move="tilt" aria-pressed="false">身体倾斜</button>
  <button type="button" data-slot="b" data-move="hurt" aria-pressed="false">受伤警告</button>
  <button type="button" data-slot="b" data-move="temp" aria-pressed="false">冷和热</button>
+ <button type="button" data-slot="b" data-move="scratch" aria-pressed="false">轻刮发痒</button>
+ <button type="button" data-slot="b" data-move="fuel" aria-pressed="false">该吃东西</button>
+ <button type="button" data-slot="b" data-move="water" aria-pressed="false">身体缺水</button>
+ <button type="button" data-slot="b" data-move="where" aria-pressed="false">手脚在哪</button>
  </div>
  </div>
  <button class="btn btn-primary" type="button" id="confirmBtn" disabled>记下这次比较</button>
@@ -884,7 +892,9 @@
 (function(){
  "use strict";
  var NAMES = { eye:"眼", ear:"耳", nose:"鼻", tongue:"舌", skin:"皮肤", balance:"平衡", pain:"痛", temp:"冷热", itch:"痒", hunger:"饿", thirst:"渴", proprio:"位置感" };
- var MOVES = { light:"光", sound:"声音", smell:"气味", taste:"味道", touch:"触碰", tilt:"身体倾斜", hurt:"受伤警告", temp:"冷和热" };
+ var MOVES = { light:"光", sound:"声音", smell:"气味", taste:"味道", touch:"触碰", tilt:"身体倾斜", hurt:"受伤警告", temp:"冷和热", scratch:"轻刮发痒", fuel:"该吃东西", water:"身体缺水", where:"手脚在哪" };
+ /* 每种探测器只认自己那种信号；判分对照这张表，别把「眼探测味道」记进足迹 */
+ var ANSWER = { eye:"light", ear:"sound", nose:"smell", tongue:"taste", skin:"touch", balance:"tilt", pain:"hurt", temp:"temp", itch:"scratch", hunger:"fuel", thirst:"water", proprio:"where" };
  var PATHS = {
  eye: { a:"M266 76 C240 60 230 40 260 30", b:"M294 76 C320 60 330 40 300 30", ax:266, ay:76, bx:294, by:76 },
  ear: { a:"M244 78 C220 56 230 34 260 28", b:"M316 78 C340 56 330 34 300 28", ax:244, ay:78, bx:316, by:78 },
@@ -968,6 +978,11 @@
  status.textContent = "两个探测对象现在一样。任务是说出各自在探测什么。";
  return;
  }
+ if (moves.a !== ANSWER[picked[0]] || moves.b !== ANSWER[picked[1]]) {
+ btn.disabled = true;
+ status.textContent = "再想想：每种探测器只认自己那种信号。眼抓光，耳抓振动，鼻抓分子……";
+ return;
+ }
  btn.disabled = false;
  status.textContent = NAMES[picked[0]]+"探测"+MOVES[moves.a]+"，"+NAMES[picked[1]]+"探测"+MOVES[moves.b]+"。点「记下这次比较」。";
  }
@@ -1015,6 +1030,7 @@
  });
  document.getElementById("confirmBtn").addEventListener("click", function(){
  if (done || picked.length < 2 || !moves.a || !moves.b || moves.a === moves.b) return;
+ if (moves.a !== ANSWER[picked[0]] || moves.b !== ANSWER[picked[1]]) return;
  done = true;
  var evidence = NAMES[picked[0]]+"探测"+MOVES[moves.a]+"，"+NAMES[picked[1]]+"探测"+MOVES[moves.b];
  if (window.Progress) Progress.complete("nature/senses.html", evidence);
