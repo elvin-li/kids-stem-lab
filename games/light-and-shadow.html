@@ -2173,6 +2173,11 @@
       objXEl = document.getElementById('objX'), objHEl = document.getElementById('objH'),
       lampREl = document.getElementById('lampR'), sourceGapEl = document.getElementById('sourceGap');
 
+  /* 「先猜一猜」的揭晓原来只挂在 lampX/lampY 两根滑杆的 input 上：孩子押完注，
+     照提示去拖画布上的灯、或按「灯靠近道具」快捷键，灯明明动了，揭晓却永远不来——
+     这些路径改的是 S.lamp，不会在滑杆上冒 input 事件。所有搬灯的路径（滑杆、拖拽、
+     键盘、快捷键）最后都汇到 syncShadowSliders，就在这里对比灯的位置，动了才广播。 */
+  var lampSyncPrev = { x: S.lamp.x, y: S.lamp.y };
   function syncShadowSliders() {
     lampXEl.value = String(Math.round(S.lamp.x * 100));
     lampYEl.value = String(Math.round(S.lamp.y * 100));
@@ -2186,6 +2191,10 @@
     sourceGapEl.value = String(Math.round(S.sourceGap * 100));
     out('sourceGapOut', Math.round(S.sourceGap * 100) + '%');
     out('sourceCountOut', S.sourceCount + ' 盏');
+    if (Math.abs(S.lamp.x - lampSyncPrev.x) > 0.0001 || Math.abs(S.lamp.y - lampSyncPrev.y) > 0.0001) {
+      lampSyncPrev.x = S.lamp.x; lampSyncPrev.y = S.lamp.y;
+      document.dispatchEvent(new CustomEvent('light:lampmove'));
+    }
   }
   lampXEl.addEventListener('input', function () { S.lamp.x = clamp(parseFloat(this.value) / 100, 0.02, wallX - 0.06); syncShadowSliders(); });
   lampYEl.addEventListener('input', function () { S.lamp.y = clamp(parseFloat(this.value) / 100, 0.06, 0.92); syncShadowSliders(); });
@@ -2384,14 +2393,14 @@
       document.getElementById("guessOut3").textContent = "押好了。先搬一次灯，再对照影子变大还是变小。";
     });
   });
-  ["lampX", "lampY"].forEach(function(id){
-    var el = document.getElementById(id);
-    if (el) el.addEventListener("input", function(){
-      if (guess1 && !guess1Done) sawMove1 = true;
-      else if (guess2 && !guess2Done) sawMove2 = true;
-      else if (guess3 && !guess3Done) sawMove3 = true;
-      checkGuess();
-    });
+  /* 听主脚本广播的 light:lampmove，而不是只听两根滑杆的 input：
+     拖画布上的灯、按「灯靠近/远离道具」快捷键、键盘方向键搬灯都会触发广播，
+     孩子无论用哪种方式搬灯，押注都能揭晓。 */
+  document.addEventListener("light:lampmove", function(){
+    if (guess1 && !guess1Done) sawMove1 = true;
+    else if (guess2 && !guess2Done) sawMove2 = true;
+    else if (guess3 && !guess3Done) sawMove3 = true;
+    checkGuess();
   });
 })();
 </script>
