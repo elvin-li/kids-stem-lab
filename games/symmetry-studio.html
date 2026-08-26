@@ -985,7 +985,7 @@
       <button class="btn guess-pick" type="button" data-guess1="slide" aria-pressed="false">整块往右平移复制就行</button>
       <button class="btn guess-pick" type="button" data-guess1="spin" aria-pressed="false">只要转 90° 就重合</button>
     </div>
-    <p class="guess-out" id="guessOut1" role="status" aria-live="polite" style="font-weight:750;color:var(--ink-mid)">押一个。再到上面镜子测验答对一题，或打开镜像画一笔验证。</p>
+    <p class="guess-out" id="guessOut1" role="status" aria-live="polite" style="font-weight:750;color:var(--ink-mid)">押一个。去上面「哪个是镜子里的」答对一题揭晓。</p>
     <div id="guessBlock2" hidden>
       <p><b>第 2 题：</b>风车能转一圈重合好几次，但沿竖线对折会？</p>
       <div class="pick-btns" role="group" aria-label="猜旋转对称对折" style="display:flex;gap:8px;flex-wrap:wrap">
@@ -993,7 +993,7 @@
         <button class="btn guess-pick" type="button" data-guess2="fit" aria-pressed="false">一定能对折重合</button>
         <button class="btn guess-pick" type="button" data-guess2="color" aria-pressed="false">只要颜色一样就算对称</button>
       </div>
-      <p class="guess-out" id="guessOut2" role="status" aria-live="polite" style="font-weight:750;color:var(--ink-mid)">押好后再去半对折/是否对称测验答对一题揭晓。</p>
+      <p class="guess-out" id="guessOut2" role="status" aria-live="polite" style="font-weight:750;color:var(--ink-mid)">押好后去上面「补另一半」或「对折能重合吗」答对一题揭晓。</p>
     </div>
     <div id="guessBlock3" hidden>
       <p><b>第 3 题：</b>镜像开着、1 折：画板上一笔，屏幕上会多出一笔、还是仍是一笔？</p>
@@ -2045,7 +2045,7 @@
         why: "P 的圆头只在右边，左边没有，对折盖不住。" },
       { name: "小旗子", face: "🏳️", ok: false, tone: "var(--warn)",
         d: "M96 26 H150 V70 H96 V118 H82 V26 Z",
-        why: "上下两块不一样宽，折过去会错开。" },
+        why: "旗杆在左、旗面在右，折过去杆子那边没有能盖住它的。" },
       { name: "月牙", face: "🌙", ok: false, tone: "var(--phys)",
         d: "M132 24 A48 48 0 1 0 132 120 A38 38 0 1 1 132 24 Z",
         why: "缺口偏在一边，沿这条线折不重合。" }
@@ -2375,7 +2375,7 @@
       Array.prototype.forEach.call(document.querySelectorAll("[data-guess2]"), function(n){
         n.setAttribute("aria-pressed", n === btn ? "true" : "false");
       });
-      document.getElementById("guessOut2").textContent = "押好了。去半对折测验答对一题再揭晓。";
+      document.getElementById("guessOut2").textContent = "押好了。去「补另一半」或「对折能重合吗」答对一题再揭晓。";
     });
   });
   Array.prototype.forEach.call(document.querySelectorAll("[data-guess3]"), function(btn){
@@ -2405,6 +2405,16 @@
       if (guess2 && !guess2Done && n > lastH) { sawHalf = true; lastH = n; checkGuess(); }
     });
     obsH.observe(halfEl, { childList: true, characterData: true, subtree: true });
+  }
+  /* 第 2 题问的正是「对折会怎样」，所以「对折能重合吗」答对也要能揭晓 */
+  var yesnoEl = document.getElementById("yesnoScore");
+  if (yesnoEl) {
+    var lastY = parseInt(yesnoEl.textContent, 10) || 0;
+    var obsY = new MutationObserver(function(){
+      var n = parseInt(yesnoEl.textContent, 10) || 0;
+      if (guess2 && !guess2Done && n > lastY) { sawHalf = true; lastY = n; checkGuess(); }
+    });
+    obsY.observe(yesnoEl, { childList: true, characterData: true, subtree: true });
   }
   var statusEl = document.getElementById("symStatus");
   if (statusEl) {
