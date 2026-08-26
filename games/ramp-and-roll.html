@@ -1040,18 +1040,20 @@
       <section class="panel" aria-labelledby="moreControlsTitle">
         <h2 id="moreControlsTitle" style="font-size:1.15rem">详细设置</h2>
         <div class="ctrl">
-          <div class="ctrl-head"><label for="mu">跑道摩擦</label><b id="muOut">0.10</b></div>
-          <input class="input" type="range" id="mu" min="0" max="0.5" step="0.01" value="0.1" aria-describedby="muHint">
-          <div class="hint" id="muHint">冰面 0.02 · 木板 0.15 · 地毯 0.35</div>
+          <div class="ctrl-head"><label for="mu">跑道摩擦</label><b id="muOut">0.24</b></div>
+          <input class="input" type="range" id="mu" min="0" max="0.5" step="0.01" value="0.24" aria-describedby="muHint">
+          <!-- 三种铺面在孩子层的大图卡上是 0.12/0.24/0.44，这里原来却写 0.02/0.15/0.35：
+               同一页里「冰面」有两个不同的摩擦系数，家长按哪套都对不上孩子的读数。统一成图卡那套。 -->
+          <div class="hint" id="muHint">冰面 0.12 · 木板 0.24 · 地毯 0.44</div>
           <div class="seg" style="margin-top:8px" role="group" aria-label="常见表面">
-            <button class="chip btn-sm" type="button" data-mu="0.02" aria-pressed="false">冰面</button>
-            <button class="chip btn-sm" type="button" data-mu="0.15" aria-pressed="false">木板</button>
-            <button class="chip btn-sm" type="button" data-mu="0.35" aria-pressed="false">地毯</button>
+            <button class="chip btn-sm" type="button" data-mu="0.12" aria-pressed="false">冰面</button>
+            <button class="chip btn-sm" type="button" data-mu="0.24" aria-pressed="false">木板</button>
+            <button class="chip btn-sm" type="button" data-mu="0.44" aria-pressed="false">地毯</button>
           </div>
         </div>
         <div class="ctrl">
-          <div class="ctrl-head"><label for="mass">球的质量</label><b id="massOut">0.50&nbsp;kg</b></div>
-          <input class="input" type="range" id="mass" min="0.1" max="3" step="0.05" value="0.5">
+          <div class="ctrl-head"><label for="mass">球的质量</label><b id="massOut">0.80&nbsp;kg</b></div>
+          <input class="input" type="range" id="mass" min="0.1" max="3" step="0.05" value="0.8">
         </div>
         <div class="ctrl">
           <div class="ctrl-head"><label for="ts">播放速度</label><b id="tsOut">1.00×</b></div>
@@ -1168,8 +1170,12 @@
   var RUNWAY = 6;          // 平地长度（米）
   var BALL_R = 0.09;       // 球半径（米，仅用于画图与滚动动画）
 
+  /* 出厂值要和四组大图卡上的读数（0.60 m · 30° · 0.80 kg · 木板 μ=0.24）说同一件事。
+     原来是 h=1.2、mu=0.1、m=0.5：标签写着矮坡、木板、0.8 kg，球却按另一套参数滚；
+     而且 1.2 m 配 μ=0.1 每一轮都冲出 6 米跑道尽头（停距约 9.9 m），
+     默认条件下永远做不出一次有效试车。 */
   var S = {
-    ang: 30, h: 1.2, mu: 0.1, m: 0.5, timeScale: 1,
+    ang: 30, h: 0.6, mu: 0.24, m: 0.8, timeScale: 1,
     phase: 'ready',        // ready | ramp | floor | stopped
     s: 0,                  // 沿斜坡走过的距离
     d: 0,                  // 平地上走过的距离
@@ -1255,21 +1261,63 @@
     S.t += dt;
   }
 
+  /* ---------- 「猜的和真的，比一比」量表 ----------
+     这三件（我猜的 / 球停的 / 差多少）在图像化改造里只加了样子没接线：
+     「球停的」永远写着「还没放球」，误差点一个也不亮，像坏的。 */
+  var rrPredMeterEl = document.getElementById('rrPredMeter');
+  var rrPredMeterValue = document.getElementById('rrPredMeterValue');
+  var rrActMeterEl = document.getElementById('rrActMeter');
+  var rrActMeterValue = document.getElementById('rrActMeterValue');
+  var rrGapDots = document.getElementById('rrGapDots');
+  var rrGapNum = document.getElementById('rrGapNum');
+  function meterFill(track, value, max) {
+    if (!track) return;
+    if (window.Playful && Playful.setMeter) { Playful.setMeter(track, value, max); return; }
+    var fill = track.querySelector('.kid-meter-fill');
+    var ratio = Math.max(0, Math.min(1, Number(value) / Number(max)));
+    if (fill) fill.style.setProperty('--fill', (ratio * 100).toFixed(1) + '%');
+  }
+  /* 误差用可数的点：一个点代表 0.25 米，亮的越多差得越多 */
+  function paintGapDots(err) {
+    if (!rrGapDots) return;
+    rrGapDots.textContent = '';
+    if (err === null) return;
+    var lit = Math.max(0, Math.min(10, Math.round(err / 0.25)));
+    for (var i = 0; i < 10; i++) {
+      var dot = document.createElement('i');
+      if (i >= lit) dot.setAttribute('data-empty', 'true');
+      rrGapDots.appendChild(dot);
+    }
+  }
+  function paintResultMeters(text, dist, err, gapText) {
+    if (rrActMeterValue) rrActMeterValue.textContent = text;
+    meterFill(rrActMeterEl, dist, RUNWAY);
+    paintGapDots(err);
+    if (rrGapNum) rrGapNum.textContent = gapText;
+  }
+
   function finish(stuckOnRamp, hitWall) {
     running = false;
     btnGo.textContent = '再来一次';
+    /* 一轮跑完就把预测滑杆解锁：原来 start() 里 disabled=true 之后再也没人改回来，
+       第一轮之后滑杆永远是灰的。 */
+    predEl.disabled = false;
     if (stuckOnRamp) {
       S.predLocked = false;
       actV.textContent = '没动';
+      paintResultMeters('没动', 0, null, '这轮不算');
       announce('斜坡太平缓，摩擦力大于下滑力，球没有动；这一轮不会记录。');
       toast('球没滚动，请把坡调陡或减小摩擦');
       updateABDisplay();
       return;
     }
-    actV.textContent = (hitWall ? '≥ ' : '') + S.d.toFixed(2) + ' m';
+    var actText = (hitWall ? '≥ ' : '') + S.d.toFixed(2) + ' m';
+    actV.textContent = actText;
     if (S.predLocked) {
       var err = Math.abs(S.d - S.pred);
       errV.textContent = err.toFixed(2) + ' m';
+      /* 冲出跑道时只知道「至少 6 米」，误差算不出来，点阵不能装作量到了 */
+      paintResultMeters(actText, S.d, hitWall ? null : err, hitWall ? '冲出跑道' : err.toFixed(2) + ' m');
       var good = err <= Math.max(0.15, S.d * 0.12);
       errV.style.color = good ? C.sci : C.warn;
       if (good) toast('预测很接近，误差 ' + err.toFixed(2) + '\u00a0米');
@@ -1278,6 +1326,7 @@
       recordFairTrial(err, hitWall);
       S.predLocked = false;
     } else {
+      paintResultMeters(actText, S.d, null, '这轮没插旗');
       announce('球停在离坡底 ' + S.d.toFixed(2) + '\u00a0米。');
       updateABDisplay();
     }
@@ -1392,7 +1441,8 @@
     ctx.arcTo(x, y, x + w, y, r);
     ctx.closePath();
   }
-  function frictionWord() { return S.mu <= 0.05 ? '很滑' : (S.mu < 0.16 ? '有点糙' : '很糙'); }
+  /* 三档铺面统一成 0.12/0.24/0.44 之后，档位词的分界跟着挪：冰面（0.12）要读作「很滑」 */
+  function frictionWord() { return S.mu <= 0.16 ? '很滑' : (S.mu < 0.34 ? '有点糙' : '很糙'); }
 
   function draw() {
     computeView();
@@ -1687,6 +1737,8 @@
   var rampFairCardSave = document.getElementById('rampFairCardSave');
   var rampReflection = document.getElementById('rampReflection');
   var rampComplete = document.getElementById('rampComplete');
+  var rrDoneCard = document.getElementById('rrDoneCard');
+  var rrDoneText = document.getElementById('rrDoneText');
   var rampTaskStatus = document.getElementById('rampTaskStatus');
   var fairPassed = false, fairChanged = '', progressSaved = false;
   var VAR_LABELS = { ang: '角度', h: '高度', mu: '跑道', m: '球重' };
@@ -1790,7 +1842,14 @@
   function updateRampTask() {
     var canComplete = fairPassed && S.trials.length === 2;
     rampComplete.disabled = !canComplete || progressSaved;
-    rampComplete.hidden = true;
+    /* 这一行在 00126ee 修成过「按 canComplete 显隐」，后来又回退成写死 true——
+       按钮永远不出现，触屏孩子过了公平比较也没有记录入口。连同外面的奖章卡
+       #rrDoneCard（markup 自带 hidden、从没人揭开）一起按条件显隐。 */
+    rampComplete.hidden = !canComplete;
+    if (rrDoneCard) rrDoneCard.hidden = !canComplete;
+    if (canComplete && rrDoneText && fairChanged) {
+      rrDoneText.textContent = '只改了「' + fairChanged + '」，两轮停的地方就不一样，才能看出到底是哪一项在起作用。';
+    }
     rampComplete.textContent = progressSaved ? '已记录完成' : '记录完成';
     rampFairCardSave.disabled = !canComplete;
     if (canComplete) {
@@ -1905,6 +1964,8 @@
     fairChanged = '';
     progressSaved = false;
     reset(false);
+    predEl.disabled = false;
+    paintResultMeters('还没放球', 0, null, '还没放球');
     fairResult.textContent = '先锁定预测，完成 A 轮。';
     updateRampTask();
     updateABDisplay();
@@ -1923,14 +1984,13 @@
     return el;
   }
 
-  /* 角度与高度滑杆已从界面移除，S.ang / S.h 用初始值（30°、1.2 m）。
-     这里原本还绑定 'ang' / 'hgt'，但那两个 id 早已不在 markup 里：
-     bindRange 第一行就对 null 调 addEventListener，整段脚本从此中断，
-     后面所有控件都绑不上。别再按 id 绑不存在的控件。 */
+  /* 角度与高度没有家长滑杆（'ang' / 'hgt' 两个 id 早已不在 markup 里：
+     bindRange 第一行就会对 null 调 addEventListener，整段脚本从此中断，
+     别再按 id 绑不存在的控件）。S.ang / S.h 由「坡有多高 / 坡有多陡」的大图卡设置。 */
   var muEl = bindRange('mu', 'muOut', function (v) { return v.toFixed(2); },
-    function (v) { S.mu = Math.min(0.5, Math.max(0, v)); syncMuChips(); running = false; reset(true); });
-  bindRange('mass', 'massOut', function (v) { return v.toFixed(2) + '\u00a0kg'; },
-    function (v) { S.m = Math.min(3, Math.max(0.1, v)); running = false; reset(true); });
+    function (v) { S.mu = Math.min(0.5, Math.max(0, v)); syncMuChips(); syncVarTiles(); running = false; reset(true); });
+  var massEl = bindRange('mass', 'massOut', function (v) { return v.toFixed(2) + '\u00a0kg'; },
+    function (v) { S.m = Math.min(3, Math.max(0.1, v)); syncVarTiles(); running = false; reset(true); });
   bindRange('ts', 'tsOut', function (v) { return v.toFixed(2) + '×'; },
     function (v) { S.timeScale = Math.min(1, Math.max(0.15, v)); });
 
@@ -1945,17 +2005,80 @@
       S.mu = parseFloat(b.dataset.mu);
       muEl.value = String(S.mu);
       document.getElementById('muOut').textContent = S.mu.toFixed(2);
-      syncMuChips(); running = false; reset(true);
+      syncMuChips(); syncVarTiles(); running = false; reset(true);
       announce('表面已切换，摩擦系数 ' + S.mu.toFixed(2));
     });
   });
   syncMuChips();
+
+  /* ---------- 四组大图卡（坡高 / 坡度 / 球重 / 跑道）接线 ----------
+     图像化改造只加了卡片的样子：点了没反应，「坡有多高 · 0.60 m」这些读数
+     永远停在出厂值。页面自己的任务说「只改一样（高度、角度、跑道或球重）」，
+     孩子照做时实验条件却纹丝不动，公平比较根本做不成。 */
+  var rrHeightNow = document.getElementById('rrHeightNow');
+  var rrAngleNow = document.getElementById('rrAngleNow');
+  var rrMassNow = document.getElementById('rrMassNow');
+  var rrTrackNow = document.getElementById('rrTrackNow');
+  var TRACK_NAMES = [[0.12, '冰面'], [0.24, '木板'], [0.44, '地毯']];
+  function trackName(mu) {
+    for (var i = 0; i < TRACK_NAMES.length; i++) {
+      if (Math.abs(TRACK_NAMES[i][0] - mu) < 0.005) return TRACK_NAMES[i][1];
+    }
+    return 'μ ' + mu.toFixed(2);
+  }
+  function syncTileGroup(attr, current) {
+    [].forEach.call(document.querySelectorAll('[' + attr + ']'), function (tile) {
+      var v = parseFloat(tile.getAttribute(attr));
+      tile.setAttribute('aria-pressed', Math.abs(v - current) < 0.005 ? 'true' : 'false');
+    });
+  }
+  function syncVarTiles() {
+    syncTileGroup('data-rr-h', S.h);
+    syncTileGroup('data-rr-ang', S.ang);
+    syncTileGroup('data-rr-m', S.m);
+    syncTileGroup('data-rr-mu', S.mu);
+    if (rrHeightNow) rrHeightNow.textContent = S.h.toFixed(2) + '\u00a0m';
+    if (rrAngleNow) rrAngleNow.textContent = Math.round(S.ang) + '°';
+    if (rrMassNow) rrMassNow.textContent = S.m.toFixed(2) + '\u00a0kg';
+    if (rrTrackNow) rrTrackNow.textContent = trackName(S.mu);
+  }
+  function bindVarTiles(attr, apply, say) {
+    [].forEach.call(document.querySelectorAll('[' + attr + ']'), function (tile) {
+      tile.addEventListener('click', function () {
+        var v = parseFloat(tile.getAttribute(attr));
+        if (!isFinite(v)) return;
+        apply(v);
+        running = false;
+        reset(true);
+        syncVarTiles();
+        updateABDisplay();
+        announce(say());
+      });
+    });
+  }
+  bindVarTiles('data-rr-h', function (v) { S.h = Math.min(3, Math.max(0.2, v)); },
+    function () { return '坡高改成 ' + S.h.toFixed(2) + '\u00a0米。'; });
+  bindVarTiles('data-rr-ang', function (v) { S.ang = Math.min(60, Math.max(10, v)); },
+    function () { return '坡度改成 ' + Math.round(S.ang) + '\u00a0度。'; });
+  bindVarTiles('data-rr-m', function (v) {
+    S.m = Math.min(3, Math.max(0.1, v));
+    massEl.value = String(S.m);
+    document.getElementById('massOut').textContent = S.m.toFixed(2) + '\u00a0kg';
+  }, function () { return '球重改成 ' + S.m.toFixed(2) + '\u00a0公斤。'; });
+  bindVarTiles('data-rr-mu', function (v) {
+    S.mu = Math.min(0.5, Math.max(0, v));
+    muEl.value = String(S.mu);
+    document.getElementById('muOut').textContent = S.mu.toFixed(2);
+    syncMuChips();
+  }, function () { return '跑道换成' + trackName(S.mu) + '，摩擦系数 ' + S.mu.toFixed(2) + '。'; });
 
   var predEl = document.getElementById('pred'), predOut = document.getElementById('predOut');
   function setPred(v, silent) {
     S.pred = Math.min(RUNWAY, Math.max(0, v));
     predEl.value = String(S.pred);
     predOut.textContent = S.pred.toFixed(2) + ' m';
+    if (rrPredMeterValue) rrPredMeterValue.textContent = S.pred.toFixed(2) + ' m';
+    meterFill(rrPredMeterEl, S.pred, RUNWAY);
     if (!silent) announce('预测位置 ' + S.pred.toFixed(2) + '\u00a0米');
   }
   predEl.addEventListener('input', function () {
@@ -1990,6 +2113,9 @@
 
   // 点击地面放旗
   function canvasPred(ev) {
+    /* 球在跑、或预测已锁定时，点跑道不能再挪旗：滑杆那条路早有这道闸，画布这条却漏了，
+       锁定之后还能把旗拖到球的落点旁边「作弊」。 */
+    if (running || S.predLocked) return;
     var r = cv.getBoundingClientRect();
     var px = (ev.clientX - r.left) * (W / r.width);
     var py = (ev.clientY - r.top) * (H / r.height);
@@ -2016,6 +2142,8 @@
 
   reset(false);
   updateRampTask();
+  syncVarTiles();
+  setPred(S.pred, true);   // 让「我猜的」量表从第一眼起就和旗子读数一致
   resize();
   requestDraw();   // 走 requestDraw 而不是裸 rAF：否则首帧待执行时 rafId 仍为 0，交互唤醒会重复排帧
 })();
