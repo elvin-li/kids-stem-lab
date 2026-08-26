@@ -202,6 +202,31 @@
  <circle class="st-ring" id="ring-cross" cx="48" cy="170" r="28"/>
  <text class="st-label" x="48" y="214" text-anchor="middle">南十字</text>
  </g>
+ <g id="figLittle">
+ <path class="st-line" d="M278 48 L266 64 L252 78 L234 86 L238 104 L256 96 L252 78"/>
+ <circle class="st-dot" cx="266" cy="64" r="2.6"/>
+ <circle class="st-dot" cx="252" cy="78" r="2.8"/>
+ <circle class="st-dot" cx="234" cy="86" r="2.6"/>
+ <circle class="st-dot" cx="238" cy="104" r="2.6"/>
+ <circle class="st-dot" cx="256" cy="96" r="2.6"/>
+ <circle class="st-ring" id="ring-little" cx="248" cy="88" r="30"/>
+ <text class="st-label" x="248" y="132" text-anchor="middle">小北斗</text>
+ </g>
+ <g id="figDeneb">
+ <circle class="st-bright" cx="320" cy="110" r="5.5"/>
+ <circle class="st-ring" id="ring-deneb" cx="320" cy="110" r="13"/>
+ <text class="st-label" x="320" y="138" text-anchor="middle">天津四</text>
+ </g>
+ <g id="figAltair">
+ <circle class="st-bright" cx="350" cy="138" r="6"/>
+ <circle class="st-ring" id="ring-altair" cx="350" cy="138" r="14"/>
+ <text class="st-label" x="350" y="166" text-anchor="middle">牛郎</text>
+ </g>
+ <g id="figArcturus">
+ <circle class="st-bright" cx="180" cy="150" r="6" style="fill:#d0762e"/>
+ <circle class="st-ring" id="ring-arcturus" cx="180" cy="150" r="14"/>
+ <text class="st-label" x="180" y="178" text-anchor="middle">大角</text>
+ </g>
  <g id="figPlea">
  <circle class="st-dot" cx="230" cy="168" r="2.2"/>
  <circle class="st-dot" cx="238" cy="160" r="2.4"/>
@@ -322,7 +347,7 @@
  <button class="kid-figure" type="button" id="stFigCass" data-st="cass" aria-pressed="false" aria-label="仙后座：像字母 W" data-say="仙后座：五颗星连起来像字母 W。它和北斗隔着北极星，也能帮忙找到北，但本身不是北极星。">
  <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/stars.jpg" alt="" width="240" height="180"></span>
  <span class="kid-figure-cap">仙后座</span>
- <span class="kid-figure-fact">仙后座五颗星连成字母W，也能帮忙找北，南半球看不见北斗时用它指路。</span>
+ <span class="kid-figure-fact">仙后座五颗星连成字母W，也能帮忙找北；北斗贴近地平线看不清时用它找北极星。</span>
  </button>
  <button class="kid-figure" type="button" id="stFigCross" data-st="cross" aria-pressed="false" aria-label="南十字：南半球才看得到" data-say="南十字：四颗星像一个小十字，是南半球找南的记号。在中国大部分地方看不见它。">
  <span class="kid-figure-art atlas-same" aria-hidden="true"><img class="photo-real" src="../assets/photos/stars.jpg" alt="" width="240" height="180"></span>
@@ -580,6 +605,8 @@
 (function(){
  "use strict";
  var NAMES = { polaris:"北极星", dipper:"北斗七星", orion:"猎户座", sirius:"天狼星", vega:"织女星", cass:"仙后座", cross:"南十字", plea:"昴星团", altair:"牛郎星", deneb:"天津四", arcturus:"大角星", little:"小北斗" };
+ /* 页面自己教过：北斗、仙后、小北斗都能帮忙找到北极星，所以选它们时「用它找北」也算对 */
+ var HELPERS = { dipper: 1, cass: 1, little: 1 };
  var picked = [];
  var roles = { polaris:"", other:"" };
  var done = false;
@@ -596,7 +623,7 @@
  }
  function hasPolaris(){ return picked.indexOf("polaris") >= 0; }
  function paintStage(){
- ["polaris","dipper","orion","sirius","vega","cass","cross","plea"].forEach(function(id){
+ ["polaris","dipper","orion","sirius","vega","cass","cross","plea","altair","deneb","arcturus","little"].forEach(function(id){
  var ring = document.getElementById("ring-"+id);
  if (ring) ring.setAttribute("class", picked.indexOf(id) >= 0 ? "st-ring on" : "st-ring");
  });
@@ -626,13 +653,19 @@
  status.textContent = "两颗都选好了。再选：谁用来找北，谁只是亮。";
  return;
  }
- if (roles.polaris !== "north" || roles.other !== "bright") {
+ var other = otherId();
+ var otherOk = roles.other === "bright" || (roles.other === "north" && HELPERS[other] === 1);
+ if (roles.polaris !== "north" || !otherOk) {
  btn.disabled = true;
- status.textContent = "再想想：哪一颗几乎不动？最亮的那颗一定能找北吗？";
+ status.textContent = (roles.other === "north" && other === "cross")
+ ? "再想想：南十字帮忙找的是南，不是北。"
+ : "再想想：哪一颗几乎不动？最亮的那颗一定能找北吗？";
  return;
  }
  btn.disabled = false;
- status.textContent = "北极星用来找北，"+NAMES[otherId()]+"只是亮。点「记下这次观察」。";
+ status.textContent = roles.other === "north"
+ ? "北极星用来找北，"+NAMES[other]+"帮忙指到它。点「记下这次观察」。"
+ : "北极星用来找北，"+NAMES[other]+"只是亮。点「记下这次观察」。";
  }
  Array.prototype.forEach.call(document.querySelectorAll("[data-st]"), function(btn){
  btn.addEventListener("click", function(){
@@ -672,11 +705,13 @@
  sync();
  });
  document.getElementById("confirmBtn").addEventListener("click", function(){
- if (done || !readyPair() || roles.polaris !== "north" || roles.other !== "bright") return;
+ var oid = otherId();
+ var ok = roles.other === "bright" || (roles.other === "north" && HELPERS[oid] === 1);
+ if (done || !readyPair() || roles.polaris !== "north" || !ok) return;
  done = true;
- var extra = NAMES[otherId()];
- if (window.Progress) Progress.complete("nature/stars.html", "北极星找北，"+extra+"只是亮");
- document.getElementById("taskStatus").textContent = "完成啦：北极星用来找北，"+extra+"只是亮。";
+ var line = NAMES[oid] + (roles.other === "north" ? "帮忙指到它" : "只是亮");
+ if (window.Progress) Progress.complete("nature/stars.html", "北极星找北，"+line);
+ document.getElementById("taskStatus").textContent = "完成啦：北极星用来找北，"+line+"。";
  this.disabled = true;
  });
  paintStage();
