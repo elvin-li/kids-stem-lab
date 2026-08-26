@@ -119,8 +119,20 @@
  <rect class="vo-sky" width="420" height="220"/>
  <rect class="vo-ground" y="168" width="420" height="52"/>
  <g id="voActor">
+ <g id="voShapeSpire">
  <path class="vo-cone" d="M90 168 L190 48 H230 L330 168 Z"/>
  <path class="vo-lava" d="M190 48 H230 L218 78 H202 Z"/>
+ </g>
+ <g id="voShapeShield" display="none">
+ <path class="vo-cone" d="M40 168 Q210 62 380 168 Z"/>
+ <path class="vo-lava" d="M198 116 H222 L242 168 H206 Z"/>
+ </g>
+ <g id="voShapeSpring" display="none">
+ <ellipse cx="210" cy="168" rx="70" ry="12" fill="#5ab0c8" stroke="#3a7a8c" stroke-width="2"/>
+ <circle cx="210" cy="140" r="10" fill="#e8f4f6" stroke="#8ab0bc" stroke-width="2" opacity=".9"/>
+ <circle cx="220" cy="116" r="13" fill="#e8f4f6" stroke="#8ab0bc" stroke-width="2" opacity=".8"/>
+ <circle cx="206" cy="88" r="16" fill="#e8f4f6" stroke="#8ab0bc" stroke-width="2" opacity=".7"/>
+ </g>
  </g>
  </svg>
  <p class="live-text" id="live" role="status" aria-live="polite">点一张图鉴，看熔岩、灰，还是热水在动。</p>
@@ -490,19 +502,27 @@
 (function(){
  "use strict";
  var INFO = {
- shield: { name:"盾状火山", mood:"gentle", say:"盾状火山：稀熔岩到了地表像平底锅慢慢流，请远观，不要踩还烫的新熔岩。" },
- strato: { name:"层状火山", mood:"wild", say:"层状火山：一层灰一层岩叠起来，气一憋就猛喷，不是这座山在发脾气。" },
- cinder: { name:"渣锥", mood:"wild", say:"渣锥：小而陡，喷出来的是渣块，熔岩到了地表才叫熔岩，请离远一点看。" },
- caldera: { name:"破火山口", mood:"wild", say:"破火山口：喷空以后山顶塌成一口大锅，这是塌陷，不是山生完气坐下。" },
- lava: { name:"熔岩流", mood:"gentle", say:"熔岩流：稀的熔岩像糖浆慢慢爬，仍是到了地表的岩浆，千万不要去踩。" },
- ash: { name:"火山灰", mood:"wild", say:"火山灰：细粉末冲上天走得又高又远，会伤到肺，不要当软灰去扬开来。" },
- geyser: { name:"间歇泉", mood:"gentle", say:"间歇泉：喷的是热水和蒸汽，不是岩浆，也不是山在吐火，请远观就够了。" },
- spring: { name:"温泉", mood:"gentle", say:"温泉：地下水被底下的热烤暖，慢慢冒上来，不是岩浆，手不要伸进去试。" },
- dome: { name:"熔岩穹丘", mood:"gentle", say:"熔岩穹丘：太稠走不动，堆成一个馒头，仍是到了地表的岩浆，别伸脚去踩。" },
- fissure: { name:"裂隙喷发", mood:"gentle", say:"裂隙喷发：地上裂开一条缝，熔岩慢慢流，请远观，不要踩新铺的那一层。" },
- bomb: { name:"火山弹", mood:"wild", say:"火山弹：喷出的大石块还没凉，会在空中变形，落地仍烫，不要伸手去捡它。" },
- pillow: { name:"枕状熔岩", mood:"gentle", say:"枕状熔岩：海底挤出来，被水一浇就鼓成枕头，仍叫到了地表的那层熔岩。" }
+ shield: { name:"盾状火山", mood:"gentle", shape:"shield", say:"盾状火山：稀熔岩到了地表像平底锅慢慢流，请远观，不要踩还烫的新熔岩。" },
+ strato: { name:"层状火山", mood:"wild", shape:"spire", say:"层状火山：一层灰一层岩叠起来，气一憋就猛喷，不是这座山在发脾气。" },
+ cinder: { name:"渣锥", mood:"wild", shape:"spire", say:"渣锥：小而陡，喷出来的是渣块，熔岩到了地表才叫熔岩，请离远一点看。" },
+ caldera: { name:"破火山口", mood:"wild", shape:"shield", say:"破火山口：喷空以后山顶塌成一口大锅，这是塌陷，不是山生完气坐下。" },
+ lava: { name:"熔岩流", mood:"gentle", shape:"shield", say:"熔岩流：稀的熔岩像糖浆慢慢爬，仍是到了地表的岩浆，千万不要去踩。" },
+ ash: { name:"火山灰", mood:"wild", shape:"spire", say:"火山灰：细粉末冲上天走得又高又远，会伤到肺，不要当软灰去扬开来。" },
+ geyser: { name:"间歇泉", mood:"gentle", shape:"spring", say:"间歇泉：喷的是热水和蒸汽，不是岩浆，也不是山在吐火，请远观就够了。" },
+ spring: { name:"温泉", mood:"gentle", shape:"spring", say:"温泉：地下水被底下的热烤暖，慢慢冒上来，不是岩浆，手不要伸进去试。" },
+ dome: { name:"熔岩穹丘", mood:"gentle", shape:"shield", say:"熔岩穹丘：太稠走不动，堆成一个馒头，仍是到了地表的岩浆，别伸脚去踩。" },
+ fissure: { name:"裂隙喷发", mood:"gentle", shape:"shield", say:"裂隙喷发：地上裂开一条缝，熔岩慢慢流，请远观，不要踩新铺的那一层。" },
+ bomb: { name:"火山弹", mood:"wild", shape:"spire", say:"火山弹：喷出的大石块还没凉，会在空中变形，落地仍烫，不要伸手去捡它。" },
+ pillow: { name:"枕状熔岩", mood:"gentle", shape:"shield", say:"枕状熔岩：海底挤出来，被水一浇就鼓成枕头，仍叫到了地表的那层熔岩。" }
  };
+ function paintShape(kind){
+ var map = { shield:"voShapeShield", spire:"voShapeSpire", spring:"voShapeSpring" };
+ Object.keys(map).forEach(function(k){
+ var el = document.getElementById(map[k]);
+ if (!el) return;
+ if (k === kind) el.removeAttribute("display"); else el.setAttribute("display", "none");
+ });
+ }
  var first = "", second = "", mood = "", done = false;
  Array.prototype.forEach.call(document.querySelectorAll("[data-vo]"), function(btn){
  btn.addEventListener("click", function(){
@@ -513,6 +533,7 @@
  var id = n.getAttribute("data-vo");
  n.setAttribute("aria-pressed", (id === first || id === second) ? "true" : "false");
  });
+ paintShape(INFO[key].shape);
  document.getElementById("live").textContent = INFO[key].say;
  document.getElementById("atlasSay").textContent = second
  ? INFO[second].name+"是"+ (INFO[second].mood==="gentle"?"慢慢流":"猛地喷") +"，"+INFO[key].name+"是"+(INFO[key].mood==="gentle"?"慢慢流":"猛地喷")+"。"
