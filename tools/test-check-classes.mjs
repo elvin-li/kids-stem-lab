@@ -238,24 +238,29 @@ if (!escOriginal.includes(ESC.find)) {
 
 /* ---- 假阳性回归之三：前缀 + 变量拼出来的类名不许被当成死代码 ----
    这一类文本扫描原理上看不见，是三个假阳性里后果最重的。
-   index.html:1371
-       dot.className = "subj-dot d-" + r.subject;
-   字符串字面量里只有 "subj-dot d-"，完整类名 d-math / d-science / d-coding /
-   d-kits / d-video 一个都不出现在源码里。照着死代码清单删掉这五条，
-   46 张资源卡左边的学科色圆点会集体变成没有底色的小圆——
-   而这不会碰响任何一道门禁：check-contrast 只看 token 组合，
-   check-rendered-contrast 量的是文字对背景，一个纯装饰的圆点没有文字。
+
+   锚点换过一次：原来挂在首页资源卡的 dot.className = "subj-dot d-" + r.subject
+   上，首页改版后那段拼接连同 .d-* 规则一起消失，这条测试报「已过期」。
+   现在挂在恐龙馆 drawShape 的同形写法上（nature/dinosaurs.html:3059）：
+       node.setAttribute("class", ... ? "dn-" + tone + "-s" : ... : "dn-" + tone);
+   tone 取 meat / plant / fish，其中 dn-meat、dn-plant 还出现在静态 markup 里，
+   只有 dn-fish / dn-fish-s 完全由拼接产生——完整类名不出现在任何源码字面量里。
+   照着死代码清单删掉这两条，图鉴里翼龙（吃鱼那格）的身体和描边会集体没了
+   颜色——而这不会碰响任何一道门禁：check-contrast 只看 token 组合，
+   check-rendered-contrast 量的是文字对背景，一只纯装饰的翼龙没有文字。
 
    现在 check-classes.mjs 在**死代码那一侧**做了前缀推断：
-   源码里出现 d-" + 这种形状，就不再把 d-xxx 报成死代码。
+   源码里出现 dn-" + 这种形状，就不再把 dn-xxx 报成死代码。
    这个放宽只用在死代码判定，没有掺进 anyJs——掺进去会让
    「markup 用了但哪里都没有规则」的真缺陷被当成 JS 钩子放过。
-   回滚方式：把拼接改成写死一个类名，前缀形状消失，五条就该重新出现在清单里。 */
+   回滚方式：把拼接改成写死的类名，前缀形状消失，两条就该重新出现在清单里。
+   如果哪天这行也改成写死类名，这条测试会再次报过期：那时要么找到新的同形
+   写法，要么重新设计这条断言，不要直接删掉它。 */
 const CONCAT = {
-  page: 'index.html',
-  find: 'dot.className = "subj-dot d-" + r.subject;',
-  replace: 'dot.className = "subj-dot";',
-  classes: ['d-math', 'd-science', 'd-coding', 'd-kits', 'd-video']
+  page: 'nature/dinosaurs.html',
+  find: 'node.setAttribute("class", part[2] === "s" ? "dn-" + tone + "-s" : part[2] === "e" ? "dn-eye" : "dn-" + tone);',
+  replace: 'node.setAttribute("class", part[2] === "s" ? "dn-plant-s" : part[2] === "e" ? "dn-eye" : "dn-plant");',
+  classes: ['dn-fish', 'dn-fish-s']
 };
 const ccAbs = join(ROOT, CONCAT.page);
 const ccOriginal = await readFile(ccAbs, 'utf8');
@@ -264,20 +269,20 @@ const wronglyListed = CONCAT.classes.filter((k) => listedNow.includes(`${CONCAT.
 if (!ccOriginal.includes(CONCAT.find)) {
   failures.push(`前缀拼接回归：找不到 ${JSON.stringify(CONCAT.find)}，测试已过期`);
 } else if (wronglyListed.length) {
-  failures.push(`前缀拼接回归：${wronglyListed.map((k) => '.' + k).join('、')} 由 "subj-dot d-" + r.subject 拼出来，`
-    + '却被列进死代码清单 —— 照着删会让 46 张资源卡的学科色圆点集体失色');
+  failures.push(`前缀拼接回归：${wronglyListed.map((k) => '.' + k).join('、')} 由 "dn-" + tone 拼出来，`
+    + '却被列进死代码清单 —— 照着删会让恐龙馆翼龙的身体和描边集体失色');
 } else {
   pass++;
-  console.log('  ✓ 不误报："subj-dot d-" + r.subject 拼出的 5 条 .d-* 没被当成死代码');
+  console.log('  ✓ 不误报："dn-" + tone 拼出的 2 条 .dn-fish* 没被当成死代码');
   try {
     await writeFile(ccAbs, ccOriginal.split(CONCAT.find).join(CONCAT.replace), 'utf8');
     const after = deadList();
     const back = CONCAT.classes.filter((k) => after.includes(`${CONCAT.page} → .${k}`));
     if (back.length === CONCAT.classes.length) {
       pass++;
-      console.log('  ✓ 把拼接改成写死类名后，5 条 .d-* 全部重新进入清单（说明上一条不是碰巧）');
+      console.log(`  ✓ 把拼接改成写死类名后，${CONCAT.classes.length} 条 .dn-fish* 全部重新进入清单（说明上一条不是碰巧）`);
     } else {
-      failures.push(`前缀拼接回归：去掉拼接后只有 ${back.length}/5 条重新进入清单，判定不可靠`);
+      failures.push(`前缀拼接回归：去掉拼接后只有 ${back.length}/${CONCAT.classes.length} 条重新进入清单，判定不可靠`);
     }
   } finally {
     await writeFile(ccAbs, ccOriginal, 'utf8');
