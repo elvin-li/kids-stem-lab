@@ -417,8 +417,11 @@
     var faces=facing(); var F=forceVal(); var mag=Math.abs(F);
     var near=gap<38;
     var shift=Math.min(22, Math.round(mag/8));
-    var leftX=40+(100-gap)*0.7-(F>0?shift:0)+(F<0?8:0);
-    var rightX=360-(100-gap)*0.7+(F>0?shift:0)-(F<0?8:0);
+    // 吸引要往中间凑（留 4px 缝不重叠），排斥要往外推
+    var basePad=150-1.4*(100-gap);
+    var pullShift=Math.min(shift, Math.max(0,(basePad-4)/2));
+    var leftX=40+(100-gap)*0.7+(F>0?pullShift:0)-(F<0?8:0);
+    var rightX=360-(100-gap)*0.7-(F>0?pullShift:0)+(F<0?8:0);
     document.getElementById("leftMag").setAttribute("transform","translate("+(leftX-40)+" 0)");
     document.getElementById("rightMag").setAttribute("transform","translate("+(rightX-400)+" 0)");
     var needleDeg=F<0?28:-28;
