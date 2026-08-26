@@ -763,16 +763,21 @@
  </g>
  </g>
  <!-- aria-pressed 要和下面的 .layer-btn 一致：静态就写成「地壳被选中」，
- 脚本再跟着切。右边切开才能看见内核，左边是带大陆的球面。 -->
+脚本再跟着切。右边切开才能看见内核，左边是带大陆的球面。 -->
+ <!-- 分层半径按真实比例换算（126 单位 = 6,371 km，即 1 单位 ≈ 50.6 km）：
+660 km→113、2,890 km→69、5,150 km→24。原来的 100/58/26 把
+660 km 那条界画到了约 1,300 km 深，下方标注却写着「按比例」。
+唯一的例外是地壳：真实厚度只有 0.7 单位，细到点不中，加厚到 4 单位，
+标注里说明了这一点。 -->
  <path class="seg on" data-l="crust" tabindex="0" role="button" aria-pressed="true" aria-label="地壳" fill="#8b6f47" d="M130 4 A126 126 0 0 1 130 256 L130 252 A122 122 0 0 0 130 8 Z"></path>
- <path class="seg" data-l="upper" tabindex="0" role="button" aria-pressed="false" aria-label="上地幔" fill="#c2703d" d="M130 8 A122 122 0 0 1 130 252 L130 230 A100 100 0 0 0 130 30 Z"></path>
- <path class="seg" data-l="lower" tabindex="0" role="button" aria-pressed="false" aria-label="下地幔" fill="#e0762f" d="M130 30 A100 100 0 0 1 130 230 L130 188 A58 58 0 0 0 130 72 Z"></path>
- <path class="seg" data-l="outer" tabindex="0" role="button" aria-pressed="false" aria-label="外核" fill="#f2a33c" d="M130 72 A58 58 0 0 1 130 188 L130 156 A26 26 0 0 0 130 104 Z"></path>
- <path class="seg" data-l="inner" tabindex="0" role="button" aria-pressed="false" aria-label="内核" fill="#fde68a" d="M130 104 A26 26 0 0 1 130 156 Z"></path>
+ <path class="seg" data-l="upper" tabindex="0" role="button" aria-pressed="false" aria-label="上地幔" fill="#c2703d" d="M130 8 A122 122 0 0 1 130 252 L130 243 A113 113 0 0 0 130 17 Z"></path>
+ <path class="seg" data-l="lower" tabindex="0" role="button" aria-pressed="false" aria-label="下地幔" fill="#e0762f" d="M130 17 A113 113 0 0 1 130 243 L130 199 A69 69 0 0 0 130 61 Z"></path>
+ <path class="seg" data-l="outer" tabindex="0" role="button" aria-pressed="false" aria-label="外核" fill="#f2a33c" d="M130 61 A69 69 0 0 1 130 199 L130 154 A24 24 0 0 0 130 106 Z"></path>
+ <path class="seg" data-l="inner" tabindex="0" role="button" aria-pressed="false" aria-label="内核" fill="#fde68a" d="M130 106 A24 24 0 0 1 130 154 Z"></path>
  <path class="ea-cut" d="M124 10 L130 4 L130 256 L124 248 Z" pointer-events="none" opacity=".35"/>
  <path d="M130 4 V256" stroke="#fff8e8" stroke-opacity=".4" stroke-width="1.6" pointer-events="none"/>
  <circle class="ea-air" cx="130" cy="130" r="128" pointer-events="none"/>
- <text class="core-scale-cap" x="130" y="272" text-anchor="middle" pointer-events="none">半径 6,371&nbsp;km（按比例）</text>
+ <text class="core-scale-cap" x="130" y="272" text-anchor="middle" pointer-events="none">半径 6,371&nbsp;km（按比例，最薄的地壳稍加厚）</text>
  </svg>
  </div>
  <!-- 五层的按钮和说明都写在静态 markup 里：关掉脚本、打印或首屏脚本还没跑完时，
@@ -1581,7 +1586,10 @@
  <g stroke="#22345c" stroke-width="1">
  <path d="M40 0v200M110 0v200M180 0v200M250 0v200M320 0v200"/>
  </g>
- <path id="spTrace" d="M12 108h60l3-9 4 18 4-14 3 5h22l4-26 5 46 5-38 4 22 4-12 3 4h201" fill="none" stroke="#7ee6a8" stroke-width="2.2" stroke-linejoin="round"/>
+ <!-- 波形的 P 波包从 x=75、S 波包从 x=118 开始，正对两条「P 到 / S 到」虚线。
+换远近时脚本会连波形一起重画（S 波包挪到新的虚线处），只挪虚线不挪波形的话，
+「S 到」会指着一段平线，而 S 的大摆动还留在 P 旁边——图就把话说反了。 -->
+ <path id="spTrace" d="M12 108h63l3-9 4 18 4-14 3 5h29l4-26 5 46 5-38 4 22 4-12 3 4h191" fill="none" stroke="#7ee6a8" stroke-width="2.2" stroke-linejoin="round"/>
  <g id="spMarkP"><path d="M75 34v148" stroke="#6ea8fe" stroke-width="2.5" stroke-dasharray="4 3"/><text x="78" y="30" fill="#6ea8fe" font-size="12">P 到</text></g>
  <g id="spMarkS"><path d="M118 34v148" stroke="#fbbf24" stroke-width="2.5" stroke-dasharray="4 3"/><text x="121" y="30" fill="#fbbf24" font-size="12">S 到</text></g>
  <path id="spSpan" d="M75 190h43" stroke="#f472b6" stroke-width="3"/>
@@ -2796,12 +2804,18 @@
  mid: { x: 176, label: "时间差变大", note: "<b>中等距离：</b>P 波先到一会儿，S 波才追来，时间差已经拉开。" },
  far: { x: 254, label: "时间差很大", note: "<b>很远：</b>两种波跑了很长的路，快慢差异累积成很大的到达时差。" }
  };
- bindPicker("data-sp", function (value) {
- var state = spCopy[value], pX = 75;
- var svg = document.getElementById("spSvg");
- svg.dataset.state = value;
- document.getElementById("spMarkS").setAttribute("transform", "translate(" + (state.x - 118) + " 0)");
- document.getElementById("spSpan").setAttribute("d", "M" + pX + " 190H" + state.x);
+bindPicker("data-sp", function (value) {
+var state = spCopy[value], pX = 75;
+var svg = document.getElementById("spSvg");
+svg.dataset.state = value;
+document.getElementById("spMarkS").setAttribute("transform", "translate(" + (state.x - 118) + " 0)");
+/* 波形要跟着虚线重画：S 波包从 state.x 开始。原来只挪虚线不挪波形，
+选「中等/很远」后「S 到」指着一段平线，S 的大摆动却还贴在 P 旁边。
+P 波包 75–89（宽 14），S 波包宽 25，全线终点固定在 x=334。 */
+document.getElementById("spTrace").setAttribute("d",
+"M12 108h63l3-9 4 18 4-14 3 5h" + (state.x - 89) +
+"l4-26 5 46 5-38 4 22 4-12 3 4h" + (334 - state.x - 25));
+document.getElementById("spSpan").setAttribute("d", "M" + pX + " 190H" + state.x);
  var label = document.getElementById("spSpanLabel");
  label.setAttribute("x", (pX + state.x) / 2);
  label.textContent = state.label;
