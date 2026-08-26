@@ -25153,3 +25153,31 @@ ART['nature-monkey'] = `
   <path d="M90 78 C114 98 124 52 132 78" fill="none" stroke="#7c2d12" stroke-width="3.8" stroke-linecap="round"/>
   <path d="M56 98 L46 118 M74 98 L86 118" stroke="#7c2d12" stroke-width="3.6" stroke-linecap="round"/>
 `;
+
+/* 捕蚜工坊（aphid-lab）舞台上的纸草蛉幼虫：椭圆身体 + 小头 + 三条腿。
+   镰刀颚由页面舞台单独画，这里只管身体。图形照页面里手写的那版收录，
+   之前只写在页面块里、图库缺这一键，art-build 一跑就会报缺图。 */
+ART['lab-larva'] = `
+  <ellipse cx="62" cy="70" rx="34" ry="18" fill="#c4a06a" stroke="#3a2a18" stroke-width="2"/>
+  <ellipse cx="38" cy="62" rx="16" ry="12" fill="#b08968" stroke="#3a2a18" stroke-width="1.6"/>
+  <circle cx="32" cy="58" r="2.2" fill="#111827"/>
+  <g fill="none" stroke="#3a2a18" stroke-width="3" stroke-linecap="round">
+    <path d="M48 84 L40 98"/><path d="M62 86 L62 102"/><path d="M76 84 L84 98"/>
+  </g>
+`;
+
+/* 卷刺球工坊（tenrecball-lab）的马岛猬：卷成球、刺从球心放射、只露一点脸。
+   图形照页面里手写的那版收录，之前只写在页面块里、图库缺这一键。 */
+ART['nature-tenrecball'] = `
+  <path d="M0 100 C34 94 72 110 120 98 V120 H0 Z" fill="#4d7c0f" opacity=".55"/>
+  <ellipse cx="64" cy="114" rx="32" ry="4.4" fill="#2a1c06" opacity=".2"/>
+  <circle cx="62" cy="72" r="28" fill="#6b4a28" stroke="#1c1008" stroke-width="1.8"/>
+  <g stroke="#e8c48a" stroke-width="2.6" stroke-linecap="round">
+    <path d="M62 72 L62 28"/><path d="M62 72 L90 38"/><path d="M62 72 L34 38"/>
+    <path d="M62 72 L104 62"/><path d="M62 72 L20 62"/><path d="M62 72 L96 92"/>
+    <path d="M62 72 L28 92"/><path d="M62 72 L80 30"/><path d="M62 72 L44 30"/>
+  </g>
+  <ellipse cx="52" cy="76" rx="6" ry="5" fill="#f5e6c8"/>
+  <circle cx="50" cy="75" r="1.6" fill="#1a1008"/>
+  <ellipse cx="44" cy="82" rx="5" ry="3" fill="#6b4328"/>
+`;
