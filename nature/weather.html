@@ -806,7 +806,10 @@
  <p class="wc-lead">这一整段都是点一点就能玩的大图，不用打字，也不用先读句子。</p>
 
  <article class="wc-card" aria-labelledby="wcAtlasTitle">
- <h3 id="wcAtlasTitle">① 云图鉴：十个云属和四种天气云</h3>
+ <!-- 下面的网格实际是 15 张卡（自己的 aria-label 也写着「十五张云卡」）：
+ 十个云属 + 贴地雾 + 荚状云/乳状云/雨幡/飞机云。原标题「十个云属和四种天气云」
+ 只数到 14，把雾漏掉了。 -->
+<h3 id="wcAtlasTitle">① 云图鉴：十个云属、贴地雾和四种天气云</h3>
  <p class="wc-lead">点一张云卡，上面的云舞台就换成那种云，并告诉你它来了会怎样。</p>
  <svg class="wc-stage" id="wcStage" viewBox="0 0 360 210" role="img" aria-labelledby="wcStageTitle wcStageDesc">
  <title id="wcStageTitle">云舞台</title>
@@ -2103,7 +2106,7 @@
  stage.appendChild(sv("path",{d:d,"class":cls}));
  }
 
- /* ---------- ① 云图鉴：六种云 + 云舞台 ---------- */
+ /* ---------- ① 云图鉴：十五种云 + 云舞台 ---------- */
  var wcStage=document.getElementById("wcStage");
  var wcSay=document.getElementById("wcSay");
  var wcGrid=document.getElementById("wcCloudGrid");
@@ -2117,13 +2120,16 @@
  wcStage.appendChild(sv("path",{d:"M"+(38+i*8)+" "+(34+i*9)+"q58-20 114-6t128-12","class":"wc-wisp"}));
  }
  }},
- cumulus:{cap:"积云",where:"住中间",floors:[1],sky:"wc-sky",hpa:1019,rain:10,
- say:"积云像一团团棉花，底下平平的，中间还看得见蓝天。多半是好天气。",
- draw:function(){
- wcStage.appendChild(sv("circle",{cx:318,cy:42,r:22,"class":"wc-sun"}));
- wcPuff(wcStage,138,106,1.05,"wc-cloud");
- wcPuff(wcStage,252,114,.7,"wc-cloud");
- }},
+/* 积云是低云族（本页下方「云朵小档案」自己就写着「低云，云底常在离地
+ 1 千米上下」）。原来 floors:[1] 让舞台把「中」那层打勾、底部字条写
+ 「积云 · 住中间」，和小档案打架；云也画到低层，顶端可以稍探进中层。 */
+cumulus:{cap:"积云",where:"住低楼层",floors:[2],sky:"wc-sky",hpa:1019,rain:10,
+say:"积云像一团团棉花，底下平平的，中间还看得见蓝天。多半是好天气。",
+draw:function(){
+wcStage.appendChild(sv("circle",{cx:318,cy:42,r:22,"class":"wc-sun"}));
+wcPuff(wcStage,138,150,.95,"wc-cloud");
+wcPuff(wcStage,252,156,.7,"wc-cloud");
+}},
  stratus:{cap:"层云",where:"住低楼层",floors:[2],sky:"wc-sky-grey",hpa:1008,rain:48,
  say:"层云是灰灰的一整片，看不出一团一团，把太阳都盖住了。它常落很小的毛毛雨。",
  draw:function(){
@@ -2339,10 +2345,11 @@
  function wcQuizDraw(key){
  var c=WC_CLOUDS[key];
  while(wcQuizArt.childNodes.length>1)wcQuizArt.removeChild(wcQuizArt.lastChild);
- wcQuizArt.appendChild(sv("rect",{x:0,y:0,width:240,height:150,"class":c.sky||"wc-sky"}));
- if(key!=="cumulonimbus"&&key!=="stratus"&&key!=="altostratus"){
- wcQuizArt.appendChild(sv("circle",{cx:206,cy:28,r:14,"class":"wc-sun"}));
- }
+wcQuizArt.appendChild(sv("rect",{x:0,y:0,width:240,height:150,"class":c.sky||"wc-sky"}));
+/* 卷层云也要跳过默认太阳：它的分支自己画「太阳＋日晕」，不然会有两个太阳 */
+if(key!=="cumulonimbus"&&key!=="stratus"&&key!=="altostratus"&&key!=="cirrostratus"){
+wcQuizArt.appendChild(sv("circle",{cx:206,cy:28,r:14,"class":"wc-sun"}));
+}
  if(key==="cirrus"){
  for(var i=0;i<4;i++)wcQuizArt.appendChild(sv("path",{d:"M"+(20+i*6)+" "+(30+i*11)+"q40-14 78-4t62-9","class":"wc-wisp"}));
  }else if(key==="cumulus"){
@@ -2371,13 +2378,30 @@
  }else if(key==="contrail"){
  wcQuizArt.appendChild(sv("path",{d:"M20 48 L220 40","class":"wc-wisp"}));
  wcQuizArt.appendChild(sv("path",{d:"M22 60 L222 54","class":"wc-wisp"}));
- }else if(key==="nimbostratus"){
- wcQuizArt.appendChild(sv("path",{d:"M0 36 C40 24 90 44 140 30 C180 22 214 38 240 32 V72 C180 62 110 78 50 68 C20 64 6 70 0 68 Z","class":"wc-cloud-mid"}));
- wcQuizArt.appendChild(sv("path",{d:"M0 68 C36 58 90 78 150 64 C196 54 224 70 240 66 V104 C180 94 110 110 50 100 C18 96 6 102 0 100 Z","class":"wc-cloud-dark"}));
- for(var ns=0;ns<8;ns++)wcQuizArt.appendChild(sv("path",{d:"M"+(18+ns*28)+" 104l-4 18","class":"wc-rain"}));
- }else{
- wcPuff(wcQuizArt,120,78,.8,"wc-cloud-grey");
- }
+}else if(key==="nimbostratus"){
+wcQuizArt.appendChild(sv("path",{d:"M0 36 C40 24 90 44 140 30 C180 22 214 38 240 32 V72 C180 62 110 78 50 68 C20 64 6 70 0 68 Z","class":"wc-cloud-mid"}));
+wcQuizArt.appendChild(sv("path",{d:"M0 68 C36 58 90 78 150 64 C196 54 224 70 240 66 V104 C180 94 110 110 50 100 C18 96 6 102 0 100 Z","class":"wc-cloud-dark"}));
+for(var ns=0;ns<8;ns++)wcQuizArt.appendChild(sv("path",{d:"M"+(18+ns*28)+" 104l-4 18","class":"wc-rain"}));
+/* 下面五种原来都掉进「一团灰云」的兜底分支：揭晓句却说「这是卷积云，
+ 许多很小的白团排成片」「雾就是贴在地面上的云」……图和答案对不上，
+ 也没法按提示「看形状猜」。各画各的样子，构图照抄上面云舞台的简化版。 */
+}else if(key==="cirrocumulus"){
+for(var cc=0;cc<3;cc++)for(var ci=0;ci<7;ci++)wcQuizArt.appendChild(sv("circle",{cx:26+ci*28+(cc%2?12:0),cy:30+cc*18,r:5-cc,"class":"wc-cloud"}));
+}else if(key==="cirrostratus"){
+wcQuizArt.appendChild(sv("circle",{cx:120,cy:58,r:38,fill:"none",stroke:"#f7e6a8","stroke-width":5,opacity:".75"}));
+wcQuizArt.appendChild(sv("circle",{cx:120,cy:58,r:28,fill:"none",stroke:"#fff5cc","stroke-width":3,opacity:".6"}));
+wcQuizArt.appendChild(sv("circle",{cx:120,cy:58,r:15,"class":"wc-sun"}));
+wcQuizArt.appendChild(sv("rect",{x:0,y:26,width:240,height:66,opacity:".38","class":"wc-cloud-mid"}));
+}else if(key==="altocumulus"){
+for(var ar=0;ar<2;ar++)for(var ai=0;ai<4;ai++)wcQuizArt.appendChild(sv("ellipse",{cx:38+ai*56+(ar?22:0),cy:54+ar*26,rx:20,ry:10,"class":ar?"wc-cloud-mid":"wc-cloud"}));
+}else if(key==="stratocumulus"){
+for(var sc=0;sc<4;sc++)wcPuff(wcQuizArt,36+sc*58,102,.55,sc%2?"wc-cloud-mid":"wc-cloud-grey");
+}else{
+/* fog：贴地的雾带压住树脚，云底就在地面，不悬在半空 */
+wcQuizArt.appendChild(sv("path",{d:"M116 132 V94 H124 V132 Z","class":"wc-trunk"}));
+wcQuizArt.appendChild(sv("path",{d:"M102 100 C102 78 120 72 120 86 C128 70 146 78 136 94 C152 92 154 108 136 108 Z","class":"wc-leaf"}));
+wcQuizArt.appendChild(sv("path",{d:"M0 106 C30 98 70 112 110 104 C160 96 200 110 240 102 V136 C190 128 130 140 80 134 C40 130 16 138 0 134 Z","class":"wc-fog"}));
+}
  wcQuizArt.appendChild(sv("rect",{x:0,y:136,width:240,height:14,"class":"wc-ground"}));
  wcQuizArt.setAttribute("aria-label","要猜的那朵云：一朵"+c.cap);
  }
@@ -2409,12 +2433,18 @@
  });
  });
  document.getElementById("wcQuizNext").addEventListener("click",wcQuizNextCloud);
- document.getElementById("wcQuizHint").addEventListener("click",function(){
- if(!wcQuizNow)return;
- var c=WC_CLOUDS[wcQuizNow];
- wcQuizSay.textContent="提示：它住"+c.where+"，"+
- (c.rain>=60?"云看起来很厚、云底发暗，还往上长。":(c.rain>=30?"云是一整片平铺的，太阳被盖住了。":"云又薄又白，还看得见蓝天。"));
- });
+document.getElementById("wcQuizHint").addEventListener("click",function(){
+if(!wcQuizNow)return;
+var c=WC_CLOUDS[wcQuizNow];
+/* 提示按答案档位（WC_ANSWER）给，不按下雨百分比切：原来 rain>=60 一档
+ 把雨层云（82%）也说成「还往上长」，和图鉴里「雨层云平铺、不打雷；
+ 往上长的才是积雨云」的分法打架，等于把孩子往错答案「有雷雨」上推；
+ 30–59 一档又把答案是「还是晴」的层积云、雨幡说成「太阳被盖住了」。
+ 另外原文「它住」+where 在 where 本身以「住」开头时拼成「它住住顶楼」。 */
+var truth=WC_ANSWER[wcQuizNow];
+wcQuizSay.textContent="提示：位置是「"+c.where+"」，"+
+(truth==="storm"?"云又厚、云底发黑，这种云附近常有雷。":(truth==="rain"?"云是一整片平铺的，把太阳都盖住了。":"云不厚也不黑，天空大部分还亮着。"));
+});
  wcQuizNextCloud();
 
  var taskStatus=document.getElementById("taskStatus");
