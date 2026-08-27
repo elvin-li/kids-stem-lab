@@ -1,5 +1,5 @@
 /* 少儿数理启蒙离线缓存。外部科学 API 不在此缓存，页面自行超时并降级。 */
-const CACHE = "kids-stem-shell-v694";
+const CACHE = "kids-stem-shell-v695";
 const CORE = [
   "./", "./index.html", "./manifest.webmanifest",
   "./assets/css/base.css", "./assets/css/kid.css", "./assets/css/med.css", "./assets/css/print.css",
