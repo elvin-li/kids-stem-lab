@@ -4955,13 +4955,13 @@ window.EXPLORATIONS = [
   {
     id: "nature/hatchetfish.html", file: "hatchetfish.html", title: "斧头鱼观察站",
     type: "nature", subject: "biology", age: "5–11", icon: "🐟", ready: true,
-    description: "比较斧头鱼和背朝上发亮的鱼。斧头鱼肚子朝上发亮从下面才看不见。",
+    description: "比较斧头鱼和背朝上发亮的鱼。斧头鱼肚子朝下发亮从下面才看不见。",
     task: "点两张不一样的卡，说出谁更像腹镜的斧头鱼。"
   }  ,
   {
     id: "games/uplook-lab.html", file: "uplook-lab.html", title: "腹镜工坊",
     type: "experiment", subject: "physics", age: "6–11", icon: "🪞", ready: true,
-    description: "同一只纸斧头鱼。肚子朝上发亮才看不见；背朝上发亮自己被看见。",
+    description: "同一只纸斧头鱼。肚子朝下发亮才看不见；背朝上发亮自己被看见。",
     task: "试一次腹亮和一次背亮，比较谁看不见。"
   }
   ,

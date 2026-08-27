@@ -4200,12 +4200,12 @@ window.PLAYFUL = {
     ,
     "nature/hatchetfish.html": {
       companion: "bo", sticker: { id: "belly-mirror", label: "腹亮看不见员", emoji: "🐟" },
-      card: { series: "自然观察", discovery: "斧头鱼肚子朝上发亮从下面才看不见。", fact: "不是蝰鱼那种长牙。也不要抓真的。", next: "对照工坊，猜另一头为什么不成。", accent: "#6b5344" },
+      card: { series: "自然观察", discovery: "斧头鱼肚子朝下发亮从下面才看不见。", fact: "不是蝰鱼那种长牙。也不要抓真的。", next: "对照工坊，猜另一头为什么不成。", accent: "#6b5344" },
       surprises: ["先看它靠的是哪一件。", "不要去碰真的。", "先猜再试。"]
     }    ,
     "games/uplook-lab.html": {
       companion: "miao", sticker: { id: "back-shiner", label: "背亮被看见员", emoji: "🪞" },
-      card: { series: "物理实验", discovery: "肚子朝上发亮才看不见，背朝上发亮自己被看见。还是同一只纸鱼。", fact: "因为光从上面来，所以一背亮就看见。", next: "对照观察站，猜该用哪一头。", accent: "#0e7490" },
+      card: { series: "物理实验", discovery: "肚子朝下发亮才看不见，背朝上发亮自己被看见。还是同一只纸鱼。", fact: "因为光从上面来，所以一背亮就看见。", next: "对照观察站，猜该用哪一头。", accent: "#0e7490" },
       surprises: ["先猜两头谁成立。", "换一种动物是不是同一件事。", "不要去碰真的。"]
     }
     ,
