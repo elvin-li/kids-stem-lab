@@ -775,6 +775,14 @@
       });
     });
   }
+  function hashHue(str) {
+    var h = 2166136261;
+    for (var i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0) % 360;
+  }
   function distinguishRepeatPhotos(root) {
     if (!root || !root.querySelectorAll) return;
     try {
@@ -797,6 +805,13 @@
         if (!key) continue;
         if (seen[key]) art.classList.add("atlas-same");
         else seen[key] = true;
+      }
+      var arts = grid.querySelectorAll(".kid-figure-art.atlas-same");
+      for (var a = 0; a < arts.length; a++) {
+        var tagged = arts[a];
+        var photo = tagged.querySelector && tagged.querySelector("img.photo-real");
+        var src = photo ? String(photo.getAttribute("src") || "") : "";
+        tagged.style.setProperty("--atlas-hue", hashHue(src) + "deg");
       }
     });
   }
