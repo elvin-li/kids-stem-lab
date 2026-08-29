@@ -789,34 +789,39 @@
       if (global.location && /\/nature\/beetles\.html$/i.test(global.location.pathname)) return;
     } catch (e) { /* file: 或无 location 时仍处理其它页 */ }
     nodes(root, ".kid-figure-grid").forEach(function (grid) {
-      var seen = Object.create(null);
+      var counts = Object.create(null);
       var imgs = grid.querySelectorAll(".kid-figure-art img.photo-real");
+      for (var c = 0; c < imgs.length; c++) {
+        var src0 = String(imgs[c].getAttribute("src") || "").replace(/[?#].*$/, "");
+        if (!src0) continue;
+        counts[src0] = (counts[src0] || 0) + 1;
+      }
       for (var i = 0; i < imgs.length; i++) {
         var img = imgs[i];
         var art = img.parentNode;
         if (!art || !art.classList || !art.classList.contains("kid-figure-art")) continue;
-        if (art.classList.contains("atlas-ban") || art.classList.contains("atlas-same")) continue;
+        if (art.classList.contains("atlas-ban")) continue;
         var btn = art.parentNode;
         var gn = btn && btn.getAttribute ? btn.getAttribute("data-gn") : "";
         var pl = btn && btn.getAttribute ? btn.getAttribute("data-pl-atlas") : "";
         if (gn === "lotus" || gn === "wick" || gn === "oilmagic") continue;
-        if (pl === "lotus" || pl === "magic" || pl === "dryok" || pl === "potion") continue;
+        if (pl === "lotus" || pl === "magic" || pl === "dryok") continue;
         var key = String(img.getAttribute("src") || "").replace(/[?#].*$/, "");
-        if (!key) continue;
-        if (seen[key]) art.classList.add("atlas-same");
-        else seen[key] = true;
+        if (!key || counts[key] < 2) continue;
+        art.classList.add("atlas-same");
       }
       var arts = grid.querySelectorAll(".kid-figure-art.atlas-same");
       for (var a = 0; a < arts.length; a++) {
         var tagged = arts[a];
         var photo = tagged.querySelector && tagged.querySelector("img.photo-real");
         var src = photo ? String(photo.getAttribute("src") || "") : "";
-        tagged.style.setProperty("--atlas-hue", hashHue(src) + "deg");
-        if (src) {
-          var abs = src;
-          try { abs = new global.URL(src, global.location.href).href; } catch (err) { /* 相对路径留给文档解析 */ }
-          tagged.style.setProperty("--atlas-photo", 'url("' + String(abs).replace(/"/g, "") + '")');
-        }
+        var host = tagged.parentNode;
+        var capEl = host && host.querySelector ? host.querySelector(".kid-figure-cap") : null;
+        var cap = capEl ? String(capEl.textContent || "") : "";
+        var slot = (host && host.getAttribute ? (host.getAttribute("data-gn") || host.getAttribute("data-pl-atlas") || "") : "") + cap + String(a);
+        var hue = hashHue(src + slot);
+        tagged.style.setProperty("--atlas-hue", hue + "deg");
+        tagged.style.setProperty("--atlas-pos", (15 + (hue % 70)) + "% " + (12 + ((hue >>> 3) % 76)) + "%");
       }
     });
   }
