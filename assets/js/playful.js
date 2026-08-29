@@ -812,6 +812,11 @@
         var photo = tagged.querySelector && tagged.querySelector("img.photo-real");
         var src = photo ? String(photo.getAttribute("src") || "") : "";
         tagged.style.setProperty("--atlas-hue", hashHue(src) + "deg");
+        if (src) {
+          var abs = src;
+          try { abs = new global.URL(src, global.location.href).href; } catch (err) { /* 相对路径留给文档解析 */ }
+          tagged.style.setProperty("--atlas-photo", 'url("' + String(abs).replace(/"/g, "") + '")');
+        }
       }
     });
   }
