@@ -775,6 +775,31 @@
       });
     });
   }
+  function distinguishRepeatPhotos(root) {
+    if (!root || !root.querySelectorAll) return;
+    try {
+      if (global.location && /\/nature\/beetles\.html$/i.test(global.location.pathname)) return;
+    } catch (e) { /* file: 或无 location 时仍处理其它页 */ }
+    nodes(root, ".kid-figure-grid").forEach(function (grid) {
+      var seen = Object.create(null);
+      var imgs = grid.querySelectorAll(".kid-figure-art img.photo-real");
+      for (var i = 0; i < imgs.length; i++) {
+        var img = imgs[i];
+        var art = img.parentNode;
+        if (!art || !art.classList || !art.classList.contains("kid-figure-art")) continue;
+        if (art.classList.contains("atlas-ban") || art.classList.contains("atlas-same")) continue;
+        var btn = art.parentNode;
+        var gn = btn && btn.getAttribute ? btn.getAttribute("data-gn") : "";
+        var pl = btn && btn.getAttribute ? btn.getAttribute("data-pl-atlas") : "";
+        if (gn === "lotus" || gn === "wick" || gn === "oilmagic") continue;
+        if (pl === "lotus" || pl === "magic" || pl === "dryok" || pl === "potion") continue;
+        var key = String(img.getAttribute("src") || "").replace(/[?#].*$/, "");
+        if (!key) continue;
+        if (seen[key]) art.classList.add("atlas-same");
+        else seen[key] = true;
+      }
+    });
+  }
   function nodes(root, selector) {
     var list = [];
     if (!root) return list;
@@ -829,7 +854,9 @@
   }
   function init(root) {
     rebuildCharacters();
-    var result = enhance(root || global.document);
+    var scope = root || global.document;
+    distinguishRepeatPhotos(scope);
+    var result = enhance(scope);
     if (!initialized && typeof global.addEventListener === "function") {
       initialized = true;
       rememberUnlockedCards();
