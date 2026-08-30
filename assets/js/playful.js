@@ -821,7 +821,12 @@
         var slot = (host && host.getAttribute ? (host.getAttribute("data-gn") || host.getAttribute("data-pl-atlas") || "") : "") + cap + String(a);
         var hue = hashHue(src + slot);
         tagged.style.setProperty("--atlas-hue", hue + "deg");
-        tagged.style.setProperty("--atlas-pos", (15 + (hue % 70)) + "% " + (12 + ((hue >>> 3) % 76)) + "%");
+        /* 同一 src 连贴时按卡序号铺成 6×6 裁切点，避免哈希挤在差不多的取景。 */
+        var gx = a % 6;
+        var gy = Math.floor(a / 6) % 6;
+        var x = 4 + gx * 18 + (hue % 5);
+        var y = 4 + gy * 18 + ((hue >>> 4) % 5);
+        tagged.style.setProperty("--atlas-pos", x + "% " + y + "%");
       }
     });
   }
